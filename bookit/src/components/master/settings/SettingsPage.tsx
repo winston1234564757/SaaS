@@ -1,0 +1,584 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut } from 'lucide-react';
+import { VacationManager } from './VacationManager';
+import { ImageUploader } from '@/components/master/services/ImageUploader';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { useMasterContext } from '@/lib/supabase/context';
+import { useToast } from '@/lib/toast/context';
+import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
+
+const AVATAR_EMOJIS = ['💅','👑','✂️','💆','💇','🌸','✨','💎','🌺','🪞','🖌️','💄'];
+
+const DAYS_UA: Record<string, string> = {
+  mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Нд',
+};
+const DAYS_ORDER = ['mon','tue','wed','thu','fri','sat','sun'] as const;
+
+type DayKey = typeof DAYS_ORDER[number];
+
+interface DaySchedule {
+  is_working: boolean;
+  start_time: string;
+  end_time: string;
+}
+
+type Schedule = Record<DayKey, DaySchedule>;
+
+const DEFAULT_SCHEDULE: Schedule = Object.fromEntries(
+  DAYS_ORDER.map(d => [d, { is_working: !['sat','sun'].includes(d), start_time: '09:00', end_time: '18:00' }])
+) as Schedule;
+
+export function SettingsPage() {
+  const { profile, masterProfile, refresh } = useMasterContext();
+  const supabase = createClient();
+  const { showToast } = useToast();
+
+  // Форма профілю
+  const [fullName, setFullName] = useState('');
+  const [bio, setBio] = useState('');
+  const [slug, setSlug] = useState('');
+  const [avatar, setAvatar] = useState('💅');
+  const [city, setCity] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [telegram, setTelegram] = useState('');
+  const [telegramChatId, setTelegramChatId] = useState('');
+  const [isPublished, setIsPublished] = useState(false);
+  const [themeKey, setThemeKey] = useState<MoodThemeKey>('default');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
+
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [slugStatus, setSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
+
+  // Зміна пароля
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
+  const [changingPwd, setChangingPwd] = useState(false);
+
+  // Ініціалізація з даних
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.full_name ?? '');
+      setAvatarUrl(profile.avatar_url ?? null);
+    }
+    if (masterProfile) {
+      setBio(masterProfile.bio ?? '');
+      setSlug(masterProfile.slug ?? '');
+      setCity(masterProfile.city ?? '');
+      setInstagram(masterProfile.instagram_url ?? '');
+      setTelegram(masterProfile.telegram_url ?? '');
+      setTelegramChatId(masterProfile.telegram_chat_id ?? '');
+      setIsPublished(masterProfile.is_published ?? false);
+      setAvatar(masterProfile.avatar_emoji ?? '💅');
+      setThemeKey((masterProfile.mood_theme as MoodThemeKey) ?? 'default');
+    }
+  }, [profile, masterProfile]);
+
+  // Перевірка доступності slug
+  useEffect(() => {
+    if (!slug || !masterProfile?.id || slug === masterProfile.slug) {
+      setSlugStatus('idle');
+      return;
+    }
+    setSlugStatus('checking');
+    const timer = setTimeout(async () => {
+      const { data } = await supabase
+        .from('master_profiles')
+        .select('id')
+        .eq('slug', slug)
+        .neq('id', masterProfile.id)
+        .maybeSingle();
+      setSlugStatus(data ? 'taken' : 'available');
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [slug, masterProfile?.id, masterProfile?.slug]);
+
+  // Завантаження графіку
+  useEffect(() => {
+    if (!masterProfile?.id) return;
+    supabase
+      .from('schedule_templates')
+      .select('*')
+      .eq('master_id', masterProfile.id)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const s = { ...DEFAULT_SCHEDULE };
+          data.forEach((row: any) => {
+            if (row.day_of_week in s) {
+              s[row.day_of_week as DayKey] = {
+                is_working: row.is_working,
+                start_time: (row.start_time as string | null)?.slice(0, 5) ?? '09:00',
+                end_time: (row.end_time as string | null)?.slice(0, 5) ?? '18:00',
+              };
+            }
+          });
+          setSchedule(s);
+        }
+      });
+  }, [masterProfile?.id]);
+
+  async function handleSave() {
+    if (!masterProfile?.id || !profile?.id) return;
+    setSaving(true);
+
+    await Promise.all([
+      supabase.from('profiles').update({ full_name: fullName, avatar_url: avatarUrl }).eq('id', profile.id),
+      supabase.from('master_profiles').update({
+        bio, city, slug,
+        avatar_emoji: avatar,
+        instagram_url: instagram || null,
+        telegram_url: telegram || null,
+        telegram_chat_id: telegramChatId.trim() || null,
+        is_published: isPublished,
+        mood_theme: themeKey,
+      }).eq('id', masterProfile.id),
+      // Upsert кожен день
+      ...DAYS_ORDER.map(day =>
+        supabase.from('schedule_templates').upsert({
+          master_id: masterProfile.id,
+          day_of_week: day,
+          ...schedule[day],
+        }, { onConflict: 'master_id,day_of_week' })
+      ),
+    ]);
+
+    await refresh();
+    setSaving(false);
+    setSaved(true);
+    showToast({ type: 'success', title: 'Налаштування збережено' });
+    setTimeout(() => setSaved(false), 2500);
+  }
+
+  async function handleChangePassword() {
+    if (newPwd.length < 6 || newPwd !== confirmPwd) return;
+    setChangingPwd(true);
+    const { error } = await supabase.auth.updateUser({ password: newPwd });
+    if (error) {
+      showToast({ type: 'error', title: 'Помилка', message: error.message });
+    } else {
+      showToast({ type: 'success', title: 'Пароль змінено!' });
+      setNewPwd('');
+      setConfirmPwd('');
+    }
+    setChangingPwd(false);
+  }
+
+  function toggleDay(day: DayKey) {
+    setSchedule(s => ({ ...s, [day]: { ...s[day], is_working: !s[day].is_working } }));
+  }
+
+  function setDayTime(day: DayKey, field: 'start_time' | 'end_time', val: string) {
+    setSchedule(s => ({ ...s, [day]: { ...s[day], [field]: val } }));
+  }
+
+  const inputCls = "w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20";
+
+  return (
+    <div className="flex flex-col gap-4 pb-10">
+      <div className="bento-card p-5">
+        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Налаштування</h1>
+        <p className="text-sm text-[#A8928D]">Профіль, графік та публікація</p>
+      </div>
+
+      {/* Аватар + ім'я */}
+      <Section title="Профіль">
+        <div className="flex flex-col gap-4">
+          <div>
+            <p className="text-xs font-medium text-[#6B5750] mb-2">Фото профілю</p>
+            {profile?.id && (
+              <ImageUploader
+                folder="avatars"
+                masterId={profile.id}
+                value={avatarUrl ?? undefined}
+                onChange={setAvatarUrl}
+              />
+            )}
+            {avatarUrl && (
+              <p className="text-[11px] text-[#A8928D] mt-1.5">
+                Фото використовується замість emoji-аватару на публічній сторінці
+              </p>
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs font-medium text-[#6B5750] mb-2">Emoji-аватар <span className="font-normal text-[#A8928D]">(якщо немає фото)</span></p>
+            <div className="flex flex-wrap gap-2">
+              {AVATAR_EMOJIS.map(e => (
+                <button
+                  key={e}
+                  onClick={() => setAvatar(e)}
+                  className={`w-11 h-11 rounded-2xl text-2xl transition-all ${
+                    avatar === e
+                      ? 'bg-[#789A99]/20 ring-2 ring-[#789A99] scale-105'
+                      : 'bg-white/70 border border-white/80 hover:bg-white'
+                  }`}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Повне ім'я</label>
+            <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ваше ім'я та прізвище" className={inputCls} />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Про себе</label>
+            <textarea
+              value={bio}
+              onChange={e => setBio(e.target.value)}
+              placeholder="Розкажіть про себе та свої послуги..."
+              rows={3}
+              className={`${inputCls} resize-none`}
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Місто</label>
+            <input value={city} onChange={e => setCity(e.target.value)} placeholder="Київ" className={inputCls} />
+          </div>
+        </div>
+      </Section>
+
+      {/* Публічна сторінка */}
+      <Section title="Публічна сторінка">
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Адреса сторінки</label>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center px-4 py-3 rounded-2xl bg-white/40 border border-white/60 text-sm text-[#A8928D] flex-shrink-0">
+                bookit.com.ua/
+              </div>
+              <input
+                value={slug}
+                onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                placeholder="your-slug"
+                className={`${inputCls} flex-1`}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-1.5 min-h-[18px]">
+              {slug && (
+                <a
+                  href={`/${slug}`}
+                  target="_blank"
+                  className="flex items-center gap-1.5 text-xs text-[#789A99] hover:text-[#5C7E7D] transition-colors"
+                >
+                  <ExternalLink size={12} />
+                  Переглянути
+                </a>
+              )}
+              <span className="ml-auto text-xs">
+                {slugStatus === 'checking' && (
+                  <span className="flex items-center gap-1 text-[#A8928D]">
+                    <Loader2 size={11} className="animate-spin" /> Перевірка...
+                  </span>
+                )}
+                {slugStatus === 'available' && (
+                  <span className="text-[#5C9E7A] font-medium">✓ Доступно</span>
+                )}
+                {slugStatus === 'taken' && (
+                  <span className="text-[#C05B5B] font-medium">✗ Вже зайнято</span>
+                )}
+              </span>
+            </div>
+          </div>
+
+          {/* Публікація */}
+          <button
+            onClick={() => setIsPublished(p => !p)}
+            className={`flex items-center justify-between px-4 py-3.5 rounded-2xl border transition-all ${
+              isPublished
+                ? 'bg-[#5C9E7A]/10 border-[#5C9E7A]/30'
+                : 'bg-white/70 border-white/80 hover:bg-white'
+            }`}
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium text-[#2C1A14]">
+                {isPublished ? 'Сторінка опублікована' : 'Сторінка прихована'}
+              </p>
+              <p className="text-xs text-[#A8928D] mt-0.5">
+                {isPublished ? 'Клієнти можуть знайти вас та записатися' : 'Ніхто не бачить вашу сторінку'}
+              </p>
+            </div>
+            <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${isPublished ? 'bg-[#5C9E7A]' : 'bg-[#E8D5CF]'}`}>
+              <motion.div
+                animate={{ x: isPublished ? 20 : 2 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+              />
+            </div>
+          </button>
+        </div>
+      </Section>
+
+      {/* Соціальні мережі */}
+      <Section title="Соціальні мережі">
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 flex items-center gap-1.5">
+              <Instagram size={12} /> Instagram
+            </label>
+            <input
+              value={instagram}
+              onChange={e => setInstagram(e.target.value)}
+              placeholder="https://instagram.com/..."
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 flex items-center gap-1.5">
+              <Send size={12} /> Telegram
+            </label>
+            <input
+              value={telegram}
+              onChange={e => setTelegram(e.target.value)}
+              placeholder="https://t.me/..."
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">
+              Telegram сповіщення
+            </label>
+            {process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME && masterProfile?.slug ? (
+              <div className="flex flex-col gap-2">
+                {telegramChatId ? (
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#5C9E7A]/8 border border-[#5C9E7A]/20">
+                    <span className="text-xs text-[#5C9E7A] font-medium flex-1">✅ Telegram підключено (ID: {telegramChatId})</span>
+                    <button onClick={() => setTelegramChatId('')} className="text-[11px] text-[#C05B5B] hover:underline">Відключити</button>
+                  </div>
+                ) : (
+                  <a
+                    href={`https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}?start=${masterProfile.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#229ED9] text-white text-sm font-semibold hover:bg-[#1a85c4] transition-colors"
+                  >
+                    <Send size={14} /> Підключити Telegram бота
+                  </a>
+                )}
+                <p className="text-[11px] text-[#A8928D]">Після підключення бот надсилатиме сповіщення про нові записи</p>
+              </div>
+            ) : (
+              <div>
+                <input
+                  value={telegramChatId}
+                  onChange={e => setTelegramChatId(e.target.value)}
+                  placeholder="123456789"
+                  className={inputCls}
+                />
+                <p className="text-[11px] text-[#A8928D] mt-1">
+                  Напишіть боту <code className="bg-white/60 px-1 rounded">/start {masterProfile?.slug}</code> та вставте свій Chat ID
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </Section>
+
+      {/* Тема сторінки */}
+      <Section title="Тема сторінки">
+        <div className="grid grid-cols-2 gap-2.5">
+          {(Object.entries(moodThemes) as [MoodThemeKey, typeof moodThemes[MoodThemeKey]][]).map(([key, t]) => (
+            <button
+              key={key}
+              onClick={() => setThemeKey(key)}
+              className="relative p-3.5 rounded-2xl border transition-all text-left"
+              style={
+                themeKey === key
+                  ? { boxShadow: `0 0 0 2px ${t.accent}`, background: `${t.accent}10`, borderColor: `${t.accent}40` }
+                  : { background: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.8)' }
+              }
+            >
+              {/* Кольоровий превʼю */}
+              <div
+                className="w-full h-9 rounded-xl mb-2 relative overflow-hidden"
+                style={{ background: `linear-gradient(135deg, ${t.gradient[0]}, ${t.gradient[1]})` }}
+              >
+                <div
+                  className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 rounded-full"
+                  style={{ background: t.accent }}
+                />
+              </div>
+              <p className="text-xs font-semibold text-[#2C1A14]">{t.name}</p>
+              {t.isExclusive && (
+                <div className="absolute top-2 right-2 flex items-center gap-0.5">
+                  <Lock size={9} className="text-[#A8928D]" />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-[#A8928D] mt-2.5">Тема відображається на вашій публічній сторінці</p>
+      </Section>
+
+      {/* Графік роботи */}
+      <Section title="Графік роботи">
+        <div className="flex flex-col gap-2">
+          {DAYS_ORDER.map(day => (
+            <div
+              key={day}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors ${
+                schedule[day].is_working ? 'bg-white/50' : 'opacity-50'
+              }`}
+            >
+              <button
+                onClick={() => toggleDay(day)}
+                className={`relative w-10 h-5 rounded-full transition-colors duration-200 flex-shrink-0 ${
+                  schedule[day].is_working ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'
+                }`}
+              >
+                <motion.div
+                  animate={{ x: schedule[day].is_working ? 18 : 2 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm"
+                />
+              </button>
+
+              <span className="text-sm font-medium text-[#2C1A14] w-6 flex-shrink-0">{DAYS_UA[day]}</span>
+
+              {schedule[day].is_working ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type="time"
+                    value={schedule[day].start_time}
+                    onChange={e => setDayTime(day, 'start_time', e.target.value)}
+                    className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-[#2C1A14] outline-none focus:border-[#789A99]"
+                  />
+                  <span className="text-xs text-[#A8928D]">—</span>
+                  <input
+                    type="time"
+                    value={schedule[day].end_time}
+                    onChange={e => setDayTime(day, 'end_time', e.target.value)}
+                    className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-[#2C1A14] outline-none focus:border-[#789A99]"
+                  />
+                </div>
+              ) : (
+                <span className="text-xs text-[#A8928D]">Вихідний</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Вихідні та відпустка */}
+      <Section title="Вихідні та відпустка">
+        <VacationManager />
+      </Section>
+
+      {/* Безпека — зміна пароля */}
+      <Section title="Безпека">
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Новий пароль</label>
+            <input
+              type="password"
+              value={newPwd}
+              onChange={e => setNewPwd(e.target.value)}
+              placeholder="Мінімум 6 символів"
+              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Підтвердити пароль</label>
+            <input
+              type="password"
+              value={confirmPwd}
+              onChange={e => setConfirmPwd(e.target.value)}
+              placeholder="Повторіть новий пароль"
+              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+            />
+            {confirmPwd && newPwd !== confirmPwd && (
+              <p className="text-[11px] text-[#C05B5B] mt-1">Паролі не збігаються</p>
+            )}
+          </div>
+          <button
+            onClick={handleChangePassword}
+            disabled={newPwd.length < 6 || newPwd !== confirmPwd || changingPwd}
+            className="w-full py-3 rounded-2xl text-sm font-semibold bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {changingPwd ? <><Loader2 size={15} className="animate-spin" /> Збереження...</> : 'Змінити пароль'}
+          </button>
+        </div>
+      </Section>
+
+      {/* Навігація (мобільна) */}
+      <div className="bento-card p-4 lg:hidden">
+        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-2">Додатково</p>
+        {[
+          { href: '/dashboard/reviews', icon: MessageSquare, label: 'Відгуки клієнтів' },
+          { href: '/dashboard/billing', icon: CreditCard,    label: 'Тариф та оплата'  },
+        ].map(({ href, icon: Icon, label }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-white/60 transition-colors"
+          >
+            <Icon size={16} className="text-[#789A99]" />
+            <span className="text-sm text-[#2C1A14] flex-1">{label}</span>
+            <ChevronRight size={14} className="text-[#A8928D]" />
+          </Link>
+        ))}
+      </div>
+
+      {/* Кнопка збереження */}
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+          saved
+            ? 'bg-[#5C9E7A] text-white'
+            : 'bg-[#789A99] text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
+        }`}
+      >
+        {saving ? (
+          <><Loader2 size={16} className="animate-spin" /> Збереження...</>
+        ) : saved ? (
+          <><Check size={16} /> Збережено</>
+        ) : (
+          'Зберегти зміни'
+        )}
+      </button>
+
+      {/* Режим клієнта */}
+      <button
+        onClick={() => {
+          document.cookie = 'view_mode=client; path=/; max-age=86400';
+          window.location.href = '/my/bookings';
+        }}
+        className="w-full py-3.5 rounded-2xl text-sm font-medium text-[#789A99] bg-[#789A99]/8 hover:bg-[#789A99]/15 border border-[#789A99]/20 transition-colors flex items-center justify-center gap-2"
+      >
+        <span className="text-base">👤</span>
+        Перейти в режим клієнта
+      </button>
+
+      {/* Вийти з акаунту */}
+      <button
+        onClick={async () => {
+          await supabase.auth.signOut();
+          window.location.href = '/login';
+        }}
+        className="w-full py-3.5 rounded-2xl text-sm font-medium text-[#C05B5B] bg-[#C05B5B]/8 hover:bg-[#C05B5B]/15 border border-[#C05B5B]/20 transition-colors flex items-center justify-center gap-2"
+      >
+        <LogOut size={15} />
+        Вийти з акаунту
+      </button>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bento-card p-5">
+      <p className="text-sm font-semibold text-[#2C1A14] mb-4">{title}</p>
+      {children}
+    </div>
+  );
+}

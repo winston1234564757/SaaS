@@ -1,0 +1,17 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/reset-monthly",
+      "schedule": "5 0 1 * *"
+    },
+    {
+      "path": "/api/cron/rebooking",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
+

@@ -1,0 +1,77 @@
+'use client';
+
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Check, ChevronRight, User2, FileText, Globe } from 'lucide-react';
+import { useMasterContext } from '@/lib/supabase/context';
+
+export function WelcomeBanner() {
+  const { profile, masterProfile, isLoading } = useMasterContext();
+
+  if (isLoading || !masterProfile) return null;
+
+  const hasName = !!(profile?.full_name?.trim());
+  const hasProfile = !!(masterProfile.bio && masterProfile.slug);
+  const isPublished = masterProfile.is_published;
+
+  if (hasName && hasProfile && isPublished) return null;
+
+  const steps = [
+    { done: hasName,      label: "Ім'я заповнено",        icon: User2 },
+    { done: hasProfile,   label: 'Профіль та адреса',     icon: FileText },
+    { done: isPublished,  label: 'Сторінка опублікована', icon: Globe },
+  ];
+
+  const completed = steps.filter(s => s.done).length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+      className="bento-card p-4"
+      style={{ borderColor: 'rgba(120,154,153,0.2)', border: '1px solid rgba(120,154,153,0.2)' }}
+    >
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <p className="text-sm font-semibold text-[#2C1A14]">Налаштуй профіль</p>
+          <p className="text-xs text-[#A8928D] mt-0.5">{completed}/3 кроків виконано</p>
+        </div>
+        <Link
+          href="/dashboard/onboarding"
+          className="flex items-center gap-1 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors flex-shrink-0 bg-[#789A99]/10 px-3 py-1.5 rounded-xl"
+        >
+          Налаштувати <ChevronRight size={13} />
+        </Link>
+      </div>
+
+      {/* Progress track */}
+      <div className="w-full h-1.5 rounded-full bg-[#E8D5CF] mb-3">
+        <div
+          className="h-full rounded-full bg-[#789A99] transition-all duration-700"
+          style={{ width: `${(completed / 3) * 100}%` }}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        {steps.map(({ done, label, icon: Icon }) => (
+          <div key={label} className="flex items-center gap-2">
+            <div
+              className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+                done ? 'bg-[#5C9E7A]' : 'bg-[#E8D5CF]'
+              }`}
+            >
+              {done
+                ? <Check size={9} className="text-white" strokeWidth={3} />
+                : <Icon size={9} className="text-[#A8928D]" />
+              }
+            </div>
+            <span className={`text-xs transition-colors ${done ? 'text-[#A8928D] line-through' : 'text-[#6B5750]'}`}>
+              {label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
