@@ -106,7 +106,8 @@
       "Read(//c/Users/Vitossik/.config/**)",
       "Read(//c/Users/Vitossik/SaaS/bookit/$APPDATA/supabase/**)",
       "Read(//c/Users/Vitossik/SaaS/bookit/$APPDATA/**)",
-      "Bash(cd C:/Users/Vitossik/SaaS/bookit && npx playwright test --reporter=list 2>&1)"
+      "Bash(cd C:/Users/Vitossik/SaaS/bookit && npx playwright test --reporter=list 2>&1)",
+      "Bash(del:*)"
     ]
   }
 }

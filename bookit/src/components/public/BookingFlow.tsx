@@ -9,7 +9,7 @@ import { notifyMasterOnBooking, sendClientBookingConfirmation, ensureClientProfi
 import { getAutoSuggestProductIds } from '@/lib/supabase/hooks/useProductLinks';
 import { scoreSlots, type SlotWithScore } from '@/lib/utils/smartSlots';
 import { applyDynamicPricing } from '@/lib/utils/dynamicPricing';
-import { ClientAuthSheet } from './ClientAuthSheet';
+import { PostBookingAuth } from './PostBookingAuth';
 
 interface Service {
   id: string;
@@ -1093,7 +1093,11 @@ export function BookingFlow({
 
                     {!clientUserId && createdBookingId ? (
                       <div className="w-full border-t border-[#F5E8E3] pt-5">
-                        <ClientAuthSheet bookingId={createdBookingId} onSkip={handleClose} />
+                        <PostBookingAuth
+                          bookingId={createdBookingId}
+                          clientPhone={clientPhone.trim()}
+                          onSkip={handleClose}
+                        />
                       </div>
                     ) : (
                       <div className="w-full flex flex-col gap-3">

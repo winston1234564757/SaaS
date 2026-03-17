@@ -62,12 +62,14 @@ export function MasterProvider({ children }: { children: React.ReactNode }) {
       if (mountedRef.current) setIsLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mountedRef.current) return;
       const u = session?.user ?? null;
       setUser(u);
       if (u) {
         await fetchProfile(u.id);
+        // Magic link / OAuth: hydrate server components with the new session cookie
+        // router.refresh() is handled by dedicated /auth/magic callback page
       } else {
         setProfile(null);
         setMasterProfile(null);

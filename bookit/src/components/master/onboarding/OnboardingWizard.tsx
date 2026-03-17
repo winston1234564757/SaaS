@@ -56,31 +56,60 @@ export function OnboardingWizard() {
   }
 
   async function handleFinish() {
-    if (!masterProfile?.id || !profile?.id) return;
     setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const ops = [
-      supabase.from('profiles').update({ full_name: fullName }).eq('id', profile.id),
-      supabase.from('master_profiles').update({
-        bio: bio || null,
-        city: city || null,
-        slug: slug || null,
-        avatar_emoji: avatar,
-        is_published: isPublished,
-      }).eq('id', masterProfile.id),
-      ...DAYS_ORDER.map(day =>
-        supabase.from('schedule_templates').upsert({
-          master_id: masterProfile.id,
-          day_of_week: day,
-          ...schedule[day],
-        }, { onConflict: 'master_id,day_of_week' })
-      ),
-    ];
+      const uid = profile?.id ?? user.id;
+      const finalSlug = slug.trim() || `master-${uid.slice(0, 8)}`;
 
-    if (!skipService && serviceName.trim() && servicePrice) {
-      ops.push(
-        supabase.from('services').insert({
-          master_id: masterProfile.id,
+      if (!masterProfile?.id) {
+        // New user (Telegram auth) — create profile + master_profiles from scratch
+        await supabase.from('profiles').upsert(
+          { id: uid, role: 'master', full_name: fullName, email: user.email },
+          { onConflict: 'id' }
+        ).throwOnError();
+
+        const referralCode = Math.random().toString(36).slice(2, 10).toUpperCase();
+
+        await supabase.from('master_profiles').insert({
+          id: uid,
+          slug: finalSlug,
+          bio: bio || null,
+          city: city || null,
+          avatar_emoji: avatar,
+          is_published: isPublished,
+          referral_code: referralCode,
+        }).throwOnError();
+      } else {
+        await Promise.all([
+          supabase.from('profiles').update({ full_name: fullName }).eq('id', uid).throwOnError(),
+          supabase.from('master_profiles').update({
+            bio: bio || null,
+            city: city || null,
+            slug: finalSlug,
+            avatar_emoji: avatar,
+            is_published: isPublished,
+          }).eq('id', masterProfile.id).throwOnError(),
+        ]);
+      }
+
+      const masterId = masterProfile?.id ?? uid;
+
+      await Promise.all(
+        DAYS_ORDER.map(day =>
+          supabase.from('schedule_templates').upsert({
+            master_id: masterId,
+            day_of_week: day,
+            ...schedule[day],
+          }, { onConflict: 'master_id,day_of_week' })
+        )
+      );
+
+      if (!skipService && serviceName.trim() && servicePrice) {
+        await supabase.from('services').insert({
+          master_id: masterId,
           name: serviceName.trim(),
           emoji: serviceEmoji,
           category: 'Інше',
@@ -89,15 +118,17 @@ export function OnboardingWizard() {
           is_active: true,
           is_popular: false,
           sort_order: 0,
-        })
-      );
-    }
+        });
+      }
 
-    await Promise.all(ops);
-    await refresh();
-    setSaving(false);
-    showToast({ type: 'success', title: 'Профіль налаштовано!' });
-    router.push('/dashboard');
+      await refresh();
+      showToast({ type: 'success', title: 'Профіль налаштовано!' });
+      router.push('/dashboard');
+    } catch (error: any) {
+      showToast({ type: 'error', title: 'Помилка', message: error?.message || 'Щось пішло не так' });
+    } finally {
+      setSaving(false);
+    }
   }
 
   const slideVariants = {

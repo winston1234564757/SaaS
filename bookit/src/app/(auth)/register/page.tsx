@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Реєстрація майстра — Bookit',
 };

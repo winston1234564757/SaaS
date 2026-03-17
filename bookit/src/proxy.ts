@@ -70,7 +70,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Unauthenticated access to protected routes
-  if (!user && (pathname.startsWith('/dashboard') || pathname.startsWith('/my'))) {
+  if (!user && (pathname.startsWith('/dashboard') || pathname.startsWith('/my') || pathname === '/onboarding')) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
