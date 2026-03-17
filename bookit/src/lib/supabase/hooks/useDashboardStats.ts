@@ -13,6 +13,10 @@ export interface DashboardStats {
   weekClients: number;
 }
 
+export interface DashboardStatsWithLoading extends DashboardStats {
+  isLoading: boolean;
+}
+
 function getWeekStart() {
   const d = new Date();
   const day = d.getDay();
@@ -20,13 +24,13 @@ function getWeekStart() {
   return d.toISOString().slice(0, 10);
 }
 
-export function useDashboardStats(): DashboardStats {
+export function useDashboardStats(): DashboardStatsWithLoading {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const today = new Date().toISOString().slice(0, 10);
   const weekStart = getWeekStart();
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['dashboard-stats', masterId, today],
     queryFn: async () => {
       const supabase = createClient();
@@ -71,8 +75,9 @@ export function useDashboardStats(): DashboardStats {
     },
   });
 
-  return data ?? {
+  const defaults = {
     todayCount: 0, todayPending: 0, todayConfirmed: 0,
     todayCompleted: 0, todayRevenue: 0, weekClients: 0,
   };
+  return { ...(data ?? defaults), isLoading };
 }

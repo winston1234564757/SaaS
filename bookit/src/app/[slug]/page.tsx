@@ -14,7 +14,7 @@ async function getMaster(slug: string) {
       id, slug, bio, city, address, rating, rating_count,
       subscription_tier, instagram_url, telegram_url, categories,
       mood_theme, avatar_emoji, bookings_this_month, pricing_rules,
-      profiles!inner ( full_name ),
+      profiles!inner ( full_name, avatar_url ),
       services ( id, name, emoji, category, price, duration_minutes, is_popular, is_active, sort_order )
     `)
     .eq('slug', slug);
@@ -34,7 +34,7 @@ export async function generateMetadata(
   const master = await getMaster(slug);
   if (!master) return { title: 'Майстер не знайдений' };
 
-  const profile = master.profiles as unknown as { full_name: string };
+  const profile = master.profiles as unknown as { full_name: string; avatar_url: string | null };
   return {
     title: `${profile.full_name} — Bookit`,
     description: master.bio ?? `Онлайн-запис до ${profile.full_name}`,
@@ -83,7 +83,7 @@ export default async function MasterPublicPage(
       .limit(30),
   ]);
 
-  const profile = data.profiles as unknown as { full_name: string };
+  const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
 
   const services = (data.services as any[])
     .filter(s => s.is_active)
@@ -148,6 +148,7 @@ export default async function MasterPublicPage(
     telegram: data.telegram_url ?? null,
     themeKey: (data.mood_theme as string) || 'default',
     avatarEmoji: (data.avatar_emoji as string) || '💅',
+    avatarUrl: profile.avatar_url ?? null,
     schedule,
     bookingsThisMonth: (data.bookings_this_month as number) ?? 0,
     pricingRules: (data.pricing_rules as Record<string, any>) ?? {},

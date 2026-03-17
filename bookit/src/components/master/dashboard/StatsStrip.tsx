@@ -4,11 +4,29 @@ import { motion } from 'framer-motion';
 import { CalendarDays, TrendingUp, Users } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function fmt(n: number) { return n.toLocaleString('uk-UA') + ' ₴'; }
 
 export function StatsStrip() {
   const s = useDashboardStats();
+
+  if (s.isLoading) {
+    return (
+      <div className="grid grid-cols-3 gap-3">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="bento-card p-4 flex flex-col gap-3">
+            <Skeleton className="w-10 h-10 rounded-2xl" />
+            <div className="flex flex-col gap-1.5">
+              <Skeleton className="h-7 w-10" />
+              <Skeleton className="h-3 w-full mt-1.5" />
+            </div>
+            <Skeleton className="h-3 w-16" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const stats = [
     {

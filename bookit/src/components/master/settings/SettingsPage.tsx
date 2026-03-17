@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { VacationManager } from './VacationManager';
 import { ImageUploader } from '@/components/master/services/ImageUploader';
 import Link from 'next/link';
@@ -36,6 +38,8 @@ export function SettingsPage() {
   const { profile, masterProfile, refresh } = useMasterContext();
   const supabase = createClient();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Форма профілю
   const [fullName, setFullName] = useState('');
@@ -126,32 +130,38 @@ export function SettingsPage() {
     if (!masterProfile?.id || !profile?.id) return;
     setSaving(true);
 
-    await Promise.all([
-      supabase.from('profiles').update({ full_name: fullName, avatar_url: avatarUrl }).eq('id', profile.id),
-      supabase.from('master_profiles').update({
-        bio, city, slug,
-        avatar_emoji: avatar,
-        instagram_url: instagram || null,
-        telegram_url: telegram || null,
-        telegram_chat_id: telegramChatId.trim() || null,
-        is_published: isPublished,
-        mood_theme: themeKey,
-      }).eq('id', masterProfile.id),
-      // Upsert кожен день
-      ...DAYS_ORDER.map(day =>
-        supabase.from('schedule_templates').upsert({
-          master_id: masterProfile.id,
-          day_of_week: day,
-          ...schedule[day],
-        }, { onConflict: 'master_id,day_of_week' })
-      ),
-    ]);
+    try {
+      await Promise.all([
+        supabase.from('profiles').update({ full_name: fullName, avatar_url: avatarUrl, telegram_chat_id: telegramChatId.trim() || null }).eq('id', profile.id).throwOnError(),
+        supabase.from('master_profiles').update({
+          bio, city, slug,
+          avatar_emoji: avatar,
+          instagram_url: instagram || null,
+          telegram_url: telegram || null,
+          is_published: isPublished,
+          mood_theme: themeKey,
+        }).eq('id', masterProfile.id).throwOnError(),
+        // Upsert кожен день
+        ...DAYS_ORDER.map(day =>
+          supabase.from('schedule_templates').upsert({
+            master_id: masterProfile.id,
+            day_of_week: day,
+            ...schedule[day],
+          }, { onConflict: 'master_id,day_of_week' }).throwOnError()
+        ),
+      ]);
 
-    await refresh();
-    setSaving(false);
-    setSaved(true);
-    showToast({ type: 'success', title: 'Налаштування збережено' });
-    setTimeout(() => setSaved(false), 2500);
+      await refresh();
+      queryClient.invalidateQueries();
+      setSaved(true);
+      showToast({ type: 'success', title: 'Налаштування збережено' });
+      setTimeout(() => setSaved(false), 2500);
+    } catch (error: any) {
+      console.error('FULL DB ERROR:', error);
+      showToast({ type: 'error', title: 'Помилка збереження', message: error?.details || error?.message || 'Помилка БД. Див. консоль.' });
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleChangePassword() {
@@ -562,8 +572,15 @@ export function SettingsPage() {
       {/* Вийти з акаунту */}
       <button
         onClick={async () => {
-          await supabase.auth.signOut();
-          window.location.href = '/login';
+          try {
+            await supabase.auth.signOut();
+          } catch {
+            // ignore signOut errors — proceed with cleanup regardless
+          } finally {
+            queryClient.clear();
+            router.push('/login');
+            router.refresh();
+          }
         }}
         className="w-full py-3.5 rounded-2xl text-sm font-medium text-[#C05B5B] bg-[#C05B5B]/8 hover:bg-[#C05B5B]/15 border border-[#C05B5B]/20 transition-colors flex items-center justify-center gap-2"
       >

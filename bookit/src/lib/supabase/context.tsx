@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from './client';
 import type { Profile, MasterProfile } from '@/types/database';
@@ -26,19 +26,24 @@ export function useMasterContext() {
 }
 
 export function MasterProvider({ children }: { children: React.ReactNode }) {
+  // Single stable client instance — created once per component mount, no leaks on re-renders
+  const supabase = useMemo(() => createClient(), []);
+
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [masterProfile, setMasterProfile] = useState<MasterProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  async function fetchProfile(userId: string) {
-    const supabase = createClient();
+  // Guard against setState after unmount
+  const mountedRef = useRef(true);
 
+  async function fetchProfile(userId: string) {
     const [{ data: p }, { data: mp }] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).single(),
       supabase.from('master_profiles').select('*').eq('id', userId).single(),
     ]);
 
+    if (!mountedRef.current) return;
     setProfile(p ?? null);
     setMasterProfile(mp ?? null);
   }
@@ -48,15 +53,17 @@ export function MasterProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    const supabase = createClient();
+    mountedRef.current = true;
 
     supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!mountedRef.current) return;
       setUser(user);
       if (user) await fetchProfile(user.id);
-      setIsLoading(false);
+      if (mountedRef.current) setIsLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mountedRef.current) return;
       const u = session?.user ?? null;
       setUser(u);
       if (u) {
@@ -67,7 +74,10 @@ export function MasterProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mountedRef.current = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

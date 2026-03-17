@@ -1,18 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, Hash, User, CheckCircle, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { serviceCategories } from '@/lib/constants/categories';
-import { generateSlug } from '@/lib/utils/slug';
 import { createClient } from '@/lib/supabase/client';
-import { cn } from '@/lib/utils/cn';
-import { createMasterProfileAfterSignup } from '@/app/(auth)/register/actions';
+
+function TelegramIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    </svg>
+  );
+}
 
 function GoogleIcon() {
   return (
@@ -25,151 +26,17 @@ function GoogleIcon() {
   );
 }
 
-// Step 1 has a sub-state for OTP verification
-type Step = 1 | 2 | 3;
-type OtpState = 'idle' | 'sent' | 'verified';
-
 export function RegisterForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const referredBy = searchParams.get('ref'); // referral code from URL
+  const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'bookit_auth_bot';
   const supabase = createClient();
-
-  const [step, setStep] = useState<Step>(1);
-  const [otpState, setOtpState] = useState<OtpState>('idle');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Step 1 fields
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [verifiedPhone, setVerifiedPhone] = useState('');
-
-  // Step 2
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
-  // Step 3
-  const [slug, setSlug] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-
-  const fullPhone = `+380${phone.replace(/\D/g, '')}`;
-
-  const stepTitles: Record<Step, string> = {
-    1: 'Створи акаунт',
-    2: 'Твоя спеціалізація',
-    3: 'Твоє посилання',
-  };
-
-  // ── Google OAuth ────────────────────────────────────────────────────────────
   const handleGoogleSignup = async () => {
     setIsGoogleLoading(true);
-    setError(null);
-    const refParam = referredBy ? `&ref=${referredBy}` : '';
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?role=master${refParam}`,
-      },
+      options: { redirectTo: window.location.origin + '/auth/callback?role=master' },
     });
-  };
-
-  // ── Step 1: Send OTP ────────────────────────────────────────────────────────
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!fullName.trim()) { setError("Введіть ім'я"); return; }
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length !== 9) { setError('Введіть 9 цифр номера'); return; }
-    setIsLoading(true);
-    setError(null);
-    const { error: otpError } = await supabase.auth.signInWithOtp({ phone: fullPhone });
-    setIsLoading(false);
-    if (otpError) { setError('Не вдалося надіслати код. Перевірте номер.'); return; }
-    setOtpState('sent');
-  };
-
-  // ── Step 1: Verify OTP ─────────────────────────────────────────────────────
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length < 4) return;
-    setIsLoading(true);
-    setError(null);
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      phone: fullPhone,
-      token: otp,
-      type: 'sms',
-    });
-    setIsLoading(false);
-    if (verifyError || !data.user) { setError('Невірний код. Спробуйте ще раз.'); return; }
-
-    // Check if user already has a profile (existing user)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .maybeSingle();
-
-    if (profile) {
-      router.push(profile.role === 'master' ? '/dashboard' : '/my/bookings');
-      return;
-    }
-
-    setVerifiedPhone(fullPhone);
-    setOtpState('verified');
-    setSlug(generateSlug(fullName));
-    setStep(2);
-  };
-
-  // ── Step 2: Categories ──────────────────────────────────────────────────────
-  const toggleCategory = (id: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    );
-  };
-
-  const handleStep2 = () => {
-    if (selectedCategories.length === 0) return;
-    setStep(3);
-  };
-
-  // ── Step 3: Slug + Finish ──────────────────────────────────────────────────
-  const handleSlugChange = (value: string) => {
-    setSlug(
-      value
-        .toLowerCase()
-        .replace(/[^a-z0-9.]/g, '')
-        .replace(/\.+/g, '.')
-        .replace(/^\.+|\.+$/g, '')
-    );
-  };
-
-  const handleFinish = async () => {
-    if (!slug) return;
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error('Сесія не знайдена');
-
-      const { error: profileErr } = await createMasterProfileAfterSignup({
-        userId: user.id,
-        fullName,
-        phone: verifiedPhone,
-        slug,
-        categories: selectedCategories,
-        referredBy,
-      });
-      if (profileErr) throw new Error(profileErr);
-
-      router.push('/dashboard');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Щось пішло не так';
-      setError(msg);
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   return (
@@ -179,240 +46,49 @@ export function RegisterForm() {
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >
       <Card>
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="heading-serif text-xl text-[#2C1A14]">{stepTitles[step]}</h1>
-            <span className="text-sm text-[#A8928D] font-medium">{step} / 3</span>
+        <div className="mb-8 text-center">
+          <h1 className="heading-serif text-2xl text-[#2C1A14] mb-2">Реєстрація в Bookit</h1>
+          <p className="text-sm text-[#A8928D]">Без паролів та SMS. Швидкий та безпечний вхід.</p>
+        </div>
+
+        {/* Telegram — primary */}
+        <a
+          href={'https://t.me/' + botName + '?start=login'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-3 w-full py-4 px-4 rounded-2xl bg-[#2AABEE] text-white text-base font-semibold whitespace-nowrap hover:bg-[#1a95d6] active:scale-[0.98] transition-all shadow-lg shadow-[#2AABEE]/25"
+        >
+          <TelegramIcon />
+          Зареєструватися через Telegram
+        </a>
+
+        {/* Divider */}
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-[#E8D8D2]" />
           </div>
-          <div className="h-1.5 bg-[#F5E8E3] rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-[#789A99] rounded-full"
-              animate={{ width: `${(step / 3) * 100}%` }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            />
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white/80 px-3 text-[#A8928D] tracking-wide">Або</span>
           </div>
         </div>
 
-        {error && (
-          <div className="flex items-start gap-2 p-3 mb-4 rounded-xl bg-[#C05B5B]/10 border border-[#C05B5B]/20">
-            <AlertCircle size={15} className="text-[#C05B5B] mt-0.5 shrink-0" />
-            <p className="text-xs text-[#C05B5B]">{error}</p>
-          </div>
-        )}
+        {/* Google — secondary */}
+        <button
+          type="button"
+          onClick={handleGoogleSignup}
+          disabled={isGoogleLoading}
+          className="flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl bg-white text-[#2C1A14] text-base font-semibold border border-[#E8D0C8] hover:border-[#D4B8AE] hover:shadow-md active:scale-[0.98] transition-all shadow-sm shadow-black/8 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isGoogleLoading ? <Loader2 size={18} className="animate-spin" /> : <GoogleIcon />}
+          Продовжити з Google
+        </button>
 
-        <AnimatePresence mode="wait">
-          {/* ── Step 1 ── */}
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }}
-              className="flex flex-col gap-4"
-            >
-              {/* Google button — only on initial state */}
-              {otpState === 'idle' && (
-                <>
-                  <Button
-                    variant="secondary"
-                    fullWidth
-                    size="lg"
-                    onClick={handleGoogleSignup}
-                    isLoading={isGoogleLoading}
-                    className="flex items-center justify-center gap-2.5"
-                  >
-                    {!isGoogleLoading && <GoogleIcon />}
-                    Зареєструватися через Google
-                  </Button>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-px bg-[#E8D8D2]" />
-                    <span className="text-xs text-[#A8928D]">або</span>
-                    <div className="flex-1 h-px bg-[#E8D8D2]" />
-                  </div>
-                </>
-              )}
-
-              {/* Phone input */}
-              {otpState === 'idle' && (
-                <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
-                  <Input
-                    label="Ім'я та прізвище"
-                    type="text"
-                    placeholder="Анна Коваленко"
-                    prefix={<User size={16} />}
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
-                  <div>
-                    <label className="block text-sm font-medium text-[#2C1A14] mb-1.5">
-                      Номер телефону
-                    </label>
-                    <div className="flex items-center rounded-xl border border-white/80 bg-white/75 overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-                      <span className="pl-3.5 pr-1 text-sm text-[#A8928D] whitespace-nowrap shrink-0 flex items-center gap-1.5">
-                        <Phone size={14} />
-                        +380
-                      </span>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                        className="flex-1 h-12 pr-4 text-sm text-[#2C1A14] bg-transparent focus:outline-none tracking-wider"
-                        placeholder="XX XXX XX XX"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" fullWidth size="lg" isLoading={isLoading} className="mt-1">
-                    Отримати код →
-                  </Button>
-                </form>
-              )}
-
-              {/* OTP verification */}
-              {otpState === 'sent' && (
-                <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
-                  <p className="text-sm text-[#6B5750]">
-                    Код надіслано на <strong>+380{phone}</strong>
-                  </p>
-                  <Input
-                    label="Код підтвердження"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="• • • • • •"
-                    prefix={<Hash size={16} />}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    required
-                  />
-                  <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-                    Підтвердити →
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={() => { setOtpState('idle'); setOtp(''); setError(null); }}
-                    className="text-sm text-[#789A99] hover:underline text-center"
-                  >
-                    ← Змінити номер
-                  </button>
-                </form>
-              )}
-
-              <p className="text-center text-sm text-[#6B5750] mt-1">
-                Вже є акаунт?{' '}
-                <Link href="/login" className="text-[#789A99] font-medium hover:underline">
-                  Увійти
-                </Link>
-              </p>
-            </motion.div>
-          )}
-
-          {/* ── Step 2 ── */}
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }}
-              className="flex flex-col gap-5"
-            >
-              <p className="text-sm text-[#6B5750]">Обери одну або кілька категорій:</p>
-              <div className="grid grid-cols-2 gap-2">
-                {serviceCategories.map((cat) => {
-                  const isSelected = selectedCategories.includes(cat.id);
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => toggleCategory(cat.id)}
-                      className={cn(
-                        'flex items-center gap-2.5 p-3.5 rounded-2xl border text-sm font-medium transition-all duration-150',
-                        isSelected
-                          ? 'bg-[#789A99]/12 border-[#789A99]/40 text-[#5C7E7D]'
-                          : 'bg-white/60 border-white/80 text-[#2C1A14] hover:border-[#789A99]/30'
-                      )}
-                    >
-                      <span className="text-xl">{cat.emoji}</span>
-                      <span>{cat.label}</span>
-                      {isSelected && <CheckCircle size={14} className="ml-auto text-[#789A99]" />}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-2 mt-1">
-                <Button variant="secondary" onClick={() => { setStep(1); setOtpState('idle'); setOtp(''); }} className="flex-1">
-                  ← Назад
-                </Button>
-                <Button
-                  onClick={handleStep2}
-                  disabled={selectedCategories.length === 0}
-                  className="flex-1"
-                >
-                  Далі →
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Step 3 ── */}
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }}
-              className="flex flex-col gap-5"
-            >
-              <p className="text-sm text-[#6B5750]">
-                Це буде твоє публічне посилання. Можна змінити пізніше.
-              </p>
-
-              <div>
-                <label className="block text-sm font-medium text-[#2C1A14] mb-1.5">
-                  Твоє посилання
-                </label>
-                <div className="flex items-center rounded-xl border border-white/80 bg-white/75 overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-                  <span className="pl-3.5 pr-1 text-sm text-[#A8928D] whitespace-nowrap shrink-0">
-                    bookit.com.ua/
-                  </span>
-                  <input
-                    type="text"
-                    value={slug}
-                    onChange={(e) => handleSlugChange(e.target.value)}
-                    className="flex-1 h-12 pr-4 text-sm text-[#2C1A14] bg-transparent focus:outline-none"
-                    placeholder="anna.kovalenko"
-                  />
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/40 border border-white/70">
-                <p className="text-xs text-[#A8928D] mb-1">Прев'ю:</p>
-                <p className="text-sm font-semibold text-[#789A99] break-all">
-                  bookit.com.ua/{slug || 'твоє-посилання'}
-                </p>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => setStep(2)} className="flex-1">
-                  ← Назад
-                </Button>
-                <Button
-                  onClick={handleFinish}
-                  disabled={!slug}
-                  isLoading={isSaving}
-                  className="flex-1"
-                >
-                  Готово 🎉
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <p className="text-center text-sm text-[#6B5750] mt-6">
+          Вже є акаунт?{' '}
+          <Link href="/login" className="text-[#789A99] font-medium hover:underline">
+            Увійти
+          </Link>
+        </p>
       </Card>
     </motion.div>
   );

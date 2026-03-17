@@ -157,7 +157,7 @@ export function PortfolioPage() {
                 className="bento-card overflow-hidden group"
               >
                 {/* Photo */}
-                <div className="relative aspect-square">
+                <div className="relative w-full aspect-square">
                   <Image
                     src={photo.url}
                     alt={photo.caption ?? `Фото ${i + 1}`}

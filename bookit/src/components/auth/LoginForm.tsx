@@ -1,14 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, Hash, AlertCircle, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { createClient } from '@/lib/supabase/client';
+
+function TelegramIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    </svg>
+  );
+}
 
 function GoogleIcon() {
   return (
@@ -21,90 +26,17 @@ function GoogleIcon() {
   );
 }
 
-type PhoneState = 'input' | 'otp';
-type LoginTab = 'phone' | 'email';
-
 export function LoginForm() {
-  const router = useRouter();
+  const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'bookit_auth_bot';
   const supabase = createClient();
-
-  const [tab, setTab] = useState<LoginTab>('phone');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [phoneState, setPhoneState] = useState<PhoneState>('input');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const fullPhone = `+380${phone.replace(/\D/g, '')}`;
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    setError(null);
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: window.location.origin + '/auth/callback' },
     });
-    // Redirect happens automatically
-  };
-
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length !== 9) {
-      setError('Введіть 9 цифр номера');
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    const { error: otpError } = await supabase.auth.signInWithOtp({ phone: fullPhone });
-    setIsLoading(false);
-    if (otpError) {
-      setError('Не вдалося надіслати код. Перевірте номер.');
-      return;
-    }
-    setPhoneState('otp');
-  };
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.includes('@')) { setError('Введіть коректний email'); return; }
-    setIsLoading(true);
-    setError(null);
-    const { data, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
-    setIsLoading(false);
-    if (loginErr || !data.user) { setError('Невірний email або пароль.'); return; }
-    const { data: profile } = await supabase
-      .from('profiles').select('role').eq('id', data.user.id).maybeSingle();
-    router.push(profile?.role === 'master' ? '/dashboard' : '/my/bookings');
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length < 4) return;
-    setIsLoading(true);
-    setError(null);
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      phone: fullPhone,
-      token: otp,
-      type: 'sms',
-    });
-    if (verifyError || !data.user) {
-      setError('Невірний код. Спробуйте ще раз.');
-      setIsLoading(false);
-      return;
-    }
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .maybeSingle();
-
-    router.push(profile?.role === 'master' ? '/dashboard' : '/my/bookings');
   };
 
   return (
@@ -114,169 +46,44 @@ export function LoginForm() {
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >
       <Card>
-        <div className="mb-6">
-          <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1">Вхід</h1>
-          <p className="text-sm text-[#6B5750]">Раді бачити тебе знову</p>
+        <div className="mb-8 text-center">
+          <h1 className="heading-serif text-2xl text-[#2C1A14] mb-2">Вхід у Bookit</h1>
+          <p className="text-sm text-[#A8928D]">Без паролів та SMS. Швидкий та безпечний вхід.</p>
         </div>
 
-        {error && (
-          <div className="flex items-start gap-2 p-3 mb-4 rounded-xl bg-[#C05B5B]/10 border border-[#C05B5B]/20">
-            <AlertCircle size={15} className="text-[#C05B5B] mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-[#C05B5B]">{error}</p>
-          </div>
-        )}
-
-        {/* Google */}
-        <Button
-          variant="secondary"
-          fullWidth
-          size="lg"
-          onClick={handleGoogleLogin}
-          isLoading={isGoogleLoading}
-          className="mb-4 flex items-center justify-center gap-2.5"
+        {/* Telegram — primary */}
+        <a
+          href={'https://t.me/' + botName + '?start=login'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-[#2AABEE] text-white text-base font-semibold hover:bg-[#1a95d6] active:scale-[0.98] transition-all shadow-lg shadow-[#2AABEE]/25"
         >
-          {!isGoogleLoading && <GoogleIcon />}
-          Увійти через Google
-        </Button>
+          <TelegramIcon />
+          Увійти через Telegram
+        </a>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-[#E8D8D2]" />
-          <span className="text-xs text-[#A8928D]">або</span>
-          <div className="flex-1 h-px bg-[#E8D8D2]" />
+        {/* Divider */}
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-[#E8D8D2]" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white/80 px-3 text-[#A8928D] tracking-wide">Або</span>
+          </div>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex gap-1 p-1 bg-[#F5EDE8] rounded-xl mb-4">
-          {([['phone', <Phone key="p" size={13} />, 'Телефон'], ['email', <Mail key="e" size={13} />, 'Email']] as const).map(([t, icon, label]) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => { setTab(t); setError(null); }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-                tab === t
-                  ? 'bg-white text-[#2C1A14] shadow-sm'
-                  : 'text-[#A8928D] hover:text-[#6B5750]'
-              }`}
-            >
-              {icon}{label}
-            </button>
-          ))}
-        </div>
+        {/* Google — secondary */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isGoogleLoading}
+          className="flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl bg-white text-[#2C1A14] text-base font-semibold border border-[#E8D0C8] hover:border-[#D4B8AE] hover:shadow-md active:scale-[0.98] transition-all shadow-sm shadow-black/8 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isGoogleLoading ? <Loader2 size={18} className="animate-spin" /> : <GoogleIcon />}
+          Продовжити з Google
+        </button>
 
-        {/* Phone OTP / Email */}
-        <AnimatePresence mode="wait">
-          {tab === 'email' ? (
-            <motion.form
-              key="email"
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
-              transition={{ duration: 0.16 }}
-              onSubmit={handleEmailLogin}
-              className="flex flex-col gap-4"
-            >
-              <div>
-                <label className="block text-sm font-medium text-[#2C1A14] mb-1.5">Email</label>
-                <div className="flex items-center rounded-xl border border-white/80 bg-white/75 overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-                  <span className="pl-3.5 pr-1 text-[#A8928D]"><Mail size={14} /></span>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="flex-1 h-12 pr-4 text-sm text-[#2C1A14] bg-transparent focus:outline-none"
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#2C1A14] mb-1.5">Пароль</label>
-                <div className="flex items-center rounded-xl border border-white/80 bg-white/75 overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="flex-1 h-12 px-4 text-sm text-[#2C1A14] bg-transparent focus:outline-none"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-              </div>
-              <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-                Увійти →
-              </Button>
-            </motion.form>
-          ) : phoneState === 'input' ? (
-            <motion.form
-              key="phone"
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
-              transition={{ duration: 0.16 }}
-              onSubmit={handleSendOtp}
-              className="flex flex-col gap-4"
-            >
-              <div>
-                <label className="block text-sm font-medium text-[#2C1A14] mb-1.5">
-                  Номер телефону
-                </label>
-                <div className="flex items-center rounded-xl border border-white/80 bg-white/75 overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-                  <span className="pl-3.5 pr-1 text-sm text-[#A8928D] whitespace-nowrap shrink-0 flex items-center gap-1.5">
-                    <Phone size={14} />
-                    +380
-                  </span>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                    className="flex-1 h-12 pr-4 text-sm text-[#2C1A14] bg-transparent focus:outline-none tracking-wider"
-                    placeholder="XX XXX XX XX"
-                    required
-                  />
-                </div>
-              </div>
-              <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-                Отримати код →
-              </Button>
-            </motion.form>
-          ) : (
-            <motion.form
-              key="otp"
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
-              transition={{ duration: 0.16 }}
-              onSubmit={handleVerifyOtp}
-              className="flex flex-col gap-4"
-            >
-              <p className="text-sm text-[#6B5750]">
-                Код надіслано на <strong>+380{phone}</strong>
-              </p>
-              <Input
-                label="Код підтвердження"
-                type="text"
-                inputMode="numeric"
-                placeholder="• • • • • •"
-                prefix={<Hash size={16} />}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                required
-              />
-              <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-                Увійти
-              </Button>
-              <button
-                type="button"
-                onClick={() => { setPhoneState('input'); setOtp(''); setError(null); }}
-                className="text-sm text-[#789A99] hover:underline text-center"
-              >
-                ← Змінити номер
-              </button>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        <p className="text-center text-sm text-[#6B5750] mt-5">
+        <p className="text-center text-sm text-[#6B5750] mt-6">
           Ще не зареєстровані?{' '}
           <Link href="/register" className="text-[#789A99] font-medium hover:underline">
             Створити акаунт

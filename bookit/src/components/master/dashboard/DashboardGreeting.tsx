@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { NotificationsBell } from './NotificationsBell';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function DashboardGreeting() {
   const { profile, isLoading } = useMasterContext();
@@ -24,9 +25,19 @@ export function DashboardGreeting() {
     });
   }, []);
 
-  const firstName = isLoading
-    ? '...'
-    : (profile?.full_name ?? 'Майстре').split(' ')[0];
+  if (isLoading) {
+    return (
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-8 w-52" />
+          <Skeleton className="h-4 w-36" />
+        </div>
+        <NotificationsBell />
+      </div>
+    );
+  }
+
+  const firstName = (profile?.full_name ?? 'Майстре').split(' ')[0];
 
   return (
     <div className="flex items-start justify-between mb-2">

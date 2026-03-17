@@ -62,6 +62,7 @@ interface Master {
   telegram: string | null;
   themeKey?: string;
   avatarEmoji?: string;
+  avatarUrl?: string | null;
   schedule?: { day: string; isWorking: boolean; startTime: string; endTime: string }[];
   bookingsThisMonth?: number;
   pricingRules?: Record<string, any>;
@@ -291,10 +292,14 @@ export function PublicMasterPage({ master }: { master: Master }) {
         >
           <div className="flex items-start gap-4">
             <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl flex-shrink-0"
+              className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl flex-shrink-0 relative overflow-hidden shrink-0"
               style={{ background: avatarBg }}
             >
-              {master.avatarEmoji ?? master.emoji}
+              {master.avatarUrl ? (
+                <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="80px" />
+              ) : (
+                master.avatarEmoji ?? master.emoji
+              )}
             </div>
 
             <div className="flex-1 min-w-0">
