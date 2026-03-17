@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(req: NextRequest) {
   const { phone: rawPhone, otp } = await req.json();
@@ -8,24 +8,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Невірні дані' }, { status: 400 });
   }
 
-  // Guard: перевірка env на момент запиту (не холодного старту)
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('[verify-sms] CRITICAL: env variables missing at runtime!');
-    return NextResponse.json(
-      { success: false, error: 'Server configuration error (Keys missing)' },
-      { status: 500 }
-    );
-  }
-
   const cleanPhone = String(rawPhone).replace(/\D/g, '');
   const cleanOtp = String(otp).trim();
 
-  // Локальна ініціалізація — читає env у момент запиту, не під час холодного старту
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  const supabaseAdmin = createAdminClient();
 
   console.log('[verify-sms] admin client initialized. Attempting to verify:', {
     phone: cleanPhone,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
 
 /**
@@ -33,51 +33,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json({ error: 'Server config error' }, { status: 500 });
-  }
-
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-
+  const admin = createAdminClient();
   const userPhone = phone || (user.user_metadata?.phone as string | undefined);
 
-  // Уpsert профілю клієнта
-  await admin.from('profiles').upsert({
-    id: user.id,
-    role: 'client',
-    email: user.email,
-    ...(userPhone ? { phone: userPhone } : {}),
-    ...(user.user_metadata?.full_name
-      ? { full_name: user.user_metadata.full_name }
-      : user.user_metadata?.name
-      ? { full_name: user.user_metadata.name }
-      : {}),
-  }, { onConflict: 'id', ignoreDuplicates: false });
+  // Profiles must exist before booking foreign-key update
+  await Promise.all([
+    admin.from('profiles').upsert({
+      id: user.id,
+      role: 'client',
+      email: user.email,
+      ...(userPhone ? { phone: userPhone } : {}),
+      ...(user.user_metadata?.full_name
+        ? { full_name: user.user_metadata.full_name }
+        : user.user_metadata?.name
+        ? { full_name: user.user_metadata.name }
+        : {}),
+    }, { onConflict: 'id', ignoreDuplicates: false }),
+    admin.from('client_profiles').upsert(
+      { id: user.id },
+      { onConflict: 'id', ignoreDuplicates: true }
+    ),
+  ]);
 
-  await admin.from('client_profiles').upsert(
-    { id: user.id },
-    { onConflict: 'id', ignoreDuplicates: true }
-  );
-
-  // Прив'язуємо всі записи за номером телефону (телефон = головний ідентифікатор)
-  if (userPhone) {
-    await admin.from('bookings')
-      .update({ client_id: user.id })
-      .eq('client_phone', userPhone)
-      .is('client_id', null);
-  }
-
-  // Також прив'язуємо конкретний запис (на випадок розбіжності формату телефону)
-  if (bookingId) {
-    await admin.from('bookings')
-      .update({ client_id: user.id })
-      .eq('id', bookingId)
-      .is('client_id', null);
-  }
+  // Прив'язуємо записи за телефоном і за конкретним bookingId паралельно
+  await Promise.all([
+    userPhone
+      ? admin.from('bookings').update({ client_id: user.id }).eq('client_phone', userPhone).is('client_id', null)
+      : Promise.resolve(),
+    bookingId
+      ? admin.from('bookings').update({ client_id: user.id }).eq('id', bookingId).is('client_id', null)
+      : Promise.resolve(),
+  ]);
 
   console.log('[link-booking] uid:', user.id, '| phone:', userPhone, '| bookingId:', bookingId);
   return NextResponse.json({ success: true });

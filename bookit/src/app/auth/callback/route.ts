@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
@@ -40,27 +40,23 @@ export async function GET(request: NextRequest) {
   // Якщо прийшли з PostBookingAuth — прив'язуємо запис до щойно авторизованого юзера
   if (bid) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const admin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        { auth: { autoRefreshToken: false, persistSession: false } }
-      );
+    if (user) {
+      const admin = createAdminClient();
 
-      // Створюємо профіль клієнта
-      await admin.from('profiles').upsert({
-        id: user.id,
-        role: 'client',
-        full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-        email: user.email,
-      }, { onConflict: 'id', ignoreDuplicates: false });
+      // Profile upserts in parallel, then link booking
+      await Promise.all([
+        admin.from('profiles').upsert({
+          id: user.id,
+          role: 'client',
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          email: user.email,
+        }, { onConflict: 'id', ignoreDuplicates: false }),
+        admin.from('client_profiles').upsert(
+          { id: user.id },
+          { onConflict: 'id', ignoreDuplicates: true }
+        ),
+      ]);
 
-      await admin.from('client_profiles').upsert(
-        { id: user.id },
-        { onConflict: 'id', ignoreDuplicates: true }
-      );
-
-      // Прив'язуємо конкретний запис
       await admin.from('bookings')
         .update({ client_id: user.id })
         .eq('id', bid)

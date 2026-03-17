@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(req: NextRequest) {
   const { phone: rawPhone } = await req.json();
@@ -29,14 +29,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = (100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000)).toString();
 
-  // Локальна ініціалізація — читає env у момент запиту
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  const supabaseAdmin = createAdminClient();
 
   const { data: upsertData, error: dbError } = await supabaseAdmin
     .from('sms_otps')

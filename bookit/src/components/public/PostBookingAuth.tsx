@@ -1,21 +1,12 @@
 'use client';
 
-import { useState, useRef, KeyboardEvent, ClipboardEvent } from 'react';
+import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-
-function GoogleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
-      <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
-      <path d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332Z" fill="#FBBC05"/>
-      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
-    </svg>
-  );
-}
+import { GoogleIcon } from '@/components/icons/GoogleIcon';
+import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
 interface Props {
   bookingId: string;
@@ -44,23 +35,16 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
   const [resendCooldown, setResendCooldown] = useState(0);
 
   const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => () => { if (cooldownRef.current) clearInterval(cooldownRef.current); }, []);
 
   function getCleanPhone() {
-    return `380${phone}`;
-  }
-
-  function formatPhoneDisplay(raw: string) {
-    const d = '0' + raw.replace(/\D/g, '');
-    if (d.length <= 3) return d;
-    if (d.length <= 6) return `${d.slice(0, 3)} ${d.slice(3)}`;
-    if (d.length <= 8) return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
-    return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6, 8)} ${d.slice(8, 10)}`;
+    return toFullPhone(phone);
   }
 
   function handlePhoneChange(val: string) {
-    let raw = val.replace(/\D/g, '');
-    if (raw.startsWith('0')) raw = raw.slice(1);
-    setPhone(raw.slice(0, 9));
+    setPhone(normalizePhoneInput(val));
     setError('');
   }
 
@@ -161,9 +145,13 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
   }
 
   function startCooldown() {
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
     setResendCooldown(60);
-    const t = setInterval(() => {
-      setResendCooldown(p => { if (p <= 1) { clearInterval(t); return 0; } return p - 1; });
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown(p => {
+        if (p <= 1) { clearInterval(cooldownRef.current!); cooldownRef.current = null; return 0; }
+        return p - 1;
+      });
     }, 1000);
   }
 
@@ -289,9 +277,9 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
                 {/* Мілстоуни */}
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
-                    { visits: 5, reward: '−10%', active: false },
-                    { visits: 10, reward: '−15%', active: false },
-                    { visits: 20, reward: 'VIP', active: false },
+                    { visits: 5, reward: '−10%' },
+                    { visits: 10, reward: '−15%' },
+                    { visits: 20, reward: 'VIP' },
                   ].map(({ visits, reward }) => (
                     <div
                       key={visits}
