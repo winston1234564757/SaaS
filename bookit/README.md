@@ -79,7 +79,7 @@ src/
     telegram.ts         — sendTelegramMessage, buildBookingMessage
     push.ts             — broadcastPush
     utils/              — dynamicPricing, cn, etc.
-  middleware.ts         — захист /dashboard/** та /my/**
+  proxy.ts              — захист /dashboard/** та /my/** (Next.js 16)
 ```
 
 ## Команди
