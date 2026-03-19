@@ -1,54 +1,70 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
-import { sendEmail, buildStatusChangeHtml } from '@/lib/email';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { sendPush } from '@/lib/push';
 
 export async function notifyClientOnStatusChange(
   bookingId: string,
-  status: 'confirmed' | 'cancelled',
+  status: string,
 ): Promise<void> {
-  const supabase = await createClient();
+  try {
+    const admin = createAdminClient();
 
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select(`
-      date, start_time, client_name, client_email,
-      booking_services ( service_name ),
-      master_profiles!inner ( slug, profiles!inner ( full_name ) )
-    `)
-    .eq('id', bookingId)
-    .single();
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('client_id, client_phone, date, start_time, master_profiles(profiles(full_name))')
+      .eq('id', bookingId)
+      .single();
 
-  if (!booking) return;
+    if (!booking || !booking.client_phone) return;
 
-  const clientEmail = booking.client_email as string | null;
-  if (!clientEmail) return;
+    const masterName = (booking.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+    const timeStr = (booking.start_time as string | null)?.slice(0, 5) ?? '';
 
-  const mp = booking.master_profiles as any;
-  const masterName = (mp?.profiles as any)?.full_name ?? 'Майстер';
-  const masterSlug = (mp?.slug as string) ?? '';
-  const services = ((booking.booking_services as any[]) ?? [])
-    .map((s: any) => s.service_name as string)
-    .join(', ');
+    let title = '';
+    let body = '';
+    if (status === 'confirmed') {
+      title = 'Запис підтверджено! ✅';
+      body = `Ваш візит до ${masterName} на ${booking.date} о ${timeStr} підтверджено.`;
+    } else if (status === 'cancelled') {
+      title = 'Запис скасовано ❌';
+      body = `Ваш візит до ${masterName} на ${booking.date} о ${timeStr} скасовано.`;
+    } else {
+      return;
+    }
 
-  const html = buildStatusChangeHtml({
-    clientName: booking.client_name as string,
-    masterName,
-    masterSlug,
-    date: booking.date as string,
-    startTime: (booking.start_time as string | null)?.slice(0, 5) ?? '',
-    services,
-    status,
-  });
+    let pushSent = false;
 
-  const subjects = {
-    confirmed: `Запис підтверджено — ${masterName}`,
-    cancelled:  `Запис скасовано — ${masterName}`,
-  };
+    // ── Спроба 1: Web Push ───────────────────────────────────────────────
+    if (booking.client_id) {
+      const { data: subs } = await admin
+        .from('push_subscriptions')
+        .select('subscription')
+        .eq('user_id', booking.client_id);
 
-  await sendEmail({
-    to: clientEmail,
-    subject: subjects[status],
-    html,
-  });
+      if (subs && subs.length > 0) {
+        const results = await Promise.allSettled(
+          subs.map(sub => sendPush(sub.subscription, { title, body, url: '/my/bookings' }))
+        );
+        pushSent = results.some(r => r.status === 'fulfilled' && r.value === true);
+      }
+    }
+
+    // ── Спроба 2: TurboSMS fallback ──────────────────────────────────────
+    if (!pushSent) {
+      await fetch('https://api.turbosms.ua/message/send.json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
+        },
+        body: JSON.stringify({
+          recipients: [booking.client_phone],
+          sms: { sender: 'BEAUTY', text: body },
+        }),
+      });
+    }
+  } catch (error) {
+    console.error('[notifyClientOnStatusChange] Error:', error);
+  }
 }

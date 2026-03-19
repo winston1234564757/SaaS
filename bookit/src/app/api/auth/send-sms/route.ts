@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(req: NextRequest) {
-  const { phone: rawPhone } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Невірний формат запиту' }, { status: 400 });
+  }
+  const rawPhone = body.phone;
 
   if (!rawPhone) {
     return NextResponse.json({ error: 'Введіть номер телефону' }, { status: 400 });
@@ -29,9 +35,43 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
   const otp = (100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000)).toString();
 
   const supabaseAdmin = createAdminClient();
+
+  // Rate limiting — паралельні запити для мінімальної затримки
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+  const [{ count: ipCount }, { count: phoneCount }] = await Promise.all([
+    supabaseAdmin
+      .from('sms_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('ip', ip)
+      .gte('created_at', oneHourAgo),
+    supabaseAdmin
+      .from('sms_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('phone', phone)
+      .gte('created_at', fifteenMinAgo),
+  ]);
+
+  if (ipCount !== null && ipCount >= 10) {
+    console.warn('[send-sms] IP rate limit exceeded:', ip);
+    return NextResponse.json(
+      { success: false, error: 'Забагато спроб з вашого пристрою. Спробуйте пізніше.' },
+      { status: 429 }
+    );
+  }
+
+  if (phoneCount !== null && phoneCount >= 3) {
+    console.warn('[send-sms] Phone rate limit exceeded:', phone);
+    return NextResponse.json(
+      { success: false, error: 'Забагато СМС на цей номер. Зачекайте 15 хвилин.' },
+      { status: 429 }
+    );
+  }
 
   const { data: upsertData, error: dbError } = await supabaseAdmin
     .from('sms_otps')
@@ -79,6 +119,9 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  // Логуємо тільки після успішної відправки — не засмічуємо лог помилковими спробами
+  await supabaseAdmin.from('sms_logs').insert({ phone, ip });
 
   console.log('[send-sms] SMS sent successfully to', phone);
   return NextResponse.json({ success: true });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, BellOff, Check } from 'lucide-react';
+import { Bell, BellOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
@@ -14,7 +14,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return output;
 }
 
-type State = 'idle' | 'subscribing' | 'subscribed' | 'denied' | 'unsupported';
+type State = 'idle' | 'subscribing' | 'subscribed' | 'denied' | 'unsupported' | 'error';
 
 export function PushSubscribeCard() {
   const [state, setState] = useState<State>('idle');
@@ -35,38 +35,62 @@ export function PushSubscribeCard() {
     setState('subscribing');
     try {
       const permission = await Notification.requestPermission();
-      if (permission !== 'granted') { setState('denied'); return; }
+      if (permission !== 'granted') { 
+        setState('denied'); 
+        return; 
+      }
 
-      const reg = await navigator.serviceWorker.ready;
+      let reg = await navigator.serviceWorker.register('/sw.js');
+      
+      // Таймаут для ServiceWorker (5 сек)
+      const readyPromise = navigator.serviceWorker.ready;
+      const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('SW_TIMEOUT')), 5000));
+      reg = await Promise.race([readyPromise, timeoutPromise]);
+
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!vapidKey) { setState('subscribed'); return; }
+      if (!vapidKey) throw new Error('MISSING_KEY');
 
-      const sub = await reg.pushManager.subscribe({
+      // Таймаут для PushManager (10 сек - блокує Opera/Brave)
+      const subPromise = reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
+      const pushTimeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('PUSH_TIMEOUT')), 5000));
+      const sub = await Promise.race([subPromise, pushTimeout]);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from('push_subscriptions').upsert({
           user_id: user.id,
           endpoint: sub.endpoint,
-          subscription: sub.toJSON(),
+          subscription: sub.toJSON() as any,
         }, { onConflict: 'endpoint' });
       }
+      
       setState('subscribed');
-    } catch {
-      setState('denied');
+    } catch (error) {
+      console.error('[Push] Subscribe flow failed:', error);
+      setState('error');
     }
   }
 
-  if (state === 'denied') {
+  if (state === 'denied' || state === 'error') {
     return (
-      <div className="bento-card p-4 flex items-center gap-3">
-        <BellOff size={18} className="text-[#A8928D] flex-shrink-0" />
+      <div className="bento-card p-4 flex items-start gap-3 bg-[#FFF5F5] border border-[#FFE5E5]">
+        <BellOff size={18} className="text-[#D9534F] shrink-0 mt-0.5" />
         <div>
-          <p className="text-xs font-semibold text-[#2C1A14]">Сповіщення вимкнені</p>
-          <p className="text-[10px] text-[#A8928D]">Увімкни в налаштуваннях браузера</p>
+          <p className="text-sm font-semibold text-[#2C1A14]">Сповіщення заблоковано</p>
+          <p className="text-xs text-[#A8928D] mt-1 leading-relaxed">
+            Ваш браузер блокує цю функцію. Для найкращого досвіду та роботи сповіщень рекомендуємо{' '}
+            <a 
+              href="https://www.google.com/chrome/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-[#789A99] font-medium underline underline-offset-2"
+            >
+              завантажити Google Chrome
+            </a>.
+          </p>
         </div>
       </div>
     );
@@ -78,7 +102,7 @@ export function PushSubscribeCard() {
       disabled={state === 'subscribing'}
       className="bento-card p-4 flex items-center gap-3 w-full text-left active:scale-[0.98] transition-transform"
     >
-      <div className="w-9 h-9 rounded-2xl bg-[#789A99]/15 flex items-center justify-center flex-shrink-0">
+      <div className="w-9 h-9 rounded-2xl bg-[#789A99]/15 flex items-center justify-center shrink-0">
         {state === 'subscribing'
           ? <div className="w-4 h-4 rounded-full border-2 border-[#789A99] border-t-transparent animate-spin" />
           : <Bell size={18} className="text-[#789A99]" />
@@ -88,7 +112,7 @@ export function PushSubscribeCard() {
         <p className="text-sm font-semibold text-[#2C1A14]">Увімкнути сповіщення</p>
         <p className="text-xs text-[#A8928D]">Нові записи, нагадування, флеш-акції</p>
       </div>
-      <div className="w-8 h-5 rounded-full bg-[#E8D5CF] flex-shrink-0">
+      <div className="w-8 h-5 rounded-full bg-[#E8D5CF] shrink-0">
         <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
       </div>
     </button>

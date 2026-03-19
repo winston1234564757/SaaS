@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Check, Clock, CalendarDays, User, Phone, MessageSquare, ShoppingBag, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
-import { notifyMasterOnBooking, sendClientBookingConfirmation, ensureClientProfile } from '@/app/[slug]/actions';
+import { notifyMasterOnBooking, ensureClientProfile } from '@/app/[slug]/actions';
 import { getAutoSuggestProductIds } from '@/lib/supabase/hooks/useProductLinks';
 import { scoreSlots, type SlotWithScore } from '@/lib/utils/smartSlots';
 import { applyDynamicPricing } from '@/lib/utils/dynamicPricing';
@@ -510,14 +510,6 @@ export function BookingFlow({
           : undefined,
       }).catch(() => {});
 
-      // Email-підтвердження клієнту (fire-and-forget)
-      if (emailTrimmed) {
-        sendClientBookingConfirmation({
-          bookingId,
-          clientEmail: emailTrimmed,
-          clientName: clientName.trim(),
-        }).catch(() => {});
-      }
     }
 
     setIsLoading(false);

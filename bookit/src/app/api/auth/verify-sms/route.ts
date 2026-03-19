@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(req: NextRequest) {
-  const { phone: rawPhone, otp } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Невірний формат запиту' }, { status: 400 });
+  }
+  const rawPhone = body.phone;
+  const otp = body.otp;
 
   if (!rawPhone || !otp) {
     return NextResponse.json({ error: 'Невірні дані' }, { status: 400 });
@@ -52,7 +59,8 @@ export async function POST(req: NextRequest) {
   await supabaseAdmin.from('sms_otps').delete().eq('phone', cleanPhone);
 
   const virtualEmail = `${cleanPhone}@bookit.app`;
-  const virtualPassword = `${cleanPhone}${process.env.SUPABASE_SERVICE_ROLE_KEY.slice(0, 10)}`;
+  const secretTail = process.env.SUPABASE_SERVICE_ROLE_KEY!.slice(-16);
+  const virtualPassword = `${cleanPhone}_${secretTail}`;
 
   let isNew = false;
   const { error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -66,20 +74,7 @@ export async function POST(req: NextRequest) {
     isNew = true;
     console.log('[verify-sms] new user created:', virtualEmail);
   } else {
-    // Юзер існує (міг бути створений через Magic Link без пароля)
-    // Знаходимо його і форсово синхронізуємо пароль
-    console.log('[verify-sms] user exists, syncing password. createError:', createError.message);
-    const { data: { users } } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-    const existing = users.find(u => u.email === virtualEmail);
-    if (existing) {
-      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-        existing.id,
-        { password: virtualPassword, email_confirm: true }
-      );
-      console.log('[verify-sms] password sync result:', updateError ?? 'OK', 'uid:', existing.id);
-    } else {
-      console.error('[verify-sms] could not find existing user by email:', virtualEmail);
-    }
+    console.log('[verify-sms] user exists, proceeding with deterministic password.');
   }
 
   console.log('[verify-sms] success. isNew:', isNew, 'email:', virtualEmail);

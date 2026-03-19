@@ -39,6 +39,8 @@ export function buildCancellationMessage(params: {
   return msg;
 }
 
+export const UA_MONTHS = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
+
 export function buildBookingMessage(params: {
   clientName: string;
   date: string;
@@ -50,19 +52,16 @@ export function buildBookingMessage(params: {
 }): string {
   const { clientName, date, startTime, services, totalPrice, notes, products } = params;
   const d = new Date(date + 'T00:00:00');
-  const months = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
-  const dateStr = `${d.getDate()} ${months[d.getMonth()]}`;
+  const dateStr = `${d.getDate()}-го ${UA_MONTHS[d.getMonth()]} о ${startTime.slice(0, 5)}`;
 
-  let msg = `📅 <b>Новий запис!</b>\n\n`;
-  msg += `👤 <b>${clientName}</b>\n`;
-  msg += `🗓 ${dateStr} о ${startTime.slice(0, 5)}\n`;
-  msg += `💅 ${services}\n`;
+  let msg = `🔥 Новий запис from BookIt\n\n`;
+  msg += `👤 Клієнт: ${clientName}\n`;
+  msg += `📅 Коли: ${dateStr} на «${services}»\n`;
   if (products && products.length > 0) {
     const productLines = products.map(p => `  • ${p.name} × ${p.quantity}`).join('\n');
     msg += `🛍 Товари:\n${productLines}\n`;
   }
-  msg += `💰 ${totalPrice.toLocaleString('uk-UA')} ₴`;
-  if (notes) msg += `\n📝 ${notes}`;
-  msg += `\n\n<i>Підтвердіть або скасуйте в Bookit</i>`;
+  msg += `💰 Сума: ${totalPrice} грн\n`;
+  if (notes) msg += `📝 Коментар: ${notes}\n`;
   return msg;
 }

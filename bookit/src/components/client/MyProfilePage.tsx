@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Check, Loader2, CalendarDays, Mail, ArrowLeft, ShieldCheck, LogOut } from 'lucide-react';
 import { updateClientProfile } from '@/app/my/profile/actions';
 import { createClient } from '@/lib/supabase/client';
+import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
 
 interface Props {
   profile: {
@@ -202,6 +203,15 @@ export function MyProfilePage({ profile }: Props) {
             )}
           </button>
         </div>
+      </motion.div>
+
+      {/* Push notifications */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.16, type: 'spring', stiffness: 300, damping: 24 }}
+      >
+        <PushSubscribeCard />
       </motion.div>
 
       {/* Save */}

@@ -56,6 +56,8 @@ export function useBookingById(id: string | null) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ['bookings'] });
+      qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      qc.invalidateQueries({ queryKey: ['weekly-overview'] });
     },
   });
 

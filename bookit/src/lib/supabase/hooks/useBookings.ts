@@ -103,7 +103,11 @@ export function useBookings(dateFrom: string, dateTo: string) {
     onError: (_e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(key, ctx.prev);
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: key }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: key });
+      qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      qc.invalidateQueries({ queryKey: ['weekly-overview'] });
+    },
   });
 
   return {

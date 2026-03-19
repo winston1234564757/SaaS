@@ -1,23 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { sendEmail, buildReminderHtml } from '@/lib/email';
-
-function getAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { createAdminClient } from '@/lib/supabase/admin';
+import { sendPush } from '@/lib/push';
 
 /**
  * Vercel Cron: щодня о 9:00 Kyiv (7:00 UTC)
- * Надсилає email-нагадування клієнтам, у яких запис завтра.
- *
- * Захищений токеном CRON_SECRET (встановлюється у Vercel env vars).
+ * Нагадування клієнтам про завтрашній запис.
+ * Канали: Web Push (основний) → TurboSMS (резерв якщо немає підписки або пуш протух).
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  // Перевірка авторизації cron запиту
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     const authHeader = req.headers.get('authorization');
@@ -26,27 +16,22 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
 
-  // Вираховуємо дату "завтра" в UTC
   const tomorrow = new Date();
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
   const tomorrowStr = tomorrow.toISOString().slice(0, 10);
 
-  // Завантажуємо всі bookings на завтра зі статусом pending/confirmed та email клієнта
   const { data: bookings, error } = await admin
     .from('bookings')
     .select(`
-      id, client_name, client_email, date, start_time, end_time,
+      id, client_id, client_name, client_phone, date, start_time, end_time,
       booking_services ( service_name ),
-      master_profiles!inner (
-        slug,
-        profiles!inner ( full_name )
-      )
+      master_profiles!inner ( profiles!inner ( full_name ) )
     `)
     .eq('date', tomorrowStr)
     .in('status', ['pending', 'confirmed'])
-    .not('client_email', 'is', null);
+    .not('client_phone', 'is', null);
 
   if (error) {
     console.error('[cron/reminders] DB error:', error.message);
@@ -54,41 +39,84 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   const rows = bookings ?? [];
-  let sent = 0;
+
+  // Один запит для всіх push-підписок (тільки для авторизованих клієнтів)
+  const clientIds = [...new Set(rows.map((b: any) => b.client_id).filter(Boolean))];
+
+  const pushSubsMap = new Map<string, { endpoint: string; keys: { p256dh: string; auth: string } }[]>();
+
+  if (clientIds.length > 0) {
+    const { data: subs } = await admin
+      .from('push_subscriptions')
+      .select('user_id, subscription')
+      .in('user_id', clientIds);
+
+    for (const row of subs ?? []) {
+      const arr = pushSubsMap.get(row.user_id) ?? [];
+      arr.push(row.subscription);
+      pushSubsMap.set(row.user_id, arr);
+    }
+  }
+
+  let pushSent = 0;
+  let smsSent = 0;
   let failed = 0;
 
   await Promise.allSettled(
     rows.map(async (b: any) => {
-      const clientEmail = b.client_email as string;
-      const clientName = b.client_name as string;
       const mp = b.master_profiles;
-      const masterName = (mp?.profiles as any)?.full_name as string ?? 'Майстер';
-      const masterSlug = (mp?.slug as string) ?? '';
-      const services = ((b.booking_services as any[]) ?? [])
+      const masterName: string = (mp?.profiles as any)?.full_name ?? 'Майстер';
+      const startTime: string = (b.start_time as string | null)?.slice(0, 5) ?? '';
+      const services: string = ((b.booking_services as any[]) ?? [])
         .map((s: any) => s.service_name as string)
         .join(', ') || 'Послуга';
 
-      const html = buildReminderHtml({
-        clientName,
-        masterName,
-        masterSlug,
-        date: b.date as string,
-        startTime: (b.start_time as string | null)?.slice(0, 5) ?? '',
-        endTime: (b.end_time as string | null)?.slice(0, 5) ?? '',
-        services,
-      });
+      const messageText = `Нагадування: завтра о ${startTime} візит до ${masterName} (${services})`;
 
-      const ok = await sendEmail({
-        to: clientEmail,
-        subject: `Нагадування: завтра о ${(b.start_time as string | null)?.slice(0, 5) ?? ''} — ${masterName}`,
-        html,
-      });
+      // ── Спроба 1: Web Push ───────────────────────────────────────────────
+      const subs = b.client_id ? (pushSubsMap.get(b.client_id) ?? []) : [];
+      if (subs.length > 0) {
+        const results = await Promise.allSettled(
+          subs.map(sub => sendPush(sub, { title: 'BookIt 🗓️', body: messageText, url: '/my/bookings' }))
+        );
+        const anyOk = results.some(r => r.status === 'fulfilled' && r.value === true);
+        if (anyOk) {
+          pushSent++;
+          return;
+        }
+      }
 
-      if (ok) sent++; else failed++;
+      // ── Спроба 2: TurboSMS fallback ──────────────────────────────────────
+      const phone = b.client_phone as string;
+      if (!phone) { failed++; return; }
+
+      try {
+        const smsRes = await fetch('https://api.turbosms.ua/message/send.json', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
+          },
+          body: JSON.stringify({
+            recipients: [phone],
+            sms: { sender: 'BEAUTY', text: messageText },
+          }),
+        });
+        const smsData = await smsRes.json();
+        if (smsData.response_code === 800 || smsData.response_code === 0) {
+          smsSent++;
+        } else {
+          console.error('[cron/reminders] TurboSMS error for', phone, smsData.response_status);
+          failed++;
+        }
+      } catch (e) {
+        console.error('[cron/reminders] SMS fetch error for', phone, e);
+        failed++;
+      }
     })
   );
 
-  console.log(`[cron/reminders] date=${tomorrowStr} total=${rows.length} sent=${sent} failed=${failed}`);
+  console.log(`[cron/reminders] date=${tomorrowStr} total=${rows.length} pushSent=${pushSent} smsSent=${smsSent} failed=${failed}`);
 
-  return NextResponse.json({ date: tomorrowStr, total: rows.length, sent, failed });
+  return NextResponse.json({ date: tomorrowStr, total: rows.length, pushSent, smsSent, failed });
 }
