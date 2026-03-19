@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 const MERCHANT = process.env.WAYFORPAY_MERCHANT_ACCOUNT!;
 const SECRET   = process.env.WAYFORPAY_MERCHANT_SECRET!;
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     if ((tier === 'pro' || tier === 'studio') && uid32?.length === 32) {
       const userId = flatUidToUuid(uid32);
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       await supabase
         .from('master_profiles')
         .update({

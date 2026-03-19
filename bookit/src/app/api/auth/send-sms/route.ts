@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
 
   // Жорстке очищення: лише цифри → формат 380XXXXXXXXX
   const phone = String(rawPhone).replace(/\D/g, '');
-  console.log('[send-sms] cleaned phone:', phone);
 
   if (!/^380\d{9}$/.test(phone)) {
     console.warn('[send-sms] invalid phone format:', phone);
@@ -73,15 +72,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { data: upsertData, error: dbError } = await supabaseAdmin
+  const { error: dbError } = await supabaseAdmin
     .from('sms_otps')
-    .upsert({ phone, otp }, { onConflict: 'phone' })
-    .select();
-
-  console.log('[send-sms] upsert result:', { upsertData, dbError });
+    .upsert({ phone, otp }, { onConflict: 'phone' });
 
   if (dbError) {
-    console.error('[send-sms] DB Error Details:', dbError);
+    console.error('[send-sms] DB error:', dbError.message);
     return NextResponse.json(
       { success: false, error: `DB Error: ${dbError.message}` },
       { status: 500 }
@@ -104,25 +100,17 @@ export async function POST(req: NextRequest) {
   });
 
   const smsData = await smsRes.json();
-  console.log('[send-sms] TurboSMS response:', JSON.stringify(smsData, null, 2));
 
   // TurboSMS: response_code 800 або 0 = успіх
   if (smsData.response_code !== 800 && smsData.response_code !== 0) {
-    console.error(
-      '[send-sms] TurboSMS error — code:',
-      smsData.response_code,
-      '| status:',
-      smsData.response_status
-    );
+    console.error('[send-sms] TurboSMS error:', smsData.response_code, smsData.response_status);
     return NextResponse.json(
       { success: false, error: smsData.response_status ?? 'Помилка TurboSMS' },
       { status: 400 }
     );
   }
 
-  // Логуємо тільки після успішної відправки — не засмічуємо лог помилковими спробами
   await supabaseAdmin.from('sms_logs').insert({ phone, ip });
 
-  console.log('[send-sms] SMS sent successfully to', phone);
   return NextResponse.json({ success: true });
 }

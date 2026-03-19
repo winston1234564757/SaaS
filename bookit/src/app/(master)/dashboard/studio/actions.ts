@@ -1,22 +1,13 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdmin } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-function getAdmin() {
-  return createAdmin(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
 
 function generateToken(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let t = '';
-  for (let i = 0; i < 12; i++) t += chars[Math.floor(Math.random() * chars.length)];
-  return t;
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return Array.from(bytes, b => chars[b % chars.length]).join('');
 }
 
 export async function createStudio(name: string): Promise<{ error: string | null }> {
@@ -24,7 +15,7 @@ export async function createStudio(name: string): Promise<{ error: string | null
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
 
   // Check master is Studio tier
   const { data: mp } = await admin
@@ -68,7 +59,7 @@ export async function joinStudio(token: string): Promise<{ error: string | null 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
 
   // Find studio by token
   const { data: studio } = await admin
@@ -110,7 +101,7 @@ export async function leaveStudio(): Promise<{ error: string | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
 
   const { data: mp } = await admin
     .from('master_profiles')
@@ -142,7 +133,7 @@ export async function removeMember(masterId: string): Promise<{ error: string | 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
 
   // Verify requester is owner of the studio the master belongs to
   const { data: mp } = await admin

@@ -132,12 +132,13 @@ export function SettingsPage() {
 
     try {
       await Promise.all([
-        supabase.from('profiles').update({ full_name: fullName, avatar_url: avatarUrl, telegram_chat_id: telegramChatId.trim() || null }).eq('id', profile.id).throwOnError(),
+        supabase.from('profiles').update({ full_name: fullName, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
         supabase.from('master_profiles').update({
           bio, city, slug,
           avatar_emoji: avatar,
           instagram_url: instagram || null,
           telegram_url: telegram || null,
+          telegram_chat_id: telegramChatId.trim() || null,
           is_published: isPublished,
           mood_theme: themeKey,
         }).eq('id', masterProfile.id).throwOnError(),
@@ -157,8 +158,7 @@ export function SettingsPage() {
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);
     } catch (error: any) {
-      console.error('FULL DB ERROR:', error);
-      showToast({ type: 'error', title: 'Помилка збереження', message: error?.details || error?.message || 'Помилка БД. Див. консоль.' });
+      showToast({ type: 'error', title: 'Помилка збереження', message: error?.message || 'Спробуйте ще раз' });
     } finally {
       setSaving(false);
     }

@@ -1,17 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
 import { sendTelegramMessage } from '@/lib/telegram';
 
 const DAYS_BEFORE = 3;
-
-function getAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
 
 function addDays(date: Date, n: number): string {
   const d = new Date(date);
@@ -25,7 +17,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
   const targetDate = addDays(new Date(), DAYS_BEFORE);
 
   // Find booking IDs that already have reminders sent

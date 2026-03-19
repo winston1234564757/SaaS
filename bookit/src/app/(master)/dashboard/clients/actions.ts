@@ -1,17 +1,9 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdmin } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
 import { sendTelegramMessage } from '@/lib/telegram';
-
-function getAdmin() {
-  return createAdmin(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
 
 export async function sendChurnReminder(
   clientId: string | null,
@@ -22,7 +14,7 @@ export async function sendChurnReminder(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { sent: false, error: 'Не авторизований' };
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
 
   const { data: mp } = await admin
     .from('master_profiles')

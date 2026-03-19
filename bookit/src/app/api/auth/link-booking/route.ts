@@ -65,6 +65,5 @@ export async function POST(req: NextRequest) {
       : Promise.resolve(),
   ]);
 
-  console.log('[link-booking] uid:', user.id, '| phone:', userPhone, '| bookingId:', bookingId);
   return NextResponse.json({ success: true });
 }

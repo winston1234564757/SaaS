@@ -97,9 +97,10 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
       return;
     }
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.verifyOtp({
       email: verifyData.email,
-      password: verifyData.password,
+      token: verifyData.token,
+      type: 'magiclink',
     });
 
     if (authError) {

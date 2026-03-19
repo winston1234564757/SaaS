@@ -1,18 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdmin } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
 import { sendTelegramMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
-
-function getAdmin() {
-  return createAdmin(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
 
 export interface CreateFlashDealParams {
   serviceName: string;
@@ -30,7 +22,7 @@ export async function createFlashDeal(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований', sentTo: 0 };
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
 
   // Check Pro/Studio tier
   const { data: mp } = await admin
@@ -138,11 +130,7 @@ export async function cancelFlashDeal(dealId: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-  await createAdmin(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  await createAdminClient()
     .from('flash_deals')
     .update({ status: 'expired' })
     .eq('id', dealId)

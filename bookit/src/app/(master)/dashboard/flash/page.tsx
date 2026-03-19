@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdmin } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import { FlashDealPage } from '@/components/master/flash/FlashDealPage';
 
@@ -19,11 +19,7 @@ export default async function FlashPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createAdmin(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  const admin = createAdminClient();
 
   const [{ data: mp }, { data: deals }] = await Promise.all([
     admin.from('master_profiles').select('subscription_tier').eq('id', user.id).single(),

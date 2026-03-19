@@ -62,7 +62,6 @@ export async function GET(request: NextRequest) {
         .eq('id', bid)
         .is('client_id', null);
 
-      console.log('[auth/callback] booking linked. bid:', bid, 'uid:', user.id);
     }
   }
 

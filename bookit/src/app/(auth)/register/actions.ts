@@ -1,23 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
-
-// Service role — обходить RLS, використовується лише на сервері
-function getAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { createAdminClient } from '@/lib/supabase/admin';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/I/1 to avoid confusion
-  let code = '';
-  for (let i = 0; i < 8; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  return Array.from(bytes, b => chars[b % chars.length]).join('');
 }
 
 export async function createMasterProfileAfterSignup(params: {
@@ -29,7 +17,7 @@ export async function createMasterProfileAfterSignup(params: {
   categories: string[];
   referredBy?: string | null; // referral_code of the inviter
 }): Promise<{ error: string | null }> {
-  const admin = getAdminClient();
+  const admin = createAdminClient();
 
   // --- profiles ---
   const profileData: Record<string, unknown> = {
@@ -112,8 +100,9 @@ export async function createMasterProfileAfterSignup(params: {
     .upsert(masterData, { onConflict: 'id', ignoreDuplicates: false });
 
   if (masterError) {
-    console.error('[register] master_profiles upsert error:', masterError);
-    return { error: masterError.message };
+    // Attempt rollback: remove the profile row we just created to avoid orphaned data
+    await admin.from('profiles').delete().eq('id', params.userId);
+    return { error: 'Помилка створення профілю. Спробуйте ще раз.' };
   }
 
   return { error: null };

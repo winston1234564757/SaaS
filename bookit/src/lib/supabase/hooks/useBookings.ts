@@ -84,6 +84,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
             .from('bookings')
             .update({ status, status_changed_at: new Date().toISOString() })
             .eq('id', id)
+            .eq('master_id', masterId!)
       );
       if (result.error) {
         const errorWithMeta = Object.assign(new Error(result.message ?? 'Failed to update booking status'), {

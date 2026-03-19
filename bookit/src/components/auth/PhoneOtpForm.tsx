@@ -92,9 +92,10 @@ export function PhoneOtpForm({ mode }: Props) {
       return;
     }
 
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email: data.email,
-      password: data.password,
+      token: data.token,
+      type: 'magiclink',
     });
 
     if (authError || !authData.session) {

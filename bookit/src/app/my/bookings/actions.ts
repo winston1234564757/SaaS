@@ -68,6 +68,17 @@ export async function submitReview(params: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
+  // Verify booking belongs to this user and is completed
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('id, master_id')
+    .eq('id', params.bookingId)
+    .eq('client_id', user.id)
+    .eq('status', 'completed')
+    .single();
+
+  if (!booking) throw new Error('Booking not found or not eligible for review');
+
   // Get client name from profile
   const { data: profile } = await supabase
     .from('profiles')
@@ -85,7 +96,7 @@ export async function submitReview(params: {
     .from('reviews')
     .insert({
       booking_id: params.bookingId,
-      master_id: params.masterId,
+      master_id: booking.master_id, // use DB value, not client-supplied
       client_id: user.id,
       client_name: clientName,
       rating: params.rating,

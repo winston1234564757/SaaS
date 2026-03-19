@@ -8,12 +8,9 @@ import { sendPush } from '@/lib/push';
  * Канали: Web Push (основний) → TurboSMS (резерв якщо немає підписки або пуш протух).
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const authHeader = req.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const admin = createAdminClient();

@@ -1,5 +1,14 @@
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
+/** Escapes user-supplied strings for Telegram HTML parse mode */
+function escHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export async function sendTelegramMessage(chatId: string, text: string): Promise<boolean> {
   if (!BOT_TOKEN || !chatId) return false;
   try {
@@ -32,9 +41,9 @@ export function buildCancellationMessage(params: {
   const dateStr = `${d.getDate()} ${months[d.getMonth()]}`;
 
   let msg = `❌ <b>Скасування запису</b>\n\n`;
-  msg += `👤 <b>${clientName}</b>\n`;
+  msg += `👤 <b>${escHtml(clientName)}</b>\n`;
   msg += `🗓 ${dateStr} о ${startTime.slice(0, 5)}\n`;
-  msg += `💅 ${services}\n\n`;
+  msg += `💅 ${escHtml(services)}\n\n`;
   msg += `<i>Клієнт скасував запис самостійно</i>`;
   return msg;
 }
@@ -55,13 +64,13 @@ export function buildBookingMessage(params: {
   const dateStr = `${d.getDate()}-го ${UA_MONTHS[d.getMonth()]} о ${startTime.slice(0, 5)}`;
 
   let msg = `🔥 Новий запис from BookIt\n\n`;
-  msg += `👤 Клієнт: ${clientName}\n`;
-  msg += `📅 Коли: ${dateStr} на «${services}»\n`;
+  msg += `👤 Клієнт: ${escHtml(clientName)}\n`;
+  msg += `📅 Коли: ${dateStr} на «${escHtml(services)}»\n`;
   if (products && products.length > 0) {
-    const productLines = products.map(p => `  • ${p.name} × ${p.quantity}`).join('\n');
+    const productLines = products.map(p => `  • ${escHtml(p.name)} × ${p.quantity}`).join('\n');
     msg += `🛍 Товари:\n${productLines}\n`;
   }
   msg += `💰 Сума: ${totalPrice} грн\n`;
-  if (notes) msg += `📝 Коментар: ${notes}\n`;
+  if (notes) msg += `📝 Коментар: ${escHtml(notes)}\n`;
   return msg;
 }

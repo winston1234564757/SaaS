@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdminClient } from '@supabase/supabase-js';
-
-function getAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
  * Saves a Web Push subscription for the current user.
@@ -27,7 +19,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
   const endpoint = (subscription as any).endpoint as string;
 
   await admin.from('push_subscriptions').upsert(
@@ -46,7 +38,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
   let body: any;
   try { body = await req.json(); } catch { body = {}; }
 
-  const admin = getAdmin();
+  const admin = createAdminClient();
   if (body.endpoint) {
     await admin.from('push_subscriptions').delete().eq('endpoint', body.endpoint).eq('user_id', user.id);
   } else {
