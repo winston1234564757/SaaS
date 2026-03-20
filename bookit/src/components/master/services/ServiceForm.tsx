@@ -29,10 +29,12 @@ const EMPTY: Omit<Service, 'id'> = {
 export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: ServiceFormProps) {
   const [form, setForm] = useState<Omit<Service, 'id'>>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Service, string>>>({});
+  // Tracks the raw text in the custom input — empty when a pill was last used
+  const [customDurationStr, setCustomDurationStr] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setForm(initial
+      const svc = initial
         ? {
             name: initial.name,
             emoji: initial.emoji,
@@ -44,7 +46,11 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
             description: initial.description ?? '',
             imageUrl: initial.imageUrl,
           }
-        : EMPTY);
+        : EMPTY;
+      setForm(svc);
+      // Pre-fill custom input only when editing a non-standard duration
+      const dur = svc.duration;
+      setCustomDurationStr(DURATIONS.includes(dur as typeof DURATIONS[number]) ? '' : String(dur));
       setErrors({});
     }
   }, [isOpen, initial]);
@@ -180,13 +186,16 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
         {/* Duration */}
         <div>
           <p className="text-xs font-medium text-[#6B5750] mb-2">Тривалість</p>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {DURATIONS.map(d => (
               <button
                 key={d}
-                onClick={() => setForm(f => ({ ...f, duration: d }))}
+                onClick={() => {
+                  setForm(f => ({ ...f, duration: d }));
+                  setCustomDurationStr('');
+                }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  form.duration === d
+                  form.duration === d && customDurationStr === ''
                     ? 'bg-[#789A99] text-white'
                     : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
                 }`}
@@ -194,6 +203,29 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
                 {formatDuration(d)}
               </button>
             ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              min={5}
+              max={480}
+              step={5}
+              value={customDurationStr}
+              onChange={e => {
+                const raw = e.target.value;
+                setCustomDurationStr(raw);
+                const v = parseInt(raw, 10);
+                if (!isNaN(v) && v >= 5) setForm(f => ({ ...f, duration: Math.min(480, v) }));
+              }}
+              placeholder="хв"
+              className="w-24 px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20"
+            />
+            <span className="text-xs text-[#A8928D]">
+              {customDurationStr ? formatDuration(form.duration) : formatDuration(form.duration)}
+              {customDurationStr !== '' && (
+                <span className="ml-1.5 text-[#789A99] font-medium">нестандарт</span>
+              )}
+            </span>
           </div>
         </div>
 

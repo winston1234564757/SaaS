@@ -8,6 +8,68 @@ function generateReferralCode(): string {
   return Array.from(bytes, b => chars[b % chars.length]).join('');
 }
 
+function generatePlaceholderSlug(): string {
+  // hex slug — guaranteed URL-safe, 8 chars, collision-negligible at current scale
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
+  return 'master-' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Called immediately after SMS OTP verification on /register.
+ *
+ * Sets profiles.role = 'master' AND creates a placeholder master_profiles row
+ * atomically (with rollback). This unblocks the proxy for /dashboard/onboarding
+ * before the user has completed the full onboarding wizard.
+ *
+ * Client-only accounts MUST NOT be created here.
+ * Client accounts are provisioned exclusively via:
+ *   - /api/auth/verify-sms (PostBookingAuth SMS path)
+ *   - /auth/callback with ?bid= param (PostBookingAuth Google OAuth path)
+ */
+export async function claimMasterRole(
+  userId: string,
+  phone: string,
+): Promise<{ error: string | null }> {
+  const admin = createAdminClient();
+
+  const { error: profileError } = await admin
+    .from('profiles')
+    .upsert(
+      { id: userId, role: 'master', phone },
+      { onConflict: 'id', ignoreDuplicates: false },
+    );
+
+  if (profileError) {
+    console.error('[register] profiles upsert failed:', profileError.message);
+    return { error: profileError.message };
+  }
+
+  const slug = generatePlaceholderSlug();
+
+  const { error: masterError } = await admin
+    .from('master_profiles')
+    .upsert(
+      { id: userId, slug, is_published: false },
+      { onConflict: 'id', ignoreDuplicates: true }, // don't overwrite if already exists
+    );
+
+  if (masterError) {
+    // Rollback: remove profiles row to avoid orphaned 'master' without master_profiles
+    await admin.from('profiles').delete().eq('id', userId);
+    console.error('[register] master_profiles upsert failed:', masterError.message);
+    return { error: 'Помилка ініціалізації профілю майстра. Спробуйте ще раз.' };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Full profile creation called from the onboarding wizard once the user has
+ * provided their name, slug, and categories.
+ *
+ * Upserts both profiles (role: master) and master_profiles (with real slug +
+ * categories). Rolls back profiles if master_profiles insert fails.
+ */
 export async function createMasterProfileAfterSignup(params: {
   userId: string;
   fullName: string;
@@ -15,7 +77,7 @@ export async function createMasterProfileAfterSignup(params: {
   phone?: string | null;
   slug: string;
   categories: string[];
-  referredBy?: string | null; // referral_code of the inviter
+  referredBy?: string | null;
 }): Promise<{ error: string | null }> {
   const admin = createAdminClient();
 
@@ -38,7 +100,6 @@ export async function createMasterProfileAfterSignup(params: {
   }
 
   // --- master_profiles ---
-  // Generate a unique referral code, retry on collision
   let referralCode = generateReferralCode();
   for (let attempt = 0; attempt < 5; attempt++) {
     const { data: existing } = await admin
@@ -50,12 +111,10 @@ export async function createMasterProfileAfterSignup(params: {
     referralCode = generateReferralCode();
   }
 
-  // Determine if new master gets a Pro trial via referral
   let subscriptionTier: 'starter' | 'pro' = 'starter';
   let subscriptionExpiresAt: string | null = null;
 
   if (params.referredBy) {
-    // Validate referral code exists
     const { data: referrer } = await admin
       .from('master_profiles')
       .select('id, subscription_tier, subscription_expires_at')
@@ -63,11 +122,9 @@ export async function createMasterProfileAfterSignup(params: {
       .maybeSingle();
 
     if (referrer) {
-      // New master gets 30 days Pro trial
       subscriptionTier = 'pro';
       subscriptionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      // Referrer also gets +30 days Pro
       const referrerExpiresAt = referrer.subscription_expires_at
         ? new Date(referrer.subscription_expires_at)
         : new Date();
@@ -100,7 +157,6 @@ export async function createMasterProfileAfterSignup(params: {
     .upsert(masterData, { onConflict: 'id', ignoreDuplicates: false });
 
   if (masterError) {
-    // Attempt rollback: remove the profile row we just created to avoid orphaned data
     await admin.from('profiles').delete().eq('id', params.userId);
     return { error: 'Помилка створення профілю. Спробуйте ще раз.' };
   }

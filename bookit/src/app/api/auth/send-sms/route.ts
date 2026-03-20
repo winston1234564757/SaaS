@@ -40,18 +40,20 @@ export async function POST(req: NextRequest) {
   const supabaseAdmin = createAdminClient();
 
   // Rate limiting — паралельні запити для мінімальної затримки
+  // IP: окрема таблиця sms_ip_logs (до 10 запитів на годину з одного IP)
+  // Phone: sms_logs (до 3 SMS на 15 хвилин на один номер)
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
   const [{ count: ipCount }, { count: phoneCount }] = await Promise.all([
     supabaseAdmin
-      .from('sms_logs')
-      .select('*', { count: 'exact', head: true })
-      .eq('ip', ip)
+      .from('sms_ip_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('ip_address', ip)
       .gte('created_at', oneHourAgo),
     supabaseAdmin
       .from('sms_logs')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('phone', phone)
       .gte('created_at', fifteenMinAgo),
   ]);
@@ -110,7 +112,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await supabaseAdmin.from('sms_logs').insert({ phone, ip });
+  // Логуємо окремо: IP (для IP rate-limit) і phone (для phone rate-limit)
+  await Promise.all([
+    supabaseAdmin.from('sms_ip_logs').insert({ ip_address: ip }),
+    supabaseAdmin.from('sms_logs').insert({ phone, ip }),
+  ]);
 
   return NextResponse.json({ success: true });
 }

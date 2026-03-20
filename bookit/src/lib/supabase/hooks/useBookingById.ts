@@ -58,6 +58,7 @@ export function useBookingById(id: string | null) {
       qc.invalidateQueries({ queryKey: ['bookings'] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       qc.invalidateQueries({ queryKey: ['weekly-overview'] });
+      qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
     },
   });
 
@@ -69,7 +70,11 @@ export function useBookingById(id: string | null) {
         .eq('id', id!);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: key });
+      // Also refresh the list so notes column stays in sync
+      qc.invalidateQueries({ queryKey: ['bookings'] });
+    },
   });
 
   return {

@@ -1,4 +1,19 @@
 export type UserRole = 'master' | 'client' | 'admin';
+import type { PricingRules } from '@/lib/utils/dynamicPricing';
+
+// ── Working-hours scheduling config (master_profiles.working_hours JSONB) ─────
+
+export interface BreakWindow {
+  start: string; // "HH:MM"
+  end: string;   // "HH:MM"
+}
+
+export interface WorkingHoursConfig {
+  /** Minutes of empty time required between the end of one booking and the start of the next */
+  buffer_time_minutes: number;
+  /** Break windows applied to every working day (e.g. lunch 13:00–14:00) */
+  breaks: BreakWindow[];
+}
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
 export type SubscriptionTier = 'starter' | 'pro' | 'studio';
 export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
@@ -40,9 +55,35 @@ export interface MasterProfile {
   telegram_url: string | null;
   telegram_chat_id: string | null;
   avatar_emoji: string;
+  pricing_rules: PricingRules | null;
+  working_hours: WorkingHoursConfig | null;
   created_at: string;
   updated_at: string;
 }
+
+// ── Rate-limiting & auth tables ──────────────────────────────────────────────
+
+export interface SmsOtp {
+  id: number;
+  phone: string;
+  otp: string;
+  used: boolean;
+  created_at: string;
+}
+
+export interface SmsVerifyAttempt {
+  id: number;
+  phone: string;
+  created_at: string;
+}
+
+export interface SmsIpLog {
+  id: number;
+  ip_address: string;
+  created_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export interface ClientProfile {
   id: string;

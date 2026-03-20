@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut } from 'lucide-react';
+import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut, Plus, Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { VacationManager } from './VacationManager';
 import { ImageUploader } from '@/components/master/services/ImageUploader';
@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useToast } from '@/lib/toast/context';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
+import type { BreakWindow } from '@/types/database';
 
 const AVATAR_EMOJIS = ['💅','👑','✂️','💆','💇','🌸','✨','💎','🌺','🪞','🖌️','💄'];
 
@@ -55,6 +56,15 @@ export function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
 
+  // Working-hours config (buffer + global breaks)
+  const [bufferTime, setBufferTime] = useState(0);
+  const [breaks, setBreaks] = useState<BreakWindow[]>([]);
+
+  // Guard: only initialize form from server data once — prevents useEffect from
+  // overwriting user's in-progress edits whenever profile refreshes after save.
+  const formInitialized = useRef(false);
+  const scheduleInitialized = useRef(false);
+
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [slugStatus, setSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
@@ -64,23 +74,26 @@ export function SettingsPage() {
   const [confirmPwd, setConfirmPwd] = useState('');
   const [changingPwd, setChangingPwd] = useState(false);
 
-  // Ініціалізація з даних
+  // Ініціалізація з даних — runs once when both profile and masterProfile first arrive.
+  // formInitialized.current prevents subsequent context refreshes (after save) from
+  // overwriting edits the user is currently making in the form.
   useEffect(() => {
-    if (profile) {
-      setFullName(profile.full_name ?? '');
-      setAvatarUrl(profile.avatar_url ?? null);
-    }
-    if (masterProfile) {
-      setBio(masterProfile.bio ?? '');
-      setSlug(masterProfile.slug ?? '');
-      setCity(masterProfile.city ?? '');
-      setInstagram(masterProfile.instagram_url ?? '');
-      setTelegram(masterProfile.telegram_url ?? '');
-      setTelegramChatId(masterProfile.telegram_chat_id ?? '');
-      setIsPublished(masterProfile.is_published ?? false);
-      setAvatar(masterProfile.avatar_emoji ?? '💅');
-      setThemeKey((masterProfile.mood_theme as MoodThemeKey) ?? 'default');
-    }
+    if (formInitialized.current || !profile || !masterProfile) return;
+    formInitialized.current = true;
+    setFullName(profile.full_name ?? '');
+    setAvatarUrl(profile.avatar_url ?? null);
+    setBio(masterProfile.bio ?? '');
+    setSlug(masterProfile.slug ?? '');
+    setCity(masterProfile.city ?? '');
+    setInstagram(masterProfile.instagram_url ?? '');
+    setTelegram(masterProfile.telegram_url ?? '');
+    setTelegramChatId(masterProfile.telegram_chat_id ?? '');
+    setIsPublished(masterProfile.is_published ?? false);
+    setAvatar(masterProfile.avatar_emoji ?? '💅');
+    setThemeKey((masterProfile.mood_theme as MoodThemeKey) ?? 'default');
+    const wh = masterProfile.working_hours;
+    setBufferTime(wh?.buffer_time_minutes ?? 0);
+    setBreaks(wh?.breaks ?? []);
   }, [profile, masterProfile]);
 
   // Перевірка доступності slug
@@ -102,9 +115,10 @@ export function SettingsPage() {
     return () => clearTimeout(timer);
   }, [slug, masterProfile?.id, masterProfile?.slug]);
 
-  // Завантаження графіку
+  // Завантаження графіку — once only, same guard as form fields
   useEffect(() => {
-    if (!masterProfile?.id) return;
+    if (scheduleInitialized.current || !masterProfile?.id) return;
+    scheduleInitialized.current = true;
     supabase
       .from('schedule_templates')
       .select('*')
@@ -141,6 +155,10 @@ export function SettingsPage() {
           telegram_chat_id: telegramChatId.trim() || null,
           is_published: isPublished,
           mood_theme: themeKey,
+          working_hours: {
+            buffer_time_minutes: bufferTime,
+            breaks: breaks.filter(b => b.start && b.end),
+          },
         }).eq('id', masterProfile.id).throwOnError(),
         // Upsert кожен день
         ...DAYS_ORDER.map(day =>
@@ -176,6 +194,18 @@ export function SettingsPage() {
       setConfirmPwd('');
     }
     setChangingPwd(false);
+  }
+
+  function addBreak() {
+    setBreaks(prev => [...prev, { start: '13:00', end: '14:00' }]);
+  }
+
+  function removeBreak(i: number) {
+    setBreaks(prev => prev.filter((_, idx) => idx !== i));
+  }
+
+  function setBreakField(i: number, field: 'start' | 'end', val: string) {
+    setBreaks(prev => prev.map((b, idx) => idx === i ? { ...b, [field]: val } : b));
   }
 
   function toggleDay(day: DayKey) {
@@ -475,6 +505,86 @@ export function SettingsPage() {
               )}
             </div>
           ))}
+        </div>
+      </Section>
+
+      {/* Перерви та буфер між клієнтами */}
+      <Section title="Перерви та буфер">
+        <div className="flex flex-col gap-4">
+
+          {/* Buffer time */}
+          <div>
+            <p className="text-xs font-medium text-[#6B5750] mb-2">
+              Час між клієнтами
+              <span className="ml-1.5 font-normal text-[#A8928D]">— щоб підготуватися до наступного</span>
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              {[0, 5, 10, 15, 20, 30].map(min => (
+                <button
+                  key={min}
+                  onClick={() => setBufferTime(min)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                    bufferTime === min
+                      ? 'bg-[#789A99] text-white'
+                      : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                  }`}
+                >
+                  {min === 0 ? 'Без буферу' : `${min} хв`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Breaks */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-[#6B5750]">
+                Перерви
+                <span className="ml-1.5 font-normal text-[#A8928D]">— обід, кава, особисті справи</span>
+              </p>
+              <button
+                onClick={addBreak}
+                className="flex items-center gap-1 text-xs font-medium text-[#789A99] px-2.5 py-1 rounded-xl bg-[#789A99]/10 hover:bg-[#789A99]/20 transition-colors"
+              >
+                <Plus size={11} /> Додати
+              </button>
+            </div>
+
+            {breaks.length === 0 ? (
+              <p className="text-xs text-[#A8928D] text-center py-3 rounded-2xl bg-white/40 border border-dashed border-[#E8D5CF]">
+                Перерви не налаштовані
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {breaks.map((b, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/50">
+                    <input
+                      type="time"
+                      value={b.start}
+                      onChange={e => setBreakField(i, 'start', e.target.value)}
+                      className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-[#2C1A14] outline-none focus:border-[#789A99]"
+                    />
+                    <span className="text-xs text-[#A8928D]">—</span>
+                    <input
+                      type="time"
+                      value={b.end}
+                      onChange={e => setBreakField(i, 'end', e.target.value)}
+                      className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-[#2C1A14] outline-none focus:border-[#789A99]"
+                    />
+                    <button
+                      onClick={() => removeBreak(i)}
+                      className="w-7 h-7 rounded-xl bg-[#C05B5B]/10 flex items-center justify-center text-[#C05B5B] hover:bg-[#C05B5B]/20 transition-colors flex-shrink-0"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-[11px] text-[#A8928D] mt-2">
+              Перерви застосовуються до всіх робочих днів
+            </p>
+          </div>
         </div>
       </Section>
 

@@ -2,44 +2,45 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import { AuthPage } from '../pages/AuthPage';
 
-const masterEmail = process.env.E2E_MASTER_EMAIL;
-const masterPassword = process.env.E2E_MASTER_PASSWORD;
-const clientEmail = process.env.E2E_CLIENT_EMAIL;
-const clientPassword = process.env.E2E_CLIENT_PASSWORD;
-
-const hasMasterCreds = !!(masterEmail && masterPassword);
-const hasClientCreds = !!(clientEmail && clientPassword);
 const hasMasterState = fs.existsSync('playwright/.auth/master.json');
 const hasClientState = fs.existsSync('playwright/.auth/client.json');
 
-// ─────────────────────────────────────────────────────────────────────
-// 1. Login page renders
-// ─────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. Login page — UI rendering
+//    Bookit uses SMS OTP only. No email/password form exists.
+// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Сторінка логіну', () => {
-  test('відображає h1 "Вхід" та поля форми', async ({ page }) => {
+  test('відображає h1 та поля форми (phone OTP)', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.goto();
 
     await expect(auth.heading).toBeVisible();
     await expect(auth.heading).toContainText('Вхід');
-    await expect(auth.emailInput).toBeVisible();
-    await expect(auth.passwordInput).toBeVisible();
-    await expect(auth.submitButton).toBeVisible();
+    await expect(auth.phoneInput).toBeVisible();
+    await expect(auth.sendSmsButton).toBeVisible();
     await expect(auth.googleButton).toBeVisible();
   });
 
-  test('показує помилку при невірних credentials', async ({ page }) => {
+  test('показує помилку при неповному номері', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.goto();
 
-    await auth.login('wrong@test.com', 'wrongpassword');
-    await expect(auth.errorMessage).toBeVisible({ timeout: 10_000 });
+    // Try to send SMS with an obviously short phone number
+    await auth.phoneInput.fill('12');
+    await auth.sendSmsButton.click();
+
+    // Button should still be disabled (phone.length < 9 guard in component)
+    // OR an error message appears — either is acceptable
+    const disabled = await auth.sendSmsButton.isDisabled();
+    if (!disabled) {
+      await expect(auth.errorMessage).toBeVisible({ timeout: 5_000 });
+    }
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 2. Routing без авторизації
-// ─────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. Routing — захист маршрутів (без авторизації)
+// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Захист роутів (без авторизації)', () => {
   test('/dashboard → редірект на /login', async ({ page }) => {
     await page.goto('/dashboard');
@@ -52,44 +53,50 @@ test.describe('Захист роутів (без авторизації)', () =>
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 3. Master login flow
-// ─────────────────────────────────────────────────────────────────────
-test.describe('Логін майстра', () => {
-  test('UI логін → редірект на /dashboard', async ({ page }) => {
-    test.skip(!hasMasterCreds, 'Потрібні E2E_MASTER_EMAIL + E2E_MASTER_PASSWORD');
-    test.skip(!hasMasterState, 'Акаунт майстра не існує в Supabase — global.setup не зміг авторизуватись');
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. Master session routing
+// ─────────────────────────────────────────────────────────────────────────────
+test.describe('Логін майстра (storageState)', () => {
+  test('майстер → /dashboard', async ({ browser }) => {
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json — запусти global.setup');
 
-    const auth = new AuthPage(page);
-    await auth.goto();
-    await auth.login(masterEmail!, masterPassword!);
+    const context = await browser.newContext({
+      storageState: 'playwright/.auth/master.json',
+    });
+    const page = await context.newPage();
 
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
+
+    await context.close();
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 4. Client login flow
-// ─────────────────────────────────────────────────────────────────────
-test.describe('Логін клієнта', () => {
-  test('UI логін → редірект на /my/bookings', async ({ page }) => {
-    test.skip(!hasClientCreds, 'Потрібні E2E_CLIENT_EMAIL + E2E_CLIENT_PASSWORD');
-    test.skip(!hasClientState, 'Акаунт клієнта не існує в Supabase — global.setup не зміг авторизуватись');
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. Client session routing
+// ─────────────────────────────────────────────────────────────────────────────
+test.describe('Логін клієнта (storageState)', () => {
+  test('клієнт → /my/bookings', async ({ browser }) => {
+    test.skip(!hasClientState, 'Немає playwright/.auth/client.json — запусти global.setup');
 
-    const auth = new AuthPage(page);
-    await auth.goto();
-    await auth.login(clientEmail!, clientPassword!);
+    const context = await browser.newContext({
+      storageState: 'playwright/.auth/client.json',
+    });
+    const page = await context.newPage();
 
+    await page.goto('/my/bookings');
     await expect(page).toHaveURL(/\/my\/bookings/, { timeout: 15_000 });
+
+    await context.close();
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 5. Security: клієнт намагається зайти на /dashboard
-// ─────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. Security — перевірка ролей
+// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Безпека ролей', () => {
   test('клієнт на /dashboard → редірект на /my/bookings', async ({ browser }) => {
-    test.skip(!hasClientState, 'Немає playwright/.auth/client.json — запусти global.setup спочатку');
+    test.skip(!hasClientState, 'Немає playwright/.auth/client.json — запусти global.setup');
 
     const context = await browser.newContext({
       storageState: 'playwright/.auth/client.json',
@@ -102,8 +109,8 @@ test.describe('Безпека ролей', () => {
     await context.close();
   });
 
-  test('майстер в режимі клієнта на /dashboard → редірект на /dashboard', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json — запусти global.setup спочатку');
+  test('майстер на /dashboard → залишається на /dashboard', async ({ browser }) => {
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json — запусти global.setup');
 
     const context = await browser.newContext({
       storageState: 'playwright/.auth/master.json',

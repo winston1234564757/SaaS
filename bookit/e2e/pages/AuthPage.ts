@@ -1,34 +1,38 @@
 import { type Page, type Locator } from '@playwright/test';
 
+/**
+ * Page Object для /login та /register.
+ * Bookit використовує виключно SMS OTP + Google OAuth —
+ * email/password форми не існує.
+ */
 export class AuthPage {
   readonly page: Page;
-  readonly emailInput: Locator;
-  readonly passwordInput: Locator;
-  readonly submitButton: Locator;
-  readonly errorMessage: Locator;
+  readonly phoneInput: Locator;
+  readonly sendSmsButton: Locator;
   readonly googleButton: Locator;
   readonly heading: Locator;
+  readonly errorMessage: Locator;
+  readonly otpBox0: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.emailInput = page.locator('input[type="email"]');
-    this.passwordInput = page.locator('input[type="password"]');
-    this.submitButton = page.locator('button[type="submit"]');
-    this.errorMessage = page.locator('text=Невірний email або пароль');
-    this.googleButton = page.getByRole('button', { name: /Google/ });
-    this.heading = page.locator('h1').first();
+    this.phoneInput    = page.locator('input[type="tel"]');
+    this.sendSmsButton = page.getByRole('button', { name: /Отримати код/i });
+    this.googleButton  = page.getByRole('button', { name: /Google/i });
+    this.heading       = page.locator('h1').first();
+    // Error shown below phone input or in OTP step
+    this.errorMessage  = page.locator('p.text-\\[\\#C05B5B\\]').first();
+    this.otpBox0       = page.locator('input[inputmode="numeric"]').first();
   }
 
   async goto() {
     await this.page.goto('/login');
     await this.page.waitForLoadState('domcontentloaded');
-    // Switch to Email tab (default is Phone)
-    await this.page.getByRole('button', { name: 'Email' }).click();
   }
 
-  async login(email: string, password: string) {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
-    await this.submitButton.click();
+  /** Enters phone and clicks "Отримати код". */
+  async enterPhone(phone: string) {
+    await this.phoneInput.fill(phone);
+    await this.sendSmsButton.click();
   }
 }

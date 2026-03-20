@@ -1,8 +1,14 @@
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-/** Escapes user-supplied strings for Telegram HTML parse mode */
-function escHtml(s: string): string {
-  return s
+/**
+ * Escapes user-supplied values for Telegram HTML parse mode.
+ * Safely handles null, undefined, and any non-string type —
+ * converts to string first, returns '' for nullish values.
+ */
+function escHtml(s: unknown): string {
+  if (s === null || s === undefined) return '';
+  const str = typeof s === 'string' ? s : String(s);
+  return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -42,7 +48,7 @@ export function buildCancellationMessage(params: {
 
   let msg = `❌ <b>Скасування запису</b>\n\n`;
   msg += `👤 <b>${escHtml(clientName)}</b>\n`;
-  msg += `🗓 ${dateStr} о ${startTime.slice(0, 5)}\n`;
+  msg += `🗓 ${dateStr} о ${escHtml(startTime).slice(0, 5)}\n`;
   msg += `💅 ${escHtml(services)}\n\n`;
   msg += `<i>Клієнт скасував запис самостійно</i>`;
   return msg;
@@ -61,7 +67,7 @@ export function buildBookingMessage(params: {
 }): string {
   const { clientName, date, startTime, services, totalPrice, notes, products } = params;
   const d = new Date(date + 'T00:00:00');
-  const dateStr = `${d.getDate()}-го ${UA_MONTHS[d.getMonth()]} о ${startTime.slice(0, 5)}`;
+  const dateStr = `${d.getDate()}-го ${UA_MONTHS[d.getMonth()]} о ${escHtml(startTime).slice(0, 5)}`;
 
   let msg = `🔥 Новий запис from BookIt\n\n`;
   msg += `👤 Клієнт: ${escHtml(clientName)}\n`;

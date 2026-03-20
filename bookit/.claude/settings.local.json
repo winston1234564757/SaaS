@@ -107,7 +107,13 @@
       "Read(//c/Users/Vitossik/SaaS/bookit/$APPDATA/supabase/**)",
       "Read(//c/Users/Vitossik/SaaS/bookit/$APPDATA/**)",
       "Bash(cd C:/Users/Vitossik/SaaS/bookit && npx playwright test --reporter=list 2>&1)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(npm i:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm audit:*)",
+      "Bash(grep -rn \"working_hours\\\\|buffer_time_minutes\" C:UsersVitossikSaaSbookitsrc --include=*.ts --include=*.tsx -l)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d[k] for k in [''''scripts'''',''''jest'''',''''devDependencies''''] if k in d}, indent=2\\)\\)\")",
+      "Bash(npx vitest:*)"
     ]
   }
 }

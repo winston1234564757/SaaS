@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, Phone, MessageSquare } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
+import { claimMasterRole } from '@/app/(auth)/register/actions';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
 interface Props {
@@ -104,6 +106,19 @@ export function PhoneOtpForm({ mode }: Props) {
       return;
     }
 
+    // Register mode: claim master role before redirect
+    if (mode === 'register') {
+      const { error: roleError } = await claimMasterRole(
+        authData.session.user.id,
+        getCleanPhone(),
+      );
+      if (roleError) {
+        setLoading(false);
+        setError(roleError);
+        return;
+      }
+    }
+
     router.push(data.isNew ? '/dashboard/onboarding' : '/dashboard');
     router.refresh();
   }
@@ -173,10 +188,17 @@ export function PhoneOtpForm({ mode }: Props) {
 
   async function handleGoogleLogin() {
     setIsGoogleLoading(true);
+    const source = mode === 'register' ? '&source=master_register' : '';
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard${source}`,
+        queryParams: {
+          // Force Google account chooser on every sign-in.
+          // Without this, iOS PWA (WKWebView) caches the Google session cookie
+          // and silently reuses the last account, bypassing the chooser.
+          prompt: 'select_account',
+        },
       },
     });
   }
@@ -277,11 +299,11 @@ export function PhoneOtpForm({ mode }: Props) {
               <p className="text-center text-sm text-[#6B5750] mt-5">
                 {isLogin ? (
                   <>Ще не зареєстровані?{' '}
-                    <a href="/register" className="text-[#789A99] font-medium hover:underline">Створити акаунт</a>
+                    <Link href="/register" className="text-[#789A99] font-medium hover:underline">Створити акаунт</Link>
                   </>
                 ) : (
                   <>Вже є акаунт?{' '}
-                    <a href="/login" className="text-[#789A99] font-medium hover:underline">Увійти</a>
+                    <Link href="/login" className="text-[#789A99] font-medium hover:underline">Увійти</Link>
                   </>
                 )}
               </p>

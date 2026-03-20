@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { claimMasterRole } from '@/app/(auth)/register/actions';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
@@ -9,6 +10,8 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/my/bookings';
   // bookingId переданий через redirectTo для прив'язки запису після Google OAuth
   const bid = searchParams.get('bid');
+  // source=master_register → Google OAuth from /register page
+  const source = searchParams.get('source');
 
   if (!code) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -35,6 +38,14 @@ export async function GET(request: NextRequest) {
   if (error) {
     console.error('[auth/callback] code exchange error:', error.message);
     return NextResponse.redirect(new URL('/login?error=callback_error', request.url));
+  }
+
+  // Master registration via Google OAuth — claim master role before dashboard redirect
+  if (source === 'master_register') {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await claimMasterRole(user.id, user.user_metadata?.phone ?? '');
+    }
   }
 
   // Якщо прийшли з PostBookingAuth — прив'язуємо запис до щойно авторизованого юзера

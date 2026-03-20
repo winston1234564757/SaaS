@@ -1,48 +1,75 @@
+'use server';
+
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+// ── Zod schema ────────────────────────────────────────────────────────────────
+
+const bodySchema = z.object({
+  phone: z
+    .string({ error: 'Введіть номер телефону' })
+    .transform(v => v.replace(/\D/g, ''))
+    .pipe(z.string().regex(/^380\d{9}$/, 'Некоректний формат телефону (380XXXXXXXXX)')),
+  otp: z
+    .string({ error: 'Введіть код підтвердження' })
+    .trim()
+    .regex(/^\d{6}$/, 'Код має містити 6 цифр'),
+});
+
+// ── Handler ───────────────────────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
-  let body;
+  // 1. Parse & validate request body with Zod
+  let raw: unknown;
   try {
-    body = await req.json();
+    raw = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Невірний формат запиту' }, { status: 400 });
-  }
-  const rawPhone = body.phone;
-  const otp = body.otp;
-
-  if (!rawPhone || !otp) {
-    return NextResponse.json({ error: 'Невірні дані' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'Невірний формат запиту' }, { status: 400 });
   }
 
-  const cleanPhone = String(rawPhone).replace(/\D/g, '');
-  const cleanOtp = String(otp).trim();
+  const parsed = bodySchema.safeParse(raw);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? 'Невірні дані';
+    return NextResponse.json({ success: false, error: message }, { status: 400 });
+  }
 
+  const { phone: cleanPhone, otp: cleanOtp } = parsed.data;
   const supabaseAdmin = createAdminClient();
 
-  // Rate limit on verify: max 10 attempts per phone per 15 minutes
-  const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-  const { count: attemptCount } = await supabaseAdmin
-    .from('sms_verify_attempts')
-    .select('*', { count: 'exact', head: true })
-    .eq('phone', cleanPhone)
-    .gte('created_at', fifteenMinAgo);
+  // 2. Atomic rate-limit check via PostgreSQL RPC (fixes race condition).
+  //    check_and_log_sms_attempt() uses pg_advisory_xact_lock to serialize
+  //    concurrent requests for the same phone, preventing SELECT+INSERT race.
+  const { data: allowed, error: rpcError } = await supabaseAdmin.rpc(
+    'check_and_log_sms_attempt',
+    { p_phone: cleanPhone, max_attempts: 10, window_minutes: 15 }
+  );
 
-  if (attemptCount !== null && attemptCount >= 10) {
+  if (rpcError) {
+    console.error('[verify-sms] RPC error:', rpcError.message);
+    // Fail-closed: reject on DB error rather than allowing through
+    return NextResponse.json(
+      { success: false, error: 'Помилка перевірки. Спробуйте пізніше.' },
+      { status: 500 }
+    );
+  }
+
+  if (!allowed) {
     return NextResponse.json(
       { success: false, error: 'Забагато спроб. Зачекайте 15 хвилин.' },
       { status: 429 }
     );
   }
 
-  const { data: record, error } = await supabaseAdmin
+  // 3. Fetch OTP record
+  const { data: record, error: fetchError } = await supabaseAdmin
     .from('sms_otps')
     .select('otp, created_at')
     .eq('phone', cleanPhone)
     .single();
 
-  if (error) {
-    if (error.code === 'PGRST116') {
+  if (fetchError) {
+    if (fetchError.code === 'PGRST116') {
       return NextResponse.json(
         { success: false, error: 'Код не знайдено або він застарів. Запросіть новий.' },
         { status: 400 }
@@ -54,7 +81,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // OTP expiry: 10 minutes
+  // 4. OTP expiry: 10 minutes
   const otpAge = Date.now() - new Date(record.created_at).getTime();
   if (otpAge > 10 * 60 * 1000) {
     await supabaseAdmin.from('sms_otps').delete().eq('phone', cleanPhone);
@@ -64,36 +91,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 5. OTP match check
   if (record.otp !== cleanOtp) {
-    // Log failed attempt (for rate limiting)
-    await supabaseAdmin.from('sms_verify_attempts').insert({ phone: cleanPhone });
     return NextResponse.json(
       { success: false, error: 'Невірний код. Спробуйте ще раз.' },
       { status: 400 }
     );
   }
 
-  // Correct OTP — delete it and clear attempt log
+  // 6. Correct OTP — clean up OTP + rate-limit log
   await Promise.all([
     supabaseAdmin.from('sms_otps').delete().eq('phone', cleanPhone),
     supabaseAdmin.from('sms_verify_attempts').delete().eq('phone', cleanPhone),
   ]);
 
+  // 7. Create user if new (idempotent — ignores conflict)
   const virtualEmail = `${cleanPhone}@bookit.app`;
-
   let isNew = false;
+
   const { error: createError } = await supabaseAdmin.auth.admin.createUser({
     email: virtualEmail,
-    password: crypto.randomUUID(), // throwaway — never used or returned
+    password: crypto.randomUUID(), // throwaway — never returned or used
     email_confirm: true,
     user_metadata: { phone: cleanPhone },
   });
+  if (!createError) isNew = true;
 
-  if (!createError) {
-    isNew = true;
-  }
-
-  // Generate a one-time magic link token — never expose the password
+  // 8. Generate one-time magiclink token — never expose the password
   const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
     type: 'magiclink',
     email: virtualEmail,

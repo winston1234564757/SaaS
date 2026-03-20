@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -12,39 +13,40 @@ export interface PortfolioPhoto {
   sortOrder: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToPhoto(p: any): PortfolioPhoto {
+  return {
+    id: p.id as string,
+    url: p.url as string,
+    storagePath: p.storage_path as string,
+    caption: (p.caption as string) || null,
+    sortOrder: p.sort_order as number,
+  };
+}
+
 export function usePortfolio() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const supabase = createClient();
+  const qc = useQueryClient();
+  const key = ['portfolio', masterId] as const;
 
-  const [photos, setPhotos] = useState<PortfolioPhoto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
 
-  const fetchPhotos = useCallback(async () => {
-    if (!masterId) return;
-    const { data } = await supabase
-      .from('portfolio_photos')
-      .select('id, url, storage_path, caption, sort_order')
-      .eq('master_id', masterId)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: true });
-
-    setPhotos(
-      (data ?? []).map((p: any) => ({
-        id: p.id as string,
-        url: p.url as string,
-        storagePath: p.storage_path as string,
-        caption: (p.caption as string) || null,
-        sortOrder: p.sort_order as number,
-      }))
-    );
-    setIsLoading(false);
-  }, [masterId]);
-
-  useEffect(() => {
-    fetchPhotos();
-  }, [fetchPhotos]);
+  const { data: photos = [], isLoading } = useQuery<PortfolioPhoto[]>({
+    queryKey: key,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('portfolio_photos')
+        .select('id, url, storage_path, caption, sort_order')
+        .eq('master_id', masterId!)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map(rowToPhoto);
+    },
+    enabled: !!masterId,
+  });
 
   async function uploadPhoto(file: File): Promise<void> {
     if (!masterId) return;
@@ -54,7 +56,9 @@ export function usePortfolio() {
     if (!user) { setIsUploading(false); return; }
 
     const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const bytes = crypto.getRandomValues(new Uint8Array(6));
+    const uniqueId = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    const path = `${user.id}/${Date.now()}-${uniqueId}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from('portfolios')
@@ -75,29 +79,39 @@ export function usePortfolio() {
       sort_order: nextOrder,
     });
 
-    await fetchPhotos();
+    await qc.invalidateQueries({ queryKey: key });
     setIsUploading(false);
   }
 
-  async function deletePhoto(id: string, storagePath: string): Promise<void> {
-    await Promise.all([
-      supabase.from('portfolio_photos').delete().eq('id', id),
-      supabase.storage.from('portfolios').remove([storagePath]),
-    ]);
-    setPhotos(prev => prev.filter(p => p.id !== id));
-  }
+  const deleteMutation = useMutation({
+    mutationFn: async ({ id, storagePath }: { id: string; storagePath: string }) => {
+      await Promise.all([
+        supabase.from('portfolio_photos').delete().eq('id', id),
+        supabase.storage.from('portfolios').remove([storagePath]),
+      ]);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+  });
 
-  async function updateCaption(id: string, caption: string): Promise<void> {
-    await supabase.from('portfolio_photos').update({ caption: caption || null }).eq('id', id);
-    setPhotos(prev => prev.map(p => p.id === id ? { ...p, caption: caption || null } : p));
-  }
+  const updateCaptionMutation = useMutation({
+    mutationFn: async ({ id, caption }: { id: string; caption: string }) => {
+      const { error } = await supabase
+        .from('portfolio_photos')
+        .update({ caption: caption || null })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+  });
 
   return {
     photos,
     isLoading,
     isUploading,
     uploadPhoto,
-    deletePhoto,
-    updateCaption,
+    deletePhoto: (id: string, storagePath: string) =>
+      deleteMutation.mutateAsync({ id, storagePath }),
+    updateCaption: (id: string, caption: string) =>
+      updateCaptionMutation.mutateAsync({ id, caption }),
   };
 }

@@ -54,6 +54,9 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/my/bookings&bid=${bookingId}`,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     });
   }

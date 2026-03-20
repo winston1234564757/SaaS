@@ -55,25 +55,21 @@ export function MasterProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     mountedRef.current = true;
 
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!mountedRef.current) return;
-      setUser(user);
-      if (user) await fetchProfile(user.id);
-      if (mountedRef.current) setIsLoading(false);
-    });
-
+    // onAuthStateChange fires INITIAL_SESSION synchronously on subscribe,
+    // so we get the session in the first event without a separate getUser() call.
+    // Using only this handler avoids the double-fetch race between getUser() and
+    // INITIAL_SESSION that caused isLoading to toggle and hooks to re-enable.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mountedRef.current) return;
       const u = session?.user ?? null;
       setUser(u);
       if (u) {
         await fetchProfile(u.id);
-        // Magic link / OAuth: hydrate server components with the new session cookie
-        // router.refresh() is handled by dedicated /auth/magic callback page
       } else {
         setProfile(null);
         setMasterProfile(null);
       }
+      if (mountedRef.current) setIsLoading(false);
     });
 
     return () => {

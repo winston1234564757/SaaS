@@ -13,7 +13,7 @@ async function getMaster(slug: string) {
     .select(`
       id, slug, bio, city, address, rating, rating_count,
       subscription_tier, instagram_url, telegram_url, categories,
-      mood_theme, avatar_emoji, bookings_this_month, pricing_rules,
+      mood_theme, avatar_emoji, pricing_rules,
       profiles!inner ( full_name, avatar_url ),
       services ( id, name, emoji, category, price, duration_minutes, is_popular, is_active, sort_order )
     `)
@@ -54,8 +54,13 @@ export default async function MasterPublicPage(
 
   const supabase = await createClient();
 
-  // Паралельно завантажуємо products, reviews, schedule, portfolio
-  const [productsRes, reviewsRes, scheduleRes, portfolioRes] = await Promise.all([
+  // Межа місячного ліміту — рахуємо динамічно з bookings (не з лічильника bookings_this_month)
+  const monthStart = new Date(
+    new Date().getFullYear(), new Date().getMonth(), 1
+  ).toISOString();
+
+  // Паралельно завантажуємо products, reviews, schedule, portfolio, monthly count
+  const [productsRes, reviewsRes, scheduleRes, portfolioRes, monthlyCountRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price, description, emoji, stock_quantity, stock_unlimited')
@@ -81,6 +86,12 @@ export default async function MasterPublicPage(
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true })
       .limit(30),
+    supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('master_id', data.id)
+      .gte('created_at', monthStart)
+      .neq('status', 'cancelled'),
   ]);
 
   const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
@@ -150,7 +161,7 @@ export default async function MasterPublicPage(
     avatarEmoji: (data.avatar_emoji as string) || '💅',
     avatarUrl: profile.avatar_url ?? null,
     schedule,
-    bookingsThisMonth: (data.bookings_this_month as number) ?? 0,
+    bookingsThisMonth: monthlyCountRes.count ?? 0,
     pricingRules: (data.pricing_rules as Record<string, any>) ?? {},
   };
 
