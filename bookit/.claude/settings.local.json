@@ -113,7 +113,9 @@
       "Bash(npm audit:*)",
       "Bash(grep -rn \"working_hours\\\\|buffer_time_minutes\" C:UsersVitossikSaaSbookitsrc --include=*.ts --include=*.tsx -l)",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d[k] for k in [''''scripts'''',''''jest'''',''''devDependencies''''] if k in d}, indent=2\\)\\)\")",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(grep -rn \"workingHours\\\\|working_hours\\\\|BookingFlow\" C:UsersVitossikSaaSbookitsrcapp[slug])",
+      "Bash(npx playwright:*)"
     ]
   }
 }

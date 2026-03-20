@@ -66,6 +66,7 @@ interface Master {
   schedule?: { day: string; isWorking: boolean; startTime: string; endTime: string }[];
   bookingsThisMonth?: number;
   pricingRules?: Record<string, any>;
+  workingHours?: Record<string, unknown> | null;
 }
 
 function formatDuration(min: number) {
@@ -680,6 +681,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
         bookingsThisMonth={master.bookingsThisMonth ?? 0}
         subscriptionTier={master.tier}
         pricingRules={master.pricingRules}
+        workingHours={master.workingHours as import('@/types/database').WorkingHoursConfig | null}
       />
 
       {/* Lightbox */}

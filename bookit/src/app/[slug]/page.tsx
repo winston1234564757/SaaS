@@ -13,9 +13,9 @@ async function getMaster(slug: string) {
     .select(`
       id, slug, bio, city, address, rating, rating_count,
       subscription_tier, instagram_url, telegram_url, categories,
-      mood_theme, avatar_emoji, pricing_rules,
+      mood_theme, avatar_emoji, pricing_rules, working_hours,
       profiles!inner ( full_name, avatar_url ),
-      services ( id, name, emoji, category, price, duration_minutes, is_popular, is_active, sort_order )
+      services ( id, name, emoji, category, price, duration_minutes, is_popular, is_active, sort_order, description )
     `)
     .eq('slug', slug);
 
@@ -107,6 +107,7 @@ export default async function MasterPublicPage(
       price: Number(s.price),
       duration: s.duration_minutes as number,
       popular: s.is_popular as boolean,
+      description: (s.description as string) || null,
     }));
 
   const products = (productsRes.data ?? []).map((p: any) => ({
@@ -163,6 +164,7 @@ export default async function MasterPublicPage(
     schedule,
     bookingsThisMonth: monthlyCountRes.count ?? 0,
     pricingRules: (data.pricing_rules as Record<string, any>) ?? {},
+    workingHours: (data.working_hours as Record<string, unknown>) ?? null,
   };
 
   return <PublicMasterPage master={master} />;

@@ -1,27 +1,25 @@
 'use client';
 
 /**
- * BookingWizard — unified 5-step booking flow.
+ * BookingWizard — unified 4-step booking flow.
  *
- * Steps: services → date → time → products* → details → success
- * (* products step is skipped when master has no in-stock products)
- *
- * Used by:
- *  - BookingFlow (public client booking, mode='client')
- *  - ManualBookingForm (master creates booking manually, mode='master')
+ * Steps: services → datetime → products* → details → success
+ * (* products step skipped when master has no in-stock products)
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X, ChevronLeft, Check, Clock, User, Phone, MessageSquare,
-  ShoppingBag, Plus, Minus,
+  X, ChevronLeft, ChevronRight, Check, Clock, User, Phone,
+  MessageSquare, ShoppingBag, Plus, Minus,
 } from 'lucide-react';
+import { addMinutes, parse as parseFns, format as formatFns, addDays } from 'date-fns';
 import { createClient } from '@/lib/supabase/client';
 import { createBooking } from '@/lib/actions/createBooking';
 import { getAutoSuggestProductIds } from '@/lib/supabase/hooks/useProductLinks';
 import {
-  generateAvailableSlots, scoreSlots, buildSlotRenderItems, type TimeRange,
+  generateAvailableSlots, scoreSlots, buildSlotRenderItems,
+  toMins as slotToMins, fromMins as slotFromMins, type TimeRange,
 } from '@/lib/utils/smartSlots';
 import { applyDynamicPricing } from '@/lib/utils/dynamicPricing';
 import { buildOffDaySet } from '@/lib/utils/bookingEngine';
@@ -39,6 +37,7 @@ export interface WizardService {
   popular: boolean;
   emoji: string;
   category: string;
+  description?: string | null;
 }
 
 export interface WizardProduct {
@@ -59,24 +58,17 @@ export interface BookingWizardProps {
   workingHours?: WorkingHoursConfig | null;
   services: WizardService[];
   products?: WizardProduct[];
-  /** Pre-select services when wizard opens */
   initialServices?: WizardService[];
-  /**
-   * 'client' — public booking flow: loyalty, push prompt, post-booking auth
-   * 'master' — manual booking: duration override, manual discount, no client auth
-   */
   mode: 'client' | 'master';
-  // client-only
   bookingsThisMonth?: number;
   subscriptionTier?: string;
   pricingRules?: Record<string, unknown>;
-  // master-only — called after successful save (use for query invalidation)
   onSuccess?: () => void;
 }
 
-// ── Internal types ────────────────────────────────────────────────────────────
+// ── Internal ──────────────────────────────────────────────────────────────────
 
-type WizardStep = 'services' | 'date' | 'time' | 'products' | 'details' | 'success';
+type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';
 
 interface CartItem { product: WizardProduct; quantity: number; }
 
@@ -93,15 +85,15 @@ interface ScheduleStore {
 
 // ── Constants & helpers ───────────────────────────────────────────────────────
 
-const DOW      = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-const DAY_S    = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-const MONTH_S  = ['січ', 'лют', 'бер', 'квіт', 'трав', 'черв', 'лип', 'серп', 'вер', 'жовт', 'лист', 'груд'];
+const DOW     = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const DAY_S   = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+const MONTH_S = ['січ', 'лют', 'бер', 'квіт', 'трав', 'черв', 'лип', 'серп', 'вер', 'жовт', 'лист', 'груд'];
 
 function toISO(d: Date) { return d.toISOString().slice(0, 10); }
 function getDays(n = 30): Date[] {
-  const today = new Date();
+  const t = new Date();
   return Array.from({ length: n }, (_, i) => {
-    const d = new Date(today); d.setDate(today.getDate() + i); return d;
+    const d = new Date(t); d.setDate(t.getDate() + i); return d;
   });
 }
 function fmt(n: number) { return n.toLocaleString('uk-UA') + ' ₴'; }
@@ -110,16 +102,26 @@ function fmtDur(m: number) {
   return h ? (r ? `${h}год ${r}хв` : `${h}год`) : `${m}хв`;
 }
 
-// ── Slide variants ─────────────────────────────────────────────────────────────
+// ── Step flow ─────────────────────────────────────────────────────────────────
+
+const ALL_STEPS: WizardStep[] = ['services', 'datetime', 'products', 'details', 'success'];
+const PROGRESS: WizardStep[]  = ['services', 'datetime', 'products', 'details'];
+
+const STEP_TITLE: Record<WizardStep, string | ((m: string) => string)> = {
+  services: 'Обери послуги',
+  datetime: 'Дата та час',
+  products: 'Додати товари',
+  details:  (m) => m === 'master' ? 'Деталі запису' : 'Твої контакти',
+  success:  '',
+};
+
+// ── Slide animation variants ──────────────────────────────────────────────────
 
 const slide = {
   enter:  (d: number) => ({ x: d > 0 ? 52 : -52, opacity: 0 }),
   center: { x: 0, opacity: 1 },
   exit:   (d: number) => ({ x: d > 0 ? -52 : 52, opacity: 0 }),
 };
-
-const ALL_STEPS: WizardStep[] = ['services', 'date', 'time', 'products', 'details', 'success'];
-const PROGRESS: WizardStep[] = ['services', 'date', 'time', 'products', 'details'];
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -130,14 +132,9 @@ function StepProgress({ step, hasProducts }: { step: WizardStep; hasProducts: bo
   return (
     <div className="flex gap-1.5 mb-5">
       {visible.map((s, i) => (
-        <div
-          key={s}
-          className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-            i < idx  ? 'bg-[#789A99]' :
-            i === idx ? 'bg-[#789A99]' :
-                        'bg-[#E8D5CF]'
-          }`}
-        />
+        <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+          i <= idx ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'
+        }`} />
       ))}
     </div>
   );
@@ -177,11 +174,11 @@ function PushPrompt() {
         <p className="text-[11px] text-[#A8928D] mt-0.5">Дізнайся першою, коли майстер підтвердить запис</p>
         <div className="flex gap-2 mt-2">
           <button onClick={handleAllow}
-            className="px-3 py-1 rounded-lg bg-[#789A99] text-white text-[11px] font-semibold hover:bg-[#5C7E7D] transition-colors">
+            className="px-3 py-1 rounded-lg bg-[#789A99] text-white text-[11px] font-semibold">
             Увімкнути
           </button>
           <button onClick={() => { setVisible(false); localStorage.setItem(PUSH_KEY, '1'); }}
-            className="px-3 py-1 text-[#A8928D] text-[11px] hover:text-[#6B5750] transition-colors">
+            className="px-3 py-1 text-[#A8928D] text-[11px]">
             Ні, дякую
           </button>
         </div>
@@ -189,17 +186,6 @@ function PushPrompt() {
     </motion.div>
   );
 }
-
-// ── STEP TITLES ───────────────────────────────────────────────────────────────
-
-const STEP_TITLE: Record<WizardStep, string | ((mode: string) => string)> = {
-  services: 'Обери послуги',
-  date:     'Обери дату',
-  time:     'Обери час',
-  products: 'Додати товари',
-  details:  (m: string) => m === 'master' ? 'Деталі запису' : 'Твої контакти',
-  success:  '',
-};
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -209,6 +195,7 @@ export function BookingWizard({
   mode, bookingsThisMonth = 0, subscriptionTier = 'starter', pricingRules,
   onSuccess,
 }: BookingWizardProps) {
+
   // ── Step navigation ──────────────────────────────────────────────────────────
   const [step, setStep]           = useState<WizardStep>('services');
   const [direction, setDirection] = useState(1);
@@ -221,18 +208,14 @@ export function BookingWizard({
   );
 
   function go(next: WizardStep, dir: 1 | -1 = 1) {
-    setDirection(dir);
-    setStep(next);
-  }
-  function goNext() {
-    const idx = visibleSteps.indexOf(step);
-    if (idx < visibleSteps.length - 1) go(visibleSteps[idx + 1], 1);
+    setDirection(dir); setStep(next);
   }
   function goBack() {
     const idx = visibleSteps.indexOf(step);
     if (idx > 0) go(visibleSteps[idx - 1], -1);
     else { onClose(); setTimeout(() => go('services'), 350); }
   }
+  function closeWizard() { onClose(); setTimeout(() => go('services'), 350); }
 
   // ── Booking state ────────────────────────────────────────────────────────────
   const [selectedServices, setSelectedServices] = useState<WizardService[]>([]);
@@ -243,9 +226,7 @@ export function BookingWizard({
   const [clientPhone, setClientPhone]           = useState('');
   const [clientEmail, setClientEmail]           = useState('');
   const [clientNotes, setClientNotes]           = useState('');
-  /** Master mode: manual discount */
   const [discountPercent, setDiscountPercent]   = useState(0);
-  /** Master mode: override total session duration */
   const [durationOverride, setDurationOverride] = useState<number | null>(null);
 
   // ── Client-mode extras ────────────────────────────────────────────────────────
@@ -263,12 +244,13 @@ export function BookingWizard({
   const [suggestedProductIds, setSuggestedProductIds] = useState<Set<string>>(new Set());
 
   // ── Submit state ──────────────────────────────────────────────────────────────
-  const [saving, setSaving]     = useState(false);
+  const [saving, setSaving]       = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  const days = useMemo(() => getDays(30), []);
+  // ── Refs ───────────────────────────────────────────────────────────────────────
+  const dateStripRef = useRef<HTMLDivElement>(null);
 
-  // ── Starter limit ─────────────────────────────────────────────────────────────
+  const days = useMemo(() => getDays(30), []);
   const isAtLimit = mode === 'client' && subscriptionTier === 'starter' && bookingsThisMonth >= 30;
 
   // ── Derived totals ────────────────────────────────────────────────────────────
@@ -297,7 +279,6 @@ export function BookingWizard({
   // ── Reset + fetch schedule on open ───────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
-    // Reset all state
     go('services', 1);
     setSelectedServices(initialServices ?? []);
     setCart([]);
@@ -369,7 +350,6 @@ export function BookingWizard({
       setScheduleLoading(false);
     });
 
-    // Client mode: auto-fill profile + fetch loyalty
     if (mode === 'client') {
       ensureClientProfile().then(({ userId, name, phone, email }) => {
         if (!userId) return;
@@ -377,7 +357,6 @@ export function BookingWizard({
         if (name)  setClientName(name);
         if (phone) setClientPhone(phone);
         if (email) setClientEmail(email);
-
         const sb = createClient();
         Promise.all([
           sb.from('client_master_relations').select('total_visits').eq('client_id', userId).eq('master_id', masterId).maybeSingle(),
@@ -397,7 +376,7 @@ export function BookingWizard({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  // ── Auto-suggest products when services change ────────────────────────────────
+  // ── Auto-suggest products ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!selectedServices.length || !availableProducts.length) {
       setSuggestedProductIds(new Set()); return;
@@ -431,11 +410,11 @@ export function BookingWizard({
     const workEnd   = exc?.end_time?.slice(0, 5)   ?? tpl.end_time.slice(0, 5);
     const raw = generateAvailableSlots({
       workStart, workEnd,
-      bookings:         scheduleStore.bookingsByDate[dateStr] ?? [],
-      breaks:           selectedDayBreaks,
-      bufferMinutes:    workingHours?.buffer_time_minutes ?? 0,
+      bookings:          scheduleStore.bookingsByDate[dateStr] ?? [],
+      breaks:            selectedDayBreaks,
+      bufferMinutes:     workingHours?.buffer_time_minutes ?? 0,
       requestedDuration: effectiveDuration,
-      stepMinutes:      15,
+      stepMinutes:       15,
     });
     return scoreSlots(raw, { clientHistoryTimes });
   }, [selectedDate, scheduleStore, offDayDates, effectiveDuration, selectedDayBreaks, workingHours, clientHistoryTimes]);
@@ -459,16 +438,39 @@ export function BookingWizard({
       ];
       const s = generateAvailableSlots({
         workStart, workEnd,
-        bookings:         scheduleStore.bookingsByDate[dateStr] ?? [],
-        breaks:           dayBreaks,
-        bufferMinutes:    workingHours?.buffer_time_minutes ?? 0,
+        bookings:          scheduleStore.bookingsByDate[dateStr] ?? [],
+        breaks:            dayBreaks,
+        bufferMinutes:     workingHours?.buffer_time_minutes ?? 0,
         requestedDuration: effectiveDuration,
-        stepMinutes:      15,
+        stepMinutes:       15,
       });
       if (!s.some(sl => sl.available)) result.add(dateStr);
     }
     return result;
   }, [scheduleStore, offDayDates, effectiveDuration, days, workingHours]);
+
+  // ── Auto-focus: select first available day once pre-calc is done ─────────
+  // Depends on fullyBookedDates (fires after month pre-calc finishes).
+  // Only auto-selects when selectedDate is still null (never overrides user).
+  useEffect(() => {
+    if (step !== 'datetime' || !scheduleStore) return;
+    if (selectedDate !== null) return;
+
+    const firstAvailable = days.find(d => {
+      const str = toISO(d);
+      return !offDayDates.has(str) && !fullyBookedDates.has(str);
+    });
+
+    if (firstAvailable) setSelectedDate(firstAvailable);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, scheduleStore, fullyBookedDates]);
+
+  // ── Scroll date strip whenever selectedDate changes ───────────────────────
+  useEffect(() => {
+    if (!selectedDate) return;
+    const el = document.getElementById(`day-${toISO(selectedDate)}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [selectedDate]);
 
   // ── Cart helpers ──────────────────────────────────────────────────────────────
   function addToCart(p: WizardProduct) {
@@ -498,30 +500,23 @@ export function BookingWizard({
     if (!selectedDate || !selectedTime) return;
     setSaving(true);
     setSaveError('');
-
     const result = await createBooking({
       masterId,
-      clientName:   clientName.trim(),
-      clientPhone:  clientPhone.trim(),
-      clientEmail:  mode === 'client' ? (clientEmail.trim().toLowerCase() || null) : null,
-      clientId:     mode === 'client' ? (clientUserId || null) : null,
-      date:         toISO(selectedDate),
-      startTime:    selectedTime,
-      services:     selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
-      products:     cart.map(ci => ({ id: ci.product.id, name: ci.product.name, price: ci.product.price, quantity: ci.quantity })),
-      notes:        clientNotes.trim() || null,
-      source:       mode === 'client' ? 'online' : 'manual',
-      discountPercent: mode === 'client' ? (loyaltyDiscount?.percent ?? 0) : discountPercent,
+      clientName:              clientName.trim(),
+      clientPhone:             clientPhone.trim(),
+      clientEmail:             mode === 'client' ? (clientEmail.trim().toLowerCase() || null) : null,
+      clientId:                mode === 'client' ? (clientUserId || null) : null,
+      date:                    toISO(selectedDate),
+      startTime:               selectedTime,
+      services:                selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
+      products:                cart.map(ci => ({ id: ci.product.id, name: ci.product.name, price: ci.product.price, quantity: ci.quantity })),
+      notes:                   clientNotes.trim() || null,
+      source:                  mode === 'client' ? 'online' : 'manual',
+      discountPercent:         mode === 'client' ? (loyaltyDiscount?.percent ?? 0) : discountPercent,
       durationOverrideMinutes: mode === 'master' ? (durationOverride ?? undefined) : undefined,
     });
-
     setSaving(false);
-
-    if (result.error) {
-      setSaveError(result.error);
-      return;
-    }
-
+    if (result.error) { setSaveError(result.error); return; }
     if (mode === 'client' && result.bookingId) {
       setCreatedBookingId(result.bookingId);
       notifyMasterOnBooking({
@@ -533,23 +528,15 @@ export function BookingWizard({
         products: cart.length > 0 ? cart.map(ci => ({ name: ci.product.name, quantity: ci.quantity })) : undefined,
       }).catch(() => {});
     }
-
-    if (mode === 'master') {
-      onSuccess?.();
-      onClose();
-      return;
-    }
-
+    if (mode === 'master') { onSuccess?.(); onClose(); return; }
     go('success', 1);
   }
 
   // ── Computed flags ────────────────────────────────────────────────────────────
-  const canGoToDate    = selectedServices.length > 0;
-  const canGoToTime    = !!selectedDate;
-  const canGoToDetails = !!selectedTime;
-  const canSubmit      = clientName.trim().length >= 2 && clientPhone.trim().length >= 9;
+  const canGoToDatetime    = selectedServices.length > 0;
+  const canProceedDatetime = !!selectedDate && !!selectedTime;
+  const canSubmit          = clientName.trim().length >= 2 && clientPhone.trim().length >= 9;
 
-  // ── Sorted products: suggested first ─────────────────────────────────────────
   const sortedProducts = useMemo(() => {
     if (!suggestedProductIds.size) return availableProducts;
     return [
@@ -558,13 +545,6 @@ export function BookingWizard({
     ];
   }, [availableProducts, suggestedProductIds]);
 
-  // ── Step title ────────────────────────────────────────────────────────────────
-  function getTitle(s: WizardStep) {
-    const t = STEP_TITLE[s];
-    return typeof t === 'function' ? t(mode) : t;
-  }
-
-  // ── Categories for service step ───────────────────────────────────────────────
   const categories = useMemo(() => [...new Set(services.map(s => s.category))], [services]);
 
   if (!isOpen) return null;
@@ -579,7 +559,7 @@ export function BookingWizard({
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
             className="fixed inset-0 bg-[#2C1A14]/25 backdrop-blur-sm z-40"
-            onClick={() => { onClose(); setTimeout(() => go('services'), 350); }}
+            onClick={closeWizard}
           />
 
           {/* Panel */}
@@ -596,26 +576,22 @@ export function BookingWizard({
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-2 flex-shrink-0">
-              <button
-                onClick={goBack}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors"
-              >
+              <button onClick={goBack}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
                 <ChevronLeft size={16} />
               </button>
-
               <div className="text-center">
                 {step !== 'success' && (
                   <>
                     {masterName && <p className="text-[10px] text-[#A8928D]">{masterName}</p>}
-                    <p className="text-sm font-semibold text-[#2C1A14]">{getTitle(step)}</p>
+                    <p className="text-sm font-semibold text-[#2C1A14]">
+                      {(() => { const t = STEP_TITLE[step]; return typeof t === 'function' ? t(mode) : t; })()}
+                    </p>
                   </>
                 )}
               </div>
-
-              <button
-                onClick={() => { onClose(); setTimeout(() => go('services'), 350); }}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors"
-              >
+              <button onClick={closeWizard}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
                 <X size={14} />
               </button>
             </div>
@@ -623,7 +599,7 @@ export function BookingWizard({
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-8">
 
-              {/* Starter limit wall */}
+              {/* Starter limit */}
               {isAtLimit && step !== 'success' && (
                 <div className="flex flex-col items-center text-center py-10 gap-4">
                   <div className="w-16 h-16 rounded-full bg-[#D4935A]/12 flex items-center justify-center text-3xl">🔒</div>
@@ -632,7 +608,7 @@ export function BookingWizard({
                     Майстер досяг ліміту 30 записів на місяць.<br />
                     Нові записи будуть доступні з наступного місяця.
                   </p>
-                  <button onClick={() => { onClose(); setTimeout(() => go('services'), 350); }}
+                  <button onClick={closeWizard}
                     className="px-6 py-3 rounded-2xl bg-[#789A99] text-white text-sm font-semibold">
                     Зрозуміло
                   </button>
@@ -645,7 +621,7 @@ export function BookingWizard({
 
                   <AnimatePresence mode="wait" custom={direction}>
 
-                    {/* ── STEP 1: SERVICES ── */}
+                    {/* ─────────────── STEP 1: SERVICES ─────────────── */}
                     {step === 'services' && (
                       <motion.div key="services" custom={direction} variants={slide}
                         initial="enter" animate="center" exit="exit"
@@ -654,28 +630,64 @@ export function BookingWizard({
                         {categories.map(cat => (
                           <div key={cat} className="mb-5">
                             <p className="text-[11px] font-bold text-[#A8928D] uppercase tracking-widest mb-2">{cat}</p>
-                            <div className="flex flex-col gap-2">
+                            <div className="space-y-2">
                               {services.filter(s => s.category === cat).map(svc => {
                                 const sel = selectedServices.some(s => s.id === svc.id);
                                 return (
-                                  <button key={svc.id} onClick={() => toggleService(svc)}
-                                    className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-all ${
-                                      sel ? 'bg-[#789A99]/10 border-[#789A99]/40' : 'bg-white/60 border-white/80 hover:border-[#789A99]/25 hover:bg-white/80'
-                                    }`}>
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                                      style={{ background: 'rgba(255,210,194,0.4)' }}>
+                                  <button
+                                    key={svc.id}
+                                    onClick={() => toggleService(svc)}
+                                    className={`flex items-start gap-3 px-4 pt-4 pb-4 rounded-2xl border text-left w-full transition-colors ${
+                                      sel
+                                        ? 'bg-[#789A99]/10 border-[#789A99]/40'
+                                        : 'bg-white/60 border-white/80 hover:border-[#789A99]/25 hover:bg-white/80'
+                                    }`}
+                                  >
+                                    <div
+                                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0 mt-0.5"
+                                      style={{ background: 'rgba(255,210,194,0.4)' }}
+                                    >
                                       {svc.emoji}
                                     </div>
+
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-semibold text-[#2C1A14]">{svc.name}</p>
                                       <p className="text-xs text-[#A8928D] flex items-center gap-1 mt-0.5">
                                         <Clock size={10} /> {fmtDur(svc.duration)}
                                       </p>
+
+                                      {/* ── CSS grid accordion (jump-free, no JS measurement) ── */}
+                                      {svc.description && (
+                                        <div
+                                          style={{
+                                            display: 'grid',
+                                            gridTemplateRows: sel ? '1fr' : '0fr',
+                                            transition: 'grid-template-rows 0.9s ease',
+                                          }}
+                                        >
+                                          <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                                            <div className="pt-2 pr-2 pb-0.5">
+                                              <p
+                                                className="text-xs text-[#6B5750] leading-relaxed"
+                                                style={{
+                                                  opacity: sel ? 1 : 0,
+                                                  transition: 'opacity 0.3s ease 0.3s',
+                                                }}
+                                              >
+                                                {svc.description}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
-                                    <div className="flex items-center gap-2 flex-shrink-0">
+
+                                    <div className="flex items-start gap-2 flex-shrink-0 mt-0.5">
                                       <div className="text-right">
                                         <p className="text-sm font-bold text-[#2C1A14]">{fmt(svc.price)}</p>
-                                        {svc.popular && <span className="text-[9px] font-semibold text-[#789A99]">популярне</span>}
+                                        {svc.popular && (
+                                          <span className="text-[9px] font-semibold text-[#789A99]">популярне</span>
+                                        )}
                                       </div>
                                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                                         sel ? 'bg-[#789A99] border-[#789A99]' : 'border-[#C8B8B2] bg-white/60'
@@ -690,65 +702,96 @@ export function BookingWizard({
                           </div>
                         ))}
 
-                        {/* Master: duration override */}
-                        {mode === 'master' && selectedServices.length > 0 && (
-                          <div className="mb-5">
-                            <label className="text-xs font-medium text-[#6B5750] mb-1.5 flex items-center gap-1.5 block">
-                              <Clock size={11} className="text-[#789A99]" />
-                              Нестандартна тривалість, хв
-                              <span className="font-normal text-[#A8928D]">(необов'язково)</span>
-                            </label>
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="number" min={5} max={480} step={5}
-                                value={durationOverride ?? ''}
-                                onChange={e => {
-                                  const v = parseInt(e.target.value, 10);
-                                  setDurationOverride(isNaN(v) ? null : Math.min(480, Math.max(5, v)));
-                                  setSelectedTime(null);
+                        {/* Master: duration override — CSS grid accordion, no jump */}
+                        {mode === 'master' && (
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateRows: selectedServices.length > 0 ? '1fr' : '0fr',
+                              transition: 'grid-template-rows 0.28s ease',
+                            }}
+                          >
+                            <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                              <div
+                                className="mb-5"
+                                style={{
+                                  opacity: selectedServices.length > 0 ? 1 : 0,
+                                  transition: 'opacity 0.2s ease 0.05s',
                                 }}
-                                placeholder={String(totalDuration)}
-                                className="w-24 px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20"
-                              />
-                              {durationOverride !== null && (
-                                <button onClick={() => { setDurationOverride(null); setSelectedTime(null); }}
-                                  className="text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors">
-                                  Скинути
-                                </button>
-                              )}
-                              <span className="text-xs text-[#A8928D]">
-                                {durationOverride !== null ? `стандарт: ${totalDuration}хв` : 'за тривалістю послуг'}
-                              </span>
+                              >
+                                <label className="text-xs font-medium text-[#6B5750] mb-1.5 flex items-center gap-1.5">
+                                  <Clock size={11} className="text-[#789A99]" />
+                                  Нестандартна тривалість, хв
+                                  <span className="font-normal text-[#A8928D]">(необов'язково)</span>
+                                </label>
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="number" min={5} max={480} step={5}
+                                    value={durationOverride ?? ''}
+                                    onChange={e => {
+                                      const v = parseInt(e.target.value, 10);
+                                      setDurationOverride(isNaN(v) ? null : Math.min(480, Math.max(5, v)));
+                                      setSelectedTime(null);
+                                    }}
+                                    placeholder={String(totalDuration)}
+                                    className="w-24 px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20"
+                                  />
+                                  {durationOverride !== null && (
+                                    <button onClick={() => { setDurationOverride(null); setSelectedTime(null); }}
+                                      className="text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors">
+                                      Скинути
+                                    </button>
+                                  )}
+                                  <span className="text-xs text-[#A8928D]">
+                                    {durationOverride !== null ? `стандарт: ${totalDuration}хв` : 'за послугами'}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
 
-                        {/* Summary chip */}
-                        {selectedServices.length > 0 && (
-                          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#789A99]/8 border border-[#789A99]/20 mb-4">
-                            <div className="flex -space-x-1 flex-shrink-0">
-                              {selectedServices.slice(0, 3).map(s => (
-                                <span key={s.id} className="text-base">{s.emoji}</span>
-                              ))}
+                        {/* Selection summary chip — CSS grid accordion, no jump */}
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateRows: selectedServices.length > 0 ? '1fr' : '0fr',
+                            transition: 'grid-template-rows 0.28s ease',
+                          }}
+                        >
+                          <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                            <div className="pb-4">
+                              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#789A99]/8 border border-[#789A99]/20"
+                                style={{
+                                  opacity: selectedServices.length > 0 ? 1 : 0,
+                                  transition: 'opacity 0.2s ease 0.05s',
+                                }}
+                              >
+                                <div className="flex -space-x-1 flex-shrink-0">
+                                  {selectedServices.slice(0, 3).map(s => <span key={s.id}>{s.emoji}</span>)}
+                                </div>
+                                <p className="text-xs text-[#6B5750] flex-1 min-w-0 truncate">
+                                  <span className="font-semibold text-[#2C1A14]">
+                                    {selectedServices.length === 1 ? selectedServices[0].name : `${selectedServices.length} послуги`}
+                                  </span>
+                                  <span className="ml-1 text-[#A8928D]">· {fmtDur(effectiveDuration)} · {fmt(totalServicesPrice)}</span>
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-xs text-[#6B5750] flex-1">
-                              <span className="font-semibold text-[#2C1A14]">{selectedServices.length === 1 ? selectedServices[0].name : `${selectedServices.length} послуги`}</span>
-                              <span className="ml-1 text-[#A8928D]">· {fmtDur(effectiveDuration)} · {fmt(totalServicesPrice)}</span>
-                            </p>
                           </div>
-                        )}
+                        </div>
 
                         <div className="sticky bottom-0 pt-3 pb-1 bg-gradient-to-t from-[rgba(255,248,244,1)] to-transparent">
                           <button
-                            disabled={!canGoToDate}
-                            onClick={() => go('date', 1)}
+                            disabled={!canGoToDatetime}
+                            onClick={() => go('datetime', 1)}
                             className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
-                              canGoToDate
+                              canGoToDatetime
                                 ? 'bg-[#789A99] text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
                                 : 'bg-[#E8D5CF] text-[#A8928D] cursor-not-allowed'
                             }`}
                           >
-                            {canGoToDate
+                            {canGoToDatetime
                               ? `Далі · ${selectedServices.length} посл. · ${fmt(totalServicesPrice)}`
                               : 'Обери послугу'}
                           </button>
@@ -756,9 +799,9 @@ export function BookingWizard({
                       </motion.div>
                     )}
 
-                    {/* ── STEP 2: DATE ── */}
-                    {step === 'date' && (
-                      <motion.div key="date" custom={direction} variants={slide}
+                    {/* ─────────────── STEP 2: DATE & TIME ─────────────── */}
+                    {step === 'datetime' && (
+                      <motion.div key="datetime" custom={direction} variants={slide}
                         initial="enter" animate="center" exit="exit"
                         transition={{ duration: 0.2, ease: 'easeInOut' }}>
 
@@ -785,147 +828,202 @@ export function BookingWizard({
                             </p>
                             <p className="text-xs text-[#A8928D]">{fmtDur(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
                           </div>
-                          <ChevronLeft size={14} className="text-[#A8928D] rotate-180" />
+                          <ChevronRight size={14} className="text-[#A8928D] rotate-180 flex-shrink-0" />
                         </button>
+
+                        {/* ── Date strip ── */}
+                        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-2">Дата</p>
 
                         {scheduleLoading ? (
-                          <div className="flex justify-center py-10">
-                            <div className="w-6 h-6 border-2 border-[#789A99] border-t-transparent rounded-full animate-spin" />
+                          <div className="flex justify-center py-6 mb-4">
+                            <div className="w-5 h-5 border-2 border-[#789A99] border-t-transparent rounded-full animate-spin" />
                           </div>
                         ) : (
-                          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-                            {days.map((d, i) => {
-                              const dateStr    = toISO(d);
-                              const isSelected = selectedDate?.toDateString() === d.toDateString();
-                              const isToday    = d.toDateString() === new Date().toDateString();
-                              const isOff      = offDayDates.has(dateStr);
-                              const isFull     = !isOff && selectedServices.length > 0 && fullyBookedDates.has(dateStr);
-                              const isDisabled = isOff || isFull;
-                              return (
-                                <button key={i} disabled={isDisabled}
-                                  onClick={() => {
-                                    if (!isDisabled) {
-                                      setSelectedDate(d);
-                                      setSelectedTime(null);
-                                      go('time', 1);
-                                    }
-                                  }}
-                                  className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-2xl flex-shrink-0 min-w-[54px] transition-all ${
-                                    isOff     ? 'bg-white/40 border border-dashed border-[#E8D5CF] cursor-not-allowed' :
-                                    isFull    ? 'bg-[#C05B5B]/8 border border-dashed border-[#C05B5B]/30 cursor-not-allowed' :
-                                    isSelected ? 'bg-[#789A99] text-white shadow-[0_4px_14px_rgba(120,154,153,0.38)]' :
-                                                'bg-white/70 border border-white/80 text-[#2C1A14] hover:bg-white/90'
-                                  }`}
-                                >
-                                  <span className={`text-[10px] font-medium ${isOff || isFull ? 'text-[#C8B8B2]' : isSelected ? 'text-white/80' : 'text-[#A8928D]'}`}>
-                                    {isToday && !isDisabled ? 'Сьог.' : DAY_S[d.getDay()]}
-                                  </span>
-                                  <span className={`text-base font-bold leading-none ${isOff || isFull ? 'text-[#C8B8B2]' : ''}`}>
-                                    {d.getDate()}
-                                  </span>
-                                  {isOff ? (
-                                    <span className="text-[9px] font-semibold text-[#C8B8B2] bg-[#F0E4DE] rounded-full px-1.5 py-0.5 leading-none">вих.</span>
-                                  ) : isFull ? (
-                                    <span className="text-[9px] font-semibold text-[#C05B5B] bg-[#C05B5B]/10 rounded-full px-1.5 py-0.5 leading-none">зайнято</span>
-                                  ) : (
-                                    <span className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-[#A8928D]'}`}>{MONTH_S[d.getMonth()]}</span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
+                          <div className="flex items-center gap-2 mb-5">
+                            {/* Prev day */}
+                            <button
+                              onClick={() => {
+                                const base = selectedDate ?? days[0];
+                                const prev = addDays(base, -1);
+                                if (prev >= days[0]) { setSelectedDate(prev); setSelectedTime(null); }
+                              }}
+                              className="w-8 h-8 rounded-full bg-white/70 border border-stone-200 flex items-center justify-center flex-shrink-0 hover:bg-white transition-colors text-stone-500"
+                            >
+                              <ChevronLeft size={14} />
+                            </button>
 
-                        <p className="text-xs text-[#A8928D] text-center mt-4">
-                          Оберіть зручний день — перейдемо до вибору часу
-                        </p>
-                      </motion.div>
-                    )}
-
-                    {/* ── STEP 3: TIME ── */}
-                    {step === 'time' && (
-                      <motion.div key="time" custom={direction} variants={slide}
-                        initial="enter" animate="center" exit="exit"
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}>
-
-                        {/* Date badge */}
-                        <button onClick={() => go('date', -1)}
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-[#789A99]/10 border border-[#789A99]/25 mb-5 w-full text-left">
-                          <span className="text-lg">📅</span>
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-[#2C1A14]">
-                              {selectedDate ? `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}` : ''}
-                            </p>
-                            <p className="text-xs text-[#A8928D]">{fmtDur(effectiveDuration)}</p>
-                          </div>
-                          <ChevronLeft size={14} className="text-[#A8928D] rotate-180" />
-                        </button>
-
-                        {selectedDate && offDayDates.has(toISO(selectedDate)) ? (
-                          <div className="flex flex-col items-center gap-2 py-8 rounded-2xl bg-[#F5E8E3]/60 border border-dashed border-[#E8D5CF]">
-                            <span className="text-3xl">😴</span>
-                            <p className="text-sm font-semibold text-[#6B5750]">Вихідний день</p>
-                            <button onClick={() => go('date', -1)} className="text-xs text-[#789A99] font-medium mt-1">← Обрати інший день</button>
-                          </div>
-                        ) : (() => {
-                          const renderItems = buildSlotRenderItems(slots, selectedDayBreaks);
-                          const hasAvail = renderItems.some(i => i.kind === 'slot');
-                          if (!hasAvail) return (
-                            <div className="flex flex-col items-center gap-2 py-8 rounded-2xl bg-[#F5E8E3]/60 border border-dashed border-[#E8D5CF]">
-                              <span className="text-3xl">📅</span>
-                              <p className="text-sm font-semibold text-[#6B5750]">Немає доступних слотів</p>
-                              <p className="text-xs text-[#A8928D]">Всі вікна зайняті</p>
-                              <button onClick={() => go('date', -1)} className="text-xs text-[#789A99] font-medium mt-1">← Обрати інший день</button>
-                            </div>
-                          );
-                          return (
-                            <div className="flex flex-wrap gap-1.5">
-                              {renderItems.map((item, idx) =>
-                                item.kind === 'break' ? (
-                                  <div key={`brk-${idx}`} className="w-full flex items-center gap-2 py-1.5">
-                                    <div className="flex-1 h-px bg-[#E8D5CF]" />
-                                    <span className="text-xs text-[#A8928D]">🍽 {item.label} · {item.start}–{item.end}</span>
-                                    <div className="flex-1 h-px bg-[#E8D5CF]" />
-                                  </div>
-                                ) : (
+                            {/* Scrollable date strip */}
+                            <div
+                              ref={dateStripRef}
+                              className="flex gap-2 overflow-x-auto scrollbar-hide flex-1"
+                              style={{ WebkitOverflowScrolling: 'touch' }}
+                            >
+                              {days.map((d, i) => {
+                                const dateStr    = toISO(d);
+                                const isSelected = selectedDate?.toDateString() === d.toDateString();
+                                const isToday    = d.toDateString() === new Date().toDateString();
+                                const isOff      = offDayDates.has(dateStr);
+                                const isFull     = !isOff && effectiveDuration > 0 && fullyBookedDates.has(dateStr);
+                                const isDisabled = isOff || isFull;
+                                return (
                                   <button
-                                    key={item.slot.time}
+                                    key={i}
+                                    id={`day-${dateStr}`}
+                                    disabled={isDisabled}
                                     onClick={() => {
-                                      setSelectedTime(item.slot.time);
-                                      go(hasProducts ? 'products' : 'details', 1);
+                                      if (!isDisabled) {
+                                        setSelectedDate(d);
+                                        setSelectedTime(null);
+                                      }
                                     }}
-                                    className={`relative py-2 px-3 rounded-xl text-sm font-semibold transition-all ${
-                                      selectedTime === item.slot.time
-                                        ? 'bg-[#789A99] text-white shadow-[0_3px_10px_rgba(120,154,153,0.35)]'
-                                        : item.slot.isSuggested
-                                        ? 'bg-[#789A99]/12 border border-[#789A99]/30 text-[#2C1A14] hover:bg-[#789A99]/20'
-                                        : 'bg-white/70 border border-white/80 text-[#2C1A14] hover:bg-white/90'
+                                    className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-2xl flex-shrink-0 min-w-[54px] transition-all ${
+                                      isOff
+                                        ? 'bg-white/40 border border-dashed border-stone-200 cursor-not-allowed opacity-50'
+                                        : isFull
+                                        ? 'bg-red-50 border border-dashed border-red-200 cursor-not-allowed'
+                                        : isSelected
+                                        ? 'bg-[#789A99] text-white shadow-md'
+                                        : 'bg-white/70 border border-stone-200 text-stone-700 hover:bg-white hover:border-[#789A99]/40'
                                     }`}
                                   >
-                                    {item.slot.isSuggested && selectedTime !== item.slot.time && (
-                                      <span className="absolute -top-1.5 -right-1 text-[8px] leading-none bg-[#789A99] text-white rounded-full px-1 py-0.5 font-bold">★</span>
+                                    <span className={`text-[10px] font-medium ${
+                                      isOff ? 'text-stone-300' :
+                                      isFull ? 'text-red-300' :
+                                      isSelected ? 'text-white/80' : 'text-stone-400'
+                                    }`}>
+                                      {isToday && !isDisabled ? 'Сьог.' : DAY_S[d.getDay()]}
+                                    </span>
+                                    <span className={`text-base font-bold leading-none ${
+                                      isOff || isFull ? 'text-stone-300' : ''
+                                    }`}>
+                                      {d.getDate()}
+                                    </span>
+                                    {isOff ? (
+                                      <span className="text-[9px] text-stone-300 leading-none">вих.</span>
+                                    ) : isFull ? (
+                                      <span className="text-[9px] font-semibold text-red-400 bg-red-50 rounded-full px-1 py-0.5 leading-none">зайнято</span>
+                                    ) : (
+                                      <span className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-stone-400'}`}>
+                                        {MONTH_S[d.getMonth()]}
+                                      </span>
                                     )}
-                                    {item.slot.time}
                                   </button>
-                                )
-                              )}
+                                );
+                              })}
                             </div>
-                          );
-                        })()}
 
-                        {/* Dynamic pricing notice */}
-                        {dynamicPricing?.label && (
-                          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium mt-4 ${
-                            dynamicPricing.modifier > 0 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'
-                          }`}>
-                            {dynamicPricing.label}
-                            <span className="ml-auto font-bold">{fmt(dynamicPricing.adjustedPrice)}</span>
+                            {/* Next day */}
+                            <button
+                              onClick={() => {
+                                const base = selectedDate ?? days[0];
+                                const next = addDays(base, 1);
+                                if (next <= days[days.length - 1]) { setSelectedDate(next); setSelectedTime(null); }
+                              }}
+                              className="w-8 h-8 rounded-full bg-white/70 border border-stone-200 flex items-center justify-center flex-shrink-0 hover:bg-white transition-colors text-stone-500"
+                            >
+                              <ChevronRight size={14} />
+                            </button>
                           </div>
                         )}
+
+                        {/* ── Time grid ── */}
+                        {selectedDate && (
+                          <>
+                            <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-3">Час</p>
+
+                            {offDayDates.has(toISO(selectedDate)) ? (
+                              <div className="flex flex-col items-center gap-2 py-8 rounded-2xl bg-stone-50 border border-dashed border-stone-200">
+                                <span className="text-3xl">😴</span>
+                                <p className="text-sm font-semibold text-stone-500">Вихідний день</p>
+                                <p className="text-xs text-stone-400">Оберіть інший день</p>
+                              </div>
+                            ) : (() => {
+                              const renderItems = buildSlotRenderItems(slots, selectedDayBreaks);
+                              const hasAvail = renderItems.some(i => i.kind === 'slot');
+
+                              if (!hasAvail) return (
+                                <div className="flex flex-col items-center gap-2 py-8 rounded-2xl bg-stone-50 border border-dashed border-stone-200">
+                                  <span className="text-3xl">📅</span>
+                                  <p className="text-sm font-semibold text-stone-500">Немає вільних слотів</p>
+                                  <p className="text-xs text-stone-400">Всі вікна зайняті</p>
+                                </div>
+                              );
+
+                              return (
+                                <div className="grid grid-cols-3 gap-3 mb-4">
+                                  {renderItems.map((item, idx) =>
+                                    item.kind === 'break' ? (
+                                      /* Break separator spans all 3 columns */
+                                      <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
+                                        <div className="flex-1 h-px bg-stone-200" />
+                                        <span className="text-xs text-stone-400 flex-shrink-0">
+                                          🍽 {item.label} · {item.start}–{item.end}
+                                        </span>
+                                        <div className="flex-1 h-px bg-stone-200" />
+                                      </div>
+                                    ) : (
+                                      <motion.button
+                                        key={item.slot.time}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setSelectedTime(item.slot.time)}
+                                        className={`relative rounded-xl py-3 text-center text-sm font-medium transition-all ${
+                                          selectedTime === item.slot.time
+                                            ? 'bg-[#789A99] text-white shadow-md ring-2 ring-[#789A99]/30 border-transparent'
+                                            : item.slot.isSuggested
+                                            ? 'bg-[#789A99]/8 border border-[#789A99]/30 text-[#2C1A14]'
+                                            : 'bg-white/60 text-stone-600 border border-stone-200 hover:bg-white hover:border-[#789A99]/30'
+                                        }`}
+                                      >
+                                        {item.slot.isSuggested && selectedTime !== item.slot.time && (
+                                          <span className="absolute -top-1.5 -right-1 text-[8px] bg-[#789A99] text-white rounded-full px-1 py-0.5 font-bold leading-none">★</span>
+                                        )}
+                                        <span className="block font-semibold">{item.slot.time}</span>
+                                        <span className={`block text-[11px] font-normal mt-0.5 ${
+                                          selectedTime === item.slot.time ? 'text-white/70' : 'text-stone-400'
+                                        }`}>
+                                          {slotFromMins(slotToMins(item.slot.time) + effectiveDuration)}
+                                        </span>
+                                      </motion.button>
+                                    )
+                                  )}
+                                </div>
+                              );
+                            })()}
+
+                            {/* Dynamic pricing badge */}
+                            {dynamicPricing?.label && (
+                              <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium mb-3 ${
+                                dynamicPricing.modifier > 0
+                                  ? 'bg-red-50 text-red-700 border border-red-100'
+                                  : 'bg-green-50 text-green-700 border border-green-100'
+                              }`}>
+                                {dynamicPricing.label}
+                                <span className="ml-auto font-bold">{fmt(dynamicPricing.adjustedPrice)}</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {/* Continue CTA */}
+                        <div className="sticky bottom-0 pt-3 pb-1 bg-gradient-to-t from-[rgba(255,248,244,1)] to-transparent">
+                          <button
+                            disabled={!canProceedDatetime}
+                            onClick={() => go(hasProducts ? 'products' : 'details', 1)}
+                            className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
+                              canProceedDatetime
+                                ? 'bg-[#789A99] text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
+                                : 'bg-[#E8D5CF] text-[#A8928D] cursor-not-allowed'
+                            }`}
+                          >
+                            {canProceedDatetime
+                              ? `Далі — ${selectedDate!.getDate()} ${MONTH_S[selectedDate!.getMonth()]} о ${selectedTime}`
+                              : selectedDate ? 'Обери час' : 'Обери день'}
+                          </button>
+                        </div>
                       </motion.div>
                     )}
 
-                    {/* ── STEP 4: PRODUCTS ── */}
+                    {/* ─────────────── STEP 3: PRODUCTS ─────────────── */}
                     {step === 'products' && (
                       <motion.div key="products" custom={direction} variants={slide}
                         initial="enter" animate="center" exit="exit"
@@ -953,8 +1051,7 @@ export function BookingWizard({
                                   <p className="text-sm font-semibold text-[#2C1A14] truncate">{p.name}</p>
                                   {p.description && <p className="text-xs text-[#A8928D] truncate">{p.description}</p>}
                                   <p className="text-sm font-bold text-[#789A99] mt-0.5">
-                                    {fmt(p.price)}
-                                    {isLinked && <span className="ml-1.5 text-xs font-normal text-[#789A99]">✨</span>}
+                                    {fmt(p.price)}{isLinked && <span className="ml-1.5 text-xs font-normal">✨</span>}
                                   </p>
                                 </div>
                                 {qty === 0 ? (
@@ -1001,13 +1098,13 @@ export function BookingWizard({
                       </motion.div>
                     )}
 
-                    {/* ── STEP 5: DETAILS ── */}
+                    {/* ─────────────── STEP 4: DETAILS ─────────────── */}
                     {step === 'details' && (
                       <motion.div key="details" custom={direction} variants={slide}
                         initial="enter" animate="center" exit="exit"
                         transition={{ duration: 0.2, ease: 'easeInOut' }}>
 
-                        {/* Booking recap */}
+                        {/* Recap badge */}
                         <div className="flex items-center gap-2 p-3 rounded-2xl bg-[#789A99]/10 border border-[#789A99]/20 mb-4">
                           <span className="text-base">📅</span>
                           <p className="text-xs text-[#6B5750]">
@@ -1021,7 +1118,6 @@ export function BookingWizard({
                           </p>
                         </div>
 
-                        {/* Profile auto-fill notice (client mode) */}
                         {mode === 'client' && clientUserId && (
                           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#5C9E7A]/10 border border-[#5C9E7A]/20 mb-4">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#5C9E7A]" />
@@ -1030,8 +1126,8 @@ export function BookingWizard({
                         )}
 
                         <div className="flex flex-col gap-4 mb-5">
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5">
+                          <div>
+                            <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">
                               <User size={13} className="text-[#A8928D]" />
                               {mode === 'master' ? "Ім'я клієнта" : "Ім'я"}
                             </label>
@@ -1041,8 +1137,8 @@ export function BookingWizard({
                               className="w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
                             />
                           </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5">
+                          <div>
+                            <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">
                               <Phone size={13} className="text-[#A8928D]" /> Телефон
                             </label>
                             <input type="tel" placeholder="+380 XX XXX XX XX"
@@ -1050,23 +1146,22 @@ export function BookingWizard({
                               className="w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
                             />
                           </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5">
+                          <div>
+                            <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">
                               <MessageSquare size={13} className="text-[#A8928D]" />
                               {mode === 'master' ? 'Нотатки' : 'Побажання'}
                               <span className="text-xs text-[#A8928D] font-normal">(необов'язково)</span>
                             </label>
                             <textarea
-                              placeholder={mode === 'master' ? 'Побажання клієнта або нотатки для себе...' : 'Алергія, особливості, побажання до майстра...'}
+                              placeholder={mode === 'master' ? 'Нотатки для себе...' : 'Алергія, особливості, побажання...'}
                               value={clientNotes} onChange={e => setClientNotes(e.target.value)} rows={2}
                               className="w-full px-4 py-3 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all resize-none"
                             />
                           </div>
 
-                          {/* Master: discount */}
                           {mode === 'master' && (
-                            <div className="flex flex-col gap-1.5">
-                              <label className="text-sm font-medium text-[#2C1A14]">Знижка майстра, %</label>
+                            <div>
+                              <label className="text-sm font-medium text-[#2C1A14] mb-1.5 block">Знижка майстра, %</label>
                               <div className="flex items-center gap-3">
                                 <input type="number" min={0} max={100} step={5}
                                   value={discountPercent || ''} onChange={e => {
@@ -1087,19 +1182,12 @@ export function BookingWizard({
                         {/* Price summary */}
                         <div className="rounded-2xl bg-white/60 border border-white/80 p-4 flex flex-col gap-2 mb-5">
                           <p className="text-xs font-bold text-[#A8928D] uppercase tracking-wide mb-1">Підсумок</p>
-                          {selectedServices.length === 1 ? (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-[#6B5750]">{selectedServices[0].name}</span>
-                              <span className="font-semibold text-[#2C1A14]">{fmt(totalServicesPrice)}</span>
+                          {selectedServices.map(s => (
+                            <div key={s.id} className="flex justify-between text-xs">
+                              <span className="text-[#6B5750]">{s.emoji} {s.name}</span>
+                              <span className="font-semibold text-[#2C1A14]">{fmt(s.price)}</span>
                             </div>
-                          ) : (
-                            selectedServices.map(s => (
-                              <div key={s.id} className="flex justify-between text-xs">
-                                <span className="text-[#6B5750] flex items-center gap-1">{s.emoji} {s.name}</span>
-                                <span className="font-semibold text-[#2C1A14]">{fmt(s.price)}</span>
-                              </div>
-                            ))
-                          )}
+                          ))}
                           {dynamicPricing?.label && (
                             <div className="flex justify-between text-xs">
                               <span className="text-[#789A99]">{dynamicPricing.label}</span>
@@ -1109,19 +1197,19 @@ export function BookingWizard({
                             </div>
                           )}
                           {totalProductsPrice > 0 && (
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-xs">
                               <span className="text-[#6B5750]">Товари</span>
                               <span className="font-semibold text-[#2C1A14]">+{fmt(totalProductsPrice)}</span>
                             </div>
                           )}
                           {loyaltyDiscount && (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-[#5C9E7A] flex items-center gap-1">🎁 {loyaltyDiscount.name} <span className="text-[10px] font-bold bg-[#5C9E7A]/10 px-1.5 py-0.5 rounded-full">-{loyaltyDiscount.percent}%</span></span>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-[#5C9E7A]">🎁 {loyaltyDiscount.name} <span className="text-[10px] font-bold">-{loyaltyDiscount.percent}%</span></span>
                               <span className="font-semibold text-[#5C9E7A]">−{fmt(loyaltyDiscountAmount)}</span>
                             </div>
                           )}
                           {mode === 'master' && discountPercent > 0 && (
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-xs">
                               <span className="text-[#5C9E7A]">Знижка {discountPercent}%</span>
                               <span className="font-semibold text-[#5C9E7A]">−{fmt(masterDiscountAmount)}</span>
                             </div>
@@ -1135,7 +1223,6 @@ export function BookingWizard({
                         </div>
 
                         {saveError && <p className="text-xs text-[#C05B5B] text-center mb-3">{saveError}</p>}
-
                         {mode === 'client' && (
                           <p className="text-xs text-[#A8928D] text-center mb-3">
                             Майстер отримає сповіщення та підтвердить запис
@@ -1159,7 +1246,7 @@ export function BookingWizard({
                       </motion.div>
                     )}
 
-                    {/* ── STEP 6: SUCCESS ── */}
+                    {/* ─────────────── STEP 5: SUCCESS ─────────────── */}
                     {step === 'success' && (
                       <motion.div key="success" custom={direction} variants={slide}
                         initial="enter" animate="center" exit="exit"
@@ -1177,9 +1264,17 @@ export function BookingWizard({
                           <h2 className="heading-serif text-2xl text-[#2C1A14]">Запис підтверджено!</h2>
                           <p className="text-sm text-[#6B5750] mt-2 leading-relaxed">
                             {selectedServices.length === 1 ? selectedServices[0].name : `${selectedServices.length} послуги`}
-                            {' о '}
-                            <span className="font-semibold text-[#789A99]">{selectedTime}</span>
-                            {selectedDate && `, ${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}`}
+                            {' — '}
+                            {selectedDate && `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}, `}
+                            <span className="font-semibold text-[#789A99]">
+                              {selectedTime && (() => {
+                                const endTime = formatFns(
+                                  addMinutes(parseFns(selectedTime, 'HH:mm', new Date()), totalDuration),
+                                  'HH:mm'
+                                );
+                                return `${selectedTime} – ${endTime}`;
+                              })()}
+                            </span>
                           </p>
                           {cart.length > 0 && (
                             <p className="text-xs text-[#A8928D] mt-1">
@@ -1198,14 +1293,14 @@ export function BookingWizard({
                             <PostBookingAuth
                               bookingId={createdBookingId}
                               clientPhone={clientPhone.trim()}
-                              onSkip={() => { onClose(); setTimeout(() => go('services'), 350); }}
+                              onSkip={closeWizard}
                             />
                           </div>
                         ) : (
                           <div className="w-full flex flex-col gap-3">
                             <PushPrompt />
                             <button
-                              onClick={() => { onClose(); setTimeout(() => go('services'), 350); }}
+                              onClick={closeWizard}
                               className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm hover:bg-[#6B8C8B] active:scale-[0.98] transition-all"
                             >
                               Чудово!
