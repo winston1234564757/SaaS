@@ -8,6 +8,7 @@ import { isChurned } from './ClientsPage';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/components/master/services/types';
+import { formatDate, pluralize } from '@/lib/utils/dates';
 import type { ClientRow } from './ClientsPage';
 import { getAutoTags } from './ClientsPage';
 
@@ -27,14 +28,12 @@ interface RecentBooking {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Очікує',     color: '#D4935A' },
-  confirmed: { label: 'Підтвержд.', color: '#789A99' },
-  completed: { label: 'Завершено',  color: '#5C9E7A' },
-  cancelled: { label: 'Скасовано',  color: '#C05B5B' },
-  no_show:   { label: 'Не прийшов', color: '#A8928D' },
+  pending:   { label: 'Очікує',       color: '#D4935A' },
+  confirmed: { label: 'Підтверджено', color: '#789A99' },
+  completed: { label: 'Завершено',    color: '#5C9E7A' },
+  cancelled: { label: 'Скасовано',    color: '#C05B5B' },
+  no_show:   { label: 'Не прийшов',   color: '#A8928D' },
 };
-
-const UA_MONTHS = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
 
 export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
@@ -263,10 +262,10 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                           <div key={b.id} className="flex items-center gap-3 py-2 px-3 rounded-2xl bg-white/50">
                             <div className="flex-shrink-0 w-10 text-center">
                               <p className="text-xs font-bold text-[#2C1A14]">{b.start_time}</p>
-                              <p className="text-[10px] text-[#A8928D]">{d.getDate()} {UA_MONTHS[d.getMonth()]}</p>
+                              <p className="text-[10px] text-[#A8928D] break-words leading-tight">{formatDate(b.date)}</p>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-[#2C1A14] truncate">{b.service_name}</p>
+                              <p className="text-xs font-medium text-[#2C1A14] break-words leading-tight">{b.service_name}</p>
                               <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
                             </div>
                             <p className="text-xs font-bold text-[#2C1A14] flex-shrink-0">{formatPrice(b.total_price)}</p>

@@ -1,3 +1,5 @@
+import { formatDurationFull } from '@/lib/utils/dates';
+
 export interface Service {
   id: string;
   name: string;
@@ -36,10 +38,7 @@ export const EMOJI_PRESETS = [
 ] as const;
 
 export function formatDuration(min: number) {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  if (!h) return `${m} хв`;
-  return m ? `${h} год ${m} хв` : `${h} год`;
+  return formatDurationFull(min);
 }
 
 export function formatPrice(price: number) {

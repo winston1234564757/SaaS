@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useBookingById } from '@/lib/supabase/hooks/useBookingById';
 import { formatPrice } from '@/components/master/services/types';
+import { formatDurationFull } from '@/lib/utils/dates';
 import { notifyClientOnStatusChange } from '@/app/(master)/dashboard/bookings/actions';
 import type { BookingStatus } from '@/types/database';
 
@@ -174,7 +175,7 @@ export function BookingDetailsModal() {
                           <div className="flex items-center gap-2">
                             <Clock size={12} className="text-[#A8928D]" />
                             <span className="text-sm text-[#2C1A14]">{s.name}</span>
-                            <span className="text-xs text-[#A8928D]">{s.duration} хв</span>
+                            <span className="text-xs text-[#A8928D]">{formatDurationFull(s.duration)}</span>
                           </div>
                           <span className="text-sm font-medium text-[#2C1A14]">{formatPrice(s.price)}</span>
                         </div>

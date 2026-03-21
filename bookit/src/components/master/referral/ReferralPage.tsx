@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Check, Gift, Users, Sparkles, Crown } from 'lucide-react';
+import { pluralize } from '@/lib/utils/dates';
 
 interface Props {
   referralCode: string;
@@ -148,7 +149,7 @@ export function ReferralPage({ referralCode, referralCount, subscriptionTier, su
             </div>
             <div>
               <p className="text-sm font-semibold text-[#2C1A14]">Pro активний</p>
-              <p className="text-xs text-[#A8928D]">Залишилось {trialDaysLeft} {trialDaysLeft === 1 ? 'день' : trialDaysLeft < 5 ? 'дні' : 'днів'} Pro доступу</p>
+              <p className="text-xs text-[#A8928D]">Залишилось {pluralize(trialDaysLeft, ['день', 'дні', 'днів'])} Pro доступу</p>
             </div>
           </div>
           <div className="mt-3 h-1.5 bg-[#F5E8E3] rounded-full overflow-hidden">

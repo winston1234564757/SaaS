@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, Clock, ExternalLink, X, Star } from 'lucide-react';
 import { cancelBooking, submitReview } from '@/app/my/bookings/actions';
+import { format } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   pending:   { label: 'Очікує',       color: '#D4935A', bg: 'rgba(212,147,90,0.12)' },
@@ -35,9 +37,8 @@ interface Booking {
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00');
-  const months = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
-  const days = ['нд','пн','вт','ср','чт','пт','сб'];
-  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+  const result = format(d, 'EEEE, d MMMM', { locale: uk });
+  return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
 function formatPrice(price: number) {

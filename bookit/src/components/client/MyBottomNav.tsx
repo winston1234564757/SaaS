@@ -15,9 +15,12 @@ const navItems = [
 export function MyBottomNav() {
   const pathname = usePathname();
 
+  const hiddenRoutes = ['/login', '/register', '/dashboard', '/studio/join', '/onboarding'];
+  if (hiddenRoutes.some(route => pathname.startsWith(route))) return null;
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 px-2 pb-2">
-      <div className="bento-card flex items-center justify-around py-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pointer-events-none">
+      <div className="bento-card flex items-center justify-around py-2 pointer-events-auto">
         {navItems.map(({ href, icon: Icon, label }) => {
           const isActive = pathname.startsWith(href);
           return (

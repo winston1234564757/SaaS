@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { BlobBackground } from '@/components/shared/BlobBackground';
-import { MyBottomNav } from '@/components/client/MyBottomNav';
 import { MasterModeBanner } from '@/components/client/MasterModeBanner';
 
 export default async function MyLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +31,6 @@ export default async function MyLayout({ children }: { children: React.ReactNode
       <div className="max-w-lg mx-auto px-4 py-6 pb-24">
         {children}
       </div>
-      <MyBottomNav />
     </div>
   );
 }

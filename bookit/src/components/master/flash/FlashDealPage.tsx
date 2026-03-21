@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createFlashDeal, cancelFlashDeal } from '@/app/(master)/dashboard/flash/actions';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
 import { Zap, Clock, X, Send, ChevronDown } from 'lucide-react';
+import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 
 interface Props {
   activeDeals: FlashDealRow[];
@@ -20,10 +21,7 @@ const EXPIRY_OPTIONS = [
 function timeUntil(expiresAt: string): string {
   const diff = new Date(expiresAt).getTime() - Date.now();
   if (diff <= 0) return 'Минула';
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  if (h > 0) return `${h} год ${m} хв`;
-  return `${m} хв`;
+  return formatDurationFull(Math.floor(diff / 60000));
 }
 
 function todayStr() {
@@ -210,7 +208,7 @@ export function FlashDealPage({ activeDeals, tier }: Props) {
 
         {result && (
           <div className={`text-xs rounded-xl px-3 py-2 ${result.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-            {result.error ?? `✅ Акцію створено! Сповіщено ${result.sentTo} клієнт${result.sentTo === 1 ? 'а' : 'ів'}.`}
+            {result.error ?? `✅ Акцію створено! Сповіщено ${pluralize(result.sentTo, ['клієнта', 'клієнти', 'клієнтів'])}.`}
           </div>
         )}
 

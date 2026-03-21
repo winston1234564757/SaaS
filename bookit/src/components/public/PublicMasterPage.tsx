@@ -7,6 +7,7 @@ import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, ChevronLeft, 
 import { BookingFlow } from './BookingFlow';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
+import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import Image from 'next/image';
 
 interface Service {
@@ -67,13 +68,6 @@ interface Master {
   bookingsThisMonth?: number;
   pricingRules?: Record<string, any>;
   workingHours?: Record<string, unknown> | null;
-}
-
-function formatDuration(min: number) {
-  if (min < 60) return `${min} хв`;
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return m ? `${h} год ${m} хв` : `${h} год`;
 }
 
 function formatPrice(price: number) {
@@ -329,7 +323,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
                   ))}
                 </div>
                 <span className="text-sm font-bold text-[#2C1A14]">{master.rating}</span>
-                <span className="text-xs" style={{ color: textTertiary }}>({master.reviewsCount} відгуків)</span>
+                <span className="text-xs" style={{ color: textTertiary }}>({pluralize(master.reviewsCount, ['відгук', 'відгуки', 'відгуків'])})</span>
                 {portfolio.length > 0 && (
                   <span className="flex items-center gap-1 text-xs" style={{ color: textTertiary }}>
                     <Images size={11} />
@@ -527,7 +521,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
                         </div>
                         <div className="flex-1 min-w-0 pr-16">
                           <p className="text-sm font-semibold text-[#2C1A14]">{service.name}</p>
-                          <p className="text-xs mt-0.5" style={{ color: textTertiary }}>{formatDuration(service.duration)}</p>
+                          <p className="text-xs mt-0.5 break-words leading-tight" style={{ color: textTertiary }}>{formatDurationFull(service.duration)}</p>
                         </div>
                         <div className="flex-shrink-0 text-right">
                           <p className="text-base font-bold text-[#2C1A14]">{formatPrice(service.price)}</p>

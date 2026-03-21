@@ -18,6 +18,7 @@ import {
   type TopService, type TopClient,
 } from '@/lib/supabase/hooks/useAnalytics';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { pluralize } from '@/lib/utils/dates';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { ClientRow } from '@/components/master/clients/ClientsPage';
 
@@ -117,7 +118,7 @@ function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
           />
         </div>
         <div className="flex items-center justify-between mt-1">
-          <span className="text-[11px] text-[#A8928D]">{svc.count} записів</span>
+          <span className="text-[11px] text-[#A8928D]">{pluralize(svc.count, ['запис', 'записи', 'записів'])}</span>
           <ChevronDown size={12} className={`text-[#A8928D] transition-transform ${open ? 'rotate-180' : ''}`} />
         </div>
       </button>
@@ -156,7 +157,7 @@ function DowChart({ data, bookings, bestIdx }: { data: number[]; bookings: numbe
               <div>
                 <p className="text-sm text-[#6B5750] mb-1">{UA_DOW_FULL[i]}</p>
                 <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(v)}</p>
-                <p className="text-sm text-[#6B5750]">{pct}% виручки · {bookings[i]} записів</p>
+                <p className="text-sm text-[#6B5750]">{pct}% виручки · {pluralize(bookings[i], ['запис', 'записи', 'записів'])}</p>
               </div>
             }
             className="flex-1 flex flex-col items-center gap-1"
@@ -466,7 +467,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                         <div>
                           <p className="text-sm text-[#6B5750] mb-1">{m.month}</p>
                           <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(m.revenue)}</p>
-                          <p className="text-sm text-[#6B5750]">{m.bookings} записів</p>
+                          <p className="text-sm text-[#6B5750]">{pluralize(m.bookings, ['запис', 'записи', 'записів'])}</p>
                         </div>
                       }
                       className="flex-1 flex flex-col items-center gap-1"

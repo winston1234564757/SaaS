@@ -5,6 +5,7 @@ import { Bell, X, CalendarDays, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications, type BookingNotification } from '@/lib/supabase/hooks/useNotifications';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { formatDate, timeAgo, pluralize } from '@/lib/utils/dates';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending:   { label: 'Очікує',       color: '#D4935A' },
@@ -13,23 +14,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   cancelled: { label: 'Скасовано',    color: '#C05B5B' },
   no_show:   { label: 'Не прийшов',   color: '#8B7AB5' },
 };
-
-const MONTH_SHORT = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
-
-function formatDate(iso: string) {
-  const d = new Date(iso + 'T00:00:00');
-  return `${d.getDate()} ${MONTH_SHORT[d.getMonth()]}`;
-}
-
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 2)  return 'щойно';
-  if (mins < 60) return `${mins} хв тому`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} год тому`;
-  return `${Math.floor(hours / 24)} дн тому`;
-}
 
 export function NotificationsBell() {
   const { notifications, unreadCount, markAllRead }: { notifications: BookingNotification[]; unreadCount: number; markAllRead: () => void } = useNotifications();
@@ -97,7 +81,7 @@ export function NotificationsBell() {
                 <div>
                   <p className="text-base font-semibold text-[#2C1A14]">Сповіщення</p>
                   {notifications.length > 0 && (
-                    <p className="text-xs text-[#A8928D]">{notifications.length} записів</p>
+                    <p className="text-xs text-[#A8928D]">{pluralize(notifications.length, ['запис', 'записи', 'записів'])}</p>
                   )}
                 </div>
                 <button
@@ -142,7 +126,7 @@ export function NotificationsBell() {
                                 <p className="text-sm font-semibold text-[#2C1A14] truncate">{n.clientName}</p>
                                 <p className="text-[10px] text-[#A8928D] flex-shrink-0 mt-0.5">{timeAgo(n.createdAt)}</p>
                               </div>
-                              <p className="text-xs text-[#6B5750] truncate">{n.services}</p>
+                              <p className="text-xs text-[#6B5750] whitespace-normal break-words leading-tight">{n.services}</p>
                               <div className="flex items-center gap-3 mt-1">
                                 <div className="flex items-center gap-1">
                                   <CalendarDays size={10} className="text-[#A8928D]" />

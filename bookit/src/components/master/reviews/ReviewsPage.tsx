@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Star, Eye, EyeOff, Loader2, MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
+import { formatDateFull } from '@/lib/utils/dates';
 
 interface Review {
   id: string;
@@ -16,12 +17,6 @@ interface Review {
   booking_date: string | null;
 }
 
-const UA_MONTHS = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return `${d.getDate()} ${UA_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-}
 
 export function ReviewsPage() {
   const { masterProfile } = useMasterContext();
@@ -130,7 +125,7 @@ export function ReviewsPage() {
                   <div>
                     <p className="text-sm font-semibold text-[#2C1A14]">{r.client_name}</p>
                     <p className="text-[10px] text-[#A8928D]">
-                      {formatDate(r.booking_date ?? r.created_at)}
+                      {formatDateFull(r.booking_date ?? r.created_at)}
                     </p>
                   </div>
                 </div>

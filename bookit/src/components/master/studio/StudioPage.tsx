@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, Copy, Check, UserX, LogOut, Plus, Users, Crown, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { createStudio, leaveStudio, removeMember } from '@/app/(master)/dashboard/studio/actions';
+import { pluralize } from '@/lib/utils/dates';
 import Link from 'next/link';
 
 interface Member {
@@ -197,7 +198,7 @@ function OwnerView({ studio, members, currentUserId }: { studio: StudioData; mem
           </div>
           <div>
             <p className="text-base font-bold text-[#2C1A14]">{studio.name}</p>
-            <p className="text-xs text-[#A8928D]">{members.length} {members.length === 1 ? 'майстер' : members.length < 5 ? 'майстри' : 'майстрів'}</p>
+            <p className="text-xs text-[#A8928D]">{pluralize(members.length, ['майстер', 'майстри', 'майстрів'])}</p>
           </div>
           <span className="ml-auto text-[10px] font-bold text-[#5C9E7A] bg-[#5C9E7A]/12 px-2.5 py-1 rounded-full">Studio</span>
         </div>

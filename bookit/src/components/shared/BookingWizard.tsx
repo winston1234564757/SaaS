@@ -25,6 +25,7 @@ import { applyDynamicPricing } from '@/lib/utils/dynamicPricing';
 import { buildOffDaySet } from '@/lib/utils/bookingEngine';
 import { notifyMasterOnBooking, ensureClientProfile } from '@/app/[slug]/actions';
 import { PostBookingAuth } from '@/components/public/PostBookingAuth';
+import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import type { WorkingHoursConfig } from '@/types/database';
 
 // ── Public types ──────────────────────────────────────────────────────────────
@@ -86,8 +87,8 @@ interface ScheduleStore {
 // ── Constants & helpers ───────────────────────────────────────────────────────
 
 const DOW     = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-const DAY_S   = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-const MONTH_S = ['січ', 'лют', 'бер', 'квіт', 'трав', 'черв', 'лип', 'серп', 'вер', 'жовт', 'лист', 'груд'];
+const DAY_S   = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота'];
+const MONTH_S = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
 
 function toISO(d: Date) { return d.toISOString().slice(0, 10); }
 function getDays(n = 30): Date[] {
@@ -97,10 +98,6 @@ function getDays(n = 30): Date[] {
   });
 }
 function fmt(n: number) { return n.toLocaleString('uk-UA') + ' ₴'; }
-function fmtDur(m: number) {
-  const h = Math.floor(m / 60), r = m % 60;
-  return h ? (r ? `${h}год ${r}хв` : `${h}год`) : `${m}хв`;
-}
 
 // ── Step flow ─────────────────────────────────────────────────────────────────
 
@@ -558,7 +555,7 @@ export function BookingWizard({
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 bg-[#2C1A14]/25 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-[#2C1A14]/25 backdrop-blur-sm z-[55]"
             onClick={closeWizard}
           />
 
@@ -566,7 +563,7 @@ export function BookingWizard({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-            className="fixed bottom-0 left-0 right-0 z-50 max-h-[92dvh] flex flex-col rounded-t-[28px] overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 z-[60] max-h-[92dvh] flex flex-col rounded-t-[28px] overflow-hidden"
             style={{ background: 'rgba(255,248,244,0.97)', backdropFilter: 'blur(32px)' }}
           >
             {/* Handle */}
@@ -653,7 +650,7 @@ export function BookingWizard({
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-semibold text-[#2C1A14]">{svc.name}</p>
                                       <p className="text-xs text-[#A8928D] flex items-center gap-1 mt-0.5">
-                                        <Clock size={10} /> {fmtDur(svc.duration)}
+                                        <Clock size={10} /> {formatDurationFull(svc.duration)}
                                       </p>
 
                                       {/* ── CSS grid accordion (jump-free, no JS measurement) ── */}
@@ -770,11 +767,11 @@ export function BookingWizard({
                                 <div className="flex -space-x-1 flex-shrink-0">
                                   {selectedServices.slice(0, 3).map(s => <span key={s.id}>{s.emoji}</span>)}
                                 </div>
-                                <p className="text-xs text-[#6B5750] flex-1 min-w-0 truncate">
+                                <p className="text-xs text-[#6B5750] flex-1 min-w-0 break-words leading-tight">
                                   <span className="font-semibold text-[#2C1A14]">
-                                    {selectedServices.length === 1 ? selectedServices[0].name : `${selectedServices.length} послуги`}
+                                    {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
                                   </span>
-                                  <span className="ml-1 text-[#A8928D]">· {fmtDur(effectiveDuration)} · {fmt(totalServicesPrice)}</span>
+                                  <span className="ml-1 text-[#A8928D]">· {formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</span>
                                 </p>
                               </div>
                             </div>
@@ -792,7 +789,7 @@ export function BookingWizard({
                             }`}
                           >
                             {canGoToDatetime
-                              ? `Далі · ${selectedServices.length} посл. · ${fmt(totalServicesPrice)}`
+                              ? `Далі · ${pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])} · ${fmt(totalServicesPrice)}`
                               : 'Обери послугу'}
                           </button>
                         </div>
@@ -824,9 +821,9 @@ export function BookingWizard({
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-[#2C1A14] truncate">
-                              {selectedServices.length === 1 ? selectedServices[0].name : `${selectedServices.length} послуги`}
+                              {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
                             </p>
-                            <p className="text-xs text-[#A8928D]">{fmtDur(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
+                            <p className="text-xs text-[#A8928D]">{formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
                           </div>
                           <ChevronRight size={14} className="text-[#A8928D] rotate-180 flex-shrink-0" />
                         </button>
@@ -886,12 +883,12 @@ export function BookingWizard({
                                         : 'bg-white/70 border border-stone-200 text-stone-700 hover:bg-white hover:border-[#789A99]/40'
                                     }`}
                                   >
-                                    <span className={`text-[10px] font-medium ${
+                                    <span className={`text-[10px] font-medium whitespace-normal text-balance break-words text-center leading-tight ${
                                       isOff ? 'text-stone-300' :
                                       isFull ? 'text-red-300' :
                                       isSelected ? 'text-white/80' : 'text-stone-400'
                                     }`}>
-                                      {isToday && !isDisabled ? 'Сьог.' : DAY_S[d.getDay()]}
+                                      {isToday && !isDisabled ? 'Сьогодні' : DAY_S[d.getDay()]}
                                     </span>
                                     <span className={`text-base font-bold leading-none ${
                                       isOff || isFull ? 'text-stone-300' : ''
@@ -1109,7 +1106,7 @@ export function BookingWizard({
                           <span className="text-base">📅</span>
                           <p className="text-xs text-[#6B5750]">
                             <span className="font-semibold text-[#2C1A14]">
-                              {selectedServices.length === 1 ? selectedServices[0].name : `${selectedServices.length} послуги`}
+                              {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
                             </span>
                             {' — '}
                             {selectedDate && `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}`}
@@ -1263,7 +1260,7 @@ export function BookingWizard({
                         <div>
                           <h2 className="heading-serif text-2xl text-[#2C1A14]">Запис підтверджено!</h2>
                           <p className="text-sm text-[#6B5750] mt-2 leading-relaxed">
-                            {selectedServices.length === 1 ? selectedServices[0].name : `${selectedServices.length} послуги`}
+                            {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
                             {' — '}
                             {selectedDate && `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}, `}
                             <span className="font-semibold text-[#789A99]">
@@ -1278,7 +1275,7 @@ export function BookingWizard({
                           </p>
                           {cart.length > 0 && (
                             <p className="text-xs text-[#A8928D] mt-1">
-                              + {cart.length} {cart.length === 1 ? 'товар' : 'товари'} · {fmt(finalTotal)}
+                              + {pluralize(cart.length, ['товар', 'товари', 'товарів'])} · {fmt(finalTotal)}
                             </p>
                           )}
                           {masterName && (

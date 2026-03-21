@@ -10,7 +10,9 @@
       "Bash(npx supabase:*)",
       "Bash(ls C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\\\\dashboard:*)",
       "Bash(xargs grep:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(find /c/Users/Vitossik/SaaS/bookit/public -type f \\\\\\(-name *.json -o -name *.js -o -name *.ts \\\\\\))"
     ]
   }
 }

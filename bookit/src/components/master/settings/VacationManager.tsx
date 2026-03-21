@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarOff, Plus, X, Loader2, Umbrella } from 'lucide-react';
 import { useVacation } from '@/lib/supabase/hooks/useVacation';
-
-const MONTH_SHORT = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
+import { format } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00');
-  const days = ['нд','пн','вт','ср','чт','пт','сб'];
-  return `${days[d.getDay()]}, ${d.getDate()} ${MONTH_SHORT[d.getMonth()]}`;
+  const result = format(d, 'EEEE, d MMMM', { locale: uk });
+  return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
 export function VacationManager() {

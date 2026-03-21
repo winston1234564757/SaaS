@@ -1,728 +1,785 @@
-# Bookit — Технічна документація
+# Bookit — Еталонна Технічна Документація
 
 > **Ukrainian SaaS для онлайн-запису у б'юті-індустрії**
 > "Твій розумний link in bio, який заробляє гроші"
-> *Оновлено: 20.03.2026*
+> *Оновлено: 21.03.2026 · Версія: 3.0 (22+ ітерації)*
 
 ---
 
-## 1. КОНЦЕПЦІЯ
+## Зміст
 
-Bookit — мобільний SaaS для майстрів краси (манікюр, брови, лешмейкінг, масаж тощо). Ключова цінність: майстер отримує особисту публічну сторінку (`bookit.com.ua/[slug]`) з онлайн-бронюванням, CRM, аналітикою та автоматичними нотифікаціями — без сайту, без адміністратора, без технічних знань.
-
-**Позиціонування:** не просто посилання в bio — розумний інструмент, що сам нагадує, сам аналізує, сам утримує клієнтів.
-
----
-
-## 2. ТЕХНІЧНИЙ СТЕК
-
-| Шар | Технологія |
-|-----|------------|
-| Framework | Next.js 16.1.6 (App Router, Turbopack) |
-| Мова | TypeScript (strict mode) |
-| Стилі | Tailwind CSS v4 (`@import "tailwindcss"`, без tailwind.config.ts) |
-| Анімації | Framer Motion |
-| State | Zustand + TanStack Query |
-| Forms | React Hook Form + Zod |
-| Backend | Supabase (auth, PostgreSQL, storage, realtime) |
-| Іконки | Lucide React |
-| Платежі | WayForPay (HMAC-MD5), Monobank (Ed25519) |
-| Нотифікації | Web Push (VAPID / web-push), Telegram Bot API, TurboSMS |
-| Деплой | Vercel + Supabase Cloud |
+1. [Візія та Позиціонування](#1-візія-та-позиціонування)
+2. [Ключовий Функціонал — Для Майстра](#2-ключовий-функціонал--для-майстра)
+3. [Ключовий Функціонал — Для Клієнта](#3-ключовий-функціонал--для-клієнта)
+4. [Технічний Стек та Архітектура](#4-технічний-стек-та-архітектура)
+5. [Схема Бази Даних](#5-схема-бази-даних)
+6. [Стандарти Коду та Engineering Principles](#6-стандарти-коду-та-engineering-principles)
+7. [API Endpoints](#7-api-endpoints)
+8. [Маршрутизація та Захист](#8-маршрутизація-та-захист)
+9. [Дизайн-система](#9-дизайн-система)
+10. [PWA та Offline](#10-pwa-та-offline)
+11. [Безпека та Аудит](#11-безпека-та-аудит)
 
 ---
 
-## 3. СТРУКТУРА ПРОЄКТУ
+## 1. Візія та Позиціонування
+
+### Продукт
+
+**Bookit** — мобільний SaaS для майстрів краси України (перукарі, майстри манікюру/педикюру, lash/brow-майстри, масажисти тощо). Кожен майстер отримує персональну публічну сторінку `bookit.com.ua/[slug]` з повноцінним онлайн-записом, CRM, аналітикою та автоматизацією — без власного сайту, без адміністратора, без технічних знань.
+
+**Слоган:** "Твій розумний link in bio, який заробляє гроші"
+
+### Ринок та Диференціатор
+
+| Конкурент | Слабке місце | Bookit відповідь |
+|-----------|-------------|-----------------|
+| Просте посилання в bio | Не конвертує, нема запису | Повноцінний booking flow прямо зі сторінки |
+| Universkin / Fresha | Дорого, зайво складно, не локалізовано | Freemium, UA ринок, mobile-first |
+| Telegram-боти | Нема аналітики, нема CRM | Когортний аналіз, churn prediction, тегування |
+
+**Унікальний стек функцій в одному продукті:**
+- **Smart Slots Engine** — алгоритм вільних слотів з буфером, перервами, multi-service консективністю
+- **Dynamic Pricing** — peak/quiet/early_bird/last_minute мультиплікатори на рівні кожного слота
+- **Loyalty Engine** — N-візитів → нагорода прямо в booking flow
+- **Flash Deals** — обмежені акції з розсилкою через Push + Telegram
+- **Studio режим** — мультимайстер під одним брендом
+
+### Монетизація
+
+| Тариф | Ціна | Ключові обмеження |
+|-------|------|--------------------|
+| **Starter** | 0₴ | 30 записів/місяць, 2 flash-акції/місяць, вотермарка, 9 фото |
+| **Pro** | 349₴/місяць | Необмежено записів, повна аналітика, CRM, CSV, без вотермарки |
+| **Studio** | 199₴/майстер/місяць | Мультимайстер, спільний бренд, invite-flow |
+
+---
+
+## 2. Ключовий Функціонал — Для Майстра
+
+### Booking Engine
+
+**Smart Slots Algorithm** (`src/lib/utils/smartSlots.ts`):
+- Генерує вільні часові слоти на основі `working_hours` майстра
+- Враховує існуючі бронювання + їх `total_duration`
+- Буфер після послуги (configurable, за замовчуванням 0 хв)
+- Перерви: заблоковані проміжки всередині робочого дня
+- **Multi-service**: перевірка consecutive slots — якщо замовлено 2 послуги (60 + 45 хв = 105 хв), алгоритм шукає безперервний блок без перетину
+
+**Manual Booking FAB** (`src/components/master/bookings/`):
+- Плаваюча кнопка "+" на сторінці записів
+- Майстер вручну додає клієнта (phone lookup або new), послугу, дату/час, нотатку
+- `source: 'manual'` — відображається badge у BookingCard
+
+### Dynamic Pricing
+
+Зберігається в `master_profiles.pricing_rules` (jsonb). Редагується через `/dashboard/pricing`.
+
+```typescript
+interface PricingRules {
+  peakHours:   { start: string; end: string; multiplier: number }[];   // e.g. ×1.3 у 12–18
+  quietHours:  { start: string; end: string; multiplier: number }[];   // e.g. ×0.85 рано вранці
+  lastMinute:  { hoursThreshold: number; discount: number };           // -15% якщо < 3г до початку
+  earlyBird:   { daysThreshold: number; discount: number };            // -10% якщо > 7 днів наперед
+}
+```
+
+`src/lib/utils/dynamicPricing.ts`: `calculateDynamicPrice(basePrice, rules, slotDateTime)` → фінальна ціна в копійках.
+На публічній сторінці показуються live-ціни з урахуванням мультиплікаторів.
+
+### CRM
+
+**Автоматичне тегування** клієнтів у `client_master_relations.tags`:
+
+| Тег | Умова |
+|-----|-------|
+| Новий | 1 візит |
+| Постійний | 3–9 візитів |
+| VIP | ручно або top-10% за витратами |
+| Великий чек | average_check > медіана ×1.5 |
+| 💤 Спить | last_visit > 60 днів |
+| ⚠️ Під ризиком | last_visit > 120 днів (churn prediction) |
+
+**ClientDetailSheet** (`src/components/master/clients/ClientDetailSheet.tsx`):
+- Статистика: кількість візитів, витрати, середній чек
+- VIP-тогл
+- Нотатки (save в `client_master_relations.notes`)
+- Теги-чипи
+
+**Тригер CRM-метрик** (PostgreSQL): при `status → 'completed'` автоматично оновлює `client_master_relations` — `total_visits`, `total_spent`, `average_check`, `last_visit_at`.
+
+### Аналітика (Pro)
+
+**AnalyticsPage** (`src/components/master/analytics/AnalyticsPage.tsx`):
+- Виручка по місяцях (bar chart, date-fns locale uk)
+- Топ послуги за кількістю та виручкою
+- Топ продукти (якщо є товари)
+- Топ клієнти за витратами
+- Retention: new vs returning клієнти (когортний аналіз)
+- **CSV-експорт** (Pro-only): всі записи за обраний діапазон дат
+- staleTime: 5 хвилин (TanStack Query)
+
+### Flash Deals
+
+**FlashDealPage** (`src/components/master/flash/FlashDealPage.tsx`):
+- Знижка 5–70%, TTL 2/4/8 годин
+- При публікації: Push + Telegram-розсилка всім клієнтам з `completed` бронюваннями
+- `flash_deals.status`: `active` → `expired` (по TTL) або `booked` (якщо забронювали)
+- Ліміт: Starter 2/місяць, Pro/Studio без обмежень
+- Server Action `cancelFlashDeal()` → `createAdminClient()` (RLS bypass)
+
+### Програма Лояльності
+
+**LoyaltyPage** (`src/components/master/dashboard/` + `/loyalty/`):
+- Майстер налаштовує: N-й візит → тип нагороди (знижка % / фіксована сума / безкоштовна послуга)
+- Прогрес показується клієнту в `/my/loyalty` та у BookingFlow
+- Таблиця `loyalty_programs`: `master_id`, `visits_required`, `reward_type`, `reward_value`
+
+### Портфоліо
+
+- Фото з підписами (`portfolio_items`)
+- Drag-to-reorder (оновлення `position`)
+- Ліміт: Starter 9 фото, Pro/Studio необмежено
+- Зображення в Supabase Storage, оптимізовані через Next.js `<Image>`
+
+### Studio Режим
+
+**StudioPage** (`src/components/master/studio/StudioPage.tsx`):
+- Один майстер — Studio Owner — запрошує інших через токен
+- `studio/join/[token]` — майстер приймає запрошення
+- Всі майстри студії доступні під одним брендом (slug власника)
+- Таблиці: `studios`, `studio_members`
+
+### Сповіщення
+
+**NotificationsBell** (`src/components/master/dashboard/NotificationsBell.tsx`):
+- `useNotifications` hook: `lastSeen` в localStorage, realtime invalidation
+- Лічильник непрочитаних → realtime оновлення через Supabase Realtime
+- staleTime: 30 секунд
+
+**Telegram Push при новому записі:**
+- Майстер зв'язує бізнес-Telegram у налаштуваннях (`master_profiles.telegram_chat_id`)
+- При кожному новому бронюванні → `buildBookingMessage()` → `sendTelegramMessage()`
+
+### Реферальна Система
+
+**ReferralPage** (`src/components/master/referral/ReferralPage.tsx`):
+- Майстер генерує `invite_code` через `crypto.getRandomValues()`
+- Шерить: `bookit.com.ua/invite/[code]`
+- За кожного зареєстрованого через код: 30 днів Pro
+- Ambassador levels: 3 запрошених → рівень 1, 5 → рівень 2
+
+### Налаштування
+
+**Settings** (`/dashboard/settings`):
+- Робочі години: `working_hours` jsonb (по днях тижня, `{ start, end, enabled }`)
+- **VacationManager** (`src/components/master/settings/VacationManager.tsx`): блокування дат через calendar picker → `schedule_exceptions`
+- Telegram chat_id (зберігається в `master_profiles`, НЕ в `profiles`)
+- Профіль та публікація сторінки
+
+---
+
+## 3. Ключовий Функціонал — Для Клієнта
+
+### BookingFlow
+
+**BookingWizard** (`src/components/shared/BookingWizard.tsx`):
+
+```
+Крок 1: Вибір послуг (single або multi-service checkboxes)
+  → totalDuration = сума тривалостей
+  → totalPrice з dynamic pricing (live-розрахунок)
+Крок 2: Додавання товарів-кошик (якщо майстер має products)
+Крок 3: Вибір дати (date strip, blocked dates з schedule_exceptions)
+Крок 4: Вибір часу (Smart Slots генерація)
+Крок 5: Підтвердження + нотатка
+Крок 6: SMS OTP для гостей (якщо не авторизований)
+```
+
+- Якщо клієнт авторизований — одразу booking, без OTP
+- Після OTP: `api/auth/link-booking` — прив'язати booking до щойно-авторизованого юзера
+- Показ прогресу лояльності: "ще N візитів до нагороди"
+
+### Публічна Сторінка Майстра
+
+**PublicMasterPage** (`src/components/public/PublicMasterPage.tsx`):
+- Послуги з live dynamic pricing (мультиплікатори залежно від поточного часу)
+- Портфоліо фото (grid, lightbox)
+- Відгуки з рейтингом
+- Working hours badge (зараз відкрито / наступний прийом)
+- Share buttons: Web Share API + QR-код (download)
+- Flash-акції: якщо є активні — відображаються зверху з countdown таймером
+
+### My Area (`/my/`)
+
+**MyBookingsPage** (`src/components/client/MyBookingsPage.tsx`):
+- Список майбутніх та минулих записів
+- Скасування (з підтвердженням)
+- Повторний запис (кнопка "Записатись знову")
+
+**MyBottomNav** (`src/components/client/MyBottomNav.tsx`):
+- Записи / Майстри / Лояльність / Профіль
+- `env(safe-area-inset-bottom)` для iPhone notch
+
+**MyLoyaltyPage** (`src/components/client/MyLoyaltyPage.tsx`):
+- Прогрес по кожному майстру
+- Активні нагороди та умови отримання
+
+### Push-сповіщення та Нагадування
+
+| Канал | Подія |
+|-------|-------|
+| Web Push | Нагадування за 24г та 1г до запису |
+| Telegram | Нагадування за 24г (якщо є `profiles.telegram_chat_id`) |
+| SMS (fallback) | Нагадування за 24г якщо нема Push-підписки |
+| Push | Після візиту (+2г): запит відгуку |
+
+### Cron Rebooking
+
+`/api/cron/rebooking` (щодня 10:00 UTC):
+- Знаходить `completed` записи N-X днів тому (де N = середній інтервал клієнта)
+- Надсилає Push-нагадування: "Час знову до [ім'я майстра]?"
+- Таблиця `rebooking_reminders` — щоб не дублювати
+
+---
+
+## 4. Технічний Стек та Архітектура
+
+```
+Frontend:   Next.js 16 (App Router, Turbopack) · TypeScript strict · Tailwind CSS v4
+UX/Motion:  Framer Motion · Lucide React · Radix-based primitives
+Forms:      React Hook Form + Zod (схеми валідації окремо від компонентів)
+State:      TanStack Query v5 (staleTime per hook) · Zustand (локальний UI-стан)
+Backend:    Supabase (PostgreSQL + RLS + Realtime + Storage + Edge Functions)
+Auth:       SMS OTP → virtual email → Supabase magiclink token (пароль НІКОЛИ не в response)
+Payments:   WayForPay (HMAC-MD5 підпис) · Monobank (Ed25519 підпис)
+Push:       Web Push API (VAPID) · TurboSMS (SMS fallback)
+Telegram:   Bot API (HTML parse_mode, escHtml() обов'язково)
+Deploy:     Vercel (Edge Runtime) · Vercel Cron Jobs · Supabase Cloud
+PWA:        Service Worker (Cache-First / Network-First / Network-Only per route type)
+```
+
+### Структура Проєкту
 
 ```
 src/
+├── proxy.ts                           — захист маршрутів (Next.js 16: proxy.ts + export function proxy)
 ├── app/
 │   ├── (auth)/login, register/        — вхід / реєстрація
-│   ├── (master)/dashboard/            — панель майстра (захищена)
-│   │   ├── page.tsx                   — головна
-│   │   ├── bookings/                  — записи
-│   │   ├── services/                  — послуги + товари
-│   │   ├── clients/                   — CRM
-│   │   ├── analytics/                 — аналітика (Pro)
-│   │   ├── flash/                     — flash-акції
-│   │   ├── pricing/                   — динамічне ціноутворення
-│   │   ├── billing/                   — підписки та оплата
-│   │   ├── settings/                  — налаштування + VacationManager
-│   │   ├── reviews/                   — відгуки
-│   │   ├── portfolio/                 — портфоліо
-│   │   ├── referral/                  — реферальна програма
-│   │   ├── loyalty/                   — програма лояльності
-│   │   └── studio/                    — Studio-тариф (мультимайстер)
-│   ├── [slug]/                        — публічна сторінка майстра
-│   ├── my/                            — зона клієнта
+│   ├── (master)/
+│   │   ├── layout.tsx                 — server-side auth check для майстра
+│   │   └── dashboard/
+│   │       ├── page.tsx               — головна (StatsStrip, TodaySchedule, NotificationsBell)
+│   │       ├── bookings/              — список записів + пошук + CSV export (Pro)
+│   │       ├── services/              — послуги + товари (CRUD, reorder)
+│   │       ├── clients/               — CRM: ClientDetailSheet, теги, VIP
+│   │       ├── analytics/             — аналітика Pro (charts, retention, когорти)
+│   │       ├── flash/                 — flash-акції
+│   │       ├── pricing/               — dynamic pricing rules
+│   │       ├── billing/               — підписки (WayForPay + Monobank)
+│   │       ├── settings/              — working hours, VacationManager, Telegram
+│   │       ├── reviews/               — відгуки клієнтів
+│   │       ├── portfolio/             — фото портфоліо (drag-reorder)
+│   │       ├── referral/              — реферальна програма
+│   │       ├── loyalty/               — програма лояльності
+│   │       └── studio/                — Studio-тариф (мультимайстер)
+│   ├── [slug]/page.tsx                — публічна сторінка майстра (Server Component)
+│   ├── my/
+│   │   ├── layout.tsx                 — client area layout + MyBottomNav
 │   │   ├── bookings/                  — мої записи
-│   │   ├── profile/                   — мій профіль
+│   │   ├── profile/                   — мій профіль (зміна телефону, аватар)
 │   │   ├── masters/                   — мої майстри
 │   │   └── loyalty/                   — моя лояльність
 │   ├── explore/                       — каталог майстрів
 │   ├── invite/[code]/                 — реферальний лендінг
-│   ├── studio/join/                   — приєднання до студії
-│   ├── onboarding/                    — онбординг
+│   ├── studio/join/                   — приєднання до студії за токеном
+│   ├── onboarding/                    — онбординг нового майстра
 │   ├── offline/                       — PWA offline page
 │   ├── auth/callback/                 — OAuth callback
 │   └── api/
-│       ├── auth/send-sms, verify-sms, link-booking/
-│       ├── billing/webhook, mono-webhook/
-│       ├── cron/reminders, reset-monthly, rebooking/
-│       └── push/subscribe/
+│       ├── auth/send-sms/             — відправка OTP (rate-limit)
+│       ├── auth/verify-sms/           — верифікація OTP → magiclink token
+│       ├── auth/link-booking/         — прив'язка booking після SMS auth
+│       ├── billing/webhook/           — WayForPay (HMAC-MD5)
+│       ├── billing/mono-webhook/      — Monobank (Ed25519)
+│       ├── cron/reminders/            — нагадування за 24г
+│       ├── cron/reset-monthly/        — скидання лічильників
+│       ├── cron/rebooking/            — smart rebooking suggestions
+│       └── push/subscribe/            — CRUD push підписок
 ├── components/
 │   ├── auth/                          — LoginForm, PhoneOtpForm, RegisterForm
-│   ├── master/                        — всі компоненти дашборду
+│   ├── master/                        — всі компоненти дашборду майстра
 │   ├── public/                        — BookingFlow, PublicMasterPage, ExplorePage
-│   ├── client/                        — MyBookingsPage, MyProfilePage, etc.
+│   ├── client/                        — MyBookingsPage, MyLoyaltyPage, MyBottomNav
 │   ├── landing/                       — Hero, Features, Pricing, FooterCTA
-│   ├── shared/                        — BlobBackground, BottomNav, InstallBanner
+│   ├── shared/                        — BookingWizard, BlobBackground, InstallBanner
 │   └── ui/                            — Button, Card, Input, Badge, BottomSheet
 ├── lib/
-│   ├── supabase/admin.ts              — ЄДИНИЙ admin client
-│   ├── supabase/client.ts, server.ts, context.tsx
-│   ├── supabase/hooks/                — useBookings, useServices, useNotifications, etc.
-│   ├── telegram.ts                    — sendTelegramMessage, buildBookingMessage
-│   ├── push.ts                        — broadcastPush
-│   ├── email.ts
-│   ├── utils/                         — cn, currency, dates, dynamicPricing, smartSlots
+│   ├── supabase/
+│   │   ├── admin.ts                   — ЄДИНИЙ admin client (service_role_key тут і тільки тут)
+│   │   ├── client.ts                  — singleton browser client
+│   │   ├── server.ts                  — SSR client (cookies)
+│   │   ├── context.tsx                — SupabaseProvider
+│   │   └── hooks/                     — useBookings, useServices, useNotifications, etc.
+│   ├── telegram.ts                    — sendTelegramMessage, buildBookingMessage, escHtml
+│   ├── push.ts                        — broadcastPush(subscriptions[], payload)
+│   ├── utils/
+│   │   ├── dates.ts                   — formatDate, formatDateFull, timeAgo, pluralize, ...
+│   │   ├── dynamicPricing.ts          — calculateDynamicPrice
+│   │   ├── smartSlots.ts              — generateSlots
+│   │   └── cn.ts                      — clsx + tailwind-merge
 │   └── constants/                     — categories, themes
-├── types/database.ts
-└── proxy.ts                           — захист маршрутів (Next.js 16)
+├── types/database.ts                  — авто-генеровані типи Supabase
+└── middleware.ts                      — ЗАСТАРІЛИЙ, Next.js 16 ігнорує (використовується proxy.ts)
 ```
 
 ---
 
-## 4. МАРШРУТИЗАЦІЯ ТА ЗАХИСТ
+## 5. Схема Бази Даних
 
-### 4.1 Proxy (Next.js 16)
+### Identity
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `profiles` | `id` (FK auth.users), `full_name`, `phone`, `role`, `telegram_chat_id` | Базовий профіль всіх користувачів |
+| `master_profiles` | `id`, `slug`, `subscription_tier`, `pricing_rules` (jsonb), `working_hours` (jsonb), `telegram_chat_id` | Бізнес-профіль майстра |
+| `client_master_relations` | `(client_id, master_id)` PK, `total_visits`, `total_spent`, `average_check`, `last_visit_at`, `is_vip`, `tags[]` | CRM-зв'язок клієнт↔майстер |
+
+> **Важливо:** `profiles.telegram_chat_id` — клієнтський Telegram (нагадування). `master_profiles.telegram_chat_id` — бізнес Telegram майстра (нові записи). Сторінка налаштувань зберігає у `master_profiles`.
+
+### Catalog
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `services` | `master_id`, `name`, `duration` (хв), `price` (копійки), `category`, `position`, `is_active` | Послуги майстра |
+| `products` | `master_id`, `name`, `price`, `stock`, `is_active` | Товари для продажу |
+| `product_service_links` | `product_id`, `service_id` | Рекомендовані товари до послуги |
+| `service_categories` | `master_id`, `name`, `position` | Категорії послуг (custom) |
+
+### Schedule
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `schedule_templates` | `master_id`, `day_of_week`, `start_time`, `end_time`, `is_enabled` | Шаблон робочих годин (резерв) |
+| `schedule_exceptions` | `master_id`, `date`, `type` ('vacation'/'blocked') | Заблоковані дати (відпустки) |
+
+> `working_hours` jsonb в `master_profiles` — основний спосіб зберігання розкладу: `{ mon: { start: "09:00", end: "18:00", enabled: true }, ... }`
+
+### Bookings
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `bookings` | `master_id`, `client_id`, `service_id`, `status`, `slot_date`, `slot_time`, `total_duration`, `total_price`, `source` | Основна таблиця записів |
+| `booking_services` | `booking_id`, `service_id`, `duration`, `price` | Деталізація послуг у multi-service |
+| `booking_products` | `booking_id`, `product_id`, `quantity`, `product_price` | Товари в записі (ціна на момент запису) |
+
+### Marketing
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `loyalty_programs` | `master_id`, `visits_required`, `reward_type`, `reward_value`, `is_active` | Програми лояльності майстра |
+| `flash_deals` | `master_id`, `service_name`, `slot_date`, `slot_time`, `original_price`, `discount_pct`, `expires_at`, `status` | Flash-акції з TTL |
+| `referrals` | `client_id`, `invite_code` UNIQUE, `master_id`, `status` | Реферальні запрошення |
+| `referral_bonuses` | `referrer_id`, `referred_id`, `bonus_days`, `applied_at` | Нараховані бонуси |
+
+### Studio
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `studios` | `owner_id`, `name`, `slug`, `invite_token` | Студія (мультимайстер) |
+| `studio_members` | `studio_id`, `master_id`, `joined_at` | Учасники студії |
+
+### Portfolio & Reviews
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `portfolio_items` | `master_id`, `image_url`, `caption`, `position` | Фото портфоліо з drag-reorder |
+| `reviews` | `booking_id` UNIQUE, `master_id`, `client_id`, `rating` (1–5), `comment` | Відгуки (1 на запис) |
+
+### Payments
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `payments` | `master_id`, `amount`, `provider` ('wayforpay'/'monobank'), `status`, `order_ref` | Транзакції |
+| `subscriptions` | `master_id`, `tier`, `expires_at`, `provider` | Активні підписки |
+
+### Notifications
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `notifications` | `user_id`, `type`, `title`, `body`, `is_read` | In-app сповіщення |
+| `push_subscriptions` | `user_id`, `endpoint` UNIQUE, `subscription` (JSON) | Web Push підписки (VAPID) |
+
+### Security
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `sms_otps` | `phone`, `code`, `used`, `created_at` | SMS OTP коди (TTL 10 хв) |
+| `sms_verify_attempts` | `phone`, `created_at` | Rate-limit верифікацій (10/15 хв) |
+| `sms_ip_logs` | `ip`, `phone`, `created_at` | Rate-limit відправки (10/год по IP) |
+
+### Rebooking
+
+| Таблиця | Ключові колонки | Мета |
+|---------|----------------|------|
+| `rebooking_reminders` | `booking_id`, `sent_at` | Дедуплікація rebooking push-сповіщень |
+
+---
+
+## 6. Стандарти Коду та Engineering Principles
+
+### Supabase Client Isolation
+
+```typescript
+// ЗАВЖДИ — єдиний singleton browser client:
+import { createClient } from '@/lib/supabase/client';
+// client.ts кешує після першого виклику, ніколи не re-creates
+
+// ЗАВЖДИ — admin client тільки в API routes / server actions:
+import { createAdminClient } from '@/lib/supabase/admin';
+const admin = createAdminClient();
+
+// НІКОЛИ — inline admin:
+// const admin = createClient(process.env.URL!, process.env.SERVICE_ROLE_KEY!)  ← ЗАБОРОНЕНО
+```
+
+`src/lib/supabase/admin.ts` — єдине місце з `service_role_key`. Використовується скрізь де потрібен bypass RLS: server actions, API webhooks, cron routes.
+
+### React Query Conventions
+
+| Hook / Дані | staleTime |
+|-------------|----------|
+| Dashboard stats | 1 хвилина |
+| Analytics | 5 хвилин |
+| Services / Products | 10 хвилин |
+| Notifications | 30 секунд |
+| Bookings list | 2 хвилини |
+
+- Placeholder data в кожному hook — запобігає flicker при гідратації
+- Invalidation: конкретні `queryKey` масиви (`['bookings', masterId]`), ніколи `invalidateQueries()` без аргументів
+- `safeQuery` / `safeMutation` wrapper — уніформна обробка помилок, запобігає silent failures
+
+### Date & Locale
+
+```typescript
+// ЗАВЖДИ так:
+import { format, formatDistanceToNow } from 'date-fns';
+import { uk } from 'date-fns/locale';
+
+// Утиліти в src/lib/utils/dates.ts:
+formatDate(date)          // "21 берез."
+formatDateFull(date)      // "21 березня 2026"
+formatDayFull(date)       // "субота, 21 березня"
+timeAgo(date)             // "3 год. тому"
+pluralize(n, forms)       // "1 запис / 2 записи / 5 записів"
+formatDurationFull(mins)  // "1 год. 30 хв."
+```
+
+**ЗАБОРОНЕНО:** хардкод масиви місяців/днів (`['Січень','Лютий',...]`), ternary плюралізація (`n === 1 ? 'запис' : 'записи'`).
+
+### Security Rules
+
+```
+SMS OTP:    atomic RPC check_and_log_sms_attempt() з advisory lock → race-condition bypass неможливий
+Webhooks:   WayForPay HMAC-MD5 + Monobank Ed25519 — перевірка підпису ОБОВ'ЯЗКОВА
+Cron:       Authorization: Bearer {CRON_SECRET} — без виключень, на першому рядку хендлера
+Telegram:   escHtml() на всіх user-supplied strings → захист від HTML injection
+Codes:      crypto.getRandomValues() для referral/invite/OTP — Math.random() ЗАБОРОНЕНО
+RLS:        всі таблиці захищені; тригери що пишуть в захищені таблиці → SECURITY DEFINER
+```
+
+### TypeScript Conventions
+
+```typescript
+// Strict mode — no any
+// Supabase builder arrays БЕЗ анотації:
+const ops = [
+  supabase.from('bookings').update(...),
+  supabase.from('client_master_relations').upsert(...),
+];
+await Promise.all(ops);  // НЕ Promise<unknown>[]
+
+// Server Components за замовчуванням
+// "use client" — тільки для компонентів з useState/useEffect/handlers
+```
+
+---
+
+## 7. API Endpoints
+
+### Auth
+
+| Метод | Endpoint | Призначення | Auth |
+|-------|----------|-------------|------|
+| POST | `/api/auth/send-sms` | Відправити OTP (rate-limit: 3/15хв по phone, 10/год по IP) | Public |
+| POST | `/api/auth/verify-sms` | Перевірити OTP → повертає `{ email, token, isNew }` (magiclink) | Public |
+| POST | `/api/auth/link-booking` | Прив'язати pending booking після SMS auth | Anon+token |
+
+**SMS OTP Flow:**
+```
+POST /api/auth/send-sms  ← { phone: "380XXXXXXXXX" }
+  → rate-limit check (sms_ip_logs + sms_otps)
+  → 4-значний код через crypto.getRandomValues()
+  → INSERT sms_otps (TTL 10 хв)
+  → TurboSMS API
+
+POST /api/auth/verify-sms  ← { phone, code }
+  → atomic check_and_log_sms_attempt() RPC
+  → перевірка created_at > now() - interval '10 minutes'
+  → admin.generateLink({ type: 'magiclink', email: virtualEmail })
+  → { email, token, isNew }   ← НІКОЛИ пароль не повертається!
+
+Client:
+  → supabase.auth.verifyOtp({ email, token, type: 'magiclink' })
+  → Сесія встановлена
+
+virtualEmail = phone.replace('+','') + '@bookit.app'
+```
+
+### Push
+
+| Метод | Endpoint | Призначення | Auth |
+|-------|----------|-------------|------|
+| POST | `/api/push/subscribe` | Зберегти Web Push підписку | Authenticated |
+| DELETE | `/api/push/subscribe` | Видалити підписку | Authenticated |
+
+### Billing
+
+| Метод | Endpoint | Призначення | Верифікація |
+|-------|----------|-------------|-------------|
+| POST | `/api/billing/webhook` | WayForPay: `transactionStatus === 'Approved'` → продовжити підписку | HMAC-MD5 |
+| POST | `/api/billing/mono-webhook` | Monobank: `status === 'success'` → продовжити підписку | Ed25519 |
+
+**WayForPay:** `orderRef` формат `sub_{masterId}_{timestamp}`. Підписка +31 день.
+**Monobank:** `reference` формат `bookit_{tier}_{uid32}_{timestamp}`. Pubkey кешується. Без double-extend.
+Обидва використовують `createAdminClient()` (не anon client!).
+
+### Cron (обов'язковий `Authorization: Bearer CRON_SECRET`)
+
+| Метод | Endpoint | Розклад | Дія |
+|-------|----------|---------|-----|
+| GET | `/api/cron/reminders` | `0 7 * * *` UTC | Push + SMS нагадування на завтра |
+| GET | `/api/cron/reset-monthly` | `5 0 1 * *` | Скинути `bookings_this_month`, downgrade прострочені підписки |
+| GET | `/api/cron/rebooking` | `0 10 * * *` | Smart rebooking push для клієнтів |
+
+---
+
+## 8. Маршрутизація та Захист
+
+### proxy.ts (Next.js 16)
+
+> **Next.js 16** deprecated `middleware.ts` → замінено на `src/proxy.ts` з `export function proxy`.
+> Файл `src/middleware.ts` — ЗАСТАРІЛИЙ, Next.js 16 його ігнорує.
 
 **Файл:** `src/proxy.ts`
-**Функція:** `export async function proxy(request: NextRequest)`
+**Export:** `export async function proxy(request: NextRequest)`
 
-> **Next.js 16** змінив конвенцію: `middleware.ts` → `proxy.ts`, функція `proxy` (не `middleware`).
-> Файл `src/middleware.ts` — **ЗАСТАРІЛИЙ**, Next.js його ігнорує.
-
-Логіка захисту:
 ```typescript
-// /dashboard — тільки masters
+// /dashboard → тільки майстри
 if (pathname.startsWith('/dashboard') && role !== 'master')
   → redirect('/my/bookings')
 
-// /my — тільки clients (майстри з cookie view_mode=client можуть зайти)
+// /my → клієнти (майстри з cookie view_mode=client — дозволено)
 if (pathname.startsWith('/my') && role === 'master' && !viewMode)
   → redirect('/dashboard')
 
-// guest-only сторінки — редирект якщо вже авторизований
-if (pathname === '/' || '/login' || '/register')
-  → redirect('/dashboard') або redirect('/my/bookings')
+// Guest-only сторінки → редирект якщо авторизований
+if (['/login', '/register'].includes(pathname) && user)
+  → redirect(role === 'master' ? '/dashboard' : '/my/bookings')
 
-// анонімний доступ до захищених — редирект на логін
-if (!user && (pathname startsWith /dashboard | /my | /onboarding))
+// Захищені маршрути для анонімних
+if (!user && (pathname startsWith /dashboard|/my|/onboarding))
   → redirect('/login')
 ```
 
-### 4.2 Маршрути
+### Таблиця Маршрутів
 
-| Шлях | Тип | Захист |
-|------|-----|--------|
-| `/` | Server | Guest only (редирект якщо авторизований) |
+| Шлях | Рендер | Захист |
+|------|--------|--------|
+| `/` | Server | Guest (редирект якщо auth) |
 | `/[slug]` | Server | Public |
 | `/explore` | Server | Public |
 | `/login`, `/register` | Client | Guest only |
 | `/invite/[code]` | Server | Public |
 | `/onboarding` | Client | Auth |
 | `/dashboard/**` | Server+Client | Master only |
-| `/my/**` | Client | Auth (client or master+cookie) |
+| `/my/**` | Client | Auth (client або master+cookie) |
 | `/studio/join` | Client | Auth |
+| `/offline` | Static | Public (PWA fallback) |
 
 ---
 
-## 5. АУТЕНТИФІКАЦІЯ
+## 9. Дизайн-система
 
-### 5.1 SMS OTP Flow (основний)
+### Палітра
 
-```
-POST /api/auth/send-sms
-  ← phone (380XXXXXXXXX)
-  → rate-limit: 3 SMS/15 хв (по phone) + 10 req/год (по IP)
-  → 4-значний код через crypto.getRandomValues()
-  → збереження в sms_otps (TTL 10 хв)
-  → TurboSMS API
-
-POST /api/auth/verify-sms
-  ← phone, code
-  → rate-limit: 10 спроб/15 хв (sms_verify_attempts)
-  → перевірка created_at > now() - 10 min
-  → admin.generateLink({ type: 'magiclink', email: virtualEmail })
-  → { email, token, isNew }  ← НІКОЛИ не повертати пароль!
-
-Client → supabase.auth.verifyOtp({ email, token, type: 'magiclink' })
-  → Сесія встановлена
-```
-
-`virtualEmail = phone.replace('+','') + '@bookit.app'`
-
-### 5.2 Реєстрація майстра
-
-```
-POST /register
-  → supabase.auth.signUp({ email, password })
-  → INSERT profiles { id, full_name, phone, role: 'master' }
-  → INSERT master_profiles { id, slug }
-    (якщо master_profiles fail → DELETE profiles → rollback)
-  → Redirect /dashboard
-```
-
-Referral/invite code: генерується через `crypto.getRandomValues()`.
-
-### 5.3 Google OAuth
-
-```
-/auth/google → Supabase OAuth → /auth/callback
-  → Якщо новий user → INSERT profiles + master_profiles
-  → Redirect: /dashboard (master) або /my/bookings (client)
-```
-
----
-
-## 6. СХЕМА БАЗИ ДАНИХ
-
-### 6.1 Таблиці
-
-```sql
--- Базові профілі
-CREATE TABLE profiles (
-  id               uuid PRIMARY KEY REFERENCES auth.users(id),
-  full_name        text,
-  phone            text UNIQUE,
-  email            text,
-  role             text CHECK (role IN ('master','client')) DEFAULT 'client',
-  avatar_url       text,
-  telegram_chat_id text,   -- клієнтський Telegram (для нагадувань)
-  created_at       timestamptz DEFAULT now()
-);
-
--- Профілі майстрів
-CREATE TABLE master_profiles (
-  id                      uuid PRIMARY KEY REFERENCES profiles(id),
-  slug                    text UNIQUE NOT NULL,
-  bio                     text,
-  subscription_tier       text CHECK (subscription_tier IN ('starter','pro','studio')) DEFAULT 'starter',
-  subscription_expires_at timestamptz,
-  bookings_this_month     int DEFAULT 0,
-  commission_rate         numeric(4,3) DEFAULT 0.05,
-  pricing_rules           jsonb,           -- dynamic pricing
-  telegram_chat_id        text,            -- бізнес Telegram майстра (для нових записів)
-  theme                   text DEFAULT 'classic',
-  working_hours           jsonb,           -- { mon: { start, end, enabled }, ... }
-  created_at              timestamptz DEFAULT now()
-);
-
--- Послуги
-CREATE TABLE services (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  master_id   uuid REFERENCES master_profiles(id),
-  name        text NOT NULL,
-  description text,
-  duration    int NOT NULL,    -- хвилини
-  price       int NOT NULL,    -- копійки
-  category    text,
-  position    int DEFAULT 0,
-  is_active   bool DEFAULT true,
-  image_url   text,
-  created_at  timestamptz DEFAULT now()
-);
-
--- Товари
-CREATE TABLE products (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  master_id   uuid REFERENCES master_profiles(id),
-  name        text NOT NULL,
-  description text,
-  price       int NOT NULL,    -- копійки
-  stock       int,
-  image_url   text,
-  is_active   bool DEFAULT true,
-  created_at  timestamptz DEFAULT now()
-);
-
--- Записи
-CREATE TABLE bookings (
-  id                   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  master_id            uuid REFERENCES master_profiles(id),
-  client_id            uuid REFERENCES profiles(id),
-  service_id           uuid REFERENCES services(id),
-  status               text CHECK (status IN ('pending','confirmed','completed','cancelled')) DEFAULT 'pending',
-  slot_date            date NOT NULL,
-  slot_time            time NOT NULL,
-  total_duration       int,       -- хвилин (multi-service)
-  total_price          int,       -- копійки
-  total_products_price int DEFAULT 0,
-  commission_amount    int DEFAULT 0,
-  notes                text,
-  source               text,      -- 'online' | 'manual'
-  created_at           timestamptz DEFAULT now()
-);
-
--- Товари в записі
-CREATE TABLE booking_products (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id    uuid REFERENCES bookings(id),
-  product_id    uuid REFERENCES products(id),
-  quantity      int DEFAULT 1,
-  product_price int NOT NULL    -- ціна на момент запису
-);
-
--- CRM-відносини клієнт↔майстер
-CREATE TABLE client_master_relations (
-  client_id     uuid REFERENCES profiles(id),
-  master_id     uuid REFERENCES master_profiles(id),
-  total_visits  int DEFAULT 0,
-  total_spent   int DEFAULT 0,
-  average_check int DEFAULT 0,
-  last_visit_at timestamptz,
-  is_vip        bool DEFAULT false,
-  tags          text[],
-  notes         text,
-  PRIMARY KEY   (client_id, master_id)
-);
-
--- Відгуки (1 відгук на запис)
-CREATE TABLE reviews (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id  uuid REFERENCES bookings(id) UNIQUE,
-  master_id   uuid REFERENCES master_profiles(id),
-  client_id   uuid REFERENCES profiles(id),
-  rating      int CHECK (rating BETWEEN 1 AND 5),
-  comment     text,
-  created_at  timestamptz DEFAULT now()
-);
-
--- Web Push підписки
-CREATE TABLE push_subscriptions (
-  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  user_id      uuid REFERENCES profiles(id),
-  endpoint     text UNIQUE NOT NULL,
-  subscription text NOT NULL,    -- JSON PushSubscription
-  created_at   timestamptz DEFAULT now()
-);
-
--- Flash-акції
-CREATE TABLE flash_deals (
-  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  master_id      uuid REFERENCES master_profiles(id),
-  service_name   text NOT NULL,
-  slot_date      date NOT NULL,
-  slot_time      time NOT NULL,
-  original_price int NOT NULL,   -- копійки
-  discount_pct   int NOT NULL,
-  expires_at     timestamptz NOT NULL,
-  status         text CHECK (status IN ('active','expired','booked')) DEFAULT 'active',
-  created_at     timestamptz DEFAULT now()
-);
-
--- SMS OTP
-CREATE TABLE sms_otps (
-  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  phone      text NOT NULL,
-  code       text NOT NULL,
-  used       bool DEFAULT false,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
--- Rate-limiting OTP верифікацій (migration 016)
-CREATE TABLE sms_verify_attempts (
-  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  phone      text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
--- Виключення в графіку (відпустки)
-CREATE TABLE schedule_exceptions (
-  id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  master_id uuid REFERENCES master_profiles(id),
-  date      date NOT NULL,
-  type      text DEFAULT 'vacation'
-);
-
--- Нотифікації
-CREATE TABLE notifications (
-  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    uuid REFERENCES profiles(id),
-  type       text,
-  title      text,
-  body       text,
-  is_read    bool DEFAULT false,
-  created_at timestamptz DEFAULT now()
-);
-
--- Реферальна система
-CREATE TABLE referrals (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id   uuid REFERENCES profiles(id),
-  invite_code text UNIQUE NOT NULL,
-  master_id   uuid REFERENCES master_profiles(id),
-  status      text DEFAULT 'pending',  -- 'pending' | 'registered'
-  created_at  timestamptz DEFAULT now()
-);
-
--- Студійні інвайти
-CREATE TABLE studio_invites (
-  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  studio_id  uuid REFERENCES master_profiles(id),
-  token      text UNIQUE NOT NULL,
-  email      text,
-  status     text DEFAULT 'pending',
-  created_at timestamptz DEFAULT now()
-);
-
--- Портфоліо
-CREATE TABLE portfolio_items (
-  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  master_id  uuid REFERENCES master_profiles(id),
-  image_url  text NOT NULL,
-  caption    text,
-  position   int DEFAULT 0,
-  created_at timestamptz DEFAULT now()
-);
-```
-
-### 6.2 Важливо: два різних telegram_chat_id
-
-| Таблиця | Поле | Призначення |
-|---------|------|-------------|
-| `profiles` | `telegram_chat_id` | Telegram клієнта (нагадування про записи) |
-| `master_profiles` | `telegram_chat_id` | Telegram майстра (нові записи, скасування) |
-
-Налаштування в `/dashboard/settings` зберігають в `master_profiles`, НЕ в `profiles`.
-
-### 6.3 Тригер CRM-метрик
-
-```sql
-CREATE OR REPLACE FUNCTION update_client_master_metrics()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.status = 'completed' AND OLD.status != 'completed' THEN
-    INSERT INTO client_master_relations (client_id, master_id, total_visits, total_spent, last_visit_at)
-    VALUES (NEW.client_id, NEW.master_id, 1, NEW.total_price, now())
-    ON CONFLICT (client_id, master_id) DO UPDATE SET
-      total_visits  = client_master_relations.total_visits + 1,
-      total_spent   = client_master_relations.total_spent + NEW.total_price,
-      average_check = (client_master_relations.total_spent + NEW.total_price) / (client_master_relations.total_visits + 1),
-      last_visit_at = now(),
-      updated_at    = now();
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-```
-
-### 6.4 Міграції
-
-| Файл | Зміст |
-|------|-------|
-| 001–003 | Початкова схема, auth trigger, grants |
-| 004–006 | Reviews, booking policies, CRM policies |
-| 007–009 | Media fields, inventory trigger, push_subscriptions |
-| 010–011 | Referrals, studios |
-| 012–013 | Killer features, trigger security fix |
-| 014–015 | Portfolio, avatar emoji |
-| 016 | `sms_verify_attempts` table + `sms_otps.created_at` |
-| 017 | `master_profiles.telegram_chat_id` |
-
----
-
-## 7. SUPABASE ADMIN CLIENT
-
-```typescript
-// ЗАВЖДИ так:
-import { createAdminClient } from '@/lib/supabase/admin';
-const admin = createAdminClient();
-
-// НІКОЛИ не inline:
-// const admin = createClient(URL, SERVICE_ROLE_KEY)  ← ЗАБОРОНЕНО
-```
-
-Використовується скрізь де потрібен bypass RLS: server actions, API webhooks, cron routes.
-
----
-
-## 8. ДИЗАЙН-СИСТЕМА
-
-### Кольори
-
-| Назва | Hex | Використання |
+| Токен | Hex | Використання |
 |-------|-----|-------------|
-| Peach | `#FFD2C2` | Основний фон |
-| Sage | `#789A99` | Акцент, кнопки |
-| Text Primary | `#2C1A14` | Заголовки |
-| Text Secondary | `#6B5750` | Підписи |
-| Text Tertiary | `#A8928D` | Плейсхолдери |
-| Surface | `rgba(255,255,255,0.68)` | Mica-ефект карток |
-| Success | `#5C9E7A` | |
-| Warning | `#D4935A` | |
-| Error | `#C05B5B` | |
+| Background | `#FFE8DC` | Основний фон (персик/salmon) |
+| Accent | `#789A99` | Кнопки, акценти, лінки (шавлія/sage teal) |
+| Text Primary | `#2C1A14` | Заголовки, основний текст |
+| Text Secondary | `#6B5750` | Підписи, допоміжний текст |
+| Text Tertiary | `#A8928D` | Плейсхолдери, disabled |
+| Surface | `rgba(255, 255, 255, 0.68)` | Mica-ефект карток (backdrop-blur) |
+| Success | `#5C9E7A` | Підтверджено, оплачено |
+| Warning | `#D4935A` | Pending, попередження |
+| Error | `#C05B5B` | Помилки, скасовано |
 
 ### Типографіка
 
-- **Body:** Inter (cyrillic)
-- **Display:** Playfair Display (cyrillic)
-- CSS-класи: `.display-xl`, `.display-lg`, `.display-md`, `.heading-serif`, `.font-display`
+- **Body:** Inter з кириличним subset (`font-sans`)
+- **Display/Heading:** Playfair Display з кириличним subset (`font-display`)
+
+| CSS клас | Застосування |
+|----------|-------------|
+| `.display-xl` | Hero заголовки |
+| `.display-lg` | Заголовки секцій |
+| `.display-md` | Картки, модалки |
+| `.heading-serif` | Акцентні підзаголовки |
+| `.font-display` | Будь-який serif елемент |
 
 ### Компоненти
 
-- Card radius: 24px | Button radius: 16px | Input radius: 12px
-- `.bento-card` — backdrop-blur, border, shadow
-- Blob background — peach + sage + cream, `z-index: -1`
-- Grain overlay — `position: fixed`, `z-index: 9999`, `opacity: 0.03`
-- Всі анімації — `will-change: transform` (GPU)
+- **Card radius:** 24px | **Button radius:** 16px | **Input radius:** 12px
+- **`.bento-card`** — `backdrop-blur`, Mica-ефект, `border: 1px solid rgba(255,255,255,0.4)`, `box-shadow`
+- **Blob background** — peach + sage + cream градієнтні blobs, `z-index: -1`
+- **Grain overlay** — `position: fixed`, `z-index: 9999`, `opacity: 0.03` — analog texture
+- Всі анімації — `will-change: transform` (GPU layer)
 
 ### Tailwind CSS v4
 
 ```css
-@import "tailwindcss";   /* globals.css — НЕ @tailwind base/components/utilities */
+/* globals.css — НЕ @tailwind base/components/utilities */
+@import "tailwindcss";
+
+@theme {
+  --color-peach: #FFE8DC;
+  --color-sage: #789A99;
+  /* ... */
+}
 ```
 
-Немає `tailwind.config.ts` — лише CSS-конфіг через `@theme {}`.
+Немає `tailwind.config.ts` — конфігурація виключно через `@theme {}` в CSS.
 
 ### Mood Themes
 
 `classic` | `dark` | `rose-gold` | `mint` — зберігається в `master_profiles.theme`.
+Застосовується через CSS data-attribute на `<html>` елементі.
+
+### Mobile-First
+
+- Safe-area insets: `env(safe-area-inset-bottom)` у `MyBottomNav`
+- BottomSheet замість модалок на мобільних
+- Touch targets мінімум 44×44px
+- No hover-only interactions
 
 ---
 
-## 9. БІЗНЕС-ЛОГІКА
+## 10. PWA та Offline
 
-### Тарифи
-
-| Функція | Starter (0₴) | Pro (349₴/міс) | Studio (199₴×N/міс) |
-|---------|:---:|:---:|:---:|
-| Записи на місяць | 30 | ∞ | ∞ |
-| Аналітика | — | ✓ | ✓ |
-| CRM повний | — | ✓ | ✓ |
-| CSV-експорт | — | ✓ | ✓ |
-| Flash-акції | 2/міс | ∞ | ∞ |
-| Реактивація клієнтів | — | ✓ | ✓ |
-| Без вотермарки | — | ✓ | ✓ |
-| Мультимайстер | — | — | ✓ |
-
-### Ліміт записів (Starter: 30/міс)
-
-`bookings_this_month` скидається cron-джобом `reset-monthly` (1-го числа, 00:05 UTC).
-При спробі нового запису — перевірка в BookingFlow → locked state + CTA "Перейти на Pro".
-
-### Multi-service бронювання
-
-- Клієнт обирає кілька послуг (checkboxes)
-- `totalDuration` = сума, перевірка consecutive slots
-- `total_price` в копійках
-
-### Динамічне ціноутворення
-
-```typescript
-interface PricingRules {
-  peakHours:  { start: string; end: string; multiplier: number }[];
-  lastMinute: { hoursThreshold: number; discount: number };
-  earlyBird:  { daysThreshold: number; discount: number };
-}
-```
-
-Зберігається в `master_profiles.pricing_rules` (jsonb). Редагується на `/dashboard/pricing`.
-
-### Комісія з продажів товарів
-
-При `status → 'completed'`:
-```typescript
-const productTotal = booking_products.reduce((s, p) => s + p.product_price * p.quantity, 0);
-const commission = productTotal * master.commission_rate; // default 5%
-```
-
-### Відпустки / Заблоковані дати
-
-Таблиця `schedule_exceptions` — майстер блокує дати через VacationManager.
-BookingFlow завантажує `blockedDates` і disabled їх у date strip.
-
----
-
-## 10. НОТИФІКАЦІЇ
-
-### Типи та канали
-
-| Подія | Отримувач | Push | Telegram | SMS |
-|-------|-----------|:----:|:--------:|:---:|
-| Новий запис | Майстер | ✓ | ✓ | — |
-| Підтвердження | Клієнт | ✓ | ✓ | — |
-| Нагадування 24г | Клієнт | ✓ | ✓ | fallback |
-| Нагадування 1г | Клієнт | ✓ | — | — |
-| Скасування | Обидва | ✓ | ✓ | — |
-| Реактивація 30 днів | Клієнт | — | ✓ | — |
-| Flash-акція | Клієнти майстра | ✓ | ✓ | — |
-| Після візиту (+2г) | Клієнт | ✓ | — | — |
-
-### Telegram
-
-- Бот: `/start [user_id]` → зберігає `telegram_chat_id`
-- HTML-теги: `<b>`, `<i>`, `<a>` — всі user-supplied strings обов'язково через `escHtml()`
-- `lib/telegram.ts`: `sendTelegramMessage()`, `buildBookingMessage()`, `buildCancellationMessage()`
-
-### Web Push
-
-- VAPID-ключі: `NEXT_PUBLIC_VAPID_KEY` + `VAPID_PRIVATE_KEY`
-- `lib/push.ts`: `broadcastPush(subscriptions[], { title, body, url })`
-- Підписки в `push_subscriptions` (upsert by endpoint)
-
-### Cron Jobs
-
-| Route | Розклад | Дія |
-|-------|---------|-----|
-| `/api/cron/reminders` | `0 7 * * *` (UTC) | Push/SMS нагадування на завтра |
-| `/api/cron/reset-monthly` | `5 0 1 * *` | Скинути bookings_this_month, downgrade прострочені |
-| `/api/cron/rebooking` | `0 10 * * *` | Нагадування повторного запису |
-
-**Auth:** всі cron routes перевіряють `Authorization: Bearer {CRON_SECRET}` — завжди, без умов.
-
----
-
-## 11. ПЛАТЕЖІ
-
-### WayForPay
-
-- Підпис: HMAC-MD5
-- Webhook: `POST /api/billing/webhook` → `createAdminClient()` (не createClient!)
-- `transactionStatus === 'Approved'` → оновити `subscription_tier` + `subscription_expires_at` (+31 день)
-- orderRef формат: `sub_{masterId}_{timestamp}`
-
-### Monobank
-
-- Підпис: Ed25519, публічний ключ кешується в пам'яті процесу
-- Webhook: `POST /api/billing/mono-webhook`
-- reference формат: `bookit_{tier}_{uid32}_{timestamp}`
-- Не подовжує якщо підписка ще активна (немає double-extend)
-
----
-
-## 12. API ENDPOINTS
-
-### Auth
-
-| Method | Path | Опис |
-|--------|------|------|
-| POST | `/api/auth/send-sms` | Відправити OTP (rate-limit: 3/15хв phone, 10/год IP) |
-| POST | `/api/auth/verify-sms` | Перевірити OTP → magiclink token |
-| POST | `/api/auth/link-booking` | Прив'язати booking після auth |
-
-### Push
-
-| Method | Path | Опис |
-|--------|------|------|
-| POST | `/api/push/subscribe` | Зберегти push підписку |
-| DELETE | `/api/push/subscribe` | Видалити push підписку |
-
-### Billing
-
-| Method | Path | Опис |
-|--------|------|------|
-| POST | `/api/billing/webhook` | WayForPay webhook |
-| POST | `/api/billing/mono-webhook` | Monobank webhook |
-
-### Cron (вимагають `Authorization: Bearer CRON_SECRET`)
-
-| Method | Path |
-|--------|------|
-| GET | `/api/cron/reminders` |
-| GET | `/api/cron/reset-monthly` |
-| GET | `/api/cron/rebooking` |
-
----
-
-## 13. РЕФЕРАЛЬНА СИСТЕМА
-
-### Клієнт запрошує майстра (`/my/invite`)
-
-1. Клієнт генерує `invite_code` → `bookit.com.ua/invite/[code]`
-2. Шерить повідомлення через Web Share API
-
-### Реферальний лендінг (`/invite/[code]`)
-
-- Персоналізована сторінка з аватарами клієнтів, що чекають
-- **Boosted Start:** 50 записів/міс на 3 місяці + тема Rose Gold
-
-### Після реєстрації через реферал
-
-1. INSERT `client_master_relations` для всіх клієнтів, що чекають
-2. Push-нотифікація кожному клієнту
-3. `referrals.status = 'registered'`
-4. Ambassador levels: 3 invited → level 1, 5 → level 2
-
----
-
-## 14. FLASH-АКЦІЇ
-
-- Майстер: послуга + слот + знижка 10–50% + TTL 2/4/8 год
-- Розсилка: Push + Telegram → всі клієнти з `completed` бронюваннями у цього майстра
-- Starter: 2 акції/міс. Pro/Studio: ∞
-- Скасування: `status → 'expired'`
-- Server action: `cancelFlashDeal()` → `createAdminClient()` (виправлено з inline `createAdmin`)
-
----
-
-## 15. PWA
+### Web App Manifest
 
 ```json
 {
   "name": "Bookit — Онлайн запис",
   "short_name": "Bookit",
   "display": "standalone",
-  "background_color": "#FFD2C2",
+  "background_color": "#FFE8DC",
   "theme_color": "#789A99",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "shortcuts": [
+    { "name": "Мої записи", "url": "/my/bookings" },
+    { "name": "Панель", "url": "/dashboard" }
+  ]
 }
 ```
 
-| Ресурс | Стратегія |
-|--------|-----------|
-| Публічні сторінки | Cache First |
-| Dashboard | Network First |
-| Статика | Stale While Revalidate |
-| API | Network Only |
+Іконки: `192×192` та `512×512` (PNG + maskable).
+
+### Service Worker Стратегії
+
+| Тип ресурсу | Стратегія | Деталі |
+|------------|----------|--------|
+| Статичні файли (JS, CSS, шрифти) | **Cache First** | Кеш → мережа (fallback) |
+| Публічні сторінки (`/[slug]`, `/explore`) | **Cache First** | 24г TTL |
+| Dashboard та `/my/` | **Network First** | Мережа → кеш (якщо offline) |
+| API Supabase | **Network Only** | Ніколи не кешувати |
+| Offline fallback | `/offline` | При повній відсутності мережі |
+
+### Push Notifications
+
+```javascript
+// Service Worker:
+self.addEventListener('push', (event) => {
+  const { title, body, url, bookingId } = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/icons/icon-192.png',
+      data: { url, bookingId }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data.url));
+});
+```
+
+**VAPID ключі:** `NEXT_PUBLIC_VAPID_KEY` (public) + `VAPID_PRIVATE_KEY` (server).
+Підписки зберігаються в `push_subscriptions` (upsert by endpoint).
 
 ---
 
-## 16. БЕЗПЕКА
+## 11. Безпека та Аудит
 
-### Виправлені вразливості
+### Закриті Вразливості
 
-| # | Вразливість | Статус |
-|---|-------------|--------|
-| 1 | Витік пароля в `/api/auth/verify-sms` (повертав SERVICE_ROLE_KEY) | ✅ Виправлено: magiclink token |
-| 2 | Middleware не працював (`proxy.ts` → ігнорувався Next.js) | ✅ Виправлено: `src/proxy.ts` + `export function proxy` |
-| 3 | WayForPay webhook тихо падав (`createClient()` без cookies) | ✅ Виправлено: `createAdminClient()` |
-| 4 | Monobank webhook без верифікації підпису | ✅ Виправлено: Ed25519 |
-| 5 | OTP brute-force (необмежені спроби) | ✅ Виправлено: `sms_verify_attempts`, 10 спроб/15 хв |
-| 6 | Cron routes без обов'язкової auth | ✅ Виправлено: завжди перевіряємо CRON_SECRET |
-| 7 | HTML-ін'єкція в Telegram | ✅ Виправлено: `escHtml()` |
-| 8 | `submitReview` приймав `master_id` від клієнта | ✅ Виправлено: master_id з БД |
-| 9 | `telegram_chat_id` зберігався в `profiles` (читалось з `master_profiles`) | ✅ Виправлено |
-| 10 | `Math.random()` для referral/invite token | ✅ Виправлено: `crypto.getRandomValues()` |
-| 11 | Дублювання admin client у 10+ файлах | ✅ Уніфіковано: `createAdminClient` |
-| 12 | Debug console.log з OTP та user ID | ✅ Видалено |
-| 13 | `cancelFlashDeal` використовував невизначений `createAdmin` | ✅ Виправлено |
+| # | Категорія | Вразливість | Виправлення |
+|---|-----------|-------------|-------------|
+| 1 | **CRITICAL** | OTP brute-force: необмежені спроби верифікації | `sms_verify_attempts` table, 10 спроб/15 хв, atomic advisory lock |
+| 2 | **CRITICAL** | Витік service role key: `/api/auth/verify-sms` повертав пароль у відповіді | Magiclink token flow — пароль НІКОЛИ не в response |
+| 3 | **CRITICAL** | Route protection bypass: `middleware.ts` ігнорувався Next.js 16 | `src/proxy.ts` + `export function proxy` |
+| 4 | **HIGH** | Webhook spoofing WayForPay: без перевірки підпису | HMAC-MD5 верифікація обов'язкова |
+| 5 | **HIGH** | Webhook spoofing Monobank: без перевірки підпису | Ed25519 верифікація через офіційний pubkey |
+| 6 | **HIGH** | Admin client exposure: `createClient(url, serviceRoleKey)` у 10+ компонентах | Уніфіковано: `createAdminClient()` тільки з `@/lib/supabase/admin` |
+| 7 | **HIGH** | WayForPay webhook тихо падав: anon client не мав RLS bypass | `createAdminClient()` у webhook |
+| 8 | **HIGH** | Cron endpoints без auth: будь-хто міг тригерити | `Authorization: Bearer CRON_SECRET` — обов'язково, без виключень |
+| 9 | **MEDIUM** | HTML injection в Telegram: user strings в HTML parse_mode | `escHtml()` на всіх user-supplied strings |
+| 10 | **MEDIUM** | Слабкий генератор кодів: `Math.random()` для referral/invite | `crypto.getRandomValues()` |
+| 11 | **MEDIUM** | Missing ownership check: `updateStatus` без `.eq('master_id', masterId)` | Додано `.eq('master_id', masterId!)` |
+| 12 | **MEDIUM** | Review spoofing: `submitReview` приймав `master_id` від клієнта | `master_id` читається з БД за `booking_id` |
+| 13 | **LOW** | Debug logs: `console.log` з OTP кодами та user ID в prod | Видалено всі sensitive console.log |
+
+### Поточна Позиція Безпеки
+
+```
+Auth:       SMS OTP з atomic rate-limit (advisory lock в PostgreSQL)
+Transport:  HTTPS only (Vercel + Supabase)
+DB:         RLS на всіх таблицях; SECURITY DEFINER тригери
+Webhooks:   Підписи верифікуються до будь-якої дії з БД
+Cron:       Bearer token auth — без виключень
+Telegram:   HTML escaping обов'язковий через escHtml()
+Codes:      Тільки crypto.getRandomValues() — ніякого Math.random()
+Admin:      Єдина точка входу admin.ts — service_role_key не розпорошений
+```
 
 ---
 
-## 17. ЧЕКЛИСТ ПЕРЕД ДЕПЛОЄМ
+## Чеклист Перед Деплоєм
 
-- [ ] Всі RLS policies активні
-- [ ] `src/proxy.ts` — функція `proxy` (не middleware!)
-- [ ] Ліміти Starter: 30 записів/міс, 2 flash-акції/міс
+- [ ] `src/proxy.ts` — `export function proxy` (не middleware!)
+- [ ] Всі RLS policies активні в Supabase
+- [ ] Міграції 016 (`sms_verify_attempts`) та 017 (`master_profiles.telegram_chat_id`) застосовані
+- [ ] Ліміти Starter: 30 записів/місяць, 2 flash-акції/місяць, 9 фото портфоліо
 - [ ] WayForPay + Monobank webhooks верифікують підпис
-- [ ] `CRON_SECRET` в env, всі cron routes перевіряють
-- [ ] Міграції 016 (sms_verify_attempts) та 017 (master_profiles.telegram_chat_id) застосовані
-- [ ] Жодного `console.log` з чутливими даними
-- [ ] `createAdminClient()` скрізь (не inline)
+- [ ] `CRON_SECRET` в env, всі cron routes перевіряють `Authorization: Bearer`
+- [ ] `VAPID_PRIVATE_KEY` + `NEXT_PUBLIC_VAPID_KEY` в env
+- [ ] `createAdminClient()` скрізь де потрібен RLS bypass — нема inline admin
+- [ ] Жодного `console.log` з OTP, user ID, або токенами
 - [ ] PWA manifest валідний, іконки `192×192` та `512×512` присутні
 - [ ] SEO мета-теги на `/[slug]` та `/explore`
 - [ ] Lighthouse score > 90 (Performance, Accessibility)
-- [ ] Всі анімації мають `will-change: transform`
-- [ ] Error boundaries на клієнтських компонентах
+- [ ] Service Worker зареєстрований та стратегії перевірені
+- [ ] Error boundaries на всіх client компонентах з async операціями

@@ -5,6 +5,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
 import { sendTelegramMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
+import { format } from 'date-fns';
+import { uk } from 'date-fns/locale';
+import { pluralize } from '@/lib/utils/dates';
 
 export interface CreateFlashDealParams {
   serviceName: string;
@@ -74,12 +77,10 @@ export async function createFlashDeal(
   const discountedPrice = Math.round(params.originalPrice * (1 - params.discountPct / 100));
   const bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp?.slug}`;
 
-  const d = new Date(params.slotDate + 'T00:00:00');
-  const UA_MONTHS = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
-  const dateStr = `${d.getDate()} ${UA_MONTHS[d.getMonth()]}`;
+  const dateStr = format(new Date(params.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
 
   const notifTitle = `⚡ Флеш-акція від ${masterName}!`;
-  const notifBody = `${params.serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${params.expiresInHours} год!`;
+  const notifBody = `${params.serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}!`;
 
   // Fetch unique client IDs from completed bookings
   const { data: completedBookings } = await admin
@@ -117,7 +118,7 @@ export async function createFlashDeal(
     : { data: [] };
 
   if (clientsWithTg && clientsWithTg.length > 0) {
-    const tgMsg = `⚡ <b>Флеш-акція від ${masterName}!</b>\n\n💅 ${params.serviceName}\n🗓 ${dateStr} о ${params.slotTime}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${params.expiresInHours} год\n\n<a href="${bookingUrl}">Записатися зараз →</a>`;
+    const tgMsg = `⚡ <b>Флеш-акція від ${masterName}!</b>\n\n💅 ${params.serviceName}\n🗓 ${dateStr} о ${params.slotTime}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${bookingUrl}">Записатися зараз →</a>`;
     await Promise.all(clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg)));
     sentCount += clientsWithTg.length;
   }

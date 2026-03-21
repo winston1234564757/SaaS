@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import { QueryProvider } from '@/lib/providers/QueryProvider';
 import { ToastProvider } from '@/lib/toast/context';
+import { MyBottomNav } from '@/components/client/MyBottomNav';
 import { ServiceWorkerRegistration } from '@/components/shared/ServiceWorkerRegistration';
 import './globals.css';
 
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="grain-overlay" aria-hidden="true" />
         <ServiceWorkerRegistration />
         <QueryProvider><ToastProvider>{children}</ToastProvider></QueryProvider>
+        <MyBottomNav />
       </body>
     </html>
   );

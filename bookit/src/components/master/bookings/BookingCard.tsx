@@ -54,7 +54,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[#2C1A14] truncate">{booking.client_name}</p>
-          <p className="text-xs text-[#A8928D] truncate mt-0.5">{serviceNames}</p>
+          <p className="text-xs text-[#A8928D] break-words leading-tight mt-0.5">{serviceNames}</p>
         </div>
 
         {/* Status + price */}

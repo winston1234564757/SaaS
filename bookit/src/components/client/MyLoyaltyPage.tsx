@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Gift } from 'lucide-react';
+import { pluralize } from '@/lib/utils/dates';
 
 interface LoyaltyProgram {
   id: string;
@@ -31,7 +32,7 @@ export function MyLoyaltyPage({ programs }: { programs: LoyaltyProgram[] }) {
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Лояльність</h1>
         <p className="text-sm text-[#A8928D]">
           {programs.length > 0
-            ? `${programs.length} активн${programs.length === 1 ? 'а програма' : programs.length < 5 ? 'і програми' : 'их програм'}`
+            ? pluralize(programs.length, ['активна програма', 'активні програми', 'активних програм'])
             : 'Програми лояльності від майстрів'}
         </p>
       </div>

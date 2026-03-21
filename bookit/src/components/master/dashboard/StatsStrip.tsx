@@ -32,7 +32,7 @@ export function StatsStrip() {
     {
       label: 'Записів сьогодні',
       value: String(s.todayCount),
-      sub: s.todayCount === 0 ? 'Ще немає' : `${s.todayConfirmed} підтв., ${s.todayPending} очік.`,
+      sub: s.todayCount === 0 ? 'Ще немає' : `${s.todayConfirmed} підтверджено, ${s.todayPending} очікує`,
       subPositive: s.todayCount > 0,
       icon: CalendarDays,
       color: '#789A99',
@@ -50,7 +50,7 @@ export function StatsStrip() {
     {
       label: 'Виручка сьогодні',
       value: fmt(s.todayRevenue),
-      sub: s.todayCompleted > 0 ? `${s.todayCompleted} завершен.` : 'Завершених немає',
+      sub: s.todayCompleted > 0 ? `${s.todayCompleted} завершено` : 'Завершених немає',
       subPositive: s.todayRevenue > 0,
       icon: TrendingUp,
       color: '#5C9E7A',
