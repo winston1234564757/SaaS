@@ -19,6 +19,9 @@ export function PhoneOtpForm({ mode }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
+  const [selectedRole, setSelectedRole] = useState<'client' | 'master'>(
+    mode === 'register' ? 'master' : 'client'
+  );
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState('');
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
@@ -81,7 +84,7 @@ export function PhoneOtpForm({ mode }: Props) {
     const res = await fetch('/api/auth/verify-sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: getCleanPhone(), otp }),
+      body: JSON.stringify({ phone: getCleanPhone(), otp, role: selectedRole }),
     });
 
     const data = await res.json();
@@ -106,8 +109,8 @@ export function PhoneOtpForm({ mode }: Props) {
       return;
     }
 
-    // Register mode: claim master role before redirect
-    if (mode === 'register') {
+    // For new masters — create master_profiles (placeholder slug + role claim)
+    if (selectedRole === 'master') {
       const { error: roleError } = await claimMasterRole(
         authData.session.user.id,
         getCleanPhone(),
@@ -119,7 +122,11 @@ export function PhoneOtpForm({ mode }: Props) {
       }
     }
 
-    router.push(data.isNew ? '/dashboard/onboarding' : '/dashboard');
+    if (selectedRole === 'master') {
+      router.push(data.isNew ? '/dashboard/onboarding' : '/dashboard');
+    } else {
+      router.push('/my/bookings');
+    }
     router.refresh();
   }
 
@@ -132,7 +139,6 @@ export function PhoneOtpForm({ mode }: Props) {
     setError('');
     if (char && index < 5) digitRefs.current[index + 1]?.focus();
     if (next.every(d => d !== '') && char) {
-      // Auto-submit when all filled
       setTimeout(() => handleVerifyOtp(), 80);
     }
   }
@@ -188,17 +194,18 @@ export function PhoneOtpForm({ mode }: Props) {
 
   async function handleGoogleLogin() {
     setIsGoogleLoading(true);
-    const source = mode === 'register' ? '&source=master_register' : '';
+    const nextPath = selectedRole === 'master' ? '/dashboard' : '/my/bookings';
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard${source}`,
+        redirectTo: `${window.location.origin}/auth/callback?role=${selectedRole}&next=${nextPath}`,
         queryParams: {
           // Force Google account chooser on every sign-in.
           // Without this, iOS PWA (WKWebView) caches the Google session cookie
           // and silently reuses the last account, bypassing the chooser.
           prompt: 'select_account',
         },
+        data: { role: selectedRole },
       },
     });
   }
@@ -209,9 +216,27 @@ export function PhoneOtpForm({ mode }: Props) {
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      transition={{ type: 'spring' as const, stiffness: 300, damping: 24 }}
     >
       <Card>
+        {/* Role toggle — iOS segmented control */}
+        <div className="flex p-1 rounded-2xl bg-[#F0E6E0] mb-6">
+          {(['client', 'master'] as const).map(r => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setSelectedRole(r)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                selectedRole === r
+                  ? 'bg-white text-[#2C1A14] shadow-sm'
+                  : 'text-[#A8928D] hover:text-[#6B5750]'
+              }`}
+            >
+              {r === 'client' ? 'Я Клієнт' : 'Я Майстер'}
+            </button>
+          ))}
+        </div>
+
         {/* Header */}
         <div className="mb-7 text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">

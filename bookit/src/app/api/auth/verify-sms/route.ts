@@ -15,6 +15,7 @@ const bodySchema = z.object({
     .string({ error: 'Введіть код підтвердження' })
     .trim()
     .regex(/^\d{6}$/, 'Код має містити 6 цифр'),
+  role: z.enum(['client', 'master']).optional(),
 });
 
 // ── Handler ───────────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: message }, { status: 400 });
   }
 
-  const { phone: cleanPhone, otp: cleanOtp } = parsed.data;
+  const { phone: cleanPhone, otp: cleanOtp, role } = parsed.data;
   const supabaseAdmin = createAdminClient();
 
   // 2. Atomic rate-limit check via PostgreSQL RPC (fixes race condition).
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
     email: virtualEmail,
     password: crypto.randomUUID(), // throwaway — never returned or used
     email_confirm: true,
-    user_metadata: { phone: cleanPhone },
+    user_metadata: { phone: cleanPhone, role: role ?? 'client' },
   });
   if (!createError) isNew = true;
 

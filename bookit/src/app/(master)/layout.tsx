@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardLayout } from '@/components/master/DashboardLayout';
 
@@ -8,13 +9,21 @@ export default async function MasterLayout({ children }: { children: React.React
 
   if (!user) redirect('/login');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
+  const [{ data: profile }, { data: masterProfile }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    supabase.from('master_profiles').select('avatar_emoji').eq('id', user.id).maybeSingle(),
+  ]);
 
   if (profile?.role === 'client') redirect('/my/bookings');
+
+  // Onboarding guard — new masters haven't set avatar_emoji yet
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') ?? '';
+  const isOnboarding = pathname.includes('/dashboard/onboarding');
+
+  if (!masterProfile?.avatar_emoji && !isOnboarding) {
+    redirect('/dashboard/onboarding');
+  }
 
   return <DashboardLayout>{children}</DashboardLayout>;
 }

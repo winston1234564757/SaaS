@@ -74,6 +74,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
+  // Expose pathname to server layouts via request header
+  supabaseResponse.headers.set('x-pathname', pathname);
+
   return supabaseResponse;
 }
 

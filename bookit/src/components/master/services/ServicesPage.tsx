@@ -95,7 +95,7 @@ export function ServicesPage() {
         <p className="text-sm text-[#A8928D]">Керуйте каталогом для публічної сторінки</p>
 
         {/* Tabs */}
-        <div className="flex gap-2 mt-4">
+        <div id="tour-services-tabs" className="flex gap-2 mt-4">
           <button
             onClick={() => setTab('services')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-medium transition-all ${
@@ -214,6 +214,7 @@ export function ServicesPage() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.3, type: 'spring', stiffness: 400, damping: 22 }}
         whileTap={{ scale: 0.94 }}
+        id="tour-services-add"
         onClick={() => tab === 'services' ? setServiceFormOpen(true) : setProductFormOpen(true)}
         className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#789A99] text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
         style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}

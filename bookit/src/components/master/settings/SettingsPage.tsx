@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut, Plus, Trash2 } from 'lucide-react';
@@ -36,6 +38,7 @@ const DEFAULT_SCHEDULE: Schedule = Object.fromEntries(
 ) as Schedule;
 
 export function SettingsPage() {
+  const { currentStep, nextStep, closeTour } = useTour('settings', 2);
   const { profile, masterProfile, refresh } = useMasterContext();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -467,6 +470,17 @@ export function SettingsPage() {
         <p className="text-xs text-[#A8928D] mt-2.5">Тема відображається на вашій публічній сторінці</p>
       </Section>
 
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="🕐 Робочий час"
+          text="Налаштуйте свої робочі години та стандартні перерви. Ваша публічна сторінка автоматично підлаштується."
+          position="bottom"
+          primaryButtonText="Далі →"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Графік роботи */}
       <Section title="Графік роботи">
         <div className="flex flex-col gap-2">
@@ -596,6 +610,17 @@ export function SettingsPage() {
         </div>
       </Section>
 
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 1}
+          onClose={closeTour}
+          title="🌴 Відпустка"
+          text="Плануєте відпочинок? Додайте відпустку сюди, і система заблокує ці дні для запису, щоб вас ніхто не турбував."
+          position="bottom"
+          primaryButtonText="Зрозуміло"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Вихідні та відпустка */}
       <Section title="Вихідні та відпустка">
         <VacationManager />

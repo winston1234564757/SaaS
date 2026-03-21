@@ -162,7 +162,7 @@ export function BookingsPage() {
   return (
     <div className="flex flex-col gap-4 pb-8">
       {/* Хедер */}
-      <div className="bento-card p-5">
+      <div id="tour-bookings-header" className="bento-card p-5">
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Записи</h1>
         <p className="text-sm text-[#A8928D]">Керуйте розкладом і статусами</p>
 
@@ -240,7 +240,7 @@ export function BookingsPage() {
       </div>
 
       {/* Фільтр статусів + Export */}
-      <div className="flex items-center gap-2">
+      <div id="tour-bookings-filter" className="flex items-center gap-2">
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 flex-1">
           {STATUS_FILTERS.map(f => (
             <button
@@ -380,6 +380,7 @@ export function BookingsPage() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.25, type: 'spring', stiffness: 400, damping: 22 }}
         whileTap={{ scale: 0.94 }}
+        id="tour-bookings-manual"
         onClick={() => setFormOpen(true)}
         className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#789A99] text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
         style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}

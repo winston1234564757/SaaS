@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Check, Gift, Users, Sparkles, Crown } from 'lucide-react';
 import { pluralize } from '@/lib/utils/dates';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 
 interface Props {
   referralCode: string;
@@ -14,6 +16,7 @@ interface Props {
 
 export function ReferralPage({ referralCode, referralCount, subscriptionTier, subscriptionExpiresAt }: Props) {
   const [copied, setCopied] = useState(false);
+  const { currentStep, nextStep, closeTour } = useTour('referral', 1);
 
   const referralLink = `https://bookit.com.ua/register?ref=${referralCode}`;
 
@@ -43,6 +46,17 @@ export function ReferralPage({ referralCode, referralCount, subscriptionTier, su
 
   return (
     <div className="flex flex-col gap-4 pb-8">
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="🤝 Амбасадори бренду"
+          text="Перетворіть клієнтів на своїх менеджерів з продажу. Даруйте їм знижку за кожного приведеного друга — це найдешевший спосіб залучення."
+          position="bottom"
+          primaryButtonText="Зрозуміло"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Header */}
       <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Реферальна програма</h1>

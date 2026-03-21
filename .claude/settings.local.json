@@ -12,7 +12,8 @@
       "Bash(xargs grep:*)",
       "Bash(grep:*)",
       "Bash(head:*)",
-      "Bash(find /c/Users/Vitossik/SaaS/bookit/public -type f \\\\\\(-name *.json -o -name *.js -o -name *.ts \\\\\\))"
+      "Bash(find /c/Users/Vitossik/SaaS/bookit/public -type f \\\\\\(-name *.json -o -name *.js -o -name *.ts \\\\\\))",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

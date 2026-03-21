@@ -6,6 +6,8 @@ import { Plus, Pencil, Trash2, Gift, Users, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 
 interface LoyaltyProgram {
   id: string;
@@ -103,6 +105,7 @@ export function LoyaltyPage() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
+  const { currentStep, nextStep, closeTour } = useTour('loyalty', 2);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -180,6 +183,17 @@ export function LoyaltyPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="🎁 Налаштування лояльності"
+          text="Зробіть так, щоб клієнти поверталися. Налаштуйте відсоток знижки, який вони отримуватимуть після кожного візиту."
+          position="bottom"
+          primaryButtonText="Далі →"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Програми лояльності</h1>
         <p className="text-sm text-[#A8928D]">Знижки для постійних клієнтів</p>
@@ -196,6 +210,17 @@ export function LoyaltyPage() {
         </div>
       </div>
 
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 1}
+          onClose={closeTour}
+          title="🔒 Утримання клієнтів"
+          text="Клієнт ніколи не піде до іншого майстра, якщо у вас на нього чекають накопичені бонуси."
+          position="bottom"
+          primaryButtonText="Зрозуміло"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Add button */}
       {!showForm && (
         <motion.button

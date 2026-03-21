@@ -6,6 +6,8 @@ import { Star, Eye, EyeOff, Loader2, MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatDateFull } from '@/lib/utils/dates';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 
 interface Review {
   id: string;
@@ -23,6 +25,7 @@ export function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const { currentStep, nextStep, closeTour } = useTour('reviews', 1);
 
   useEffect(() => {
     if (!masterProfile?.id) return;
@@ -67,6 +70,17 @@ export function ReviewsPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="⭐ Ваш рейтинг"
+          text="Тут будуть відгуки ваших клієнтів. Високий рейтинг піднімає вашу сторінку в пошуку. Не забувайте відповідати на коментарі!"
+          position="bottom"
+          primaryButtonText="Зрозуміло"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Header */}
       <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Відгуки</h1>

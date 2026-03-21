@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { savePricingRules } from '@/app/(master)/dashboard/pricing/actions';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 import { TrendingUp, TrendingDown, Clock, Bird, Zap, Info } from 'lucide-react';
@@ -45,6 +47,7 @@ function DaysToggle({ value, onChange }: { value: string[]; onChange: (v: string
 }
 
 export function DynamicPricingPage({ initial }: Props) {
+  const { currentStep, nextStep, closeTour } = useTour('pricing', 2);
   const [rules, setRules] = useState<PricingRules>(initial);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -233,6 +236,17 @@ export function DynamicPricingPage({ initial }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="⚡ Смарт-слоти"
+          text="Автоматично заповнюйте 'вікна' у графіку. Ми самі запропонуємо клієнтам найоптимальніший час запису."
+          position="bottom"
+          primaryButtonText="Далі →"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-[#789A99]/15 flex items-center justify-center">
           <Clock size={20} className="text-[#789A99]" />
@@ -250,6 +264,17 @@ export function DynamicPricingPage({ initial }: Props) {
         </p>
       </div>
 
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 1}
+          onClose={closeTour}
+          title="💸 Динамічні знижки"
+          text="Встановіть знижку на 'незручні' години (наприклад, ранкові), щоб стимулювати клієнтів бронювати порожній час."
+          position="bottom"
+          primaryButtonText="Зрозуміло"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       <div className="space-y-3">
         {sections.map(({ key, icon: Icon, color, bg, title, hint, content }) => (
           <div key={key} className="bg-white rounded-2xl border border-[#E8D5CF]/60 overflow-hidden">

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { createFlashDeal, cancelFlashDeal } from '@/app/(master)/dashboard/flash/actions';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
 import { Zap, Clock, X, Send, ChevronDown } from 'lucide-react';
@@ -33,6 +35,7 @@ function todayStr() {
 }
 
 export function FlashDealPage({ activeDeals, tier }: Props) {
+  const { currentStep, nextStep, closeTour } = useTour('flash', 2);
   const [serviceName, setServiceName] = useState('');
   const [slotDate, setSlotDate] = useState(todayStr());
   const [slotTime, setSlotTime] = useState('');
@@ -79,6 +82,17 @@ export function FlashDealPage({ activeDeals, tier }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="⚡ Створення акції"
+          text="Потрібно терміново заповнити завтрашній день? Створіть флеш-акцію зі знижкою."
+          position="bottom"
+          primaryButtonText="Далі →"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center">
@@ -96,6 +110,17 @@ export function FlashDealPage({ activeDeals, tier }: Props) {
       </div>
 
       {/* Create Form */}
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 1}
+          onClose={closeTour}
+          title="⏳ Ефект терміновості"
+          text="Акція з'явиться на вашій сторінці з таймером. Це створює ефект FOMO та прискорює прийняття рішення клієнтом."
+          position="bottom"
+          primaryButtonText="Зрозуміло"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E8D5CF]/60 p-5 space-y-4">
         <h2 className="text-sm font-semibold text-[#2C1A14]">Нова флеш-акція</h2>
 

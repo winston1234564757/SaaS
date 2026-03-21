@@ -7,11 +7,14 @@ import { usePortfolio } from '@/lib/supabase/hooks/usePortfolio';
 import { useMasterContext } from '@/lib/supabase/context';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 
 const STARTER_LIMIT = 9;
 
 export function PortfolioPage() {
   const { masterProfile } = useMasterContext();
+  const { currentStep, nextStep, closeTour } = useTour('portfolio', 2);
   const { photos, isLoading, isUploading, uploadPhoto, deletePhoto, updateCaption } = usePortfolio();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isPro = masterProfile?.subscription_tier === 'pro' || masterProfile?.subscription_tier === 'studio';
@@ -49,6 +52,17 @@ export function PortfolioPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10">
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="📸 Ваше портфоліо"
+          text="Завантажте фото найкращих робіт. Візуальне портфоліо — це фактор №1, на який дивляться клієнти при виборі майстра."
+          position="bottom"
+          primaryButtonText="Далі →"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Header */}
       <div className="bento-card p-5">
         <div className="flex items-start justify-between gap-3">
@@ -103,6 +117,17 @@ export function PortfolioPage() {
         </motion.div>
       )}
 
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 1}
+          onClose={closeTour}
+          title="✍️ Підписи до фото"
+          text="Обов'язково додавайте опис до фото, щоб клієнти бачили складність вашої роботи."
+          position="bottom"
+          primaryButtonText="Зрозуміло"
+          onPrimaryClick={nextStep}
+        />
+      </div>
       {/* Upload zone */}
       {!atLimit && (
         <button

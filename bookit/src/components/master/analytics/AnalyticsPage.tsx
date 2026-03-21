@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTour } from '@/lib/hooks/useTour';
+import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { motion } from 'framer-motion';
 import {
   BarChart2, TrendingUp, TrendingDown, Users,
@@ -272,6 +274,7 @@ function ProUpgradeCard() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
+  const { currentStep, nextStep, closeTour } = useTour('analytics', 2);
   const { masterProfile } = useMasterContext();
   const range = useDateRange();
   const [exporting, setExporting]   = useState(false);
@@ -317,6 +320,17 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
   return (
     <div className="flex flex-col gap-4 pb-8 w-full max-w-full overflow-x-hidden">
+      <div className="relative">
+        <AnchoredTooltip
+          isOpen={currentStep === 0}
+          onClose={closeTour}
+          title="💰 Контроль доходів"
+          text="Тримайте фінанси під контролем. Тут ви побачите реальний графік ваших доходів за місяць."
+          position="bottom"
+          primaryButtonText="Далі →"
+          onPrimaryClick={nextStep}
+        />
+      </div>
 
       {/* ── Header ── */}
       <div className="bento-card p-5">
@@ -404,7 +418,18 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       {isPro && (
         <>
           {/* Нові vs Постійні */}
-          <div className="bento-card p-5">
+          <div className="bento-card p-5 relative">
+            <div className="relative">
+              <AnchoredTooltip
+                isOpen={currentStep === 1}
+                onClose={closeTour}
+                title="📊 Когортний аналіз"
+                text="Слідкуйте за тим, скільки нових клієнтів до вас приходить, і який відсоток з них стає постійними."
+                position="top"
+                primaryButtonText="Зрозуміло"
+                onPrimaryClick={nextStep}
+              />
+            </div>
             <SectionHeader title="Нові vs Постійні" />
             {isLoading ? (
               <div className="flex flex-col gap-3">
