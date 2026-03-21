@@ -45,7 +45,7 @@ export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
 
       // Агрегуємо по днях тижня (0=Пн…6=Нд)
       const days: DayData[] = Array.from({ length: 7 }, () => ({ bookings: 0, revenue: 0 }));
-      (data ?? []).forEach(b => {
+      ((data ?? []) as { date: string; total_price: string | number; status: string }[]).forEach(b => {
         const d = new Date(b.date);
         const idx = (d.getDay() + 6) % 7; // 0=Пн
         days[idx].bookings += 1;

@@ -42,13 +42,13 @@ export function useProducts() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
-  const supabase = createClient();
   const key = ['products', masterId] as const;
 
-  const query = useQuery({
+  const query = useQuery<Product[]>({
     queryKey: key,
     queryFn: async () => {
-      const result = await safeQuery(
+      const supabase = createClient();
+      const result = await safeQuery<any[]>(
         'products:list',
         () =>
           supabase
@@ -72,6 +72,7 @@ export function useProducts() {
 
   const addMutation = useMutation({
     mutationFn: async (data: Omit<Product, 'id'>) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'products:add',
         () =>
@@ -94,6 +95,7 @@ export function useProducts() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Omit<Product, 'id'> }) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'products:update',
         () =>
@@ -114,6 +116,7 @@ export function useProducts() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'products:delete',
         () => supabase.from('products').delete().eq('id', id)
@@ -130,6 +133,7 @@ export function useProducts() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'products:toggle',
         () =>

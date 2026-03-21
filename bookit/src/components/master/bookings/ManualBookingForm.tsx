@@ -19,9 +19,9 @@ export function ManualBookingForm({ isOpen, onClose, onSuccess }: ManualBookingF
   const { products: allProducts } = useProducts();
   const qc = useQueryClient();
 
-  const activeServices = (services ?? []).filter(s => s.active) as WizardService[];
-  const availableProducts = (allProducts ?? []).filter(
-    (p) => p.active && (p.stock === null || p.stock > 0)
+  const activeServices = services.filter(s => s.active) as WizardService[];
+  const availableProducts = allProducts.filter(
+    p => p.active && (p.stock === null || p.stock > 0)
   ) as WizardProduct[];
 
   function handleSuccess() {

@@ -103,16 +103,15 @@ export function LoyaltyPage() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
-  const supabase = createClient();
-
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const { data: programs = [], isLoading } = useQuery({
+  const { data: programs = [], isLoading } = useQuery<LoyaltyProgram[]>({
     queryKey: ['loyaltyPrograms', masterId],
     enabled: !!masterId,
     queryFn: async () => {
+      const supabase = createClient();
       const { data } = await supabase
         .from('loyalty_programs')
         .select('id, name, target_visits, reward_type, reward_value, is_active')
@@ -133,6 +132,7 @@ export function LoyaltyPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: Omit<LoyaltyProgram, 'id' | 'isActive'>) => {
+      const supabase = createClient();
       const { error } = await supabase.from('loyalty_programs').insert({
         master_id: masterId!,
         name: data.name,
@@ -148,6 +148,7 @@ export function LoyaltyPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Omit<LoyaltyProgram, 'id' | 'isActive'> }) => {
+      const supabase = createClient();
       const { error } = await supabase.from('loyalty_programs').update({
         name: data.name,
         target_visits: data.targetVisits,
@@ -161,6 +162,7 @@ export function LoyaltyPage() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const supabase = createClient();
       const { error } = await supabase.from('loyalty_programs').update({ is_active: !isActive }).eq('id', id);
       if (error) throw error;
     },
@@ -169,6 +171,7 @@ export function LoyaltyPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      const supabase = createClient();
       const { error } = await supabase.from('loyalty_programs').delete().eq('id', id);
       if (error) throw error;
     },

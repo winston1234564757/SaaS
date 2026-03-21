@@ -37,7 +37,8 @@ export function ReviewsPage() {
       .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
       .eq('master_id', masterProfile.id)
       .order('created_at', { ascending: false })
-      .then(({ data }) => {
+      .then((res: { data: any[] | null }) => {
+        const data = res.data;
         setReviews(
           (data ?? []).map((r: any) => ({
             id: r.id,

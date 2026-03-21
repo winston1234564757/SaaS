@@ -10,17 +10,24 @@ export const metadata: Metadata = {
 export default async function Explore() {
   const supabase = createAdminClient();
 
-  const { data: masters } = await supabase
+  const { data: masters, error: mastersError } = await supabase
     .from('master_profiles')
     .select(`
       id, slug, bio, city, rating, rating_count,
       avatar_emoji, categories, subscription_tier, created_at,
-      profiles!inner ( full_name ),
+      profiles ( full_name ),
       services ( id, active )
     `)
     .eq('is_published', true)
     .order('rating_count', { ascending: false })
     .limit(120);
+
+  if (mastersError) {
+    console.error('[Explore] Failed to load masters:', mastersError);
+  }
+  if (!masters?.length) {
+    console.error('[Explore] No masters returned. is_published filter may be too strict, or RLS is blocking reads.');
+  }
 
   // Unique cities sorted alphabetically
   const cities = Array.from(

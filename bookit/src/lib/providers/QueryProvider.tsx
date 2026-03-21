@@ -9,8 +9,9 @@ function createQueryClient(showToast: ReturnType<typeof useToast>['showToast']) 
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60_000,
-        retry: 1,
+        staleTime: 1000 * 60 * 2,
+        gcTime:    1000 * 60 * 15,
+        refetchOnWindowFocus: false,
       },
       mutations: {
         retry: 0,

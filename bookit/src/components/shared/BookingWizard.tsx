@@ -343,8 +343,8 @@ export function BookingWizard({
       }
       setScheduleStore({ templates, exceptions, bookingsByDate });
       setOffDayDates(buildOffDaySet(
-        (tmplRes.data ?? []).map(t => ({ day_of_week: t.day_of_week, is_working: t.is_working })),
-        (excRes.data ?? []).filter(e => e.is_day_off).map(e => ({ date: e.date })),
+        (tmplRes.data ?? []).map((t: any) => ({ day_of_week: t.day_of_week, is_working: t.is_working })),
+        (excRes.data ?? []).filter((e: any) => e.is_day_off).map((e: any) => ({ date: e.date })),
         days,
       ));
       setScheduleLoading(false);
@@ -363,7 +363,7 @@ export function BookingWizard({
           sb.from('loyalty_programs').select('name, target_visits, reward_type, reward_value').eq('master_id', masterId).eq('is_active', true),
           sb.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
         ]).then(([relRes, progRes, histRes]) => {
-          const history = (histRes.data ?? []).map((b: { start_time: string | null }) => b.start_time?.slice(0, 5)).filter((t): t is string => !!t);
+          const history = (histRes.data ?? []).map((b: { start_time: string | null }) => b.start_time?.slice(0, 5)).filter((t: string | undefined): t is string => !!t);
           if (history.length) setClientHistoryTimes(history);
           const visits = relRes.data?.total_visits ?? 0;
           const best = (progRes.data ?? [])

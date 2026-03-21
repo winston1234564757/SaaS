@@ -49,7 +49,7 @@ export function OnboardingWizard() {
 
   // Step 3: Schedule + publish
   const [schedule, setSchedule] = useState<Record<DayKey, DaySchedule>>(DEFAULT_SCHEDULE);
-  const [isPublished, setIsPublished] = useState(false);
+  const [isPublished, setIsPublished] = useState(true);
 
   function toggleDay(day: DayKey) {
     setSchedule(s => ({ ...s, [day]: { ...s[day], is_working: !s[day].is_working } }));

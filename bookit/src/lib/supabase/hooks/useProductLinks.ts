@@ -22,25 +22,26 @@ export interface ProductLink {
  * the product, then inserts the new set. Pass an empty array to clear.
  */
 export function useProductLinks(productId: string | null) {
-  const supabase = createClient();
   const qc = useQueryClient();
   const key = ['product-links', productId] as const;
 
   const query = useQuery({
     queryKey: key,
     queryFn: async (): Promise<ProductLink[]> => {
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('product_service_links')
         .select('service_id, is_auto_suggest')
         .eq('product_id', productId!);
       if (error) throw error;
-      return data.map(r => ({ serviceId: r.service_id, isAutoSuggest: r.is_auto_suggest }));
+      return (data as { service_id: string; is_auto_suggest: boolean }[]).map(r => ({ serviceId: r.service_id, isAutoSuggest: r.is_auto_suggest }));
     },
     enabled: !!productId,
   });
 
   const setLinksMutation = useMutation({
     mutationFn: async (links: ProductLink[]) => {
+      const supabase = createClient();
       // 1. Delete all existing links for this product
       const { error: delError } = await supabase
         .from('product_service_links')
@@ -117,5 +118,5 @@ export async function getAutoSuggestProductIds(serviceIds: string[]): Promise<st
     .in('service_id', serviceIds)
     .eq('is_auto_suggest', true);
   if (error) throw error;
-  return [...new Set(data.map(r => r.product_id))];
+  return [...new Set((data as { product_id: string }[]).map(r => r.product_id))];
 }

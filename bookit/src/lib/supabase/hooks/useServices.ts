@@ -45,13 +45,13 @@ export function useServices() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
-  const supabase = createClient();
   const key = ['services', masterId] as const;
 
-  const query = useQuery({
+  const query = useQuery<Service[]>({
     queryKey: key,
     queryFn: async () => {
-      const result = await safeQuery(
+      const supabase = createClient();
+      const result = await safeQuery<any[]>(
         'services:list',
         () =>
           supabase
@@ -75,6 +75,7 @@ export function useServices() {
 
   const addMutation = useMutation({
     mutationFn: async (data: Omit<Service, 'id'>) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'services:add',
         () =>
@@ -97,6 +98,7 @@ export function useServices() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Omit<Service, 'id'> }) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'services:update',
         () =>
@@ -117,6 +119,7 @@ export function useServices() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'services:delete',
         () => supabase.from('services').delete().eq('id', id)
@@ -133,14 +136,13 @@ export function useServices() {
 
   const reorderMutation = useMutation({
     mutationFn: async (ordered: { id: string; sort_order: number }[]) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'services:reorder',
         async () => {
           for (const { id, sort_order } of ordered) {
             const { error } = await supabase.from('services').update({ sort_order }).eq('id', id);
-            if (error) {
-              throw error;
-            }
+            if (error) throw error;
           }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return { success: true } as any;
@@ -170,6 +172,7 @@ export function useServices() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'services:toggle',
         () =>

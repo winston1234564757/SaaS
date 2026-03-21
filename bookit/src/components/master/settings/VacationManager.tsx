@@ -33,8 +33,17 @@ export function VacationManager() {
     <div className="flex flex-col gap-3">
       {/* Список заблокованих дат */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-4">
-          <Loader2 size={16} className="text-[#789A99] animate-spin" />
+        <div className="flex flex-col gap-1.5">
+          {[0, 1].map(i => (
+            <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/50 animate-pulse">
+              <div className="w-3 h-3 rounded-full bg-[#F0E4DE] flex-shrink-0" />
+              <div className="flex-1 flex flex-col gap-1.5">
+                <div className="h-3 w-28 rounded bg-[#F0E4DE]" />
+                <div className="h-2.5 w-16 rounded bg-[#F0E4DE]" />
+              </div>
+              <div className="w-6 h-6 rounded-lg bg-[#F0E4DE]" />
+            </div>
+          ))}
         </div>
       ) : blockedDates.length === 0 ? (
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 text-center">

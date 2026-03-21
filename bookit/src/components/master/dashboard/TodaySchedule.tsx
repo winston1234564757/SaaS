@@ -107,7 +107,8 @@ function EmptyScheduleWidget() {
       .eq('status', 'completed')
       .gte('date', from)
       .lte('date', to)
-      .then(({ data }) => {
+      .then((res: { data: any[] | null }) => {
+        const data = res.data;
         const rows = data ?? [];
         const revenue = rows.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
         const count = rows.length;

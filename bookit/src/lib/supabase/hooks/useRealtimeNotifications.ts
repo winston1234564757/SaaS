@@ -27,7 +27,7 @@ export function useRealtimeNotifications() {
           table: 'bookings',
           filter: `master_id=eq.${masterId}`,
         },
-        (payload) => {
+        (payload: { new: Record<string, unknown> }) => {
           const b = payload.new as {
             client_name: string;
             date: string;
@@ -59,7 +59,7 @@ export function useRealtimeNotifications() {
           table: 'bookings',
           filter: `master_id=eq.${masterId}`,
         },
-        (payload) => {
+        (payload: { new: Record<string, unknown> }) => {
           const b = payload.new as { status: string; client_name: string };
           // Інвалідуємо кеш при оновленні статусу
           qc.invalidateQueries({ queryKey: ['bookings'] });

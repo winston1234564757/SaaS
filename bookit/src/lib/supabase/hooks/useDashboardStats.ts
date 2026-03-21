@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { startOfWeek, format } from 'date-fns';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -17,24 +18,22 @@ export interface DashboardStatsWithLoading extends DashboardStats {
   isLoading: boolean;
 }
 
-function getWeekStart() {
-  const d = new Date();
-  const day = d.getDay();
-  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
-  return d.toISOString().slice(0, 10);
-}
-
 export function useDashboardStats(): DashboardStatsWithLoading {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
-  const today = new Date().toISOString().slice(0, 10);
-  const weekStart = getWeekStart();
+  const today     = format(new Date(), 'yyyy-MM-dd');
+  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-stats', masterId, today],
     queryFn: async () => {
       const supabase = createClient();
-      const [{ data: todayRows }, { data: weekRows }] = await Promise.all([
+      await supabase.auth.getSession();
+
+      type TodayRow = { status: string; total_price: string | number };
+      type WeekRow  = { client_phone: string | null; client_name: string | null };
+
+      const [{ data: rawToday }, { data: rawWeek }] = await Promise.all([
         supabase
           .from('bookings')
           .select('status, total_price')
@@ -42,20 +41,21 @@ export function useDashboardStats(): DashboardStatsWithLoading {
           .eq('date', today),
         supabase
           .from('bookings')
-          .select('client_id, status')
+          .select('client_phone, client_name, status')
           .eq('master_id', masterId!)
           .gte('date', weekStart)
           .lte('date', today)
           .neq('status', 'cancelled'),
       ]);
 
-      const bookings = todayRows ?? [];
+      const bookings  = (rawToday ?? []) as TodayRow[];
+      const weekRows2 = (rawWeek  ?? []) as WeekRow[];
       const todayRevenue = bookings
         .filter(b => b.status === 'completed')
         .reduce((s, b) => s + Number(b.total_price), 0);
 
-      const uniqueClients = new Set(
-        (weekRows ?? []).map(b => b.client_id).filter(Boolean)
+      const weekClients = new Set(
+        weekRows2.map(b => b.client_phone || b.client_name)
       ).size;
 
       return {
@@ -64,7 +64,7 @@ export function useDashboardStats(): DashboardStatsWithLoading {
         todayConfirmed: bookings.filter(b => b.status === 'confirmed').length,
         todayCompleted: bookings.filter(b => b.status === 'completed').length,
         todayRevenue,
-        weekClients: uniqueClients,
+        weekClients,
       } satisfies DashboardStats;
     },
     enabled: !!masterId,

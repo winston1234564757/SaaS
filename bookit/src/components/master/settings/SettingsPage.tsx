@@ -123,7 +123,8 @@ export function SettingsPage() {
       .from('schedule_templates')
       .select('*')
       .eq('master_id', masterProfile.id)
-      .then(({ data }) => {
+      .then((res: { data: any[] | null }) => {
+        const data = res.data;
         if (data && data.length > 0) {
           const s = { ...DEFAULT_SCHEDULE };
           data.forEach((row: any) => {
@@ -683,13 +684,12 @@ export function SettingsPage() {
       <button
         onClick={async () => {
           try {
+            await supabase.auth.getSession();
             await supabase.auth.signOut();
-          } catch {
-            // ignore signOut errors — proceed with cleanup regardless
-          } finally {
             queryClient.clear();
-            router.push('/login');
-            router.refresh();
+            window.location.href = '/login';
+          } catch (error) {
+            console.error('Logout error:', error);
           }
         }}
         className="w-full py-3.5 rounded-2xl text-sm font-medium text-[#C05B5B] bg-[#C05B5B]/8 hover:bg-[#C05B5B]/15 border border-[#C05B5B]/20 transition-colors flex items-center justify-center gap-2"

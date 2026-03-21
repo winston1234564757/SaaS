@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { MapPin, Search } from 'lucide-react';
 
 interface Master {
   id: string;
@@ -70,6 +70,13 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
           {masters.map((master, index) => (
             <MasterCard key={master.id} master={master} index={index} />
           ))}
+          <Link
+            href="/explore"
+            className="w-full flex items-center justify-center gap-2 py-3.5 mt-2 rounded-2xl bg-[#F5E8E3]/50 text-[#6B5750] font-semibold hover:bg-[#F5E8E3] active:scale-[0.98] transition-all border border-[#F5E8E3] text-sm"
+          >
+            <Search size={15} />
+            Знайти нових майстрів
+          </Link>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
+import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from './client';
 import type { Profile, MasterProfile } from '@/types/database';
 
@@ -59,7 +59,7 @@ export function MasterProvider({ children }: { children: React.ReactNode }) {
     // so we get the session in the first event without a separate getUser() call.
     // Using only this handler avoids the double-fetch race between getUser() and
     // INITIAL_SESSION that caused isLoading to toggle and hooks to re-enable.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       if (!mountedRef.current) return;
       const u = session?.user ?? null;
       setUser(u);

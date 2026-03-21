@@ -63,13 +63,13 @@ export function useBookings(dateFrom: string, dateTo: string) {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
-  const supabase = createClient();
   const key = ['bookings', masterId, dateFrom, dateTo] as const;
 
   const query = useQuery({
     queryKey: key,
     queryFn: async () => {
-      const result = await safeQuery(
+      const supabase = createClient();
+      const result = await safeQuery<any[]>(
         'bookings:list',
         () =>
           supabase
@@ -94,6 +94,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: BookingStatus }) => {
+      const supabase = createClient();
       const result = await safeMutation(
         'bookings:updateStatus',
         () =>
@@ -122,7 +123,6 @@ export function useBookings(dateFrom: string, dateTo: string) {
       if (ctx?.prev) qc.setQueryData(key, ctx.prev);
     },
     onSettled: () => {
-      // Invalidate all booking windows for this master (prefix match), not just the current date range
       qc.invalidateQueries({ queryKey: ['bookings', masterId] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       qc.invalidateQueries({ queryKey: ['weekly-overview'] });
@@ -147,7 +147,6 @@ export function useMonthlyBookingCount() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const tier = masterProfile?.subscription_tier ?? 'starter';
-  const supabase = createClient();
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -155,6 +154,7 @@ export function useMonthlyBookingCount() {
   const { data: count = 0, isLoading } = useQuery({
     queryKey: ['monthly-booking-count', masterId, monthStart],
     queryFn: async () => {
+      const supabase = createClient();
       const { count: c } = await supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })

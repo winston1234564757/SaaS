@@ -59,7 +59,8 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
       .eq('client_phone', client.client_phone)
       .order('date', { ascending: false })
       .limit(8)
-      .then(({ data }) => {
+      .then((res: { data: any[] | null }) => {
+        const data = res.data;
         setBookings(
           (data ?? []).map((b: any) => ({
             id: b.id,

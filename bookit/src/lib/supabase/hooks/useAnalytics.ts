@@ -72,6 +72,9 @@ export function useAnalytics(
     staleTime: 5 * 60_000,
 
     queryFn: async (): Promise<AnalyticsData> => {
+      // Прогрів сесії — гарантує оновлення токена до паралельних запитів
+      await supabase.auth.getSession();
+
       const now          = new Date();
       // End of CURRENT month (not today) — so the current month in the trend
       // chart shows a full month, not truncated at today's date
@@ -195,19 +198,20 @@ export function useAnalytics(
         const servicesRev = completed.reduce((s, b) => s + Number(b.total_services_price ?? 0), 0);
         const productsRev = completed.reduce((s, b) => s + Number(b.total_products_price ?? 0), 0);
 
-        // Top 3 clients by revenue (from non-cancelled)
-        const clientMap = new Map<string, { name: string; revenue: number; visits: number }>();
+        // Top 3 clients by revenue (from non-cancelled) — includes guests & manual
+        const clientMap = new Map<string, { clientId: string | null; name: string; revenue: number; visits: number }>();
         for (const b of nonCancelled) {
-          if (!b.client_id) continue;
-          const cur = clientMap.get(b.client_id) ?? { name: b.client_name ?? '—', revenue: 0, visits: 0 };
-          clientMap.set(b.client_id, {
-            name:    cur.name,
-            revenue: cur.revenue + (b.status === 'completed' ? Number(b.total_price) : 0),
-            visits:  cur.visits + 1,
+          const key = (b.client_phone as string) || (b.client_name as string) || 'unknown';
+          const cur = clientMap.get(key) ?? { clientId: b.client_id || null, name: b.client_name || 'Невідомий', revenue: 0, visits: 0 };
+          clientMap.set(key, {
+            clientId: cur.clientId,
+            name:     cur.name,
+            revenue:  cur.revenue + (b.status === 'completed' ? Number(b.total_price) : 0),
+            visits:   cur.visits + 1,
           });
         }
-        const topClients: TopClient[] = Array.from(clientMap.entries())
-          .map(([id, d]) => ({ clientId: id, clientName: d.name, revenue: d.revenue, visits: d.visits }))
+        const topClients: TopClient[] = Array.from(clientMap.values())
+          .map(d => ({ clientId: d.clientId, clientName: d.name, revenue: d.revenue, visits: d.visits }))
           .sort((a, b) => b.revenue - a.revenue)
           .slice(0, 3);
 
@@ -275,24 +279,35 @@ export function useAnalytics(
         };
       }
 
-      // ── New clients (sequential — depends on activePhones) ───────────────
+      // ── Retention: Lifetime logic (sequential — depends on activePhones) ──
+      // "Постійні" = клієнт має > 1 візит за весь час до endDate
+      // "Нові"     = клієнт має рівно 1 візит (вперше прийшов у цьому періоді)
       let retention: RetentionData | null = null;
       let newClients: number | null = null;
 
       if (activePhones.length > 0) {
-        // Find phones that had ANY non-cancelled booking before the period start
-        const { data: priorData } = await supabase
+        const { data: allVisitsData } = await supabase
           .from('bookings')
           .select('client_phone')
           .eq('master_id', masterId!)
-          .lt('date', startDate)
+          .lte('date', endDate)
           .neq('status', 'cancelled')
           .in('client_phone', activePhones);
 
-        const returningSet     = new Set((priorData ?? []).map((b: any) => b.client_phone as string).filter(Boolean));
-        const returningClients = activePhones.filter(p => returningSet.has(p)).length;
-        newClients             = activePhones.length - returningClients;
-        retention              = { newClients, returningClients };
+        const visitsMap = new Map<string, number>();
+        for (const b of (allVisitsData ?? []) as any[]) {
+          const p = b.client_phone as string;
+          if (p) visitsMap.set(p, (visitsMap.get(p) ?? 0) + 1);
+        }
+
+        let returningClients = 0;
+        let newCount         = 0;
+        for (const phone of activePhones) {
+          if ((visitsMap.get(phone) ?? 0) > 1) returningClients++;
+          else newCount++;
+        }
+        newClients = newCount;
+        retention  = { newClients, returningClients };
       } else {
         retention  = { newClients: 0, returningClients: 0 };
         newClients = 0;

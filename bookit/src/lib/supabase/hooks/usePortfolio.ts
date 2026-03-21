@@ -27,7 +27,6 @@ function rowToPhoto(p: any): PortfolioPhoto {
 export function usePortfolio() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
-  const supabase = createClient();
   const qc = useQueryClient();
   const key = ['portfolio', masterId] as const;
 
@@ -36,6 +35,7 @@ export function usePortfolio() {
   const { data: photos = [], isLoading } = useQuery<PortfolioPhoto[]>({
     queryKey: key,
     queryFn: async () => {
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('portfolio_photos')
         .select('id, url, storage_path, caption, sort_order')
@@ -51,6 +51,7 @@ export function usePortfolio() {
   async function uploadPhoto(file: File): Promise<void> {
     if (!masterId) return;
     setIsUploading(true);
+    const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setIsUploading(false); return; }
@@ -85,6 +86,7 @@ export function usePortfolio() {
 
   const deleteMutation = useMutation({
     mutationFn: async ({ id, storagePath }: { id: string; storagePath: string }) => {
+      const supabase = createClient();
       await Promise.all([
         supabase.from('portfolio_photos').delete().eq('id', id),
         supabase.storage.from('portfolios').remove([storagePath]),
@@ -95,6 +97,7 @@ export function usePortfolio() {
 
   const updateCaptionMutation = useMutation({
     mutationFn: async ({ id, caption }: { id: string; caption: string }) => {
+      const supabase = createClient();
       const { error } = await supabase
         .from('portfolio_photos')
         .update({ caption: caption || null })
