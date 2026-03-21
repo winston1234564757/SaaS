@@ -66,7 +66,6 @@ export function isChurned(client: ClientRow): boolean {
 
 export function ClientsPage() {
   const { masterProfile } = useMasterContext();
-  const supabase = createClient();
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -76,6 +75,8 @@ export function ClientsPage() {
     if (!masterProfile?.id) return;
 
     async function load() {
+      const supabase = createClient();
+      await supabase.auth.getSession();
       // 1. Всі завершені/підтверджені/очікуючі записи
       const { data: bookings } = await supabase
         .from('bookings')

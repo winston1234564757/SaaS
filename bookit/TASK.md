@@ -1,22 +1,18 @@
-Проаналізуй файли src/components/public/ExplorePage.tsx та src/components/client/MyMastersPage.tsx. Завдання — відновити відображення майстрів у каталозі та покращити навігацію для існуючих клієнтів (AAA UX).
+Увійди в режим архітектурного аудиту. У нас є системна критична проблема в зв'язці React Query + Supabase: "Stale Closure" та "Auth Deadlock". Вона проявляється так: при клієнтському роутингу запити зависають, а мутації (наприклад, зміна статусу запису) не спрацьовують з першого разу — все починає працювати лише після хард-релоаду (F5).
 
-Ремонт сторінки Explore (ExplorePage.tsx):
+Завдання: провести глобальний рефакторинг усіх хуків для досягнення AAA-стабільності.
 
-Перевір запит supabase.from('master_profiles').select(...). Якщо він використовує жорсткі фільтри (наприклад, вимагає наявність аватарки, послуг або робочих годин), тимчасово послаб їх або додай обробку помилок (safeQuery), щоб вивести в console.error причину, чому дані не приходять.
+Крок 1. Глобальний пошук (Склади план)
+Проскануй УСІ файли у директорії src/lib/supabase/hooks/ (особливо useBookingById.ts, useBookings.ts, useServices.ts, useClients.ts тощо) та будь-які компоненти, де використовуються useMutation або useQuery для роботи з Supabase.
+Знайди всі місця, де порушено хоча б одне з наступних правил.
 
-SQL RLS: Створи новий файл міграції у supabase/migrations/ (наприклад, 021_explore_rls.sql), який гарантовано відкриває публічний доступ на читання до профілів майстрів:
+Крок 2. Правила AAA-Архітектури (Що треба виправити):
 
-SQL
--- Дозволяємо всім (anon та authenticated) читати публічні дані майстрів
-CREATE POLICY "Public profiles are viewable by everyone" ON profiles FOR SELECT USING (role = 'master');
-CREATE POLICY "Master profiles are viewable by everyone" ON master_profiles FOR SELECT USING (true);
--- Якщо є таблиці services/portfolio, додайте policies і для них
-AAA UX для MyMastersPage.tsx:
+Ізоляція Клієнта: Виклик const supabase = createClient(); СУВОРО ЗАБОРОНЕНИЙ на верхньому рівні (у тілі хука чи компонента). Він має бути переміщений БЕЗПОСЕРЕДНЬО всередину queryFn: async () => { ... } та mutationFn: async () => { ... }.
 
-Знайди місце, де рендериться список існуючих майстрів (коли masters.length > 0).
+Прогрів Сесії (Auth Warm-up): У кожній queryFn та mutationFn перед першим зверненням до бази даних (через safeQuery, safeMutation або прямий supabase.from...) ОБОВ'ЯЗКОВО має стояти рядок await supabase.auth.getSession();. Це вирішує проблему мертвих блокувань токена.
 
-Додай в кінці списку (або як sticky-елемент внизу екрана) преміальну CTA-кнопку "Знайти нових майстрів" (з іконкою Search або Compass).
+Миттєва Реактивність (Cache Invalidation): Перевір усі useMutation (особливо функції оновлення статусів у useBookingById та useBookings). У їхніх блоках onSuccess ОБОВ'ЯЗКОВО має бути виклик queryClient.invalidateQueries(...) для відповідних ключів (наприклад, ['booking', id], ['bookings'], ['dashboard-stats']), щоб UI оновлювався миттєво без перезавантаження сторінки.
 
-Дизайн кнопки має бути елегантним (Secondary/Ghost style), щоб не конфліктувати з основними діями: <Link href="/explore" className="w-full flex items-center justify-center gap-2 py-3.5 mt-4 rounded-2xl bg-[#F5E8E3]/50 text-[#6B5750] font-semibold hover:bg-[#F5E8E3] active:scale-[0.98] transition-all border border-[#F5E8E3]">...
-
-Виконай ці зміни. Переконайся, що кнопка коректно працює на мобільних пристроях, а каталог /explore відображає дані.
+Крок 3. Виконання (Execution)
+Після складання списку проблемних файлів, автоматично застосуй ці три правила до кожного знайденого файлу. Переконайся, що функція зміни статусу бронювання (у деталях запису) тепер отримує свіжий інстанс клієнта і успішно інвалідує кеш після мутації.

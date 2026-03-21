@@ -64,14 +64,13 @@ export function useAnalytics(
 ) {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
-  const supabase = createClient();
-
   return useQuery({
     queryKey: ['analytics-v2', masterId, startDate, endDate, isPro],
     enabled:  !!masterId,
     staleTime: 5 * 60_000,
 
     queryFn: async (): Promise<AnalyticsData> => {
+      const supabase = createClient();
       // Прогрів сесії — гарантує оновлення токена до паралельних запитів
       await supabase.auth.getSession();
 
@@ -357,6 +356,7 @@ export async function exportAnalyticsCsv(
   endDate: string,
 ): Promise<void> {
   const supabase = createClient();
+  await supabase.auth.getSession();
   const { data } = await supabase
     .from('bookings')
     .select(`

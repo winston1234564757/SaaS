@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { ExplorePage } from '@/components/public/ExplorePage';
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export const metadata: Metadata = {
   title: 'Знайти майстра — Bookit',
@@ -8,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Explore() {
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const { data: masters, error: mastersError } = await supabase
     .from('master_profiles')
@@ -16,14 +19,14 @@ export default async function Explore() {
       id, slug, bio, city, rating, rating_count,
       avatar_emoji, categories, subscription_tier, created_at,
       profiles ( full_name ),
-      services ( id, active )
+      services ( id, is_active )
     `)
     .eq('is_published', true)
     .order('rating_count', { ascending: false })
     .limit(120);
 
   if (mastersError) {
-    console.error('[Explore] Failed to load masters:', mastersError);
+    console.error('[Explore] Supabase Query Error:', mastersError);
   }
   if (!masters?.length) {
     console.error('[Explore] No masters returned. is_published filter may be too strict, or RLS is blocking reads.');
@@ -49,7 +52,7 @@ export default async function Explore() {
     avatarEmoji: (m.avatar_emoji as string) ?? '💅',
     categories: (m.categories as string[]) ?? [],
     isPro: m.subscription_tier === 'pro' || m.subscription_tier === 'studio',
-    serviceCount: ((m.services ?? []) as { active: boolean }[]).filter(s => s.active).length,
+    serviceCount: ((m.services ?? []) as { is_active: boolean }[]).filter(s => s.is_active).length,
     createdAt: m.created_at as string,
   }));
 

@@ -33,6 +33,7 @@ export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
     queryKey: ['weekly-overview', masterId, from],
     queryFn: async () => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const { data, error } = await supabase
         .from('bookings')
         .select('date, total_price, status')

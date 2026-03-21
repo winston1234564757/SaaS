@@ -37,7 +37,6 @@ const DEFAULT_SCHEDULE: Schedule = Object.fromEntries(
 
 export function SettingsPage() {
   const { profile, masterProfile, refresh } = useMasterContext();
-  const supabase = createClient();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -104,6 +103,8 @@ export function SettingsPage() {
     }
     setSlugStatus('checking');
     const timer = setTimeout(async () => {
+      const supabase = createClient();
+      await supabase.auth.getSession();
       const { data } = await supabase
         .from('master_profiles')
         .select('id')
@@ -119,31 +120,36 @@ export function SettingsPage() {
   useEffect(() => {
     if (scheduleInitialized.current || !masterProfile?.id) return;
     scheduleInitialized.current = true;
-    supabase
-      .from('schedule_templates')
-      .select('*')
-      .eq('master_id', masterProfile.id)
-      .then((res: { data: any[] | null }) => {
-        const data = res.data;
-        if (data && data.length > 0) {
-          const s = { ...DEFAULT_SCHEDULE };
-          data.forEach((row: any) => {
-            if (row.day_of_week in s) {
-              s[row.day_of_week as DayKey] = {
-                is_working: row.is_working,
-                start_time: (row.start_time as string | null)?.slice(0, 5) ?? '09:00',
-                end_time: (row.end_time as string | null)?.slice(0, 5) ?? '18:00',
-              };
-            }
-          });
-          setSchedule(s);
-        }
-      });
+    const supabase = createClient();
+    supabase.auth.getSession().then(() => {
+      supabase
+        .from('schedule_templates')
+        .select('*')
+        .eq('master_id', masterProfile.id)
+        .then((res: { data: any[] | null }) => {
+          const data = res.data;
+          if (data && data.length > 0) {
+            const s = { ...DEFAULT_SCHEDULE };
+            data.forEach((row: any) => {
+              if (row.day_of_week in s) {
+                s[row.day_of_week as DayKey] = {
+                  is_working: row.is_working,
+                  start_time: (row.start_time as string | null)?.slice(0, 5) ?? '09:00',
+                  end_time: (row.end_time as string | null)?.slice(0, 5) ?? '18:00',
+                };
+              }
+            });
+            setSchedule(s);
+          }
+        });
+    });
   }, [masterProfile?.id]);
 
   async function handleSave() {
     if (!masterProfile?.id || !profile?.id) return;
     setSaving(true);
+    const supabase = createClient();
+    await supabase.auth.getSession();
 
     try {
       await Promise.all([
@@ -186,6 +192,7 @@ export function SettingsPage() {
   async function handleChangePassword() {
     if (newPwd.length < 6 || newPwd !== confirmPwd) return;
     setChangingPwd(true);
+    const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: newPwd });
     if (error) {
       showToast({ type: 'error', title: 'Помилка', message: error.message });
@@ -684,7 +691,7 @@ export function SettingsPage() {
       <button
         onClick={async () => {
           try {
-            await supabase.auth.getSession();
+            const supabase = createClient();
             await supabase.auth.signOut();
             queryClient.clear();
             window.location.href = '/login';

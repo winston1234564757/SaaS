@@ -32,31 +32,34 @@ export function ReviewsPage() {
   useEffect(() => {
     if (!masterProfile?.id) return;
     const supabase = createClient();
-    supabase
-      .from('reviews')
-      .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
-      .eq('master_id', masterProfile.id)
-      .order('created_at', { ascending: false })
-      .then((res: { data: any[] | null }) => {
-        const data = res.data;
-        setReviews(
-          (data ?? []).map((r: any) => ({
-            id: r.id,
-            rating: r.rating,
-            comment: r.comment || null,
-            client_name: r.client_name || 'Клієнт',
-            is_published: r.is_published,
-            created_at: r.created_at,
-            booking_date: r.bookings?.date ?? null,
-          }))
-        );
-        setIsLoading(false);
-      });
+    supabase.auth.getSession().then(() => {
+      supabase
+        .from('reviews')
+        .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
+        .eq('master_id', masterProfile.id)
+        .order('created_at', { ascending: false })
+        .then((res: { data: any[] | null }) => {
+          const data = res.data;
+          setReviews(
+            (data ?? []).map((r: any) => ({
+              id: r.id,
+              rating: r.rating,
+              comment: r.comment || null,
+              client_name: r.client_name || 'Клієнт',
+              is_published: r.is_published,
+              created_at: r.created_at,
+              booking_date: r.bookings?.date ?? null,
+            }))
+          );
+          setIsLoading(false);
+        });
+    });
   }, [masterProfile?.id]);
 
   async function togglePublish(id: string, current: boolean) {
     setToggling(id);
     const supabase = createClient();
+    await supabase.auth.getSession();
     await supabase.from('reviews').update({ is_published: !current }).eq('id', id);
     setReviews(prev => prev.map(r => r.id === id ? { ...r, is_published: !current } : r));
     setToggling(null);

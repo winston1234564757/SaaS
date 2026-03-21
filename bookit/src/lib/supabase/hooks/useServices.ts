@@ -51,6 +51,7 @@ export function useServices() {
     queryKey: key,
     queryFn: async () => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeQuery<any[]>(
         'services:list',
         () =>
@@ -76,6 +77,7 @@ export function useServices() {
   const addMutation = useMutation({
     mutationFn: async (data: Omit<Service, 'id'>) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeMutation(
         'services:add',
         () =>
@@ -99,6 +101,7 @@ export function useServices() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Omit<Service, 'id'> }) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeMutation(
         'services:update',
         () =>
@@ -120,6 +123,7 @@ export function useServices() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeMutation(
         'services:delete',
         () => supabase.from('services').delete().eq('id', id)
@@ -137,6 +141,7 @@ export function useServices() {
   const reorderMutation = useMutation({
     mutationFn: async (ordered: { id: string; sort_order: number }[]) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeMutation(
         'services:reorder',
         async () => {
@@ -173,6 +178,7 @@ export function useServices() {
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeMutation(
         'services:toggle',
         () =>

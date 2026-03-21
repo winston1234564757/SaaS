@@ -42,6 +42,7 @@ export function useVacation() {
   const addMutation = useMutation({
     mutationFn: async ({ date, reason }: { date: string; reason?: string }) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       await supabase.from('schedule_exceptions').upsert({
         master_id: masterId!,
         date,
@@ -55,6 +56,7 @@ export function useVacation() {
   const removeMutation = useMutation({
     mutationFn: async (id: string) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       await supabase.from('schedule_exceptions').delete().eq('id', id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),

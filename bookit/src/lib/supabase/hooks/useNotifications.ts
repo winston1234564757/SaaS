@@ -32,6 +32,7 @@ export function useNotifications() {
     enabled: !!masterId,
     queryFn: async () => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const { data } = await supabase
         .from('bookings')
         .select('id, client_name, date, start_time, status, created_at, booking_services(service_name)')

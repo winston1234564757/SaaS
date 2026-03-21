@@ -34,6 +34,7 @@ export function useBookingById(id: string | null) {
     queryKey: key,
     queryFn: async () => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const { data, error } = await supabase
         .from('bookings')
         .select('*, booking_services(service_name, service_price, duration_minutes)')
@@ -48,6 +49,7 @@ export function useBookingById(id: string | null) {
   const updateStatus = useMutation({
     mutationFn: async (status: BookingStatus) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const { error } = await supabase
         .from('bookings')
         .update({ status, status_changed_at: new Date().toISOString() })
@@ -66,6 +68,7 @@ export function useBookingById(id: string | null) {
   const saveMasterNotes = useMutation({
     mutationFn: async (master_notes: string) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const { error } = await supabase
         .from('bookings')
         .update({ master_notes })

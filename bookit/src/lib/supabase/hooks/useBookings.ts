@@ -69,6 +69,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
     queryKey: key,
     queryFn: async () => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeQuery<any[]>(
         'bookings:list',
         () =>
@@ -95,6 +96,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: BookingStatus }) => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const result = await safeMutation(
         'bookings:updateStatus',
         () =>
@@ -155,6 +157,7 @@ export function useMonthlyBookingCount() {
     queryKey: ['monthly-booking-count', masterId, monthStart],
     queryFn: async () => {
       const supabase = createClient();
+      await supabase.auth.getSession();
       const { count: c } = await supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })

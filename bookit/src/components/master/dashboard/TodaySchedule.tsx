@@ -100,31 +100,33 @@ function EmptyScheduleWidget() {
       to = toISO(end);
     }
     const supabase = createClient();
-    supabase
-      .from('bookings')
-      .select('total_price, booking_products(product_name, quantity)')
-      .eq('master_id', masterId)
-      .eq('status', 'completed')
-      .gte('date', from)
-      .lte('date', to)
-      .then((res: { data: any[] | null }) => {
-        const data = res.data;
-        const rows = data ?? [];
-        const revenue = rows.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
-        const count = rows.length;
-        const prodMap = new Map<string, number>();
-        rows.forEach(b => {
-          ((b.booking_products as any[]) ?? []).forEach((p: any) => {
-            prodMap.set(p.product_name, (prodMap.get(p.product_name) ?? 0) + (Number(p.quantity) || 1));
+    supabase.auth.getSession().then(() => {
+      supabase
+        .from('bookings')
+        .select('total_price, booking_products(product_name, quantity)')
+        .eq('master_id', masterId)
+        .eq('status', 'completed')
+        .gte('date', from)
+        .lte('date', to)
+        .then((res: { data: any[] | null }) => {
+          const data = res.data;
+          const rows = data ?? [];
+          const revenue = rows.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
+          const count = rows.length;
+          const prodMap = new Map<string, number>();
+          rows.forEach(b => {
+            ((b.booking_products as any[]) ?? []).forEach((p: any) => {
+              prodMap.set(p.product_name, (prodMap.get(p.product_name) ?? 0) + (Number(p.quantity) || 1));
+            });
           });
+          const topProducts = [...prodMap.entries()]
+            .map(([name, qty]) => ({ name, qty }))
+            .sort((a, b) => b.qty - a.qty)
+            .slice(0, 3);
+          setStats({ revenue, count, topProducts });
+          setLoading(false);
         });
-        const topProducts = [...prodMap.entries()]
-          .map(([name, qty]) => ({ name, qty }))
-          .sort((a, b) => b.qty - a.qty)
-          .slice(0, 3);
-        setStats({ revenue, count, topProducts });
-        setLoading(false);
-      });
+    });
   }, [period, masterProfile?.id]);
 
   return (
