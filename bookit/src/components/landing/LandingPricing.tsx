@@ -11,13 +11,13 @@ const plans = [
     price: '0',
     period: '',
     label: 'Безкоштовно',
-    description: 'Ідеально для старту',
+    description: 'Для тих, хто тільки починає',
     highlight: false,
     features: [
       'До 30 записів на місяць',
       'Публічна booking-сторінка',
-      'Базові Mood Themes',
-      'Управління послугами та товарами',
+      'Управління послугами та розкладом',
+      'Базовий CRM клієнтів',
       'Водяний знак Bookit',
     ],
     cta: 'Почати безкоштовно',
@@ -25,39 +25,45 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: '349',
+    price: '700',
     period: '/міс',
     label: '',
-    description: 'Для серйозного бізнесу',
+    description: 'Для майстра, який серйозно ставиться до свого бізнесу',
     highlight: true,
-    badge: 'Популярний',
+    badge: 'Хіт продажу',
     features: [
-      'Необмежено записів',
-      'Власний брендинг (без знаку)',
-      'Аналітика та звіти',
-      'CRM з фільтрами та мітками',
-      'Автонагадування клієнтам',
-      'Telegram-бот нотифікації',
-      'Всі Mood Themes',
+      'Необмежені записи',
+      'Смарт-слоти та динамічне ціноутворення',
+      'Флеш-акції та термінові пропозиції',
+      'Програма лояльності та кешбек',
+      'Реферальна програма для клієнтів',
+      'Telegram-сповіщення для вас і клієнтів',
+      'PWA — додаток без App Store',
+      'Детальна аналітика та CRM',
+      'Власний брендинг (без знаку Bookit)',
+      'CSV-експорт клієнтів та записів',
     ],
     cta: 'Спробувати Pro',
     ctaHref: '/register?plan=pro',
   },
   {
     name: 'Studio',
-    price: '199',
+    price: '300',
     period: '/майстер/міс',
     label: '',
-    description: 'Команди від 2 майстрів',
+    description: 'Для салонів та команд від 2 майстрів',
     highlight: false,
     features: [
-      'Все з Pro для кожного майстра',
-      'Зведена аналітика студії',
-      'Мультилокації (Phase 2)',
+      'Усе з Pro для кожного майстра',
+      'Спільна сторінка салону',
+      'Єдина база клієнтів студії',
+      'Управління розкладом команди',
+      'Розділення прав (власник / адмін / майстер)',
+      'Зведена аналітика по всіх майстрах',
       'Пріоритетна підтримка',
     ],
-    cta: "Зв'язатися з нами",
-    ctaHref: '/contact',
+    cta: 'Обрати Studio',
+    ctaHref: '/register?plan=studio',
   },
 ];
 
@@ -73,8 +79,10 @@ export function LandingPricing() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="display-md text-[#2C1A14] mb-3">Прозорі ціни</h2>
-        <p className="text-[#6B5750]">Почни безкоштовно, масштабуйся коли готова</p>
+        <h2 className="display-md text-[#2C1A14] mb-3 text-balance">Прозорі ціни без сюрпризів</h2>
+        <p className="text-[#6B5750] text-lg text-balance">
+          Починайте безкоштовно, масштабуйтесь коли готові
+        </p>
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
@@ -91,7 +99,7 @@ export function LandingPricing() {
             }`}
           >
             {plan.badge && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 bg-[#789A99] text-white text-xs font-semibold rounded-full shadow-md">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 bg-[#789A99] text-white text-xs font-semibold rounded-full shadow-md whitespace-nowrap">
                 <Sparkles size={10} />
                 {plan.badge}
               </div>
@@ -99,7 +107,7 @@ export function LandingPricing() {
 
             <div>
               <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wider mb-1">{plan.name}</p>
-              <p className="text-sm text-[#6B5750]">{plan.description}</p>
+              <p className="text-sm text-[#6B5750] leading-snug">{plan.description}</p>
             </div>
 
             <div className="flex items-end gap-1">
@@ -142,7 +150,7 @@ export function LandingPricing() {
         transition={{ delay: 0.5 }}
         className="text-center text-sm text-[#A8928D] mt-6"
       >
-        + 3–5% комісія з продажу товарів через платформу
+        Стартовий план — назавжди безкоштовно. Без прихованих платежів.
       </motion.p>
     </section>
   );

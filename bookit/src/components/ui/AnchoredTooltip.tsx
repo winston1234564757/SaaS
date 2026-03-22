@@ -13,6 +13,15 @@ const POSITION_CLASSES: Record<Position, string> = {
   right:  'left-full top-0 ml-3',
 };
 
+// Arrow points toward the anchored element
+const ARROW_CLASSES: Record<Position, string> = {
+  top:    'bottom-[-6px] left-8 -translate-x-1/2 rotate-45 border-b border-r',
+  bottom: 'top-[-6px] left-8 -translate-x-1/2 rotate-45 border-t border-l',
+  left:   'right-[-6px] top-1/2 -translate-y-1/2 rotate-45 border-t border-r',
+  right:  'left-[-6px] top-1/2 -translate-y-1/2 rotate-45 border-b border-l',
+};
+
+
 interface AnchoredTooltipProps {
   isOpen: boolean;
   onClose: () => void;
@@ -56,16 +65,21 @@ export function AnchoredTooltip({
           transition={{ type: 'spring' as const, stiffness: 300, damping: 20 }}
           className={`absolute ${POSITION_CLASSES[position]} z-50 w-72`}
         >
+          {/* Tooltip card */}
           <div
-            className="bg-white rounded-2xl p-4"
+            className="relative bg-white rounded-2xl p-4"
             style={{
-              boxShadow:
-                '0 8px 32px rgba(44,26,20,0.13), 0 2px 8px rgba(44,26,20,0.07)',
-              border: '1px solid rgba(255,255,255,0.9)',
+              boxShadow: '0 8px 32px rgba(44,26,20,0.13), 0 2px 8px rgba(44,26,20,0.07)',
+              border: '1px solid rgba(44,26,20,0.08)',
             }}
           >
+            {/* Arrow caret */}
+            <div
+              className={`absolute w-3 h-3 bg-white z-[-1] ${ARROW_CLASSES[position]}`}
+              style={{ borderColor: 'rgba(44,26,20,0.1)' }}
+            />
+
             <div className="flex items-start gap-3">
-              {/* Accent dot */}
               <div className="mt-1 flex-shrink-0">
                 <span className="block w-2.5 h-2.5 rounded-full bg-[#789A99]" />
               </div>

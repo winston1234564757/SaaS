@@ -21,13 +21,15 @@ export function LandingFooterCTA() {
             'linear-gradient(140deg, rgba(120,154,153,0.1) 0%, rgba(255,210,194,0.35) 60%, rgba(255,255,255,0.5) 100%)',
         }}
       >
-        <span className="text-6xl">🌸</span>
+        <span className="text-6xl">🚀</span>
 
         <div>
-          <h2 className="display-md text-[#2C1A14] mb-3">Готова почати?</h2>
-          <p className="text-[#6B5750] max-w-md mx-auto leading-relaxed text-lg">
-            Приєднуйся до 500+ майстрів, які вже автоматизували
-            свій запис. Налаштування займе 2 хвилини.
+          <h2 className="display-md text-[#2C1A14] mb-3 text-balance">
+            Ваш наступний клієнт вже шукає майстра
+          </h2>
+          <p className="text-[#6B5750] max-w-md mx-auto leading-relaxed text-lg text-balance">
+            500+ майстрів вже використовують Bookit для автоматичного заповнення
+            розкладу та утримання клієнтів. Приєднуйтесь — налаштування займе менше 2 хвилин.
           </p>
         </div>
 
@@ -35,12 +37,12 @@ export function LandingFooterCTA() {
           href="/register"
           className="inline-flex items-center gap-2.5 h-14 px-10 rounded-2xl bg-[#789A99] text-white font-bold text-lg hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_24px_rgba(120,154,153,0.4)] active:scale-[0.97]"
         >
-          Створити безкоштовно
+          Почати заробляти більше
           <ArrowRight size={20} />
         </Link>
 
         <p className="text-sm text-[#A8928D]">
-          Стартовий план — назавжди безкоштовно
+          Стартовий план — назавжди безкоштовно · Без кредитної картки
         </p>
       </motion.div>
     </section>

@@ -2,29 +2,40 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Zap, ShoppingBag, RefreshCw } from 'lucide-react';
+import { Zap, Flame, Gift, Smartphone } from 'lucide-react';
 
 const features = [
   {
     icon: Zap,
-    title: 'Запис за 15 секунд',
-    description: 'Клієнт обирає послугу, час та підтверджує в 4 кроки — без реєстрації.',
+    title: 'Смарт-слоти та динамічні ціни',
+    description:
+      'Система сама заповнює порожні вікна у графіку та пропонує знижки на "незручні" години — ви заробляєте навіть тоді, коли зазвичай простоюєте.',
     color: '#D4935A',
     bgColor: 'rgba(212, 147, 90, 0.1)',
   },
   {
-    icon: ShoppingBag,
-    title: 'Продаж товарів на сторінці',
-    description: 'Додай товари до послуг. Клієнти купують у той самий візит — більший чек.',
-    color: '#789A99',
-    bgColor: 'rgba(120, 154, 153, 0.1)',
+    icon: Flame,
+    title: 'Флеш-акції за один клік',
+    description:
+      'Терміново потрібні клієнти на завтра? Запустіть флеш-акцію в один клік і створіть ажіотаж навколо вільних слотів.',
+    color: '#C05B5B',
+    bgColor: 'rgba(192, 91, 91, 0.1)',
   },
   {
-    icon: RefreshCw,
-    title: 'Клієнти повертаються самі',
-    description: 'CRM, нагадування, програми лояльності — всі інструменти для повторних візитів.',
+    icon: Gift,
+    title: 'Кешбек та реферальна програма',
+    description:
+      'Бонуси та кешбек повертають клієнтів знову і знову. Реферальна програма перетворює кожного клієнта на амбасадора вашого бренду.',
     color: '#5C9E7A',
     bgColor: 'rgba(92, 158, 122, 0.1)',
+  },
+  {
+    icon: Smartphone,
+    title: 'PWA та Telegram-сповіщення',
+    description:
+      'Bookit встановлюється як нативний додаток на iOS та Android без App Store. Миттєві сповіщення про записи — прямо у Telegram.',
+    color: '#789A99',
+    bgColor: 'rgba(120, 154, 153, 0.1)',
   },
 ];
 
@@ -40,12 +51,15 @@ export function LandingFeatures() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="display-md text-[#2C1A14]">
-          Чому майстри обирають Bookit
+        <h2 className="display-md text-[#2C1A14] text-balance">
+          Не просто запис — повноцінна машина для зростання бізнесу
         </h2>
+        <p className="mt-3 text-[#6B5750] text-lg max-w-xl mx-auto text-balance">
+          Інструменти, які раніше були тільки у великих мереж, тепер у вашому смартфоні.
+        </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {features.map((f, i) => {
           const Icon = f.icon;
           return (

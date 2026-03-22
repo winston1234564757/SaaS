@@ -8,6 +8,7 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 
 interface LoyaltyProgram {
   id: string;
@@ -183,7 +184,10 @@ export function LoyaltyPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <div className="relative">
+      <div className={cn(
+        'relative bento-card p-5 transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -193,8 +197,6 @@ export function LoyaltyPage() {
           primaryButtonText="Далі →"
           onPrimaryClick={nextStep}
         />
-      </div>
-      <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Програми лояльності</h1>
         <p className="text-sm text-[#A8928D]">Знижки для постійних клієнтів</p>
       </div>
@@ -210,26 +212,29 @@ export function LoyaltyPage() {
         </div>
       </div>
 
-      <div className="relative">
-        <AnchoredTooltip
-          isOpen={currentStep === 1}
-          onClose={closeTour}
-          title="🔒 Утримання клієнтів"
-          text="Клієнт ніколи не піде до іншого майстра, якщо у вас на нього чекають накопичені бонуси."
-          position="bottom"
-          primaryButtonText="Зрозуміло"
-          onPrimaryClick={nextStep}
-        />
-      </div>
       {/* Add button */}
       {!showForm && (
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setShowForm(true)}
-          className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#789A99] text-white font-semibold text-sm hover:bg-[#5C7E7D] transition-colors shadow-[0_4px_14px_rgba(120,154,153,0.3)]"
-        >
-          <Plus size={16} /> Нова програма
-        </motion.button>
+        <div className={cn(
+          'relative rounded-2xl transition-all duration-500',
+          currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
+        )}>
+          <AnchoredTooltip
+            isOpen={currentStep === 1}
+            onClose={closeTour}
+            title="🔒 Утримання клієнтів"
+            text="Клієнт ніколи не піде до іншого майстра, якщо у вас на нього чекають накопичені бонуси."
+            position="bottom"
+            primaryButtonText="Зрозуміло"
+            onPrimaryClick={nextStep}
+          />
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowForm(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#789A99] text-white font-semibold text-sm hover:bg-[#5C7E7D] transition-colors shadow-[0_4px_14px_rgba(120,154,153,0.3)]"
+          >
+            <Plus size={16} /> Нова програма
+          </motion.button>
+        </div>
       )}
 
       <AnimatePresence>

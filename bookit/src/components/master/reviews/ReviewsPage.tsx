@@ -8,6 +8,7 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { formatDateFull } from '@/lib/utils/dates';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 
 interface Review {
   id: string;
@@ -70,7 +71,11 @@ export function ReviewsPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <div className="relative">
+      {/* Header */}
+      <div className={cn(
+        'relative bento-card p-5 transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -80,9 +85,6 @@ export function ReviewsPage() {
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
-      </div>
-      {/* Header */}
-      <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Відгуки</h1>
         <p className="text-sm text-[#A8928D]">Керуйте відгуками клієнтів</p>
       </div>

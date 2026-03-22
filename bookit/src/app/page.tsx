@@ -7,9 +7,9 @@ import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingFooterCTA } from '@/components/landing/LandingFooterCTA';
 
 export const metadata: Metadata = {
-  title: 'Bookit — Твоя booking-сторінка за 2 хвилини',
+  title: 'Bookit — Система, яка сама генерує дохід для б\'юті-майстра',
   description:
-    'Онлайн-запис, продаж товарів та CRM для б\'юті-майстрів. Безкоштовно, без зайвих налаштувань.',
+    'Смарт-слоти, флеш-акції, програма лояльності та Telegram-сповіщення для б\'юті-майстрів. Безкоштовно для старту.',
 };
 
 export default function LandingPage() {

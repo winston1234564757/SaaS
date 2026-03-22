@@ -6,6 +6,7 @@ import { Copy, Check, Gift, Users, Sparkles, Crown } from 'lucide-react';
 import { pluralize } from '@/lib/utils/dates';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 
 interface Props {
   referralCode: string;
@@ -46,7 +47,11 @@ export function ReferralPage({ referralCode, referralCount, subscriptionTier, su
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <div className="relative">
+      {/* Header */}
+      <div className={cn(
+        'relative bento-card p-5 transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -56,9 +61,6 @@ export function ReferralPage({ referralCode, referralCount, subscriptionTier, su
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
-      </div>
-      {/* Header */}
-      <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Реферальна програма</h1>
         <p className="text-sm text-[#A8928D]">Запрошуй колег — отримуйте бонуси разом</p>
       </div>

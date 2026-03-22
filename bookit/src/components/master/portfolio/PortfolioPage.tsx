@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 
 const STARTER_LIMIT = 9;
 
@@ -52,7 +53,11 @@ export function PortfolioPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-10">
-      <div className="relative">
+      {/* Header */}
+      <div className={cn(
+        'relative bento-card p-5 transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -62,9 +67,6 @@ export function PortfolioPage() {
           primaryButtonText="Далі →"
           onPrimaryClick={nextStep}
         />
-      </div>
-      {/* Header */}
-      <div className="bento-card p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Портфоліо</h1>
@@ -117,7 +119,11 @@ export function PortfolioPage() {
         </motion.div>
       )}
 
-      <div className="relative">
+      {/* Upload zone */}
+      <div className={cn(
+        'relative rounded-2xl transition-all duration-500',
+        currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 1}
           onClose={closeTour}
@@ -127,13 +133,11 @@ export function PortfolioPage() {
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
-      </div>
-      {/* Upload zone */}
-      {!atLimit && (
+        {!atLimit && (
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="bento-card flex flex-col items-center justify-center gap-3 py-8 border-2 border-dashed border-[#C8B8B2] hover:border-[#789A99] hover:bg-white/40 transition-all disabled:opacity-50 cursor-pointer"
+          className="bento-card w-full flex flex-col items-center justify-center gap-3 py-8 border-2 border-dashed border-[#C8B8B2] hover:border-[#789A99] hover:bg-white/40 transition-all disabled:opacity-50 cursor-pointer"
         >
           {isUploading ? (
             <Loader2 size={28} className="text-[#789A99] animate-spin" />
@@ -147,7 +151,8 @@ export function PortfolioPage() {
             <p className="text-xs text-[#A8928D] mt-0.5">JPG, PNG, WebP — до 5 МБ</p>
           </div>
         </button>
-      )}
+        )}
+      </div>
       <input
         ref={fileInputRef}
         type="file"

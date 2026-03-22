@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut, Plus, Trash2 } from 'lucide-react';
@@ -470,7 +471,10 @@ export function SettingsPage() {
         <p className="text-xs text-[#A8928D] mt-2.5">Тема відображається на вашій публічній сторінці</p>
       </Section>
 
-      <div className="relative">
+      <div className={cn(
+        'relative rounded-2xl transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -480,9 +484,8 @@ export function SettingsPage() {
           primaryButtonText="Далі →"
           onPrimaryClick={nextStep}
         />
-      </div>
-      {/* Графік роботи */}
-      <Section title="Графік роботи">
+        {/* Графік роботи */}
+        <Section title="Графік роботи">
         <div className="flex flex-col gap-2">
           {DAYS_ORDER.map(day => (
             <div
@@ -528,7 +531,8 @@ export function SettingsPage() {
             </div>
           ))}
         </div>
-      </Section>
+        </Section>
+      </div>
 
       {/* Перерви та буфер між клієнтами */}
       <Section title="Перерви та буфер">
@@ -610,7 +614,10 @@ export function SettingsPage() {
         </div>
       </Section>
 
-      <div className="relative">
+      <div className={cn(
+        'relative rounded-2xl transition-all duration-500',
+        currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 1}
           onClose={closeTour}
@@ -620,11 +627,11 @@ export function SettingsPage() {
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
+        {/* Вихідні та відпустка */}
+        <Section title="Вихідні та відпустка">
+          <VacationManager />
+        </Section>
       </div>
-      {/* Вихідні та відпустка */}
-      <Section title="Вихідні та відпустка">
-        <VacationManager />
-      </Section>
 
       {/* Безпека — зміна пароля */}
       <Section title="Безпека">

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 import { createFlashDeal, cancelFlashDeal } from '@/app/(master)/dashboard/flash/actions';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
 import { Zap, Clock, X, Send, ChevronDown } from 'lucide-react';
@@ -82,7 +83,11 @@ export function FlashDealPage({ activeDeals, tier }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="relative">
+      {/* Header */}
+      <div className={cn(
+        'relative flex items-center gap-3 rounded-2xl transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02] p-3'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -92,9 +97,6 @@ export function FlashDealPage({ activeDeals, tier }: Props) {
           primaryButtonText="Далі →"
           onPrimaryClick={nextStep}
         />
-      </div>
-      {/* Header */}
-      <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center">
           <Zap size={20} className="text-amber-600" />
         </div>
@@ -110,7 +112,10 @@ export function FlashDealPage({ activeDeals, tier }: Props) {
       </div>
 
       {/* Create Form */}
-      <div className="relative">
+      <form onSubmit={handleSubmit} className={cn(
+        'relative bg-white rounded-2xl border border-[#E8D5CF]/60 p-5 space-y-4 transition-all duration-500',
+        currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 1}
           onClose={closeTour}
@@ -120,8 +125,6 @@ export function FlashDealPage({ activeDeals, tier }: Props) {
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
-      </div>
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E8D5CF]/60 p-5 space-y-4">
         <h2 className="text-sm font-semibold text-[#2C1A14]">Нова флеш-акція</h2>
 
         {starterLimitWarning && (

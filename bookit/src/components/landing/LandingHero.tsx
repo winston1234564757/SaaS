@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Star, Zap } from 'lucide-react';
 
 export function LandingHero() {
   return (
@@ -27,7 +27,7 @@ export function LandingHero() {
           ))}
         </div>
         <span className="text-sm text-[#2C1A14]">
-          <strong>500+</strong> майстрів вже у Bookit
+          <strong>500+</strong> майстрів вже заробляють більше
         </span>
         <div className="flex gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -36,15 +36,15 @@ export function LandingHero() {
         </div>
       </motion.div>
 
-      {/* Main headline — Playfair Display */}
+      {/* Main headline */}
       <motion.h1
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.18, type: 'spring', stiffness: 260, damping: 22 }}
-        className="display-xl text-[#2C1A14] max-w-3xl"
+        className="display-xl text-[#2C1A14] max-w-3xl text-balance leading-tight"
       >
-        Твоя booking-сторінка{' '}
-        <em className="not-italic text-[#789A99]">за 2 хвилини</em>
+        Перетворіть свій розклад на систему,{' '}
+        <em className="not-italic text-[#789A99]">яка сама генерує дохід</em>
       </motion.h1>
 
       {/* Sub */}
@@ -52,10 +52,10 @@ export function LandingHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.28 }}
-        className="mt-6 text-xl text-[#6B5750] max-w-lg leading-relaxed"
+        className="mt-6 text-xl text-[#6B5750] max-w-lg leading-relaxed text-balance"
       >
-        Розумний link in bio, який заробляє гроші.
-        Запис, товари та CRM — в одному місці.
+        Смарт-слоти, флеш-акції, кешбек та Telegram-сповіщення —
+        все в одному link in bio, який продає за вас.
       </motion.p>
 
       {/* CTA */}
@@ -72,7 +72,7 @@ export function LandingHero() {
           Створити безкоштовно
           <ArrowRight size={19} />
         </Link>
-        <span className="text-sm text-[#A8928D]">Без кредитної картки</span>
+        <span className="text-sm text-[#A8928D]">Без кредитної картки · Старт за 2 хвилини</span>
       </motion.div>
 
       {/* Demo mockup */}
@@ -80,7 +80,7 @@ export function LandingHero() {
         initial={{ opacity: 0, y: 44, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 0.46, type: 'spring', stiffness: 200, damping: 24 }}
-        className="mt-16 w-full max-w-[360px] mx-auto"
+        className="mt-16 w-full max-w-[380px] mx-auto"
       >
         <DemoMockup />
       </motion.div>
@@ -91,6 +91,15 @@ export function LandingHero() {
 function DemoMockup() {
   return (
     <div className="bento-card p-5 text-left">
+      {/* Flash deal banner */}
+      <div
+        className="flex items-center gap-2 px-3 py-2 rounded-2xl mb-4 text-sm font-semibold"
+        style={{ background: 'rgba(212,147,90,0.12)', color: '#D4935A' }}
+      >
+        <Zap size={14} className="fill-[#D4935A] flex-shrink-0" />
+        <span>Флеш-акція · -25% до 20:00 · лишилось 2 місця</span>
+      </div>
+
       {/* Master header */}
       <div className="flex items-center gap-3.5 mb-5">
         <div
@@ -119,8 +128,8 @@ function DemoMockup() {
       </p>
       <div className="grid grid-cols-2 gap-2 mb-4">
         {[
-          { name: 'Класичний манікюр', price: '500 ₴', time: '60 хв', popular: true },
-          { name: 'Покриття гелем', price: 'від 700 ₴', time: '90 хв', popular: false },
+          { name: 'Класичний манікюр', price: '375 ₴', oldPrice: '500 ₴', time: '60 хв', popular: true },
+          { name: 'Покриття гелем', price: 'від 525 ₴', time: '90 хв', popular: false },
           { name: 'Педикюр', price: '650 ₴', time: '75 хв', popular: false },
           { name: 'Дизайн', price: '50–200 ₴', time: '20 хв', popular: false },
         ].map((s, i) => (
@@ -128,22 +137,36 @@ function DemoMockup() {
             key={i}
             className={`rounded-2xl p-3 border transition-all ${
               s.popular
-                ? 'col-span-2 border-[#789A99]/30'
+                ? 'col-span-2 border-[#D4935A]/30'
                 : 'border-white/60'
             }`}
             style={{
               background: s.popular
-                ? 'rgba(120,154,153,0.1)'
+                ? 'rgba(212,147,90,0.08)'
                 : 'rgba(255,255,255,0.5)',
             }}
           >
             <p className="text-sm font-semibold text-[#2C1A14] leading-snug">{s.name}</p>
             <div className="flex items-center justify-between mt-1">
-              <span className="text-sm font-bold text-[#789A99]">{s.price}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-[#D4935A]">{s.price}</span>
+                {s.oldPrice && (
+                  <span className="text-xs text-[#A8928D] line-through">{s.oldPrice}</span>
+                )}
+              </div>
               <span className="text-xs text-[#A8928D]">{s.time}</span>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Loyalty points */}
+      <div
+        className="flex items-center justify-between px-3 py-2 rounded-2xl mb-3 text-xs"
+        style={{ background: 'rgba(92,158,122,0.1)' }}
+      >
+        <span className="text-[#5C9E7A] font-medium">🎁 Ваші бонуси: 240 балів</span>
+        <span className="text-[#5C9E7A] font-semibold">= 48 ₴</span>
       </div>
 
       {/* CTA */}

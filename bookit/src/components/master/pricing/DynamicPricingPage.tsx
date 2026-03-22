@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 import { savePricingRules } from '@/app/(master)/dashboard/pricing/actions';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 import { TrendingUp, TrendingDown, Clock, Bird, Zap, Info } from 'lucide-react';
@@ -236,7 +237,10 @@ export function DynamicPricingPage({ initial }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      <div className="relative">
+      <div className={cn(
+        'relative flex items-center gap-3 rounded-2xl transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02] p-3'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -246,8 +250,6 @@ export function DynamicPricingPage({ initial }: Props) {
           primaryButtonText="Далі →"
           onPrimaryClick={nextStep}
         />
-      </div>
-      <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-[#789A99]/15 flex items-center justify-center">
           <Clock size={20} className="text-[#789A99]" />
         </div>
@@ -264,7 +266,10 @@ export function DynamicPricingPage({ initial }: Props) {
         </p>
       </div>
 
-      <div className="relative">
+      <div className={cn(
+        'relative rounded-2xl transition-all duration-500',
+        currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 1}
           onClose={closeTour}
@@ -274,7 +279,6 @@ export function DynamicPricingPage({ initial }: Props) {
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
-      </div>
       <div className="space-y-3">
         {sections.map(({ key, icon: Icon, color, bg, title, hint, content }) => (
           <div key={key} className="bg-white rounded-2xl border border-[#E8D5CF]/60 overflow-hidden">
@@ -304,6 +308,7 @@ export function DynamicPricingPage({ initial }: Props) {
             )}
           </div>
         ))}
+      </div>
       </div>
 
       <button

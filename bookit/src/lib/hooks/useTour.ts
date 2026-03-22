@@ -28,5 +28,10 @@ export function useTour(tourName: string, totalSteps: number) {
     localStorage.setItem(`tour_${tourName}`, 'done');
   }
 
-  return { currentStep, nextStep, closeTour };
+  function resetTour() {
+    localStorage.removeItem(`tour_${tourName}`);
+    setCurrentStep(0);
+  }
+
+  return { currentStep, nextStep, closeTour, resetTour };
 }

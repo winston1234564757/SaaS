@@ -116,6 +116,17 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
+/* ─── Product Tour — Neon Glow ─── */
+.tour-glow {
+  box-shadow:
+    0 0 0 2px rgba(110, 218, 210, 0.95),
+    0 0 10px rgba(110, 218, 210, 0.80),
+    0 0 25px rgba(110, 218, 210, 0.55),
+    0 0 55px rgba(110, 218, 210, 0.30),
+    0 0 100px rgba(110, 218, 210, 0.12) !important;
+  border-radius: 32px;
+}
+
 /* ─── Floating Sidebar ─── */
 .floating-sidebar {
   position: fixed;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { cn } from '@/lib/utils/cn';
 import { motion } from 'framer-motion';
 import {
   BarChart2, TrendingUp, TrendingDown, Users,
@@ -320,7 +321,11 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
   return (
     <div className="flex flex-col gap-4 pb-8 w-full max-w-full overflow-x-hidden">
-      <div className="relative">
+      {/* ── Header ── */}
+      <div className={cn(
+        'relative bento-card p-5 transition-all duration-500',
+        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+      )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
@@ -330,10 +335,6 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           primaryButtonText="Далі →"
           onPrimaryClick={nextStep}
         />
-      </div>
-
-      {/* ── Header ── */}
-      <div className="bento-card p-5">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Аналітика</h1>
@@ -418,18 +419,19 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       {isPro && (
         <>
           {/* Нові vs Постійні */}
-          <div className="bento-card p-5 relative">
-            <div className="relative">
-              <AnchoredTooltip
-                isOpen={currentStep === 1}
-                onClose={closeTour}
-                title="📊 Когортний аналіз"
-                text="Слідкуйте за тим, скільки нових клієнтів до вас приходить, і який відсоток з них стає постійними."
-                position="top"
-                primaryButtonText="Зрозуміло"
-                onPrimaryClick={nextStep}
-              />
-            </div>
+          <div className={cn(
+            'relative bento-card p-5 transition-all duration-500',
+            currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
+          )}>
+            <AnchoredTooltip
+              isOpen={currentStep === 1}
+              onClose={closeTour}
+              title="📊 Когортний аналіз"
+              text="Слідкуйте за тим, скільки нових клієнтів до вас приходить, і який відсоток з них стає постійними."
+              position="top"
+              primaryButtonText="Зрозуміло"
+              onPrimaryClick={nextStep}
+            />
             <SectionHeader title="Нові vs Постійні" />
             {isLoading ? (
               <div className="flex flex-col gap-3">
