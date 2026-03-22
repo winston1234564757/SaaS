@@ -2,6 +2,7 @@
 
 import { BookingWizard, type WizardService, type WizardProduct } from '@/components/shared/BookingWizard';
 import type { WorkingHoursConfig } from '@/types/database';
+import type { FlashDeal } from '@/components/public/PublicMasterPage';
 
 interface Service {
   id: string; name: string; price: number; duration: number;
@@ -26,6 +27,7 @@ interface BookingFlowProps {
   subscriptionTier?: string;
   pricingRules?: Record<string, unknown>;
   workingHours?: WorkingHoursConfig | null;
+  flashDeal?: FlashDeal | null;
 }
 
 export function BookingFlow({
@@ -33,7 +35,7 @@ export function BookingFlow({
   initialService, initialServices,
   masterName, masterId,
   bookingsThisMonth, subscriptionTier,
-  pricingRules, workingHours,
+  pricingRules, workingHours, flashDeal,
 }: BookingFlowProps) {
   const initial: WizardService[] | undefined =
     initialServices?.length ? (initialServices as WizardService[]) :
@@ -54,6 +56,7 @@ export function BookingFlow({
       bookingsThisMonth={bookingsThisMonth}
       subscriptionTier={subscriptionTier}
       pricingRules={pricingRules}
+      flashDeal={flashDeal}
     />
   );
 }

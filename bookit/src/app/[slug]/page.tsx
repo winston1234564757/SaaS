@@ -59,8 +59,8 @@ export default async function MasterPublicPage(
     new Date().getFullYear(), new Date().getMonth(), 1
   ).toISOString();
 
-  // Паралельно завантажуємо products, reviews, schedule, portfolio, monthly count
-  const [productsRes, reviewsRes, scheduleRes, portfolioRes, monthlyCountRes] = await Promise.all([
+  // Паралельно завантажуємо products, reviews, schedule, portfolio, monthly count, flash deals
+  const [productsRes, reviewsRes, scheduleRes, portfolioRes, monthlyCountRes, flashDealsRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price, description, emoji, stock_quantity, stock_unlimited')
@@ -92,6 +92,14 @@ export default async function MasterPublicPage(
       .eq('master_id', data.id)
       .gte('created_at', monthStart)
       .neq('status', 'cancelled'),
+    supabase
+      .from('flash_deals')
+      .select('id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at')
+      .eq('master_id', data.id)
+      .eq('status', 'active')
+      .gt('expires_at', new Date().toISOString())
+      .order('expires_at', { ascending: true })
+      .limit(5),
   ]);
 
   const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
@@ -140,6 +148,16 @@ export default async function MasterPublicPage(
     caption: (p.caption as string) || null,
   }));
 
+  const flashDeals = (flashDealsRes.data ?? []).map((d: any) => ({
+    id: d.id as string,
+    serviceName: d.service_name as string,
+    slotDate: d.slot_date as string,
+    slotTime: (d.slot_time as string).slice(0, 5),
+    originalPrice: Math.round(Number(d.original_price) / 100),
+    discountPct: d.discount_pct as number,
+    expiresAt: d.expires_at as string,
+  }));
+
   const master = {
     id: data.id,
     slug: data.slug,
@@ -165,6 +183,7 @@ export default async function MasterPublicPage(
     bookingsThisMonth: monthlyCountRes.count ?? 0,
     pricingRules: (data.pricing_rules as Record<string, any>) ?? {},
     workingHours: (data.working_hours as Record<string, unknown>) ?? null,
+    flashDeals,
   };
 
   return <PublicMasterPage master={master} />;

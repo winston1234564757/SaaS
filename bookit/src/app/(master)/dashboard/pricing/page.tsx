@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import { DynamicPricingPage } from '@/components/master/pricing/DynamicPricingPage';
+import { PricingUpgradeGate } from '@/components/master/pricing/PricingUpgradeGate';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 
 export default async function PricingPage() {
@@ -11,9 +12,15 @@ export default async function PricingPage() {
 
   const { data: mp } = await createAdminClient()
     .from('master_profiles')
-    .select('pricing_rules')
+    .select('pricing_rules, subscription_tier')
     .eq('id', user.id)
     .single();
+
+  const isPro = mp?.subscription_tier === 'pro' || mp?.subscription_tier === 'studio';
+
+  if (!isPro) {
+    return <PricingUpgradeGate />;
+  }
 
   return (
     <div className="p-6">

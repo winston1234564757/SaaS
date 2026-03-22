@@ -2,8 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { LandingFeatures } from '@/components/landing/LandingFeatures';
+import { LandingAgitation } from '@/components/landing/LandingAgitation';
+import { LandingMagic } from '@/components/landing/LandingMagic';
+import { LandingBentoFeatures } from '@/components/landing/LandingBentoFeatures';
+import { LandingEconomy } from '@/components/landing/LandingEconomy';
 import { LandingPricing } from '@/components/landing/LandingPricing';
+import { LandingFAQ } from '@/components/landing/LandingFAQ';
 import { LandingFooterCTA } from '@/components/landing/LandingFooterCTA';
 
 export const metadata: Metadata = {
@@ -48,8 +52,12 @@ export default function LandingPage() {
 
       <main className="max-w-5xl mx-auto px-4">
         <LandingHero />
-        <LandingFeatures />
+        <LandingAgitation />
+        <LandingMagic />
+        <LandingBentoFeatures />
+        <LandingEconomy />
         <LandingPricing />
+        <LandingFAQ />
         <LandingFooterCTA />
       </main>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, ChevronLeft, ChevronRight, X, Images } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, ChevronLeft, ChevronRight, X, Images, Zap } from 'lucide-react';
 import { BookingFlow } from './BookingFlow';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
@@ -43,6 +43,16 @@ interface PortfolioPhoto {
   caption: string | null;
 }
 
+export interface FlashDeal {
+  id: string;
+  serviceName: string;
+  slotDate: string;
+  slotTime: string;
+  originalPrice: number;
+  discountPct: number;
+  expiresAt: string;
+}
+
 interface Master {
   id: string;
   slug: string;
@@ -68,6 +78,7 @@ interface Master {
   bookingsThisMonth?: number;
   pricingRules?: Record<string, any>;
   workingHours?: Record<string, unknown> | null;
+  flashDeals?: FlashDeal[];
 }
 
 function formatPrice(price: number) {
@@ -200,6 +211,103 @@ function Lightbox({
   );
 }
 
+// ── Flash Deals Strip ──────────────────────────────────────────────────────────
+
+function useCountdown(expiresAt: string) {
+  const calc = () => Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+  const [secs, setSecs] = useState(calc);
+  useEffect(() => {
+    const id = setInterval(() => setSecs(calc), 1000);
+    return () => clearInterval(id);
+  });
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return secs > 0 ? (h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`) : null;
+}
+
+function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: string; onBook: () => void }) {
+  const countdown = useCountdown(deal.expiresAt);
+  const discounted = Math.round(deal.originalPrice * (1 - deal.discountPct / 100));
+  const [d, mon] = deal.slotDate.split('-').slice(1).map(Number);
+  const months = ['', 'січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
+  const dateLabel = `${d} ${months[mon]}`;
+
+  if (!countdown) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className="flex-shrink-0 w-72 rounded-2xl p-4 border"
+      style={{ background: `${accent}12`, borderColor: `${accent}35` }}
+    >
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${accent}25` }}>
+            <Zap size={14} style={{ color: accent }} />
+          </div>
+          <p className="text-sm font-semibold text-[#2C1A14] leading-tight">{deal.serviceName}</p>
+        </div>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: `${accent}20`, color: accent }}>
+          -{deal.discountPct}%
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-xs text-[#A8928D]">{dateLabel} о {deal.slotTime}</p>
+          <div className="flex items-baseline gap-1.5 mt-0.5">
+            <span className="text-base font-bold text-[#2C1A14]">{discounted} ₴</span>
+            <span className="text-xs text-[#A8928D] line-through">{deal.originalPrice} ₴</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 text-xs font-mono font-bold" style={{ color: accent }}>
+          <Clock size={12} />
+          {countdown}
+        </div>
+      </div>
+
+      <button
+        onClick={onBook}
+        className="w-full py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        style={{ background: accent }}
+      >
+        Записатися за акцією
+      </button>
+    </motion.div>
+  );
+}
+
+function FlashDealsStrip({ deals, accent, onBook }: { deals: FlashDeal[]; accent: string; onBook: (deal: FlashDeal) => void }) {
+  if (deals.length === 0) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
+      className="mb-5"
+    >
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <Zap size={16} style={{ color: accent }} />
+        <h2 className="heading-serif text-lg" style={{ color: '#2C1A14' }}>Флеш-акції</h2>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: `${accent}20`, color: accent }}>
+          LIVE
+        </span>
+      </div>
+      <div className={deals.length === 1 ? '' : 'flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide'}>
+        <AnimatePresence>
+          {deals.map(deal => (
+            <FlashDealCard key={deal.id} deal={deal} accent={accent} onBook={() => onBook(deal)} />
+          ))}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 export function PublicMasterPage({ master }: { master: Master }) {
   const themeKey = (master.themeKey ?? 'default') as MoodThemeKey;
@@ -210,6 +318,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [repeatServices, setRepeatServices] = useState<Service[] | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [activeFlashDeal, setActiveFlashDeal] = useState<FlashDeal | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const didAutoOpen = useRef(false);
@@ -238,9 +347,10 @@ export function PublicMasterPage({ master }: { master: Master }) {
   const GRID_LIMIT = 9;
   const visiblePhotos = showAllPhotos ? portfolio : portfolio.slice(0, GRID_LIMIT);
 
-  function openBooking(service?: Service) {
+  function openBooking(service?: Service, flashDeal?: FlashDeal) {
     setRepeatServices(null);
     setSelectedService(service ?? null);
+    setActiveFlashDeal(flashDeal ?? null);
     setBookingOpen(true);
   }
 
@@ -473,6 +583,15 @@ export function PublicMasterPage({ master }: { master: Master }) {
           </motion.div>
         )}
 
+        {/* Flash Deals */}
+        {(master.flashDeals?.length ?? 0) > 0 && (
+          <FlashDealsStrip
+            deals={master.flashDeals!}
+            accent={theme.accent}
+            onBook={(deal) => openBooking(undefined, deal)}
+          />
+        )}
+
         {/* Services */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -563,7 +682,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#2C1A14]">{product.name}</p>
                       {product.description && (
-                        <p className="text-xs mt-0.5 line-clamp-1" style={{ color: textTertiary }}>
+                        <p className="text-xs mt-0.5 line-clamp-2" style={{ color: textTertiary }}>
                           {product.description}
                         </p>
                       )}
@@ -664,7 +783,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
 
       <BookingFlow
         isOpen={bookingOpen}
-        onClose={() => { setBookingOpen(false); setRepeatServices(null); }}
+        onClose={() => { setBookingOpen(false); setRepeatServices(null); setActiveFlashDeal(null); }}
         services={master.services}
         products={master.products ?? []}
         initialService={selectedService}
@@ -676,6 +795,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
         subscriptionTier={master.tier}
         pricingRules={master.pricingRules}
         workingHours={master.workingHours as import('@/types/database').WorkingHoursConfig | null}
+        flashDeal={activeFlashDeal}
       />
 
       {/* Lightbox */}

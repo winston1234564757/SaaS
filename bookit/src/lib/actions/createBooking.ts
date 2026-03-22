@@ -40,6 +40,8 @@ const schema = z.object({
   // Optional master override for the booking duration (manual source only).
   // When provided, overrides the sum of service durations for end_time calculation.
   durationOverrideMinutes: z.number().positive().int().max(480).optional().nullable(),
+  // Flash deal ID — server verifies it's active, applies discount, marks as claimed.
+  flashDealId: z.string().uuid().optional().nullable(),
 });
 
 export type CreateBookingPayload = z.input<typeof schema>;
@@ -49,6 +51,8 @@ export interface CreateBookingResult {
   error: string | null;
   /** Server-recomputed final total — use this for display, not the client guess */
   finalTotal?: number;
+  /** True when the master's Starter booking limit (30/month) is exceeded */
+  upgradeRequired?: boolean;
 }
 
 // ── Unified server action ─────────────────────────────────────────────────────
@@ -105,7 +109,11 @@ export async function createBooking(
       .gte('created_at', monthStart)
       .neq('status', 'cancelled');
     if ((count ?? 0) >= 30) {
-      return { bookingId: null, error: 'Досягнуто ліміт 30 записів на місяць. Перейдіть на Pro.' };
+      return {
+        bookingId: null,
+        error: 'Досягнуто ліміт 30 записів на місяць. Перейдіть на Pro.',
+        upgradeRequired: true,
+      };
     }
   }
 
@@ -186,7 +194,24 @@ export async function createBooking(
   const discountAmount = p.discountPercent > 0
     ? Math.round(grandTotal * p.discountPercent / 100)
     : 0;
-  const finalTotal = Math.max(0, grandTotal - discountAmount);
+
+  // Flash deal — server verifies and applies discount
+  let flashDealDiscountPct = 0;
+  if (p.flashDealId) {
+    const { data: deal } = await admin
+      .from('flash_deals')
+      .select('discount_pct, status, master_id')
+      .eq('id', p.flashDealId)
+      .single();
+    if (deal && deal.status === 'active' && deal.master_id === p.masterId) {
+      flashDealDiscountPct = deal.discount_pct as number;
+    }
+  }
+  const flashDealAmount = flashDealDiscountPct > 0
+    ? Math.round(grandTotal * flashDealDiscountPct / 100)
+    : 0;
+
+  const finalTotal = Math.max(0, grandTotal - discountAmount - flashDealAmount);
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
@@ -259,6 +284,15 @@ export async function createBooking(
             .eq('id', cp.id)
         )
     );
+  }
+
+  // 11. Mark flash deal as claimed
+  if (p.flashDealId && flashDealDiscountPct > 0) {
+    await admin
+      .from('flash_deals')
+      .update({ status: 'claimed', claimed_by: p.clientId ?? null, booking_id: bookingId })
+      .eq('id', p.flashDealId)
+      .eq('status', 'active');
   }
 
   return { bookingId, error: null, finalTotal };

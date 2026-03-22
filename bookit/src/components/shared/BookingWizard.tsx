@@ -25,6 +25,7 @@ import { applyDynamicPricing } from '@/lib/utils/dynamicPricing';
 import { buildOffDaySet } from '@/lib/utils/bookingEngine';
 import { notifyMasterOnBooking, ensureClientProfile } from '@/app/[slug]/actions';
 import { PostBookingAuth } from '@/components/public/PostBookingAuth';
+import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import type { WorkingHoursConfig } from '@/types/database';
 
@@ -65,6 +66,7 @@ export interface BookingWizardProps {
   subscriptionTier?: string;
   pricingRules?: Record<string, unknown>;
   onSuccess?: () => void;
+  flashDeal?: { id: string; discountPct: number; serviceName: string } | null;
 }
 
 // ── Internal ──────────────────────────────────────────────────────────────────
@@ -190,7 +192,7 @@ export function BookingWizard({
   isOpen, onClose, masterId, masterName = '', workingHours,
   services, products = [], initialServices,
   mode, bookingsThisMonth = 0, subscriptionTier = 'starter', pricingRules,
-  onSuccess,
+  onSuccess, flashDeal,
 }: BookingWizardProps) {
 
   // ── Step navigation ──────────────────────────────────────────────────────────
@@ -241,8 +243,9 @@ export function BookingWizard({
   const [suggestedProductIds, setSuggestedProductIds] = useState<Set<string>>(new Set());
 
   // ── Submit state ──────────────────────────────────────────────────────────────
-  const [saving, setSaving]       = useState(false);
-  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving]             = useState(false);
+  const [saveError, setSaveError]       = useState('');
+  const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
 
   // ── Refs ───────────────────────────────────────────────────────────────────────
   const dateStripRef = useRef<HTMLDivElement>(null);
@@ -271,7 +274,8 @@ export function BookingWizard({
   const grandTotal            = adjustedServicesPrice + totalProductsPrice;
   const loyaltyDiscountAmount = loyaltyDiscount ? Math.round(grandTotal * loyaltyDiscount.percent / 100) : 0;
   const masterDiscountAmount  = Math.round(grandTotal * discountPercent / 100);
-  const finalTotal            = grandTotal - loyaltyDiscountAmount - masterDiscountAmount;
+  const flashDealAmount       = flashDeal ? Math.round(grandTotal * flashDeal.discountPct / 100) : 0;
+  const finalTotal            = Math.max(0, grandTotal - loyaltyDiscountAmount - masterDiscountAmount - flashDealAmount);
 
   // ── Reset + fetch schedule on open ───────────────────────────────────────────
   useEffect(() => {
@@ -511,9 +515,19 @@ export function BookingWizard({
       source:                  mode === 'client' ? 'online' : 'manual',
       discountPercent:         mode === 'client' ? (loyaltyDiscount?.percent ?? 0) : discountPercent,
       durationOverrideMinutes: mode === 'master' ? (durationOverride ?? undefined) : undefined,
+      flashDealId:             mode === 'client' ? (flashDeal?.id ?? undefined) : undefined,
     });
     setSaving(false);
-    if (result.error) { setSaveError(result.error); return; }
+    if (result.error) {
+      if (result.upgradeRequired && mode === 'master') {
+        setUpgradePromptOpen(true);
+      } else if (result.upgradeRequired && mode === 'client') {
+        setSaveError('На жаль, запис до цього майстра тимчасово недоступний. Зверніться до майстра напряму.');
+      } else {
+        setSaveError(result.error);
+      }
+      return;
+    }
     if (mode === 'client' && result.bookingId) {
       setCreatedBookingId(result.bookingId);
       notifyMasterOnBooking({
@@ -548,6 +562,7 @@ export function BookingWizard({
 
   // ── Shell ──────────────────────────────────────────────────────────────────────
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -1205,6 +1220,12 @@ export function BookingWizard({
                               <span className="font-semibold text-[#5C9E7A]">−{fmt(loyaltyDiscountAmount)}</span>
                             </div>
                           )}
+                          {flashDeal && flashDealAmount > 0 && (
+                            <div className="flex justify-between text-xs">
+                              <span className="text-amber-600">⚡ Флеш-акція <span className="text-[10px] font-bold">-{flashDeal.discountPct}%</span></span>
+                              <span className="font-semibold text-amber-600">−{fmt(flashDealAmount)}</span>
+                            </div>
+                          )}
                           {mode === 'master' && discountPercent > 0 && (
                             <div className="flex justify-between text-xs">
                               <span className="text-[#5C9E7A]">Знижка {discountPercent}%</span>
@@ -1315,5 +1336,14 @@ export function BookingWizard({
         </>
       )}
     </AnimatePresence>
+
+    {/* Upgrade prompt — master hits monthly booking limit */}
+    <UpgradePromptModal
+      isOpen={upgradePromptOpen}
+      onClose={() => setUpgradePromptOpen(false)}
+      feature="Безліміт записів"
+      description="На тарифі Starter — 30 записів на місяць. Перейдіть на Pro, щоб приймати необмежену кількість клієнтів."
+    />
+    </>
   );
 }

@@ -13,7 +13,11 @@
       "Bash(grep:*)",
       "Bash(head:*)",
       "Bash(find /c/Users/Vitossik/SaaS/bookit/public -type f \\\\\\(-name *.json -o -name *.js -o -name *.ts \\\\\\))",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(ls -la /c/Users/Vitossik/SaaS/bookit/src/app/\\\\\\(master\\\\\\)/dashboard/loyalty/)",
+      "Bash(ls -la /c/Users/Vitossik/SaaS/bookit/src/app/\\\\\\(master\\\\\\)/dashboard/referral/)",
+      "Bash(cat /c/Users/Vitossik/SaaS/bookit/src/app/invite/[code]/page.tsx)",
+      "Bash(node -e \"require\\(''dotenv''\\).config\\({path:''.env.local''}\\); console.log\\(''CRON_SECRET:'', JSON.stringify\\(process.env.CRON_SECRET\\)\\);\")"
     ]
   }
 }

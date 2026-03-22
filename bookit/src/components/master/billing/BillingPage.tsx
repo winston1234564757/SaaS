@@ -30,7 +30,7 @@ const PLANS = [
   {
     key: 'pro' as Tier,
     name: 'Pro',
-    price: '349',
+    price: '700',
     period: '/ місяць',
     icon: Crown,
     color: '#D4935A',
@@ -49,7 +49,7 @@ const PLANS = [
   {
     key: 'studio' as Tier,
     name: 'Studio',
-    price: '199',
+    price: '299',
     period: '/ майстер/місяць',
     icon: Building2,
     color: '#5C9E7A',

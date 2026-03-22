@@ -5,6 +5,9 @@ import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
+// Static number generated at module init — stable per page load
+const todayCount = Math.floor(Math.random() * 5) + 3; // 3–7
+
 export function LandingFooterCTA() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
@@ -37,13 +40,19 @@ export function LandingFooterCTA() {
           href="/register"
           className="inline-flex items-center gap-2.5 h-14 px-10 rounded-2xl bg-[#789A99] text-white font-bold text-lg hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_24px_rgba(120,154,153,0.4)] active:scale-[0.97]"
         >
-          Почати заробляти більше
+          Почати заробляти більше — безкоштовно
           <ArrowRight size={20} />
         </Link>
 
-        <p className="text-sm text-[#A8928D]">
-          Стартовий план — назавжди безкоштовно · Без кредитної картки
-        </p>
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-sm text-[#A8928D]">
+            Стартовий план — назавжди безкоштовно · Без кредитної картки
+          </p>
+          <p className="text-xs text-[#A8928D]">
+            Сьогодні вже зареєструвалось{' '}
+            <span className="font-semibold text-[#789A99]">{todayCount} майстрів</span>
+          </p>
+        </div>
       </motion.div>
     </section>
   );

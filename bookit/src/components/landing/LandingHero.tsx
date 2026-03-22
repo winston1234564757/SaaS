@@ -43,8 +43,8 @@ export function LandingHero() {
         transition={{ delay: 0.18, type: 'spring', stiffness: 260, damping: 22 }}
         className="display-xl text-[#2C1A14] max-w-3xl text-balance leading-tight"
       >
-        Перетворіть свій розклад на систему,{' '}
-        <em className="not-italic text-[#789A99]">яка сама генерує дохід</em>
+        Ваш бізнес не повинен{' '}
+        <em className="not-italic text-[#789A99]">забирати весь ваш час.</em>
       </motion.h1>
 
       {/* Sub */}
@@ -52,10 +52,11 @@ export function LandingHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.28 }}
-        className="mt-6 text-xl text-[#6B5750] max-w-lg leading-relaxed text-balance"
+        className="mt-6 text-xl text-[#6B5750] max-w-xl leading-relaxed text-balance"
       >
-        Смарт-слоти, флеш-акції, кешбек та Telegram-сповіщення —
-        все в одному link in bio, який продає за вас.
+        Перша CRM, яка не просто записує клієнтів, а сама заповнює порожні вікна,
+        продає палаючі слоти і повертає втрачених клієнтів.{' '}
+        <span className="text-[#2C1A14] font-medium">Поки ви відпочиваєте.</span>
       </motion.p>
 
       {/* CTA */}
@@ -69,7 +70,7 @@ export function LandingHero() {
           href="/register"
           className="inline-flex items-center gap-2.5 h-14 px-9 rounded-2xl bg-[#789A99] text-white font-semibold text-lg hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_28px_rgba(120,154,153,0.4)] active:scale-[0.97]"
         >
-          Створити безкоштовно
+          Спробувати безкоштовно
           <ArrowRight size={19} />
         </Link>
         <span className="text-sm text-[#A8928D]">Без кредитної картки · Старт за 2 хвилини</span>

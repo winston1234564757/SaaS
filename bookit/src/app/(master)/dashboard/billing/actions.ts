@@ -14,8 +14,8 @@ function hmacMd5(str: string): string {
 }
 
 const PLAN: Record<string, { price: number; name: string }> = {
-  pro:    { price: 349, name: 'Bookit Pro — підписка на місяць' },
-  studio: { price: 199, name: 'Bookit Studio — підписка за майстра/місяць' },
+  pro:    { price: 700, name: 'Bookit Pro — підписка на місяць' },
+  studio: { price: 299, name: 'Bookit Studio — підписка за майстра/місяць' },
 };
 
 export async function createBillingInvoice(

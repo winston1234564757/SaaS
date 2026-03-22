@@ -11,7 +11,7 @@ const plans = [
     price: '0',
     period: '',
     label: 'Безкоштовно',
-    description: 'Для тих, хто тільки починає',
+    description: 'Для тих, хто тільки починає. Без кредитної картки.',
     highlight: false,
     features: [
       'До 30 записів на місяць',
@@ -28,9 +28,10 @@ const plans = [
     price: '700',
     period: '/міс',
     label: '',
-    description: 'Для майстра, який серйозно ставиться до свого бізнесу',
+    description: 'Окупається після ПЕРШОГО врятованого слота.',
     highlight: true,
     badge: 'Хіт продажу',
+    anchor: '700 ₴ = вартість одного манікюру. Один флеш-слот — і місяць окупився.',
     features: [
       'Необмежені записи',
       'Смарт-слоти та динамічне ціноутворення',
@@ -48,7 +49,7 @@ const plans = [
   },
   {
     name: 'Studio',
-    price: '300',
+    price: '299',
     period: '/майстер/міс',
     label: '',
     description: 'Для салонів та команд від 2 майстрів',
@@ -129,6 +130,12 @@ export function LandingPricing() {
                 </li>
               ))}
             </ul>
+
+            {'anchor' in plan && plan.anchor && (
+              <p className="text-xs text-[#789A99] leading-relaxed px-1 text-balance">
+                {plan.anchor as string}
+              </p>
+            )}
 
             <Link
               href={plan.ctaHref}
