@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Star, Phone, Calendar, TrendingUp, Loader2 } from 'lucide-react';
+import { Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/components/master/services/types';
@@ -196,17 +196,82 @@ export function ClientsPage() {
           <p className="text-sm text-[#A8928D]">Завантаження клієнтів...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-          <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
-            <Users size={26} className="text-[#A8928D]" />
+        search ? (
+          <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
+            <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
+              <Users size={26} className="text-[#A8928D]" />
+            </div>
+            <p className="text-sm font-semibold text-[#2C1A14]">Нічого не знайдено</p>
+            <p className="text-xs text-[#A8928D]">Спробуйте інший запит</p>
           </div>
-          <p className="text-sm font-semibold text-[#2C1A14]">
-            {search ? 'Нічого не знайдено' : 'Клієнтів ще немає'}
-          </p>
-          <p className="text-xs text-[#A8928D]">
-            {search ? 'Спробуйте інший запит' : 'Клієнти з\'являться після перших записів'}
-          </p>
-        </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bento-card p-6 flex flex-col gap-5"
+          >
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-3xl bg-[#789A99]/10 flex items-center justify-center mx-auto mb-4">
+                <Users size={28} className="text-[#789A99]" />
+              </div>
+              <p className="text-base font-bold text-[#2C1A14]">Ваша база клієнтів порожня</p>
+              <p className="text-sm text-[#A8928D] mt-1 text-balance">
+                Ось як залучити перших клієнтів за 24 години
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {[
+                {
+                  icon: Link2,
+                  color: '#789A99',
+                  title: 'Поділіться своєю сторінкою',
+                  desc: 'Скопіюйте посилання на публічну сторінку та надішліть у ваш Instagram, Telegram або WhatsApp.',
+                  href: '/dashboard/settings',
+                  cta: 'Відкрити налаштування',
+                },
+                {
+                  icon: Zap,
+                  color: '#D4935A',
+                  title: 'Запустіть флеш-акцію',
+                  desc: 'Знижка 15–30% на перший запис залучить нових клієнтів моментально. Займає 30 секунд.',
+                  href: '/dashboard/flash',
+                  cta: 'Створити акцію',
+                },
+                {
+                  icon: Instagram,
+                  color: '#C05B5B',
+                  title: 'Додайте посилання в bio',
+                  desc: 'Одне посилання в bio Instagram — і клієнт одразу потрапляє до вашого онлайн-розкладу.',
+                },
+              ].map((step, i) => {
+                const StepIcon = step.icon;
+                return (
+                  <div key={i} className="flex gap-3 p-4 rounded-2xl bg-white/50">
+                    <div
+                      className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${step.color}15` }}
+                    >
+                      <StepIcon size={16} style={{ color: step.color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#2C1A14]">{step.title}</p>
+                      <p className="text-xs text-[#A8928D] mt-0.5 leading-relaxed">{step.desc}</p>
+                      {step.href && (
+                        <a
+                          href={step.href}
+                          className="inline-flex mt-2 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors"
+                        >
+                          {step.cta} →
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((client, i) => (

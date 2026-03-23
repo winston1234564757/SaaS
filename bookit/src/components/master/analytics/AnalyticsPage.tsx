@@ -266,7 +266,7 @@ function ProUpgradeCard() {
       <Link href="/dashboard/billing"
         className="relative flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#789A99] to-[#5C9E7A] text-white text-sm font-semibold shadow-[0_4px_14px_rgba(92,158,122,0.3)] hover:shadow-[0_6px_20px_rgba(92,158,122,0.4)] active:scale-[0.98] transition-all">
         <Crown size={15} />
-        Перейти на Pro — 349₴/міс
+        Перейти на Pro — 700₴/міс
       </Link>
     </motion.div>
   );
@@ -412,8 +412,65 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         )}
       </motion.div>
 
+      {/* ── Empty state: no bookings yet ── */}
+      {!isLoading && !isLockedDateRange && summary.bookings === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING, delay: 0.15 }}
+          className="bento-card p-6 flex flex-col gap-5"
+        >
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-3xl bg-[#789A99]/10 flex items-center justify-center mx-auto mb-4">
+              <BarChart2 size={28} className="text-[#789A99]" />
+            </div>
+            <p className="text-base font-bold text-[#2C1A14]">Даних ще немає</p>
+            <p className="text-sm text-[#A8928D] mt-1 text-balance">
+              Аналітика з'явиться після перших записів. Ось як їх отримати:
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {[
+              {
+                emoji: '🔗',
+                title: 'Поширте публічну сторінку',
+                desc: 'Ваш унікальний link in bio — надішліть в Instagram Stories, Telegram-канал або WhatsApp.',
+                href: '/dashboard/settings',
+                cta: 'Налаштування →',
+              },
+              {
+                emoji: '⚡',
+                title: 'Запустіть флеш-акцію',
+                desc: 'Знижка -20% на перший запис залучає нових клієнтів моментально.',
+                href: '/dashboard/flash',
+                cta: 'Створити акцію →',
+              },
+              {
+                emoji: '✍️',
+                title: 'Додайте запис вручну',
+                desc: 'Зафіксуйте поточних клієнтів — їхня статистика одразу з\'явиться тут.',
+                href: '/dashboard/bookings',
+                cta: 'Записи →',
+              },
+            ].map(step => (
+              <div key={step.title} className="flex gap-3 p-4 rounded-2xl bg-white/50">
+                <span className="text-xl flex-shrink-0 mt-0.5">{step.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-[#2C1A14]">{step.title}</p>
+                  <p className="text-xs text-[#A8928D] mt-0.5 leading-relaxed">{step.desc}</p>
+                  <Link href={step.href} className="inline-flex mt-1.5 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors">
+                    {step.cta}
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* ── Starter: одна красива картка апгрейду ── */}
-      {!isPro && !isLockedDateRange && <ProUpgradeCard />}
+      {!isPro && !isLockedDateRange && summary.bookings > 0 && <ProUpgradeCard />}
 
       {/* ── Pro контент ── */}
       {isPro && (
