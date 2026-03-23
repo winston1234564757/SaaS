@@ -50,7 +50,8 @@ export async function createStudio(name: string): Promise<{ error: string | null
   // Link master to studio
   await admin.from('master_profiles').update({ studio_id: studio.id }).eq('id', user.id);
 
-  revalidatePath('/dashboard/studio');
+  revalidatePath('/dashboard/studio', 'layout');
+  revalidatePath('/dashboard', 'layout');
   return { error: null };
 }
 

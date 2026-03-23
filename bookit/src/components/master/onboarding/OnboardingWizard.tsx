@@ -3,11 +3,33 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Camera, Check, Loader2, Copy, ExternalLink } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Camera, Check, Loader2, Copy, ExternalLink, Plus, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useToast } from '@/lib/toast/context';
-import { revalidateAfterOnboarding } from '@/app/(master)/dashboard/onboarding/actions';
+import {
+  revalidateAfterOnboarding,
+  saveOnboardingProfile,
+  saveOnboardingSchedule,
+  saveOnboardingService,
+} from '@/app/(master)/dashboard/onboarding/actions';
+
+type Step =
+  | 'BASIC'
+  | 'SCHEDULE_PROMPT'
+  | 'SCHEDULE_FORM'
+  | 'SERVICES_PROMPT'
+  | 'SERVICES_FORM'
+  | 'SUCCESS';
+
+const STEP_ORDER: Step[] = [
+  'BASIC',
+  'SCHEDULE_PROMPT',
+  'SCHEDULE_FORM',
+  'SERVICES_PROMPT',
+  'SERVICES_FORM',
+  'SUCCESS',
+];
 
 const SPECIALIZATIONS = [
   { emoji: '💅', label: 'Манікюр' },
@@ -35,6 +57,9 @@ const DEFAULT_SCHEDULE = Object.fromEntries(
 const TEMPLATE_SCHEDULE = Object.fromEntries(
   DAYS_ORDER.map(d => [d, { is_working: !['sat', 'sun'].includes(d), start_time: '10:00', end_time: '19:00' }])
 ) as Record<DayKey, DaySchedule>;
+
+const BUFFER_PRESETS = [0, 5, 10, 15, 20, 30];
+const DURATION_PRESETS = [30, 45, 60, 90, 120];
 
 const inputCls = 'w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all';
 
@@ -67,19 +92,27 @@ function ConfettiParticles() {
   );
 }
 
+function getProgressStep(s: Step): number {
+  if (s === 'BASIC') return 1;
+  if (s === 'SCHEDULE_PROMPT' || s === 'SCHEDULE_FORM') return 2;
+  if (s === 'SERVICES_PROMPT' || s === 'SERVICES_FORM') return 3;
+  return 3;
+}
+
 export function OnboardingWizard() {
   const { profile, masterProfile, refresh } = useMasterContext();
   const { showToast } = useToast();
   const router = useRouter();
   const supabase = createClient();
 
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<Step>('BASIC');
   const [direction, setDirection] = useState<1 | -1>(1);
   const [saving, setSaving] = useState(false);
   const [savedSlug, setSavedSlug] = useState('');
+  const [savedMasterId, setSavedMasterId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Step 1: Brand face
+  // BASIC: Brand face
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
@@ -87,14 +120,15 @@ export function OnboardingWizard() {
   const [specialization, setSpecialization] = useState('💅');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Step 2: Schedule
+  // SCHEDULE_FORM: Schedule + working hours
   const [schedule, setSchedule] = useState<Record<DayKey, DaySchedule>>(DEFAULT_SCHEDULE);
+  const [bufferTime, setBufferTime] = useState(0);
+  const [breaks, setBreaks] = useState<Array<{ start: string; end: string }>>([]);
 
-  // Step 3: First service
+  // SERVICES_FORM: First service
   const [serviceName, setServiceName] = useState('');
   const [servicePrice, setServicePrice] = useState('');
-  const [serviceDuration, setServiceDuration] = useState('60');
-  const [skipService, setSkipService] = useState(false);
+  const [serviceDuration, setServiceDuration] = useState(60);
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -107,12 +141,28 @@ export function OnboardingWizard() {
     setSchedule(s => ({ ...s, [day]: { ...s[day], is_working: !s[day].is_working } }));
   }
 
-  function goTo(next: 1 | 2 | 3 | 4) {
-    setDirection(next > step ? 1 : -1);
+  function addBreak() {
+    setBreaks(prev => [...prev, { start: '13:00', end: '14:00' }]);
+  }
+
+  function removeBreak(i: number) {
+    setBreaks(prev => prev.filter((_, idx) => idx !== i));
+  }
+
+  function setBreakField(i: number, field: 'start' | 'end', val: string) {
+    setBreaks(prev => prev.map((b, idx) => idx === i ? { ...b, [field]: val } : b));
+  }
+
+  function goTo(next: Step) {
+    const currentIdx = STEP_ORDER.indexOf(step);
+    const nextIdx = STEP_ORDER.indexOf(next);
+    setDirection(nextIdx >= currentIdx ? 1 : -1);
     setStep(next);
   }
 
-  async function handleFinish() {
+  // ── BASIC: зберегти профіль (обов'язково) ───────────────────────────────────
+  async function handleSaveProfile() {
+    if (!fullName.trim()) return;
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -120,8 +170,7 @@ export function OnboardingWizard() {
 
       const uid = profile?.id ?? user.id;
 
-      // Upload avatar if provided
-      // Uses 'images' bucket (path: avatars/{uid}/{uid}.{ext}) — matches existing RLS: foldername[2] = auth.uid()
+      // Upload avatar client-side (binary file)
       let avatarUrl: string | null = null;
       if (avatarFile) {
         const ext = avatarFile.name.split('.').pop() ?? 'jpg';
@@ -150,81 +199,90 @@ export function OnboardingWizard() {
       crypto.getRandomValues(arr);
       const referralCode = arr[0].toString(36).toUpperCase().slice(0, 8);
 
-      if (!masterProfile?.id) {
-        await supabase.from('profiles').upsert(
-          {
-            id: uid,
-            role: 'master',
-            full_name: fullName,
-            email: user.email,
-            ...(phone.trim() ? { phone: phone.trim() } : {}),
-            ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-          },
-          { onConflict: 'id' }
-        ).throwOnError();
+      const { error } = await saveOnboardingProfile({
+        userId: uid,
+        fullName: fullName.trim(),
+        phone: phone.trim() || null,
+        avatarUrl,
+        avatarEmoji: specialization,
+        slug: finalSlug,
+        referralCode,
+      });
 
-        await supabase.from('master_profiles').insert({
-          id: uid,
-          slug: finalSlug,
-          avatar_emoji: specialization,
-          is_published: true,
-          referral_code: referralCode,
-        }).throwOnError();
-      } else {
-        await Promise.all([
-          supabase.from('profiles').update({
-            full_name: fullName,
-            ...(phone.trim() ? { phone: phone.trim() } : {}),
-            ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-          }).eq('id', uid).throwOnError(),
-          supabase.from('master_profiles').update({
-            slug: finalSlug,
-            avatar_emoji: specialization,
-            is_published: true,
-          }).eq('id', masterProfile.id).throwOnError(),
-        ]);
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка збереження', message: error });
+        return;
       }
 
-      const masterId = masterProfile?.id ?? uid;
-
-      await Promise.all(
-        DAYS_ORDER.map(day =>
-          supabase.from('schedule_templates').upsert({
-            master_id: masterId,
-            day_of_week: day,
-            ...schedule[day],
-          }, { onConflict: 'master_id,day_of_week' })
-        )
-      );
-
-      if (!skipService && serviceName.trim() && servicePrice) {
-        await supabase.from('services').insert({
-          master_id: masterId,
-          name: serviceName.trim(),
-          emoji: specialization,
-          category: 'Інше',
-          price: parseFloat(servicePrice),
-          duration_minutes: parseInt(serviceDuration),
-          is_active: true,
-          is_popular: false,
-          sort_order: 0,
-        });
-      }
-
-      await revalidateAfterOnboarding();
-      await refresh();
       setSavedSlug(finalSlug);
-      setDirection(1);
-      setStep(4);
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Щось пішло не так';
+      setSavedMasterId(uid);
+      goTo('SCHEDULE_PROMPT');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Щось пішло не так';
       showToast({ type: 'error', title: 'Помилка', message: msg });
     } finally {
       setSaving(false);
     }
   }
 
-  function handleGoToDashboard() {
+  // ── SCHEDULE_FORM: зберегти розклад (опціонально) ───────────────────────────
+  async function handleSaveSchedule() {
+    setSaving(true);
+    try {
+      const masterId = savedMasterId ?? profile?.id;
+      if (!masterId) { goTo('SERVICES_PROMPT'); return; }
+
+      const { error } = await saveOnboardingSchedule({ masterId, schedule, bufferTime, breaks });
+
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка збереження', message: error });
+        return;
+      }
+
+      goTo('SERVICES_PROMPT');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Щось пішло не так';
+      showToast({ type: 'error', title: 'Помилка', message: msg });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ── SERVICES_FORM: зберегти послугу (опціонально) ───────────────────────────
+  async function handleSaveService() {
+    if (!serviceName.trim() || !servicePrice) { goTo('SUCCESS'); return; }
+
+    setSaving(true);
+    try {
+      const masterId = savedMasterId ?? profile?.id;
+      if (!masterId) { goTo('SUCCESS'); return; }
+
+      const { error } = await saveOnboardingService({
+        masterId,
+        name: serviceName.trim(),
+        emoji: specialization,
+        price: parseFloat(servicePrice),
+        durationMinutes: serviceDuration,
+      });
+
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка збереження', message: error });
+        return;
+      }
+
+      goTo('SUCCESS');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Щось пішло не так';
+      showToast({ type: 'error', title: 'Помилка', message: msg });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ── SUCCESS: завершити онбординг ─────────────────────────────────────────────
+  async function handleComplete() {
+    await revalidateAfterOnboarding();
+    await refresh();
     if (typeof window !== 'undefined') {
       localStorage.setItem('bookit_hints_pending', 'true');
     }
@@ -245,6 +303,9 @@ export function OnboardingWizard() {
   };
   const transition = { type: 'spring' as const, stiffness: 320, damping: 28 };
 
+  const progressStep = getProgressStep(step);
+  const showProgress = step !== 'SUCCESS';
+
   return (
     <div className="min-h-dvh flex flex-col items-center justify-start px-4 py-8">
       <div className="w-full max-w-sm">
@@ -256,14 +317,14 @@ export function OnboardingWizard() {
           </span>
         </p>
 
-        {/* Progress bar — hidden on success step */}
-        {step < 4 && (
+        {/* Progress bar */}
+        {showProgress && (
           <div className="flex items-center gap-1.5 mb-6">
             {[1, 2, 3].map(n => (
               <div
                 key={n}
                 className="flex-1 h-1.5 rounded-full transition-all duration-500"
-                style={{ background: step >= n ? '#789A99' : '#E8D5CF' }}
+                style={{ background: progressStep >= n ? '#789A99' : '#E8D5CF' }}
               />
             ))}
           </div>
@@ -271,10 +332,10 @@ export function OnboardingWizard() {
 
         <AnimatePresence mode="wait" custom={direction}>
 
-          {/* ─── Step 1: Brand Face ─── */}
-          {step === 1 && (
+          {/* ─── BASIC: Brand Face ─── */}
+          {step === 'BASIC' && (
             <motion.div
-              key="step1"
+              key="BASIC"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -286,7 +347,6 @@ export function OnboardingWizard() {
               <h2 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Обличчя бренду</h2>
               <p className="text-sm text-[#A8928D] mb-6">Як тебе побачать клієнти</p>
 
-              {/* Avatar upload */}
               <div className="flex flex-col items-center mb-6">
                 <button
                   type="button"
@@ -303,38 +363,19 @@ export function OnboardingWizard() {
                     <Camera size={20} className="text-white" />
                   </div>
                 </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                 <p className="text-xs text-[#A8928D] mt-2">Натисни щоб додати фото</p>
               </div>
 
               <div className="flex flex-col gap-4">
                 <div>
                   <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">{"Ім'я та прізвище"}</label>
-                  <input
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    placeholder="Ксенія Коваль"
-                    className={inputCls}
-                  />
+                  <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ксенія Коваль" className={inputCls} />
                 </div>
-
                 <div>
                   <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Мобільний телефон</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    placeholder="+38 (050) 000-00-00"
-                    className={inputCls}
-                  />
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+38 (050) 000-00-00" className={inputCls} />
                 </div>
-
                 <div>
                   <label className="text-xs font-medium text-[#6B5750] mb-2 block">Спеціалізація</label>
                   <div className="grid grid-cols-4 gap-2">
@@ -359,19 +400,66 @@ export function OnboardingWizard() {
 
               <button
                 type="button"
-                onClick={() => goTo(2)}
-                disabled={!fullName.trim()}
+                onClick={handleSaveProfile}
+                disabled={!fullName.trim() || saving}
                 className="mt-6 w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors disabled:opacity-50"
               >
-                Далі <ArrowRight size={16} />
+                {saving
+                  ? <><Loader2 size={16} className="animate-spin" /> Зберігаємо...</>
+                  : <>Далі <ArrowRight size={16} /></>}
               </button>
             </motion.div>
           )}
 
-          {/* ─── Step 2: Schedule ─── */}
-          {step === 2 && (
+          {/* ─── SCHEDULE_PROMPT ─── */}
+          {step === 'SCHEDULE_PROMPT' && (
             <motion.div
-              key="step2"
+              key="SCHEDULE_PROMPT"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={transition}
+              className="bento-card p-6 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 18, delay: 0.05 }}
+                className="text-5xl mb-4"
+              >
+                🎉
+              </motion.div>
+
+              <h2 className="heading-serif text-xl text-[#2C1A14] mb-2">Профіль успішно створено!</h2>
+              <p className="text-sm text-[#6B5750] mb-7 leading-relaxed">
+                Щоб клієнти могли до вас записуватися, потрібно налаштувати робочі години. Зробимо це зараз?
+              </p>
+
+              <div className="flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => goTo('SCHEDULE_FORM')}
+                  className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors"
+                >
+                  Налаштувати графік <ArrowRight size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo('SERVICES_PROMPT')}
+                  className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-[#6B5750] hover:bg-white transition-colors"
+                >
+                  Пропустити
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── SCHEDULE_FORM ─── */}
+          {step === 'SCHEDULE_FORM' && (
+            <motion.div
+              key="SCHEDULE_FORM"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -380,6 +468,14 @@ export function OnboardingWizard() {
               transition={transition}
               className="bento-card p-6"
             >
+              <button
+                type="button"
+                onClick={() => goTo('SCHEDULE_PROMPT')}
+                className="flex items-center gap-1.5 text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors mb-4"
+              >
+                <ArrowLeft size={13} /> Назад
+              </button>
+
               <h2 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Твій час</h2>
               <p className="text-sm text-[#A8928D] mb-4">Коли ти приймаєш клієнтів</p>
 
@@ -398,20 +494,17 @@ export function OnboardingWizard() {
                 </span>
               </button>
 
-              <div className="flex flex-col gap-1.5 mb-4">
+              {/* Day toggles */}
+              <div className="flex flex-col gap-1.5 mb-5">
                 {DAYS_ORDER.map(day => (
                   <div
                     key={day}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-opacity ${
-                      schedule[day].is_working ? '' : 'opacity-50'
-                    }`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-opacity ${schedule[day].is_working ? '' : 'opacity-50'}`}
                   >
                     <button
                       type="button"
                       onClick={() => toggleDay(day)}
-                      className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${
-                        schedule[day].is_working ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'
-                      }`}
+                      className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${schedule[day].is_working ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'}`}
                     >
                       <div
                         className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-[left] duration-200"
@@ -442,29 +535,113 @@ export function OnboardingWizard() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Buffer */}
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-[#6B5750] mb-2">Буфер між записами</p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {BUFFER_PRESETS.map(min => (
+                    <button
+                      key={min}
+                      type="button"
+                      onClick={() => setBufferTime(min)}
+                      className={`py-2 rounded-xl text-xs font-medium transition-all ${
+                        bufferTime === min ? 'bg-[#789A99] text-white' : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                      }`}
+                    >
+                      {min === 0 ? 'Без буферу' : `${min} хв`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Breaks */}
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-[#6B5750]">Перерви</p>
+                  <button type="button" onClick={addBreak} className="flex items-center gap-1 text-xs text-[#789A99] font-medium hover:text-[#5C7E7D] transition-colors">
+                    <Plus size={12} /> Додати
+                  </button>
+                </div>
+                {breaks.length === 0 ? (
+                  <p className="text-xs text-[#A8928D] py-1">Немає перерв — весь робочий час доступний</p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {breaks.map((b, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input type="time" value={b.start} onChange={e => setBreakField(i, 'start', e.target.value)} className="flex-1 px-2 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-[#2C1A14] outline-none focus:border-[#789A99]" />
+                        <span className="text-xs text-[#A8928D]">—</span>
+                        <input type="time" value={b.end} onChange={e => setBreakField(i, 'end', e.target.value)} className="flex-1 px-2 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-[#2C1A14] outline-none focus:border-[#789A99]" />
+                        <button type="button" onClick={() => removeBreak(i)} className="text-[#A8928D] hover:text-[#C05B5B] transition-colors flex-shrink-0">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveSchedule}
+                disabled={saving}
+                className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors disabled:opacity-70"
+              >
+                {saving
+                  ? <><Loader2 size={16} className="animate-spin" /> Зберігаємо...</>
+                  : <>Налаштувати та продовжити <ArrowRight size={16} /></>}
+              </button>
+            </motion.div>
+          )}
+
+          {/* ─── SERVICES_PROMPT ─── */}
+          {step === 'SERVICES_PROMPT' && (
+            <motion.div
+              key="SERVICES_PROMPT"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={transition}
+              className="bento-card p-6 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 18, delay: 0.05 }}
+                className="text-5xl mb-4"
+              >
+                🚀
+              </motion.div>
+
+              <h2 className="heading-serif text-xl text-[#2C1A14] mb-2">Майже все!</h2>
+              <p className="text-sm text-[#6B5750] mb-7 leading-relaxed">
+                Додамо вашу першу послугу чи товар, щоб клієнтам було з чого обирати?
+              </p>
+
+              <div className="flex flex-col gap-2.5">
                 <button
                   type="button"
-                  onClick={() => goTo(1)}
-                  className="p-3.5 rounded-2xl bg-white/70 border border-white/80 hover:bg-white transition-colors flex-shrink-0"
+                  onClick={() => goTo('SERVICES_FORM')}
+                  className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors"
                 >
-                  <ArrowLeft size={16} className="text-[#6B5750]" />
+                  Додати послугу <ArrowRight size={16} />
                 </button>
                 <button
                   type="button"
-                  onClick={() => goTo(3)}
-                  className="flex-1 py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors"
+                  onClick={handleComplete}
+                  className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-[#6B5750] hover:bg-white transition-colors"
                 >
-                  Далі <ArrowRight size={16} />
+                  Завершити та перейти в Dashboard
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* ─── Step 3: First Service ─── */}
-          {step === 3 && (
+          {/* ─── SERVICES_FORM ─── */}
+          {step === 'SERVICES_FORM' && (
             <motion.div
-              key="step3"
+              key="SERVICES_FORM"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -473,87 +650,74 @@ export function OnboardingWizard() {
               transition={transition}
               className="bento-card p-6"
             >
-              <h2 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Ваша коронна послуга</h2>
-              <p className="text-sm text-[#A8928D] mb-5">Додайте послугу, на яку до вас записуються найчастіше. Інші послуги ви зможете додати пізніше в налаштуваннях.</p>
-
-              {!skipService ? (
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Назва послуги</label>
-                    <input
-                      value={serviceName}
-                      onChange={e => setServiceName(e.target.value)}
-                      placeholder="Манікюр класичний"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Ціна, ₴</label>
-                      <input
-                        type="number"
-                        value={servicePrice}
-                        onChange={e => setServicePrice(e.target.value)}
-                        placeholder="500"
-                        min="0"
-                        className={inputCls}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Хвилин</label>
-                      <input
-                        type="number"
-                        value={serviceDuration}
-                        onChange={e => setServiceDuration(e.target.value)}
-                        placeholder="60"
-                        min="15"
-                        step="15"
-                        className={inputCls}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-8 text-center">
-                  <p className="text-4xl mb-3">✨</p>
-                  <p className="text-sm text-[#6B5750]">Послугу можна додати пізніше</p>
-                  <p className="text-xs text-[#A8928D] mt-1">Розділ «Послуги» в меню</p>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 mt-5">
-                <button
-                  type="button"
-                  onClick={() => goTo(2)}
-                  className="p-3.5 rounded-2xl bg-white/70 border border-white/80 hover:bg-white transition-colors flex-shrink-0"
-                >
-                  <ArrowLeft size={16} className="text-[#6B5750]" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleFinish}
-                  disabled={saving}
-                  className="flex-1 py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors disabled:opacity-70"
-                >
-                  {saving
-                    ? <><Loader2 size={16} className="animate-spin" /> Збереження...</>
-                    : <><Check size={16} /> Все готово!</>}
-                </button>
-              </div>
               <button
                 type="button"
-                onClick={() => setSkipService(p => !p)}
-                className="mt-2.5 w-full text-sm text-[#A8928D] hover:text-[#789A99] transition-colors py-1.5"
+                onClick={() => goTo('SERVICES_PROMPT')}
+                className="flex items-center gap-1.5 text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors mb-4"
               >
-                {skipService ? 'Додати послугу' : 'Пропустити'}
+                <ArrowLeft size={13} /> Назад
               </button>
+
+              <h2 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Ваша коронна послуга</h2>
+              <p className="text-sm text-[#A8928D] mb-5">
+                Додайте послугу, яку записують найчастіше. Решту зможете додати пізніше.
+              </p>
+
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Назва послуги</label>
+                  <input value={serviceName} onChange={e => setServiceName(e.target.value)} placeholder="Манікюр класичний" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Ціна, ₴</label>
+                  <input type="number" value={servicePrice} onChange={e => setServicePrice(e.target.value)} placeholder="500" min="0" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[#6B5750] mb-2 block">Тривалість</label>
+                  <div className="flex gap-1.5">
+                    {DURATION_PRESETS.map(min => (
+                      <button
+                        key={min}
+                        type="button"
+                        onClick={() => setServiceDuration(min)}
+                        className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all ${
+                          serviceDuration === min ? 'bg-[#789A99] text-white' : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                        }`}
+                      >
+                        {min < 60 ? `${min}хв` : `${min / 60}г`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 mt-6">
+                <button
+                  type="button"
+                  onClick={handleSaveService}
+                  disabled={saving || !serviceName.trim() || !servicePrice}
+                  className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors disabled:opacity-50"
+                >
+                  {saving
+                    ? <><Loader2 size={16} className="animate-spin" /> Зберігаємо...</>
+                    : <><Check size={16} /> Додати послугу</>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo('SERVICES_PROMPT')}
+                  disabled={saving}
+                  className="w-full py-2 text-sm text-[#A8928D] hover:text-[#789A99] transition-colors"
+                >
+                  Скасувати
+                </button>
+              </div>
             </motion.div>
           )}
 
-          {/* ─── Step 4: Success / Magic ─── */}
-          {step === 4 && (
+          {/* ─── SUCCESS ─── */}
+          {step === 'SUCCESS' && (
             <motion.div
-              key="step4"
+              key="SUCCESS"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -565,7 +729,6 @@ export function OnboardingWizard() {
               <ConfettiParticles />
 
               <div className="relative z-10 flex flex-col items-center text-center">
-                {/* Success icon */}
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -575,56 +738,25 @@ export function OnboardingWizard() {
                   <Check size={28} className="text-[#5C9E7A]" strokeWidth={2.5} />
                 </motion.div>
 
-                <motion.h2
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
-                  className="heading-serif text-2xl text-[#2C1A14] mb-1"
-                >
+                <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="heading-serif text-2xl text-[#2C1A14] mb-1">
                   Твій Bookit готовий!
                 </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.35 }}
-                  className="text-sm text-[#A8928D] mb-6"
-                >
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="text-sm text-[#A8928D] mb-6">
                   Ділись посиланням і отримуй записи
                 </motion.p>
 
-                {/* Link card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45 }}
-                  className="w-full rounded-2xl bg-white/70 border border-white/80 p-4 mb-4 text-left"
-                >
-                  <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wide mb-2">
-                    Твоя публічна сторінка
-                  </p>
-                  <p className="text-sm font-mono text-[#2C1A14] mb-3 truncate">
-                    bookit.com.ua/{savedSlug}
-                  </p>
+                <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="w-full rounded-2xl bg-white/70 border border-white/80 p-4 mb-4 text-left">
+                  <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wide mb-2">Твоя публічна сторінка</p>
+                  <p className="text-sm font-mono text-[#2C1A14] mb-3 truncate">bookit.com.ua/{savedSlug}</p>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={handleCopyLink}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                        copied
-                          ? 'bg-[#5C9E7A]/15 text-[#5C9E7A]'
-                          : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20'
-                      }`}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${copied ? 'bg-[#5C9E7A]/15 text-[#5C9E7A]' : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20'}`}
                     >
-                      {copied
-                        ? <><Check size={12} /> Скопійовано</>
-                        : <><Copy size={12} /> Копіювати</>}
+                      {copied ? <><Check size={12} /> Скопійовано</> : <><Copy size={12} /> Копіювати</>}
                     </button>
-                    <a
-                      href={`/${savedSlug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/60 text-[#6B5750] hover:bg-white/80 transition-all"
-                    >
+                    <a href={`/${savedSlug}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/60 text-[#6B5750] hover:bg-white/80 transition-all">
                       <ExternalLink size={12} />
                     </a>
                   </div>
@@ -636,7 +768,7 @@ export function OnboardingWizard() {
                   transition={{ delay: 0.55 }}
                   whileTap={{ scale: 0.97 }}
                   type="button"
-                  onClick={handleGoToDashboard}
+                  onClick={handleComplete}
                   className="w-full py-4 rounded-2xl bg-[#789A99] text-white font-semibold text-base flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_24px_rgba(120,154,153,0.35)]"
                 >
                   Поїхали в CRM! <ArrowRight size={18} />

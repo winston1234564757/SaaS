@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Building2, Copy, Check, UserX, LogOut, Plus, Users, Crown, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { createStudio, leaveStudio, removeMember } from '@/app/(master)/dashboard/studio/actions';
@@ -78,7 +79,7 @@ function NoStudioAccess() {
           'Необмежені майстри у команді',
           'Зведена аналітика по студії',
           'Кожен майстер зберігає свій кабінет',
-          '199 ₴/майстер на місяць',
+          '299 ₴/майстер на місяць',
         ].map(f => (
           <div key={f} className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-[#5C9E7A] flex-shrink-0" />
@@ -91,7 +92,7 @@ function NoStudioAccess() {
         className="w-full max-w-xs py-3 rounded-2xl bg-[#5C9E7A] text-white text-sm font-semibold text-center block"
         style={{ boxShadow: '0 4px 16px rgba(92,158,122,0.35)' }}
       >
-        Перейти на Studio — 199 ₴/майстер
+        Перейти на Studio — 299 ₴/майстер
       </Link>
     </motion.div>
   );
@@ -102,13 +103,18 @@ function CreateStudioForm() {
   const [name, setName] = useState('');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleCreate = () => {
     if (!name.trim()) return;
     setError(null);
     startTransition(async () => {
       const result = await createStudio(name);
-      if (result.error) setError(result.error);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        router.refresh();
+      }
     });
   };
 

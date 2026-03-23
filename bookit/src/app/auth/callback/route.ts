@@ -85,13 +85,15 @@ export async function GET(request: NextRequest) {
       }
 
       // Redirect: any master with a paid plan intent → billing; new masters → onboarding; others → dashboard
-      const intendedPlan = cookieStore.get('intended_plan')?.value ?? null;
+      // Cookie may be lost during Google OAuth redirect chain (SameSite=Lax), so also read from URL param as fallback
+      const intendedPlan = cookieStore.get('intended_plan')?.value || searchParams.get('plan') || null;
       cookieStore.set('intended_plan', '', { path: '/', maxAge: 0 });
 
       if (intendedPlan === 'pro' || intendedPlan === 'studio') {
         return NextResponse.redirect(new URL(`/dashboard/billing?plan=${intendedPlan}`, origin));
       }
-      if (isNewMaster) {
+      // `next` may already point to /dashboard/billing (embedded by handleGoogleLogin as fallback)
+      if (isNewMaster && !next.startsWith('/dashboard/billing')) {
         return NextResponse.redirect(new URL('/dashboard/onboarding', origin));
       }
       return NextResponse.redirect(new URL(next, origin));

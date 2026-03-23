@@ -204,11 +204,19 @@ export function PhoneOtpForm({ mode }: Props) {
 
   async function handleGoogleLogin() {
     setIsGoogleLoading(true);
-    const nextPath = selectedRole === 'master' ? '/dashboard' : '/my/bookings';
+    const planMatch = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);
+    const planValue = planMatch?.[1] ?? '';
+    const isPaidPlan = planValue === 'pro' || planValue === 'studio';
+    // For paid plans embed billing URL in `next` so it survives OAuth redirect even if cookie is lost
+    const nextPath = selectedRole === 'master'
+      ? isPaidPlan ? `/dashboard/billing?plan=${planValue}` : '/dashboard'
+      : '/my/bookings';
+    const cbParams = new URLSearchParams({ role: selectedRole, next: nextPath });
+    if (isPaidPlan) cbParams.set('plan', planValue);
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?role=${selectedRole}&next=${nextPath}`,
+        redirectTo: `${window.location.origin}/auth/callback?${cbParams.toString()}`,
         queryParams: {
           // Force Google account chooser on every sign-in.
           // Without this, iOS PWA (WKWebView) caches the Google session cookie

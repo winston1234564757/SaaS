@@ -20,8 +20,9 @@ export default async function MasterLayout({ children }: { children: React.React
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') ?? '';
   const isOnboarding = pathname.includes('/dashboard/onboarding');
+  const isBilling = pathname.includes('/dashboard/billing');
 
-  if (!masterProfile?.avatar_emoji && !isOnboarding) {
+  if (!masterProfile?.avatar_emoji && !isOnboarding && !isBilling) {
     redirect('/dashboard/onboarding');
   }
 

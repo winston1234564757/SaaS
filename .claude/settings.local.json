@@ -23,7 +23,11 @@
       "Bash(find /c/Users/Vitossik/SaaS/bookit/src -name \"RootLayout\\\\|layout.tsx\" -o -name \"*Provider*\")",
       "Bash(find C:UsersVitossikSaaSbookit -type f -name *[Ww]izard* -o -name *[Oo]nboard*)",
       "Bash(find C:/Users/Vitossik/SaaS/bookit -type f \\\\\\(-name *MyProfile* -o -name *Profile* \\\\\\) -path */components/*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(find \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\\\\dashboard\" -type f -name \"*.tsx\" -o -name \"*.ts\")",
+      "Bash(find C:UsersVitossikSaaSbookitsrc -type f -name *service*)",
+      "Bash(find:*)",
+      "Bash(ls -la \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit/src/app/\\(master\\)/dashboard/\")"
     ]
   }
 }
