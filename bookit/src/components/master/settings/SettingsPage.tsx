@@ -47,6 +47,7 @@ export function SettingsPage() {
 
   // Форма профілю
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
   const [slug, setSlug] = useState('');
   const [avatar, setAvatar] = useState('💅');
@@ -84,6 +85,7 @@ export function SettingsPage() {
     if (formInitialized.current || !profile || !masterProfile) return;
     formInitialized.current = true;
     setFullName(profile.full_name ?? '');
+    setPhone(profile.phone ?? '');
     setAvatarUrl(profile.avatar_url ?? null);
     setBio(masterProfile.bio ?? '');
     setSlug(masterProfile.slug ?? '');
@@ -157,7 +159,7 @@ export function SettingsPage() {
 
     try {
       await Promise.all([
-        supabase.from('profiles').update({ full_name: fullName, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
+        supabase.from('profiles').update({ full_name: fullName, phone: phone.trim() || null, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
         supabase.from('master_profiles').update({
           bio, city, slug,
           avatar_emoji: avatar,
@@ -278,6 +280,11 @@ export function SettingsPage() {
           <div>
             <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Повне ім'я</label>
             <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ваше ім'я та прізвище" className={inputCls} />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Мобільний телефон</label>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+38 (050) 000-00-00" className={inputCls} />
           </div>
 
           <div>

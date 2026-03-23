@@ -74,12 +74,15 @@ export function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Detect return from WayForPay
+  // Detect return from WayForPay or intended plan from landing
   useEffect(() => {
     if (searchParams.get('paid') === '1') {
       setShowSuccess(true);
       refresh();
-      // Clean up URL without reload
+      window.history.replaceState({}, '', '/dashboard/billing');
+      return;
+    }
+    if (searchParams.get('plan')) {
       window.history.replaceState({}, '', '/dashboard/billing');
     }
   }, []);

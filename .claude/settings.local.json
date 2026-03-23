@@ -20,7 +20,10 @@
       "Bash(node -e \"require\\(''dotenv''\\).config\\({path:''.env.local''}\\); console.log\\(''CRON_SECRET:'', JSON.stringify\\(process.env.CRON_SECRET\\)\\);\")",
       "Bash(ls -la \"/c/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard/studio/\")",
       "Bash(xargs cat:*)",
-      "Bash(find /c/Users/Vitossik/SaaS/bookit/src -name \"RootLayout\\\\|layout.tsx\" -o -name \"*Provider*\")"
+      "Bash(find /c/Users/Vitossik/SaaS/bookit/src -name \"RootLayout\\\\|layout.tsx\" -o -name \"*Provider*\")",
+      "Bash(find C:UsersVitossikSaaSbookit -type f -name *[Ww]izard* -o -name *[Oo]nboard*)",
+      "Bash(find C:/Users/Vitossik/SaaS/bookit -type f \\\\\\(-name *MyProfile* -o -name *Profile* \\\\\\) -path */components/*)",
+      "Bash(npx next:*)"
     ]
   }
 }

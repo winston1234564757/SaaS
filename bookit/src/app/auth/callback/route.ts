@@ -60,6 +60,10 @@ export async function GET(request: NextRequest) {
 
     // 2. Guarantee the matching sub-profile exists
     if (assignedRole === 'master') {
+      const { data: existingMaster } = await admin
+        .from('master_profiles').select('id').eq('id', user.id).maybeSingle();
+      const isNewMaster = !existingMaster;
+
       const bytes = crypto.getRandomValues(new Uint8Array(4));
       const suffix = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').slice(0, 6);
       const baseName = (user.user_metadata?.name as string | undefined)
@@ -71,6 +75,26 @@ export async function GET(request: NextRequest) {
         { id: user.id, slug },
         { onConflict: 'id', ignoreDuplicates: true }
       );
+
+      // 3. Link a pending booking to the newly authenticated user
+      if (bid) {
+        await admin.from('bookings')
+          .update({ client_id: user.id })
+          .eq('id', bid)
+          .is('client_id', null);
+      }
+
+      // Redirect: any master with a paid plan intent → billing; new masters → onboarding; others → dashboard
+      const intendedPlan = cookieStore.get('intended_plan')?.value ?? null;
+      cookieStore.set('intended_plan', '', { path: '/', maxAge: 0 });
+
+      if (intendedPlan === 'pro' || intendedPlan === 'studio') {
+        return NextResponse.redirect(new URL(`/dashboard/billing?plan=${intendedPlan}`, origin));
+      }
+      if (isNewMaster) {
+        return NextResponse.redirect(new URL('/dashboard/onboarding', origin));
+      }
+      return NextResponse.redirect(new URL(next, origin));
     } else {
       await admin.from('client_profiles').upsert(
         { id: user.id },
@@ -78,7 +102,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Link a pending booking to the newly authenticated user
+    // Link a pending booking for clients
     if (bid) {
       await admin.from('bookings')
         .update({ client_id: user.id })

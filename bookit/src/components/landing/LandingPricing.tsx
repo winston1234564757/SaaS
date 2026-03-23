@@ -5,6 +5,14 @@ import { motion, useInView } from 'framer-motion';
 import { Check, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
+function setIntendedPlan(planId: string) {
+  if (planId !== 'starter') {
+    document.cookie = `intended_plan=${planId}; path=/; max-age=3600; SameSite=Lax`;
+  } else {
+    document.cookie = 'intended_plan=; path=/; max-age=0';
+  }
+}
+
 const plans = [
   {
     name: 'Starter',
@@ -139,6 +147,7 @@ export function LandingPricing() {
 
             <Link
               href={plan.ctaHref}
+              onClick={() => setIntendedPlan(plan.name.toLowerCase())}
               className={`mt-auto flex items-center justify-center h-12 rounded-2xl font-semibold text-sm transition-colors ${
                 plan.highlight
                   ? 'bg-[#789A99] text-white hover:bg-[#5C7E7D] shadow-[0_4px_14px_rgba(120,154,153,0.35)]'

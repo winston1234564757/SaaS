@@ -7,6 +7,7 @@ import { ArrowRight, ArrowLeft, Camera, Check, Loader2, Copy, ExternalLink } fro
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useToast } from '@/lib/toast/context';
+import { revalidateAfterOnboarding } from '@/app/(master)/dashboard/onboarding/actions';
 
 const SPECIALIZATIONS = [
   { emoji: '💅', label: 'Манікюр' },
@@ -82,6 +83,7 @@ export function OnboardingWizard() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
+  const [phone, setPhone] = useState('');
   const [specialization, setSpecialization] = useState('💅');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -119,14 +121,19 @@ export function OnboardingWizard() {
       const uid = profile?.id ?? user.id;
 
       // Upload avatar if provided
+      // Uses 'images' bucket (path: avatars/{uid}/{uid}.{ext}) — matches existing RLS: foldername[2] = auth.uid()
       let avatarUrl: string | null = null;
       if (avatarFile) {
         const ext = avatarFile.name.split('.').pop() ?? 'jpg';
-        const path = `avatars/${uid}.${ext}`;
-        const { data: up } = await supabase.storage.from('avatars').upload(path, avatarFile, { upsert: true });
+        const path = `avatars/${uid}/${uid}.${ext}`;
+        const { data: up, error: upError } = await supabase.storage
+          .from('images')
+          .upload(path, avatarFile, { upsert: true });
         if (up) {
-          const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+          const { data: urlData } = supabase.storage.from('images').getPublicUrl(path);
           avatarUrl = urlData.publicUrl;
+        } else if (upError) {
+          console.error('[onboarding] avatar upload error:', upError.message);
         }
       }
 
@@ -150,6 +157,7 @@ export function OnboardingWizard() {
             role: 'master',
             full_name: fullName,
             email: user.email,
+            ...(phone.trim() ? { phone: phone.trim() } : {}),
             ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
           },
           { onConflict: 'id' }
@@ -166,6 +174,7 @@ export function OnboardingWizard() {
         await Promise.all([
           supabase.from('profiles').update({
             full_name: fullName,
+            ...(phone.trim() ? { phone: phone.trim() } : {}),
             ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
           }).eq('id', uid).throwOnError(),
           supabase.from('master_profiles').update({
@@ -202,6 +211,7 @@ export function OnboardingWizard() {
         });
       }
 
+      await revalidateAfterOnboarding();
       await refresh();
       setSavedSlug(finalSlug);
       setDirection(1);
@@ -310,6 +320,17 @@ export function OnboardingWizard() {
                     value={fullName}
                     onChange={e => setFullName(e.target.value)}
                     placeholder="Ксенія Коваль"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Мобільний телефон</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="+38 (050) 000-00-00"
                     className={inputCls}
                   />
                 </div>

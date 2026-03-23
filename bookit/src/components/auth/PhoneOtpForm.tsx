@@ -123,7 +123,17 @@ export function PhoneOtpForm({ mode }: Props) {
     }
 
     if (selectedRole === 'master') {
-      router.push(data.isNew ? '/dashboard/onboarding' : '/dashboard');
+      const match = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);
+      const intendedPlan = match ? match[1] : null;
+      document.cookie = 'intended_plan=; path=/; max-age=0';
+
+      if (intendedPlan === 'pro' || intendedPlan === 'studio') {
+        router.push(`/dashboard/billing?plan=${intendedPlan}`);
+      } else if (data.isNew) {
+        router.push('/dashboard/onboarding');
+      } else {
+        router.push('/dashboard');
+      }
     } else {
       router.push('/my/bookings');
     }

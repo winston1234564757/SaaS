@@ -63,9 +63,16 @@ export async function proxy(request: NextRequest) {
 
     // Guest-only pages — redirect to home
     if (pathname === '/' || pathname === '/login' || pathname === '/register') {
-      return NextResponse.redirect(
-        new URL(role === 'master' ? '/dashboard' : '/my/bookings', request.url)
-      );
+      if (role === 'master') {
+        const intendedPlan = request.cookies.get('intended_plan')?.value;
+        if (intendedPlan === 'pro' || intendedPlan === 'studio') {
+          const res = NextResponse.redirect(new URL(`/dashboard/billing?plan=${intendedPlan}`, request.url));
+          res.cookies.set('intended_plan', '', { path: '/', maxAge: 0 });
+          return res;
+        }
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      return NextResponse.redirect(new URL('/my/bookings', request.url));
     }
   }
 
