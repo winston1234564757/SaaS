@@ -132,7 +132,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
 
   return {
     bookings: query.data ?? [],
-    isLoading: query.isLoading,
+    isLoading: query.isLoading && !!masterId,
     error: query.error,
     updateStatus: (id: string, status: BookingStatus) => updateStatus.mutate({ id, status }),
   };
@@ -169,7 +169,7 @@ export function useMonthlyBookingCount() {
 
   return {
     count,
-    isLoading,
+    isLoading: isLoading && !!masterId,
     isAtLimit: tier === 'starter' && count >= STARTER_LIMIT,
     remaining: tier === 'starter' ? Math.max(0, STARTER_LIMIT - count) : null,
   };

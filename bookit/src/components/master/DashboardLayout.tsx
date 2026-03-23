@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 import { FloatingSidebar } from '@/components/shared/FloatingSidebar';
 import { BottomNav } from '@/components/shared/BottomNav';
@@ -8,6 +9,7 @@ import { InstallBanner } from '@/components/shared/InstallBanner';
 import { MasterProvider } from '@/lib/supabase/context';
 import { useRealtimeNotifications } from '@/lib/supabase/hooks/useRealtimeNotifications';
 import { BookingDetailsModal } from '@/components/master/bookings/BookingDetailsModal';
+import type { Profile, MasterProfile } from '@/types/database';
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
   useRealtimeNotifications();
@@ -33,9 +35,20 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  initialUser?: User | null;
+  initialProfile?: Profile | null;
+  initialMasterProfile?: MasterProfile | null;
+}
+
+export function DashboardLayout({ children, initialUser, initialProfile, initialMasterProfile }: DashboardLayoutProps) {
   return (
-    <MasterProvider>
+    <MasterProvider
+      initialUser={initialUser}
+      initialProfile={initialProfile}
+      initialMasterProfile={initialMasterProfile}
+    >
       <DashboardInner>{children}</DashboardInner>
     </MasterProvider>
   );

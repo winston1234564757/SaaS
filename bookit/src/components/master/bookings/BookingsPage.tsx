@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Loader2, Plus, Search, Download, Lock } from 'lucide-react';
 import { BookingCard } from './BookingCard';
 import { ManualBookingForm } from './ManualBookingForm';
+import { SharePageCard } from '@/components/master/dashboard/SharePageCard';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { useMasterContext } from '@/lib/supabase/context';
 import type { BookingStatus } from '@/types/database';
@@ -129,6 +130,7 @@ export function BookingsPage() {
 
   const visibleItems = filtered.slice(0, visibleCount);
   const hasMore = filtered.length > visibleCount;
+  const isGenuinelyEmpty = bookings.length === 0 && !search.trim() && statusFilter === 'all';
 
   // Групуємо по даті для week/month
   const grouped = useMemo(() => {
@@ -307,19 +309,38 @@ export function BookingsPage() {
             <p className="text-sm text-[#A8928D]">Завантаження записів...</p>
           </motion.div>
         ) : filtered.length === 0 ? (
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bento-card p-10 flex flex-col items-center gap-3 text-center"
-          >
-            <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
-              <CalendarDays size={26} className="text-[#A8928D]" />
-            </div>
-            <p className="text-sm font-semibold text-[#2C1A14]">Записів немає</p>
-            <p className="text-xs text-[#A8928D]">Поділіться своєю сторінкою, щоб отримати перші записи</p>
-          </motion.div>
+          isGenuinelyEmpty ? (
+            <motion.div
+              key="empty-share"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col gap-4"
+            >
+              <div className="bento-card p-6 flex flex-col items-center gap-3 text-center">
+                <div className="w-14 h-14 rounded-3xl bg-[#789A99]/10 flex items-center justify-center">
+                  <CalendarDays size={26} className="text-[#789A99]" />
+                </div>
+                <p className="text-base font-bold text-[#2C1A14]">Ваші перші записи чекають</p>
+                <p className="text-sm text-[#A8928D] text-balance">Поділіться своєю сторінкою, щоб клієнти могли записатися онлайн</p>
+              </div>
+              <SharePageCard />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bento-card p-10 flex flex-col items-center gap-3 text-center"
+            >
+              <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
+                <CalendarDays size={26} className="text-[#A8928D]" />
+              </div>
+              <p className="text-sm font-semibold text-[#2C1A14]">Записів немає</p>
+              <p className="text-xs text-[#A8928D]">Спробуйте змінити фільтри або діапазон дат</p>
+            </motion.div>
+          )
         ) : view === 'day' ? (
           <motion.div key="day-list" className="flex flex-col gap-3">
             {visibleItems.map((b, i) => (

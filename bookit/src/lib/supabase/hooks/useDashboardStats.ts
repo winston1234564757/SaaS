@@ -79,5 +79,5 @@ export function useDashboardStats(): DashboardStatsWithLoading {
     todayCount: 0, todayPending: 0, todayConfirmed: 0,
     todayCompleted: 0, todayRevenue: 0, weekClients: 0,
   };
-  return { ...(data ?? defaults), isLoading };
+  return { ...(data ?? defaults), isLoading: isLoading && !!masterId };
 }

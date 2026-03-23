@@ -10,8 +10,8 @@ export default async function MasterLayout({ children }: { children: React.React
   if (!user) redirect('/login');
 
   const [{ data: profile }, { data: masterProfile }] = await Promise.all([
-    supabase.from('profiles').select('role').eq('id', user.id).single(),
-    supabase.from('master_profiles').select('avatar_emoji').eq('id', user.id).maybeSingle(),
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('master_profiles').select('*').eq('id', user.id).maybeSingle(),
   ]);
 
   if (profile?.role === 'client') redirect('/my/bookings');
@@ -25,5 +25,13 @@ export default async function MasterLayout({ children }: { children: React.React
     redirect('/dashboard/onboarding');
   }
 
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return (
+    <DashboardLayout
+      initialUser={user}
+      initialProfile={profile ?? null}
+      initialMasterProfile={masterProfile ?? null}
+    >
+      {children}
+    </DashboardLayout>
+  );
 }

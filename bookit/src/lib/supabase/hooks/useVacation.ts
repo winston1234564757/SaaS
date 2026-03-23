@@ -64,7 +64,7 @@ export function useVacation() {
 
   return {
     blockedDates,
-    isLoading,
+    isLoading: isLoading && !!masterId,
     addBlockedDate: (date: string, reason?: string) => addMutation.mutate({ date, reason }),
     removeBlockedDate: (id: string) => removeMutation.mutate(id),
     isAdding: addMutation.isPending,

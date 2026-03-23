@@ -25,17 +25,27 @@ export function useMasterContext() {
   return useContext(MasterContext);
 }
 
-export function MasterProvider({ children }: { children: React.ReactNode }) {
+interface MasterProviderProps {
+  children: React.ReactNode;
+  initialUser?: User | null;
+  initialProfile?: Profile | null;
+  initialMasterProfile?: MasterProfile | null;
+}
+
+export function MasterProvider({ children, initialUser, initialProfile, initialMasterProfile }: MasterProviderProps) {
   // Single stable client instance — created once per component mount, no leaks on re-renders
   const supabase = useMemo(() => createClient(), []);
 
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [masterProfile, setMasterProfile] = useState<MasterProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(initialUser ?? null);
+  const [profile, setProfile] = useState<Profile | null>(initialProfile ?? null);
+  const [masterProfile, setMasterProfile] = useState<MasterProfile | null>(initialMasterProfile ?? null);
+  // isLoading=false одразу якщо сервер передав дані — хуки запускаються без затримки
+  const [isLoading, setIsLoading] = useState(!initialUser);
 
   // Guard against setState after unmount
   const mountedRef = useRef(true);
+  // Якщо сервер надав initial data — пропускаємо зайвий fetchProfile на INITIAL_SESSION
+  const hasInitialData = useRef(!!initialUser);
 
   async function fetchProfile(userId: string) {
     const [{ data: p }, { data: mp }] = await Promise.all([
@@ -61,6 +71,16 @@ export function MasterProvider({ children }: { children: React.ReactNode }) {
     // INITIAL_SESSION that caused isLoading to toggle and hooks to re-enable.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       if (!mountedRef.current) return;
+
+      // Якщо сервер вже надав свіжі дані — INITIAL_SESSION є дублем, пропускаємо fetchProfile
+      if (event === 'INITIAL_SESSION' && hasInitialData.current) {
+        hasInitialData.current = false;
+        const u = session?.user ?? null;
+        setUser(u); // оновлюємо user на випадок refresh токена між SSR і гідратацією
+        if (mountedRef.current) setIsLoading(false);
+        return;
+      }
+
       const u = session?.user ?? null;
       setUser(u);
       if (u) {

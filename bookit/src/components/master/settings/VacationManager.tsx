@@ -48,7 +48,7 @@ export function VacationManager() {
       ) : blockedDates.length === 0 ? (
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 text-center">
           <Umbrella size={16} className="text-[#A8928D] flex-shrink-0" />
-          <p className="text-xs text-[#A8928D]">Вихідних та відпусток не заплановано</p>
+          <p className="text-xs text-[#A8928D]">Запорука якісної роботи - якісний відпочинок, зроби собі вихідний)</p>
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">

@@ -182,7 +182,6 @@ export function SettingsPage() {
       ]);
 
       await refresh();
-      queryClient.invalidateQueries();
       setSaved(true);
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);

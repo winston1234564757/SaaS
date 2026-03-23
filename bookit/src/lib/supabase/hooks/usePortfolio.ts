@@ -112,7 +112,7 @@ export function usePortfolio() {
 
   return {
     photos,
-    isLoading,
+    isLoading: isLoading && !!masterId,
     isUploading,
     uploadPhoto,
     deletePhoto: (id: string, storagePath: string) =>

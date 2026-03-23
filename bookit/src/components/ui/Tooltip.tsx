@@ -34,9 +34,9 @@ export function Tooltip({ content, children, position = 'top', className, delay 
             className={cn(
               'z-[9999] pointer-events-none select-none',
               // Glassmorphism
-              'bg-white/40 backdrop-blur-2xl',
-              'border border-white/60',
-              'shadow-[0_8px_30px_rgb(0,0,0,0.12)]',
+              'bg-white/90 backdrop-blur-xl',
+              'border border-white/70',
+              'shadow-[0_8px_30px_rgb(0,0,0,0.14)]',
               'text-[#2C1A14] rounded-2xl p-4',
               // Radix animations
               'origin-[--radix-tooltip-content-transform-origin]',
@@ -45,7 +45,7 @@ export function Tooltip({ content, children, position = 'top', className, delay 
             )}
           >
             {content}
-            <RadixTooltip.Arrow className="fill-white/50" />
+            <RadixTooltip.Arrow className="fill-white/90" />
           </RadixTooltip.Content>
         </RadixTooltip.Portal>
       </RadixTooltip.Root>
