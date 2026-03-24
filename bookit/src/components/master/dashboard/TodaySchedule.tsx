@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, ChevronRight, Loader2, CheckCircle2, Star, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
@@ -192,6 +193,14 @@ export function TodaySchedule() {
   const range = getDateRange(view);
   const { bookings, isLoading, updateStatus } = useBookings(range.from, range.to);
   const allBookings: BookingWithServices[] = bookings ?? [];
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const openBooking = (id: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('bookingId', id);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
 
   useEffect(() => setMounted(true), []);
 
@@ -297,7 +306,7 @@ export function TodaySchedule() {
                       const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
                       const svcName = b.services[0]?.name ?? 'Послуга';
                       return (
-                        <div key={b.id} className="flex items-center gap-4 px-5 py-3 hover:bg-white/40 transition-colors">
+                        <div key={b.id} onClick={() => openBooking(b.id)} className="flex items-center gap-4 px-5 py-3 hover:bg-white/40 transition-colors cursor-pointer">
                           <div className="w-12 flex-shrink-0 text-right">
                             <p className="text-sm font-semibold tabular-nums text-[#6B5750]">{b.start_time}</p>
                             <p className="text-[10px] text-[#A8928D]">{b.end_time}</p>
@@ -329,7 +338,8 @@ export function TodaySchedule() {
                 return (
                   <div
                     key={b.id}
-                    className={`flex items-center gap-4 px-5 py-4 transition-colors ${
+                    onClick={() => openBooking(b.id)}
+                    className={`flex items-center gap-4 px-5 py-4 transition-colors cursor-pointer ${
                       isCurrent
                         ? 'bg-[#789A99]/6'
                         : b.status === 'completed'
@@ -381,14 +391,14 @@ export function TodaySchedule() {
                         <div className="flex items-center gap-1.5 mt-1.5">
                           {b.status === 'pending' && (
                             <button
-                              onClick={() => updateStatus(b.id, 'confirmed')}
+                              onClick={(e) => { e.stopPropagation(); updateStatus(b.id, 'confirmed'); }}
                               className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#789A99]/10 text-[#789A99] text-[10px] font-semibold hover:bg-[#789A99]/20 transition-colors"
                             >
                               <CheckCircle2 size={10} /> Підтвердити
                             </button>
                           )}
                           <button
-                            onClick={() => updateStatus(b.id, 'completed')}
+                            onClick={(e) => { e.stopPropagation(); updateStatus(b.id, 'completed'); }}
                             className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#5C9E7A]/10 text-[#5C9E7A] text-[10px] font-semibold hover:bg-[#5C9E7A]/20 transition-colors"
                           >
                             <Star size={10} /> Завершити

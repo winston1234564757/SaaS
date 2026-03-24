@@ -1,14 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import {
   X, Clock, Phone, Globe, PenLine,
   CheckCircle2, XCircle, Star, Save, Loader2,
   TrendingUp, ShoppingBag, CalendarClock,
 } from 'lucide-react';
 import { useBookingById } from '@/lib/supabase/hooks/useBookingById';
+import { createClient } from '@/lib/supabase/client';
+import { useMasterContext } from '@/lib/supabase/context';
+import { generateAvailableSlots, scoreSlots } from '@/lib/utils/smartSlots';
+import type { TimeRange, SlotWithScore } from '@/lib/utils/smartSlots';
+import type { WorkingHoursConfig } from '@/types/database';
 import { formatPrice } from '@/components/master/services/types';
 import { formatDurationFull } from '@/lib/utils/dates';
 import { notifyClientOnStatusChange } from '@/app/(master)/dashboard/bookings/actions';
@@ -26,10 +32,16 @@ const UA_MONTHS = [
   'січня','лютого','березня','квітня','травня','червня',
   'липня','серпня','вересня','жовтня','листопада','грудня',
 ];
+const UA_DAYS_SHORT = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
+const DOW_MAP: Record<number, string> = { 0:'sun', 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri', 6:'sat' };
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr + 'T00:00:00');
   return `${d.getDate()} ${UA_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function toISOLocal(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function computeEndTime(startTime: string, totalMinutes: number): string {
@@ -40,10 +52,201 @@ function computeEndTime(startTime: string, totalMinutes: number): string {
   return `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
 }
 
+// ── Reschedule Panel ──────────────────────────────────────────────────────────
+
+interface ReschedulePanelProps {
+  masterId: string;
+  currentBookingId: string;
+  durationMinutes: number;
+  workingHours: WorkingHoursConfig | null;
+  onConfirm: (date: string, startTime: string, endTime: string) => void;
+  onCancel: () => void;
+  isSaving: boolean;
+  saveError: string | null;
+}
+
+function ReschedulePanel({
+  masterId, currentBookingId, durationMinutes, workingHours,
+  onConfirm, onCancel, isSaving, saveError,
+}: ReschedulePanelProps) {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+
+  const days = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      return d;
+    });
+  }, []);
+
+  const dateStr = selectedDate ? toISOLocal(selectedDate) : null;
+
+  const slotsQuery = useQuery({
+    queryKey: ['reschedule-slots', masterId, dateStr],
+    queryFn: async () => {
+      const supabase = createClient();
+      const [tplRes, excRes, bookRes] = await Promise.all([
+        supabase
+          .from('schedule_templates')
+          .select('day_of_week, is_working, start_time, end_time, break_start, break_end')
+          .eq('master_id', masterId),
+        supabase
+          .from('schedule_exceptions')
+          .select('date, is_day_off, start_time, end_time')
+          .eq('master_id', masterId)
+          .eq('date', dateStr!),
+        supabase
+          .from('bookings')
+          .select('start_time, end_time')
+          .eq('master_id', masterId)
+          .eq('date', dateStr!)
+          .neq('status', 'cancelled')
+          .neq('id', currentBookingId),
+      ]);
+
+      const dow = DOW_MAP[selectedDate!.getDay()];
+      const tpl = (tplRes.data ?? []).find((t: any) => t.day_of_week === dow);
+
+      if (!tpl?.is_working) return { slots: [] as SlotWithScore[], isOffDay: true };
+
+      const exc = excRes.data?.[0] as any;
+      if (exc?.is_day_off) return { slots: [] as SlotWithScore[], isOffDay: true };
+
+      const workStart = ((exc?.start_time ?? tpl.start_time) as string).slice(0, 5);
+      const workEnd   = ((exc?.end_time   ?? tpl.end_time)   as string).slice(0, 5);
+
+      const breaks: TimeRange[] = [];
+      if (tpl.break_start && tpl.break_end) {
+        breaks.push({ start: (tpl.break_start as string).slice(0, 5), end: (tpl.break_end as string).slice(0, 5) });
+      }
+      if (workingHours?.breaks?.length) {
+        breaks.push(...workingHours.breaks);
+      }
+
+      const bookings: TimeRange[] = (bookRes.data ?? []).map((b: any) => ({
+        start: (b.start_time as string).slice(0, 5),
+        end:   (b.end_time   as string).slice(0, 5),
+      }));
+
+      const raw = generateAvailableSlots({
+        workStart,
+        workEnd,
+        bookings,
+        breaks,
+        bufferMinutes: workingHours?.buffer_time_minutes ?? 0,
+        requestedDuration: durationMinutes > 0 ? durationMinutes : 60,
+        stepMinutes: 15,
+      });
+
+      return { slots: scoreSlots(raw, {}), isOffDay: false };
+    },
+    enabled: !!dateStr,
+  });
+
+  const handleConfirm = () => {
+    if (!selectedDate || !selectedSlot) return;
+    const dur = durationMinutes > 0 ? durationMinutes : 60;
+    onConfirm(toISOLocal(selectedDate), selectedSlot, computeEndTime(selectedSlot, dur));
+  };
+
+  const availableSlots = slotsQuery.data?.slots.filter(s => s.available) ?? [];
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Date strip */}
+      <div>
+        <p className="text-[11px] text-[#A8928D] mb-2">Оберіть нову дату</p>
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+          {days.map(d => {
+            const iso = toISOLocal(d);
+            const isSelected = dateStr === iso;
+            return (
+              <button
+                key={iso}
+                onClick={() => { setSelectedDate(d); setSelectedSlot(null); }}
+                className={`flex-shrink-0 flex flex-col items-center w-11 py-2 rounded-xl transition-all ${
+                  isSelected
+                    ? 'bg-[#789A99] text-white shadow-md'
+                    : 'bg-[#F5E8E3]/60 text-[#6B5750] hover:bg-[#F5E8E3]'
+                }`}
+              >
+                <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-[#A8928D]'}`}>
+                  {UA_DAYS_SHORT[d.getDay()]}
+                </span>
+                <span className="text-sm font-bold leading-none mt-1">{d.getDate()}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Slots */}
+      {selectedDate && (
+        <div>
+          <p className="text-[11px] text-[#A8928D] mb-2">Доступні слоти</p>
+          {slotsQuery.isLoading ? (
+            <div className="flex items-center gap-2 py-2">
+              <Loader2 size={14} className="animate-spin text-[#789A99]" />
+              <span className="text-xs text-[#A8928D]">Завантаження...</span>
+            </div>
+          ) : slotsQuery.data?.isOffDay ? (
+            <p className="text-xs text-[#A8928D] py-2">Майстер не працює цього дня</p>
+          ) : availableSlots.length === 0 ? (
+            <p className="text-xs text-[#A8928D] py-2">Немає вільних слотів</p>
+          ) : (
+            <div className="grid grid-cols-4 gap-1.5">
+              {availableSlots.map(s => (
+                <button
+                  key={s.time}
+                  onClick={() => setSelectedSlot(s.time)}
+                  className={`py-2 rounded-xl text-xs font-semibold transition-all ${
+                    selectedSlot === s.time
+                      ? 'bg-[#789A99] text-white shadow-sm'
+                      : s.isSuggested
+                      ? 'bg-[#789A99]/15 text-[#789A99] border border-[#789A99]/30'
+                      : 'bg-[#F5E8E3]/60 text-[#6B5750] hover:bg-[#F5E8E3]'
+                  }`}
+                >
+                  {s.time}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {saveError && <p className="text-xs text-[#C05B5B]">{saveError}</p>}
+
+      <div className="flex gap-2 mt-1">
+        <button
+          onClick={handleConfirm}
+          disabled={isSaving || !selectedDate || !selectedSlot}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors disabled:opacity-50"
+        >
+          {isSaving ? <Loader2 size={14} className="animate-spin" /> : <CalendarClock size={14} />}
+          Зберегти перенесення
+        </button>
+        <button
+          onClick={onCancel}
+          className="px-4 py-2.5 rounded-xl bg-[#F5E8E3] text-[#A8928D] text-sm font-semibold hover:bg-[#EBCFC7] transition-colors"
+        >
+          Скасувати
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Modal ────────────────────────────────────────────────────────────────
+
 export function BookingDetailsModal() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('bookingId');
+  const { masterProfile } = useMasterContext();
 
   const {
     booking, isLoading,
@@ -56,8 +259,6 @@ export function BookingDetailsModal() {
   const [notes, setNotes] = useState('');
   const [notesDirty, setNotesDirty] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
-  const [newDate, setNewDate] = useState('');
-  const [newTime, setNewTime] = useState('');
 
   useEffect(() => {
     if (booking) {
@@ -92,13 +293,10 @@ export function BookingDetailsModal() {
     setNotesDirty(false);
   };
 
-  const handleReschedule = () => {
-    if (!newDate || !newTime || !booking) return;
-    const totalMinutes = booking.services.reduce((acc, s) => acc + s.duration, 0) || 60;
-    const endTime = computeEndTime(newTime, totalMinutes);
-    reschedule({ date: newDate, startTime: newTime, endTime });
-    setShowReschedule(false);
-  };
+  const durationMinutes = useMemo(
+    () => (booking?.services ?? []).reduce((sum, s) => sum + s.duration, 0),
+    [booking?.services],
+  );
 
   const isOpen = !!bookingId;
   const canAct = booking?.status === 'pending' || booking?.status === 'confirmed';
@@ -178,7 +376,6 @@ export function BookingDetailsModal() {
                     </a>
                   </div>
 
-                  {/* Source */}
                   <div>
                     {booking.source === 'manual' ? (
                       <span className="inline-flex items-center gap-1 text-[10px] text-[#A8928D] bg-[#F5E8E3] px-2 py-0.5 rounded-full">
@@ -297,49 +494,22 @@ export function BookingDetailsModal() {
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-3">Дії</p>
 
-                    {/* Reschedule inline form */}
                     {showReschedule ? (
-                      <div className="flex flex-col gap-3 mb-3">
-                        <div className="flex gap-2">
-                          <div className="flex-1">
-                            <label className="text-[11px] text-[#A8928D] mb-1 block">Нова дата</label>
-                            <input
-                              type="date"
-                              value={newDate}
-                              onChange={e => setNewDate(e.target.value)}
-                              className="w-full text-sm text-[#2C1A14] bg-[#FDFAF8] border border-[#F0DDD8] rounded-xl px-3 py-2 outline-none focus:border-[#789A99] transition-all"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <label className="text-[11px] text-[#A8928D] mb-1 block">Час</label>
-                            <input
-                              type="time"
-                              value={newTime}
-                              onChange={e => setNewTime(e.target.value)}
-                              className="w-full text-sm text-[#2C1A14] bg-[#FDFAF8] border border-[#F0DDD8] rounded-xl px-3 py-2 outline-none focus:border-[#789A99] transition-all"
-                            />
-                          </div>
-                        </div>
-                        {rescheduleError && (
-                          <p className="text-xs text-[#C05B5B]">{rescheduleError}</p>
-                        )}
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleReschedule}
-                            disabled={isRescheduling || !newDate || !newTime}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors disabled:opacity-50"
-                          >
-                            {isRescheduling ? <Loader2 size={14} className="animate-spin" /> : <CalendarClock size={14} />}
-                            Зберегти перенесення
-                          </button>
-                          <button
-                            onClick={() => setShowReschedule(false)}
-                            className="px-4 py-2.5 rounded-xl bg-[#F5E8E3] text-[#A8928D] text-sm font-semibold hover:bg-[#EBCFC7] transition-colors"
-                          >
-                            Скасувати
-                          </button>
-                        </div>
-                      </div>
+                      masterProfile?.id ? (
+                        <ReschedulePanel
+                          masterId={masterProfile.id}
+                          currentBookingId={booking.id}
+                          durationMinutes={durationMinutes}
+                          workingHours={masterProfile.working_hours ?? null}
+                          onConfirm={(date, startTime, endTime) => {
+                            reschedule({ date, startTime, endTime });
+                            setShowReschedule(false);
+                          }}
+                          onCancel={() => setShowReschedule(false)}
+                          isSaving={isRescheduling}
+                          saveError={rescheduleError}
+                        />
+                      ) : null
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {booking.status === 'pending' && (
