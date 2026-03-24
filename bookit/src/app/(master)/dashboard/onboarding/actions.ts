@@ -56,6 +56,8 @@ export async function saveOnboardingProfile(params: {
 
   if (masterError) return { error: masterError.message };
 
+  revalidatePath('/dashboard/onboarding');
+  revalidatePath('/dashboard');
   return { error: null };
 }
 
@@ -93,6 +95,7 @@ export async function saveOnboardingSchedule(params: {
 
   if (whError) return { error: whError.message };
 
+  revalidatePath('/dashboard/onboarding');
   return { error: null };
 }
 
@@ -118,5 +121,7 @@ export async function saveOnboardingService(params: {
   });
 
   if (error) return { error: error.message };
+
+  revalidatePath('/dashboard/onboarding');
   return { error: null };
 }

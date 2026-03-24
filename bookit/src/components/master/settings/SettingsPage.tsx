@@ -110,7 +110,6 @@ export function SettingsPage() {
     setSlugStatus('checking');
     const timer = setTimeout(async () => {
       const supabase = createClient();
-      await supabase.auth.getSession();
       const { data } = await supabase
         .from('master_profiles')
         .select('id')
@@ -127,35 +126,35 @@ export function SettingsPage() {
     if (scheduleInitialized.current || !masterProfile?.id) return;
     scheduleInitialized.current = true;
     const supabase = createClient();
-    supabase.auth.getSession().then(() => {
-      supabase
-        .from('schedule_templates')
-        .select('*')
-        .eq('master_id', masterProfile.id)
-        .then((res: { data: any[] | null }) => {
-          const data = res.data;
-          if (data && data.length > 0) {
-            const s = { ...DEFAULT_SCHEDULE };
-            data.forEach((row: any) => {
-              if (row.day_of_week in s) {
-                s[row.day_of_week as DayKey] = {
-                  is_working: row.is_working,
-                  start_time: (row.start_time as string | null)?.slice(0, 5) ?? '09:00',
-                  end_time: (row.end_time as string | null)?.slice(0, 5) ?? '18:00',
-                };
-              }
-            });
-            setSchedule(s);
-          }
-        });
-    });
+    supabase
+      .from('schedule_templates')
+      .select('*')
+      .eq('master_id', masterProfile.id)
+      .then((res: { data: any[] | null }) => {
+        const data = res.data;
+        if (data && data.length > 0) {
+          const s = { ...DEFAULT_SCHEDULE };
+          data.forEach((row: any) => {
+            if (row.day_of_week in s) {
+              s[row.day_of_week as DayKey] = {
+                is_working: row.is_working,
+                start_time: (row.start_time as string | null)?.slice(0, 5) ?? '09:00',
+                end_time: (row.end_time as string | null)?.slice(0, 5) ?? '18:00',
+              };
+            }
+          });
+          setSchedule(s);
+        }
+      });
   }, [masterProfile?.id]);
 
   async function handleSave() {
-    if (!masterProfile?.id || !profile?.id) return;
+    if (!masterProfile?.id || !profile?.id) {
+      showToast({ type: 'error', title: 'Помилка', message: 'Профіль ще завантажується, спробуйте ще раз' });
+      return;
+    }
     setSaving(true);
     const supabase = createClient();
-    await supabase.auth.getSession();
 
     try {
       await Promise.all([

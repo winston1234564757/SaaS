@@ -1,7 +1,8 @@
-'use client';
-
+import { createClient } from '@/lib/supabase/server';
 import { MasterProvider } from '@/lib/supabase/context';
 
-export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
-  return <MasterProvider>{children}</MasterProvider>;
+export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return <MasterProvider initialUser={user}>{children}</MasterProvider>;
 }

@@ -1,19 +1,103 @@
-# BOOKIT V2 - ELITE ZERO-ERROR PROTOCOL
+# BOOKIT V2 — ELITE ZERO-ERROR PROTOCOL
 
 ## 1. Role & Core Directives
 - You are an Elite Senior Full-stack Architect and Lead QA.
 - Write all code, commit messages, and terminal responses strictly in **Ukrainian**.
-- Do not guess or hallucinate. If a type or component is missing, read the file system or use your tools to find it.
+- Do not guess or hallucinate. If a type or component is missing, read the file system first.
+- This project runs on **Next.js 16+ App Router** (Turbopack). `middleware.ts` is **DEPRECATED** — routing protection lives in `src/proxy.ts` with `export function proxy`.
 
-## 2. The Zero-Error Loop (HARD SKILLS)
-You are EQUIPPED with custom scripts in `package.json`. You **MUST** run them autonomously before reporting to the user that any task is "Done". Do not wait for the user to ask you to test your code.
-- **`npm run skill:typecheck`** ➔ Run this after making ANY file modifications. If it fails, fix the TypeScript errors yourself before proceeding.
-- **`npm run skill:build`** ➔ Run this after finishing the logical part of a task. Next.js 15 SSR and Hydration bugs will be caught here. Do not pass the task to the user until the build succeeds 100%.
-- **`npm run skill:test-smoke`** ➔ Run this if you modified Auth, Routing, Landing, or major UI flows.
-- **`npm run skill:db-sync`** ➔ Run this if the user informs you that the Supabase cloud database schema was updated.
+## 2. The Zero-Error Loop (MANDATORY)
+Run these scripts autonomously. Do NOT wait for the user to ask.
+- **`npm run build`** ➔ Run after finishing any logical task. SSR/Hydration bugs are caught here. Never report "Done" until build passes 100%.
+- **`npx tsc --noEmit`** ➔ Run after ANY file modification. Fix all TypeScript errors before continuing (ignore pre-existing `.next/types` errors).
 
 ## 3. Strict Architectural Rules
-- **No F5 Required:** All Server Actions must end with `revalidatePath` or `revalidateTag`. All React Query mutations must call `queryClient.invalidateQueries({ queryKey: [...] })` on success.
-- **Server-First Auth:** Use Supabase server client (`createClient` from `@/lib/supabase/server`) for layout guards. Do not rely on client-side `useEffect` for critical access redirects to avoid "Client-Cache Mirages".
-- **No Infinite Spinners:** Handle React Query `isPending` gracefully. Always implement clean Empty States instead of infinite skeletons when data arrays are empty.
-- **Clean UI:** Maintain glassmorphism, deep dark/light minimal themes, and use `lucide-react` icons. No emojis in the professional desktop UI unless explicitly requested.
+
+### Reactivity (No F5 Required)
+- All **Server Actions** MUST end with `revalidatePath(...)` or `revalidateTag(...)`.
+- All `useMutation` hooks MUST call `queryClient.invalidateQueries({ queryKey: [...] })` in `onSuccess`.
+- Never use `window.location.reload()`. Only native TanStack Query reactivity.
+
+### Auth & Security
+- **Server-First Auth:** Use `createClient` from `@/lib/supabase/server` in Server Components and Server Actions.
+- **Admin Client:** Always import from `@/lib/supabase/admin`. Never inline `createAdminClient`.
+- Never return passwords or raw tokens in API responses — use magiclink token flow.
+- HTML-escape all user-supplied data before embedding in Telegram messages (`src/lib/telegram.ts`).
+
+### No Blocking `getSession()` in QueryFn
+- **NEVER** call `await supabase.auth.getSession()` inside TanStack Query's `queryFn`. The Supabase browser client attaches the auth token automatically. This call blocks the query until token refresh completes and is the #1 cause of infinite skeletons.
+- `getSession()` is permitted only inside event handlers (e.g., `handleSave`, `handleAdd`) where you explicitly need to verify session state before a write.
+
+### No Infinite Spinners
+- Use `isPending` from TanStack Query v5. `isLoading` is computed as `isPending && isFetching` — use it only when you need the "actually fetching for the first time" semantic.
+- When a data array is empty (`[]`), ALWAYS render a clean **Empty State** — never leave a skeleton spinning.
+- Skeleton guard pattern: `isLoading: query.isLoading && !!entityId` — prevents showing skeleton before auth/context is ready.
+
+### Context Hydration (No Client-Cache Mirages)
+- `MasterProvider` receives `initialUser`, `initialProfile`, `initialMasterProfile` from the Server Layout.
+- Layout files must be **Server Components** or **async Server Component layouts** that fetch user data and pass it as props — never `'use client'` layouts without initial data.
+- `onboarding/layout.tsx` MUST be a server component that fetches the user and passes `initialUser` to `MasterProvider`. A `'use client'` layout without `initialUser` causes `isLoading: true` on mount, which blocks all context-dependent saves.
+
+### Slot Scheduling (BookingWizard / ReschedulePanel Pattern)
+- Pre-fetch full 30-day schedule in a single `Promise.all` (schedule_templates + schedule_exceptions + bookings).
+- Store results in a `ScheduleStore` shape: `{ templates, exceptions, bookingsByDate }`.
+- Use `generateAvailableSlots`, `scoreSlots`, `buildSlotRenderItems` from `@/lib/utils/smartSlots`.
+- Date strip: off-days show `вих.` + dashed border; fully-booked show `зайнято` + red border.
+- Slot grid: 3 columns, break separators via `buildSlotRenderItems`, show start+end time + star badge for suggested.
+- Never fetch slots per-date lazily — always pre-fetch the whole window.
+
+### TypeScript
+- Strict mode is on. Never add explicit `Promise<unknown>[]` annotation to Supabase builder arrays.
+- Keep all types aligned with `src/types/database.ts`.
+
+### Clean UI
+- Glassmorphism + dark/light minimal theme. `lucide-react` icons only.
+- No emojis in the professional desktop UI unless explicitly requested by the user.
+- Mobile-first layout. Server Components by default; `"use client"` only for interactivity.
+
+## 4. Tech Stack (Locked)
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16+ App Router, Turbopack |
+| Language | TypeScript (strict) |
+| Routing guard | `src/proxy.ts` — `export function proxy` |
+| Styling | Tailwind CSS v4 — `@import "tailwindcss"` in globals.css. No `tailwind.config.ts` |
+| Data | TanStack Query v5, Supabase (auth, DB, storage, realtime) |
+| Forms | React Hook Form + Zod |
+| State | Zustand |
+| Animation | Framer Motion |
+| Icons | Lucide React |
+
+## 5. Design System (Locked)
+| Token | Value |
+|---|---|
+| Background | `#FFE8DC` (peach/salmon) |
+| Accent | `#789A99` (sage teal) |
+| Text primary | `#2C1A14` |
+| Text secondary | `#6B5750` |
+| Text tertiary | `#A8928D` |
+| Surface | `rgba(255,255,255,0.68)` (Mica) |
+| Success | `#5C9E7A` |
+| Warning | `#D4935A` |
+| Error | `#C05B5B` |
+
+- Card radius: 24px | Button radius: 16px | Input radius: 12px
+- `.bento-card` CSS class for all glass cards (backdrop-blur, border, shadow)
+- Fonts: **Inter** (body) + **Playfair Display** (headings), both with Cyrillic subset
+- CSS classes: `.display-xl`, `.display-lg`, `.display-md`, `.heading-serif`, `.font-display`
+- Blob background: peach + sage + cream blobs, `z-index: -1`
+- Grain overlay: fixed, `z-index: 9999`, `opacity: 0.03`
+
+## 6. Auth Flow (SMS OTP → Magiclink)
+1. `send-sms` → writes OTP to `sms_otps` table (10 min TTL, rate-limited)
+2. `verify-sms` → verifies OTP, calls `admin.generateLink({ type: 'magiclink' })`, returns `{ email, token, isNew }`
+3. Client calls `supabase.auth.verifyOtp({ email, token, type: 'magiclink' })`
+- `sms_verify_attempts` table enforces max 10 attempts per 15 min.
+- NEVER return password in API response.
+
+## 7. Monetization Tiers
+| Tier | Price | Key Limits |
+|---|---|---|
+| Starter | 0₴ | 30 bookings/month, watermark |
+| Pro | 700₴/month | Unlimited, analytics, CRM, CSV, Telegram, no watermark |
+| Studio | 299₴/master/month | All Pro + team management |

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -12,11 +12,12 @@ import {
 import { useBookingById } from '@/lib/supabase/hooks/useBookingById';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
-import { generateAvailableSlots, scoreSlots } from '@/lib/utils/smartSlots';
-import type { TimeRange, SlotWithScore } from '@/lib/utils/smartSlots';
+import { generateAvailableSlots, scoreSlots, buildSlotRenderItems } from '@/lib/utils/smartSlots';
+import type { TimeRange, SlotWithScore, SlotRenderItem } from '@/lib/utils/smartSlots';
 import type { WorkingHoursConfig } from '@/types/database';
 import { formatPrice } from '@/components/master/services/types';
-import { formatDurationFull } from '@/lib/utils/dates';
+import { formatDurationFull, getDayOfWeek } from '@/lib/utils/dates';
+import { computeEndTime } from '@/lib/utils/bookingEngine';
 import { notifyClientOnStatusChange } from '@/app/(master)/dashboard/bookings/actions';
 import type { BookingStatus } from '@/types/database';
 
@@ -33,7 +34,6 @@ const UA_MONTHS = [
   'липня','серпня','вересня','жовтня','листопада','грудня',
 ];
 const UA_DAYS_SHORT = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
-const DOW_MAP: Record<number, string> = { 0:'sun', 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri', 6:'sat' };
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr + 'T00:00:00');
@@ -44,15 +44,11 @@ function toISOLocal(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function computeEndTime(startTime: string, totalMinutes: number): string {
-  const [h, m] = startTime.split(':').map(Number);
-  const total = h * 60 + m + totalMinutes;
-  const eh = Math.floor(total / 60) % 24;
-  const em = total % 60;
-  return `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
+interface ScheduleStore {
+  templates: Record<string, { start_time: string; end_time: string; break_start: string | null; break_end: string | null }>;
+  exceptions: Record<string, { is_day_off: boolean; start_time: string | null; end_time: string | null }>;
+  bookingsByDate: Record<string, TimeRange[]>;
 }
-
-// ── Reschedule Panel ──────────────────────────────────────────────────────────
 
 interface ReschedulePanelProps {
   masterId: string;
@@ -82,10 +78,11 @@ function ReschedulePanel({
     });
   }, []);
 
-  const dateStr = selectedDate ? toISOLocal(selectedDate) : null;
+  const rangeFrom = toISOLocal(days[0]);
+  const rangeTo   = toISOLocal(days[days.length - 1]);
 
-  const slotsQuery = useQuery({
-    queryKey: ['reschedule-slots', masterId, dateStr],
+  const scheduleQuery = useQuery({
+    queryKey: ['reschedule-store', masterId, rangeFrom, currentBookingId],
     queryFn: async () => {
       const supabase = createClient();
       const [tplRes, excRes, bookRes] = await Promise.all([
@@ -97,122 +94,211 @@ function ReschedulePanel({
           .from('schedule_exceptions')
           .select('date, is_day_off, start_time, end_time')
           .eq('master_id', masterId)
-          .eq('date', dateStr!),
+          .gte('date', rangeFrom)
+          .lte('date', rangeTo),
         supabase
           .from('bookings')
-          .select('start_time, end_time')
+          .select('date, start_time, end_time')
           .eq('master_id', masterId)
-          .eq('date', dateStr!)
+          .gte('date', rangeFrom)
+          .lte('date', rangeTo)
           .neq('status', 'cancelled')
           .neq('id', currentBookingId),
       ]);
 
-      const dow = DOW_MAP[selectedDate!.getDay()];
-      const tpl = (tplRes.data ?? []).find((t: any) => t.day_of_week === dow);
-
-      if (!tpl?.is_working) return { slots: [] as SlotWithScore[], isOffDay: true };
-
-      const exc = excRes.data?.[0] as any;
-      if (exc?.is_day_off) return { slots: [] as SlotWithScore[], isOffDay: true };
-
-      const workStart = ((exc?.start_time ?? tpl.start_time) as string).slice(0, 5);
-      const workEnd   = ((exc?.end_time   ?? tpl.end_time)   as string).slice(0, 5);
-
-      const breaks: TimeRange[] = [];
-      if (tpl.break_start && tpl.break_end) {
-        breaks.push({ start: (tpl.break_start as string).slice(0, 5), end: (tpl.break_end as string).slice(0, 5) });
-      }
-      if (workingHours?.breaks?.length) {
-        breaks.push(...workingHours.breaks);
+      const templates: ScheduleStore['templates'] = {};
+      for (const t of (tplRes.data ?? []) as any[]) {
+        if (t.is_working) {
+          templates[t.day_of_week as string] = {
+            start_time:  (t.start_time  as string).slice(0, 5),
+            end_time:    (t.end_time    as string).slice(0, 5),
+            break_start: t.break_start ? (t.break_start as string).slice(0, 5) : null,
+            break_end:   t.break_end   ? (t.break_end   as string).slice(0, 5) : null,
+          };
+        }
       }
 
-      const bookings: TimeRange[] = (bookRes.data ?? []).map((b: any) => ({
-        start: (b.start_time as string).slice(0, 5),
-        end:   (b.end_time   as string).slice(0, 5),
-      }));
+      const exceptions: ScheduleStore['exceptions'] = {};
+      for (const e of (excRes.data ?? []) as any[]) {
+        exceptions[e.date as string] = {
+          is_day_off:  e.is_day_off  as boolean,
+          start_time:  e.start_time  ? (e.start_time  as string).slice(0, 5) : null,
+          end_time:    e.end_time    ? (e.end_time    as string).slice(0, 5) : null,
+        };
+      }
 
-      const raw = generateAvailableSlots({
-        workStart,
-        workEnd,
-        bookings,
-        breaks,
-        bufferMinutes: workingHours?.buffer_time_minutes ?? 0,
-        requestedDuration: durationMinutes > 0 ? durationMinutes : 60,
-        stepMinutes: 15,
-      });
+      const bookingsByDate: ScheduleStore['bookingsByDate'] = {};
+      for (const b of (bookRes.data ?? []) as any[]) {
+        const dk = b.date as string;
+        if (!bookingsByDate[dk]) bookingsByDate[dk] = [];
+        bookingsByDate[dk].push({
+          start: (b.start_time as string).slice(0, 5),
+          end:   (b.end_time   as string).slice(0, 5),
+        });
+      }
 
-      return { slots: scoreSlots(raw, {}), isOffDay: false };
+      return { templates, exceptions, bookingsByDate } as ScheduleStore;
     },
-    enabled: !!dateStr,
+    staleTime: 60_000,
   });
+
+  const store = scheduleQuery.data ?? null;
+
+  const getBreaks = useCallback((d: Date): TimeRange[] => {
+    if (!store) return [];
+    const tpl = store.templates[getDayOfWeek(d)];
+    if (!tpl) return [];
+    const breaks: TimeRange[] = [];
+    if (tpl.break_start && tpl.break_end) breaks.push({ start: tpl.break_start, end: tpl.break_end });
+    if (workingHours?.breaks?.length) breaks.push(...workingHours.breaks);
+    return breaks;
+  }, [store, workingHours]);
+
+  const getSlotsForDate = useCallback((d: Date): SlotWithScore[] => {
+    if (!store || durationMinutes <= 0) return [];
+    const dateStr = toISOLocal(d);
+    const tpl = store.templates[getDayOfWeek(d)];
+    if (!tpl) return [];
+    const exc = store.exceptions[dateStr];
+    if (exc?.is_day_off) return [];
+    const workStart = exc?.start_time ?? tpl.start_time;
+    const workEnd   = exc?.end_time   ?? tpl.end_time;
+    const raw = generateAvailableSlots({
+      workStart, workEnd,
+      bookings:          store.bookingsByDate[dateStr] ?? [],
+      breaks:            getBreaks(d),
+      bufferMinutes:     workingHours?.buffer_time_minutes ?? 0,
+      requestedDuration: durationMinutes,
+      stepMinutes:       15,
+    });
+    return scoreSlots(raw, {});
+  }, [store, durationMinutes, workingHours, getBreaks]);
+
+  const isDayOff = useCallback((d: Date): boolean => {
+    if (!store) return false;
+    if (!store.templates[getDayOfWeek(d)]) return true;
+    return store.exceptions[toISOLocal(d)]?.is_day_off ?? false;
+  }, [store]);
+
+  const fullyBookedDates = useMemo(() => {
+    if (!store || durationMinutes <= 0) return new Set<string>();
+    return new Set(
+      days
+        .filter(d => !isDayOff(d))
+        .filter(d => !getSlotsForDate(d).some(s => s.available))
+        .map(d => toISOLocal(d))
+    );
+  }, [store, days, durationMinutes, isDayOff, getSlotsForDate]);
+
+  const hasAutoSelected = useRef(false);
+  useEffect(() => {
+    if (hasAutoSelected.current || !store) return;
+    const first = days.find(d => !isDayOff(d) && !fullyBookedDates.has(toISOLocal(d)));
+    if (first) { setSelectedDate(first); hasAutoSelected.current = true; }
+  }, [store, days, isDayOff, fullyBookedDates]);
+
+  const dateStr    = selectedDate ? toISOLocal(selectedDate) : null;
+  const slots      = useMemo(() => selectedDate ? getSlotsForDate(selectedDate) : [], [selectedDate, getSlotsForDate]);
+  const renderItems: SlotRenderItem[] = useMemo(
+    () => buildSlotRenderItems(slots, selectedDate ? getBreaks(selectedDate) : []),
+    [slots, selectedDate, getBreaks],
+  );
 
   const handleConfirm = () => {
     if (!selectedDate || !selectedSlot) return;
-    const dur = durationMinutes > 0 ? durationMinutes : 60;
-    onConfirm(toISOLocal(selectedDate), selectedSlot, computeEndTime(selectedSlot, dur));
+    onConfirm(toISOLocal(selectedDate), selectedSlot, computeEndTime(selectedSlot, durationMinutes));
   };
 
-  const availableSlots = slotsQuery.data?.slots.filter(s => s.available) ?? [];
+  const currentDayOff     = selectedDate ? isDayOff(selectedDate) : false;
+  const hasAvailableSlots = renderItems.some(i => i.kind === 'slot' && i.slot.available);
 
   return (
     <div className="flex flex-col gap-3">
       {/* Date strip */}
       <div>
         <p className="text-[11px] text-[#A8928D] mb-2">Оберіть нову дату</p>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
-          {days.map(d => {
-            const iso = toISOLocal(d);
-            const isSelected = dateStr === iso;
-            return (
-              <button
-                key={iso}
-                onClick={() => { setSelectedDate(d); setSelectedSlot(null); }}
-                className={`flex-shrink-0 flex flex-col items-center w-11 py-2 rounded-xl transition-all ${
-                  isSelected
-                    ? 'bg-[#789A99] text-white shadow-md'
-                    : 'bg-[#F5E8E3]/60 text-[#6B5750] hover:bg-[#F5E8E3]'
-                }`}
-              >
-                <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-[#A8928D]'}`}>
-                  {UA_DAYS_SHORT[d.getDay()]}
-                </span>
-                <span className="text-sm font-bold leading-none mt-1">{d.getDate()}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Slots */}
-      {selectedDate && (
-        <div>
-          <p className="text-[11px] text-[#A8928D] mb-2">Доступні слоти</p>
-          {slotsQuery.isLoading ? (
-            <div className="flex items-center gap-2 py-2">
-              <Loader2 size={14} className="animate-spin text-[#789A99]" />
-              <span className="text-xs text-[#A8928D]">Завантаження...</span>
-            </div>
-          ) : slotsQuery.data?.isOffDay ? (
-            <p className="text-xs text-[#A8928D] py-2">Майстер не працює цього дня</p>
-          ) : availableSlots.length === 0 ? (
-            <p className="text-xs text-[#A8928D] py-2">Немає вільних слотів</p>
-          ) : (
-            <div className="grid grid-cols-4 gap-1.5">
-              {availableSlots.map(s => (
+        {scheduleQuery.isLoading ? (
+          <div className="flex items-center gap-2 py-2">
+            <Loader2 size={14} className="animate-spin text-[#789A99]" />
+            <span className="text-xs text-[#A8928D]">Завантаження розкладу...</span>
+          </div>
+        ) : (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+            {days.map(d => {
+              const iso        = toISOLocal(d);
+              const isSelected = dateStr === iso;
+              const off        = isDayOff(d);
+              const full       = !off && fullyBookedDates.has(iso);
+              const disabled   = off || full;
+              return (
                 <button
-                  key={s.time}
-                  onClick={() => setSelectedSlot(s.time)}
-                  className={`py-2 rounded-xl text-xs font-semibold transition-all ${
-                    selectedSlot === s.time
-                      ? 'bg-[#789A99] text-white shadow-sm'
-                      : s.isSuggested
-                      ? 'bg-[#789A99]/15 text-[#789A99] border border-[#789A99]/30'
+                  key={iso}
+                  onClick={() => { if (!disabled) { setSelectedDate(d); setSelectedSlot(null); } }}
+                  disabled={disabled}
+                  className={`flex-shrink-0 flex flex-col items-center w-11 py-2 rounded-xl transition-all ${
+                    isSelected
+                      ? 'bg-[#789A99] text-white shadow-md'
+                      : off
+                      ? 'bg-white/40 border border-dashed border-[#E8D5CF] opacity-40 cursor-not-allowed'
+                      : full
+                      ? 'bg-[#C05B5B]/8 border border-dashed border-[#C05B5B]/30 cursor-not-allowed'
                       : 'bg-[#F5E8E3]/60 text-[#6B5750] hover:bg-[#F5E8E3]'
                   }`}
                 >
-                  {s.time}
+                  <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-[#A8928D]'}`}>
+                    {UA_DAYS_SHORT[d.getDay()]}
+                  </span>
+                  <span className="text-sm font-bold leading-none mt-1">{d.getDate()}</span>
+                  {full && <span className="text-[8px] text-[#C05B5B] leading-none mt-0.5">зайнято</span>}
+                  {off  && <span className="text-[8px] text-[#A8928D] leading-none mt-0.5">вих.</span>}
                 </button>
-              ))}
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Slots */}
+      {selectedDate && !scheduleQuery.isLoading && (
+        <div>
+          <p className="text-[11px] text-[#A8928D] mb-2">Доступні слоти</p>
+          {currentDayOff ? (
+            <p className="text-xs text-[#A8928D] py-2">Майстер не працює цього дня</p>
+          ) : !hasAvailableSlots ? (
+            <p className="text-xs text-[#A8928D] py-2">Немає вільних слотів</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {renderItems.map((item, idx) =>
+                item.kind === 'break' ? (
+                  <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
+                    <div className="flex-1 h-px bg-[#F5E8E3]" />
+                    <span className="text-[10px] text-[#A8928D] flex-shrink-0">
+                      {item.label} · {item.start}–{item.end}
+                    </span>
+                    <div className="flex-1 h-px bg-[#F5E8E3]" />
+                  </div>
+                ) : (
+                  <button
+                    key={item.slot.time}
+                    onClick={() => setSelectedSlot(item.slot.time)}
+                    className={`relative py-2.5 rounded-xl text-center text-xs font-semibold transition-all ${
+                      selectedSlot === item.slot.time
+                        ? 'bg-[#789A99] text-white shadow-sm ring-2 ring-[#789A99]/30'
+                        : item.slot.isSuggested
+                        ? 'bg-[#789A99]/10 border border-[#789A99]/30 text-[#2C1A14]'
+                        : 'bg-[#F5E8E3]/60 text-[#6B5750] hover:bg-[#F5E8E3]'
+                    }`}
+                  >
+                    {item.slot.isSuggested && selectedSlot !== item.slot.time && (
+                      <span className="absolute -top-1 -right-0.5 text-[7px] bg-[#789A99] text-white rounded-full px-1 py-0.5 font-bold leading-none">★</span>
+                    )}
+                    <span className="block font-bold">{item.slot.time}</span>
+                    <span className={`block text-[10px] font-normal mt-0.5 ${selectedSlot === item.slot.time ? 'text-white/70' : 'text-[#A8928D]'}`}>
+                      {computeEndTime(item.slot.time, durationMinutes)}
+                    </span>
+                  </button>
+                )
+              )}
             </div>
           )}
         </div>
