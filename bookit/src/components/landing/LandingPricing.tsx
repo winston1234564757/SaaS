@@ -52,6 +52,7 @@ const plans = [
     label: '',
     description: 'Для салонів та команд від 2 майстрів',
     highlight: false,
+    disabled: true,
     features: [
       'Усе з Pro для кожного майстра',
       'Спільна сторінка салону',
@@ -61,7 +62,7 @@ const plans = [
       'Зведена аналітика по всіх майстрах',
       'Пріоритетна підтримка',
     ],
-    cta: 'Обрати Studio',
+    cta: 'Очікується',
   },
 ];
 
@@ -146,9 +147,12 @@ export function LandingPricing() {
 
             <button
               type="button"
-              onClick={() => handleSelectPlan(plan.name.toLowerCase())}
+              onClick={() => !plan.disabled && handleSelectPlan(plan.name.toLowerCase())}
+              disabled={'disabled' in plan && plan.disabled}
               className={`mt-auto flex items-center justify-center h-12 rounded-2xl font-semibold text-sm transition-colors ${
-                plan.highlight
+                'disabled' in plan && plan.disabled
+                  ? 'bg-white/50 text-[#A8928D] cursor-not-allowed'
+                  : plan.highlight
                   ? 'bg-[#789A99] text-white hover:bg-[#5C7E7D] shadow-[0_4px_14px_rgba(120,154,153,0.35)]'
                   : 'bg-white/70 text-[#2C1A14] hover:bg-white/90'
               }`}

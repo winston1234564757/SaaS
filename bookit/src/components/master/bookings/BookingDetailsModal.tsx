@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Clock, Phone, Globe, PenLine,
   CheckCircle2, XCircle, Star, Save, Loader2,
+  TrendingUp, ShoppingBag, CalendarClock,
 } from 'lucide-react';
 import { useBookingById } from '@/lib/supabase/hooks/useBookingById';
 import { formatPrice } from '@/components/master/services/types';
@@ -31,20 +32,38 @@ function formatDate(dateStr: string) {
   return `${d.getDate()} ${UA_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+function computeEndTime(startTime: string, totalMinutes: number): string {
+  const [h, m] = startTime.split(':').map(Number);
+  const total = h * 60 + m + totalMinutes;
+  const eh = Math.floor(total / 60) % 24;
+  const em = total % 60;
+  return `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
+}
+
 export function BookingDetailsModal() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('bookingId');
 
-  const { booking, isLoading, updateStatus, saveMasterNotes, isSavingNotes } = useBookingById(bookingId);
+  const {
+    booking, isLoading,
+    clientLtv,
+    updateStatus, isUpdatingStatus,
+    saveMasterNotes, isSavingNotes,
+    reschedule, isRescheduling, rescheduleError,
+  } = useBookingById(bookingId);
 
   const [notes, setNotes] = useState('');
   const [notesDirty, setNotesDirty] = useState(false);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
 
   useEffect(() => {
     if (booking) {
       setNotes(booking.master_notes ?? '');
       setNotesDirty(false);
+      setShowReschedule(false);
     }
   }, [booking?.id]);
 
@@ -55,7 +74,6 @@ export function BookingDetailsModal() {
     router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
   }, [router, searchParams]);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
     document.addEventListener('keydown', handler);
@@ -74,7 +92,16 @@ export function BookingDetailsModal() {
     setNotesDirty(false);
   };
 
+  const handleReschedule = () => {
+    if (!newDate || !newTime || !booking) return;
+    const totalMinutes = booking.services.reduce((acc, s) => acc + s.duration, 0) || 60;
+    const endTime = computeEndTime(newTime, totalMinutes);
+    reschedule({ date: newDate, startTime: newTime, endTime });
+    setShowReschedule(false);
+  };
+
   const isOpen = !!bookingId;
+  const canAct = booking?.status === 'pending' || booking?.status === 'confirmed';
 
   return (
     <AnimatePresence>
@@ -121,7 +148,7 @@ export function BookingDetailsModal() {
                 <Loader2 size={24} className="text-[#789A99] animate-spin" />
               </div>
             ) : (
-              <div className="px-5 pb-8 flex flex-col gap-5">
+              <div className="px-5 pb-8 flex flex-col gap-4">
                 {/* Client + date block */}
                 <div className="bg-white rounded-2xl p-4 flex flex-col gap-2 shadow-sm">
                   <div className="flex items-start justify-between">
@@ -165,6 +192,30 @@ export function BookingDetailsModal() {
                   </div>
                 </div>
 
+                {/* LTV клієнта */}
+                {clientLtv && (
+                  <div className="bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <TrendingUp size={13} className="text-[#789A99]" />
+                      <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide">Клієнт</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <p className="text-[11px] text-[#A8928D]">Візитів</p>
+                        <p className="text-lg font-bold text-[#2C1A14]">{clientLtv.total_visits}</p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[11px] text-[#A8928D]">Виручка</p>
+                        <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(clientLtv.total_spent)}</p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[11px] text-[#A8928D]">Середній чек</p>
+                        <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(clientLtv.average_check)}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Services */}
                 {booking.services.length > 0 && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
@@ -184,6 +235,29 @@ export function BookingDetailsModal() {
                     <div className="mt-3 pt-3 border-t border-[#F5E8E3] flex justify-between items-center">
                       <span className="text-sm text-[#6B5750]">Разом</span>
                       <span className="text-base font-bold text-[#2C1A14]">{formatPrice(booking.total_price)}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Products */}
+                {booking.products && booking.products.length > 0 && (
+                  <div className="bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <ShoppingBag size={13} className="text-[#A8928D]" />
+                      <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide">Товари</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {booking.products.map((p, i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-[#2C1A14]">{p.name}</span>
+                            {p.quantity > 1 && (
+                              <span className="text-xs text-[#A8928D]">×{p.quantity}</span>
+                            )}
+                          </div>
+                          <span className="text-sm font-medium text-[#2C1A14]">{formatPrice(p.price * p.quantity)}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -219,39 +293,99 @@ export function BookingDetailsModal() {
                 </div>
 
                 {/* Status actions */}
-                {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                {canAct && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-3">Дії</p>
-                    <div className="flex flex-wrap gap-2">
-                      {booking.status === 'pending' && (
+
+                    {/* Reschedule inline form */}
+                    {showReschedule ? (
+                      <div className="flex flex-col gap-3 mb-3">
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="text-[11px] text-[#A8928D] mb-1 block">Нова дата</label>
+                            <input
+                              type="date"
+                              value={newDate}
+                              onChange={e => setNewDate(e.target.value)}
+                              className="w-full text-sm text-[#2C1A14] bg-[#FDFAF8] border border-[#F0DDD8] rounded-xl px-3 py-2 outline-none focus:border-[#789A99] transition-all"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-[11px] text-[#A8928D] mb-1 block">Час</label>
+                            <input
+                              type="time"
+                              value={newTime}
+                              onChange={e => setNewTime(e.target.value)}
+                              className="w-full text-sm text-[#2C1A14] bg-[#FDFAF8] border border-[#F0DDD8] rounded-xl px-3 py-2 outline-none focus:border-[#789A99] transition-all"
+                            />
+                          </div>
+                        </div>
+                        {rescheduleError && (
+                          <p className="text-xs text-[#C05B5B]">{rescheduleError}</p>
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleReschedule}
+                            disabled={isRescheduling || !newDate || !newTime}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors disabled:opacity-50"
+                          >
+                            {isRescheduling ? <Loader2 size={14} className="animate-spin" /> : <CalendarClock size={14} />}
+                            Зберегти перенесення
+                          </button>
+                          <button
+                            onClick={() => setShowReschedule(false)}
+                            className="px-4 py-2.5 rounded-xl bg-[#F5E8E3] text-[#A8928D] text-sm font-semibold hover:bg-[#EBCFC7] transition-colors"
+                          >
+                            Скасувати
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {booking.status === 'pending' && (
+                          <button
+                            onClick={() => handleStatus('confirmed')}
+                            disabled={isUpdatingStatus}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 text-sm font-semibold transition-colors disabled:opacity-50"
+                          >
+                            {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                            Підтвердити
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleStatus('confirmed')}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 text-sm font-medium transition-colors"
+                          onClick={() => handleStatus('completed')}
+                          disabled={isUpdatingStatus}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#5C9E7A]/10 text-[#5C9E7A] hover:bg-[#5C9E7A]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
-                          <CheckCircle2 size={14} /> Підтвердити
+                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
+                          Завершити
                         </button>
-                      )}
-                      <button
-                        onClick={() => handleStatus('completed')}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#5C9E7A]/10 text-[#5C9E7A] hover:bg-[#5C9E7A]/20 text-sm font-medium transition-colors"
-                      >
-                        <Star size={14} /> Завершити
-                      </button>
-                      <button
-                        onClick={() => handleStatus('cancelled')}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C05B5B]/10 text-[#C05B5B] hover:bg-[#C05B5B]/20 text-sm font-medium transition-colors"
-                      >
-                        <XCircle size={14} /> Скасувати
-                      </button>
-                      {booking.status === 'confirmed' && (
                         <button
-                          onClick={() => handleStatus('no_show')}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#A8928D]/10 text-[#A8928D] hover:bg-[#A8928D]/20 text-sm font-medium transition-colors"
+                          onClick={() => setShowReschedule(true)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#D4935A]/10 text-[#D4935A] hover:bg-[#D4935A]/20 text-sm font-semibold transition-colors"
                         >
-                          Не прийшов
+                          <CalendarClock size={14} />
+                          Перенести
                         </button>
-                      )}
-                    </div>
+                        <button
+                          onClick={() => handleStatus('cancelled')}
+                          disabled={isUpdatingStatus}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#C05B5B]/10 text-[#C05B5B] hover:bg-[#C05B5B]/20 text-sm font-semibold transition-colors disabled:opacity-50"
+                        >
+                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                          Скасувати
+                        </button>
+                        {booking.status === 'confirmed' && (
+                          <button
+                            onClick={() => handleStatus('no_show')}
+                            disabled={isUpdatingStatus}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#A8928D]/10 text-[#A8928D] hover:bg-[#A8928D]/20 text-sm font-semibold transition-colors disabled:opacity-50"
+                          >
+                            Не прийшов
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

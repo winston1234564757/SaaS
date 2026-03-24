@@ -29,7 +29,8 @@
       "Bash(find:*)",
       "Bash(ls -la \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit/src/app/\\(master\\)/dashboard/\")",
       "Bash(cat src/app/\\\\\\(master\\\\\\)/dashboard/studio/page.tsx)",
-      "Bash(head -40 src/app/\\\\\\(master\\\\\\)/layout.tsx)"
+      "Bash(head -40 src/app/\\\\\\(master\\\\\\)/layout.tsx)",
+      "WebSearch"
     ]
   }
 }

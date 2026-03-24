@@ -110,6 +110,50 @@ export async function getMasterProfileBySlug(slug: string) {
   return data;
 }
 
+export async function getMasterIdByEmail(email: string): Promise<string> {
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .single();
+  if (error || !data) throw new Error(`getMasterIdByEmail("${email}"): ${error?.message}`);
+  return data.id;
+}
+
+export async function setMasterSubscriptionTier(masterId: string, tier: string) {
+  const { error } = await supabaseAdmin
+    .from('master_profiles')
+    .update({ subscription_tier: tier })
+    .eq('id', masterId);
+  if (error) throw new Error(`setMasterSubscriptionTier: ${error.message}`);
+}
+
+export async function cleanupStudio(masterId: string) {
+  const { data: mp } = await supabaseAdmin
+    .from('master_profiles')
+    .select('studio_id')
+    .eq('id', masterId)
+    .single();
+
+  if (mp?.studio_id) {
+    await supabaseAdmin.from('studio_members').delete().eq('studio_id', mp.studio_id);
+    await supabaseAdmin.from('studios').delete().eq('id', mp.studio_id);
+    await supabaseAdmin
+      .from('master_profiles')
+      .update({ studio_id: null })
+      .eq('id', masterId);
+  }
+}
+
+export async function getStudioByOwnerId(ownerId: string) {
+  const { data } = await supabaseAdmin
+    .from('studios')
+    .select('*')
+    .eq('owner_id', ownerId)
+    .maybeSingle();
+  return data ?? null;
+}
+
 // ─── Reviews ──────────────────────────────────────────────────────────────────
 
 export async function getReviewsByMasterId(masterId: string) {

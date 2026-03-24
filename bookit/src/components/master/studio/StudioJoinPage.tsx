@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Building2, AlertCircle, CheckCircle } from 'lucide-react';
 import { joinStudio } from '@/app/(master)/dashboard/studio/actions';
@@ -15,10 +14,15 @@ interface Props {
 
 export function StudioJoinPage({ studio, token }: Props) {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
+
+  useEffect(() => {
+    if (!joined) return;
+    const t = setTimeout(() => router.push('/dashboard/studio'), 2000);
+    return () => clearTimeout(t);
+  }, [joined, router]);
 
   const handleJoin = () => {
     setError(null);
@@ -28,9 +32,6 @@ export function StudioJoinPage({ studio, token }: Props) {
         setError(result.error);
       } else {
         setJoined(true);
-        await queryClient.invalidateQueries({ queryKey: ['profile'] });
-        await queryClient.invalidateQueries({ queryKey: ['studio'] });
-        setTimeout(() => router.push('/dashboard/studio'), 2000);
       }
     });
   };

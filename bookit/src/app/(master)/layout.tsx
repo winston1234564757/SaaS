@@ -3,6 +3,8 @@ import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardLayout } from '@/components/master/DashboardLayout';
 
+export const dynamic = 'force-dynamic';
+
 export default async function MasterLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

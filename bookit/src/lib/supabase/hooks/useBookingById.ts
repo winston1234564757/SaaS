@@ -4,10 +4,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import type { BookingWithServices } from './useBookings';
 import type { BookingStatus } from '@/types/database';
+import { rescheduleBooking } from '@/app/(master)/dashboard/bookings/actions';
 
-function rowToBooking(row: any): BookingWithServices {
+export interface BookingProduct {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface ClientLtv {
+  total_visits: number;
+  total_spent: number;
+  average_check: number;
+}
+
+export interface BookingWithServicesAndProducts extends BookingWithServices {
+  client_id: string | null;
+  products: BookingProduct[];
+}
+
+function rowToBooking(row: any): BookingWithServicesAndProducts {
   return {
     id: row.id,
+    client_id: row.client_id ?? null,
     client_name: row.client_name,
     client_phone: row.client_phone,
     date: row.date,
@@ -23,6 +42,11 @@ function rowToBooking(row: any): BookingWithServices {
       price: Number(s.service_price),
       duration: s.duration_minutes,
     })),
+    products: (row.booking_products ?? []).map((p: any) => ({
+      name: p.product_name,
+      price: Number(p.product_price),
+      quantity: p.quantity ?? 1,
+    })),
   };
 }
 
@@ -36,13 +60,32 @@ export function useBookingById(id: string | null) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('bookings')
-        .select('*, booking_services(service_name, service_price, duration_minutes)')
+        .select('*, booking_services(service_name, service_price, duration_minutes), booking_products(product_name, product_price, quantity)')
         .eq('id', id!)
         .single();
       if (error) throw error;
       return rowToBooking(data);
     },
     enabled: !!id,
+  });
+
+  const booking = query.data ?? null;
+
+  const ltvQuery = useQuery({
+    queryKey: ['client-ltv', id, booking?.client_id],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !booking?.client_id) return null;
+      const { data } = await supabase
+        .from('client_master_relations')
+        .select('total_visits, total_spent, average_check')
+        .eq('client_id', booking.client_id)
+        .eq('master_id', user.id)
+        .maybeSingle();
+      return (data as ClientLtv | null) ?? null;
+    },
+    enabled: !!booking?.client_id,
   });
 
   const updateStatus = useMutation({
@@ -74,16 +117,32 @@ export function useBookingById(id: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      // Also refresh the list so notes column stays in sync
       qc.invalidateQueries({ queryKey: ['bookings'] });
     },
   });
 
+  const rescheduleMutation = useMutation({
+    mutationFn: async ({ date, startTime, endTime }: { date: string; startTime: string; endTime: string }) => {
+      const result = await rescheduleBooking(id!, date, startTime, endTime);
+      if (result.error) throw new Error(result.error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: key });
+      qc.invalidateQueries({ queryKey: ['bookings'] });
+      qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+  });
+
   return {
-    booking: query.data ?? null,
+    booking,
     isLoading: query.isLoading,
+    clientLtv: ltvQuery.data ?? null,
     updateStatus: (status: BookingStatus) => updateStatus.mutate(status),
+    isUpdatingStatus: updateStatus.isPending,
     saveMasterNotes: (notes: string) => saveMasterNotes.mutate(notes),
     isSavingNotes: saveMasterNotes.isPending,
+    reschedule: (params: { date: string; startTime: string; endTime: string }) => rescheduleMutation.mutate(params),
+    isRescheduling: rescheduleMutation.isPending,
+    rescheduleError: rescheduleMutation.error?.message ?? null,
   };
 }

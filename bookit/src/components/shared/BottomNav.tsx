@@ -27,7 +27,7 @@ const MORE_ITEMS = [
   { href: '/dashboard/loyalty',   icon: Gift,           label: 'Лояльність'    },
   { href: '/dashboard/reviews',   icon: MessageSquare,  label: 'Відгуки'       },
   { href: '/dashboard/referral',  icon: Share2,         label: 'Запроси друга' },
-  { href: '/dashboard/studio',    icon: Building2,      label: 'Студія'        },
+  { href: '/dashboard/studio',    icon: Building2,      label: 'Студія',       soon: true },
   { href: '/dashboard/billing',   icon: CreditCard,     label: 'Тариф'         },
   { href: '/dashboard/settings',  icon: Settings,       label: 'Налаштування'  },
 ];
@@ -122,7 +122,7 @@ export function BottomNav() {
               </div>
 
               <div className="grid grid-cols-4 gap-1 px-3 pb-10 pb-safe-bottom">
-                {MORE_ITEMS.map(({ href, icon: Icon, label }) => {
+                {MORE_ITEMS.map(({ href, icon: Icon, label, soon }) => {
                   const isActive = pathname.startsWith(href);
                   return (
                     <Link
@@ -137,10 +137,15 @@ export function BottomNav() {
                       )}
                     >
                       <div className={cn(
-                        'w-10 h-10 rounded-2xl flex items-center justify-center',
+                        'w-10 h-10 rounded-2xl flex items-center justify-center relative',
                         isActive ? 'bg-[#789A99]/15' : 'bg-[#F5E8E3]'
                       )}>
                         <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                        {soon && (
+                          <span className="absolute -top-1 -right-1 text-[8px] font-bold text-white bg-[#789A99] px-1 py-px rounded-full leading-none">
+                            Скоро
+                          </span>
+                        )}
                       </div>
                       <span className="text-[10px] font-medium text-center leading-tight">{label}</span>
                     </Link>

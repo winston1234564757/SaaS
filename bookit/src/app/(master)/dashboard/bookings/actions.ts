@@ -1,7 +1,51 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { sendPush } from '@/lib/push';
+
+export async function rescheduleBooking(
+  bookingId: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизовано' };
+
+    const admin = createAdminClient();
+
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('master_id')
+      .eq('id', bookingId)
+      .single();
+
+    if (!booking) return { error: 'Запис не знайдено' };
+    if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+
+    const { error } = await admin
+      .from('bookings')
+      .update({
+        date,
+        start_time: startTime,
+        end_time: endTime,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', bookingId);
+
+    if (error) return { error: error.message };
+
+    revalidatePath('/dashboard/bookings');
+    return { error: null };
+  } catch (err) {
+    console.error('[rescheduleBooking]', err);
+    return { error: 'Помилка сервера' };
+  }
+}
 
 export async function notifyClientOnStatusChange(
   bookingId: string,

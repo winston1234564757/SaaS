@@ -20,7 +20,7 @@ const navItems = [
   { href: '/dashboard/pricing',   icon: TrendingUp,      label: 'Ціноутворення', hint: 'Пік, тихий час, рання бронь, остання хвилина' },
   { href: '/dashboard/loyalty',   icon: Gift,            label: 'Лояльність',   hint: 'Знижки для постійних клієнтів' },
   { href: '/dashboard/referral',  icon: Share2,          label: 'Запроси друга', hint: 'Запрошуй колег — обидва отримуєте місяць Pro' },
-  { href: '/dashboard/studio',    icon: Building2,       label: 'Студія',        hint: 'Команда майстрів та зведена аналітика' },
+  { href: '/dashboard/studio',    icon: Building2,       label: 'Студія',        hint: 'Команда майстрів та зведена аналітика', soon: true },
   { href: '/dashboard/billing',   icon: CreditCard,      label: 'Тариф',        hint: 'Підписка та оплата'       },
   { href: '/dashboard/settings',  icon: Settings,        label: 'Налаштування', hint: 'Профіль, тема, інтеграції' },
 ];
@@ -45,7 +45,7 @@ export function FloatingSidebar() {
 
       {/* Nav */}
       <nav className="flex flex-col gap-1 flex-1">
-        {navItems.map(({ href, icon: Icon, label, hint }) => {
+        {navItems.map(({ href, icon: Icon, label, hint, soon }) => {
           const isActive =
             pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
           const showBadge = href === '/dashboard/bookings' && todayPending > 0;
@@ -77,6 +77,11 @@ export function FloatingSidebar() {
                 {showBadge && (
                   <span className="ml-auto text-[10px] font-semibold text-[#D4935A] bg-[#D4935A]/10 px-1.5 py-0.5 rounded-full">
                     {todayPending} нові
+                  </span>
+                )}
+                {soon && !showBadge && (
+                  <span className="ml-auto text-[9px] font-bold text-[#789A99] bg-[#789A99]/12 px-1.5 py-0.5 rounded-full">
+                    Скоро
                   </span>
                 )}
               </Link>

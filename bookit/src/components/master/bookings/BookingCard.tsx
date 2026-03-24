@@ -2,9 +2,13 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, X, Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import type { BookingStatus } from '@/types/database';
 import { formatPrice } from '@/components/master/services/types';
+import { notifyClientOnStatusChange } from '@/app/(master)/dashboard/bookings/actions';
 
 interface BookingCardProps {
   booking: BookingWithServices;
@@ -22,6 +26,7 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: s
 export function BookingCard({ booking, index }: BookingCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const qc = useQueryClient();
   const cfg = STATUS_CONFIG[booking.status];
   const serviceNames = booking.services.map(s => s.name).join(', ') || 'Без послуги';
 
@@ -30,6 +35,43 @@ export function BookingCard({ booking, index }: BookingCardProps) {
     params.set('bookingId', booking.id);
     router.push(`?${params.toString()}`, { scroll: false });
   };
+
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ['bookings'] });
+    qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    qc.invalidateQueries({ queryKey: ['weekly-overview'] });
+    qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
+  };
+
+  const confirmMutation = useMutation({
+    mutationFn: async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'confirmed', status_changed_at: new Date().toISOString() })
+        .eq('id', booking.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidateAll();
+      notifyClientOnStatusChange(booking.id, 'confirmed').catch(() => {});
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'cancelled', status_changed_at: new Date().toISOString() })
+        .eq('id', booking.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidateAll();
+      notifyClientOnStatusChange(booking.id, 'cancelled').catch(() => {});
+    },
+  });
 
   return (
     <motion.div
@@ -68,6 +110,37 @@ export function BookingCard({ booking, index }: BookingCardProps) {
           <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(booking.total_price)}</p>
         </div>
       </button>
+
+      {/* Quick Actions — тільки для pending */}
+      {booking.status === 'pending' && (
+        <div
+          className="flex gap-2 px-4 pb-3"
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            onClick={() => confirmMutation.mutate()}
+            disabled={confirmMutation.isPending || cancelMutation.isPending}
+            className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#789A99]/12 text-[#789A99] hover:bg-[#789A99]/22 text-xs font-semibold transition-colors disabled:opacity-50"
+          >
+            {confirmMutation.isPending
+              ? <Loader2 size={11} className="animate-spin" />
+              : <Check size={11} />
+            }
+            Підтвердити
+          </button>
+          <button
+            onClick={() => cancelMutation.mutate()}
+            disabled={confirmMutation.isPending || cancelMutation.isPending}
+            className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#C05B5B]/12 text-[#C05B5B] hover:bg-[#C05B5B]/22 text-xs font-semibold transition-colors disabled:opacity-50"
+          >
+            {cancelMutation.isPending
+              ? <Loader2 size={11} className="animate-spin" />
+              : <X size={11} />
+            }
+            Скасувати
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }
