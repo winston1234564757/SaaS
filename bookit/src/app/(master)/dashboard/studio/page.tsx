@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { StudioPage } from '@/components/master/studio/StudioPage';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Студія — Bookit' };
 
 export default async function Studio() {

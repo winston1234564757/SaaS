@@ -19,7 +19,7 @@ export function ReferralPage({ referralCode, referralCount, subscriptionTier, su
   const [copied, setCopied] = useState(false);
   const { currentStep, nextStep, closeTour } = useTour('referral', 1);
 
-  const referralLink = `https://bookit.com.ua/register?ref=${referralCode}`;
+  const referralLink = `https://bookit-five-psi.vercel.app/register?ref=${referralCode}`;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(referralLink);
@@ -104,7 +104,7 @@ export function ReferralPage({ referralCode, referralCount, subscriptionTier, su
         {/* Link display */}
         <div className="flex items-center rounded-2xl border border-white/80 bg-white/60 overflow-hidden mb-3">
           <p className="flex-1 px-4 py-3 text-sm text-[#2C1A14] truncate font-mono">
-            bookit.com.ua/register?ref=<span className="font-bold text-[#789A99]">{referralCode}</span>
+            bookit-five-psi.vercel.app/register?ref=<span className="font-bold text-[#789A99]">{referralCode}</span>
           </p>
           <button
             onClick={handleCopy}

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Building2, Copy, Check, UserX, LogOut, Plus, Users, Crown, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { createStudio, leaveStudio, removeMember } from '@/app/(master)/dashboard/studio/actions';
@@ -32,9 +33,17 @@ interface Props {
   members: Member[];
 }
 
-export function StudioPage({ currentUserId, subscriptionTier, studio, members }: Props) {
+export function StudioPage({ currentUserId, subscriptionTier, studio: initialStudio, members }: Props) {
+  const [studio, setStudio] = useState<StudioData | null>(initialStudio);
+  const router = useRouter();
+
   const isStudioTier = subscriptionTier === 'studio';
   const isOwner = studio?.ownerId === currentUserId;
+
+  const handleCreated = (created: StudioData) => {
+    setStudio(created);
+    router.refresh();
+  };
 
   return (
     <div className="flex flex-col gap-4 pb-8">
@@ -46,7 +55,7 @@ export function StudioPage({ currentUserId, subscriptionTier, studio, members }:
       {!isStudioTier && !studio ? (
         <NoStudioAccess />
       ) : !studio ? (
-        <CreateStudioForm />
+        <CreateStudioForm onCreated={handleCreated} />
       ) : isOwner ? (
         <OwnerView studio={studio} members={members} currentUserId={currentUserId} />
       ) : (
@@ -99,11 +108,11 @@ function NoStudioAccess() {
 }
 
 // ── Create studio ─────────────────────────────────────────────────────────────
-function CreateStudioForm() {
+function CreateStudioForm({ onCreated }: { onCreated: (studio: StudioData) => void }) {
   const [name, setName] = useState('');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const handleCreate = () => {
     if (!name.trim()) return;
@@ -112,8 +121,10 @@ function CreateStudioForm() {
       const result = await createStudio(name);
       if (result.error) {
         setError(result.error);
-      } else {
-        router.refresh();
+      } else if (result.studio) {
+        await queryClient.invalidateQueries({ queryKey: ['profile'] });
+        await queryClient.invalidateQueries({ queryKey: ['studio'] });
+        onCreated(result.studio);
       }
     });
   };
@@ -170,6 +181,8 @@ function OwnerView({ studio, members, currentUserId }: { studio: StudioData; mem
   const [copied, setCopied] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const inviteLink = `${typeof window !== 'undefined' ? window.location.origin : 'https://bookit.com.ua'}/studio/join?token=${studio.inviteToken}`;
 
@@ -183,6 +196,9 @@ function OwnerView({ studio, members, currentUserId }: { studio: StudioData; mem
     setRemovingId(masterId);
     startTransition(async () => {
       await removeMember(masterId);
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
+      await queryClient.invalidateQueries({ queryKey: ['studio'] });
+      router.refresh();
       setRemovingId(null);
     });
   };
@@ -308,12 +324,20 @@ function MemberView({ studio, members, currentUserId }: { studio: StudioData; me
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const handleLeave = () => {
     setError(null);
     startTransition(async () => {
       const result = await leaveStudio();
-      if (result.error) setError(result.error);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        await queryClient.invalidateQueries({ queryKey: ['profile'] });
+        await queryClient.invalidateQueries({ queryKey: ['studio'] });
+        router.refresh();
+      }
     });
   };
 

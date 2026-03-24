@@ -10,10 +10,10 @@ function generateToken(): string {
   return Array.from(bytes, b => chars[b % chars.length]).join('');
 }
 
-export async function createStudio(name: string): Promise<{ error: string | null }> {
+export async function createStudio(name: string): Promise<{ error: string | null; studio: { id: string; name: string; inviteToken: string; ownerId: string } | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Не авторизований' };
+  if (!user) return { error: 'Не авторизований', studio: null };
 
   const admin = createAdminClient();
 
@@ -24,9 +24,9 @@ export async function createStudio(name: string): Promise<{ error: string | null
     .eq('id', user.id)
     .single();
 
-  if (!mp) return { error: 'Профіль не знайдено' };
-  if (mp.subscription_tier !== 'studio') return { error: 'Потрібен тариф Studio' };
-  if (mp.studio_id) return { error: 'Ви вже у студії' };
+  if (!mp) return { error: 'Профіль не знайдено', studio: null };
+  if (mp.subscription_tier !== 'studio') return { error: 'Потрібен тариф Studio', studio: null };
+  if (mp.studio_id) return { error: 'Ви вже у студії', studio: null };
 
   let token = generateToken();
   // Retry on collision
@@ -42,7 +42,7 @@ export async function createStudio(name: string): Promise<{ error: string | null
     .select('id')
     .single();
 
-  if (studioErr) return { error: studioErr.message };
+  if (studioErr) return { error: studioErr.message, studio: null };
 
   // Add owner as member
   await admin.from('studio_members').insert({ studio_id: studio.id, master_id: user.id, role: 'owner' });
@@ -50,9 +50,11 @@ export async function createStudio(name: string): Promise<{ error: string | null
   // Link master to studio
   await admin.from('master_profiles').update({ studio_id: studio.id }).eq('id', user.id);
 
-  revalidatePath('/dashboard/studio', 'layout');
-  revalidatePath('/dashboard', 'layout');
-  return { error: null };
+  revalidatePath('/', 'layout');
+  return {
+    error: null,
+    studio: { id: studio.id, name: name.trim(), inviteToken: token, ownerId: user.id },
+  };
 }
 
 export async function joinStudio(token: string): Promise<{ error: string | null }> {
@@ -93,7 +95,7 @@ export async function joinStudio(token: string): Promise<{ error: string | null 
   await admin.from('studio_members').insert({ studio_id: studio.id, master_id: user.id, role: 'member' });
   await admin.from('master_profiles').update({ studio_id: studio.id, subscription_tier: 'studio' }).eq('id', user.id);
 
-  revalidatePath('/dashboard/studio');
+  revalidatePath('/', 'layout');
   return { error: null };
 }
 
@@ -125,7 +127,7 @@ export async function leaveStudio(): Promise<{ error: string | null }> {
   await admin.from('studio_members').delete().eq('studio_id', mp.studio_id).eq('master_id', user.id);
   await admin.from('master_profiles').update({ studio_id: null, subscription_tier: 'starter' }).eq('id', user.id);
 
-  revalidatePath('/dashboard/studio');
+  revalidatePath('/', 'layout');
   return { error: null };
 }
 
@@ -156,6 +158,6 @@ export async function removeMember(masterId: string): Promise<{ error: string | 
   await admin.from('studio_members').delete().eq('studio_id', mp.studio_id).eq('master_id', masterId);
   await admin.from('master_profiles').update({ studio_id: null, subscription_tier: 'starter' }).eq('id', masterId);
 
-  revalidatePath('/dashboard/studio');
+  revalidatePath('/', 'layout');
   return { error: null };
 }

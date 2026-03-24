@@ -27,7 +27,9 @@
       "Bash(find \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\\\\dashboard\" -type f -name \"*.tsx\" -o -name \"*.ts\")",
       "Bash(find C:UsersVitossikSaaSbookitsrc -type f -name *service*)",
       "Bash(find:*)",
-      "Bash(ls -la \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit/src/app/\\(master\\)/dashboard/\")"
+      "Bash(ls -la \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit/src/app/\\(master\\)/dashboard/\")",
+      "Bash(cat src/app/\\\\\\(master\\\\\\)/dashboard/studio/page.tsx)",
+      "Bash(head -40 src/app/\\\\\\(master\\\\\\)/layout.tsx)"
     ]
   }
 }
