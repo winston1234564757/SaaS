@@ -20,6 +20,7 @@ export default async function StudioJoin({ searchParams }: Props) {
     .from('studios')
     .select('id, name')
     .eq('invite_token', token)
+    .gt('invite_token_expires_at', new Date().toISOString())
     .single();
 
   return <StudioJoinPage studio={studio} token={token} />;

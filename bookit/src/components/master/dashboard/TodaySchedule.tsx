@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, ChevronRight, Loader2, CheckCircle2, Star, Package } from 'lucide-react';
+import { Clock, ChevronRight, Loader2, CheckCircle2, Star, Package, LayoutList, CalendarDays, BarChart2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
@@ -13,11 +13,18 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 
 type ViewMode = 'today' | 'tomorrow' | 'week';
+type DisplayMode = 'list' | 'calendar' | 'stats';
 
 const TABS: { id: ViewMode; label: string }[] = [
   { id: 'today',    label: 'Сьогодні' },
   { id: 'tomorrow', label: 'Завтра'   },
   { id: 'week',     label: 'Тиждень'  },
+];
+
+const DISPLAY_MODES: { id: DisplayMode; Icon: typeof LayoutList; label: string }[] = [
+  { id: 'list',     Icon: LayoutList,    label: 'Список'  },
+  { id: 'calendar', Icon: CalendarDays,  label: 'Тиждень' },
+  { id: 'stats',    Icon: BarChart2,     label: 'Стата'   },
 ];
 
 const STATUS_CONFIG = {
@@ -44,7 +51,6 @@ function getDateRange(view: ViewMode): { from: string; to: string } {
     const s = toISO(t);
     return { from: s, to: s };
   }
-  // week: Mon–Sun
   const day = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
@@ -101,17 +107,15 @@ function EmptyScheduleWidget() {
       to = toISO(end);
     }
     const supabase = createClient();
-    supabase.auth.getSession().then(() => {
-      supabase
-        .from('bookings')
+    supabase
+      .from('bookings')
         .select('total_price, booking_products(product_name, quantity)')
         .eq('master_id', masterId)
         .eq('status', 'completed')
         .gte('date', from)
         .lte('date', to)
         .then((res: { data: any[] | null }) => {
-          const data = res.data;
-          const rows = data ?? [];
+          const rows = res.data ?? [];
           const revenue = rows.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
           const count = rows.length;
           const prodMap = new Map<string, number>();
@@ -127,7 +131,6 @@ function EmptyScheduleWidget() {
           setStats({ revenue, count, topProducts });
           setLoading(false);
         });
-    });
   }, [period, masterProfile?.id]);
 
   return (
@@ -187,9 +190,116 @@ function EmptyScheduleWidget() {
   );
 }
 
+// ── CalendarView — тижневий стрип з індикаторами записів ──────────────────────
+
+function CalendarView({ bookings }: { bookings: BookingWithServices[] }) {
+  const today = new Date();
+  const todayISO = toISO(today);
+  const day = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const iso = toISO(d);
+    const count = bookings.filter(b => b.date === iso).length;
+    return { d, iso, count, isToday: iso === todayISO, dayName: UA_DAYS_SHORT[d.getDay()] };
+  });
+
+  const maxCount = Math.max(...days.map(d => d.count), 1);
+
+  return (
+    <div className="px-5 py-4">
+      <div className="grid grid-cols-7 gap-1.5">
+        {days.map(({ d, iso, count, isToday, dayName }) => (
+          <div key={iso} className="flex flex-col items-center gap-1.5">
+            <span className={`text-[10px] font-medium ${isToday ? 'text-[#789A99]' : 'text-[#A8928D]'}`}>
+              {dayName}
+            </span>
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-semibold transition-all ${
+              isToday
+                ? 'bg-[#789A99] text-white shadow-[0_2px_8px_rgba(120,154,153,0.35)]'
+                : 'text-[#6B5750] bg-white/40'
+            }`}>
+              {d.getDate()}
+            </div>
+            {/* Bar indicator */}
+            <div className="w-full flex flex-col items-center gap-0.5">
+              {count > 0 ? (
+                <>
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: Math.max(3, Math.round((count / maxCount) * 24)) }}
+                    transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 24 }}
+                    className="w-1 rounded-full"
+                    style={{ background: isToday ? '#789A99' : 'rgba(120,154,153,0.4)' }}
+                  />
+                  <span className="text-[10px] font-bold text-[#789A99]">{count}</span>
+                </>
+              ) : (
+                <div className="h-5" />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── StatsView — компактна статистика за обраний період ───────────────────────
+
+function StatsView({ bookings }: { bookings: BookingWithServices[] }) {
+  const completed = bookings.filter(b => b.status === 'completed');
+  const revenue = completed.reduce((s, b) => s + b.total_price, 0);
+  const avgCheck = completed.length > 0 ? Math.round(revenue / completed.length) : 0;
+
+  const svcMap = new Map<string, number>();
+  bookings.forEach(b => {
+    const name = b.services[0]?.name;
+    if (name) svcMap.set(name, (svcMap.get(name) ?? 0) + 1);
+  });
+  const topService = [...svcMap.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+  if (bookings.length === 0) {
+    return (
+      <div className="px-5 py-6 text-center">
+        <p className="text-sm text-[#A8928D]">Записів немає за цей період</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-5 py-4 grid grid-cols-2 gap-2.5">
+      {[
+        { label: 'Всього',     value: String(bookings.length),  color: '#789A99' },
+        { label: 'Завершено',  value: String(completed.length), color: '#5C9E7A' },
+        { label: 'Виручка',    value: formatPrice(revenue),     color: '#2C1A14' },
+        { label: 'Сер. чек',   value: avgCheck > 0 ? formatPrice(avgCheck) : '—', color: '#2C1A14' },
+      ].map(item => (
+        <div key={item.label} className="p-3 rounded-2xl bg-white/50 border border-white/80">
+          <p className="text-[10px] text-[#A8928D] uppercase tracking-wide mb-1">{item.label}</p>
+          <p className="text-base font-bold" style={{ color: item.color }}>{item.value}</p>
+        </div>
+      ))}
+      {topService && (
+        <div className="col-span-2 p-3 rounded-2xl bg-white/50 border border-white/80 flex items-center gap-2">
+          <Star size={13} className="text-[#D4935A] shrink-0" />
+          <div className="min-w-0">
+            <p className="text-[10px] text-[#A8928D] uppercase tracking-wide">Топ послуга</p>
+            <p className="text-sm font-semibold text-[#2C1A14] truncate">{topService}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TodaySchedule() {
   const [mounted, setMounted] = useState(false);
   const [view, setView] = useState<ViewMode>('today');
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('list');
   const range = getDateRange(view);
   const { bookings, isLoading, updateStatus } = useBookings(range.from, range.to);
   const allBookings: BookingWithServices[] = bookings ?? [];
@@ -209,7 +319,6 @@ export function TodaySchedule() {
     [allBookings]
   );
 
-  // Групуємо по даті для тижневого виду
   const grouped = useMemo(() => {
     if (view !== 'week') return null;
     const map = new Map<string, BookingWithServices[]>();
@@ -248,7 +357,7 @@ export function TodaySchedule() {
         </Link>
       </div>
 
-      {/* Tabs */}
+      {/* Date tabs */}
       <div className="flex gap-1 px-5 pb-3">
         {TABS.map(tab => (
           <button
@@ -265,10 +374,32 @@ export function TodaySchedule() {
         ))}
       </div>
 
+      {/* Display mode toggle (3-segment sliding pill) */}
+      <div className="relative flex bg-[#F5E8E3]/60 rounded-2xl p-0.5 gap-0 mx-5 mb-3">
+        {DISPLAY_MODES.map(mode => (
+          <button
+            key={mode.id}
+            onClick={() => setDisplayMode(mode.id)}
+            className="relative flex-1 flex items-center justify-center gap-1 py-2 z-10 text-[10px] font-semibold transition-colors"
+            style={{ color: displayMode === mode.id ? '#2C1A14' : '#A8928D' }}
+          >
+            {displayMode === mode.id && (
+              <motion.div
+                layoutId="schedule-display-pill"
+                className="absolute inset-0 bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              />
+            )}
+            <mode.Icon size={11} className="relative z-10" />
+            <span className="relative z-10">{mode.label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Content */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={view}
+          key={`${view}-${displayMode}`}
           initial={{ opacity: 0, x: 8 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -8 }}
@@ -279,6 +410,10 @@ export function TodaySchedule() {
               <Loader2 size={18} className="text-[#789A99] animate-spin" />
               <span className="text-sm text-[#A8928D]">Завантаження...</span>
             </div>
+          ) : displayMode === 'calendar' ? (
+            <CalendarView bookings={filtered} />
+          ) : displayMode === 'stats' ? (
+            <StatsView bookings={filtered} />
           ) : filtered.length === 0 ? (
             view === 'today' ? (
               <EmptyScheduleWidget />
@@ -307,16 +442,16 @@ export function TodaySchedule() {
                       const svcName = b.services[0]?.name ?? 'Послуга';
                       return (
                         <div key={b.id} onClick={() => openBooking(b.id)} className="flex items-center gap-4 px-5 py-3 hover:bg-white/40 transition-colors cursor-pointer">
-                          <div className="w-12 flex-shrink-0 text-right">
+                          <div className="w-12 shrink-0 text-right">
                             <p className="text-sm font-semibold tabular-nums text-[#6B5750]">{b.start_time}</p>
                             <p className="text-[10px] text-[#A8928D]">{b.end_time}</p>
                           </div>
-                          <div className="w-2 h-2 rounded-full flex-shrink-0 bg-[#E8D5CF]" />
+                          <div className="w-2 h-2 rounded-full shrink-0 bg-[#E8D5CF]" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-[#2C1A14] truncate">{svcName}</p>
                             <p className="text-xs text-[#6B5750] truncate">{b.client_name}</p>
                           </div>
-                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <div className="flex flex-col items-end gap-1 shrink-0">
                             <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(b.total_price)}</p>
                             <Badge variant={cfg.variant}>{cfg.label}</Badge>
                           </div>
@@ -348,7 +483,7 @@ export function TodaySchedule() {
                     }`}
                   >
                     {/* Час */}
-                    <div className="w-12 flex-shrink-0 text-right">
+                    <div className="w-12 shrink-0 text-right">
                       <p className={`text-sm font-semibold tabular-nums ${isCurrent ? 'text-[#789A99]' : 'text-[#6B5750]'}`}>
                         {b.start_time}
                       </p>
@@ -356,7 +491,7 @@ export function TodaySchedule() {
                     </div>
 
                     {/* Dot + line */}
-                    <div className="flex flex-col items-center self-stretch gap-0.5 flex-shrink-0">
+                    <div className="flex flex-col items-center self-stretch gap-0.5 shrink-0">
                       <Tooltip
                         position="right"
                         delay={150}
@@ -369,7 +504,7 @@ export function TodaySchedule() {
                           </div>
                         }
                       >
-                        <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1.5 cursor-default ${
+                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 cursor-default ${
                           isCurrent
                             ? 'bg-[#789A99] ring-2 ring-[#789A99]/25 ring-offset-1'
                             : b.status === 'completed'
@@ -386,7 +521,6 @@ export function TodaySchedule() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#2C1A14] truncate">{svcName}</p>
                       <p className="text-xs text-[#6B5750] truncate">{b.client_name}</p>
-                      {/* Quick actions */}
                       {(b.status === 'pending' || b.status === 'confirmed') && (
                         <div className="flex items-center gap-1.5 mt-1.5">
                           {b.status === 'pending' && (
@@ -408,7 +542,7 @@ export function TodaySchedule() {
                     </div>
 
                     {/* Ціна + статус */}
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <div className="flex flex-col items-end gap-1 shrink-0">
                       <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(b.total_price)}</p>
                       <Badge variant={cfg.variant}>{cfg.label}</Badge>
                     </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { startOfWeek, format } from 'date-fns';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
@@ -23,12 +24,30 @@ export function useDashboardStats(): DashboardStatsWithLoading {
   const masterId = masterProfile?.id;
   const today     = format(new Date(), 'yyyy-MM-dd');
   const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  const qc = useQueryClient();
+
+  // Realtime: invalidate on any bookings change for this master
+  useEffect(() => {
+    if (!masterId) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`dashboard-stats-${masterId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'bookings',
+        filter: `master_id=eq.${masterId}`,
+      }, () => {
+        qc.invalidateQueries({ queryKey: ['dashboard-stats', masterId] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [masterId]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-stats', masterId, today],
     queryFn: async () => {
       const supabase = createClient();
-      await supabase.auth.getSession();
 
       type TodayRow = { status: string; total_price: string | number };
       type WeekRow  = { client_phone: string | null; client_name: string | null };
@@ -68,7 +87,7 @@ export function useDashboardStats(): DashboardStatsWithLoading {
       } satisfies DashboardStats;
     },
     enabled: !!masterId,
-    refetchInterval: 60_000,
+    staleTime: 30_000,
     placeholderData: {
       todayCount: 0, todayPending: 0, todayConfirmed: 0,
       todayCompleted: 0, todayRevenue: 0, weekClients: 0,

@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
-import { sendTelegramMessage } from '@/lib/telegram';
+import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
@@ -118,7 +118,7 @@ export async function createFlashDeal(
     : { data: [] };
 
   if (clientsWithTg && clientsWithTg.length > 0) {
-    const tgMsg = `⚡ <b>Флеш-акція від ${masterName}!</b>\n\n💅 ${params.serviceName}\n🗓 ${dateStr} о ${params.slotTime}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${bookingUrl}">Записатися зараз →</a>`;
+    const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(params.serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(params.slotTime)}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
     await Promise.all(clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg)));
     sentCount += clientsWithTg.length;
   }

@@ -11,8 +11,7 @@ export function useTour(tourName: string, totalSteps: number) {
       const t = setTimeout(() => setCurrentStep(0), 800);
       return () => clearTimeout(t);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [tourName]);
 
   function nextStep() {
     if (currentStep < totalSteps - 1) {

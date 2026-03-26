@@ -2,27 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings, CreditCard, MessageSquare, GalleryHorizontalEnd, Gift, Share2, Building2, Zap, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings, MessageSquare, GalleryHorizontalEnd, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 
 const navItems = [
-  { href: '/dashboard',           icon: LayoutDashboard, label: 'Головна',      hint: 'Огляд дня та статистика' },
-  { href: '/dashboard/bookings',  icon: CalendarDays,    label: 'Записи',       hint: 'Всі записи та календар' },
-  { href: '/dashboard/services',  icon: Scissors,        label: 'Послуги',      hint: 'Послуги та товари' },
-  { href: '/dashboard/clients',   icon: Users,           label: 'Клієнти',      hint: 'База клієнтів та CRM' },
-  { href: '/dashboard/portfolio', icon: GalleryHorizontalEnd, label: 'Портфоліо', hint: 'Фото ваших робіт для клієнтів' },
-  { href: '/dashboard/analytics', icon: BarChart2,       label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
-  { href: '/dashboard/reviews',   icon: MessageSquare,   label: 'Відгуки',      hint: 'Керування відгуками клієнтів' },
-  { href: '/dashboard/flash',     icon: Zap,             label: 'Флеш-акції',   hint: 'Заповни вільний слот — сповісти клієнтів миттєво' },
-  { href: '/dashboard/pricing',   icon: TrendingUp,      label: 'Ціноутворення', hint: 'Пік, тихий час, рання бронь, остання хвилина' },
-  { href: '/dashboard/loyalty',   icon: Gift,            label: 'Лояльність',   hint: 'Знижки для постійних клієнтів' },
-  { href: '/dashboard/referral',  icon: Share2,          label: 'Запроси друга', hint: 'Запрошуй колег — обидва отримуєте місяць Pro' },
-  { href: '/dashboard/studio',    icon: Building2,       label: 'Студія',        hint: 'Команда майстрів та зведена аналітика', soon: true },
-  { href: '/dashboard/billing',   icon: CreditCard,      label: 'Тариф',        hint: 'Підписка та оплата'       },
-  { href: '/dashboard/settings',  icon: Settings,        label: 'Налаштування', hint: 'Профіль, тема, інтеграції' },
+  { href: '/dashboard',           icon: LayoutDashboard,       label: 'Головна',      hint: 'Огляд дня та статистика' },
+  { href: '/dashboard/bookings',  icon: CalendarDays,          label: 'Записи',       hint: 'Всі записи та календар' },
+  { href: '/dashboard/services',  icon: Scissors,              label: 'Послуги',      hint: 'Послуги та товари' },
+  { href: '/dashboard/clients',   icon: Users,                 label: 'Клієнти',      hint: 'База клієнтів та CRM' },
+  { href: '/dashboard/portfolio', icon: GalleryHorizontalEnd,  label: 'Портфоліо',    hint: 'Фото ваших робіт для клієнтів' },
+  { href: '/dashboard/analytics', icon: BarChart2,             label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
+  { href: '/dashboard/reviews',   icon: MessageSquare,         label: 'Відгуки',      hint: 'Керування відгуками клієнтів' },
+  { href: '/dashboard/more',      icon: MoreHorizontal,        label: 'Ще',           hint: 'Флеш, Ціни, Лояльність, Студія та інше' },
+  { href: '/dashboard/settings',  icon: Settings,              label: 'Налаштування', hint: 'Профіль, тема, інтеграції' },
 ];
 
 export function FloatingSidebar() {
@@ -45,7 +40,7 @@ export function FloatingSidebar() {
 
       {/* Nav */}
       <nav className="flex flex-col gap-1 flex-1">
-        {navItems.map(({ href, icon: Icon, label, hint, soon }) => {
+        {navItems.map(({ href, icon: Icon, label, hint }) => {
           const isActive =
             pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
           const showBadge = href === '/dashboard/bookings' && todayPending > 0;
@@ -65,7 +60,7 @@ export function FloatingSidebar() {
                     : 'text-[#6B5750] hover:bg-white/55 hover:text-[#2C1A14]'
                 )}
               >
-                <div className="relative flex-shrink-0">
+                <div className="relative shrink-0">
                   <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
                   {showBadge && (
                     <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#D4935A] text-white text-[9px] font-bold flex items-center justify-center leading-none">
@@ -77,11 +72,6 @@ export function FloatingSidebar() {
                 {showBadge && (
                   <span className="ml-auto text-[10px] font-semibold text-[#D4935A] bg-[#D4935A]/10 px-1.5 py-0.5 rounded-full">
                     {todayPending} нові
-                  </span>
-                )}
-                {soon && !showBadge && (
-                  <span className="ml-auto text-[9px] font-bold text-[#789A99] bg-[#789A99]/12 px-1.5 py-0.5 rounded-full">
-                    Скоро
                   </span>
                 )}
               </Link>
@@ -101,7 +91,7 @@ export function FloatingSidebar() {
         } position="right" delay={400}>
           <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-2xl hover:bg-white/55 transition-colors w-full">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm flex-shrink-0"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0"
               style={{ background: 'rgba(255,210,194,0.6)' }}
             >
               {avatarEmoji}

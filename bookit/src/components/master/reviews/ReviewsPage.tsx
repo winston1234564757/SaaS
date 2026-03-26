@@ -31,9 +31,8 @@ export function ReviewsPage() {
   useEffect(() => {
     if (!masterProfile?.id) return;
     const supabase = createClient();
-    supabase.auth.getSession().then(() => {
-      supabase
-        .from('reviews')
+    supabase
+      .from('reviews')
         .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
         .eq('master_id', masterProfile.id)
         .order('created_at', { ascending: false })
@@ -52,13 +51,11 @@ export function ReviewsPage() {
           );
           setIsLoading(false);
         });
-    });
   }, [masterProfile?.id]);
 
   async function togglePublish(id: string, current: boolean) {
     setToggling(id);
     const supabase = createClient();
-    await supabase.auth.getSession();
     await supabase.from('reviews').update({ is_published: !current }).eq('id', id);
     setReviews(prev => prev.map(r => r.id === id ? { ...r, is_published: !current } : r));
     setToggling(null);

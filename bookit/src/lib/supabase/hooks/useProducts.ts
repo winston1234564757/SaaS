@@ -8,8 +8,19 @@ import { safeQuery, safeMutation } from '../safeQuery';
 
 // ─── DB ↔ Component type mapping ──────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToProduct(row: any): Product {
+interface ProductRow {
+  id: string;
+  name: string;
+  emoji: string | null;
+  price: number;
+  stock_unlimited: boolean;
+  stock_quantity: number;
+  is_active: boolean;
+  description: string | null;
+  image_url: string | null;
+}
+
+function rowToProduct(row: ProductRow): Product {
   return {
     id: row.id,
     name: row.name,
@@ -48,8 +59,8 @@ export function useProducts() {
     queryKey: key,
     queryFn: async () => {
       const supabase = createClient();
-      await supabase.auth.getSession();
-      const result = await safeQuery<any[]>(
+
+      const result = await safeQuery<ProductRow[]>(
         'products:list',
         () =>
           supabase
@@ -74,8 +85,8 @@ export function useProducts() {
   const addMutation = useMutation({
     mutationFn: async (data: Omit<Product, 'id'>) => {
       const supabase = createClient();
-      await supabase.auth.getSession();
-      const result = await safeMutation(
+
+      const result = await safeMutation<ProductRow>(
         'products:add',
         () =>
           supabase
@@ -98,7 +109,7 @@ export function useProducts() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Omit<Product, 'id'> }) => {
       const supabase = createClient();
-      await supabase.auth.getSession();
+
       const result = await safeMutation(
         'products:update',
         () =>
@@ -120,7 +131,7 @@ export function useProducts() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const supabase = createClient();
-      await supabase.auth.getSession();
+
       const result = await safeMutation(
         'products:delete',
         () => supabase.from('products').delete().eq('id', id)
@@ -138,7 +149,7 @@ export function useProducts() {
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
       const supabase = createClient();
-      await supabase.auth.getSession();
+
       const result = await safeMutation(
         'products:toggle',
         () =>

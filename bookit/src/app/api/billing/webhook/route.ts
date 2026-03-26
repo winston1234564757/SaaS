@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { flatUidToUuid } from '@/lib/utils/uuid';
 
 const MERCHANT = process.env.WAYFORPAY_MERCHANT_ACCOUNT!;
 const SECRET   = process.env.WAYFORPAY_MERCHANT_SECRET!;
@@ -9,15 +10,6 @@ function hmacMd5(str: string): string {
   return crypto.createHmac('md5', SECRET).update(str).digest('hex');
 }
 
-function flatUidToUuid(flat: string): string {
-  return [
-    flat.slice(0, 8),
-    flat.slice(8, 12),
-    flat.slice(12, 16),
-    flat.slice(16, 20),
-    flat.slice(20),
-  ].join('-');
-}
 
 export async function POST(req: NextRequest) {
   let body: Record<string, string>;
@@ -53,13 +45,16 @@ export async function POST(req: NextRequest) {
     if ((tier === 'pro' || tier === 'studio') && uid32?.length === 32) {
       const userId = flatUidToUuid(uid32);
       const supabase = createAdminClient();
-      await supabase
+      const { error: updateError } = await supabase
         .from('master_profiles')
         .update({
           subscription_tier: tier,
           subscription_expires_at: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString(),
         })
         .eq('id', userId);
+      if (updateError) {
+        console.error('[wayforpay-webhook] subscription update failed:', updateError.message, { userId, tier });
+      }
     }
   }
 

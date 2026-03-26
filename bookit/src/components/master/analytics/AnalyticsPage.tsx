@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart2, TrendingUp, TrendingDown, Users,
   Minus, Download, Loader2, RefreshCw,
@@ -150,31 +150,68 @@ function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
 function DowChart({ data, bookings, bestIdx }: { data: number[]; bookings: number[]; bestIdx: number }) {
   const max   = Math.max(...data, 1);
   const total = data.reduce((s, v) => s + v, 0);
+  const [activeBar, setActiveBar] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (activeBar === null) return;
+    const close = () => setActiveBar(null);
+    const frame = requestAnimationFrame(() => {
+      document.addEventListener('click', close, { once: true });
+      document.addEventListener('touchstart', close, { once: true, passive: true });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener('click', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [activeBar]);
+
   return (
     <div className="flex items-end gap-1.5 h-12 mt-2">
       {data.map((v, i) => {
         const pct = total > 0 ? Math.round((v / total) * 100) : 0;
         return (
-          <Tooltip key={i}
-            content={
-              <div>
-                <p className="text-sm text-[#6B5750] mb-1">{UA_DOW_FULL[i]}</p>
-                <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(v)}</p>
-                <p className="text-sm text-[#6B5750]">{pct}% виручки · {pluralize(bookings[i], ['запис', 'записи', 'записів'])}</p>
-              </div>
-            }
-            className="flex-1 flex flex-col items-center gap-1"
+          <div
+            key={i}
+            className="flex-1 flex flex-col items-center gap-1 relative"
+            onMouseEnter={() => setActiveBar(i)}
+            onMouseLeave={() => setActiveBar(null)}
+            onClick={(e) => { e.stopPropagation(); setActiveBar(prev => prev === i ? null : i); }}
           >
+            <AnimatePresence>
+              {activeBar === i && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+                  style={{
+                    background: 'rgba(255,248,244,0.97)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.72)',
+                    boxShadow: '0 8px 24px rgba(44,26,20,0.12)',
+                    borderRadius: 12,
+                    padding: '6px 10px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <p className="text-sm text-[#6B5750] mb-0.5">{UA_DOW_FULL[i]}</p>
+                  <p className="text-base font-bold text-[#2C1A14]">{formatPrice(v)}</p>
+                  <p className="text-[11px] text-[#6B5750]">{pct}% · {pluralize(bookings[i], ['запис', 'записи', 'записів'])}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <motion.div
               initial={{ height: 0 }}
               animate={{ height: Math.max(3, Math.round((v / max) * 36)) }}
               transition={{ delay: i * 0.04, ...SPRING }}
-              className={`w-full rounded-t-md ${i === bestIdx ? 'bg-[#789A99]' : 'bg-[#789A99]/20'}`}
+              className={`w-full rounded-t-md cursor-pointer ${i === bestIdx ? 'bg-[#789A99]' : 'bg-[#789A99]/20'}`}
             />
             <span className={`text-[9px] leading-none ${i === bestIdx ? 'font-bold text-[#789A99]' : 'text-[#C8B8B2]'}`}>
               {UA_DOW[i]}
             </span>
-          </Tooltip>
+          </div>
         );
       })}
     </div>
@@ -269,6 +306,76 @@ function ProUpgradeCard() {
         Перейти на Pro — 700₴/міс
       </Link>
     </motion.div>
+  );
+}
+
+// ── MonthBarChart ─────────────────────────────────────────────────────────────
+
+function MonthBarChart({ monthStats }: { monthStats: Array<{ month: string; revenue: number; bookings: number }> }) {
+  const [activeBar, setActiveBar] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (activeBar === null) return;
+    const close = () => setActiveBar(null);
+    const frame = requestAnimationFrame(() => {
+      document.addEventListener('click', close, { once: true });
+      document.addEventListener('touchstart', close, { once: true, passive: true });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener('click', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [activeBar]);
+
+  const maxV = Math.max(...monthStats.map(x => x.revenue), 1);
+  return (
+    <div className="flex items-end gap-2 h-24">
+      {monthStats.map((m, i) => {
+        const h = m.revenue === 0 ? 4 : Math.round((m.revenue / maxV) * 80);
+        return (
+          <div
+            key={i}
+            className="flex-1 flex flex-col items-center gap-1 relative"
+            onMouseEnter={() => setActiveBar(i)}
+            onMouseLeave={() => setActiveBar(null)}
+            onClick={(e) => { e.stopPropagation(); setActiveBar(prev => prev === i ? null : i); }}
+          >
+            <AnimatePresence>
+              {activeBar === i && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+                  style={{
+                    background: 'rgba(255,248,244,0.97)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.72)',
+                    boxShadow: '0 8px 24px rgba(44,26,20,0.12)',
+                    borderRadius: 12,
+                    padding: '6px 10px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <p className="text-sm text-[#6B5750] mb-0.5">{m.month}</p>
+                  <p className="text-base font-bold text-[#2C1A14]">{formatPrice(m.revenue)}</p>
+                  <p className="text-[11px] text-[#6B5750]">{pluralize(m.bookings, ['запис', 'записи', 'записів'])}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.div
+              initial={{ height: 0 }} animate={{ height: h }}
+              transition={{ delay: 0.06 + i * 0.06, ...SPRING }}
+              className="w-full rounded-t-xl bg-gradient-to-t from-[#789A99]/60 to-[#789A99]/25"
+              style={{ minHeight: 4, cursor: 'pointer' }}
+            />
+            <span className="text-[10px] text-[#A8928D]">{m.month}</span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -541,32 +648,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             ) : monthStats.length === 0 ? (
               <p className="text-sm text-[#A8928D] text-center py-8">Недостатньо даних</p>
             ) : (
-              <div className="flex items-end gap-2 h-24">
-                {monthStats.map((m, i) => {
-                  const maxV = Math.max(...monthStats.map(x => x.revenue), 1);
-                  const h = m.revenue === 0 ? 4 : Math.round((m.revenue / maxV) * 80);
-                  return (
-                    <Tooltip key={i}
-                      content={
-                        <div>
-                          <p className="text-sm text-[#6B5750] mb-1">{m.month}</p>
-                          <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(m.revenue)}</p>
-                          <p className="text-sm text-[#6B5750]">{pluralize(m.bookings, ['запис', 'записи', 'записів'])}</p>
-                        </div>
-                      }
-                      className="flex-1 flex flex-col items-center gap-1"
-                    >
-                      <motion.div
-                        initial={{ height: 0 }} animate={{ height: h }}
-                        transition={{ delay: 0.06 + i * 0.06, ...SPRING }}
-                        className="w-full rounded-t-xl bg-gradient-to-t from-[#789A99]/60 to-[#789A99]/25"
-                        style={{ minHeight: 4 }}
-                      />
-                      <span className="text-[10px] text-[#A8928D]">{m.month}</span>
-                    </Tooltip>
-                  );
-                })}
-              </div>
+              <MonthBarChart monthStats={monthStats} />
             )}
           </div>
 

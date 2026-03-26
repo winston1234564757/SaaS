@@ -29,7 +29,7 @@ export function useProductLinks(productId: string | null) {
     queryKey: key,
     queryFn: async (): Promise<ProductLink[]> => {
       const supabase = createClient();
-      await supabase.auth.getSession();
+
       const { data, error } = await supabase
         .from('product_service_links')
         .select('service_id, is_auto_suggest')
@@ -43,7 +43,7 @@ export function useProductLinks(productId: string | null) {
   const setLinksMutation = useMutation({
     mutationFn: async (links: ProductLink[]) => {
       const supabase = createClient();
-      await supabase.auth.getSession();
+
       // 1. Delete all existing links for this product
       const { error: delError } = await supabase
         .from('product_service_links')
@@ -84,7 +84,7 @@ export function useProductLinks(productId: string | null) {
  */
 export async function setProductLinks(productId: string, links: ProductLink[]): Promise<void> {
   const supabase = createClient();
-  await supabase.auth.getSession();
+
   const { error: delError } = await supabase
     .from('product_service_links')
     .delete()
@@ -115,7 +115,7 @@ export async function setProductLinks(productId: string, links: ProductLink[]): 
 export async function getAutoSuggestProductIds(serviceIds: string[]): Promise<string[]> {
   if (serviceIds.length === 0) return [];
   const supabase = createClient();
-  await supabase.auth.getSession();
+
   const { data, error } = await supabase
     .from('product_service_links')
     .select('product_id')

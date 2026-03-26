@@ -21,7 +21,7 @@ function CircleProgress({ progress }: { progress: number }) {
     '#789A99';
 
   return (
-    <svg width={86} height={86} viewBox="0 0 86 86" className="flex-shrink-0 -rotate-90">
+    <svg width={86} height={86} viewBox="0 0 86 86" className="shrink-0 -rotate-90">
       <circle cx={43} cy={43} r={RADIUS} fill="none" stroke="#F5E8E3" strokeWidth={STROKE} />
       <motion.circle
         cx={43} cy={43} r={RADIUS}
@@ -136,13 +136,13 @@ export function ProfileStrengthWidget() {
       !isLoading
     ) {
       setCelebrating(true);
-      const t = setTimeout(() => {
-        localStorage.setItem(LS_KEY, 'done');
-        setVisible(false);
-      }, 2800);
-      return () => clearTimeout(t);
     }
   }, [progress, celebrating, alreadyCelebrated, hasPortfolio, isLoading]);
+
+  function handleCelebrationConfirm() {
+    localStorage.setItem(LS_KEY, 'done');
+    setVisible(false);
+  }
 
   // ── Early returns AFTER all hooks ─────────────────────────────────────────
   if (isLoading || !masterProfile || !profile || hasPortfolio === null || alreadyCelebrated) {
@@ -188,18 +188,30 @@ export function ProfileStrengthWidget() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
+                className="w-full"
               >
                 <p className="text-sm font-bold text-[#2C1A14]">Ваш профіль ідеальний!</p>
-                <p className="text-xs text-[#A8928D] mt-1">
-                  Ви готові приймати клієнтів на 100% 🚀
+                <p className="text-xs text-[#A8928D] mt-1 mb-4">
+                  Ви готові приймати клієнтів на 100%
                 </p>
+                <motion.button
+                  type="button"
+                  onClick={handleCelebrationConfirm}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full py-2.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors"
+                >
+                  Вперед, до роботи →
+                </motion.button>
               </motion.div>
             </div>
           ) : (
             <>
               {/* Header: circle + text */}
               <div className="flex items-center gap-4 mb-4">
-                <div className="relative flex-shrink-0">
+                <div className="relative shrink-0">
                   <CircleProgress progress={progress} />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <motion.span
@@ -244,12 +256,12 @@ export function ProfileStrengthWidget() {
                         whileTap={{ scale: 0.98 }}
                         className="flex items-center gap-3 py-2.5 px-3 rounded-2xl cursor-pointer"
                       >
-                        <div className="w-5 h-5 rounded-full border-2 border-[#E8D5CF] bg-white/60 flex-shrink-0" />
+                        <div className="w-5 h-5 rounded-full border-2 border-[#E8D5CF] bg-white/60 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-[#2C1A14]">{step.label}</p>
                           <p className="text-[11px] text-[#A8928D]">{step.sub}</p>
                         </div>
-                        <ChevronRight size={13} className="text-[#A8928D] flex-shrink-0" />
+                        <ChevronRight size={13} className="text-[#A8928D] shrink-0" />
                       </motion.div>
                     </Link>
                   </motion.div>

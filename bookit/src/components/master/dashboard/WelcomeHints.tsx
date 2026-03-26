@@ -27,6 +27,8 @@ export function WelcomeHints() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (localStorage.getItem('bookit_hints_pending') !== 'true') return;
+    // Видаляємо одразу на mount — щоб refresh не показував підказки знову
+    localStorage.removeItem('bookit_hints_pending');
     const t = setTimeout(() => setHintIndex(0), 1200);
     return () => clearTimeout(t);
   }, []);
@@ -38,7 +40,6 @@ export function WelcomeHints() {
       setHintIndex(next);
     } else {
       setHintIndex(null);
-      localStorage.removeItem('bookit_hints_pending');
     }
   }
 
@@ -77,7 +78,7 @@ export function WelcomeHints() {
             >
               <div className="flex items-start gap-3">
                 {/* Pulsing beacon */}
-                <div className="relative flex-shrink-0 mt-0.5">
+                <div className="relative shrink-0 mt-0.5">
                   <div className="w-11 h-11 rounded-2xl bg-[#789A99]/15 flex items-center justify-center text-xl">
                     {hint.emoji}
                   </div>
@@ -95,7 +96,7 @@ export function WelcomeHints() {
                     <button
                       type="button"
                       onClick={dismiss}
-                      className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/60 border border-white/80 text-[#A8928D] hover:text-[#6B5750] transition-colors flex-shrink-0"
+                      className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/60 border border-white/80 text-[#A8928D] hover:text-[#6B5750] transition-colors shrink-0"
                     >
                       <X size={11} />
                     </button>

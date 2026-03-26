@@ -51,9 +51,8 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
     if (!client || !masterProfile?.id) return;
     setLoading(true);
     const supabase = createClient();
-    supabase.auth.getSession().then(() => {
-      supabase
-        .from('bookings')
+    supabase
+      .from('bookings')
         .select('id, date, start_time, status, total_price, booking_services(service_name)')
         .eq('master_id', masterProfile.id)
         .eq('client_phone', client.client_phone)
@@ -73,14 +72,12 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
           );
           setLoading(false);
         });
-    });
   }, [client?.id, masterProfile?.id]);
 
   async function handleToggleVip() {
     if (!client || !masterProfile?.id || toggling || !client.relation_id) return;
     setToggling(true);
     const supabase = createClient();
-    await supabase.auth.getSession();
     const newVip = !client.is_vip;
     await supabase
       .from('client_master_relations')

@@ -200,7 +200,6 @@ export function OnboardingWizard() {
       const referralCode = arr[0].toString(36).toUpperCase().slice(0, 8);
 
       const { error } = await saveOnboardingProfile({
-        userId: uid,
         fullName: fullName.trim(),
         phone: phone.trim() || null,
         avatarUrl,
@@ -229,10 +228,7 @@ export function OnboardingWizard() {
   async function handleSaveSchedule() {
     setSaving(true);
     try {
-      const masterId = savedMasterId ?? profile?.id;
-      if (!masterId) { goTo('SERVICES_PROMPT'); return; }
-
-      const { error } = await saveOnboardingSchedule({ masterId, schedule, bufferTime, breaks });
+      const { error } = await saveOnboardingSchedule({ schedule, bufferTime, breaks });
 
       if (error) {
         showToast({ type: 'error', title: 'Помилка збереження', message: error });
@@ -254,11 +250,7 @@ export function OnboardingWizard() {
 
     setSaving(true);
     try {
-      const masterId = savedMasterId ?? profile?.id;
-      if (!masterId) { goTo('SUCCESS'); return; }
-
       const { error } = await saveOnboardingService({
-        masterId,
         name: serviceName.trim(),
         emoji: specialization,
         price: parseFloat(servicePrice),

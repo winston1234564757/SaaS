@@ -59,8 +59,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   let smsSent = 0;
   let failed = 0;
 
-  await Promise.allSettled(
-    rows.map(async (b: any) => {
+  const BATCH_SIZE = 50;
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    await Promise.allSettled(
+    rows.slice(i, i + BATCH_SIZE).map(async (b: any) => {
       const mp = b.master_profiles;
       const masterName: string = (mp?.profiles as any)?.full_name ?? 'Майстер';
       const startTime: string = (b.start_time as string | null)?.slice(0, 5) ?? '';
@@ -96,7 +98,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           },
           body: JSON.stringify({
             recipients: [phone],
-            sms: { sender: 'BEAUTY', text: messageText },
+            sms: { sender: process.env.TURBOSMS_SENDER ?? 'BEAUTY', text: messageText },
           }),
         });
         const smsData = await smsRes.json();
@@ -111,7 +113,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         failed++;
       }
     })
-  );
+    );
+  }
 
   console.log(`[cron/reminders] date=${tomorrowStr} total=${rows.length} pushSent=${pushSent} smsSent=${smsSent} failed=${failed}`);
 

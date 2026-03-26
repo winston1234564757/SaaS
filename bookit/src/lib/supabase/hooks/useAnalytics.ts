@@ -8,6 +8,37 @@ import { getPrevPeriodRange, type Preset } from './useDateRange';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+interface AnalyticsBookingRow {
+  date: string;
+  status: string;
+  total_price: number;
+  total_services_price: number | null;
+  total_products_price: number | null;
+  client_id: string | null;
+  client_name: string | null;
+  client_phone: string | null;
+  source: string | null;
+  booking_services: { service_name: string; service_price: number; duration_minutes: number }[];
+  booking_products: { product_name: string; product_price: number; quantity: number }[];
+}
+
+interface TrendBookingRow { date: string; status: string; total_price: number; }
+interface PrevBookingRow  { status: string; total_price: number; }
+interface VisitRow        { client_phone: string | null; }
+
+interface CsvBookingRow {
+  date: string | null;
+  start_time: string | null;
+  client_name: string | null;
+  client_phone: string | null;
+  booking_services: { service_name: string }[] | null;
+  booking_products: { product_name: string; quantity: number }[] | null;
+  discount_percent: number | null;
+  total_price: number;
+  status: string;
+  source: string | null;
+}
+
 export interface MonthStat { month: string; bookings: number; revenue: number; }
 
 export interface TopService {
@@ -67,12 +98,10 @@ export function useAnalytics(
   return useQuery({
     queryKey: ['analytics-v2', masterId, startDate, endDate, isPro],
     enabled:  !!masterId,
-    staleTime: 5 * 60_000,
+    staleTime: 2 * 60_000,
 
     queryFn: async (): Promise<AnalyticsData> => {
       const supabase = createClient();
-      // Прогрів сесії — гарантує оновлення токена до паралельних запитів
-      await supabase.auth.getSession();
 
       const now          = new Date();
       // End of CURRENT month (not today) — so the current month in the trend
@@ -119,7 +148,7 @@ export function useAnalytics(
           : Promise.resolve({ data: null }),
       ]);
 
-      const rows = (mainRes.data ?? []) as any[];
+      const rows = (mainRes.data ?? []) as AnalyticsBookingRow[];
 
       // ── Summary ───────────────────────────────────────────────────────────
       const nonCancelled = rows.filter(b => b.status !== 'cancelled');
@@ -134,7 +163,7 @@ export function useAnalytics(
       const monthStats: MonthStat[] = [];
       if (trendRes.data) {
         const map = new Map<string, { bookings: number; revenue: number }>();
-        for (const b of trendRes.data as any[]) {
+        for (const b of trendRes.data as TrendBookingRow[]) {
           const key = (b.date as string).slice(0, 7);
           const cur = map.get(key) ?? { bookings: 0, revenue: 0 };
           map.set(key, {
@@ -240,7 +269,7 @@ export function useAnalytics(
         const currentAvg       = currentCompleted > 0 ? revenue / currentCompleted : 0;
         let prevAvg: number | null = null;
         if (prevRes.data) {
-          const prevCompleted = (prevRes.data as any[]).filter(b => b.status === 'completed');
+          const prevCompleted = (prevRes.data as PrevBookingRow[]).filter(b => b.status === 'completed');
           const prevRev       = prevCompleted.reduce((s, b) => s + Number(b.total_price), 0);
           prevAvg = prevCompleted.length > 0 ? prevRev / prevCompleted.length : null;
         }
@@ -294,7 +323,7 @@ export function useAnalytics(
           .in('client_phone', activePhones);
 
         const visitsMap = new Map<string, number>();
-        for (const b of (allVisitsData ?? []) as any[]) {
+        for (const b of (allVisitsData ?? []) as VisitRow[]) {
           const p = b.client_phone as string;
           if (p) visitsMap.set(p, (visitsMap.get(p) ?? 0) + 1);
         }
@@ -356,7 +385,6 @@ export async function exportAnalyticsCsv(
   endDate: string,
 ): Promise<void> {
   const supabase = createClient();
-  await supabase.auth.getSession();
   const { data } = await supabase
     .from('bookings')
     .select(`
@@ -380,13 +408,13 @@ export async function exportAnalyticsCsv(
 
   const rows = [
     ['Дата', 'Час', 'Клієнт', 'Телефон', 'Послуги', 'Товари', 'Знижка %', 'Сума', 'Статус', 'Джерело'],
-    ...(data as any[]).map(b => [
+    ...(data as CsvBookingRow[]).map(b => [
       b.date ?? '',
       String(b.start_time ?? '').slice(0, 5),
       b.client_name  ?? '',
       b.client_phone ?? '',
-      (b.booking_services ?? []).map((s: any) => s.service_name).join('; '),
-      (b.booking_products  ?? []).map((p: any) => `${p.product_name} ×${p.quantity}`).join('; '),
+      (b.booking_services ?? []).map((s) => s.service_name).join('; '),
+      (b.booking_products  ?? []).map((p) => `${p.product_name} ×${p.quantity}`).join('; '),
       String(b.discount_percent ?? 0),
       Number(b.total_price).toFixed(2),
       STATUS_UA[b.status] ?? b.status ?? '',

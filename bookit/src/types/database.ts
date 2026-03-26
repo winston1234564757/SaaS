@@ -19,6 +19,7 @@ export type SubscriptionTier = 'starter' | 'pro' | 'studio';
 export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 export type NotificationChannel = 'push' | 'telegram' | 'sms';
 export type ReferralStatus = 'pending' | 'registered' | 'activated';
+export type FlashDealStatus = 'active' | 'claimed' | 'expired';
 
 export interface Profile {
   id: string;
@@ -42,7 +43,6 @@ export interface MasterProfile {
   accent_color: string;
   subscription_tier: SubscriptionTier;
   subscription_expires_at: string | null;
-  bookings_this_month: number;
   commission_rate: number;
   rating: number;
   rating_count: number;
@@ -148,6 +148,8 @@ export interface Booking {
   master_notes: string | null;
   source: string;
   cancellation_reason: string | null;
+  next_visit_suggestion: string | null;
+  flash_deal_id: string | null;
   created_at: string;
   updated_at: string;
 }

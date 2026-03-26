@@ -112,7 +112,6 @@ export function PhoneOtpForm({ mode }: Props) {
     // For new masters — create master_profiles (placeholder slug + role claim)
     if (selectedRole === 'master') {
       const { error: roleError } = await claimMasterRole(
-        authData.session.user.id,
         getCleanPhone(),
       );
       if (roleError) {

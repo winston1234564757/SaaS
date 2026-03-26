@@ -76,7 +76,6 @@ export function ClientsPage() {
 
     async function load() {
       const supabase = createClient();
-      await supabase.auth.getSession();
       // 1. Всі завершені/підтверджені/очікуючі записи
       const { data: bookings } = await supabase
         .from('bookings')

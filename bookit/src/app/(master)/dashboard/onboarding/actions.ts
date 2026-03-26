@@ -9,7 +9,6 @@ export async function revalidateAfterOnboarding() {
 }
 
 export async function saveOnboardingProfile(params: {
-  userId: string;
   fullName: string;
   phone?: string | null;
   avatarUrl?: string | null;
@@ -19,8 +18,11 @@ export async function saveOnboardingProfile(params: {
 }): Promise<{ error: string | null }> {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
   const profileData: Record<string, unknown> = {
-    id: params.userId,
+    id: user.id,
     role: 'master',
     full_name: params.fullName,
   };
@@ -37,11 +39,11 @@ export async function saveOnboardingProfile(params: {
   const { data: existing } = await supabase
     .from('master_profiles')
     .select('referral_code')
-    .eq('id', params.userId)
+    .eq('id', user.id)
     .maybeSingle();
 
   const masterData: Record<string, unknown> = {
-    id: params.userId,
+    id: user.id,
     slug: params.slug,
     avatar_emoji: params.avatarEmoji,
     is_published: true,
@@ -62,19 +64,21 @@ export async function saveOnboardingProfile(params: {
 }
 
 export async function saveOnboardingSchedule(params: {
-  masterId: string;
   schedule: Record<string, { is_working: boolean; start_time: string; end_time: string }>;
   bufferTime: number;
   breaks: Array<{ start: string; end: string }>;
 }): Promise<{ error: string | null }> {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
   const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
   const results = await Promise.all(
     DAYS.map(day =>
       supabase.from('schedule_templates').upsert(
-        { master_id: params.masterId, day_of_week: day, ...params.schedule[day] },
+        { master_id: user.id, day_of_week: day, ...params.schedule[day] },
         { onConflict: 'master_id,day_of_week' }
       )
     )
@@ -91,7 +95,7 @@ export async function saveOnboardingSchedule(params: {
         breaks: params.breaks.filter(b => b.start && b.end),
       },
     })
-    .eq('id', params.masterId);
+    .eq('id', user.id);
 
   if (whError) return { error: whError.message };
 
@@ -100,7 +104,6 @@ export async function saveOnboardingSchedule(params: {
 }
 
 export async function saveOnboardingService(params: {
-  masterId: string;
   name: string;
   emoji: string;
   price: number;
@@ -108,8 +111,11 @@ export async function saveOnboardingService(params: {
 }): Promise<{ error: string | null }> {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
   const { error } = await supabase.from('services').insert({
-    master_id: params.masterId,
+    master_id: user.id,
     name: params.name,
     emoji: params.emoji,
     category: 'Інше',

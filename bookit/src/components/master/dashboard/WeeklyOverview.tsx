@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Tooltip } from '@/components/ui/Tooltip';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useWeeklyOverview, type DayData } from '@/lib/supabase/hooks/useWeeklyOverview';
 
 const DAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
@@ -10,7 +10,7 @@ const BAR_MAX_PX = 72;
 
 function getTodayIdx() {
   const d = new Date().getDay();
-  return d === 0 ? 6 : d - 1; // 0=Пн
+  return d === 0 ? 6 : d - 1;
 }
 
 function BarTooltipContent({ dayFull, bookings, revenue, isToday, isPast }: {
@@ -58,6 +58,25 @@ export function WeeklyOverview() {
   const totalRevenue  = weekData.reduce((s, d) => s + d.revenue,   0);
   const totalBookings = weekData.reduce((s, d) => s + d.bookings, 0);
 
+  const [activeBar, setActiveBar] = useState<number | null>(null);
+
+  // Закриваємо tooltip при кліку поза графіком.
+  // requestAnimationFrame гарантує, що listener реєструється ПІСЛЯ поточного тіку подій
+  // (усуває блимання на мобільних: клік-відкриття не одразу закриває tooltip)
+  useEffect(() => {
+    if (activeBar === null) return;
+    const close = () => setActiveBar(null);
+    const frame = requestAnimationFrame(() => {
+      document.addEventListener('click', close, { once: true });
+      document.addEventListener('touchstart', close, { once: true, passive: true });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener('click', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [activeBar]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -78,21 +97,46 @@ export function WeeklyOverview() {
           const isPast  = i < todayIdx;
 
           return (
-            <Tooltip
+            <div
               key={i}
-              position="top"
-              delay={120}
-              className="flex-1 flex flex-col items-center justify-end h-full"
-              content={
-                <BarTooltipContent
-                  dayFull={DAYS_FULL[i]}
-                  bookings={day.bookings}
-                  revenue={day.revenue}
-                  isToday={isToday}
-                  isPast={isPast}
-                />
-              }
+              className="flex-1 flex flex-col items-center justify-end h-full relative"
+              onMouseEnter={() => setActiveBar(i)}
+              onMouseLeave={() => setActiveBar(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveBar(prev => prev === i ? null : i);
+              }}
             >
+              {/* Touch/hover tooltip */}
+              <AnimatePresence>
+                {activeBar === i && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+                    style={{
+                      background: 'rgba(255,248,244,0.97)',
+                      backdropFilter: 'blur(16px)',
+                      border: '1px solid rgba(255,255,255,0.72)',
+                      boxShadow: '0 8px 24px rgba(44,26,20,0.12)',
+                      borderRadius: 14,
+                      padding: '8px 12px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <BarTooltipContent
+                      dayFull={DAYS_FULL[i]}
+                      bookings={day.bookings}
+                      revenue={day.revenue}
+                      isToday={isToday}
+                      isPast={isPast}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: isLoading ? 4 : barH }}
@@ -104,12 +148,12 @@ export function WeeklyOverview() {
                     : isPast
                     ? 'rgba(120, 154, 153, 0.4)'
                     : 'rgba(120, 154, 153, 0.18)',
-                  cursor: 'default',
+                  cursor: 'pointer',
                   width: '100%',
                 }}
                 whileHover={{ background: isToday ? '#5C7E7D' : isPast ? 'rgba(120,154,153,0.6)' : 'rgba(120,154,153,0.35)' }}
               />
-            </Tooltip>
+            </div>
           );
         })}
       </div>

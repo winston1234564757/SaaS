@@ -39,37 +39,34 @@ export async function POST(req: NextRequest) {
 
   const supabaseAdmin = createAdminClient();
 
-  // Rate limiting — паралельні запити для мінімальної затримки
-  // IP: окрема таблиця sms_ip_logs (до 10 запитів на годину з одного IP)
-  // Phone: sms_logs (до 3 SMS на 15 хвилин на один номер)
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+  // Atomic rate-limit check via PostgreSQL RPC (fixes TOCTOU race condition).
+  // check_and_log_sms_send() uses pg_advisory_xact_lock to serialize
+  // concurrent requests for the same phone/IP, preventing SELECT+INSERT race.
+  const { data: rlResult, error: rlError } = await supabaseAdmin.rpc(
+    'check_and_log_sms_send',
+    { p_phone: phone, p_ip: ip }
+  );
 
-  const [{ count: ipCount }, { count: phoneCount }] = await Promise.all([
-    supabaseAdmin
-      .from('sms_ip_logs')
-      .select('id', { count: 'exact', head: true })
-      .eq('ip_address', ip)
-      .gte('created_at', oneHourAgo),
-    supabaseAdmin
-      .from('sms_logs')
-      .select('id', { count: 'exact', head: true })
-      .eq('phone', phone)
-      .gte('created_at', fifteenMinAgo),
-  ]);
-
-  if (ipCount !== null && ipCount >= 10) {
-    console.warn('[send-sms] IP rate limit exceeded:', ip);
+  if (rlError) {
+    console.error('[send-sms] rate-limit RPC error:', rlError.message);
     return NextResponse.json(
-      { success: false, error: 'Забагато спроб з вашого пристрою. Спробуйте пізніше.' },
+      { success: false, error: 'Помилка перевірки. Спробуйте пізніше.' },
+      { status: 500 }
+    );
+  }
+
+  if (rlResult === 'phone_limit') {
+    console.warn('[send-sms] phone rate limit exceeded:', phone);
+    return NextResponse.json(
+      { success: false, error: 'Забагато СМС на цей номер. Зачекайте 15 хвилин.' },
       { status: 429 }
     );
   }
 
-  if (phoneCount !== null && phoneCount >= 3) {
-    console.warn('[send-sms] Phone rate limit exceeded:', phone);
+  if (rlResult === 'ip_limit') {
+    console.warn('[send-sms] IP rate limit exceeded:', ip);
     return NextResponse.json(
-      { success: false, error: 'Забагато СМС на цей номер. Зачекайте 15 хвилин.' },
+      { success: false, error: 'Забагато спроб з вашого пристрою. Спробуйте пізніше.' },
       { status: 429 }
     );
   }
@@ -111,12 +108,6 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-
-  // Логуємо окремо: IP (для IP rate-limit) і phone (для phone rate-limit)
-  await Promise.all([
-    supabaseAdmin.from('sms_ip_logs').insert({ ip_address: ip }),
-    supabaseAdmin.from('sms_logs').insert({ phone, ip }),
-  ]);
 
   return NextResponse.json({ success: true });
 }

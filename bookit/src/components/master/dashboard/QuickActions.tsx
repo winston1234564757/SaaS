@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Plus, BarChart2, Settings } from 'lucide-react';
+import { Plus, BarChart2, Settings, Scissors, Users, CalendarDays } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { ManualBookingForm } from '@/components/master/bookings/ManualBookingForm';
 
@@ -57,6 +57,45 @@ export function QuickActions() {
                   <Settings size={18} className="text-[#6B5750]" />
                 </div>
                 <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Налаштування</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+
+          {/* Послуги */}
+          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Керувати списком послуг та цінами</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/services"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
+                  <Scissors size={18} className="text-[#6B5750]" />
+                </div>
+                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Послуги</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+
+          {/* Клієнти */}
+          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">CRM: база клієнтів та VIP</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/clients"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
+                  <Users size={18} className="text-[#6B5750]" />
+                </div>
+                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Клієнти</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+
+          {/* Записи */}
+          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Усі записи: пошук, статуси, CSV</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/bookings"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
+                  <CalendarDays size={18} className="text-[#6B5750]" />
+                </div>
+                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Записи</span>
               </Link>
             </motion.div>
           </Tooltip>

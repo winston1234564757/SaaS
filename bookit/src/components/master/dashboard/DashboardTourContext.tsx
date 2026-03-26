@@ -25,7 +25,11 @@ export function DashboardTourProvider({ children }: { children: React.ReactNode 
   const [tourStep, setTourStep] = useState(-1);
 
   useEffect(() => {
-    if (localStorage.getItem(LS_KEY) !== 'true') {
+    const val = localStorage.getItem(LS_KEY);
+    // Запускаємо тур тільки якщо ключ відсутній (перший запуск)
+    // 'in-progress' означає що тур вже стартував, але юзер перезавантажив сторінку
+    if (val === null) {
+      localStorage.setItem(LS_KEY, 'in-progress');
       const t = setTimeout(() => setTourStep(0), 1000);
       return () => clearTimeout(t);
     }

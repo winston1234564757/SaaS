@@ -45,7 +45,7 @@ function ProgramForm({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
-      className="bento-card p-4 border-2 border-[#789A99]/30"
+      className="bento-card p-4"
     >
       <div className="flex flex-col gap-3">
         <div>
@@ -203,7 +203,7 @@ export function LoyaltyPage() {
 
       {/* Info banner */}
       <div className="bento-card p-4 flex items-start gap-3" style={{ background: 'rgba(120, 154, 153, 0.08)' }}>
-        <Gift size={16} className="text-[#789A99] flex-shrink-0 mt-0.5" />
+        <Gift size={16} className="text-[#789A99] shrink-0 mt-0.5" />
         <div>
           <p className="text-xs font-semibold text-[#2C1A14]">Як це працює</p>
           <p className="text-xs text-[#6B5750] mt-0.5 leading-relaxed">
@@ -283,7 +283,7 @@ export function LoyaltyPage() {
                 ) : (
                   <>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#789A99]/10 flex-shrink-0">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#789A99]/10 shrink-0">
                         <Gift size={18} className="text-[#789A99]" />
                       </div>
                       <div className="flex-1 min-w-0">

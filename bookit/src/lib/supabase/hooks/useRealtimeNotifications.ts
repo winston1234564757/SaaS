@@ -45,10 +45,10 @@ export function useRealtimeNotifications() {
             });
           }
 
-          // Інвалідуємо кеш у фоні
-          qc.invalidateQueries({ queryKey: ['bookings'] });
-          qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          qc.invalidateQueries({ queryKey: ['weekly-overview'] });
+          // Інвалідуємо лише кеш цього майстра
+          qc.invalidateQueries({ queryKey: ['bookings', masterId] });
+          qc.invalidateQueries({ queryKey: ['dashboard-stats', masterId] });
+          qc.invalidateQueries({ queryKey: ['weekly-overview', masterId] });
         }
       )
       .on(
@@ -62,8 +62,8 @@ export function useRealtimeNotifications() {
         (payload: { new: Record<string, unknown> }) => {
           const b = payload.new as { status: string; client_name: string };
           // Інвалідуємо кеш при оновленні статусу
-          qc.invalidateQueries({ queryKey: ['bookings'] });
-          qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+          qc.invalidateQueries({ queryKey: ['bookings', masterId] });
+          qc.invalidateQueries({ queryKey: ['dashboard-stats', masterId] });
 
           if (b.status === 'cancelled') {
             showToast({

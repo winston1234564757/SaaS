@@ -9,7 +9,13 @@ import { cookies } from 'next/headers';
  * Body: { bookingId?: string, phone?: string }
  */
 export async function POST(req: NextRequest) {
-  const { bookingId, phone } = await req.json();
+  let bookingId: string | undefined;
+  try {
+    const body = await req.json();
+    bookingId = typeof body.bookingId === 'string' ? body.bookingId : undefined;
+  } catch {
+    return NextResponse.json({ error: 'Невірний формат запиту' }, { status: 400 });
+  }
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -34,7 +40,9 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createAdminClient();
-  const userPhone = phone || (user.user_metadata?.phone as string | undefined);
+
+  // Only trust phone from auth token — never from client body to prevent IDOR
+  const userPhone = user.user_metadata?.phone as string | undefined;
 
   // Profiles must exist before booking foreign-key update
   await Promise.all([
@@ -55,15 +63,32 @@ export async function POST(req: NextRequest) {
     ),
   ]);
 
-  // Прив'язуємо записи за телефоном і за конкретним bookingId паралельно
-  await Promise.all([
-    userPhone
-      ? admin.from('bookings').update({ client_id: user.id }).eq('client_phone', userPhone).is('client_id', null)
-      : Promise.resolve(),
-    bookingId
-      ? admin.from('bookings').update({ client_id: user.id }).eq('id', bookingId).is('client_id', null)
-      : Promise.resolve(),
-  ]);
+  // Link bookings by phone (auth-verified phone only)
+  if (userPhone) {
+    await admin
+      .from('bookings')
+      .update({ client_id: user.id })
+      .eq('client_phone', userPhone)
+      .is('client_id', null);
+  }
+
+  // Link specific booking by ID only if its client_phone matches the auth-verified phone
+  if (bookingId && userPhone) {
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('client_phone')
+      .eq('id', bookingId)
+      .is('client_id', null)
+      .single();
+
+    if (booking?.client_phone === userPhone) {
+      await admin
+        .from('bookings')
+        .update({ client_id: user.id })
+        .eq('id', bookingId)
+        .is('client_id', null);
+    }
+  }
 
   return NextResponse.json({ success: true });
 }

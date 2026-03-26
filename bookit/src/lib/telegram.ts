@@ -5,7 +5,7 @@ const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
  * Safely handles null, undefined, and any non-string type —
  * converts to string first, returns '' for nullish values.
  */
-function escHtml(s: unknown): string {
+export function escHtml(s: unknown): string {
   if (s === null || s === undefined) return '';
   const str = typeof s === 'string' ? s : String(s);
   return str

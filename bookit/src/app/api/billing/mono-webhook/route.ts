@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { flatUidToUuid } from '@/lib/utils/uuid';
 
-// Cache the Monobank public key in memory (refreshed on cold start)
-let cachedMonoPubKey: string | null = null;
+// Cache Monobank public key with 24h TTL.
+// On verification failure the key is force-refreshed once to handle key rotation.
+const PUBKEY_TTL_MS = 24 * 60 * 60 * 1000;
+let pubKeyCache: { key: string; fetchedAt: number } | null = null;
 
-async function getMonoPubKey(): Promise<string | null> {
-  if (cachedMonoPubKey) return cachedMonoPubKey;
+async function getMonoPubKey(forceRefresh = false): Promise<string | null> {
+  if (!forceRefresh && pubKeyCache && Date.now() - pubKeyCache.fetchedAt < PUBKEY_TTL_MS) {
+    return pubKeyCache.key;
+  }
   try {
     const res = await fetch('https://api.monobank.ua/api/merchant/pubkey', {
       headers: { 'X-Token': process.env.MONO_API_KEY! },
     });
     const json = await res.json();
-    cachedMonoPubKey = json.key ?? null;
-    return cachedMonoPubKey;
+    if (json.key) {
+      pubKeyCache = { key: json.key, fetchedAt: Date.now() };
+      return pubKeyCache.key;
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
-async function verifyMonoSignature(rawBody: string, xSign: string): Promise<boolean> {
-  const pubKeyBase64 = await getMonoPubKey();
-  if (!pubKeyBase64) return false;
+function verifyWithKey(rawBody: string, xSign: string, pubKeyBase64: string): boolean {
   try {
     const pubKey = crypto.createPublicKey({
       key: Buffer.from(pubKeyBase64, 'base64'),
@@ -39,15 +45,18 @@ async function verifyMonoSignature(rawBody: string, xSign: string): Promise<bool
   }
 }
 
-function flatUidToUuid(flat: string): string {
-  return [
-    flat.slice(0, 8),
-    flat.slice(8, 12),
-    flat.slice(12, 16),
-    flat.slice(16, 20),
-    flat.slice(20),
-  ].join('-');
+async function verifyMonoSignature(rawBody: string, xSign: string): Promise<boolean> {
+  const pubKeyBase64 = await getMonoPubKey();
+  if (!pubKeyBase64) return false;
+
+  if (verifyWithKey(rawBody, xSign, pubKeyBase64)) return true;
+
+  // Verification failed — Monobank may have rotated the key. Force-refresh and retry once.
+  const freshKey = await getMonoPubKey(true);
+  if (!freshKey || freshKey === pubKeyBase64) return false;
+  return verifyWithKey(rawBody, xSign, freshKey);
 }
+
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
@@ -83,11 +92,14 @@ export async function POST(req: NextRequest) {
       const userId = flatUidToUuid(uid32);
       const admin = createAdminClient();
 
-      const { data: mp } = await admin
+      const { data: mp, error: selectError } = await admin
         .from('master_profiles')
         .select('subscription_expires_at')
         .eq('id', userId)
         .single();
+      if (selectError) {
+        console.error('[mono-webhook] master_profiles select failed:', selectError.message, { userId });
+      }
 
       const currentExpiry = mp?.subscription_expires_at
         ? new Date(mp.subscription_expires_at)
@@ -95,13 +107,16 @@ export async function POST(req: NextRequest) {
       if (currentExpiry < new Date()) currentExpiry.setTime(Date.now());
       currentExpiry.setDate(currentExpiry.getDate() + 31);
 
-      await admin
+      const { error: updateError } = await admin
         .from('master_profiles')
         .update({
           subscription_tier: tier,
           subscription_expires_at: currentExpiry.toISOString(),
         })
         .eq('id', userId);
+      if (updateError) {
+        console.error('[mono-webhook] subscription update failed:', updateError.message, { userId, tier });
+      }
     }
   }
 

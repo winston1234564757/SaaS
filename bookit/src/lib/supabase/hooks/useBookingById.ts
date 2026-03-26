@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
+import { useMasterContext } from '../context';
 import type { BookingWithServices } from './useBookings';
 import type { BookingStatus } from '@/types/database';
 import { rescheduleBooking } from '@/app/(master)/dashboard/bookings/actions';
@@ -23,26 +24,55 @@ export interface BookingWithServicesAndProducts extends BookingWithServices {
   products: BookingProduct[];
 }
 
-function rowToBooking(row: any): BookingWithServicesAndProducts {
+interface BookingServiceRow {
+  service_name: string;
+  service_price: number;
+  duration_minutes: number;
+}
+
+interface BookingProductRow {
+  product_name: string;
+  product_price: number;
+  quantity: number | null;
+}
+
+interface BookingRow {
+  id: string;
+  client_id: string | null;
+  client_name: string;
+  client_phone: string;
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  status: BookingStatus;
+  total_price: number;
+  notes: string | null;
+  master_notes: string | null;
+  source: string | null;
+  booking_services: BookingServiceRow[] | null;
+  booking_products: BookingProductRow[] | null;
+}
+
+function rowToBooking(row: BookingRow): BookingWithServicesAndProducts {
   return {
     id: row.id,
     client_id: row.client_id ?? null,
     client_name: row.client_name,
     client_phone: row.client_phone,
     date: row.date,
-    start_time: (row.start_time as string | null)?.slice(0, 5) ?? '',
-    end_time: (row.end_time as string | null)?.slice(0, 5) ?? '',
+    start_time: row.start_time?.slice(0, 5) ?? '',
+    end_time: row.end_time?.slice(0, 5) ?? '',
     status: row.status,
     total_price: Number(row.total_price),
     notes: row.notes,
     master_notes: row.master_notes ?? null,
     source: row.source ?? null,
-    services: (row.booking_services ?? []).map((s: any) => ({
+    services: (row.booking_services ?? []).map((s) => ({
       name: s.service_name,
       price: Number(s.service_price),
       duration: s.duration_minutes,
     })),
-    products: (row.booking_products ?? []).map((p: any) => ({
+    products: (row.booking_products ?? []).map((p) => ({
       name: p.product_name,
       price: Number(p.product_price),
       quantity: p.quantity ?? 1,
@@ -52,6 +82,8 @@ function rowToBooking(row: any): BookingWithServicesAndProducts {
 
 export function useBookingById(id: string | null) {
   const qc = useQueryClient();
+  const { masterProfile } = useMasterContext();
+  const masterId = masterProfile?.id;
   const key = ['booking', id] as const;
 
   const query = useQuery({
@@ -72,20 +104,19 @@ export function useBookingById(id: string | null) {
   const booking = query.data ?? null;
 
   const ltvQuery = useQuery({
-    queryKey: ['client-ltv', id, booking?.client_id],
+    queryKey: ['client-ltv', id, booking?.client_id, masterId],
     queryFn: async () => {
+      if (!booking?.client_id || !masterId) return null;
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !booking?.client_id) return null;
       const { data } = await supabase
         .from('client_master_relations')
         .select('total_visits, total_spent, average_check')
         .eq('client_id', booking.client_id)
-        .eq('master_id', user.id)
+        .eq('master_id', masterId)
         .maybeSingle();
       return (data as ClientLtv | null) ?? null;
     },
-    enabled: !!booking?.client_id,
+    enabled: !!booking?.client_id && !!masterId,
   });
 
   const updateStatus = useMutation({
@@ -99,7 +130,7 @@ export function useBookingById(id: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      qc.invalidateQueries({ queryKey: ['bookings', masterId] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       qc.invalidateQueries({ queryKey: ['weekly-overview'] });
       qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
@@ -117,7 +148,7 @@ export function useBookingById(id: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      qc.invalidateQueries({ queryKey: ['bookings', masterId] });
     },
   });
 
@@ -128,7 +159,7 @@ export function useBookingById(id: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      qc.invalidateQueries({ queryKey: ['bookings'] });
+      qc.invalidateQueries({ queryKey: ['bookings', masterId] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
   });

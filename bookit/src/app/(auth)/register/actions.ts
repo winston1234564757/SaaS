@@ -1,5 +1,6 @@
 'use server';
 
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 function generateReferralCode(): string {
@@ -27,15 +28,18 @@ function generatePlaceholderSlug(): string {
  *   - /auth/callback with ?bid= param (PostBookingAuth Google OAuth path)
  */
 export async function claimMasterRole(
-  userId: string,
   phone: string,
 ): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
   const admin = createAdminClient();
 
   const { error: profileError } = await admin
     .from('profiles')
     .upsert(
-      { id: userId, role: 'master', phone },
+      { id: user.id, role: 'master', phone },
       { onConflict: 'id', ignoreDuplicates: false },
     );
 
@@ -49,13 +53,13 @@ export async function claimMasterRole(
   const { error: masterError } = await admin
     .from('master_profiles')
     .upsert(
-      { id: userId, slug, is_published: false },
+      { id: user.id, slug, is_published: false },
       { onConflict: 'id', ignoreDuplicates: true }, // don't overwrite if already exists
     );
 
   if (masterError) {
     // Rollback: remove profiles row to avoid orphaned 'master' without master_profiles
-    await admin.from('profiles').delete().eq('id', userId);
+    await admin.from('profiles').delete().eq('id', user.id);
     console.error('[register] master_profiles upsert failed:', masterError.message);
     return { error: 'Помилка ініціалізації профілю майстра. Спробуйте ще раз.' };
   }

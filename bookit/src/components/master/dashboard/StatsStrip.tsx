@@ -13,9 +13,9 @@ export function StatsStrip() {
 
   if (s.isLoading) {
     return (
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 items-stretch">
         {[0, 1, 2].map(i => (
-          <div key={i} className="bento-card p-4 flex flex-col gap-3">
+          <div key={i} className="bento-card p-4 flex flex-col justify-between gap-3">
             <Skeleton className="w-10 h-10 rounded-2xl" />
             <div className="flex flex-col gap-1.5">
               <Skeleton className="h-7 w-10" />
@@ -84,7 +84,7 @@ export function StatsStrip() {
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-3 gap-3 items-stretch">
       {stats.map((stat, i) => {
         const Icon = stat.icon;
         return (
@@ -93,9 +93,10 @@ export function StatsStrip() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
+            className="h-full"
           >
-            <Tooltip content={stat.tooltip} position="bottom" className="w-full">
-              <div className="bento-card p-4 flex flex-col gap-3 w-full cursor-default">
+            <Tooltip content={stat.tooltip} position="bottom" className="w-full h-full">
+              <div className="bento-card p-4 flex flex-col justify-between w-full h-full cursor-default">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: stat.bg }}>
                   <Icon size={18} style={{ color: stat.color }} />
                 </div>

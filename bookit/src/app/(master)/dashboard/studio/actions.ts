@@ -13,11 +13,15 @@ export async function joinStudio(token: string): Promise<{ error: string | null 
 
   const { data: studio } = await admin
     .from('studios')
-    .select('id, owner_id, name')
+    .select('id, owner_id, name, invite_token_expires_at')
     .eq('invite_token', token)
     .single();
 
   if (!studio) return { error: 'Недійсне посилання або студія не знайдена' };
+
+  if (!studio.invite_token_expires_at || new Date(studio.invite_token_expires_at) < new Date()) {
+    return { error: 'Посилання застаріло. Попросіть власника студії надіслати нове.' };
+  }
 
   const { data: existing } = await admin
     .from('studio_members')
@@ -39,6 +43,11 @@ export async function joinStudio(token: string): Promise<{ error: string | null 
   await Promise.all([
     admin.from('studio_members').insert({ studio_id: studio.id, master_id: user.id, role: 'member' }),
     admin.from('master_profiles').update({ studio_id: studio.id, subscription_tier: 'studio' }).eq('id', user.id),
+    // Rotate invite token after successful join — one-time use enforcement
+    admin.from('studios').update({
+      invite_token: crypto.randomUUID(),
+      invite_token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }).eq('id', studio.id),
   ]);
 
   revalidatePath('/', 'layout');

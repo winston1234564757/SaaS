@@ -13,14 +13,21 @@ export interface PortfolioPhoto {
   sortOrder: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function rowToPhoto(p: any): PortfolioPhoto {
+interface PhotoRow {
+  id: string;
+  url: string;
+  storage_path: string;
+  caption: string | null;
+  sort_order: number;
+}
+
+function rowToPhoto(p: PhotoRow): PortfolioPhoto {
   return {
-    id: p.id as string,
-    url: p.url as string,
-    storagePath: p.storage_path as string,
-    caption: (p.caption as string) || null,
-    sortOrder: p.sort_order as number,
+    id: p.id,
+    url: p.url,
+    storagePath: p.storage_path,
+    caption: p.caption || null,
+    sortOrder: p.sort_order,
   };
 }
 
@@ -36,7 +43,6 @@ export function usePortfolio() {
     queryKey: key,
     queryFn: async () => {
       const supabase = createClient();
-      await supabase.auth.getSession();
       const { data, error } = await supabase
         .from('portfolio_photos')
         .select('id, url, storage_path, caption, sort_order')
@@ -88,7 +94,6 @@ export function usePortfolio() {
   const deleteMutation = useMutation({
     mutationFn: async ({ id, storagePath }: { id: string; storagePath: string }) => {
       const supabase = createClient();
-      await supabase.auth.getSession();
       await Promise.all([
         supabase.from('portfolio_photos').delete().eq('id', id),
         supabase.storage.from('portfolios').remove([storagePath]),
@@ -100,7 +105,6 @@ export function usePortfolio() {
   const updateCaptionMutation = useMutation({
     mutationFn: async ({ id, caption }: { id: string; caption: string }) => {
       const supabase = createClient();
-      await supabase.auth.getSession();
       const { error } = await supabase
         .from('portfolio_photos')
         .update({ caption: caption || null })

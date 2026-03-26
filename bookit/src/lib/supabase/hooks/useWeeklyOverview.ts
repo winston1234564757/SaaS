@@ -1,6 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -28,12 +29,30 @@ export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const { from, to } = getWeekRange();
+  const qc = useQueryClient();
+
+  // Realtime: invalidate on any bookings change for this master
+  useEffect(() => {
+    if (!masterId) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`weekly-overview-${masterId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'bookings',
+        filter: `master_id=eq.${masterId}`,
+      }, () => {
+        qc.invalidateQueries({ queryKey: ['weekly-overview', masterId] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [masterId]);
 
   const query = useQuery({
     queryKey: ['weekly-overview', masterId, from],
     queryFn: async () => {
       const supabase = createClient();
-      await supabase.auth.getSession();
       const { data, error } = await supabase
         .from('bookings')
         .select('date, total_price, status')
@@ -58,7 +77,7 @@ export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
     },
     enabled: !!masterId,
     placeholderData: Array.from({ length: 7 }, () => ({ bookings: 0, revenue: 0 })),
-    refetchInterval: 60_000,
+    staleTime: 30_000,
   });
 
   return {

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const endpoint = (subscription as any).endpoint as string;
 
   await admin.from('push_subscriptions').upsert(
-    { user_id: user.id, endpoint, subscription: JSON.stringify(subscription) },
+    { user_id: user.id, endpoint, subscription },
     { onConflict: 'endpoint' }
   );
 

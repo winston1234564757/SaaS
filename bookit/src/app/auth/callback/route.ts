@@ -77,10 +77,12 @@ export async function GET(request: NextRequest) {
       );
 
       // 3. Link a pending booking to the newly authenticated user
-      if (bid) {
+      // Verify email ownership to prevent IDOR via crafted ?bid= URL param
+      if (bid && user.email) {
         await admin.from('bookings')
           .update({ client_id: user.id })
           .eq('id', bid)
+          .eq('client_email', user.email)
           .is('client_id', null);
       }
 
@@ -105,10 +107,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Link a pending booking for clients
-    if (bid) {
+    // Verify email ownership to prevent IDOR via crafted ?bid= URL param
+    if (bid && user.email) {
       await admin.from('bookings')
         .update({ client_id: user.id })
         .eq('id', bid)
+        .eq('client_email', user.email)
         .is('client_id', null);
     }
   }
