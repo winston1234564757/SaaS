@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "model": "claude-haiku-4-5-20251001",
+            "statusMessage": "Визначаю потрібний скіл...",
+            "prompt": "You are a skill router for a Next.js 16 SaaS project (Bookit — Ukrainian beauty booking platform). Analyze the user's message and determine which skill is most relevant.\n\nAvailable skills and when to use them:\n- ui-ux-pro-max: UI design, bento cards, animations, Framer Motion, Tailwind CSS visual changes, design system tokens, component styling, layout, landing pages, color palette, typography\n- senior-frontend: React/Next.js components, TypeScript, state management, hooks, performance, TanStack Query, Zustand, form logic\n- senior-backend: API routes, Supabase DB queries, auth, RLS policies, webhooks, cron jobs, server actions, edge functions\n- nextjs-best-practices: App Router patterns, Server Components vs Client Components, routing, metadata, caching, middleware/proxy\n- code-reviewer: code review, security audit, bug finding, refactoring suggestions, PR review\n\nUser message JSON: $ARGUMENTS\n\nIf a skill is clearly relevant, return:\n{\"hookSpecificOutput\": {\"hookEventName\": \"UserPromptSubmit\", \"additionalContext\": \"[Skill routing] Use skill: <skill-name> — <one-line reason why>\"}}\n\nIf the task is general conversation, clarification, or no specific skill applies, return:\n{}"
+          }
+        ]
+      }
+    ]
+  }
+}

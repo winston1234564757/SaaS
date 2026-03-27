@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
@@ -99,6 +99,7 @@ export function useAnalytics(
     queryKey: ['analytics-v2', masterId, startDate, endDate, isPro],
     enabled:  !!masterId,
     staleTime: 2 * 60_000,
+    placeholderData: keepPreviousData,
 
     queryFn: async (): Promise<AnalyticsData> => {
       const supabase = createClient();
@@ -135,7 +136,7 @@ export function useAnalytics(
               .eq('master_id', masterId!)
               .gte('date', sixMonthsAgo)
               .lte('date', endOfMonth)
-          : Promise.resolve({ data: null }),
+          : Promise.resolve({ data: null, error: null }),
 
         // Previous period — for avg check delta (Pro only)
         isPro && prevPeriod
@@ -145,8 +146,12 @@ export function useAnalytics(
               .eq('master_id', masterId!)
               .gte('date', prevPeriod.startDate)
               .lte('date', prevPeriod.endDate)
-          : Promise.resolve({ data: null }),
+          : Promise.resolve({ data: null, error: null }),
       ]);
+
+      if (mainRes.error)  throw mainRes.error;
+      if (trendRes.error) throw trendRes.error;
+      if (prevRes.error)  throw prevRes.error;
 
       const rows = (mainRes.data ?? []) as AnalyticsBookingRow[];
 

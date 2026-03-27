@@ -127,3 +127,75 @@ await Promise.all(ops);
 // НЕПРАВИЛЬНО
 const ops: Promise<unknown>[] = [...];
 ```
+
+---
+
+## 11. DATA FETCHING & STATE MANAGEMENT
+
+### Правило: Server Actions = Мутації ТІЛЬКИ. Читання = Browser Client + React Query.
+
+```ts
+// ПРАВИЛЬНО — читання через browser client у queryFn
+const { data } = useQuery({
+  queryKey: ['bookings', masterId, dateFrom, dateTo],
+  queryFn: async () => {
+    const supabase = createClient(); // browser client — singleton
+    const { data } = await supabase.from('bookings').select('*').eq('master_id', masterId!);
+    return data;
+  },
+});
+
+// НЕПРАВИЛЬНО — Server Action для читання
+const { data } = useQuery({
+  queryFn: async () => {
+    return await getBookingsAction(masterId); // 'use server' — зайвий roundtrip
+  },
+});
+```
+
+### Правило: keepPreviousData — обов'язково для хуків із динамічним queryKey.
+
+Якщо `queryKey` містить параметри що змінюються користувачем (дата, preset, фільтр) — завжди додавай `placeholderData: keepPreviousData`. Без цього при кожній зміні параметра UI відображає порожній скелетон.
+
+```ts
+import { keepPreviousData } from '@tanstack/react-query';
+
+// ПРАВИЛЬНО — UI зберігає старі дані поки нові вантажаться
+useQuery({
+  queryKey: ['analytics-v2', masterId, startDate, endDate],
+  queryFn: ...,
+  placeholderData: keepPreviousData,
+});
+
+// НЕПРАВИЛЬНО — при зміні startDate/endDate → бланк + spinner 1-2 секунди
+useQuery({
+  queryKey: ['analytics-v2', masterId, startDate, endDate],
+  queryFn: ...,
+  // немає placeholderData
+});
+```
+
+Показувати фоновий рефетч через `isFetching`, не через `isLoading`:
+
+```ts
+const { data, isLoading, isFetching, isPlaceholderData } = useQuery({ ... });
+
+// isLoading — тільки перший завантаження (немає даних взагалі)
+// isFetching — будь-який фоновий рефетч (оновлення дати, фокус вкладки)
+// isPlaceholderData — показуємо попередні дані
+
+// ПРАВИЛЬНО — guard щоб уникнути skeleton при placeholder
+return { data, isLoading: isLoading && !isPlaceholderData };
+```
+
+### Заборонено: `getSession()` у queryFn
+
+```ts
+// ЗАБОРОНЕНО — блокує queryFn до завершення token refresh
+queryFn: async () => {
+  await supabase.auth.getSession(); // причина вічного спінера
+  ...
+}
+
+// ДОЗВОЛЕНО — тільки в event handlers (handleSave, etc.)
+```

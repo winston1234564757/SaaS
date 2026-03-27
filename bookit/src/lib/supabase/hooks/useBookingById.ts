@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import type { BookingWithServices } from './useBookings';
@@ -99,6 +99,7 @@ export function useBookingById(id: string | null) {
       return rowToBooking(data);
     },
     enabled: !!id,
+    placeholderData: keepPreviousData,
   });
 
   const booking = query.data ?? null;

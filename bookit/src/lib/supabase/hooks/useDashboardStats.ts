@@ -52,7 +52,7 @@ export function useDashboardStats(): DashboardStatsWithLoading {
       type TodayRow = { status: string; total_price: string | number };
       type WeekRow  = { client_phone: string | null; client_name: string | null };
 
-      const [{ data: rawToday }, { data: rawWeek }] = await Promise.all([
+      const [todayRes, weekRes] = await Promise.all([
         supabase
           .from('bookings')
           .select('status, total_price')
@@ -66,6 +66,12 @@ export function useDashboardStats(): DashboardStatsWithLoading {
           .lte('date', today)
           .neq('status', 'cancelled'),
       ]);
+
+      if (todayRes.error) throw todayRes.error;
+      if (weekRes.error)  throw weekRes.error;
+
+      const rawToday = todayRes.data;
+      const rawWeek  = weekRes.data;
 
       const bookings  = (rawToday ?? []) as TodayRow[];
       const weekRows2 = (rawWeek  ?? []) as WeekRow[];

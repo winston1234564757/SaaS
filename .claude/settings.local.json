@@ -45,7 +45,11 @@
       "Bash(ls \"c:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard/bookings/\")",
       "Bash(ls \"c:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard/clients/\")",
       "Bash(cat /c/Users/Vitossik/SaaS/bookit/src/app/[slug]/actions.ts)",
-      "Bash(ls /c/Users/Vitossik/SaaS/bookit/src/app/\\\\\\(master\\\\\\)/dashboard/)"
+      "Bash(ls /c/Users/Vitossik/SaaS/bookit/src/app/\\\\\\(master\\\\\\)/dashboard/)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(node -e \"const j = require\\(''/c/Users/Vitossik/SaaS/bookit/.claude/settings.json''\\); const h = j.hooks.UserPromptSubmit[0].hooks[0]; console.log\\(''type:'', h.type, ''| model:'', h.model, ''| status:'', h.statusMessage\\); console.log\\(''OK''\\)\")",
+      "Bash(node -e \"const j = JSON.parse\\(require\\(''fs''\\).readFileSync\\(''C:/Users/Vitossik/SaaS/bookit/.claude/settings.json'',''utf8''\\)\\); const h = j.hooks.UserPromptSubmit[0].hooks[0]; console.log\\(''type:'', h.type, ''| model:'', h.model\\); console.log\\(''prompt snippet:'', h.prompt.slice\\(0,60\\)\\); console.log\\(''JSON valid: OK''\\)\")"
     ]
   }
 }

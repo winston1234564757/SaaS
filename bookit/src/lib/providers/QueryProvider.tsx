@@ -45,7 +45,14 @@ function useSessionWakeup() {
       const handler = async () => {
         if (document.visibilityState !== 'visible') return;
         // Supabase refreshes the token automatically if it's expired.
-        await supabase.auth.getSession();
+        // Таймаут 3с — якщо getSession() повисне (мережа, фоновий таб),
+        // onFocus() все одно спрацює і TanStack Query рефетчить з існуючим токеном.
+        try {
+          await Promise.race([
+            supabase.auth.getSession(),
+            new Promise(resolve => setTimeout(resolve, 3000)),
+          ]);
+        } catch { /* ігноруємо — onFocus() нижче все одно спрацює */ }
         // Now it's safe to let TanStack Query refetch stale queries.
         onFocus();
       };

@@ -6,11 +6,6 @@
 - Do not guess or hallucinate. If a type or component is missing, read the file system first.
 - This project runs on **Next.js 16+ App Router** (Turbopack). `middleware.ts` is **DEPRECATED** — routing protection lives in `src/proxy.ts` with `export function proxy`.
 
-## 2. The Zero-Error Loop (MANDATORY)
-Run these scripts autonomously. Do NOT wait for the user to ask.
-- **`npm run build`** ➔ Run after finishing any logical task. SSR/Hydration bugs are caught here. Never report "Done" until build passes 100%.
-- **`npx tsc --noEmit`** ➔ Run after ANY file modification. Fix all TypeScript errors before continuing (ignore pre-existing `.next/types` errors).
-
 ## 3. Strict Architectural Rules
 
 ### Reactivity (No F5 Required)
