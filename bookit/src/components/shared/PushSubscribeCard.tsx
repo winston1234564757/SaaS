@@ -58,10 +58,10 @@ export function PushSubscribeCard() {
       const pushTimeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('PUSH_TIMEOUT')), 5000));
       const sub = await Promise.race([subPromise, pushTimeout]);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
         await supabase.from('push_subscriptions').upsert({
-          user_id: user.id,
+          user_id: session.user.id,
           endpoint: sub.endpoint,
           subscription: sub.toJSON() as any,
         }, { onConflict: 'endpoint' });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { createClient } from '../client';
 
 // ─── Types ────────────────────────────────────────────────────
@@ -38,6 +38,8 @@ export function useProductLinks(productId: string | null) {
       return (data as { service_id: string; is_auto_suggest: boolean }[]).map(r => ({ serviceId: r.service_id, isAutoSuggest: r.is_auto_suggest }));
     },
     enabled: !!productId,
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
   });
 
   const setLinksMutation = useMutation({

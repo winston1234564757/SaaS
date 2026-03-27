@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -22,13 +22,14 @@ export function useVacation() {
     queryFn: async () => {
       const supabase = createClient();
       const today = new Date().toISOString().slice(0, 10);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('schedule_exceptions')
         .select('id, date, reason')
         .eq('master_id', masterId!)
         .eq('is_day_off', true)
         .gte('date', today)
         .order('date', { ascending: true });
+      if (error) throw error;
       return (data ?? []).map((r: any) => ({
         id: r.id as string,
         date: r.date as string,
@@ -36,6 +37,7 @@ export function useVacation() {
       }));
     },
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 
   const addMutation = useMutation({

@@ -1,65 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Eye, EyeOff, Loader2, MessageSquare } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useMasterContext } from '@/lib/supabase/context';
 import { formatDateFull } from '@/lib/utils/dates';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
-
-interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  client_name: string;
-  is_published: boolean;
-  created_at: string;
-  booking_date: string | null;
-}
+import { useReviews } from '@/lib/supabase/hooks/useReviews';
 
 
 export function ReviewsPage() {
-  const { masterProfile } = useMasterContext();
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [toggling, setToggling] = useState<string | null>(null);
+  const { reviews, isLoading, togglePublish, isToggling } = useReviews();
   const { currentStep, nextStep, closeTour } = useTour('reviews', 1);
-
-  useEffect(() => {
-    if (!masterProfile?.id) return;
-    const supabase = createClient();
-    supabase
-      .from('reviews')
-        .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
-        .eq('master_id', masterProfile.id)
-        .order('created_at', { ascending: false })
-        .then((res: { data: any[] | null }) => {
-          const data = res.data;
-          setReviews(
-            (data ?? []).map((r: any) => ({
-              id: r.id,
-              rating: r.rating,
-              comment: r.comment || null,
-              client_name: r.client_name || 'Клієнт',
-              is_published: r.is_published,
-              created_at: r.created_at,
-              booking_date: r.bookings?.date ?? null,
-            }))
-          );
-          setIsLoading(false);
-        });
-  }, [masterProfile?.id]);
-
-  async function togglePublish(id: string, current: boolean) {
-    setToggling(id);
-    const supabase = createClient();
-    await supabase.from('reviews').update({ is_published: !current }).eq('id', id);
-    setReviews(prev => prev.map(r => r.id === id ? { ...r, is_published: !current } : r));
-    setToggling(null);
-  }
 
   const published = reviews.filter(r => r.is_published).length;
   const avgRating = reviews.length > 0
@@ -146,14 +98,14 @@ export function ReviewsPage() {
                 {/* Publish toggle */}
                 <button
                   onClick={() => togglePublish(r.id, r.is_published)}
-                  disabled={toggling === r.id}
+                  disabled={isToggling === r.id}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all disabled:opacity-50 ${
                     r.is_published
                       ? 'bg-[#5C9E7A]/12 text-[#5C9E7A] hover:bg-[#5C9E7A]/20'
                       : 'bg-white/70 border border-white/80 text-[#A8928D] hover:bg-white'
                   }`}
                 >
-                  {toggling === r.id ? (
+                  {isToggling === r.id ? (
                     <Loader2 size={11} className="animate-spin" />
                   ) : r.is_published ? (
                     <><Eye size={11} /> Публічний</>

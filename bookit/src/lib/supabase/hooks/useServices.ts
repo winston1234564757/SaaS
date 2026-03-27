@@ -85,6 +85,7 @@ export function useServices() {
     },
     enabled: !!masterId,
     placeholderData: INITIAL_SERVICES,
+    staleTime: 60_000,
   });
 
   const addMutation = useMutation({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -32,12 +32,14 @@ export function useNotifications() {
     enabled: !!masterId,
     queryFn: async () => {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('bookings')
         .select('id, client_name, date, start_time, status, created_at, booking_services(service_name)')
         .eq('master_id', masterId!)
         .order('created_at', { ascending: false })
         .limit(20);
+
+      if (error) throw error;
 
       return (data ?? []).map((b: any) => ({
         id: b.id as string,
@@ -50,6 +52,7 @@ export function useNotifications() {
       }));
     },
     staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 
   // Realtime: invalidate on new booking

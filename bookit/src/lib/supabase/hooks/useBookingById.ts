@@ -100,6 +100,7 @@ export function useBookingById(id: string | null) {
     },
     enabled: !!id,
     placeholderData: keepPreviousData,
+    staleTime: 30_000,
   });
 
   const booking = query.data ?? null;
@@ -109,15 +110,17 @@ export function useBookingById(id: string | null) {
     queryFn: async () => {
       if (!booking?.client_id || !masterId) return null;
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('client_master_relations')
         .select('total_visits, total_spent, average_check')
         .eq('client_id', booking.client_id)
         .eq('master_id', masterId)
         .maybeSingle();
+      if (error) throw error;
       return (data as ClientLtv | null) ?? null;
     },
     enabled: !!booking?.client_id && !!masterId,
+    staleTime: 60_000,
   });
 
   const updateStatus = useMutation({

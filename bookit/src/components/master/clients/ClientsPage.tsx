@@ -1,25 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/components/master/services/types';
 import { ClientDetailSheet } from './ClientDetailSheet';
+import { useClients } from '@/lib/supabase/hooks/useClients';
+import type { ClientRow } from '@/lib/supabase/hooks/useClients';
 
-export interface ClientRow {
-  id: string;          // client_phone as stable id
-  client_id: string | null; // auth user id (for push/telegram reminders)
-  client_name: string;
-  client_phone: string;
-  total_visits: number;
-  total_spent: number;
-  average_check: number;
-  last_visit_at: string | null;
-  is_vip: boolean;
-  relation_id: string | null; // id у client_master_relations (для VIP toggle)
-}
+export type { ClientRow };
 
 export interface AutoTag {
   label: string;
@@ -65,88 +54,11 @@ export function isChurned(client: ClientRow): boolean {
 }
 
 export function ClientsPage() {
-  const { masterProfile } = useMasterContext();
-  const [clients, setClients] = useState<ClientRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { clients, isLoading } = useClients();
   const [search, setSearch] = useState('');
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
 
-  useEffect(() => {
-    if (!masterProfile?.id) return;
-
-    async function load() {
-      const supabase = createClient();
-      // 1. Всі завершені/підтверджені/очікуючі записи
-      const { data: bookings } = await supabase
-        .from('bookings')
-        .select('client_name, client_phone, total_price, date, status, client_id')
-        .eq('master_id', masterProfile!.id)
-        .neq('status', 'cancelled');
-
-      // 2. CRM-метадані для VIP-статусу (може бути порожньо)
-      const { data: relations } = await supabase
-        .from('client_master_relations')
-        .select('id, is_vip, client_id')
-        .eq('master_id', masterProfile!.id);
-
-      const vipByClientId = new Map<string, { id: string; is_vip: boolean }>();
-      for (const r of relations ?? []) {
-        if (r.client_id) vipByClientId.set(r.client_id, { id: r.id, is_vip: r.is_vip });
-      }
-
-      // 3. Агрегуємо по телефону
-      const map = new Map<string, ClientRow>();
-
-      for (const b of bookings ?? []) {
-        const phone = b.client_phone ?? '—';
-        const name  = b.client_name  ?? 'Клієнт';
-        const price = Number(b.total_price ?? 0);
-        const date  = b.date as string;
-        const clientId = b.client_id as string | null;
-
-        const existing = map.get(phone);
-        const crm = clientId ? vipByClientId.get(clientId) : undefined;
-
-        if (existing) {
-          existing.total_visits  += 1;
-          existing.total_spent   += price;
-          if (!existing.last_visit_at || date > existing.last_visit_at) {
-            existing.last_visit_at = date;
-          }
-          existing.average_check = existing.total_spent / existing.total_visits;
-          if (crm) {
-            existing.is_vip      = crm.is_vip;
-            existing.relation_id = crm.id;
-          }
-          if (!existing.client_id && clientId) existing.client_id = clientId;
-        } else {
-          map.set(phone, {
-            id:             phone,
-            client_id:      clientId,
-            client_name:    name,
-            client_phone:   phone,
-            total_visits:   1,
-            total_spent:    price,
-            average_check:  price,
-            last_visit_at:  date,
-            is_vip:         crm?.is_vip ?? false,
-            relation_id:    crm?.id     ?? null,
-          });
-        }
-      }
-
-      const result = Array.from(map.values()).sort(
-        (a, b) => b.total_visits - a.total_visits
-      );
-      setClients(result);
-      setIsLoading(false);
-    }
-
-    load();
-  }, [masterProfile?.id]);
-
   function handleVipChange(id: string, isVip: boolean) {
-    setClients(prev => prev.map(c => c.id === id ? { ...c, is_vip: isVip } : c));
     setSelectedClient(prev => prev?.id === id ? { ...prev, is_vip: isVip } : prev);
   }
 

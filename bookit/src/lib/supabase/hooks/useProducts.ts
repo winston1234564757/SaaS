@@ -80,6 +80,7 @@ export function useProducts() {
     },
     enabled: !!masterId,
     placeholderData: INITIAL_PRODUCTS,
+    staleTime: 60_000,
   });
 
   const addMutation = useMutation({

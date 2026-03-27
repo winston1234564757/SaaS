@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -53,6 +53,8 @@ export function usePortfolio() {
       return (data ?? []).map(rowToPhoto);
     },
     enabled: !!masterId,
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
   });
 
   async function uploadPhoto(file: File): Promise<void> {
@@ -60,13 +62,10 @@ export function usePortfolio() {
     setIsUploading(true);
     const supabase = createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setIsUploading(false); return; }
-
     const ext = file.name.split('.').pop() ?? 'jpg';
     const bytes = crypto.getRandomValues(new Uint8Array(6));
     const uniqueId = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-    const path = `${user.id}/${Date.now()}-${uniqueId}.${ext}`;
+    const path = `${masterId}/${Date.now()}-${uniqueId}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from('portfolios')

@@ -106,6 +106,10 @@ function ReschedulePanel({
           .neq('id', currentBookingId),
       ]);
 
+      if (tplRes.error) throw tplRes.error;
+      if (excRes.error) throw excRes.error;
+      if (bookRes.error) throw bookRes.error;
+
       const templates: ScheduleStore['templates'] = {};
       for (const t of (tplRes.data ?? []) as any[]) {
         if (t.is_working) {
@@ -139,6 +143,7 @@ function ReschedulePanel({
 
       return { templates, exceptions, bookingsByDate } as ScheduleStore;
     },
+    enabled: !!masterId,
     staleTime: 60_000,
   });
 

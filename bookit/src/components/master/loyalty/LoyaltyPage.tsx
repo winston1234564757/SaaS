@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Pencil, Trash2, Gift, Users, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
@@ -116,11 +116,12 @@ export function LoyaltyPage() {
     enabled: !!masterId,
     queryFn: async () => {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('loyalty_programs')
         .select('id, name, target_visits, reward_type, reward_value, is_active')
         .eq('master_id', masterId!)
         .order('target_visits', { ascending: true });
+      if (error) throw error;
       return (data ?? []).map((p: any) => ({
         id: p.id as string,
         name: p.name as string,
@@ -130,6 +131,8 @@ export function LoyaltyPage() {
         isActive: p.is_active as boolean,
       }));
     },
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['loyaltyPrograms', masterId] });

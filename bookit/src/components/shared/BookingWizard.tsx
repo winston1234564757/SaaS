@@ -238,6 +238,8 @@ export function BookingWizard({
   const [scheduleStore, setScheduleStore]     = useState<ScheduleStore | null>(null);
   const [offDayDates, setOffDayDates]         = useState<Set<string>>(new Set());
   const [scheduleLoading, setScheduleLoading] = useState(true);
+  const [scheduleError, setScheduleError]     = useState(false);
+  const [scheduleRetryKey, setScheduleRetryKey] = useState(0);
 
   // ── Product auto-suggest ──────────────────────────────────────────────────────
   const [suggestedProductIds, setSuggestedProductIds] = useState<Set<string>>(new Set());
@@ -248,7 +250,8 @@ export function BookingWizard({
   const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
 
   // ── Refs ───────────────────────────────────────────────────────────────────────
-  const dateStripRef = useRef<HTMLDivElement>(null);
+  const dateStripRef  = useRef<HTMLDivElement>(null);
+  const wasOpenRef    = useRef(false); // true if modal was already open (retry vs fresh open)
 
   const days = useMemo(() => getDays(30), []);
   const isAtLimit = mode === 'client' && subscriptionTier === 'starter' && bookingsThisMonth >= 30;
@@ -279,27 +282,36 @@ export function BookingWizard({
 
   // ── Reset + fetch schedule on open ───────────────────────────────────────────
   useEffect(() => {
-    if (!isOpen) return;
-    go('services', 1);
-    setSelectedServices(initialServices ?? []);
-    setCart([]);
-    setSelectedDate(null);
-    setSelectedTime(null);
-    setClientName('');
-    setClientPhone('');
-    setClientEmail('');
-    setClientNotes('');
-    setDiscountPercent(0);
-    setDurationOverride(null);
-    setClientUserId(null);
-    setCreatedBookingId(null);
-    setClientHistoryTimes([]);
-    setLoyaltyDiscount(null);
-    setSuggestedProductIds(new Set());
+    if (!isOpen) { wasOpenRef.current = false; return; }
+
+    const isRetry = wasOpenRef.current;
+    wasOpenRef.current = true;
+
+    // Full form reset only on fresh open, not on schedule retry
+    if (!isRetry) {
+      go('services', 1);
+      setSelectedServices(initialServices ?? []);
+      setCart([]);
+      setSelectedDate(null);
+      setSelectedTime(null);
+      setClientName('');
+      setClientPhone('');
+      setClientEmail('');
+      setClientNotes('');
+      setDiscountPercent(0);
+      setDurationOverride(null);
+      setClientUserId(null);
+      setCreatedBookingId(null);
+      setClientHistoryTimes([]);
+      setLoyaltyDiscount(null);
+      setSuggestedProductIds(new Set());
+      setSaveError('');
+    }
+
     setOffDayDates(new Set());
     setScheduleStore(null);
     setScheduleLoading(true);
-    setSaveError('');
+    setScheduleError(false);
 
     if (!masterId) { setScheduleLoading(false); return; }
 
@@ -319,6 +331,12 @@ export function BookingWizard({
         .eq('master_id', masterId).neq('status', 'cancelled')
         .gte('date', from).lte('date', to),
     ]).then(([tmplRes, excRes, bookRes]) => {
+      if (tmplRes.error || excRes.error || bookRes.error) {
+        console.error('[BookingWizard] Schedule fetch error:', tmplRes.error ?? excRes.error ?? bookRes.error);
+        setScheduleError(true);
+        setScheduleLoading(false);
+        return;
+      }
       const templates: ScheduleStore['templates'] = {};
       for (const t of (tmplRes.data ?? [])) {
         templates[t.day_of_week] = {
@@ -349,6 +367,9 @@ export function BookingWizard({
         days,
       ));
       setScheduleLoading(false);
+    }).catch(() => {
+      setScheduleError(true);
+      setScheduleLoading(false);
     });
 
     if (mode === 'client') {
@@ -375,7 +396,7 @@ export function BookingWizard({
       }).catch(() => {});
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, masterId, scheduleRetryKey]);
 
   // ── Auto-suggest products ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -846,7 +867,17 @@ export function BookingWizard({
                         {/* ── Date strip ── */}
                         <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-2">Дата</p>
 
-                        {scheduleLoading ? (
+                        {scheduleError ? (
+                          <div className="flex flex-col items-center gap-3 py-6 mb-4">
+                            <p className="text-sm text-[#C05B5B]">Не вдалося завантажити розклад</p>
+                            <button
+                              onClick={() => setScheduleRetryKey(k => k + 1)}
+                              className="px-4 py-2 rounded-xl bg-[#789A99] text-white text-xs font-semibold"
+                            >
+                              Спробувати знову
+                            </button>
+                          </div>
+                        ) : scheduleLoading ? (
                           <div className="flex justify-center py-6 mb-4">
                             <div className="w-5 h-5 border-2 border-[#789A99] border-t-transparent rounded-full animate-spin" />
                           </div>
