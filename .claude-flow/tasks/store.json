@@ -380,6 +380,33 @@
       "createdAt": "2026-03-28T17:41:19.630Z",
       "startedAt": null,
       "completedAt": null
+    },
+    "task-1774720626423-ev94l1": {
+      "taskId": "task-1774720626423-ev94l1",
+      "type": "bugfix",
+      "description": "\n## CRITICAL BUGFIX: Portfolio Upload Infinite Spinner + Services Empty\n\n**Project:** Bookit SaaS (Next.js 16 App Router, TanStack Query v5, Supabase)\n\n---\n\n### BUG 1 — Infinite Spinner on Upload\n\n**File:** `src/lib/supabase/hooks/usePortfolio.ts`\n**Function:** `uploadPhoto` (рядок ~76)\n\n**Root Cause:**\n```ts\n// ПРОБЛЕМА: await чекає завершення фонового рефетчу\nawait qc.invalidateQueries({ queryKey: key });\n```\nВ TanStack Query v5, `invalidateQueries` повертає Promise, який резолвиться тільки коли рефетч ЗАВЕРШЕНО. Якщо рефетч висить або довго виконується — `finally { setIsUploading(false) }` не виконується → спінер крутиться нескінченно.\n\n**FIX — прибери `await` перед invalidateQueries:**\n```ts\n// ВИПРАВЛЕННЯ:\nvoid qc.invalidateQueries({ queryKey: key });\n```\nАбо просто без `await`:\n```ts\nqc.invalidateQueries({ queryKey: key });\n```\nФото вже завантажено й вставлено в БД — `isUploading` має стати `false` одразу після вдалого INSERT. Рефетч відбудеться у фоні.\n\n---\n\n### BUG 2 — Services Empty / Not Rendering\n\n**File:** `src/components/master/portfolio/PortfolioPage.tsx`\n**Рядки:** ~32-47\n\n**Root Cause:**\nPortfolioPage використовує inline `useQuery` з ключем `['services-list', masterId]`:\n```ts\nconst { data: services = [] } = useQuery<{ id: string; name: string; price: number }[]>({\n  queryKey: ['services-list', masterId],  // ← неправильний ключ! окремий кеш\n  queryFn: async () => {\n    const supabase = createClient();\n    // ... прямий запит без safeQuery wrapper\n  },\n  enabled: !!masterId,\n  staleTime: 60_000,\n});\n```\n\nАле існує `useServices()` hook (`src/lib/supabase/hooks/useServices.ts`) з:\n- `queryKey: ['services', masterId]` — спільний кеш з іншими сторінками\n- `placeholderData: INITIAL_SERVICES` — немає порожнього стану під час завантаження\n- `safeQuery` wrapper — правильна обробка помилок\n- Повний тип `Service` з усіма полями\n\n**FIX — замінити inline query на useServices() hook:**\n\n1. Видали весь блок `useQuery` для services (~рядки 32-47) з `PortfolioPage.tsx`\n2. Додай імпорт: `import { useServices } from '@/lib/supabase/hooks/useServices';`\n3. Замість inline query використай:\n```ts\nconst { services: rawServices } = useServices();\nconst services = rawServices.map(s => ({ id: s.id, name: s.name, price: s.price }));\n```\n4. Решту JSX залишити без змін — `services` вже використовується правильно (`.find(s => s.id === photo.serviceId)?.name`, `services.map(s => ...)`)\n\n---\n\n### ВИМОГИ ДО ВИПРАВЛЕННЯ:\n\n1. **Тільки 2 файли**: `usePortfolio.ts` і `PortfolioPage.tsx`\n2. **Не чіпай** логіку upload, delete, caption, grid layout\n3. **Не додавай** нових features чи error handling поза описаним\n4. **TypeScript strict** — переконайся що `services` має тип `{ id: string; name: string; price: number }[]` після маппінгу\n5. **Перевір** що `Service` тип з `useServices` має поля `id`, `name`, `price` (так, є — `ServiceRow` → `Service` через `rowToService`)\n\n### ОЧІКУВАНИЙ РЕЗУЛЬТАТ:\n- Upload кнопка відразу відображає нове фото після завантаження без зависання\n- Список послуг у select виводиться одразу (з placeholderData або з кешу)\n- Бейдж послуги над фото коректно відображає назву\n",
+      "priority": "critical",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "portfolio",
+        "react-query",
+        "upload",
+        "services"
+      ],
+      "createdAt": "2026-03-28T17:57:06.423Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T17:59:23.594Z",
+      "result": {
+        "status": "fixed",
+        "files_changed": 2,
+        "bugs_fixed": [
+          "infinite_spinner_upload",
+          "services_empty"
+        ],
+        "tsc": "clean"
+      }
     }
   },
   "version": "3.0.0"

@@ -1,35 +1,33 @@
-БІЗНЕС-ЗАДАЧА:
-Повністю переробити механіку "Флеш-акцій" (Flash Deals). Це має бути преміальний інструмент.
-По-перше: майстер повинен обирати існуючу послугу зі списку, а не вписувати текст.
-По-друге (кілер-фіча): при створенні акції система має знаходити клієнтів цього майстра, у яких НЕМАЄ записів у діапазоні +/- 48 годин від часу дії акції, щоб відправити їм сповіщення.
-По-третє: збільшити ліміт акцій для тарифу starter до 5 і відображати преміальний прогрес-бар.
+CRITICAL BUG FIX: PORTFOLIO UPLOAD & SERVICE LINKING (RUFLO SWARM DIRECTIVE)
 
-ВЕКТОР ДІЙ:
+CONTEXT:
+We are working on the Bookit SaaS (Next.js App Router, React Query v5, Supabase). The Portfolio feature is currently broken.
 
-SQL Міграція (Schema & Smart Targeting): Створи міграцію (напр. 044_flash_deals_upgrade.sql).
+SYMPTOMS:
 
-Зміни в flash_deals: додай service_id UUID REFERENCES services(id) ON DELETE CASCADE.
+Infinite Spinner: Attempting to upload a new portfolio photo results in an endless loading state. The UI never recovers.
 
-Створи Postgres RPC функцію get_eligible_flash_deal_clients(p_master_id UUID, p_slot_timestamp TIMESTAMPTZ). Функція повинна повертати список client_id (з client_master_relations), у яких НЕМАЄ активних бронювань (status IN ('confirmed', 'pending')) у вікні p_slot_timestamp - INTERVAL '48 hours' до p_slot_timestamp + INTERVAL '48 hours'.
+Missing Services for Linking: When trying to link a service to an existing portfolio photo, the services do not render, or the list is completely empty.
 
-Бекенд (Server Action): Онови src/lib/actions/createFlashDeal (або відповідний файл).
+SUSPECTED ARCHITECTURAL VIOLATIONS:
 
-Додай валідацію ліміту: якщо тариф starter, перевір, чи не перевищено ліміт у 5 активних/використаних акцій за поточний період.
+The upload useMutation is likely missing queryClient.invalidateQueries({ queryKey: ['portfolio'] }) in its onSuccess callback, OR it's swallowing a Supabase storage error.
 
-Після успішного INSERT акції, виклич RPC функцію get_eligible_flash_deal_clients і згенеруй записи в таблицю notifications для знайдених клієнтів (фон/асинхронно).
+The modal/component handling the photo details is failing to fetch the master's services using the useServices() hook, or the data is not being hydrated properly.
 
-UI Форми: Заміни текстовий інпут для послуги на <Select> (випадаючий список), куди підтягуються активні послуги майстра (useServices хук).
+A possible violation of the "No Blocking getSession() in QueryFn" rule.
 
-UI Дашборду (FlashDealPage.tsx): - Зроби повний редизайн сторінки в єдиному преміальному стилі Tailwind (Glassmorphism, плавні тіні).
+STRICT EXECUTION RULE (RUFLO ONLY):
+You are strictly FORBIDDEN from using your native single-threaded file-editing tools. Do NOT use "high effort" mode. You MUST invoke your Ruflo MCP tools to deploy the Swarm (Coder & Architect) to fix this bug.
 
-Для тарифу Starter виведи красивий прогрес-бар "Використано X/5 флеш-акцій". Якщо 5/5 — заблокуй кнопку створення і покажи Paywall.
+MISSIONS FOR THE SWARM:
 
-ЖОРСТКІ ОБМЕЖЕННЯ:
+Analyze: Scan src/components/master/portfolio (e.g., PortfolioPage.tsx and related modals/uploaders) and src/lib/supabase/hooks/usePortfolio.ts.
 
-DO NOT run build or typecheck.
+Fix Upload: Resolve the infinite spinner. Ensure the mutation handles loading states (isPending) correctly and invalidates the query on success.
 
-Таргетинг (+/- 48 год) роби ВИКЛЮЧНО через SQL (RPC). Не завантажуй бронювання на Node.js сервер для фільтрації — це вб'є пам'ять.
+Fix Service Linking: Ensure the photo-detail component correctly fetches available services (via React Query) and allows the master to link them to the photo.
 
-Використовуй компоненти нашої дизайн-системи (Select, Card, Progress, Badge).
+Execute: Apply the exact code changes and report back.
 
-Відповідай українською мовою. Видай: 1. SQL міграцію (особливо RPC). 2. Оновлений Server Action. 3. Код UI компонентів.
+Call the Ruflo tool NOW to begin.

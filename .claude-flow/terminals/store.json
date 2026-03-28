@@ -1,0 +1,22 @@
+{
+  "sessions": {
+    "term-1774720668880-8vwd5t": {
+      "id": "term-1774720668880-8vwd5t",
+      "name": "portfolio-bugfix",
+      "status": "active",
+      "createdAt": "2026-03-28T17:57:48.880Z",
+      "lastActivity": "2026-03-28T17:58:43.596Z",
+      "workingDir": "C:/Users/Vitossik/SaaS/bookit",
+      "history": [
+        {
+          "command": "cd /c/Users/Vitossik/SaaS/bookit && npx tsc --noEmit --project tsconfig.json 2>&1 | head -40",
+          "output": "[STATE TRACKING] Command recorded: cd /c/Users/Vitossik/SaaS/bookit && npx tsc --noEmit --project tsconfig.json 2>&1 | head -40",
+          "timestamp": "2026-03-28T17:58:43.596Z",
+          "exitCode": 0
+        }
+      ],
+      "env": {}
+    }
+  },
+  "version": "3.0.0"
+}

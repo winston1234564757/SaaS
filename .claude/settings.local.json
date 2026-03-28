@@ -74,7 +74,10 @@
       "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"flash deals premium SaaS dashboard progress bar paywall glassmorphism\" --design-system -p \"Flash Deals\" -f markdown)",
       "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"beauty booking SaaS dashboard pricing portfolio premium\" --design-system -p \"Bookit Dashboard\" -f markdown 2>&1)",
       "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"glassmorphism premium SaaS dashboard cards bento\" --domain style -n 3)",
-      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"drag drop image grid gallery interactive\" --domain ux -n 3)"
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"drag drop image grid gallery interactive\" --domain ux -n 3)",
+      "Skill(nextjs-best-practices)",
+      "mcp__ruflo__terminal_create",
+      "mcp__ruflo__terminal_execute"
     ]
   }
 }

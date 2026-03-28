@@ -112,7 +112,7 @@ export function usePortfolio() {
         return;
       }
 
-      await qc.invalidateQueries({ queryKey: key });
+      void qc.invalidateQueries({ queryKey: key });
     } catch (e) {
       setUploadError('Несподівана помилка: ' + String(e));
     } finally {

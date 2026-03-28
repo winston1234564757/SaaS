@@ -1,15 +1,14 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ImagePlus, Trash2, Loader2, Lock, PenLine,
   Check, X as XIcon, Link as LinkIcon, Camera, Images, AlertCircle,
 } from 'lucide-react';
 import { usePortfolio } from '@/lib/supabase/hooks/usePortfolio';
+import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useMasterContext } from '@/lib/supabase/context';
-import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTour } from '@/lib/hooks/useTour';
@@ -29,22 +28,10 @@ export function PortfolioPage() {
   const isPro    = masterProfile?.subscription_tier === 'pro' || masterProfile?.subscription_tier === 'studio';
   const atLimit  = !isPro && photos.length >= STARTER_LIMIT;
 
-  const { data: services = [] } = useQuery<{ id: string; name: string; price: number }[]>({
-    queryKey: ['services-list', masterId],
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('services')
-        .select('id, name, price')
-        .eq('master_id', masterId!)
-        .eq('is_active', true)
-        .order('sort_order');
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!masterId,
-    staleTime: 60_000,
-  });
+  const { services: rawServices } = useServices();
+  const services = rawServices
+    .filter(s => s.active)
+    .map(s => ({ id: s.id, name: s.name, price: s.price }));
 
   const [editingId, setEditingId]     = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState('');
