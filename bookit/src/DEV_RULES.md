@@ -48,6 +48,9 @@ return { data, isLoading };
 // ПРАВИЛЬНО
 queryClient.invalidateQueries({ queryKey: ['vacation', masterId] });
 
+// ПРАВИЛЬНО (тільки для pull-to-refresh) — інвалідує лише активно підписані queries
+queryClient.invalidateQueries({ type: 'active' });
+
 // НЕПРАВИЛЬНО — скидає весь кеш, каскад loading-станів по всьому dashboard
 queryClient.invalidateQueries();
 ```
@@ -153,25 +156,25 @@ const { data } = useQuery({
 });
 ```
 
-### Правило: keepPreviousData — обов'язково для хуків із динамічним queryKey.
+### Правило: keepPreviousData — тільки для "рефайнмент" фільтрів, НЕ для перемикання дат.
 
-Якщо `queryKey` містить параметри що змінюються користувачем (дата, preset, фільтр) — завжди додавай `placeholderData: keepPreviousData`. Без цього при кожній зміні параметра UI відображає порожній скелетон.
+Використовуй `placeholderData: keepPreviousData` коли зміна queryKey є **уточненням** тих самих даних (пагінація, аналітичний період). **НЕ використовуй** для перемикання між принципово різними наборами даних (дні, тижні — записи на понеділок ≠ записи на вівторок).
 
 ```ts
 import { keepPreviousData } from '@tanstack/react-query';
 
-// ПРАВИЛЬНО — UI зберігає старі дані поки нові вантажаться
+// ПРАВИЛЬНО — аналітика: той самий дашборд, інший період
 useQuery({
   queryKey: ['analytics-v2', masterId, startDate, endDate],
   queryFn: ...,
   placeholderData: keepPreviousData,
 });
 
-// НЕПРАВИЛЬНО — при зміні startDate/endDate → бланк + spinner 1-2 секунди
+// НЕПРАВИЛЬНО — записи: день A → день B = різні набори, покаже записи з A у день B
 useQuery({
-  queryKey: ['analytics-v2', masterId, startDate, endDate],
+  queryKey: ['bookings', masterId, dateFrom, dateTo],
   queryFn: ...,
-  // немає placeholderData
+  placeholderData: keepPreviousData, // ❌ покаже 5 записів з понеділка у пустий вівторок
 });
 ```
 
@@ -199,3 +202,73 @@ queryFn: async () => {
 
 // ДОЗВОЛЕНО — тільки в event handlers (handleSave, etc.)
 ```
+
+---
+
+## 12. Stale Tab Recovery — focusManager + getSession()
+
+Після тривалого фонового режиму (PWA згорнуто, вкладка неактивна) Supabase JWT може протухнути. 
+Але що гірше — **iOS PWA часто повністю вбиває/заморожує JavaScript** і під час повернення в додаток може **не відправити** події `visibilitychange` або `focus`.
+
+### Правильне рішення: 2 механізми (QueryProvider.tsx)
+1. **`useSessionWakeup`**: Слухає стандартні події `visibilitychange`. При пробудженні швидко оновлює токен через `await supabase.auth.getSession()` та каже TanStack Query зробити `onFocus()`.
+2. **`useDeepSleepWakeup` (Heartbeat)**: Тихий інтервал, який кожні 5 секунд працює у фоні. Якщо JS був "заморожений" ОС (> 3-х хвилин розрив між викликами інтервалу), це означає що користувач явно повернувся до додатка з тривалого фону. Змушуємо бекграунд-рефетч через `queryClient.invalidateQueries({ type: 'active' })`.
+
+```ts
+// ПРАВИЛЬНО — heartbeat детектор (useDeepSleepWakeup)
+const interval = setInterval(async () => {
+    const elapsed = Date.now() - lastTime;
+    if (elapsed > 180_000) { // 3 хвилини
+      // 1. Оновити токен
+      await supabase.auth.getSession();
+      // 2. Змусити TQ перезавантажити активні хуки без skeleton-loading
+      queryClient.invalidateQueries({ type: 'active' });
+    }
+    lastTime = Date.now();
+}, 5000);
+```
+
+**Чому:** `refetchOnWindowFocus: true` працює ідеально для вкладок Chrome, але цього **недостатньо** для iOS PWAs (Home Screen Apps), які обходять стандартний JS Event Loop. Поєднання listener + heartbeat гарантує 100% свіжі дані.
+
+---
+
+## 13. Realtime — один канал на таблицю
+
+Всі Supabase Realtime підписки для таблиці `bookings` консолідовані в `useRealtimeNotifications`. Це єдиний хук, де дозволено `.channel()` для bookings.
+
+```ts
+// ПРАВИЛЬНО — єдиний канал в useRealtimeNotifications
+// Інвалідує: bookings, wizard-schedule, dashboard-stats,
+// weekly-overview, notifications, monthly-booking-count, clients
+
+// ЗАБОРОНЕНО — окремі канали в useDashboardStats, useWeeklyOverview, etc.
+// Кожен канал = окреме WebSocket-з'єднання = 4× батарея/мережа
+```
+
+**Чому:** Кожен `.channel()` — це окреме WebSocket-з'єднання до Supabase. На мобільному 4 канали замість 1 — це 4× батарея та мережевих з'єднань.
+
+---
+
+## 14. Supabase запити — `.limit()` для bulk queries
+
+Будь-який запит що може повернути необмежену кількість рядків **ОБОВ'ЯЗКОВО** має мати `.limit()`.
+
+```ts
+// ПРАВИЛЬНО
+supabase.from('bookings').select('*').eq('master_id', id).limit(5000);
+
+// ЗАБОРОНЕНО — 10,000+ записів завантажаться на клієнт
+supabase.from('bookings').select('*').eq('master_id', id);
+```
+
+**Виняток:** single-row запити (`.single()`, `.maybeSingle()`), count запити (`{ count: 'exact', head: true }`).
+
+---
+
+## 15. CSS — GPU та мобільна швидкодія
+
+- `will-change: transform` для animated елементів (blobs, cards)
+- `contain: strict` для ізоляції layout/paint
+- `@media (prefers-reduced-motion: reduce)` — зупиняти декоративні анімації
+- Grain overlay — тільки desktop (`@media (hover: hover)`)
+- Backdrop-filter — уникати на мобільних де це спричиняє frame drops

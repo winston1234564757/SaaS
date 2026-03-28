@@ -175,6 +175,7 @@ function ReschedulePanel({
       bufferMinutes:     workingHours?.buffer_time_minutes ?? 0,
       requestedDuration: durationMinutes,
       stepMinutes:       15,
+      selectedDate:      d,
     });
     return scoreSlots(raw, {});
   }, [store, durationMinutes, workingHours, getBreaks]);

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { generateAvailableSlots, scoreSlots, buildSlotRenderItems, toMins, fromMins, type SlotInfo } from './smartSlots';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -147,6 +147,58 @@ describe('generateAvailableSlots – buffer', () => {
       bookings: [], breaks: [], bufferMinutes: 0, requestedDuration: 30,
     });
     expect(available(slots)).toContain('09:30');
+  });
+});
+
+// ── Past cutoff (Safety buffer) ────────────────────────────────────────────────────────
+
+describe('generateAvailableSlots – past cutoff (today)', () => {
+  it('filters out past slots with a safety buffer of 30 minutes on current date', () => {
+    // Mock current time to 10:15
+    const mockNow = new Date('2023-10-05T10:15:00');
+    vi.useFakeTimers();
+    vi.setSystemTime(mockNow);
+
+    const slots = generateAvailableSlots({
+      selectedDate: '2023-10-05',
+      workStart: '09:00', workEnd: '14:00',
+      bookings: [], breaks: [], bufferMinutes: 0, requestedDuration: 30,
+    });
+
+    // Current time: 10:15. Buffer: 30 mins.
+    // Cutoff = 10:45. Any slot starting < 10:45 is blocked (reason: past).
+    // 09:00, 09:30, 10:00, 10:30 should be blocked.
+    // 11:00 should be available.
+    
+    expect(available(slots)).not.toContain('10:00');
+    expect(available(slots)).not.toContain('10:30');
+    expect(available(slots)).toContain('11:00');
+    expect(available(slots)).toContain('11:30');
+
+    // Also check reasoning
+    const tenThirtySlot = slots.find(s => s.time === '10:30');
+    expect(tenThirtySlot?.reason).toBe('past');
+
+    vi.useRealTimers();
+  });
+
+  it('ignores the safety buffer if selectedDate is not today', () => {
+    // Current time: 15:45
+    const mockNow = new Date('2023-10-05T15:45:00');
+    vi.useFakeTimers();
+    vi.setSystemTime(mockNow);
+
+    const slots = generateAvailableSlots({
+      selectedDate: '2023-10-06', // Tomorrow
+      workStart: '12:00', workEnd: '18:00',
+      bookings: [], breaks: [], bufferMinutes: 0, requestedDuration: 30,
+    });
+
+    // Since selectedDate is tomorrow, the 12:00 slot configures ignoring the today buffer.
+    expect(available(slots)).toContain('12:00');
+    expect(available(slots)).toContain('12:30');
+
+    vi.useRealTimers();
   });
 });
 

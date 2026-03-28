@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { sendTelegramMessage, buildCancellationMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
-
 export async function cancelBooking(bookingId: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -17,8 +16,7 @@ export async function cancelBooking(bookingId: string): Promise<void> {
     .in('status', ['pending', 'confirmed']);
 
   if (error) throw error;
-
-  revalidatePath('/my/bookings');
+  revalidatePath('/', 'layout');
 
   // Notify master via Telegram
   const { data: booking } = await supabase
@@ -108,6 +106,5 @@ export async function submitReview(params: {
     });
 
   if (error) throw error;
-
-  revalidatePath('/my/bookings');
+  revalidatePath('/', 'layout');
 }

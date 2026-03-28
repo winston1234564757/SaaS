@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -25,29 +24,12 @@ function getWeekRange(): { from: string; to: string } {
 }
 
 // Повертає масив [Пн, Вт, Ср, Чт, Пт, Сб, Нд] — індекс 0=Пн
+// Realtime invalidation is handled by the consolidated channel
+// in useRealtimeNotifications — no separate channel needed here.
 export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const { from, to } = getWeekRange();
-  const qc = useQueryClient();
-
-  // Realtime: invalidate on any bookings change for this master
-  useEffect(() => {
-    if (!masterId) return;
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`weekly-overview-${masterId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'bookings',
-        filter: `master_id=eq.${masterId}`,
-      }, () => {
-        qc.invalidateQueries({ queryKey: ['weekly-overview', masterId] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [masterId]);
 
   const query = useQuery({
     queryKey: ['weekly-overview', masterId, from],
@@ -85,3 +67,4 @@ export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
     isLoading: query.isLoading && !query.isPlaceholderData,
   };
 }
+

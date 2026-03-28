@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import type { BookingWithServices } from './useBookings';
@@ -99,7 +99,6 @@ export function useBookingById(id: string | null) {
       return rowToBooking(data);
     },
     enabled: !!id,
-    placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
 
@@ -135,6 +134,7 @@ export function useBookingById(id: string | null) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ['bookings', masterId] });
+      qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       qc.invalidateQueries({ queryKey: ['weekly-overview'] });
       qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
@@ -164,6 +164,7 @@ export function useBookingById(id: string | null) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ['bookings', masterId] });
+      qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
   });

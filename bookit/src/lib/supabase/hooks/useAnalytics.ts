@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery} from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
@@ -99,8 +99,6 @@ export function useAnalytics(
     queryKey: ['analytics-v2', masterId, startDate, endDate, isPro],
     enabled:  !!masterId,
     staleTime: 2 * 60_000,
-    placeholderData: keepPreviousData,
-
     queryFn: async (): Promise<AnalyticsData> => {
       const supabase = createClient();
 

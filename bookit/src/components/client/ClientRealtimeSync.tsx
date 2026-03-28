@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, startTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -26,7 +26,9 @@ export function ClientRealtimeSync({ userId }: Props) {
           filter: `client_id=eq.${userId}`,
         },
         () => {
-          router.refresh();
+          startTransition(() => {
+            router.refresh();
+          });
         }
       )
       .subscribe();
@@ -38,3 +40,4 @@ export function ClientRealtimeSync({ userId }: Props) {
 
   return null;
 }
+

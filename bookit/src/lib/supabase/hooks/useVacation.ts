@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -37,7 +37,6 @@ export function useVacation() {
       }));
     },
     staleTime: 60_000,
-    placeholderData: keepPreviousData,
   });
 
   const addMutation = useMutation({

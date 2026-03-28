@@ -26,6 +26,7 @@ export function ManualBookingForm({ isOpen, onClose, onSuccess }: ManualBookingF
 
   function handleSuccess() {
     qc.invalidateQueries({ queryKey: ['bookings'] });
+    qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
     qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     qc.invalidateQueries({ queryKey: ['weekly-overview'] });
     qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });

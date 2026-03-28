@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -31,7 +31,8 @@ export function useClients() {
           .from('bookings')
           .select('client_name, client_phone, total_price, date, status, client_id')
           .eq('master_id', masterId!)
-          .neq('status', 'cancelled'),
+          .neq('status', 'cancelled')
+          .limit(5000), // Safety guard — prevents unbounded download for high-volume masters
         supabase
           .from('client_master_relations')
           .select('id, is_vip, client_id')
@@ -88,7 +89,6 @@ export function useClients() {
       return Array.from(map.values()).sort((a, b) => b.total_visits - a.total_visits);
     },
     enabled: !!masterId,
-    placeholderData: keepPreviousData,
     staleTime: 60_000,
   });
 

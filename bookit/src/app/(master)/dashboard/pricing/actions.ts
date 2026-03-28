@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 import { revalidatePath } from 'next/cache';
-
 export async function savePricingRules(rules: PricingRules): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,7 +22,6 @@ export async function savePricingRules(rules: PricingRules): Promise<{ error?: s
     .from('master_profiles')
     .update({ pricing_rules: rules })
     .eq('id', user.id);
-
-  revalidatePath('/dashboard/pricing');
+  revalidatePath('/', 'layout');
   return {};
 }

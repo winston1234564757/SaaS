@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -17,10 +17,11 @@ export interface BookingNotification {
 
 const LS_KEY = 'bookit_notifications_last_seen';
 
+// Realtime invalidation is handled by the consolidated channel
+// in useRealtimeNotifications — no separate channel needed here.
 export function useNotifications() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
-  const qc = useQueryClient();
 
   const [lastSeenAt, setLastSeenAt] = useState<string>(() => {
     if (typeof window === 'undefined') return new Date(0).toISOString();
@@ -52,26 +53,7 @@ export function useNotifications() {
       }));
     },
     staleTime: 30_000,
-    placeholderData: keepPreviousData,
   });
-
-  // Realtime: invalidate on new booking
-  useEffect(() => {
-    if (!masterId) return;
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`notifications-bell-${masterId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'bookings',
-        filter: `master_id=eq.${masterId}`,
-      }, () => {
-        qc.invalidateQueries({ queryKey: ['notifications', masterId] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [masterId]);
 
   const unreadCount = notifications.filter(n => n.createdAt > lastSeenAt).length;
 
@@ -85,3 +67,4 @@ export function useNotifications() {
 
   return { notifications, unreadCount, markAllRead };
 }
+

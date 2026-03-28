@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { applyDynamicPricing, type PricingRules } from '@/lib/utils/dynamicPricing';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
+import { revalidatePath } from 'next/cache';
 
 // ── Payload schema ────────────────────────────────────────────────────────────
 
@@ -236,8 +237,8 @@ export async function createBooking(
   });
 
   if (bErr) {
-    console.error('[createBooking] bookings insert:', bErr.message);
-    return { bookingId: null, error: 'Помилка збереження запису. Спробуйте ще раз.' };
+    console.error('[createBooking] bookings insert [ERROR CODE]:', bErr.code, ' [MESSAGE]:', bErr.message);
+    return { bookingId: null, error: `Помилка БД: ${bErr.message} (Код: ${bErr.code})` };
   }
 
   // 9. Insert booking_services
@@ -294,6 +295,9 @@ export async function createBooking(
       .eq('id', p.flashDealId)
       .eq('status', 'active');
   }
+
+  // Clear Next.js server-side data cache
+  revalidatePath('/', 'layout');
 
   return { bookingId, error: null, finalTotal };
 }

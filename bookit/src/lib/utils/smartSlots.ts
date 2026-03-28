@@ -23,10 +23,12 @@ export interface GenerateSlotsParams {
   requestedDuration: number;
   /** Grid step in minutes (default 30) */
   stepMinutes?: number;
+  /** The date being queried (optional, used to filter out past slots if today) e.g., 'YYYY-MM-DD' or Date */
+  selectedDate?: string | Date;
 }
 
 /** Why a slot is unavailable — used for differentiated UI rendering */
-export type SlotReason = 'available' | 'booked' | 'break' | 'buffer' | 'overflow';
+export type SlotReason = 'available' | 'booked' | 'break' | 'buffer' | 'overflow' | 'past';
 
 export interface SlotInfo {
   time: string;
@@ -75,12 +77,43 @@ export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] 
     bufferMinutes,
     requestedDuration,
     stepMinutes = 30,
+    selectedDate,
   } = params;
 
   const workStartMin = toMins(workStart);
   const workEndMin   = toMins(workEnd);
 
   if (workStartMin >= workEndMin || requestedDuration <= 0) return [];
+
+  // Determine the safety cutoff if the selected date is today
+  let minAllowedStart = 0;
+  if (selectedDate) {
+    const now = new Date();
+    let isToday = false;
+    
+    // Safely parse date to avoid timezone shift on 'YYYY-MM-DD' strings
+    if (typeof selectedDate === 'string') {
+      const parts = selectedDate.split('T')[0].split('-');
+      if (parts.length === 3) {
+        const [y, m, d] = parts.map(Number);
+        isToday = now.getFullYear() === y && (now.getMonth() + 1) === m && now.getDate() === d;
+      } else {
+        const q = new Date(selectedDate);
+        isToday = q.getFullYear() === now.getFullYear() && q.getMonth() === now.getMonth() && q.getDate() === now.getDate();
+      }
+    } else {
+      isToday = 
+        selectedDate.getFullYear() === now.getFullYear() && 
+        selectedDate.getMonth() === now.getMonth() && 
+        selectedDate.getDate() === now.getDate();
+    }
+
+    if (isToday) {
+      const SAFETY_BUFFER_MINUTES = 30; // 30 хвилин буфер
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      minAllowedStart = currentMinutes + SAFETY_BUFFER_MINUTES;
+    }
+  }
 
   const inWindow = (e: { start: number; end: number }) =>
     e.end > workStartMin && e.start < workEndMin;
@@ -100,6 +133,12 @@ export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] 
   const result: SlotInfo[] = [];
 
   for (let t = workStartMin; t < workEndMin; t += stepMinutes) {
+    // 0. Past Safety Buffer cutoff
+    if (t < minAllowedStart) {
+      result.push({ time: fromMins(t), available: false, reason: 'past' });
+      continue;
+    }
+
     const slotEnd = t + requestedDuration;
 
     // 1. Duration overflow
@@ -186,7 +225,7 @@ export function buildSlotRenderItems(
     if (slot.available) {
       items.push({ kind: 'slot', slot });
     }
-    // booked / buffer / overflow → silently omitted
+    // booked / buffer / overflow / past → silently omitted
 
     i++;
   }

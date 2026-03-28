@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardLayout } from '@/components/master/DashboardLayout';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,9 @@ export default async function MasterLayout({ children }: { children: React.React
       initialProfile={profile ?? null}
       initialMasterProfile={masterProfile ?? null}
     >
-      {children}
+      <PullToRefresh>
+        {children}
+      </PullToRefresh>
     </DashboardLayout>
   );
 }

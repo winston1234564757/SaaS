@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { startOfWeek, format } from 'date-fns';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
@@ -22,27 +22,15 @@ export interface DashboardStatsWithLoading extends DashboardStats {
 export function useDashboardStats(): DashboardStatsWithLoading {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
-  const today     = format(new Date(), 'yyyy-MM-dd');
-  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-  const qc = useQueryClient();
 
-  // Realtime: invalidate on any bookings change for this master
-  useEffect(() => {
-    if (!masterId) return;
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`dashboard-stats-${masterId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'bookings',
-        filter: `master_id=eq.${masterId}`,
-      }, () => {
-        qc.invalidateQueries({ queryKey: ['dashboard-stats', masterId] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [masterId]);
+  // Stabilize date strings — recomputed only on mount, not every render
+  const { today, weekStart } = useMemo(() => ({
+    today:     format(new Date(), 'yyyy-MM-dd'),
+    weekStart: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
+  }), []);
+
+  // Realtime invalidation is handled by the consolidated channel
+  // in useRealtimeNotifications — no separate channel needed here.
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-stats', masterId, today],
@@ -106,3 +94,4 @@ export function useDashboardStats(): DashboardStatsWithLoading {
   };
   return { ...(data ?? defaults), isLoading: isLoading && !!masterId };
 }
+

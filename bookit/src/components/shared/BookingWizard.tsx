@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
 import {
   X, ChevronLeft, ChevronRight, Check, Clock, User, Phone,
   MessageSquare, ShoppingBag, Plus, Minus,
@@ -75,16 +76,7 @@ type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';
 
 interface CartItem { product: WizardProduct; quantity: number; }
 
-interface ScheduleStore {
-  templates: Record<string, {
-    start_time: string; end_time: string;
-    break_start: string | null; break_end: string | null;
-  }>;
-  exceptions: Record<string, {
-    is_day_off: boolean; start_time: string | null; end_time: string | null;
-  }>;
-  bookingsByDate: Record<string, TimeRange[]>;
-}
+
 
 // ── Constants & helpers ───────────────────────────────────────────────────────
 
@@ -235,11 +227,25 @@ export function BookingWizard({
   const [loyaltyDiscount, setLoyaltyDiscount]       = useState<{ name: string; percent: number } | null>(null);
 
   // ── Schedule data ─────────────────────────────────────────────────────────────
-  const [scheduleStore, setScheduleStore]     = useState<ScheduleStore | null>(null);
-  const [offDayDates, setOffDayDates]         = useState<Set<string>>(new Set());
-  const [scheduleLoading, setScheduleLoading] = useState(true);
-  const [scheduleError, setScheduleError]     = useState(false);
-  const [scheduleRetryKey, setScheduleRetryKey] = useState(0);
+  const days = useMemo(() => getDays(30), []);
+  const fromDateStr = useMemo(() => toISO(days[0]), [days]);
+  const toDateStr   = useMemo(() => toISO(days[days.length - 1]), [days]);
+
+  const { 
+    data: scheduleStore, 
+    isLoading: scheduleLoading, 
+    isError: scheduleError, 
+    refetch: refetchSchedule 
+  } = useWizardSchedule(isOpen ? masterId : null, fromDateStr, toDateStr);
+
+  const offDayDates = useMemo(() => {
+    if (!scheduleStore) return new Set<string>();
+    return buildOffDaySet(
+      Object.entries(scheduleStore.templates).map(([d, t]) => ({ day_of_week: d as any, is_working: t.is_working })),
+      Object.entries(scheduleStore.exceptions).filter(([_, e]) => e.is_day_off).map(([d]) => ({ date: d })),
+      days
+    );
+  }, [scheduleStore, days]);
 
   // ── Product auto-suggest ──────────────────────────────────────────────────────
   const [suggestedProductIds, setSuggestedProductIds] = useState<Set<string>>(new Set());
@@ -253,7 +259,6 @@ export function BookingWizard({
   const dateStripRef  = useRef<HTMLDivElement>(null);
   const wasOpenRef    = useRef(false); // true if modal was already open (retry vs fresh open)
 
-  const days = useMemo(() => getDays(30), []);
   const isAtLimit = mode === 'client' && subscriptionTier === 'starter' && bookingsThisMonth >= 30;
 
   // ── Derived totals ────────────────────────────────────────────────────────────
@@ -280,14 +285,14 @@ export function BookingWizard({
   const flashDealAmount       = flashDeal ? Math.round(grandTotal * flashDeal.discountPct / 100) : 0;
   const finalTotal            = Math.max(0, grandTotal - loyaltyDiscountAmount - masterDiscountAmount - flashDealAmount);
 
-  // ── Reset + fetch schedule on open ───────────────────────────────────────────
+  // ── Reset + fetch client history on open ───────────────────────────────────
   useEffect(() => {
     if (!isOpen) { wasOpenRef.current = false; return; }
 
     const isRetry = wasOpenRef.current;
     wasOpenRef.current = true;
 
-    // Full form reset only on fresh open, not on schedule retry
+    // Full form reset only on fresh open
     if (!isRetry) {
       go('services', 1);
       setSelectedServices(initialServices ?? []);
@@ -308,71 +313,7 @@ export function BookingWizard({
       setSaveError('');
     }
 
-    setOffDayDates(new Set());
-    setScheduleStore(null);
-    setScheduleLoading(true);
-    setScheduleError(false);
-
-    if (!masterId) { setScheduleLoading(false); return; }
-
-    const supabase = createClient();
-    const from = toISO(days[0]);
-    const to   = toISO(days[days.length - 1]);
-
-    Promise.all([
-      supabase.from('schedule_templates')
-        .select('day_of_week, is_working, start_time, end_time, break_start, break_end')
-        .eq('master_id', masterId),
-      supabase.from('schedule_exceptions')
-        .select('date, is_day_off, start_time, end_time')
-        .eq('master_id', masterId).gte('date', from).lte('date', to),
-      supabase.from('bookings')
-        .select('date, start_time, end_time')
-        .eq('master_id', masterId).neq('status', 'cancelled')
-        .gte('date', from).lte('date', to),
-    ]).then(([tmplRes, excRes, bookRes]) => {
-      if (tmplRes.error || excRes.error || bookRes.error) {
-        console.error('[BookingWizard] Schedule fetch error:', tmplRes.error ?? excRes.error ?? bookRes.error);
-        setScheduleError(true);
-        setScheduleLoading(false);
-        return;
-      }
-      const templates: ScheduleStore['templates'] = {};
-      for (const t of (tmplRes.data ?? [])) {
-        templates[t.day_of_week] = {
-          start_time: t.start_time, end_time: t.end_time,
-          break_start: t.break_start ?? null, break_end: t.break_end ?? null,
-        };
-      }
-      const exceptions: ScheduleStore['exceptions'] = {};
-      for (const e of (excRes.data ?? [])) {
-        exceptions[e.date] = {
-          is_day_off: e.is_day_off,
-          start_time: e.start_time ?? null, end_time: e.end_time ?? null,
-        };
-      }
-      const bookingsByDate: ScheduleStore['bookingsByDate'] = {};
-      for (const b of (bookRes.data ?? [])) {
-        const k = b.date as string;
-        if (!bookingsByDate[k]) bookingsByDate[k] = [];
-        bookingsByDate[k].push({
-          start: (b.start_time as string).slice(0, 5),
-          end:   (b.end_time   as string).slice(0, 5),
-        });
-      }
-      setScheduleStore({ templates, exceptions, bookingsByDate });
-      setOffDayDates(buildOffDaySet(
-        (tmplRes.data ?? []).map((t: any) => ({ day_of_week: t.day_of_week, is_working: t.is_working })),
-        (excRes.data ?? []).filter((e: any) => e.is_day_off).map((e: any) => ({ date: e.date })),
-        days,
-      ));
-      setScheduleLoading(false);
-    }).catch(() => {
-      setScheduleError(true);
-      setScheduleLoading(false);
-    });
-
-    if (mode === 'client') {
+    if (mode === 'client' && masterId) {
       ensureClientProfile().then(({ userId, name, phone, email }) => {
         if (!userId) return;
         setClientUserId(userId);
@@ -396,7 +337,7 @@ export function BookingWizard({
       }).catch(() => {});
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, masterId, scheduleRetryKey]);
+  }, [isOpen, masterId]);
 
   // ── Auto-suggest products ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -437,6 +378,7 @@ export function BookingWizard({
       bufferMinutes:     workingHours?.buffer_time_minutes ?? 0,
       requestedDuration: effectiveDuration,
       stepMinutes:       15,
+      selectedDate:      selectedDate,
     });
     return scoreSlots(raw, { clientHistoryTimes });
   }, [selectedDate, scheduleStore, offDayDates, effectiveDuration, selectedDayBreaks, workingHours, clientHistoryTimes]);
@@ -465,6 +407,7 @@ export function BookingWizard({
         bufferMinutes:     workingHours?.buffer_time_minutes ?? 0,
         requestedDuration: effectiveDuration,
         stepMinutes:       15,
+        selectedDate:      d,
       });
       if (!s.some(sl => sl.available)) result.add(dateStr);
     }
@@ -871,7 +814,7 @@ export function BookingWizard({
                           <div className="flex flex-col items-center gap-3 py-6 mb-4">
                             <p className="text-sm text-[#C05B5B]">Не вдалося завантажити розклад</p>
                             <button
-                              onClick={() => setScheduleRetryKey(k => k + 1)}
+                              onClick={() => refetchSchedule()}
                               className="px-4 py-2 rounded-xl bg-[#789A99] text-white text-xs font-semibold"
                             >
                               Спробувати знову

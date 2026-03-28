@@ -38,6 +38,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
 
   const invalidateAll = () => {
     qc.invalidateQueries({ queryKey: ['bookings'] });
+    qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
     qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     qc.invalidateQueries({ queryKey: ['weekly-overview'] });
     qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });

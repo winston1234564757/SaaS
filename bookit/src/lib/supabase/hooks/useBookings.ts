@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import type { BookingStatus } from '@/types/database';
@@ -90,7 +90,6 @@ export function useBookings(dateFrom: string, dateTo: string) {
       return (result.data ?? []).map(rowToBooking);
     },
     enabled: !!masterId,
-    placeholderData: keepPreviousData,
   });
 
   const updateStatus = useMutation({
@@ -125,6 +124,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['bookings', masterId] });
+      qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       qc.invalidateQueries({ queryKey: ['weekly-overview'] });
       qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });

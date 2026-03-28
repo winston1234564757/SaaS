@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -53,7 +53,6 @@ export function usePortfolio() {
       return (data ?? []).map(rowToPhoto);
     },
     enabled: !!masterId,
-    placeholderData: keepPreviousData,
     staleTime: 60_000,
   });
 

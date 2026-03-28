@@ -280,30 +280,41 @@ export function BookingsPage() {
       </div>
 
       {/* Статистика */}
-      {filtered.length > 0 && (
-        <div className="flex gap-2">
-          <div className="flex-1 bento-card p-3 text-center">
-            <p className="text-lg font-bold text-[#2C1A14]">{filtered.length}</p>
-            <p className="text-[11px] text-[#A8928D]">записів</p>
-          </div>
-          {totalRevenue > 0 && (
-            <div className="flex-1 bento-card p-3 text-center">
-              <p className="text-lg font-bold text-[#5C9E7A]">{totalRevenue.toLocaleString('uk-UA')} ₴</p>
-              <p className="text-[11px] text-[#A8928D]">завершені</p>
+      <AnimatePresence>
+        {filtered.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0, scale: 0.95 }}
+            animate={{ height: 'auto', opacity: 1, scale: 1 }}
+            exit={{ height: 0, opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden p-0.5 -m-0.5"
+          >
+            <div className="flex gap-2">
+              <div className="flex-1 bento-card p-3 text-center">
+                <p className="text-lg font-bold text-[#2C1A14]">{filtered.length}</p>
+                <p className="text-[11px] text-[#A8928D]">записів</p>
+              </div>
+              {totalRevenue > 0 && (
+                <div className="flex-1 bento-card p-3 text-center">
+                  <p className="text-lg font-bold text-[#5C9E7A]">{totalRevenue.toLocaleString('uk-UA')} ₴</p>
+                  <p className="text-[11px] text-[#A8928D]">завершені</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Список */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout">
         {isLoading ? (
           <motion.div
             key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="bento-card p-10 flex flex-col items-center gap-3"
+            initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
+            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+            exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
+            transition={{ duration: 0.2 }}
+            className="bento-card p-10 flex flex-col items-center gap-3 w-full"
           >
             <Loader2 size={24} className="text-[#789A99] animate-spin" />
             <p className="text-sm text-[#A8928D]">Завантаження записів...</p>
@@ -312,10 +323,11 @@ export function BookingsPage() {
           isGenuinelyEmpty ? (
             <motion.div
               key="empty-share"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col gap-4"
+              initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
+              animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+              exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-4 w-full"
             >
               <div className="bento-card p-6 flex flex-col items-center gap-3 text-center">
                 <div className="w-14 h-14 rounded-3xl bg-[#789A99]/10 flex items-center justify-center">
@@ -329,10 +341,11 @@ export function BookingsPage() {
           ) : (
             <motion.div
               key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="bento-card p-10 flex flex-col items-center gap-3 text-center"
+              initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
+              animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+              exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
+              transition={{ duration: 0.2 }}
+              className="bento-card p-10 flex flex-col items-center gap-3 text-center w-full"
             >
               <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
                 <CalendarDays size={26} className="text-[#A8928D]" />
@@ -342,7 +355,14 @@ export function BookingsPage() {
             </motion.div>
           )
         ) : view === 'day' ? (
-          <motion.div key="day-list" className="flex flex-col gap-3">
+          <motion.div 
+            key="day-list"
+            initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
+            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+            exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col gap-3 w-full"
+          >
             {visibleItems.map((b, i) => (
               <Suspense key={b.id}>
                 <BookingCard booking={b} index={i} />
@@ -358,7 +378,14 @@ export function BookingsPage() {
             )}
           </motion.div>
         ) : (
-          <motion.div key="grouped-list" className="flex flex-col gap-4">
+          <motion.div
+            key="grouped-list"
+            initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
+            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+            exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col gap-4 w-full"
+          >
             {[...grouped!.entries()].map(([date, items]) => {
               const d = new Date(date);
               const dayName = UA_DAYS[(d.getDay() + 6) % 7];

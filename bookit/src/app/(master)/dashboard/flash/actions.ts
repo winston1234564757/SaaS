@@ -3,8 +3,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
-import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
+import { sendTelegramMessage, escHtml } from '@/lib/telegram';
+
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { pluralize } from '@/lib/utils/dates';
@@ -123,7 +124,7 @@ export async function createFlashDeal(
     sentCount += clientsWithTg.length;
   }
 
-  revalidatePath('/dashboard/flash');
+  revalidatePath('/', 'layout');
   return { error: null, sentTo: sentCount };
 }
 
@@ -136,5 +137,5 @@ export async function cancelFlashDeal(dealId: string): Promise<void> {
     .update({ status: 'expired' })
     .eq('id', dealId)
     .eq('master_id', user.id);
-  revalidatePath('/dashboard/flash');
+  revalidatePath('/', 'layout');
 }

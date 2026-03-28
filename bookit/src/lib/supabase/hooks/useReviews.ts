@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -42,7 +42,6 @@ export function useReviews() {
       }));
     },
     enabled: !!masterId,
-    placeholderData: keepPreviousData,
     staleTime: 60_000,
   });
 

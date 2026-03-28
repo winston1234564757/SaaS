@@ -52,6 +52,7 @@ body {
   font-family: var(--font-inter, 'Inter'), -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100dvh;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 /* ─── Typography ─── */
@@ -185,12 +186,20 @@ body {
   border-radius: 50%;
   filter: blur(90px);
   animation: float 22s ease-in-out infinite;
+  will-change: transform;  /* GPU promotion — avoids main-thread repaints */
+  contain: strict;         /* Isolate layout/paint from rest of DOM */
 }
 
 @keyframes float {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33%  { transform: translate(35px, -25px) scale(1.06); }
   66%  { transform: translate(-25px, 12px) scale(0.94); }
+}
+
+/* Respect user motion preference — pause all decorative animations */
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none; }
+  .pulse-confirmed { animation: none; }
 }
 
 /* ─── Button press ─── */
@@ -200,6 +209,8 @@ body {
 }
 
 /* ─── Film Grain ─── */
+/* Only on desktop — on mobile this fixed overlay at z-index:9999
+   was blocking GPU compositing for every frame, costing ~2-4ms per paint */
 .grain-overlay {
   position: fixed;
   inset: 0;
@@ -207,7 +218,12 @@ body {
   opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
   background-size: 200px;
-  z-index: 9999;
+  z-index: 1;  /* Was 9999 — only needs to be above body bg, not above modals/sheets */
+  display: none; /* Hidden on mobile by default */
+}
+
+@media (hover: hover) and (min-width: 768px) {
+  .grain-overlay { display: block; } /* Desktop only */
 }
 
 /* ─── Status pulse ─── */

@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
 export async function joinStudio(token: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
