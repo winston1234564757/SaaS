@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { startOfWeek, format } from 'date-fns';
 import { createClient } from '../client';
@@ -23,11 +22,9 @@ export function useDashboardStats(): DashboardStatsWithLoading {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
 
-  // Stabilize date strings — recomputed only on mount, not every render
-  const { today, weekStart } = useMemo(() => ({
-    today:     format(new Date(), 'yyyy-MM-dd'),
-    weekStart: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-  }), []);
+  // Recomputed every render — cheap ops; queryKey change triggers new fetch after midnight
+  const today     = format(new Date(), 'yyyy-MM-dd');
+  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
   // Realtime invalidation is handled by the consolidated channel
   // in useRealtimeNotifications — no separate channel needed here.

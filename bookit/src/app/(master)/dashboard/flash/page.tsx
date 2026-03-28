@@ -21,7 +21,11 @@ export default async function FlashPage() {
 
   const admin = createAdminClient();
 
-  const [{ data: mp }, { data: deals }] = await Promise.all([
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const [{ data: mp }, { data: deals }, { count: usedThisMonth }] = await Promise.all([
     admin.from('master_profiles').select('subscription_tier').eq('id', user.id).single(),
     admin
       .from('flash_deals')
@@ -30,6 +34,11 @@ export default async function FlashPage() {
       .eq('status', 'active')
       .gte('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false }),
+    admin
+      .from('flash_deals')
+      .select('id', { count: 'exact', head: true })
+      .eq('master_id', user.id)
+      .gte('created_at', monthStart.toISOString()),
   ]);
 
   return (
@@ -37,6 +46,7 @@ export default async function FlashPage() {
       <FlashDealPage
         activeDeals={(deals ?? []) as FlashDealRow[]}
         tier={mp?.subscription_tier ?? 'starter'}
+        usedThisMonth={usedThisMonth ?? 0}
       />
     </div>
   );

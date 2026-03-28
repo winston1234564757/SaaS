@@ -1,0 +1,386 @@
+{
+  "tasks": {
+    "task-1774680248824-tnor69": {
+      "taskId": "task-1774680248824-tnor69",
+      "type": "feature",
+      "description": "Додати toggle динамічного ціноутворення для manual booking (master mode). Змінити createBooking.ts (схема + logic) та BookingWizard.tsx (state + UI toggle + handleSubmit). Деталі у агента agent-1774680236532-pish9e.",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [
+        "agent-1774680236532-pish9e"
+      ],
+      "tags": [
+        "dynamic-pricing",
+        "manual-booking",
+        "wizard"
+      ],
+      "createdAt": "2026-03-28T06:44:08.824Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774710466459-66q3r0": {
+      "taskId": "task-1774710466459-66q3r0",
+      "type": "feature",
+      "description": "\nСтвори SQL міграцію `supabase/migrations/052_portfolio_service_link.sql`.\n\nТаблиця portfolio_photos вже існує (migration 014):\n  id, master_id, url, storage_path, caption, sort_order, created_at\n\nДодай колонку:\n  ALTER TABLE portfolio_photos\n    ADD COLUMN IF NOT EXISTS service_id UUID REFERENCES services(id) ON DELETE SET NULL;\n\nCREATE INDEX IF NOT EXISTS idx_portfolio_service ON portfolio_photos(service_id) WHERE service_id IS NOT NULL;\n\nКоментар на початку файлу: \"-- Прив'язка фото портфоліо до послуги майстра (Book this look)\"\n",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "database",
+        "migration",
+        "portfolio"
+      ],
+      "createdAt": "2026-03-28T15:07:46.459Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:12:22.981Z",
+      "result": "Міграція 052_portfolio_service_link.sql створена і застосована до БД"
+    },
+    "task-1774710479325-vl4q96": {
+      "taskId": "task-1774710479325-vl4q96",
+      "type": "feature",
+      "description": "\nОновити `src/app/(master)/dashboard/portfolio/page.tsx` і `src/lib/supabase/hooks/usePortfolio.ts`.\n\nКОНТЕКСТ:\n- Поточна структура hook: usePortfolio() повертає { photos, isLoading, isUploading, uploadPhoto, deletePhoto, updateCaption }\n- PortfolioPhoto interface: { id, url, storagePath, caption, sortOrder }\n- TanStack Query key: ['portfolio', masterId]\n\nЗМІНИ В usePortfolio.ts:\n1. Додати service_id до select запиту: select('id, url, storage_path, caption, sort_order, service_id')\n2. Додати serviceId: string | null до PortfolioPhoto interface\n3. Додати функцію updateServiceLink(id: string, serviceId: string | null) — робить .update({ service_id: serviceId }).eq('id', id).eq('master_id', masterId!) + invalidateQueries\n\nЗМІНИ В PortfolioPage.tsx:\n1. На початку файлу fetch списку послуг майстра через useQuery(['services', masterId]) → select('id, name, price') from services where master_id=masterId\n2. На кожній photo-карточці після поля caption — додати Select для вибору послуги:\n   - label: \"Послуга (для кнопки «Хочу так само»)\"\n   - value: photo.serviceId ?? ''\n   - options: [{ value: '', label: 'Без послуги' }, ...services.map(s => ({ value: s.id, label: `${s.name} — ${s.price}₴` }))]\n   - onChange: updateServiceLink(photo.id, value || null)\n   - Стиль: text-xs, rounded-xl, bg-white/80 border border-white/60, text-[#2C1A14], п'ятий рядок\n\nСтек: Next.js 14, TanStack Query v5, Supabase JS, Tailwind v4, TypeScript strict.\nТокени дизайну: accent #789A99, text #2C1A14, surface rgba(255,255,255,0.68).\nНЕ використовувати getSession() в queryFn.\n",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "backend",
+        "server-action",
+        "portfolio"
+      ],
+      "createdAt": "2026-03-28T15:07:59.325Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:12:33.839Z",
+      "result": {
+        "status": "done",
+        "changes": "usePortfolio.ts: service_id у select + PortfolioPhoto interface + updateServiceLink mutation. PortfolioPage.tsx: useQuery services + select per photo"
+      }
+    },
+    "task-1774710493553-nv8m92": {
+      "taskId": "task-1774710493553-nv8m92",
+      "type": "feature",
+      "description": "\nОновити `src/components/public/PublicMasterPage.tsx` — додати Floating Bar \"Хочу так само\".\n\nКОНТЕКСТ КОМПОНЕНТА (800+ рядків):\n- Lightbox вже є — відкривається кліком на фото портфоліо\n- Portfolio photos передаються як initialPortfolio: { id, url, caption }[] з server\n- Публічна сторінка — /[slug]\n\nЗМІНИ:\n1. Оновити тип portfolio photo: додати serviceId?: string | null, serviceName?: string | null, servicePrice?: number | null (дані прийдуть з оновленого server query)\n\n2. Всередині Lightbox (модалка перегляду фото) — додати Floating Bar знизу екрану:\n```\nУмова рендеру: photo.serviceId != null && photo.serviceName != null\n\nРозмітка (fixed bottom-0, z-50):\n<div className=\"fixed bottom-0 left-0 right-0 z-50 p-4\">\n  <div className=\"backdrop-blur-md bg-white/80 border border-white/60 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-lg max-w-lg mx-auto\">\n    <div className=\"flex flex-col min-w-0\">\n      <span className=\"text-xs text-[#A8928D] font-medium\">Послуга</span>\n      <span className=\"text-sm font-semibold text-[#2C1A14] truncate\">{photo.serviceName}</span>\n      <span className=\"text-xs text-[#789A99] font-medium\">{photo.servicePrice}₴</span>\n    </div>\n    <a\n      href={`/${slug}/book?serviceId=${photo.serviceId}`}  (використай актуальний шлях для бронювання)\n      className=\"flex-shrink-0 bg-[#789A99] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#6B8C8B] transition-colors active:scale-95\"\n    >\n      Хочу так само\n    </a>\n  </div>\n</div>\n```\n\n3. Framer Motion: Floating Bar з'являється з animate={{ y: 0, opacity: 1 }} initial={{ y: 20, opacity: 0 }} transition={{ duration: 0.2 }} при зміні фото.\n\n4. Якщо serviceId = null — Floating Bar не рендериться взагалі (не займає місце, не ламає layout).\n\nСтек: Next.js App Router, Framer Motion, Tailwind v4, TypeScript strict, Lucide React icons.\nMobile-first. Touch targets мін 44px. Без емодзі.\n",
+      "priority": "critical",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "frontend",
+        "public-ui",
+        "floating-bar",
+        "glassmorphism"
+      ],
+      "createdAt": "2026-03-28T15:08:13.553Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:12:36.384Z",
+      "result": {
+        "status": "done",
+        "changes": "PublicMasterPage.tsx: PortfolioPhoto interface +serviceId/serviceName/servicePrice. Lightbox: Floating Bar з Framer Motion + glassmorphism + Хочу так само кнопка"
+      }
+    },
+    "task-1774710503674-vxfqp4": {
+      "taskId": "task-1774710503674-vxfqp4",
+      "type": "feature",
+      "description": "\nОновити BookingFlow + BookingWizard для підтримки serviceId з URL.\n\nФАЙЛИ:\n- src/components/public/BookingFlow.tsx (63 рядки — wrapper)\n- src/components/shared/BookingWizard.tsx (500+ рядків — 4-step wizard)\n\nКОНТЕКСТ BookingFlow props:\ninterface BookingFlowProps {\n  services: Service[];\n  initialService: Service | null;\n  initialServices?: Service[];\n  initialStep?: string;  // 'datetime' для repeat booking\n  masterId: string;\n  masterName: string;\n  // ...\n}\n\nЗМІНИ В BookingFlow.tsx:\n1. Додати prop: initialServiceId?: string | null\n2. Якщо initialServiceId передано і initialService = null — знайти service з services[] по id і передати як initialService\n\nЗМІНИ В публічній сторінці де викликається BookingFlow:\n- Компонент PublicMasterPage.tsx або [slug]/page.tsx\n- При відкритті бронювання через URL параметр ?serviceId=... — витягнути serviceId з useSearchParams() і передати як initialServiceId до BookingFlow\n- При маунті: якщо є serviceId в URL → автоматично openBooking(serviceFromUrl)\n\nЗМІНИ В BookingWizard.tsx:\n- Додати prop: initialStep?: string\n- При initialStep === 'datetime' і selectedServices.length > 0 — починати з кроку 'datetime' замість 'services'\n- Поточний useEffect на mount вже встановлює selectedServices з initialServices/initialService — розширити: після встановлення послуги, якщо initialStep = 'datetime', перейти на step 'datetime'\n\nTypeScript strict. TanStack Query v5. useSearchParams() з 'next/navigation'. НЕ window.location.\n",
+      "priority": "critical",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "frontend",
+        "booking-flow",
+        "deep-link",
+        "url-params"
+      ],
+      "createdAt": "2026-03-28T15:08:23.674Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:12:37.576Z",
+      "result": {
+        "status": "done",
+        "changes": "PublicMasterPage.tsx: useEffect обробляє ?serviceId= — знаходить service і auto-opens BookingFlow з pre-selected послугою"
+      }
+    },
+    "task-1774710509750-j6ht9n": {
+      "taskId": "task-1774710509750-j6ht9n",
+      "type": "feature",
+      "description": "\nОновити server query портфоліо у `src/app/[slug]/page.tsx`.\n\nПОТОЧНИЙ ЗАПИТ (приблизно):\nsupabase.from('portfolio_photos').select('id, url, caption').order('sort_order').order('created_at').limit(30)\n\nНОВИЙ ЗАПИТ — додати service_id + join на services:\nsupabase\n  .from('portfolio_photos')\n  .select('id, url, caption, service_id, services(id, name, price)')\n  .order('sort_order')\n  .order('created_at')\n  .limit(30)\n\nРезультат маппиться в:\n{\n  id: string,\n  url: string,\n  caption: string | null,\n  serviceId: string | null,        // з service_id\n  serviceName: string | null,      // з services?.name\n  servicePrice: number | null,     // з services?.price\n}\n\nЦей масив передається як initialPortfolio до PublicMasterPage client component.\n\nTypeScript strict — Supabase join повертає об'єкт або null (не масив, бо FK → один запис).\nНЕ додавати explicit Promise<unknown>[] до builder arrays.\n",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "backend",
+        "server-component",
+        "data-fetching"
+      ],
+      "createdAt": "2026-03-28T15:08:29.750Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:12:38.865Z",
+      "result": {
+        "status": "done",
+        "changes": "[slug]/page.tsx: select portfolio_photos з services(id,name,price) join + маппінг serviceId/serviceName/servicePrice"
+      }
+    },
+    "task-1774711406702-t37z8x": {
+      "taskId": "task-1774711406702-t37z8x",
+      "type": "feature",
+      "description": "\nСтвори `supabase/migrations/053_flash_deals_upgrade.sql`.\n\nЧАСТИНА 1 — нова колонка:\nALTER TABLE flash_deals\n  ADD COLUMN IF NOT EXISTS service_id UUID REFERENCES services(id) ON DELETE CASCADE;\n\nЧАСТИНА 2 — RPC для розумного таргетингу (±48h вікно, ТІЛЬКИ SQL):\nCREATE OR REPLACE FUNCTION get_eligible_flash_deal_clients(\n  p_master_id     UUID,\n  p_slot_timestamp TIMESTAMPTZ\n)\nRETURNS TABLE(client_id UUID)\nLANGUAGE sql STABLE SECURITY DEFINER SET search_path = public\nAS $$\n  SELECT cmr.client_id\n  FROM client_master_relations cmr\n  WHERE cmr.master_id = p_master_id\n    AND NOT EXISTS (\n      SELECT 1 FROM bookings b\n      WHERE b.client_id = cmr.client_id\n        AND b.master_id = p_master_id\n        AND b.status IN ('confirmed', 'pending')\n        AND (b.slot_date::date + b.slot_time::time) AT TIME ZONE 'Europe/Kyiv'\n            BETWEEN p_slot_timestamp - INTERVAL '48 hours'\n                AND p_slot_timestamp + INTERVAL '48 hours'\n    );\n$$;\n\nПримітка: bookings зберігає slot_date (DATE) і slot_time (TIME) окремо.\nGRANT EXECUTE ON FUNCTION get_eligible_flash_deal_clients TO authenticated, anon;\n",
+      "priority": "critical",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "database",
+        "migration",
+        "rpc",
+        "flash-deals"
+      ],
+      "createdAt": "2026-03-28T15:23:26.702Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774711421592-rm0zf9": {
+      "taskId": "task-1774711421592-rm0zf9",
+      "type": "feature",
+      "description": "\nОновити `src/app/(master)/dashboard/flash/actions.ts`.\n\nЗМІНИ:\n\n1. CreateFlashDealParams — замінити serviceName: string на serviceId: string (UUID послуги)\n\n2. Ліміт Starter: змінити з 2 на 5:\n   if ((count ?? 0) >= 5) return { error: 'На Starter тарифі — 5 флеш-акцій на місяць...', sentTo: 0 }\n\n3. Перед INSERT — отримати serviceName з таблиці services по serviceId:\n   const { data: svc } = await admin.from('services').select('name, price').eq('id', serviceId).single();\n   if (!svc) return { error: 'Послугу не знайдено', sentTo: 0 };\n   Використовувати svc.name як service_name при INSERT.\n\n4. INSERT flash_deals — додати service_id: serviceId у об'єкт.\n\n5. ЗАМІНИТИ поточний таргетинг (завантаження bookings у Node.js) на RPC:\n   ВИДАЛИТИ блок:\n     const { data: completedBookings } = await admin.from('bookings')...\n     const clientIds = [...new Set(...)]\n   \n   ЗАМІНИТИ на:\n     const slotTimestamp = `${params.slotDate}T${params.slotTime}:00+03:00`;\n     const { data: eligibleClients } = await admin\n       .rpc('get_eligible_flash_deal_clients', {\n         p_master_id: user.id,\n         p_slot_timestamp: slotTimestamp,\n       });\n     const clientIds = (eligibleClients ?? []).map((r: { client_id: string }) => r.client_id);\n\n6. Після broadcastPush/Telegram — INSERT у таблицю notifications для кожного eligible client:\n   await admin.from('notifications').insert(\n     clientIds.map(cid => ({\n       recipient_id: cid,\n       title: notifTitle,\n       body: notifBody,\n       type: 'flash_deal',\n       channel: 'push',\n       related_master_id: user.id,\n       is_read: false,\n       sent_at: new Date().toISOString(),\n     }))\n   );\n\nВАЖЛИВО: notifications.recipient_id references profiles(id), а client_master_relations.client_id references client_profiles(id).\nclient_profiles і profiles — різні таблиці. Для notifications беремо client_id з client_master_relations і шукаємо відповідний profiles.id через client_profiles.\nПеревір чи є client_profiles.id == profiles.id (user_id). Якщо так — можна вставляти client_id напряму.\n\nСтек: Next.js Server Actions, Supabase Admin Client, TypeScript strict.\n",
+      "priority": "critical",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "backend",
+        "server-action",
+        "flash-deals",
+        "targeting"
+      ],
+      "createdAt": "2026-03-28T15:23:41.592Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774711439586-f4jhg3": {
+      "taskId": "task-1774711439586-f4jhg3",
+      "type": "feature",
+      "description": "\nОновити `src/components/master/flash/FlashDealPage.tsx` та `src/app/(master)/dashboard/flash/page.tsx`.\n\nЗМІНИ В page.tsx:\n1. Додати до паралельних запитів: fetch активних послуг майстра:\n   admin.from('services').select('id, name, price').eq('master_id', user.id).eq('is_active', true).order('sort_order')\n2. Додати до FlashDealPage props: services={services ?? []}\n3. Додати до FlashDealPage: usedThisMonth={count} де count = кількість flash_deals created_at >= початок місяця\n   (додати окремий count query)\n\nЗМІНИ В FlashDealPage.tsx:\n\nPROPS:\ninterface Props {\n  activeDeals: FlashDealRow[];\n  tier: string;\n  services: { id: string; name: string; price: number }[];\n  usedThisMonth: number;\n}\n\nФОРМА:\n1. Замінити текстовий input \"Послуга\" на <select>:\n   - value: selectedServiceId (useState)\n   - options: services.map(s => <option value={s.id}>{s.name} — {s.price}₴</option>)\n   - При виборі: setSelectedServiceId + автоматично setOriginalPrice(String(s.price))\n   - Стиль: такий самий як інші inputs в компоненті\n\n2. Оновити handleSubmit: передавати serviceId замість serviceName\n\nЛІМІТ STARTER (замість поточного starterLimitWarning):\nconst STARTER_LIMIT = 5;\nconst starterUsed = tier === 'starter' ? usedThisMonth : 0;\nconst starterLimitReached = tier === 'starter' && starterUsed >= STARTER_LIMIT;\n\nПРОГРЕС-БАР (додати у Header bento-card, тільки для tier === 'starter'):\n- Показати після stats grid:\n  <div className=\"mt-4 flex flex-col gap-2\">\n    <div className=\"flex justify-between text-xs\">\n      <span className=\"text-[#6B5750] font-medium\">Використано цього місяця</span>\n      <span className=\"font-bold text-[#D4935A]\">{starterUsed}/5</span>\n    </div>\n    <div className=\"h-2 rounded-full bg-[#F5E8E3] overflow-hidden\">\n      <motion.div\n        initial={{ width: 0 }}\n        animate={{ width: `${Math.min((starterUsed / STARTER_LIMIT) * 100, 100)}%` }}\n        transition={{ type: 'spring', stiffness: 200, damping: 24 }}\n        className=\"h-full rounded-full\"\n        style={{ background: starterUsed >= STARTER_LIMIT ? '#C05B5B' : starterUsed >= 3 ? '#D4935A' : '#5C9E7A' }}\n      />\n    </div>\n  </div>\n\nPAYWALL (оновити умову starterLimitWarning → starterLimitReached):\n- Якщо starterLimitReached — заблокувати submit button\n- Текст в banner: \"5 флеш-акцій на місяць\" (було 2)\n- Оновити badge у header: \"5/міс\" (було \"2/міс\")\n\nСтек: Next.js, TanStack Query v5, Framer Motion, Tailwind v4, TypeScript strict, Lucide React icons.\nТокени: accent #D4935A, text #2C1A14, success #5C9E7A, error #C05B5B.\n",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "frontend",
+        "flash-deals",
+        "premium-ui",
+        "progress-bar"
+      ],
+      "createdAt": "2026-03-28T15:23:59.586Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774711576904-amu9sm": {
+      "taskId": "task-1774711576904-amu9sm",
+      "type": "feature",
+      "description": "Створити supabase/migrations/053_flash_deals_upgrade.sql: 1) ALTER TABLE flash_deals ADD COLUMN service_id UUID REFERENCES services(id) ON DELETE CASCADE; 2) CREATE OR REPLACE FUNCTION get_eligible_flash_deal_clients(p_master_id UUID, p_slot_timestamp TIMESTAMPTZ) RETURNS TABLE(client_id UUID) з вибіркою з client_master_relations де НЕ існує бронювань зі статусом confirmed/pending у вікні ±48 годин від p_slot_timestamp.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "migration",
+        "sql",
+        "flash-deals"
+      ],
+      "createdAt": "2026-03-28T15:26:16.904Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:32:02.398Z",
+      "result": {
+        "status": "done",
+        "file": "supabase/migrations/053_flash_deals_upgrade.sql",
+        "details": "service_id FK додано, RPC get_eligible_flash_deal_clients створено з правильними колонками date+start_time з bookings. Міграція застосована успішно."
+      }
+    },
+    "task-1774711580963-ot6y1p": {
+      "taskId": "task-1774711580963-ot6y1p",
+      "type": "feature",
+      "description": "Оновити src/app/(master)/dashboard/flash/actions.ts: замінити serviceName:string на serviceId:UUID у CreateFlashDealParams; змінити ліміт Starter 2→5; після INSERT викликати RPC get_eligible_flash_deal_clients і вставити notifications для знайдених клієнтів (замість завантаження всіх bookings у Node.js); зберегти push + telegram сповіщення.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "backend",
+        "server-action",
+        "flash-deals"
+      ],
+      "createdAt": "2026-03-28T15:26:20.963Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:32:05.021Z",
+      "result": {
+        "status": "done",
+        "file": "src/app/(master)/dashboard/flash/actions.ts",
+        "details": "serviceId замість serviceName, ліміт 5, RPC-таргетинг, notifications insert, push і telegram збережені."
+      }
+    },
+    "task-1774711583835-o00aep": {
+      "taskId": "task-1774711583835-o00aep",
+      "type": "feature",
+      "description": "Оновити FlashDealPage.tsx та flash/page.tsx: 1) у page.tsx додати prop usedThisMonth (count flash_deals за поточний місяць), передати у FlashDealPage; 2) у FlashDealPage замінити текстовий input для послуги на select з активних послуг майстра; додати преміальний progress bar для Starter (X/5); заблокувати кнопку і показати paywall при 5/5.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "frontend",
+        "flash-deals"
+      ],
+      "createdAt": "2026-03-28T15:26:23.835Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:32:06.746Z",
+      "result": {
+        "status": "done",
+        "files": [
+          "FlashDealPage.tsx",
+          "flash/page.tsx"
+        ],
+        "details": "Select з useServices, progress bar (зелений→оранжевий→червоний), paywall при 5/5, usedThisMonth prop."
+      }
+    },
+    "task-1774712699078-e3xjuh": {
+      "taskId": "task-1774712699078-e3xjuh",
+      "type": "bugfix",
+      "description": "Міграція 054: виправити RPC get_eligible_flash_deal_clients. Замінити client_master_relations (тільки completed) на пряме SELECT DISTINCT з bookings (всі клієнти які бронювали). Виключати тільки тих у кого є confirmed/pending у ±48h вікні.",
+      "priority": "critical",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "rpc",
+        "bugfix",
+        "targeting"
+      ],
+      "createdAt": "2026-03-28T15:44:59.078Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:47:21.613Z",
+      "result": {
+        "status": "done",
+        "file": "054_fix_flash_deal_rpc.sql",
+        "applied": true
+      }
+    },
+    "task-1774712700571-7ggk05": {
+      "taskId": "task-1774712700571-7ggk05",
+      "type": "feature",
+      "description": "FlashDealPage.tsx: auto-fill price з service.price, замінити time input на smart slot picker (useWizardSchedule + generateAvailableSlots по службі і даті).",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "slots",
+        "price-autofill"
+      ],
+      "createdAt": "2026-03-28T15:45:00.571Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T15:47:23.607Z",
+      "result": {
+        "status": "done",
+        "file": "FlashDealPage.tsx",
+        "changes": [
+          "auto-fill price",
+          "smart slot picker",
+          "hidden price field"
+        ]
+      }
+    },
+    "task-1774713551341-tu1dcn": {
+      "taskId": "task-1774713551341-tu1dcn",
+      "type": "feature",
+      "description": "Редизайн DynamicPricingPage.tsx: info chips row у header (3 плитки), left colored border на картках, impact badges (+15% / -10%), преміальний toggle, spinner замість тексту у кнопці збереження.",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "redesign",
+        "pricing"
+      ],
+      "createdAt": "2026-03-28T15:59:11.341Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774713554007-71kz9g": {
+      "taskId": "task-1774713554007-71kz9g",
+      "type": "feature",
+      "description": "Редизайн PortfolioPage.tsx: portrait aspect-[4/5] фото, hover scale, завжди-видима кнопка delete з backdrop-blur, service badge overlay на фото, skeleton loading, empty state з Camera icon (без emoji), більший upload zone.",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "redesign",
+        "portfolio"
+      ],
+      "createdAt": "2026-03-28T15:59:14.007Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774714439691-iupq77": {
+      "taskId": "task-1774714439691-iupq77",
+      "type": "bugfix",
+      "description": "\nВиправити мовчазне поглинання помилок в usePortfolio + показати помилку в UI.\n\n## Файли для зміни\n1. `src/lib/supabase/hooks/usePortfolio.ts`\n2. `src/components/master/portfolio/PortfolioPage.tsx`\n\n## Проблема\n`uploadPhoto()` повністю ігнорує помилки:\n- `if (uploadErr) { setIsUploading(false); return; }` — storage error тихо ковтається\n- `await supabase.from('portfolio_photos').insert(...)` — DB error не перевіряється\n- `useQuery` для `service_id` може падати якщо міграція 052 не застосована\n\n## Що потрібно зробити\n\n### 1. `usePortfolio.ts`\n- Додати `const [uploadError, setUploadError] = useState<string | null>(null);`\n- В `uploadPhoto`:\n  - `if (uploadErr) { setIsUploading(false); setUploadError('Помилка завантаження файлу: ' + uploadErr.message); return; }`\n  - Перевірити insert error: `const { error: insertErr } = await supabase.from('portfolio_photos').insert({...}); if (insertErr) { setUploadError('Помилка збереження: ' + insertErr.message); setIsUploading(false); return; }`\n  - Скидати помилку на початку кожного upload: `setUploadError(null);`\n- Повернути `uploadError` та `clearUploadError: () => setUploadError(null)` з хука\n\n### 2. `PortfolioPage.tsx`\n- Деструктурувати `uploadError, clearUploadError` з `usePortfolio()`\n- Після кнопки upload додати блок помилки (AnimatePresence):\n```tsx\n<AnimatePresence>\n  {uploadError && (\n    <motion.div\n      initial={{ opacity: 0, y: -6 }}\n      animate={{ opacity: 1, y: 0 }}\n      exit={{ opacity: 0, y: -6 }}\n      className=\"bento-card p-4 flex items-center gap-3\"\n      style={{ background: 'rgba(192,91,91,0.06)', borderColor: 'rgba(192,91,91,0.2)' }}\n    >\n      <AlertCircle size={16} className=\"text-[#C05B5B] shrink-0\" />\n      <p className=\"text-xs text-[#C05B5B] flex-1\">{uploadError}</p>\n      <button onClick={clearUploadError} className=\"text-[#C05B5B] p-1 cursor-pointer\">\n        <XIcon size={14} />\n      </button>\n    </motion.div>\n  )}\n</AnimatePresence>\n```\n- Додати `AlertCircle` до import lucide\n\n## Стиль коду\n- Tailwind v4, дизайн-система проекту (error: #C05B5B)\n- Lucide icons only\n- Не додавати коментарі, де логіка очевидна\n",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "portfolio",
+        "bugfix",
+        "error-handling"
+      ],
+      "createdAt": "2026-03-28T16:13:59.691Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774718875290-qz3ap9": {
+      "taskId": "task-1774718875290-qz3ap9",
+      "type": "bugfix",
+      "description": "\nГлобальний фікс портфоліо: 3 критичних баги у 2 файлах.\n\n═══════════════════════════════════════\nROOT CAUSES (діагностика)\n═══════════════════════════════════════\n\n1. SELECT включає `service_id` — якщо міграція 052 не застосована, query падає з \"column service_id does not exist\".\n   TanStack Query v5 retries 3 рази → `isLoading=true` весь час → скелетон.\n   Після помилки `data=undefined` → `photos=[]` → \"фото зникли\".\n\n2. `refetchOnWindowFocus` (дефолт TanStack Query) тригериться при поверненні фокусу з file picker.\n   Якщо refetch fail → `data` стирається → фото зникають.\n\n3. Query не зберігає попередні дані при помилці refetch (потрібен `placeholderData`).\n\n═══════════════════════════════════════\nЗМІНИ — файл 1: `src/lib/supabase/hooks/usePortfolio.ts`\n═══════════════════════════════════════\n\nЗАМІНИТИ весь `useQuery` виклик:\n\nБУЛО:\n```ts\nconst { data: photos = [], isLoading } = useQuery<PortfolioPhoto[]>({\n  queryKey: key,\n  queryFn: async () => {\n    const supabase = createClient();\n    const { data, error } = await supabase\n      .from('portfolio_photos')\n      .select('id, url, storage_path, caption, sort_order, service_id')\n      .eq('master_id', masterId!)\n      .order('sort_order', { ascending: true })\n      .order('created_at', { ascending: true });\n    if (error) throw error;\n    return (data ?? []).map(rowToPhoto);\n  },\n  enabled: !!masterId,\n  staleTime: 60_000,\n});\n```\n\nСТАЛО:\n```ts\nconst {\n  data: photos = [],\n  isLoading,\n  error: queryError,\n} = useQuery<PortfolioPhoto[]>({\n  queryKey: key,\n  queryFn: async () => {\n    const supabase = createClient();\n    const { data, error } = await supabase\n      .from('portfolio_photos')\n      .select('id, url, storage_path, caption, sort_order, service_id')\n      .eq('master_id', masterId!)\n      .order('sort_order', { ascending: true })\n      .order('created_at', { ascending: true });\n    if (error) throw error;\n    return (data ?? []).map(rowToPhoto);\n  },\n  enabled: !!masterId,\n  staleTime: 60_000,\n  retry: 1,\n  placeholderData: (prev) => prev,\n});\n```\n\nТАКОЖ ДОДАТИ в return об'єкт:\n```ts\nqueryError: queryError ? String((queryError as Error).message ?? queryError) : null,\n```\n\n═══════════════════════════════════════\nЗМІНИ — файл 2: `src/components/master/portfolio/PortfolioPage.tsx`\n═══════════════════════════════════════\n\n1. Деструктуризація — додати `queryError`:\n```ts\nconst { photos, isLoading, isUploading, uploadPhoto, deletePhoto, updateCaption,\n  updateServiceLink, uploadError, clearUploadError, queryError } = usePortfolio();\n```\n\n2. Відразу після `{/* ── Header ── */}` motion.div (після закриваючого `</motion.div>` хедера, але ДО Pro limit banner) — додати блок з query error:\n\n```tsx\n{/* ── Query error banner ── */}\n<AnimatePresence>\n  {queryError && (\n    <motion.div\n      initial={{ opacity: 0, y: -6 }}\n      animate={{ opacity: 1, y: 0 }}\n      exit={{ opacity: 0, y: -6 }}\n      className=\"bento-card p-4 flex items-center gap-3\"\n      style={{ background: 'rgba(192,91,91,0.06)', borderColor: 'rgba(192,91,91,0.2)' }}\n    >\n      <AlertCircle size={16} className=\"text-[#C05B5B] shrink-0\" />\n      <div className=\"flex-1 min-w-0\">\n        <p className=\"text-xs font-semibold text-[#C05B5B]\">Помилка завантаження портфоліо</p>\n        <p className=\"text-[10px] text-[#C05B5B]/70 mt-0.5 break-all\">{queryError}</p>\n      </div>\n    </motion.div>\n  )}\n</AnimatePresence>\n```\n\nВАЖЛИВО: `AlertCircle` вже є в import lucide (додано раніше).\n\n═══════════════════════════════════════\nДОДАТКОВІ ПРАВИЛА\n═══════════════════════════════════════\n- Tailwind v4, дизайн-система проекту\n- Не чіпати нічого іншого в цих файлах\n- TypeScript strict mode — перевірити типи\n",
+      "priority": "critical",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "portfolio",
+        "bugfix",
+        "query-error",
+        "placeholder-data"
+      ],
+      "createdAt": "2026-03-28T17:27:55.291Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774719679630-lpm3bg": {
+      "taskId": "task-1774719679630-lpm3bg",
+      "type": "bugfix",
+      "description": "\nДефінітивний фікс портфоліо — 2 файли.\n\n═══ ROOT CAUSE ═══\nplaceholderData: (prev)=>prev нічого не дає бо умова {isLoading ? skeleton : ...}\nперевіряє isLoading ДО photos — скелетон показується навіть якщо photos є дані.\nКоли мутація викликає invalidateQueries і refetch fails → data=undefined → photos=[] → фото зникають.\n\n═══ ФАЙЛ 1: src/lib/supabase/hooks/usePortfolio.ts ═══\n\nЗМІНА 1 — імпорт: додати useRef\n  БУЛО: import { useState } from 'react';\n  СТАЛО: import { useState, useRef } from 'react';\n\nЗМІНА 2 — замінити ВЕСЬ useQuery блок і додати кеш ПІСЛЯ нього:\n\nВИДАЛИТИ:\n  const {\n    data: photos = [],\n    isLoading,\n    error: queryError,\n  } = useQuery<PortfolioPhoto[]>({\n    queryKey: key,\n    queryFn: async () => {\n      const supabase = createClient();\n      const { data, error } = await supabase\n        .from('portfolio_photos')\n        .select('id, url, storage_path, caption, sort_order, service_id')\n        .eq('master_id', masterId!)\n        .order('sort_order', { ascending: true })\n        .order('created_at', { ascending: true });\n      if (error) throw error;\n      return (data ?? []).map(rowToPhoto);\n    },\n    enabled: !!masterId,\n    staleTime: 60_000,\n    retry: 1,\n    placeholderData: (prev) => prev,\n  });\n\nДОДАТИ ЗАМІСТЬ:\n  const cachedPhotosRef = useRef<PortfolioPhoto[]>([]);\n\n  const {\n    data: freshPhotos,\n    isLoading,\n    error: queryError,\n  } = useQuery<PortfolioPhoto[]>({\n    queryKey: key,\n    queryFn: async () => {\n      const supabase = createClient();\n      const { data, error } = await supabase\n        .from('portfolio_photos')\n        .select('id, url, storage_path, caption, sort_order, service_id')\n        .eq('master_id', masterId!)\n        .order('sort_order', { ascending: true })\n        .order('created_at', { ascending: true });\n      if (error) throw error;\n      return (data ?? []).map(rowToPhoto);\n    },\n    enabled: !!masterId,\n    staleTime: 60_000,\n    retry: 1,\n  });\n\n  // Зберігаємо останні успішні дані — фото не зникають при refetch-помилках\n  if (freshPhotos !== undefined) {\n    cachedPhotosRef.current = freshPhotos;\n  }\n  const photos = freshPhotos ?? cachedPhotosRef.current;\n\n═══ ФАЙЛ 2: src/components/master/portfolio/PortfolioPage.tsx ═══\n\nЗМІНА — рядок 255, умова скелетону:\n\nБУЛО:\n      {/* ── Loading skeleton ── */}\n      {isLoading ? (\n\nСТАЛО:\n      {/* ── Loading skeleton ── */}\n      {isLoading && photos.length === 0 ? (\n\nПОЯСНЕННЯ: якщо в кеші є фото (photos.length > 0), показуємо grid навіть під час refetch/loading.\nЦе виключає \"зникнення фото\" при будь-якому invalidateQueries.\n",
+      "priority": "critical",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "portfolio",
+        "bugfix",
+        "useRef-cache",
+        "skeleton-fix"
+      ],
+      "createdAt": "2026-03-28T17:41:19.630Z",
+      "startedAt": null,
+      "completedAt": null
+    }
+  },
+  "version": "3.0.0"
+}

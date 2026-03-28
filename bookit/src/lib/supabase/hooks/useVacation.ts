@@ -21,7 +21,8 @@ export function useVacation() {
     enabled: !!masterId,
     queryFn: async () => {
       const supabase = createClient();
-      const today = new Date().toISOString().slice(0, 10);
+      const n = new Date();
+      const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
       const { data, error } = await supabase
         .from('schedule_exceptions')
         .select('id, date, reason')

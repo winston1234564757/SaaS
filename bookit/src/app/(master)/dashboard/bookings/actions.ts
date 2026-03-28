@@ -2,7 +2,6 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
 import { sendPush } from '@/lib/push';
 
 export async function rescheduleBooking(
@@ -39,7 +38,6 @@ export async function rescheduleBooking(
 
     if (error) return { error: error.message };
 
-    revalidatePath('/', 'layout');
     return { error: null };
   } catch (err) {
     console.error('[rescheduleBooking]', err);

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings, MessageSquare, GalleryHorizontalEnd, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -28,6 +29,7 @@ export function FloatingSidebar() {
   const tier = masterProfile?.subscription_tier ?? 'starter';
   const tierLabel = tier === 'pro' ? 'Pro' : tier === 'studio' ? 'Studio' : 'Starter';
   const avatarEmoji = masterProfile?.avatar_emoji ?? '💅';
+  const avatarUrl   = profile?.avatar_url ?? null;
 
   return (
     <div className="floating-sidebar flex flex-col p-3">
@@ -91,10 +93,14 @@ export function FloatingSidebar() {
         } position="right" delay={400}>
           <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-2xl hover:bg-white/55 transition-colors w-full">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0"
+              className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center text-sm"
               style={{ background: 'rgba(255,210,194,0.6)' }}
             >
-              {avatarEmoji}
+              {avatarUrl ? (
+                <Image src={avatarUrl} alt={displayName} width={36} height={36} className="w-full h-full object-cover" />
+              ) : (
+                avatarEmoji
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-[#2C1A14] truncate">{displayName}</p>

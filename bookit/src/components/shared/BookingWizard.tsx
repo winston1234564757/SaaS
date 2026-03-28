@@ -84,9 +84,11 @@ const DOW     = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const DAY_S   = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота'];
 const MONTH_S = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
 
-function toISO(d: Date) { return d.toISOString().slice(0, 10); }
+function toISO(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 function getDays(n = 30): Date[] {
-  const t = new Date();
+  const t = new Date(); t.setHours(0, 0, 0, 0); // normalize to local midnight
   return Array.from({ length: n }, (_, i) => {
     const d = new Date(t); d.setDate(t.getDate() + i); return d;
   });
@@ -219,6 +221,7 @@ export function BookingWizard({
   const [clientNotes, setClientNotes]           = useState('');
   const [discountPercent, setDiscountPercent]   = useState(0);
   const [durationOverride, setDurationOverride] = useState<number | null>(null);
+  const [useDynamicPrice, setUseDynamicPrice]   = useState(true);
 
   // ── Client-mode extras ────────────────────────────────────────────────────────
   const [clientUserId, setClientUserId]             = useState<string | null>(null);
@@ -277,9 +280,12 @@ export function BookingWizard({
     return applyDynamicPricing(totalServicesPrice, pricingRules as Record<string, unknown>, selectedDate, selectedTime);
   }, [totalServicesPrice, pricingRules, selectedDate, selectedTime]);
 
-  const adjustedServicesPrice = dynamicPricing?.adjustedPrice ?? totalServicesPrice;
+  // Якщо майстер вимкнув toggle — використовуємо базову ціну
+  const effectiveServicesPrice = (
+    dynamicPricing && dynamicPricing.adjustedPrice !== totalServicesPrice && useDynamicPrice
+  ) ? dynamicPricing.adjustedPrice : totalServicesPrice;
   const totalProductsPrice    = useMemo(() => cart.reduce((s, ci) => s + ci.product.price * ci.quantity, 0), [cart]);
-  const grandTotal            = adjustedServicesPrice + totalProductsPrice;
+  const grandTotal            = effectiveServicesPrice + totalProductsPrice;
   const loyaltyDiscountAmount = loyaltyDiscount ? Math.round(grandTotal * loyaltyDiscount.percent / 100) : 0;
   const masterDiscountAmount  = Math.round(grandTotal * discountPercent / 100);
   const flashDealAmount       = flashDeal ? Math.round(grandTotal * flashDeal.discountPct / 100) : 0;
@@ -305,6 +311,7 @@ export function BookingWizard({
       setClientNotes('');
       setDiscountPercent(0);
       setDurationOverride(null);
+      setUseDynamicPrice(true);
       setClientUserId(null);
       setCreatedBookingId(null);
       setClientHistoryTimes([]);
@@ -480,6 +487,7 @@ export function BookingWizard({
       discountPercent:         mode === 'client' ? (loyaltyDiscount?.percent ?? 0) : discountPercent,
       durationOverrideMinutes: mode === 'master' ? (durationOverride ?? undefined) : undefined,
       flashDealId:             mode === 'client' ? (flashDeal?.id ?? undefined) : undefined,
+      applyDynamicPricing:     mode === 'master' ? useDynamicPrice : true,
     });
     setSaving(false);
     if (result.error) {
@@ -976,8 +984,8 @@ export function BookingWizard({
                               );
                             })()}
 
-                            {/* Dynamic pricing badge */}
-                            {dynamicPricing?.label && (
+                            {/* Dynamic pricing badge — для клієнта: інфо-бейдж */}
+                            {dynamicPricing?.label && mode === 'client' && (
                               <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium mb-3 ${
                                 dynamicPricing.modifier > 0
                                   ? 'bg-red-50 text-red-700 border border-red-100'
@@ -986,6 +994,35 @@ export function BookingWizard({
                                 {dynamicPricing.label}
                                 <span className="ml-auto font-bold">{fmt(dynamicPricing.adjustedPrice)}</span>
                               </div>
+                            )}
+
+                            {/* Dynamic pricing toggle — тільки для майстра, якщо правило спрацювало */}
+                            {mode === 'master' && dynamicPricing && dynamicPricing.adjustedPrice !== totalServicesPrice && selectedTime && (
+                              <button
+                                type="button"
+                                onClick={() => setUseDynamicPrice(v => !v)}
+                                className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl border transition-all mb-3 ${
+                                  useDynamicPrice
+                                    ? 'bg-[#789A99]/10 border-[#789A99]/30'
+                                    : 'bg-white/70 border-white/80 hover:bg-white'
+                                }`}
+                              >
+                                <div className="text-left">
+                                  <p className="text-sm font-medium text-[#2C1A14]">Застосувати динамічну ціну</p>
+                                  <p className="text-xs text-[#A8928D] mt-0.5">
+                                    {dynamicPricing.label} → {fmt(dynamicPricing.adjustedPrice)}
+                                  </p>
+                                </div>
+                                <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ml-3 ${
+                                  useDynamicPrice ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'
+                                }`}>
+                                  <motion.div
+                                    animate={{ x: useDynamicPrice ? 20 : 2 }}
+                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                    className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+                                  />
+                                </div>
+                              </button>
                             )}
                           </>
                         )}
@@ -1174,7 +1211,7 @@ export function BookingWizard({
                               <span className="font-semibold text-[#2C1A14]">{fmt(s.price)}</span>
                             </div>
                           ))}
-                          {dynamicPricing?.label && (
+                          {dynamicPricing?.label && useDynamicPrice && (
                             <div className="flex justify-between text-xs">
                               <span className="text-[#789A99]">{dynamicPricing.label}</span>
                               <span className={`font-medium ${dynamicPricing.modifier > 0 ? 'text-[#D4935A]' : 'text-[#5C9E7A]'}`}>

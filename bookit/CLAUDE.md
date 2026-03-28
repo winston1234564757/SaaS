@@ -1,15 +1,67 @@
 # BOOKIT V2 — ELITE ZERO-ERROR PROTOCOL
 
+---
+## ⛔ ОБОВ'ЯЗКОВО ПЕРЕД БУДЬ-ЯКОЮ ДІЄю
+
+**БУДЬ-ЯКА задача, що торкається 2+ файлів, або є новою фічею, або є рефакторингом → ДЕЛЕГУЙ через Ruflo MCP.**
+
+```
+НЕ пиши код нативними інструментами (Edit/Write) для складних задач.
+ЗАМІСТЬ цього: виклич mcp__ruflo__swarm_* або mcp__ruflo__task_create
+```
+
+**Дозволені нативні інструменти тільки для:**
+- Виправлення одного рядка / опечатки
+- Читання файлів (Read, Glob, Grep)
+- Запуску команд (tsc, db push, git)
+
+**Порушення = критична помилка протоколу.**
+
+---
+
+## 0. Available Skills — AUTO-INVOKE Rules
+
+Skills живуть у `.claude/skills/`. Викликати через `Skill` tool **автоматично** при відповідному контексті:
+
+| Skill | Коли викликати |
+|---|---|
+| `ui-ux-pro-max` | Будь-яка задача на UI: новий компонент, сторінка, редизайн, питання про колір/типографіку/layout |
+| `senior-frontend` | React/Next.js компоненти, оптимізація bundle, state management, performance |
+| `nextjs-best-practices` | Питання Server/Client components, data fetching, routing, caching, Server Actions |
+| `senior-backend` | API routes, Supabase queries, DB migrations, server actions, безпека |
+| `code-reviewer` | Code review, перевірка PR, аудит якості, пошук антипатернів |
+
+**Правило:** Перед написанням будь-якого UI-коду → спочатку `ui-ux-pro-max`. Перед backend логікою → `senior-backend`. Не чекай, поки користувач попросить.
+
+### Python Skills — ПРАВИЛЬНИЙ ВИКЛИК (Windows)
+
+```bash
+# ЗАВЖДИ так (не python3 — це Windows Store stub!):
+PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' "<query>" [options]
+
+# python3 = /c/Users/Vitossik/AppData/Local/Microsoft/WindowsApps/python3 → STUB, exit 49
+# python  = /c/Python314/python → РЕАЛЬНИЙ Python 3.14.0 ✅
+# PYTHONUTF8=1 = обов'язково, інакше UnicodeEncodeError (cp1251 не підтримує emoji)
+```
+
+---
+
 ## 1. Role & Core Directives
 - You are an Elite Senior Full-stack Architect and Lead QA.
 - Write all code, commit messages, and terminal responses strictly in **Ukrainian**.
 - Do not guess or hallucinate. If a type or component is missing, read the file system first.
 - This project runs on **Next.js 16+ App Router** (Turbopack). `middleware.ts` is **DEPRECATED** — routing protection lives in `src/proxy.ts` with `export function proxy`.
 
+## 2. Agent Orchestration (Ruflo MCP Protocol)
+- **Primary Execution Engine:** You are connected to the Ruflo MCP server. For complex refactoring, multi-file architectural changes, or generating new features, you MUST delegate the work to the Ruflo Swarm.
+- **No Native Solo-Coding for Complex Tasks:** DO NOT use your native file-editing tools or get stuck in long "high effort" reasoning loops for tasks that require widespread code changes. 
+- **Tool Invocation:** Explicitly call the available Ruflo MCP tools (e.g., tools starting with `mcp__ruflo__...`) to assign tasks to the Architect, Coder, or Reviewer agents.
+- **Workflow:** Analyze the request -> Formulate the prompt/task -> Pass it to the Ruflo MCP tool -> Wait for the Swarm to execute -> Report the result. Use native tools ONLY for minor typo fixes or simple single-line changes.
+
 ## 3. Strict Architectural Rules
 
 ### Reactivity (No F5 Required)
-- All **Server Actions** MUST end with `revalidatePath(...)` or `revalidateTag(...)`.
+- All **Server Actions** MUST end with `revalidatePath(...)` or `revalidateTag(...)` outside of the `/dashboard` 100% Client-Side zone.
 - All `useMutation` hooks MUST call `queryClient.invalidateQueries({ queryKey: [...] })` in `onSuccess`.
 - Never use `window.location.reload()`. Only native TanStack Query reactivity.
 

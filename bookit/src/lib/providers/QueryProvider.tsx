@@ -44,12 +44,12 @@ function createQueryClient(showToast: ReturnType<typeof useToast>['showToast']) 
  *
  * Strategy:
  *   1. Intercept TanStack Query's focus event via focusManager
- *   2. Await `getSession()` (triggers automatic token refresh if expired) — 10s timeout
- *   3. Call `onFocus()` — signals TanStack Query to refetch all stale queries
+ *   2. Await `refreshSession()` — гарантований мережевий запит, свіжий токен
+ *   3. Call `onFocus(true)` — явний boolean гарантує тригер #onFocus() у TQ v5
  *
- * We intentionally do NOT call `router.refresh()` or `queryClient.invalidateQueries()`
- * here. TanStack Query's built-in `refetchOnWindowFocus: true` handles data refetching
- * after `onFocus()` fires, without conflicting with server component re-renders.
+ * FIX #1: getSession() → refreshSession() — getSession() повертає кеш, НЕ оновлює токен.
+ * FIX #2: onFocus() → onFocus(true) — без аргументу setFocused(undefined) не тригерить
+ *         рефетч у TanStack Query v5, якщо #focused вже undefined (initial state).
  */
 function useSessionWakeup() {
   const queryClient = useQueryClient();
@@ -61,23 +61,23 @@ function useSessionWakeup() {
       const handler = async () => {
         if (document.visibilityState !== 'visible') return;
 
-        // Renew auth token before any data fetches fire.
-        // 10s timeout: after sleep the first network request may be slow,
-        // but 3s was too aggressive and caused stale-token cascades.
+        // FIX #1: refreshSession() робить мережевий запит і гарантує свіжий JWT.
+        // getSession() повертав токен з in-memory cache — міг бути протермінованим.
+        // 10s timeout залишаємо — мережа після сну може бути повільною.
         try {
           await Promise.race([
-            supabase.auth.getSession(),
+            supabase.auth.refreshSession(),
             new Promise(resolve => setTimeout(resolve, 10_000)),
           ]);
         } catch {
-          // Auth refresh failed — onFocus() below will still fire and TanStack Query
-          // will retry with exponential backoff (retry: 2). If the token truly expired,
-          // the global onError handler will prompt a page reload.
+          // Refresh failed — onFocus(true) нижче все одно стріляє,
+          // TanStack Query зробить retry з exponential backoff.
         }
 
-        // Signal TanStack Query: "the window is focused, refetch stale queries."
-        // This respects each query's staleTime — only stale queries are refetched.
-        onFocus();
+        // FIX #2: onFocus(true) замість onFocus().
+        // У TQ v5 setFocused(undefined) → #focused !== undefined = false → #onFocus() не викликається.
+        // setFocused(true) → завжди встановлює #focused=true і тригерить рефетч.
+        onFocus(true);
       };
 
       document.addEventListener('visibilitychange', handler);
@@ -94,37 +94,49 @@ function useSessionWakeup() {
 
 /**
  * Detects when the PWA wakes up from deep sleep (iOS/Android backgrounding).
- * Mobile browsers often freeze JS completely, and sometimes fail to fire 
+ * Mobile browsers often freeze JS completely, and sometimes fail to fire
  * visibilitychange or focus events when waking back up.
- * 
+ *
  * Strategy: A silent 5s interval heartbeat. If the interval fires and >3 minutes
  * have passed, the device was asleep. We then force a token refresh and refetch.
+ *
+ * FIX #3: getSession() → refreshSession() — гарантований мережевий refresh токена.
+ * FIX #4: invalidateQueries → resetQueries — invalidate лише позначає як stale,
+ *         але НЕ очищує error state після retry exhaustion. resetQueries повертає
+ *         query в initial стан і тригерить чистий fetch.
+ * FIX #5: timeout 5s → 12s — мережа після deep sleep прокидається повільно,
+ *         5s було занадто агресивно і race виграв timeout до завершення refresh.
  */
 function useDeepSleepWakeup() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     let lastTime = Date.now();
-    
+
     const interval = setInterval(async () => {
       const now = Date.now();
       const elapsed = now - lastTime;
-      
+
       // If JS was frozen for more than 3 minutes (180,000 ms)
       if (elapsed > 180_000) {
         const supabase = createClient();
         try {
+          // FIX #3 + #5: refreshSession() з 12s timeout.
+          // Дає достатньо часу мережі прокинутись і завершити token refresh
+          // до того як запити підуть з новим токеном.
           await Promise.race([
-            supabase.auth.getSession(),
-            new Promise(resolve => setTimeout(resolve, 5000)),
+            supabase.auth.refreshSession(),
+            new Promise(resolve => setTimeout(resolve, 12_000)),
           ]);
         } catch {}
-        
-        // Force TanStack Query to refetch all mounted components 
-        // (background refetch, no spinners/skeletons)
-        queryClient.invalidateQueries({ type: 'active' });
+
+        // FIX #4: resetQueries замість invalidateQueries.
+        // Після 3+ хвилин сну частина запитів може бути в error state (retry exhausted).
+        // invalidateQueries позначає як stale, але не очищує error — юзер бачить dead UI.
+        // resetQueries: очищує error state, повертає initial, тригерить свіжий fetch.
+        queryClient.resetQueries({ type: 'active' });
       }
-      
+
       lastTime = now;
     }, 5000);
 
@@ -132,9 +144,34 @@ function useDeepSleepWakeup() {
   }, [queryClient]);
 }
 
+/**
+ * FIX #3: Слухаємо TOKEN_REFRESHED від Supabase.
+ *
+ * Коли Supabase успішно оновлює JWT (фоново або явно), він емітить TOKEN_REFRESHED.
+ * Без цього listener queryClient не знає про свіжий токен — запити в error state
+ * залишаються мертвими до наступного F5.
+ *
+ * resetQueries({ type: 'active' }): очищує error state тільки у АКТИВНИХ запитів
+ * (тих що зараз маунтовані). Inactive (кешовані) не чіпаємо — вони оновляться при mount.
+ */
+function useAuthQuerySync() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const supabase = createClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string) => {
+      if (event === 'TOKEN_REFRESHED') {
+        queryClient.resetQueries({ type: 'active' });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
+}
+
 function SessionWakeup() {
   useSessionWakeup();
   useDeepSleepWakeup();
+  useAuthQuerySync();
   return null;
 }
 

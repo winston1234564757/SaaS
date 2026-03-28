@@ -40,13 +40,24 @@ export async function proxy(request: NextRequest) {
     pathname === '/register';
 
   if (user && needsRoleCheck) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    // Role is immutable after onboarding — cache in cookie to avoid a DB hit on every navigation.
+    // Cookie is set on first visit and cleared on sign-out.
+    let role = request.cookies.get('user_role')?.value ?? null;
 
-    const role = profile?.role ?? null;
+    if (!role) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      role = profile?.role ?? null;
+      if (role) {
+        supabaseResponse.cookies.set('user_role', role, {
+          path: '/', maxAge: 60 * 60 * 24 * 30, // 30 days
+          httpOnly: true, sameSite: 'lax',
+        });
+      }
+    }
 
     // /dashboard — masters only
     if (pathname.startsWith('/dashboard') && role !== 'master') {

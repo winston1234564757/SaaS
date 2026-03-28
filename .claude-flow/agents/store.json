@@ -1,0 +1,410 @@
+{
+  "agents": {
+    "agent-1774680236532-pish9e": {
+      "agentId": "agent-1774680236532-pish9e",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "instructions": "You are an Elite Senior Full-stack Engineer. Write all code and comments in Ukrainian. Follow the project's strict conventions: TypeScript strict mode, Tailwind CSS v4, Framer Motion for animations, Lucide React icons only, mobile-first design. DO NOT run build or typecheck. Make ONLY the minimal changes required by the task.",
+        "task": "ЗАДАЧА: Додати опціональний toggle динамічного ціноутворення в ручний запис майстра.\n\nКОНТЕКСТ:\n1. `src/lib/actions/createBooking.ts` — Server Action. Зараз ЗАВЖДИ застосовує dynamic pricing (рядки 188-193). Потрібно зробити це опціональним через нове поле `applyDynamicPricing`.\n2. `src/components/shared/BookingWizard.tsx` — UI wizard. mode='master' або 'client'. Динамічне ціноутворення вже розраховується через `dynamicPricing` useMemo (рядки 277-284). Але toggle для майстра відсутній.\n\nЩО ЗМІНИТИ:\n\n### 1. `src/lib/actions/createBooking.ts`\nДодати до Zod схеми (після `flashDealId`):\n```ts\n// Якщо false — ігнорувати pricing_rules (майстер вирішив не застосовувати)\napplyDynamicPricing: z.boolean().default(true),\n```\nВ блоці '7. Server-side totals' змінити розрахунок dynamicResult:\n```ts\nconst dynamicResult =\n  p.applyDynamicPricing && pricingRules && Object.keys(pricingRules).length > 0\n    ? applyDynamicPricing(totalServicesPrice, pricingRules, bookingDate, p.startTime)\n    : null;\n```\n\n### 2. `src/components/shared/BookingWizard.tsx`\nДодати стан після `discountPercent`:\n```ts\nconst [useDynamicPrice, setUseDynamicPrice] = useState(true);\n```\nЦей стан скидати до `true` при reset форми (в useEffect де isOpen).\n\nВ useMemo для `dynamicPricing` (рядки 277-284) — залишити розрахунок незмінним, він завжди рахує потенційну ціну.\n\nДодати нову derived змінну після `adjustedServicesPrice`:\n```ts\nconst effectiveServicesPrice = (dynamicPricing && dynamicPricing.adjustedPrice !== totalServicesPrice && useDynamicPrice)\n  ? dynamicPricing.adjustedPrice\n  : totalServicesPrice;\n```\nЗамінити всі використання `adjustedServicesPrice` на `effectiveServicesPrice` у розрахунку `grandTotal` та `finalTotal`.\n\nПісля existing dynamic pricing badge (рядки 982-991 в step 'datetime') додати toggle блок — тільки якщо `mode === 'master'` і `dynamicPricing?.adjustedPrice !== undefined && dynamicPricing.adjustedPrice !== totalServicesPrice`:\n```tsx\n{mode === 'master' && dynamicPricing && dynamicPricing.adjustedPrice !== totalServicesPrice && selectedTime && (\n  <button\n    onClick={() => setUseDynamicPrice(v => !v)}\n    className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl border transition-all mb-3 ${\n      useDynamicPrice\n        ? 'bg-[#789A99]/10 border-[#789A99]/30'\n        : 'bg-white/70 border-white/80'\n    }`}\n  >\n    <div className='text-left'>\n      <p className='text-sm font-medium text-[#2C1A14]'>Застосувати динамічну ціну</p>\n      <p className='text-xs text-[#A8928D] mt-0.5'>{dynamicPricing.label} → {fmt(dynamicPricing.adjustedPrice)}</p>\n    </div>\n    <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${\n      useDynamicPrice ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'\n    }`}>\n      <motion.div\n        animate={{ x: useDynamicPrice ? 20 : 2 }}\n        transition={{ type: 'spring', stiffness: 500, damping: 30 }}\n        className='absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm'\n      />\n    </div>\n  </button>\n)}\n```\n\nВ `handleSubmit` в аргументи `createBooking` додати:\n```ts\napplyDynamicPricing: mode === 'master' ? useDynamicPrice : true,\n```\n\nВ summary (step 'details') — в рядку де показується `dynamicPricing?.label` — додати умову `&& useDynamicPrice` щоб not show label якщо toggle вимкнений.\n\nДОДАТКОВО: у step 'details', в рядку ціни послуг показуй `effectiveServicesPrice` замість `adjustedServicesPrice`.\n\nЖОРСТКІ ОБМЕЖЕННЯ:\n- DO NOT run build or typecheck\n- Компонент toggle — inline Framer Motion (pattern вже є в проекті: motion.div з animate x)\n- Не робити зайвих запитів до БД\n- Не змінювати нічого що не стосується задачі\n- TypeScript strict — ніяких any там де не потрібно\n\nФАЙЛИ ДЛЯ РЕДАГУВАННЯ:\n1. `C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\actions\\createBooking.ts`\n2. `C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\BookingWizard.tsx`",
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T06:43:56.534Z",
+      "domain": "fullstack",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774680565019-w93b8x": {
+      "agentId": "agent-1774680565019-w93b8x",
+      "agentType": "architect",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "role": "Architect + Researcher",
+        "mission": "Проаналізуй інфраструктуру відновлення після сну та сформуй PWA Resurrection Plan",
+        "files_scanned": {
+          "QueryProvider": "src/lib/providers/QueryProvider.tsx",
+          "SupabaseClient": "src/lib/supabase/client.ts",
+          "MasterContext": "src/lib/supabase/context.tsx"
+        },
+        "findings": {
+          "client_ts": "Singleton pattern через module-level var. createBrowserClient викликається один раз. ОК.",
+          "useSessionWakeup": {
+            "mechanism": "focusManager.setEventListener перехоплює visibility/focus events. Перед onFocus() чекає getSession() з 10s timeout.",
+            "bug_1": "CRITICAL: getSession() НЕ гарантує свіжий токен. Він повертає сесію з in-memory cache. Якщо токен протерміновано, getSession() поверне null або expired session БЕЗ мережевого запиту. onFocus() стрілить з мертвим токеном.",
+            "bug_2": "onFocus() викликається БЕЗ аргументів. В TanStack Query v5 focusManager.setEventListener передає setFocused(focused?: boolean). Виклик setFocused(undefined) — якщо #focused вже undefined (initial state), умова #focused !== focused = false, і #onFocus() НЕ тригериться. Рефетч не відбувається."
+          },
+          "useDeepSleepWakeup": {
+            "mechanism": "5s interval heartbeat. Якщо elapsed > 180s — force refresh + invalidateQueries.",
+            "bug_3": "Promise.race([getSession(), timeout(5000)]) — якщо мережа повільна після сну, timeout(5000) виграє race. invalidateQueries стріляє до завершення token refresh. Всі query отримують 401, кешують error state.",
+            "bug_4": "Після 3 retry (retry:2) query переходить в error state і ЗАЛИШАЄТЬСЯ там. refetchOnWindowFocus вже відпрацював — повторного тригеру немає. Юзер бачить вічний скелетон."
+          },
+          "missing_mechanism": "Немає глобального onAuthStateChange listener в QueryProvider. Коли Supabase успішно оновлює токен (TOKEN_REFRESHED event), queryClient.invalidateQueries ніколи не викликається автоматично — тільки якщо це збіглось з ручним вікном фокусу."
+        },
+        "resurrection_plan": {
+          "fix_1": {
+            "title": "Замінити getSession() на refreshSession() або getUser()",
+            "why": "refreshSession() робить МЕРЕЖЕВИЙ запит і гарантує свіжий токен. getUser() також верифікує через сервер.",
+            "where": "useSessionWakeup та useDeepSleepWakeup"
+          },
+          "fix_2": {
+            "title": "Виправити onFocus() виклик → onFocus(true)",
+            "why": "TanStack Query v5 setFocused приймає boolean. Тільки onFocus(true) гарантовано встановить #focused=true і викличе #onFocus() для тригеру рефетчів.",
+            "where": "useSessionWakeup handler"
+          },
+          "fix_3": {
+            "title": "Додати onAuthStateChange в QueryProvider",
+            "why": "При TOKEN_REFRESHED event — одразу queryClient.invalidateQueries({ type: active }). Це гарантує рефетч ПІСЛЯ того як токен вже свіжий, без race condition.",
+            "where": "QueryProvider або окремий useAuthQuerySync hook"
+          },
+          "fix_4": {
+            "title": "queryClient.resetQueries замість invalidateQueries в deep sleep",
+            "why": "invalidateQueries позначає як stale але не очищує error state. resetQueries очищує error + повертає initial state + тригерить свіжий fetch.",
+            "where": "useDeepSleepWakeup"
+          },
+          "fix_5": {
+            "title": "Збільшити timeout у useDeepSleepWakeup до 12s + await реального refresh",
+            "why": "5s timeout після сну — занадто агресивно. Мережа після sleep може бути повільною. 12s + використання refreshSession() (не getSession()) дасть час на реальний token refresh.",
+            "where": "useDeepSleepWakeup"
+          },
+          "fix_6": {
+            "title": "Додати visibilitychange fallback з повторним invalidate",
+            "why": "Деякі мобільні браузери (iOS Safari PWA) не стріляють focus event при поверненні з фону — тільки visibilitychange. Поточний handler слухає обидва, але onFocus(true) fix вирішить це."
+          }
+        },
+        "output_format": "Поверни структурований Diagnostic Report + PWA Resurrection Plan готовий до презентації юзеру",
+        "model": "opus"
+      },
+      "createdAt": "2026-03-28T06:49:25.019Z",
+      "domain": "infrastructure",
+      "model": "opus",
+      "modelRoutedBy": "explicit"
+    },
+    "researcher-state-cache": {
+      "agentId": "researcher-state-cache",
+      "agentType": "researcher",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:02:17.073Z",
+      "domain": "state-caching",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "code-reviewer-time": {
+      "agentId": "code-reviewer-time",
+      "agentType": "code-reviewer",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:02:22.457Z",
+      "domain": "time-scheduling",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "security-db-reviewer": {
+      "agentId": "security-db-reviewer",
+      "agentType": "security",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:02:29.684Z",
+      "domain": "database-security",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "architect-component-health": {
+      "agentId": "architect-component-health",
+      "agentType": "architect",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:02:35.670Z",
+      "domain": "component-architecture",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "fixer-critical": {
+      "agentId": "fixer-critical",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "opus"
+      },
+      "createdAt": "2026-03-28T07:17:37.611Z",
+      "domain": "critical-security",
+      "model": "opus",
+      "modelRoutedBy": "explicit"
+    },
+    "fixer-context-time": {
+      "agentId": "fixer-context-time",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:17:58.042Z",
+      "domain": "context-time-fixes",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "fixer-actions-utils": {
+      "agentId": "fixer-actions-utils",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:18:16.799Z",
+      "domain": "actions-utils-fixes",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "fixer-s4-s8": {
+      "agentId": "fixer-s4-s8",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:28:22.509Z",
+      "domain": "hooks-performance",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "fixer-s5-migration": {
+      "agentId": "fixer-s5-migration",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T07:28:23.127Z",
+      "domain": "db-migration",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "stability-hooks-realtime": {
+      "agentId": "stability-hooks-realtime",
+      "agentType": "researcher",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T11:40:01.232Z",
+      "domain": "hooks-realtime-stability",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "stability-server-api": {
+      "agentId": "stability-server-api",
+      "agentType": "researcher",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T11:40:06.038Z",
+      "domain": "server-api-stability",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "stability-ui-flows": {
+      "agentId": "stability-ui-flows",
+      "agentType": "researcher",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T11:40:11.212Z",
+      "domain": "ui-flow-stability",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "stability-pwa-offline": {
+      "agentId": "stability-pwa-offline",
+      "agentType": "researcher",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T11:40:15.472Z",
+      "domain": "pwa-offline-stability",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "fix-critical-errors": {
+      "agentId": "fix-critical-errors",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "opus"
+      },
+      "createdAt": "2026-03-28T11:43:18.803Z",
+      "domain": "critical-stability",
+      "model": "opus",
+      "modelRoutedBy": "explicit"
+    },
+    "fix-pwa-proxy": {
+      "agentId": "fix-pwa-proxy",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T11:43:20.045Z",
+      "domain": "pwa-proxy-stability",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774710528364-iran31": {
+      "agentId": "agent-1774710528364-iran31",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "haiku"
+      },
+      "createdAt": "2026-03-28T15:08:48.364Z",
+      "domain": "database",
+      "model": "haiku",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774710531737-xptig9": {
+      "agentId": "agent-1774710531737-xptig9",
+      "agentType": "architect",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T15:08:51.737Z",
+      "domain": "backend",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774710534736-bmado1": {
+      "agentId": "agent-1774710534736-bmado1",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "opus"
+      },
+      "createdAt": "2026-03-28T15:08:54.736Z",
+      "domain": "frontend",
+      "model": "opus",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774710536276-u4g7ge": {
+      "agentId": "agent-1774710536276-u4g7ge",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "opus"
+      },
+      "createdAt": "2026-03-28T15:08:56.276Z",
+      "domain": "frontend",
+      "model": "opus",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774710537623-m5qpi2": {
+      "agentId": "agent-1774710537623-m5qpi2",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T15:08:57.623Z",
+      "domain": "backend",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774711587845-e2uokv": {
+      "agentId": "agent-1774711587845-e2uokv",
+      "agentType": "architect",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T15:26:27.845Z",
+      "domain": "database",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774711588655-9exaq4": {
+      "agentId": "agent-1774711588655-9exaq4",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T15:26:28.655Z",
+      "domain": "backend",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774711589135-7cyb3q": {
+      "agentId": "agent-1774711589135-7cyb3q",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-28T15:26:29.135Z",
+      "domain": "frontend",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    }
+  },
+  "version": "3.0.0"
+}

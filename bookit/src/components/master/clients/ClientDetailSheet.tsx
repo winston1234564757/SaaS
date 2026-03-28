@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, Calendar, TrendingUp, Star, Clock, CheckCircle2, XCircle, Crown, Bell } from 'lucide-react';
-import { sendChurnReminder } from '@/app/(master)/dashboard/clients/actions';
+import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2 } from 'lucide-react';
+import { sendChurnReminder, saveClientNote } from '@/app/(master)/dashboard/clients/actions';
 import { isChurned } from './ClientsPage';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/components/master/services/types';
-import { formatDate, pluralize } from '@/lib/utils/dates';
+import { formatDate } from '@/lib/utils/dates';
 import type { ClientRow } from './ClientsPage';
 import { getAutoTags } from './ClientsPage';
+import { useClientNote, useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
 
 interface ClientDetailSheetProps {
   client: ClientRow | null;
@@ -43,8 +44,22 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   const [reminding, setReminding] = useState(false);
   const [reminderResult, setReminderResult] = useState<string | null>(null);
 
+  // Notes
+  const { data: savedNote = '' } = useClientNote(client?.client_phone);
+  const invalidateNote = useClientNoteInvalidate();
+  const [noteText, setNoteText] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync note from server when client changes or note loads
+  useEffect(() => {
+    setNoteText(savedNote);
+  }, [savedNote, client?.id]);
+
   useEffect(() => {
     setReminderResult(null);
+    setNoteSaved(false);
   }, [client?.id]);
 
   useEffect(() => {
@@ -73,6 +88,25 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
           setLoading(false);
         });
   }, [client?.id, masterProfile?.id]);
+
+  function handleNoteChange(val: string) {
+    setNoteText(val);
+    setNoteSaved(false);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => handleSaveNote(val), 1500);
+  }
+
+  async function handleSaveNote(text = noteText) {
+    if (!client?.client_phone) return;
+    setNoteSaving(true);
+    const { error } = await saveClientNote(client.client_phone, text);
+    if (!error) {
+      setNoteSaved(true);
+      invalidateNote(client.client_phone);
+      setTimeout(() => setNoteSaved(false), 2000);
+    }
+    setNoteSaving(false);
+  }
 
   async function handleToggleVip() {
     if (!client || !masterProfile?.id || toggling || !client.relation_id) return;
@@ -240,6 +274,36 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                     VIP доступний для клієнтів з акаунтом Bookit
                   </p>
                 )}
+
+                {/* Private notes */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <PenLine size={13} className="text-[#789A99]" />
+                      <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide">Приватні нотатки</p>
+                    </div>
+                    <button
+                      onClick={() => handleSaveNote()}
+                      disabled={noteSaving || noteText === savedNote}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
+                        noteSaved
+                          ? 'bg-[#5C9E7A]/12 text-[#5C9E7A]'
+                          : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 disabled:opacity-40 disabled:cursor-not-allowed'
+                      }`}
+                    >
+                      {noteSaving ? <Loader2 size={11} className="animate-spin" /> : noteSaved ? <Check size={11} /> : null}
+                      {noteSaved ? 'Збережено' : 'Зберегти'}
+                    </button>
+                  </div>
+                  <textarea
+                    value={noteText}
+                    onChange={e => handleNoteChange(e.target.value)}
+                    placeholder="Формула фарбування, алергії, особливі побажання, звички клієнта..."
+                    rows={3}
+                    className="w-full text-sm text-[#2C1A14] placeholder-[#C8B0AA] bg-white/60 border border-[#F0DDD8] rounded-2xl px-3.5 py-3 outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 resize-none transition-all leading-relaxed"
+                  />
+                  <p className="text-[10px] text-[#A8928D] mt-1.5">Видимо тільки вам. Автозбереження через 1.5 сек.</p>
+                </div>
 
                 {/* Recent bookings */}
                 <div>

@@ -1,8 +1,10 @@
 // Bookit Service Worker
 // Стратегії: Static → Cache First | Dashboard → Network First | API → Network Only
+// BUMP версію при кожному деплої щоб примусово очистити старий кеш
 
-const CACHE_NAME = 'bookit-v1';
-const STATIC_CACHE = 'bookit-static-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `bookit-${CACHE_VERSION}`;
+const STATIC_CACHE = `bookit-static-${CACHE_VERSION}`;
 
 // Ресурси для попереднього кешування
 const PRECACHE_URLS = [
@@ -98,14 +100,19 @@ async function cacheFirst(request, cacheName) {
 }
 
 async function networkFirst(request, cacheName) {
+  // 7s timeout — prevents SW hanging on slow networks after deep sleep
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 7_000);
   try {
-    const response = await fetch(request);
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(timeoutId);
     if (response.ok) {
       const cache = await caches.open(cacheName);
       cache.put(request, response.clone());
     }
     return response;
   } catch {
+    clearTimeout(timeoutId);
     const cached = await caches.match(request);
     if (cached) return cached;
     const offline = await caches.match('/offline');

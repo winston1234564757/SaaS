@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
-import { revalidatePath } from 'next/cache';
 import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 
 import { format } from 'date-fns';
@@ -11,13 +10,15 @@ import { uk } from 'date-fns/locale';
 import { pluralize } from '@/lib/utils/dates';
 
 export interface CreateFlashDealParams {
-  serviceName: string;
-  slotDate: string;     // YYYY-MM-DD
-  slotTime: string;     // HH:MM
-  originalPrice: number; // UAH (not kopecks)
+  serviceId: string;     // UUID послуги
+  slotDate: string;      // YYYY-MM-DD
+  slotTime: string;      // HH:MM
+  originalPrice: number; // грн (не копійки)
   discountPct: number;
   expiresInHours: number; // 2 | 4 | 8
 }
+
+const STARTER_LIMIT = 5;
 
 export async function createFlashDeal(
   params: CreateFlashDealParams
@@ -28,74 +29,104 @@ export async function createFlashDeal(
 
   const admin = createAdminClient();
 
-  // Check Pro/Studio tier
-  const { data: mp } = await admin
-    .from('master_profiles')
-    .select('subscription_tier, slug')
-    .eq('id', user.id)
-    .single();
+  // Паралельно: майстер-профіль + назва послуги
+  const [{ data: mp }, { data: service }] = await Promise.all([
+    admin
+      .from('master_profiles')
+      .select('subscription_tier, slug')
+      .eq('id', user.id)
+      .single(),
+    admin
+      .from('services')
+      .select('name')
+      .eq('id', params.serviceId)
+      .eq('master_id', user.id)
+      .single(),
+  ]);
 
-  // Count flash deals this month for Starter
+  if (!service) return { error: 'Послугу не знайдено або немає доступу', sentTo: 0 };
+
+  // Перевірка ліміту Starter
   if (mp?.subscription_tier === 'starter') {
-    const start = new Date();
-    start.setDate(1);
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
     const { count } = await admin
       .from('flash_deals')
       .select('id', { count: 'exact', head: true })
       .eq('master_id', user.id)
-      .gte('created_at', start.toISOString());
-    if ((count ?? 0) >= 2) {
-      return { error: 'На Starter тарифі — 2 флеш-акції на місяць. Перейдіть на Pro.', sentTo: 0 };
+      .gte('created_at', monthStart.toISOString());
+    if ((count ?? 0) >= STARTER_LIMIT) {
+      return {
+        error: `На Starter тарифі — ${STARTER_LIMIT} флеш-акцій на місяць. Перейдіть на Pro.`,
+        sentTo: 0,
+      };
     }
   }
 
+  const serviceName = service.name;
   const expiresAt = new Date(Date.now() + params.expiresInHours * 3600 * 1000).toISOString();
+
   const { data: deal, error: dealErr } = await admin
     .from('flash_deals')
     .insert({
-      master_id: user.id,
-      service_name: params.serviceName,
-      slot_date: params.slotDate,
-      slot_time: params.slotTime,
+      master_id:      user.id,
+      service_id:     params.serviceId,
+      service_name:   serviceName,
+      slot_date:      params.slotDate,
+      slot_time:      params.slotTime,
       original_price: params.originalPrice * 100,
-      discount_pct: params.discountPct,
-      expires_at: expiresAt,
-      status: 'active',
+      discount_pct:   params.discountPct,
+      expires_at:     expiresAt,
+      status:         'active',
     })
     .select('id')
     .single();
 
   if (dealErr) return { error: dealErr.message, sentTo: 0 };
 
-  // Get master name
+  // Дані для сповіщень
   const { data: profile } = await admin
     .from('profiles')
     .select('full_name')
     .eq('id', user.id)
     .single();
 
-  const masterName = profile?.full_name ?? 'Майстер';
+  const masterName     = profile?.full_name ?? 'Майстер';
   const discountedPrice = Math.round(params.originalPrice * (1 - params.discountPct / 100));
-  const bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp?.slug}`;
-
-  const dateStr = format(new Date(params.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
+  const bookingUrl     = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp?.slug}`;
+  const dateStr        = format(new Date(params.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
 
   const notifTitle = `⚡ Флеш-акція від ${masterName}!`;
-  const notifBody = `${params.serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}!`;
+  const notifBody  = `${serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}!`;
 
-  // Fetch unique client IDs from completed bookings
-  const { data: completedBookings } = await admin
-    .from('bookings')
-    .select('client_id')
-    .eq('master_id', user.id)
-    .eq('status', 'completed')
-    .not('client_id', 'is', null);
+  // ── Смарт-таргетинг: виключно через SQL RPC (±48 год) ──
+  // Слот у київський час (+03:00), PostgreSQL конвертує в UTC при порівнянні
+  const slotTimestamp = `${params.slotDate}T${params.slotTime}:00+03:00`;
+  const { data: eligibleRows } = await admin
+    .rpc('get_eligible_flash_deal_clients', {
+      p_master_id:      user.id,
+      p_slot_timestamp: slotTimestamp,
+    });
 
-  const clientIds = [...new Set((completedBookings ?? []).map((b: any) => b.client_id as string))];
+  const clientIds = (eligibleRows ?? []).map((r: { client_id: string }) => r.client_id);
 
-  // Broadcast web push to all unique clients of this master
   let sentCount = 0;
+
   if (clientIds.length > 0) {
+    // In-app notifications
+    await admin.from('notifications').insert(
+      clientIds.map((clientId: string) => ({
+        recipient_id:      clientId,
+        title:             notifTitle,
+        body:              notifBody,
+        type:              'flash_deal',
+        channel:           'in_app',
+        related_master_id: user.id,
+      }))
+    );
+
+    // Web Push
     const { data: pushSubs } = await admin
       .from('push_subscriptions')
       .select('subscription')
@@ -107,35 +138,36 @@ export async function createFlashDeal(
         { title: notifTitle, body: notifBody, url: bookingUrl }
       );
     }
+
+    // Telegram
+    const { data: clientsWithTg } = await admin
+      .from('profiles')
+      .select('telegram_chat_id')
+      .in('id', clientIds)
+      .not('telegram_chat_id', 'is', null);
+
+    if (clientsWithTg && clientsWithTg.length > 0) {
+      const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(params.slotTime)}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
+      await Promise.all(
+        clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg))
+      );
+      sentCount += clientsWithTg.length;
+    }
   }
 
-  // Also notify via Telegram (clients who have telegram_chat_id)
-  const { data: clientsWithTg } = clientIds.length > 0
-    ? await admin
-        .from('profiles')
-        .select('telegram_chat_id')
-        .in('id', clientIds)
-        .not('telegram_chat_id', 'is', null)
-    : { data: [] };
-
-  if (clientsWithTg && clientsWithTg.length > 0) {
-    const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(params.serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(params.slotTime)}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
-    await Promise.all(clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg)));
-    sentCount += clientsWithTg.length;
-  }
-
-  revalidatePath('/', 'layout');
   return { error: null, sentTo: sentCount };
 }
 
-export async function cancelFlashDeal(dealId: string): Promise<void> {
+export async function cancelFlashDeal(dealId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await createAdminClient()
+  if (!user) return { error: 'Не авторизований' };
+  const admin = createAdminClient();
+  const { error } = await admin
     .from('flash_deals')
     .update({ status: 'expired' })
     .eq('id', dealId)
     .eq('master_id', user.id);
-  revalidatePath('/', 'layout');
+  if (error) return { error: error.message };
+  return { error: null };
 }

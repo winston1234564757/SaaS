@@ -104,8 +104,9 @@ export function useBookingById(id: string | null) {
 
   const booking = query.data ?? null;
 
+  const clientIdForLtv = booking?.client_id ?? null;
   const ltvQuery = useQuery({
-    queryKey: ['client-ltv', id, booking?.client_id, masterId],
+    queryKey: ['client-ltv', id, clientIdForLtv, masterId],
     queryFn: async () => {
       if (!booking?.client_id || !masterId) return null;
       const supabase = createClient();
@@ -128,7 +129,8 @@ export function useBookingById(id: string | null) {
       const { error } = await supabase
         .from('bookings')
         .update({ status, status_changed_at: new Date().toISOString() })
-        .eq('id', id!);
+        .eq('id', id!)
+        .eq('master_id', masterId!);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -147,7 +149,8 @@ export function useBookingById(id: string | null) {
       const { error } = await supabase
         .from('bookings')
         .update({ master_notes })
-        .eq('id', id!);
+        .eq('id', id!)
+        .eq('master_id', masterId!);
       if (error) throw error;
     },
     onSuccess: () => {

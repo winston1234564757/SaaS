@@ -89,7 +89,8 @@ export function useRealtimeNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [masterId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [masterId, showToast]);
 }
 
 /**

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
@@ -11,6 +11,7 @@ export interface PortfolioPhoto {
   storagePath: string;
   caption: string | null;
   sortOrder: number;
+  serviceId: string | null;
 }
 
 interface PhotoRow {
@@ -19,6 +20,7 @@ interface PhotoRow {
   storage_path: string;
   caption: string | null;
   sort_order: number;
+  service_id: string | null;
 }
 
 function rowToPhoto(p: PhotoRow): PortfolioPhoto {
@@ -28,6 +30,7 @@ function rowToPhoto(p: PhotoRow): PortfolioPhoto {
     storagePath: p.storage_path,
     caption: p.caption || null,
     sortOrder: p.sort_order,
+    serviceId: p.service_id ?? null,
   };
 }
 
@@ -38,14 +41,21 @@ export function usePortfolio() {
   const key = ['portfolio', masterId] as const;
 
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const { data: photos = [], isLoading } = useQuery<PortfolioPhoto[]>({
+  const cachedPhotosRef = useRef<PortfolioPhoto[]>([]);
+
+  const {
+    data: freshPhotos,
+    isLoading,
+    error: queryError,
+  } = useQuery<PortfolioPhoto[]>({
     queryKey: key,
     queryFn: async () => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('portfolio_photos')
-        .select('id, url, storage_path, caption, sort_order')
+        .select('id, url, storage_path, caption, sort_order, service_id')
         .eq('master_id', masterId!)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
@@ -54,39 +64,60 @@ export function usePortfolio() {
     },
     enabled: !!masterId,
     staleTime: 60_000,
+    retry: 1,
   });
+
+  // Зберігаємо останні успішні дані — фото не зникають при refetch-помилках
+  if (freshPhotos !== undefined) {
+    cachedPhotosRef.current = freshPhotos;
+  }
+  const photos = freshPhotos ?? cachedPhotosRef.current;
 
   async function uploadPhoto(file: File): Promise<void> {
     if (!masterId) return;
     setIsUploading(true);
-    const supabase = createClient();
+    setUploadError(null);
+    try {
+      const supabase = createClient();
 
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const bytes = crypto.getRandomValues(new Uint8Array(6));
-    const uniqueId = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-    const path = `${masterId}/${Date.now()}-${uniqueId}.${ext}`;
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const bytes = crypto.getRandomValues(new Uint8Array(6));
+      const uniqueId = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      const path = `${masterId}/${Date.now()}-${uniqueId}.${ext}`;
 
-    const { error: uploadErr } = await supabase.storage
-      .from('portfolios')
-      .upload(path, file, { contentType: file.type, upsert: false });
+      const { error: uploadErr } = await supabase.storage
+        .from('portfolios')
+        .upload(path, file, { contentType: file.type, upsert: false });
 
-    if (uploadErr) { setIsUploading(false); return; }
+      if (uploadErr) {
+        setUploadError('Помилка завантаження: ' + uploadErr.message);
+        return;
+      }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('portfolios')
-      .getPublicUrl(path);
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolios')
+        .getPublicUrl(path);
 
-    const nextOrder = photos.length > 0 ? Math.max(...photos.map(p => p.sortOrder)) + 1 : 0;
+      const nextOrder = photos.length > 0 ? Math.max(...photos.map(p => p.sortOrder)) + 1 : 0;
 
-    await supabase.from('portfolio_photos').insert({
-      master_id: masterId,
-      url: publicUrl,
-      storage_path: path,
-      sort_order: nextOrder,
-    });
+      const { error: insertErr } = await supabase.from('portfolio_photos').insert({
+        master_id: masterId,
+        url: publicUrl,
+        storage_path: path,
+        sort_order: nextOrder,
+      });
 
-    await qc.invalidateQueries({ queryKey: key });
-    setIsUploading(false);
+      if (insertErr) {
+        setUploadError('Помилка збереження: ' + insertErr.message);
+        return;
+      }
+
+      await qc.invalidateQueries({ queryKey: key });
+    } catch (e) {
+      setUploadError('Несподівана помилка: ' + String(e));
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   const deleteMutation = useMutation({
@@ -112,6 +143,19 @@ export function usePortfolio() {
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   });
 
+  const updateServiceLinkMutation = useMutation({
+    mutationFn: async ({ id, serviceId }: { id: string; serviceId: string | null }) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('portfolio_photos')
+        .update({ service_id: serviceId })
+        .eq('id', id)
+        .eq('master_id', masterId!);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+  });
+
   return {
     photos,
     isLoading: isLoading && !!masterId,
@@ -121,5 +165,10 @@ export function usePortfolio() {
       deleteMutation.mutateAsync({ id, storagePath }),
     updateCaption: (id: string, caption: string) =>
       updateCaptionMutation.mutateAsync({ id, caption }),
+    updateServiceLink: (id: string, serviceId: string | null) =>
+      updateServiceLinkMutation.mutate({ id, serviceId }),
+    uploadError,
+    clearUploadError: () => setUploadError(null),
+    queryError: queryError ? String((queryError as Error).message ?? queryError) : null,
   };
 }

@@ -37,7 +37,9 @@ const STATUS_CONFIG = {
 
 const UA_DAYS_SHORT = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
 
-function toISO(d: Date) { return d.toISOString().slice(0, 10); }
+function toISO(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 function getDateRange(view: ViewMode): { from: string; to: string } {
   const today = new Date();

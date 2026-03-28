@@ -78,33 +78,49 @@ export async function POST(req: NextRequest) {
   if (dbError) {
     console.error('[send-sms] DB error:', dbError.message);
     return NextResponse.json(
-      { success: false, error: `DB Error: ${dbError.message}` },
+      { success: false, error: 'Помилка сервера. Спробуйте пізніше.' },
       { status: 500 }
     );
   }
 
-  const smsRes = await fetch('https://api.turbosms.ua/message/send.json', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
-    },
-    body: JSON.stringify({
-      recipients: [phone],
-      sms: {
-        sender: 'BEAUTY',
-        text: `Код підтвердження BookIt: ${otp}`,
-      },
-    }),
-  });
+  // 8s timeout — TurboSMS may be slow; without it the route hangs until Vercel's 30s limit
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8_000);
 
-  const smsData = await smsRes.json();
+  let smsData: { response_code?: number; response_status?: string };
+  try {
+    const smsRes = await fetch('https://api.turbosms.ua/message/send.json', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
+      },
+      body: JSON.stringify({
+        recipients: [phone],
+        sms: {
+          sender: 'BEAUTY',
+          text: `Код підтвердження BookIt: ${otp}`,
+        },
+      }),
+    });
+    smsData = await smsRes.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    console.error('[send-sms] TurboSMS fetch failed:', err);
+    return NextResponse.json(
+      { success: false, error: 'Не вдалося надіслати SMS. Спробуйте ще раз.' },
+      { status: 503 }
+    );
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   // TurboSMS: response_code 800 або 0 = успіх
   if (smsData.response_code !== 800 && smsData.response_code !== 0) {
     console.error('[send-sms] TurboSMS error:', smsData.response_code, smsData.response_status);
     return NextResponse.json(
-      { success: false, error: smsData.response_status ?? 'Помилка TurboSMS' },
+      { success: false, error: 'Не вдалося надіслати SMS. Спробуйте пізніше.' },
       { status: 400 }
     );
   }

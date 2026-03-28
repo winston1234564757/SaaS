@@ -81,7 +81,7 @@ export default async function MasterPublicPage(
       .eq('master_id', data.id),
     supabase
       .from('portfolio_photos')
-      .select('id, url, caption')
+      .select('id, url, caption, service_id, services(id, name, price)')
       .eq('master_id', data.id)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true })
@@ -142,11 +142,17 @@ export default async function MasterPublicPage(
     endTime: (s.end_time as string | null)?.slice(0, 5) ?? '18:00',
   }));
 
-  const portfolio = (portfolioRes.data ?? []).map((p: any) => ({
-    id: p.id as string,
-    url: p.url as string,
-    caption: (p.caption as string) || null,
-  }));
+  const portfolio = (portfolioRes.data ?? []).map((p: any) => {
+    const svc = p.services as { id: string; name: string; price: number } | null;
+    return {
+      id: p.id as string,
+      url: p.url as string,
+      caption: (p.caption as string) || null,
+      serviceId: (p.service_id as string) || null,
+      serviceName: svc?.name ?? null,
+      servicePrice: svc ? Number(svc.price) : null,
+    };
+  });
 
   const flashDeals = (flashDealsRes.data ?? []).map((d: any) => ({
     id: d.id as string,

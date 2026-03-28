@@ -505,51 +505,59 @@ export function BookingDetailsModal() {
                   </div>
                 )}
 
-                {/* Services */}
-                {booking.services.length > 0 && (
-                  <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-3">Послуги</p>
-                    <div className="flex flex-col gap-2">
-                      {booking.services.map((s, i) => (
-                        <div key={i} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Clock size={12} className="text-[#A8928D]" />
-                            <span className="text-sm text-[#2C1A14]">{s.name}</span>
-                            <span className="text-xs text-[#A8928D]">{formatDurationFull(s.duration)}</span>
-                          </div>
-                          <span className="text-sm font-medium text-[#2C1A14]">{formatPrice(s.price)}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-[#F5E8E3] flex justify-between items-center">
-                      <span className="text-sm text-[#6B5750]">Разом</span>
-                      <span className="text-base font-bold text-[#2C1A14]">{formatPrice(booking.total_price)}</span>
-                    </div>
-                  </div>
-                )}
+                {/* Order details — services + products unified */}
+                {(booking.services.length > 0 || (booking.products && booking.products.length > 0)) && (() => {
+                  const productsTotal = (booking.products ?? []).reduce((s, p) => s + p.price * p.quantity, 0);
+                  const grandTotal = booking.total_price + productsTotal;
+                  return (
+                    <div className="bg-white rounded-2xl p-4 shadow-sm">
+                      <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-3">Деталі замовлення</p>
 
-                {/* Products */}
-                {booking.products && booking.products.length > 0 && (
-                  <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <ShoppingBag size={13} className="text-[#A8928D]" />
-                      <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide">Товари</p>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {booking.products.map((p, i) => (
-                        <div key={i} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-[#2C1A14]">{p.name}</span>
-                            {p.quantity > 1 && (
-                              <span className="text-xs text-[#A8928D]">×{p.quantity}</span>
-                            )}
+                      <div className="flex flex-col gap-2.5">
+                        {/* Services */}
+                        {booking.services.map((s, i) => (
+                          <div key={i} className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Clock size={12} className="text-[#A8928D] shrink-0 mt-0.5" />
+                              <div className="min-w-0">
+                                <span className="text-sm text-[#2C1A14]">{s.name}</span>
+                                <span className="text-xs text-[#A8928D] ml-1.5">{formatDurationFull(s.duration)}</span>
+                              </div>
+                            </div>
+                            <span className="text-sm font-medium text-[#2C1A14] shrink-0">{formatPrice(s.price)}</span>
                           </div>
-                          <span className="text-sm font-medium text-[#2C1A14]">{formatPrice(p.price * p.quantity)}</span>
-                        </div>
-                      ))}
+                        ))}
+
+                        {/* Products */}
+                        {(booking.products ?? []).length > 0 && (
+                          <>
+                            {booking.services.length > 0 && (
+                              <div className="border-t border-dashed border-[#F0DDD8] my-0.5" />
+                            )}
+                            {booking.products!.map((p, i) => (
+                              <div key={i} className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <ShoppingBag size={12} className="text-[#A8928D] shrink-0" />
+                                  <span className="text-sm text-[#2C1A14] truncate">{p.name}</span>
+                                  {p.quantity > 1 && (
+                                    <span className="text-xs text-[#A8928D] shrink-0">×{p.quantity}</span>
+                                  )}
+                                </div>
+                                <span className="text-sm font-medium text-[#2C1A14] shrink-0">{formatPrice(p.price * p.quantity)}</span>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Total */}
+                      <div className="mt-4 pt-3 border-t-2 border-[#F0DDD8] flex justify-between items-center">
+                        <span className="text-sm font-semibold text-[#6B5750]">Загалом</span>
+                        <span className="text-xl font-bold text-[#2C1A14]">{formatPrice(grandTotal)}</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Client notes */}
                 {booking.notes && (

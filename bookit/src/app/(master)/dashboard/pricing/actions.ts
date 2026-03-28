@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
-import { revalidatePath } from 'next/cache';
+
 export async function savePricingRules(rules: PricingRules): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -15,13 +15,17 @@ export async function savePricingRules(rules: PricingRules): Promise<{ error?: s
     .eq('id', user.id)
     .single();
 
-  const isPro = mp?.subscription_tier === 'pro' || mp?.subscription_tier === 'studio';
-  if (!isPro) return { error: 'Динамічне ціноутворення доступне лише в тарифі Pro.' };
+  const tier = mp?.subscription_tier;
+  const isPro = tier === 'pro' || tier === 'studio';
+  const isStarter = tier === 'starter';
+  // Starter має trial-доступ до налаштування правил
+  if (!isPro && !isStarter) return { error: 'Динамічне ціноутворення недоступне на вашому тарифі.' };
 
-  await createAdminClient()
+  const { error: dbError } = await createAdminClient()
     .from('master_profiles')
     .update({ pricing_rules: rules })
     .eq('id', user.id);
-  revalidatePath('/', 'layout');
+
+  if (dbError) return { error: dbError.message };
   return {};
 }

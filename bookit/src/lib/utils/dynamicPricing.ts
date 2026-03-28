@@ -15,6 +15,10 @@ export interface PricingResult {
   label: string | null;
 }
 
+// Захист: максимальна сукупна знижка та націнка
+const DISCOUNT_FLOOR = -30; // не більше -30%
+const MARKUP_CEIL    =  50; // не більше +50%
+
 export function applyDynamicPricing(
   basePrice: number,
   rules: PricingRules | null | undefined,
@@ -28,45 +32,57 @@ export function applyDynamicPricing(
   const dayKey = DAY_MAP[date.getDay()];
   const hour = parseInt(time.split(':')[0], 10);
   const now = new Date();
-  const daysAhead = Math.floor((date.getTime() - now.getTime()) / 86_400_000);
+
+  // Calendar-day difference: midnight-to-midnight
+  const todayYMD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const dateYMD  = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const daysAhead  = Math.round((new Date(dateYMD + 'T00:00:00').getTime() - new Date(todayYMD + 'T00:00:00').getTime()) / 86_400_000);
   const hoursAhead = (date.getTime() - now.getTime()) / 3_600_000;
 
-  let modifier = 0;
-  let label: string | null = null;
+  const appliedRules: string[] = [];
+  let totalModifier = 0;
 
-  // Early bird takes priority (positive signal, book ahead)
-  if (rules.early_bird && daysAhead >= rules.early_bird.days_ahead) {
-    modifier = -rules.early_bird.discount_pct;
-    label = `🐦 Рання бронь -${rules.early_bird.discount_pct}%`;
+  // ── Early Bird vs Last Minute ──────────────────────────────────────────────
+  // Ці правила взаємовиключні: якщо Last Minute активний — Early Bird ігнорується
+  const earlyBirdActive  = !!(rules.early_bird  && daysAhead >= rules.early_bird.days_ahead);
+  const lastMinuteActive = !!(rules.last_minute && hoursAhead <= rules.last_minute.hours_ahead && hoursAhead > 0);
+
+  if (lastMinuteActive) {
+    totalModifier += -rules.last_minute!.discount_pct;
+    appliedRules.push(`⚡ Остання хвилина -${rules.last_minute!.discount_pct}%`);
+  } else if (earlyBirdActive) {
+    totalModifier += -rules.early_bird!.discount_pct;
+    appliedRules.push(`🐦 Рання бронь -${rules.early_bird!.discount_pct}%`);
   }
-  // Last minute (highest discount)
-  else if (rules.last_minute && hoursAhead <= rules.last_minute.hours_ahead && hoursAhead > 0) {
-    modifier = -rules.last_minute.discount_pct;
-    label = `⚡ Остання хвилина -${rules.last_minute.discount_pct}%`;
-  }
-  // Peak hours (markup)
-  else if (
+
+  // ── Peak (незалежно накладається поверх) ──────────────────────────────────
+  if (
     rules.peak &&
     rules.peak.days.includes(dayKey) &&
     hour >= rules.peak.hours[0] &&
     hour < rules.peak.hours[1]
   ) {
-    modifier = rules.peak.markup_pct;
-    label = `🔥 Пік +${rules.peak.markup_pct}%`;
+    totalModifier += rules.peak.markup_pct;
+    appliedRules.push(`🔥 Пік +${rules.peak.markup_pct}%`);
   }
-  // Quiet hours (discount)
-  else if (
+
+  // ── Quiet hours (незалежно накладається поверх) ───────────────────────────
+  if (
     rules.quiet &&
     rules.quiet.days.includes(dayKey) &&
     hour >= rules.quiet.hours[0] &&
     hour < rules.quiet.hours[1]
   ) {
-    modifier = -rules.quiet.discount_pct;
-    label = `😌 Тихий час -${rules.quiet.discount_pct}%`;
+    totalModifier += -rules.quiet.discount_pct;
+    appliedRules.push(`😌 Тихий час -${rules.quiet.discount_pct}%`);
   }
 
-  if (modifier === 0) return { adjustedPrice: basePrice, modifier: 0, label: null };
+  if (appliedRules.length === 0) return { adjustedPrice: basePrice, modifier: 0, label: null };
 
-  const adjustedPrice = Math.round(basePrice * (1 + modifier / 100));
-  return { adjustedPrice, modifier, label };
+  // ── Limits: захист від надмірних знижок / націнок ─────────────────────────
+  const clampedModifier = Math.min(MARKUP_CEIL, Math.max(DISCOUNT_FLOOR, totalModifier));
+
+  const adjustedPrice = Math.round(basePrice * (1 + clampedModifier / 100));
+  const label = appliedRules.join(', ');
+  return { adjustedPrice, modifier: clampedModifier, label };
 }

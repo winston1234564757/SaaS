@@ -5,6 +5,24 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
 import { sendTelegramMessage } from '@/lib/telegram';
 
+export async function saveClientNote(
+  clientPhone: string,
+  noteText: string,
+): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('master_client_notes')
+    .upsert(
+      { master_id: user.id, client_phone: clientPhone, note_text: noteText, updated_at: new Date().toISOString() },
+      { onConflict: 'master_id,client_phone' },
+    );
+  return { error: error?.message ?? null };
+}
+
 export async function sendChurnReminder(
   clientId: string | null,
   clientPhone: string,
@@ -58,8 +76,12 @@ export async function sendChurnReminder(
       .single();
 
     if (tgProfile?.telegram_chat_id) {
-      await sendTelegramMessage(tgProfile.telegram_chat_id, msg);
-      sent = true;
+      try {
+        await sendTelegramMessage(tgProfile.telegram_chat_id, msg);
+        sent = true;
+      } catch (tgErr) {
+        console.error('[sendChurnReminder] Telegram failed:', tgErr);
+      }
     }
   }
 

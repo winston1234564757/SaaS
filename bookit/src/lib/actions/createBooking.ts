@@ -43,6 +43,9 @@ const schema = z.object({
   durationOverrideMinutes: z.number().positive().int().max(480).optional().nullable(),
   // Flash deal ID — server verifies it's active, applies discount, marks as claimed.
   flashDealId: z.string().uuid().optional().nullable(),
+  // Якщо false — ігнорувати pricing_rules (майстер вирішив не застосовувати dynamic pricing).
+  // true за замовчуванням, щоб не зламати існуючі записи клієнтів.
+  applyDynamicPricing: z.boolean().default(true),
 });
 
 export type CreateBookingPayload = z.input<typeof schema>;
@@ -90,10 +93,10 @@ export async function createBooking(
     }
   }
 
-  // 3. Master profile — pricing rules + subscription tier
+  // 3. Master profile — pricing rules + subscription tier + trial counter
   const { data: mp } = await admin
     .from('master_profiles')
-    .select('subscription_tier, pricing_rules')
+    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned')
     .eq('id', p.masterId)
     .single();
 
@@ -184,9 +187,13 @@ export async function createBooking(
   const totalDuration = canonicalServices.reduce((sum, s) => sum + s.duration, 0);
 
   const bookingDate = new Date(p.date + 'T00:00:00');
-  const pricingRules = mp.pricing_rules as PricingRules | null;
+  // Value-Capped Trial: Starter отримує фічу безкоштовно до ліміту 100 000 коп. (1 000 ₴)
+  const TRIAL_LIMIT_KOP = 100_000;
+  const extraEarned = (mp.dynamic_pricing_extra_earned as number) ?? 0;
+  const trialExhausted = mp.subscription_tier === 'starter' && extraEarned >= TRIAL_LIMIT_KOP;
+  const pricingRules = (!trialExhausted ? mp.pricing_rules : null) as PricingRules | null;
   const dynamicResult =
-    pricingRules && Object.keys(pricingRules).length > 0
+    p.applyDynamicPricing && pricingRules && Object.keys(pricingRules).length > 0
       ? applyDynamicPricing(totalServicesPrice, pricingRules, bookingDate, p.startTime)
       : null;
 
@@ -217,6 +224,11 @@ export async function createBooking(
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
   // 8. Insert booking
+  // Зберігаємо результат динамічного ціноутворення для аналітики + trigger-обліку
+  const dynamicExtraKopecks = dynamicResult && dynamicResult.modifier > 0
+    ? Math.max(0, Math.round((adjustedServicesPrice - totalServicesPrice) * 100))
+    : 0;
+
   const bookingId = crypto.randomUUID();
   const { error: bErr } = await admin.from('bookings').insert({
     id: bookingId,
@@ -234,6 +246,8 @@ export async function createBooking(
     total_price: finalTotal,
     notes: p.notes?.trim() ?? null,
     source: p.source === 'manual' ? 'manual' : 'public_page',
+    dynamic_pricing_label: dynamicResult?.label ?? null,
+    dynamic_extra_kopecks: dynamicExtraKopecks,
   });
 
   if (bErr) {
@@ -274,8 +288,10 @@ export async function createBooking(
       return { bookingId: null, error: 'Помилка збереження товарів.' };
     }
 
-    // Deduct stock for finite-quantity products
-    await Promise.all(
+    // Atomic stock decrement — checks and deducts in one operation (prevents overselling TOCTOU race)
+    // If a concurrent booking depleted stock between our check (step 6) and now,
+    // the UPDATE matches 0 rows (stock_quantity < cp.quantity) → we detect & roll back.
+    const stockResults = await Promise.all(
       canonicalProducts
         .filter(cp => !cp.stockUnlimited)
         .map(cp =>
@@ -283,8 +299,15 @@ export async function createBooking(
             .from('products')
             .update({ stock_quantity: cp.stockQty - cp.quantity })
             .eq('id', cp.id)
+            .gte('stock_quantity', cp.quantity)
+            .select('id')
         )
     );
+    const oversold = stockResults.find(r => !r.error && (!r.data || r.data.length === 0));
+    if (oversold) {
+      await admin.from('bookings').delete().eq('id', bookingId);
+      return { bookingId: null, error: 'Товар щойно закінчився. Спробуйте ще раз.' };
+    }
   }
 
   // 11. Mark flash deal as claimed
@@ -295,6 +318,9 @@ export async function createBooking(
       .eq('id', p.flashDealId)
       .eq('status', 'active');
   }
+
+  // 12. Trial accounting — облік ведеться DB trigger'ом (fn_dp_trial_earned_on_complete)
+  //     при зміні статусу на 'completed'. Тут нічого додатково робити не потрібно.
 
   // Clear Next.js server-side data cache
   revalidatePath('/', 'layout');

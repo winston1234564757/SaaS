@@ -9,6 +9,10 @@ export interface DayData {
   revenue: number;
 }
 
+function toLocalYMD(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
   const day = now.getDay();
@@ -17,9 +21,10 @@ function getWeekRange(): { from: string; to: string } {
   monday.setHours(0, 0, 0, 0);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
+  // toLocalYMD avoids UTC offset shift that toISOString() introduces for UTC+ timezones
   return {
-    from: monday.toISOString().slice(0, 10),
-    to:   sunday.toISOString().slice(0, 10),
+    from: toLocalYMD(monday),
+    to:   toLocalYMD(sunday),
   };
 }
 
@@ -48,7 +53,8 @@ export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
       // Агрегуємо по днях тижня (0=Пн…6=Нд)
       const days: DayData[] = Array.from({ length: 7 }, () => ({ bookings: 0, revenue: 0 }));
       ((data ?? []) as { date: string; total_price: string | number; status: string }[]).forEach(b => {
-        const d = new Date(b.date);
+        const [yr, mo, dy] = (b.date as string).split('-').map(Number);
+        const d = new Date(yr, mo - 1, dy); // local date — avoids UTC midnight shift for UTC+ timezones
         const idx = (d.getDay() + 6) % 7; // 0=Пн
         days[idx].bookings += 1;
         if (b.status === 'completed') {

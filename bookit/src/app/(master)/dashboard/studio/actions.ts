@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { revalidatePath } from 'next/cache';
+
 export async function joinStudio(token: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -39,16 +39,40 @@ export async function joinStudio(token: string): Promise<{ error: string | null 
 
   if (mp?.studio_id) return { error: 'Ви вже у іншій студії' };
 
-  await Promise.all([
-    admin.from('studio_members').insert({ studio_id: studio.id, master_id: user.id, role: 'member' }),
-    admin.from('master_profiles').update({ studio_id: studio.id, subscription_tier: 'studio' }).eq('id', user.id),
-    // Rotate invite token after successful join — one-time use enforcement
-    admin.from('studios').update({
+  // Optimistic lock: rotate token first, matching original value.
+  // If two masters arrive simultaneously, only one matches — the second gets 0 rows.
+  const { data: rotated, error: rotateErr } = await admin
+    .from('studios')
+    .update({
       invite_token: crypto.randomUUID(),
       invite_token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    }).eq('id', studio.id),
-  ]);
+    })
+    .eq('id', studio.id)
+    .eq('invite_token', token)
+    .select('id');
 
-  revalidatePath('/', 'layout');
+  if (rotateErr || !rotated?.length) {
+    return { error: 'Посилання вже було використане. Попросіть власника студії надіслати нове.' };
+  }
+
+  const { error: memberErr } = await admin
+    .from('studio_members')
+    .insert({ studio_id: studio.id, master_id: user.id, role: 'member' });
+
+  if (memberErr) {
+    return { error: 'Не вдалося приєднатися до студії. Спробуйте ще раз.' };
+  }
+
+  const { error: profileErr } = await admin
+    .from('master_profiles')
+    .update({ studio_id: studio.id, subscription_tier: 'studio' })
+    .eq('id', user.id);
+
+  if (profileErr) {
+    // Compensate: remove the member record to avoid broken state
+    await admin.from('studio_members').delete().eq('studio_id', studio.id).eq('master_id', user.id);
+    return { error: 'Не вдалося оновити профіль. Спробуйте ще раз.' };
+  }
+
   return { error: null };
 }

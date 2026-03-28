@@ -73,10 +73,6 @@ export function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [slugStatus, setSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
 
-  // Зміна пароля
-  const [newPwd, setNewPwd] = useState('');
-  const [confirmPwd, setConfirmPwd] = useState('');
-  const [changingPwd, setChangingPwd] = useState(false);
 
   // Ініціалізація з даних — runs once when both profile and masterProfile first arrive.
   // formInitialized.current prevents subsequent context refreshes (after save) from
@@ -182,30 +178,16 @@ export function SettingsPage() {
         ),
       ]);
 
-      await refresh();
       setSaved(true);
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);
+      // Оновлюємо контекст у фоні — не блокуємо UI
+      refresh().catch(() => {});
     } catch (error: any) {
       showToast({ type: 'error', title: 'Помилка збереження', message: error?.message || 'Спробуйте ще раз' });
     } finally {
       setSaving(false);
     }
-  }
-
-  async function handleChangePassword() {
-    if (newPwd.length < 6 || newPwd !== confirmPwd) return;
-    setChangingPwd(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password: newPwd });
-    if (error) {
-      showToast({ type: 'error', title: 'Помилка', message: error.message });
-    } else {
-      showToast({ type: 'success', title: 'Пароль змінено!' });
-      setNewPwd('');
-      setConfirmPwd('');
-    }
-    setChangingPwd(false);
   }
 
   function addBreak() {
@@ -257,24 +239,26 @@ export function SettingsPage() {
             )}
           </div>
 
-          <div>
-            <p className="text-xs font-medium text-[#6B5750] mb-2">Emoji-аватар <span className="font-normal text-[#A8928D]">(якщо немає фото)</span></p>
-            <div className="flex flex-wrap gap-2">
-              {AVATAR_EMOJIS.map(e => (
-                <button
-                  key={e}
-                  onClick={() => setAvatar(e)}
-                  className={`w-11 h-11 rounded-2xl text-2xl transition-all ${
-                    avatar === e
-                      ? 'bg-[#789A99]/20 ring-2 ring-[#789A99] scale-105'
-                      : 'bg-white/70 border border-white/80 hover:bg-white'
-                  }`}
-                >
-                  {e}
-                </button>
-              ))}
+          {!avatarUrl && (
+            <div>
+              <p className="text-xs font-medium text-[#6B5750] mb-2">Emoji-аватар <span className="font-normal text-[#A8928D]">(якщо немає фото)</span></p>
+              <div className="flex flex-wrap gap-2">
+                {AVATAR_EMOJIS.map(e => (
+                  <button
+                    key={e}
+                    onClick={() => setAvatar(e)}
+                    className={`w-11 h-11 rounded-2xl text-2xl transition-all ${
+                      avatar === e
+                        ? 'bg-[#789A99]/20 ring-2 ring-[#789A99] scale-105'
+                        : 'bg-white/70 border border-white/80 hover:bg-white'
+                    }`}
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Повне ім'я</label>
@@ -638,42 +622,6 @@ export function SettingsPage() {
         </Section>
       </div>
 
-      {/* Безпека — зміна пароля */}
-      <Section title="Безпека">
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Новий пароль</label>
-            <input
-              type="password"
-              value={newPwd}
-              onChange={e => setNewPwd(e.target.value)}
-              placeholder="Мінімум 6 символів"
-              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Підтвердити пароль</label>
-            <input
-              type="password"
-              value={confirmPwd}
-              onChange={e => setConfirmPwd(e.target.value)}
-              placeholder="Повторіть новий пароль"
-              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
-            />
-            {confirmPwd && newPwd !== confirmPwd && (
-              <p className="text-[11px] text-[#C05B5B] mt-1">Паролі не збігаються</p>
-            )}
-          </div>
-          <button
-            onClick={handleChangePassword}
-            disabled={newPwd.length < 6 || newPwd !== confirmPwd || changingPwd}
-            className="w-full py-3 rounded-2xl text-sm font-semibold bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {changingPwd ? <><Loader2 size={15} className="animate-spin" /> Збереження...</> : 'Змінити пароль'}
-          </button>
-        </div>
-      </Section>
-
       {/* Навігація (мобільна) */}
       <div className="bento-card p-4 lg:hidden">
         <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-2">Додатково</p>
@@ -731,6 +679,8 @@ export function SettingsPage() {
             const supabase = createClient();
             await supabase.auth.signOut();
             queryClient.clear();
+            // Clear role cookie so next login re-fetches fresh role from DB
+            document.cookie = 'user_role=; path=/; max-age=0';
             window.location.href = '/login';
           } catch (error) {
             console.error('Logout error:', error);

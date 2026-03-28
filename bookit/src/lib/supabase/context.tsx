@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from './client';
 import type { Profile, MasterProfile } from '@/types/database';
@@ -58,9 +58,9 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     setMasterProfile(mp ?? null);
   }
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     if (user) await fetchProfile(user.id);
-  }
+  }, [user]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -98,8 +98,13 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     };
   }, []);
 
+  const contextValue = useMemo(
+    () => ({ user, profile, masterProfile, isLoading, refresh }),
+    [user, profile, masterProfile, isLoading, refresh]
+  );
+
   return (
-    <MasterContext.Provider value={{ user, profile, masterProfile, isLoading, refresh }}>
+    <MasterContext.Provider value={contextValue}>
       {children}
     </MasterContext.Provider>
   );

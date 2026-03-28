@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, Loader2, CalendarDays, Mail, ArrowLeft, ShieldCheck, LogOut } from 'lucide-react';
+import { Check, Loader2, CalendarDays, Mail, ArrowLeft, LogOut } from 'lucide-react';
 import { updateClientProfile } from '@/app/my/profile/actions';
 import { createClient } from '@/lib/supabase/client';
 import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
@@ -28,30 +28,11 @@ export function MyProfilePage({ profile }: Props) {
   const [fullName, setFullName] = useState(profile.fullName);
   const [phone, setPhone] = useState(profile.phone);
 
-  const [newPwd, setNewPwd] = useState('');
-  const [confirmPwd, setConfirmPwd] = useState('');
-  const [changingPwd, setChangingPwd] = useState(false);
-  const [pwdSaved, setPwdSaved] = useState(false);
-
   const memberSinceFormatted = profile.memberSince
     ? new Date(profile.memberSince).toLocaleDateString('uk-UA', {
         day: 'numeric', month: 'long', year: 'numeric',
       })
     : '';
-
-  async function handleChangePassword() {
-    if (newPwd.length < 6 || newPwd !== confirmPwd) return;
-    setChangingPwd(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password: newPwd });
-    if (!error) {
-      setNewPwd('');
-      setConfirmPwd('');
-      setPwdSaved(true);
-      setTimeout(() => setPwdSaved(false), 2500);
-    }
-    setChangingPwd(false);
-  }
 
   function handleSave() {
     startTransition(async () => {
@@ -150,61 +131,6 @@ export function MyProfilePage({ profile }: Props) {
         </div>
       </motion.div>
 
-      {/* Password change */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18, type: 'spring', stiffness: 300, damping: 24 }}
-        className="bento-card p-5"
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <ShieldCheck size={15} className="text-[#789A99]" />
-          <p className="text-sm font-semibold text-[#2C1A14]">Безпека</p>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Новий пароль</label>
-            <input
-              type="password"
-              value={newPwd}
-              onChange={e => setNewPwd(e.target.value)}
-              placeholder="Мінімум 6 символів"
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Підтвердити пароль</label>
-            <input
-              type="password"
-              value={confirmPwd}
-              onChange={e => setConfirmPwd(e.target.value)}
-              placeholder="Повторіть новий пароль"
-              className={inputCls}
-            />
-            {confirmPwd && newPwd !== confirmPwd && (
-              <p className="text-[11px] text-[#C05B5B] mt-1">Паролі не збігаються</p>
-            )}
-          </div>
-          <button
-            onClick={handleChangePassword}
-            disabled={newPwd.length < 6 || newPwd !== confirmPwd || changingPwd}
-            className={`w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
-              pwdSaved
-                ? 'bg-[#5C9E7A] text-white'
-                : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {changingPwd ? (
-              <><Loader2 size={15} className="animate-spin" /> Збереження...</>
-            ) : pwdSaved ? (
-              <><Check size={15} /> Пароль змінено</>
-            ) : (
-              'Змінити пароль'
-            )}
-          </button>
-        </div>
-      </motion.div>
-
       {/* Push notifications */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -261,6 +187,7 @@ export function MyProfilePage({ profile }: Props) {
         onClick={async () => {
           const supabase = createClient();
           await supabase.auth.signOut();
+          document.cookie = 'user_role=; path=/; max-age=0';
           window.location.href = '/login';
         }}
         className="w-full py-3.5 rounded-2xl text-sm font-medium text-[#C05B5B] bg-[#C05B5B]/8 hover:bg-[#C05B5B]/15 border border-[#C05B5B]/20 transition-colors flex items-center justify-center gap-2"

@@ -123,6 +123,7 @@ export function useServices() {
             .from('services')
             .update(serviceToRow(data, masterId!))
             .eq('id', id)
+            .eq('master_id', masterId!)
       );
       if (result.error) {
         const errorWithMeta = Object.assign(new Error(result.message ?? 'Failed to update service'), {
@@ -159,10 +160,14 @@ export function useServices() {
       const result = await safeMutation(
         'services:reorder',
         async () => {
-          for (const { id, sort_order } of ordered) {
-            const { error } = await supabase.from('services').update({ sort_order }).eq('id', id);
-            if (error) throw error;
-          }
+          // Parallel batch — all updates fire simultaneously instead of N sequential round-trips
+          const results = await Promise.all(
+            ordered.map(({ id, sort_order }) =>
+              supabase.from('services').update({ sort_order }).eq('id', id).eq('master_id', masterId!)
+            )
+          );
+          const failed = results.find(r => r.error);
+          if (failed?.error) throw failed.error;
           return { data: null, error: null, count: null, status: 200, statusText: 'OK' } as PostgrestSingleResponse<null>;
         }
       );

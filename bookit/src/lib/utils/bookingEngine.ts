@@ -86,7 +86,7 @@ export function computeBookingTotals(params: ComputeTotalsParams): BookingTotals
 
 export function computeEndTime(startTime: string, durationMinutes: number): string {
   const [h, m] = startTime.split(':').map(Number);
-  const endMin = h * 60 + m + durationMinutes;
+  const endMin = Math.min(h * 60 + m + durationMinutes, 23 * 60 + 59); // cap at 23:59
   return `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
 }
 
@@ -127,7 +127,7 @@ export function buildOffDaySet(
   const offDates = new Set<string>();
   days.forEach(d => {
     if (nonWorkingDows.has(DOW[d.getDay()])) {
-      offDates.add(d.toISOString().slice(0, 10));
+      offDates.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
     }
   });
   exceptions.forEach(e => offDates.add(e.date));

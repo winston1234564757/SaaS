@@ -41,6 +41,9 @@ interface PortfolioPhoto {
   id: string;
   url: string;
   caption: string | null;
+  serviceId?: string | null;
+  serviceName?: string | null;
+  servicePrice?: number | null;
 }
 
 export interface FlashDeal {
@@ -101,10 +104,12 @@ function Lightbox({
   photos,
   initialIndex,
   onClose,
+  slug,
 }: {
   photos: PortfolioPhoto[];
   initialIndex: number;
   onClose: () => void;
+  slug: string;
 }) {
   const [idx, setIdx] = useState(initialIndex);
 
@@ -172,6 +177,35 @@ function Lightbox({
             <p className="text-center text-sm text-white/80 mt-3">{photo.caption}</p>
           )}
         </motion.div>
+      </AnimatePresence>
+
+      {/* Floating Bar "Хочу так само" */}
+      <AnimatePresence mode="wait">
+        {photo.serviceId && photo.serviceName && (
+          <motion.div
+            key={`bar-${idx}`}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-0 left-0 right-0 z-[110] p-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="backdrop-blur-md bg-white/85 border border-white/60 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-lg max-w-lg mx-auto">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11px] text-[#A8928D] font-medium">Послуга</span>
+                <span className="text-sm font-semibold text-[#2C1A14] truncate">{photo.serviceName}</span>
+                <span className="text-xs text-[#789A99] font-medium">{photo.servicePrice?.toLocaleString('uk-UA')} ₴</span>
+              </div>
+              <a
+                href={`/${slug}?serviceId=${photo.serviceId}`}
+                className="flex-shrink-0 bg-[#789A99] text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-[#6B8C8B] transition-colors active:scale-95 min-h-[44px] flex items-center"
+              >
+                Хочу так само
+              </a>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Prev / Next */}
@@ -328,9 +362,24 @@ export function PublicMasterPage({ master }: { master: Master }) {
     return () => { document.body.style.backgroundColor = ''; };
   }, [theme.background]);
 
-  // Auto-open BookingFlow with pre-selected services from ?services= query param
+  // Auto-open BookingFlow with pre-selected services from ?services= or ?serviceId= query param
   useEffect(() => {
     if (didAutoOpen.current) return;
+
+    // ?serviceId= — deep link з Floating Bar "Хочу так само"
+    const serviceId = searchParams.get('serviceId');
+    if (serviceId) {
+      const service = master.services.find(s => s.id === serviceId);
+      if (service) {
+        didAutoOpen.current = true;
+        setRepeatServices(null);
+        setSelectedService(service);
+        setBookingOpen(true);
+        return;
+      }
+    }
+
+    // ?services= — repeat booking (кілька послуг)
     const ids = searchParams.get('services');
     if (!ids) return;
     const idList = ids.split(',').filter(Boolean);
@@ -805,6 +854,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
             photos={portfolio}
             initialIndex={lightboxIdx}
             onClose={() => setLightboxIdx(null)}
+            slug={master.slug}
           />
         )}
       </AnimatePresence>

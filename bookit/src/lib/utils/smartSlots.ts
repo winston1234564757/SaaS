@@ -14,6 +14,13 @@ export interface TimeRange {
   end: string;   // "HH:MM"
 }
 
+/** Виняток з розкладу для конкретного дня (передається з master_time_off) */
+export interface TimeOffEntry {
+  type: 'vacation' | 'day_off' | 'short_day';
+  startTime?: string | null; // 'HH:MM' — тільки для short_day
+  endTime?: string | null;   // 'HH:MM' — тільки для short_day
+}
+
 export interface GenerateSlotsParams {
   workStart: string;
   workEnd: string;
@@ -25,6 +32,11 @@ export interface GenerateSlotsParams {
   stepMinutes?: number;
   /** The date being queried (optional, used to filter out past slots if today) e.g., 'YYYY-MM-DD' or Date */
   selectedDate?: string | Date;
+  /**
+   * Виняток з розкладу для цього дня (vacation/day_off → порожній масив;
+   * short_day → замінює workStart/workEnd кастомними годинами).
+   */
+  timeOff?: TimeOffEntry | null;
 }
 
 /** Why a slot is unavailable — used for differentiated UI rendering */
@@ -70,15 +82,26 @@ export function fromMins(mins: number): string {
  */
 export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] {
   const {
-    workStart,
-    workEnd,
     bookings,
     breaks,
     bufferMinutes,
     requestedDuration,
     stepMinutes = 30,
     selectedDate,
+    timeOff,
   } = params;
+
+  // ── Обробка винятків з розкладу ───────────────────────────────────────────
+  if (timeOff) {
+    if (timeOff.type === 'vacation' || timeOff.type === 'day_off') return [];
+    // short_day — використовуємо кастомний час замість шаблонного
+    if (timeOff.type === 'short_day' && timeOff.startTime && timeOff.endTime) {
+      params = { ...params, workStart: timeOff.startTime, workEnd: timeOff.endTime, timeOff: null };
+    }
+  }
+
+  const workStart = params.workStart;
+  const workEnd   = params.workEnd;
 
   const workStartMin = toMins(workStart);
   const workEndMin   = toMins(workEnd);

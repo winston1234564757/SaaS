@@ -96,12 +96,18 @@ export async function POST(req: NextRequest) {
         .from('master_profiles')
         .select('subscription_expires_at')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+
       if (selectError) {
         console.error('[mono-webhook] master_profiles select failed:', selectError.message, { userId });
+        return NextResponse.json({ status: 'ok' }); // ack webhook, log error for investigation
+      }
+      if (!mp) {
+        console.error('[mono-webhook] userId not found in master_profiles:', userId);
+        return NextResponse.json({ status: 'ok' }); // ack to prevent retry loop
       }
 
-      const currentExpiry = mp?.subscription_expires_at
+      const currentExpiry = mp.subscription_expires_at
         ? new Date(mp.subscription_expires_at)
         : new Date();
       if (currentExpiry < new Date()) currentExpiry.setTime(Date.now());

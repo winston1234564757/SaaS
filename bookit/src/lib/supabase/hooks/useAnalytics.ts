@@ -317,13 +317,14 @@ export function useAnalytics(
       let newClients: number | null = null;
 
       if (activePhones.length > 0) {
+        // No .in(activePhones) filter — avoids PostgREST URL length limit for masters with
+        // hundreds of clients. JS loop below filters by activePhones set, so results are identical.
         const { data: allVisitsData } = await supabase
           .from('bookings')
           .select('client_phone')
           .eq('master_id', masterId!)
           .lte('date', endDate)
-          .neq('status', 'cancelled')
-          .in('client_phone', activePhones);
+          .neq('status', 'cancelled');
 
         const visitsMap = new Map<string, number>();
         for (const b of (allVisitsData ?? []) as VisitRow[]) {

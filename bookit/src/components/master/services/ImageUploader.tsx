@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
@@ -19,6 +19,11 @@ export function ImageUploader({ folder, masterId, value, onChange }: ImageUpload
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(value ?? null);
 
+  // Sync preview when value prop changes (e.g., after context loads avatar_url)
+  useEffect(() => {
+    setPreview(value ?? null);
+  }, [value]);
+
   async function handleFile(file: File) {
     if (!file.type.startsWith('image/')) return;
     setUploading(true);
@@ -30,22 +35,27 @@ export function ImageUploader({ folder, masterId, value, onChange }: ImageUpload
     const ext = file.name.split('.').pop() ?? 'jpg';
     const path = `${folder}/${masterId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
-    const { error } = await supabase.storage.from('images').upload(path, file, {
-      cacheControl: '3600',
-      upsert: false,
-    });
+    try {
+      const { error } = await supabase.storage.from('images').upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
 
-    if (error) {
-      console.error('[ImageUploader] upload error', error);
+      if (error) {
+        console.error('[ImageUploader] upload error', error);
+        setPreview(value ?? null);
+        return;
+      }
+
+      const { data } = supabase.storage.from('images').getPublicUrl(path);
+      setPreview(data.publicUrl);
+      onChange(data.publicUrl);
+    } catch (err) {
+      console.error('[ImageUploader] unexpected error', err);
       setPreview(value ?? null);
+    } finally {
       setUploading(false);
-      return;
     }
-
-    const { data } = supabase.storage.from('images').getPublicUrl(path);
-    setPreview(data.publicUrl);
-    onChange(data.publicUrl);
-    setUploading(false);
   }
 
   function handleClear() {

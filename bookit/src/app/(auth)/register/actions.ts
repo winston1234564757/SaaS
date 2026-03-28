@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { revalidatePath } from 'next/cache';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/I/1 to avoid confusion
@@ -64,6 +65,7 @@ export async function claimMasterRole(
     return { error: 'Помилка ініціалізації профілю майстра. Спробуйте ще раз.' };
   }
 
+  revalidatePath('/dashboard', 'layout');
   return { error: null };
 }
 
@@ -165,5 +167,6 @@ export async function createMasterProfileAfterSignup(params: {
     return { error: 'Помилка створення профілю. Спробуйте ще раз.' };
   }
 
+  revalidatePath('/dashboard', 'layout');
   return { error: null };
 }

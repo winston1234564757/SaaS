@@ -118,6 +118,7 @@ export function useProducts() {
             .from('products')
             .update(productToRow(data, masterId!))
             .eq('id', id)
+            .eq('master_id', masterId!)
       );
       if (result.error) {
         const errorWithMeta = Object.assign(new Error(result.message ?? 'Failed to update product'), {

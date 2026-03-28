@@ -49,7 +49,32 @@
       "Skill(update-config)",
       "Skill(update-config:*)",
       "Bash(node -e \"const j = require\\(''/c/Users/Vitossik/SaaS/bookit/.claude/settings.json''\\); const h = j.hooks.UserPromptSubmit[0].hooks[0]; console.log\\(''type:'', h.type, ''| model:'', h.model, ''| status:'', h.statusMessage\\); console.log\\(''OK''\\)\")",
-      "Bash(node -e \"const j = JSON.parse\\(require\\(''fs''\\).readFileSync\\(''C:/Users/Vitossik/SaaS/bookit/.claude/settings.json'',''utf8''\\)\\); const h = j.hooks.UserPromptSubmit[0].hooks[0]; console.log\\(''type:'', h.type, ''| model:'', h.model\\); console.log\\(''prompt snippet:'', h.prompt.slice\\(0,60\\)\\); console.log\\(''JSON valid: OK''\\)\")"
+      "Bash(node -e \"const j = JSON.parse\\(require\\(''fs''\\).readFileSync\\(''C:/Users/Vitossik/SaaS/bookit/.claude/settings.json'',''utf8''\\)\\); const h = j.hooks.UserPromptSubmit[0].hooks[0]; console.log\\(''type:'', h.type, ''| model:'', h.model\\); console.log\\(''prompt snippet:'', h.prompt.slice\\(0,60\\)\\); console.log\\(''JSON valid: OK''\\)\")",
+      "Bash(find C:UsersVitossikSaaSbookitsrchooks -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))",
+      "Bash(find \"C:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)\" -type d)",
+      "mcp__ruflo__mcp_status",
+      "mcp__ruflo__system_health",
+      "mcp__ruflo__agentdb_session-start",
+      "mcp__ruflo__hooks_pre-task",
+      "mcp__ruflo__swarm_init",
+      "mcp__ruflo__agent_spawn",
+      "mcp__ruflo__task_create",
+      "mcp__ruflo__agent_status",
+      "Bash(curl:*)",
+      "Bash(node -e \":*)",
+      "Bash(python3 \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"beauty booking service floating bar CTA mobile\" --design-system -p \"Bookit Floating Bar\" -f markdown)",
+      "Bash(python3:*)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(python3 -c \":*)",
+      "mcp__ruflo__task_complete",
+      "Bash(python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"beauty booking floating bar mobile\" --design-system -p \"Bookit\" -f markdown)",
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"beauty booking floating bar mobile\" --design-system -p \"Bookit\" -f markdown)",
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"touch mobile CTA button\" --domain ux -n 2)",
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"nextjs server component\" --stack nextjs -n 2)",
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"flash deals premium SaaS dashboard progress bar paywall glassmorphism\" --design-system -p \"Flash Deals\" -f markdown)",
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"beauty booking SaaS dashboard pricing portfolio premium\" --design-system -p \"Bookit Dashboard\" -f markdown 2>&1)",
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"glassmorphism premium SaaS dashboard cards bento\" --domain style -n 3)",
+      "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"drag drop image grid gallery interactive\" --domain ux -n 3)"
     ]
   }
 }

@@ -20,7 +20,7 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
     queryFn: async () => {
       if (!masterId) throw new Error('No masterId');
       const supabase = createClient();
-      const [tmplRes, excRes, bookRes] = await Promise.all([
+      const [tmplRes, excRes, bookRes, timeOffRes] = await Promise.all([
         supabase.from('schedule_templates')
           .select('day_of_week, is_working, start_time, end_time, break_start, break_end')
           .eq('master_id', masterId),
@@ -31,11 +31,15 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
           .select('date, start_time, end_time')
           .eq('master_id', masterId).neq('status', 'cancelled')
           .gte('date', from).lte('date', to),
+        supabase.from('master_time_off')
+          .select('type, start_date, end_date, start_time, end_time')
+          .eq('master_id', masterId).lte('start_date', to).gte('end_date', from),
       ]);
 
       if (tmplRes.error) throw tmplRes.error;
-      if (excRes.error) throw excRes.error;
+      if (excRes.error)  throw excRes.error;
       if (bookRes.error) throw bookRes.error;
+      // timeOffRes помилки не кидаємо — таблиця може ще не існувати на старих середовищах
 
       const templates: ScheduleStore['templates'] = {};
       for (const t of (tmplRes.data ?? [])) {
@@ -45,13 +49,39 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
           is_working: t.is_working !== false,
         };
       }
+
       const exceptions: ScheduleStore['exceptions'] = {};
+
+      // 1. Базові schedule_exceptions
       for (const e of (excRes.data ?? [])) {
         exceptions[e.date] = {
           is_day_off: e.is_day_off,
           start_time: e.start_time ?? null, end_time: e.end_time ?? null,
         };
       }
+
+      // 2. master_time_off — перезаписує / доповнює (вищий пріоритет)
+      for (const toff of (timeOffRes.data ?? [])) {
+        // Розгортаємо діапазон vacation у окремі дати
+        let cur = new Date(toff.start_date + 'T00:00:00');
+        const last = new Date(toff.end_date + 'T00:00:00');
+        while (cur <= last) {
+          const dateStr = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;
+          if (dateStr >= from && dateStr <= to) {
+            if (toff.type === 'vacation' || toff.type === 'day_off') {
+              exceptions[dateStr] = { is_day_off: true, start_time: null, end_time: null };
+            } else if (toff.type === 'short_day') {
+              exceptions[dateStr] = {
+                is_day_off: false,
+                start_time: toff.start_time ? (toff.start_time as string).slice(0, 5) : null,
+                end_time:   toff.end_time   ? (toff.end_time   as string).slice(0, 5) : null,
+              };
+            }
+          }
+          cur.setDate(cur.getDate() + 1);
+        }
+      }
+
       const bookingsByDate: ScheduleStore['bookingsByDate'] = {};
       for (const b of (bookRes.data ?? [])) {
         const k = b.date as string;
