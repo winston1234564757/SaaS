@@ -404,6 +404,76 @@
       "domain": "frontend",
       "model": "sonnet",
       "modelRoutedBy": "explicit"
+    },
+    "coder-exodus-phase1": {
+      "agentId": "coder-exodus-phase1",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "opus"
+      },
+      "createdAt": "2026-03-29T18:05:07.121Z",
+      "domain": "migration",
+      "model": "opus",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774811170149-ju0zbx": {
+      "agentId": "agent-1774811170149-ju0zbx",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-29T19:06:10.149Z",
+      "domain": "file-migration",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774811191074-6qfkfm": {
+      "agentId": "agent-1774811191074-6qfkfm",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-29T19:06:31.074Z",
+      "domain": "file-migration",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774811206003-8bfytp": {
+      "agentId": "agent-1774811206003-8bfytp",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-29T19:06:46.003Z",
+      "domain": "file-migration",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1774811223207-vqtkop": {
+      "agentId": "agent-1774811223207-vqtkop",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-03-29T19:07:03.208Z",
+      "domain": "file-migration",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
     }
   },
   "version": "3.0.0"

@@ -84,7 +84,9 @@
       "Bash(npx kill-port:*)",
       "Bash(taskkill //F //IM node.exe)",
       "Bash(pkill -f \"next dev\")",
-      "Bash(ls \"C:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard/referral/\")"
+      "Bash(ls \"C:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard/referral/\")",
+      "Bash(find /c/Users/Vitossik/SaaS/bookit/src -type f \\\\\\(-name *loyalty* -o -name *referral* -o -name *billing* -o -name *flash* \\\\\\))",
+      "Bash(find \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\\\\dashboard\" -name \"page.tsx\")"
     ]
   }
 }
