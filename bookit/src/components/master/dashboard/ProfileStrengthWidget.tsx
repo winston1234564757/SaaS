@@ -134,13 +134,13 @@ export function ProfileStrengthWidget() {
           initial={{ opacity: 0, y: 16 }}
           animate={
             celebrating
-              ? { scale: [1, 1.03, 1], opacity: 1 }
+              ? { scale: 1, opacity: 1 }
               : { opacity: 1, y: 0 }
           }
           exit={{ opacity: 0, scale: 0.95, y: -8 }}
           transition={
             celebrating
-              ? { duration: 0.5, times: [0, 0.5, 1] }
+              ? { type: 'spring' as const, stiffness: 400, damping: 18 }
               : { delay: 0.05, type: 'spring' as const, stiffness: 280, damping: 24 }
           }
           className="bento-card p-5"
@@ -150,8 +150,8 @@ export function ProfileStrengthWidget() {
             <div className="flex flex-col items-center gap-3 py-2 text-center">
               <motion.div
                 initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.3, 1] }}
-                transition={{ duration: 0.6, times: [0, 0.6, 1], type: 'spring' as const }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring' as const, stiffness: 180, damping: 8 }}
                 className="text-4xl"
               >
                 🎉

@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { QueryClient, QueryClientProvider, focusManager, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, focusManager, onlineManager, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/lib/toast/context';
 import type { SafeResult } from '@/lib/supabase/safeQuery';
 import { createClient } from '@/lib/supabase/client';
+import { RefCapture } from '@/components/shared/RefCapture';
 
 function createQueryClient(showToast: ReturnType<typeof useToast>['showToast']) {
   return new QueryClient({
     defaultOptions: {
       queries: {
+        networkMode: 'always',       // ігнорує navigator.onLine — завжди виконує queryFn
         staleTime: 30000,            // 30 sec defaults
         gcTime:    1000 * 60 * 15,   // 15 min — keep cache alive across navigation
         refetchOnWindowFocus: true,  // wake up stale queries on tab return
@@ -19,6 +21,7 @@ function createQueryClient(showToast: ReturnType<typeof useToast>['showToast']) 
         retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000), // 1s, 2s, 4s, 8s
       },
       mutations: {
+        networkMode: 'always',       // мутації теж не зупиняються при offline
         retry: 0,
         onError: (error: unknown) => {
           const supaError = (error as { __safeResult?: SafeResult<unknown> | null })?.__safeResult;
@@ -36,29 +39,27 @@ function createQueryClient(showToast: ReturnType<typeof useToast>['showToast']) 
 }
 
 /**
- * Universal aggressive wake-up — web + PWA.
+ * Universal wake-up — web + PWA.
  *
- * Відстежує час, коли вкладка йде у фон (visibilityState = 'hidden').
- * При поверненні (visibilityState = 'visible') перевіряє elapsed:
+ * НЕ викликає refreshSession() вручну — це спричиняло GoTrue lock contention:
+ * кілька concurrent refreshSession() змагались за один Web Lock, через 5s
+ * GoTrue примусово відбирав lock і вбивав попередній refresh → мертвий токен.
  *
- *   < 60 s  → легкий refresh токена + onFocus(true)  (звичайне перемикання вкладок)
- *   ≥ 60 s  → агресивна послідовність:
- *               Step 1: refreshSession() з 12s timeout
- *               Step 2: resetQueries({ type: 'active' }) — очищує error state + тригерить refetch
- *               Step 3: якщо Supabase повертає auth error (сесія мертва) → window.location.reload()
- *
- * waking ref: debounce-lock — не дозволяє запускатись паралельно при швидкому перемиканні.
+ * Supabase-js сам оновлює токен per-request через внутрішній _getSession().
+ * Ми лише:
+ *   1. Виводимо TQ з "paused" стану (onlineManager.setOnline + onFocus)
+ *   2. Чистимо error state після довгого сну (resetQueries)
+ *   3. TOKEN_REFRESHED → resetQueries в useAuthQuerySync нижче
  */
 function useAggressiveWakeup() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const supabase = createClient();
     let hiddenAt: number | null = null;
     let waking = false;
 
     const cleanup = focusManager.setEventListener((onFocus) => {
-      const handleVisibility = async () => {
+      const handleVisibility = () => {
         if (document.visibilityState === 'hidden') {
           hiddenAt = Date.now();
           return;
@@ -66,51 +67,26 @@ function useAggressiveWakeup() {
         if (document.visibilityState !== 'visible') return;
         if (waking) return;
 
-        const elapsed = hiddenAt !== null ? Date.now() - hiddenAt : 0;
-        hiddenAt = null;
         waking = true;
 
-        try {
-          if (elapsed >= 60_000) {
-            // ── Агресивне пробудження після 1+ хвилини ──────────────────────
-            let sessionDead = false;
-            try {
-              const { error } = await Promise.race([
-                supabase.auth.refreshSession(),
-                new Promise<never>((_, reject) =>
-                  setTimeout(() => reject(new Error('wake timeout')), 12_000)
-                ),
-              ]);
-              // error від Supabase = refresh token протермінований / сесія відкликана
-              if (error) sessionDead = true;
-            } catch {
-              // network/timeout — сесія може бути ще дійсна, продовжуємо з reset
-            }
+        // Виводимо TQ з "paused" стану — браузер міг не стріляти `online` при поверненні.
+        onlineManager.setOnline(true);
 
-            if (sessionDead) {
-              window.location.reload();
-              return;
-            }
+        const elapsed = hiddenAt !== null ? Date.now() - hiddenAt : 0;
+        hiddenAt = null;
 
-            queryClient.resetQueries({ type: 'active' });
-          } else if (elapsed > 0) {
-            // ── Легкий refresh при короткій відсутності ──────────────────────
-            try {
-              await Promise.race([
-                supabase.auth.refreshSession(),
-                new Promise(resolve => setTimeout(resolve, 10_000)),
-              ]);
-            } catch {}
-          }
-
-          onFocus(true);
-        } finally {
-          waking = false;
+        if (elapsed >= 60_000) {
+          // Після 1+ хвилини: очищуємо error state і тригеримо чистий refetch.
+          // Якщо токен протермінований — supabase-js оновить його per-request,
+          // useAuthQuerySync отримає TOKEN_REFRESHED і зробить ще один resetQueries.
+          queryClient.resetQueries({ type: 'active' });
         }
+
+        onFocus(true);
+        waking = false;
       };
 
       const handleFocus = () => {
-        // window focus без visibilitychange (напр. клік по вже видимому вікну)
         if (document.visibilityState === 'visible' && !waking) onFocus(true);
       };
 
@@ -127,19 +103,9 @@ function useAggressiveWakeup() {
 }
 
 /**
- * Detects when the PWA wakes up from deep sleep (iOS/Android backgrounding).
- * Mobile browsers often freeze JS completely, and sometimes fail to fire
- * visibilitychange or focus events when waking back up.
- *
- * Strategy: A silent 5s interval heartbeat. If the interval fires and >3 minutes
- * have passed, the device was asleep. We then force a token refresh and refetch.
- *
- * FIX #3: getSession() → refreshSession() — гарантований мережевий refresh токена.
- * FIX #4: invalidateQueries → resetQueries — invalidate лише позначає як stale,
- *         але НЕ очищує error state після retry exhaustion. resetQueries повертає
- *         query в initial стан і тригерить чистий fetch.
- * FIX #5: timeout 5s → 12s — мережа після deep sleep прокидається повільно,
- *         5s було занадто агресивно і race виграв timeout до завершення refresh.
+ * PWA deep sleep detection — для мобільних браузерів, де JS повністю заморожується.
+ * Не викликає refreshSession() з тієї ж причини: lock contention.
+ * Supabase оновить токен per-request самостійно.
  */
 function useDeepSleepWakeup() {
   const queryClient = useQueryClient();
@@ -147,27 +113,12 @@ function useDeepSleepWakeup() {
   useEffect(() => {
     let lastTime = Date.now();
 
-    const interval = setInterval(async () => {
+    const interval = setInterval(() => {
       const now = Date.now();
       const elapsed = now - lastTime;
 
-      // If JS was frozen for more than 3 minutes (180,000 ms)
       if (elapsed > 180_000) {
-        const supabase = createClient();
-        try {
-          // FIX #3 + #5: refreshSession() з 12s timeout.
-          // Дає достатньо часу мережі прокинутись і завершити token refresh
-          // до того як запити підуть з новим токеном.
-          await Promise.race([
-            supabase.auth.refreshSession(),
-            new Promise(resolve => setTimeout(resolve, 12_000)),
-          ]);
-        } catch {}
-
-        // FIX #4: resetQueries замість invalidateQueries.
-        // Після 3+ хвилин сну частина запитів може бути в error state (retry exhausted).
-        // invalidateQueries позначає як stale, але не очищує error — юзер бачить dead UI.
-        // resetQueries: очищує error state, повертає initial, тригерить свіжий fetch.
+        onlineManager.setOnline(true);
         queryClient.resetQueries({ type: 'active' });
       }
 
@@ -215,6 +166,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={client}>
+      <RefCapture />
       <SessionWakeup />
       {children}
     </QueryClientProvider>

@@ -23,6 +23,7 @@ export default async function Referral() {
 
   return (
     <ReferralPage
+      masterId={user.id}
       referralCode={mp?.referral_code ?? ''}
       referralCount={count ?? 0}
       subscriptionTier={mp?.subscription_tier ?? 'starter'}

@@ -488,6 +488,9 @@ export function BookingWizard({
       durationOverrideMinutes: mode === 'master' ? (durationOverride ?? undefined) : undefined,
       flashDealId:             mode === 'client' ? (flashDeal?.id ?? undefined) : undefined,
       applyDynamicPricing:     mode === 'master' ? useDynamicPrice : true,
+      referral_code_used:      mode === 'client'
+        ? (typeof window !== 'undefined' ? localStorage.getItem('bookit_ref') ?? null : null)
+        : null,
     });
     setSaving(false);
     if (result.error) {
@@ -501,6 +504,8 @@ export function BookingWizard({
       return;
     }
     if (mode === 'client' && result.bookingId) {
+      // Реф-код використано — очищаємо щоб не застосовувати повторно
+      if (typeof window !== 'undefined') localStorage.removeItem('bookit_ref');
       setCreatedBookingId(result.bookingId);
       notifyMasterOnBooking({
         masterId, clientName: clientName.trim(),

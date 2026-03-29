@@ -1,26 +1,46 @@
-🚨 GLOBAL RESILIENCE DIRECTIVE: AGGRESSIVE WAKE-UP FOR WEB & PWA (RUFLO SWARM) 🚨
+ПРОМТ ДЛЯ CLAUDE (TASK 4.2.2 - REFERRAL SYSTEM MVP FRONTEND & UI):
 
-STATUS: Both standard browser tabs (Web App) and the PWA are completely dying after being placed in the background. When the OS or browser suspends the tab and later resumes it, the Supabase token is dead, and React Query deadlocks with infinite skeletons. We need a universal, aggressive "Force Soft-Reload" upon waking up that applies to ALL environments (Web and PWA).
+БІЗНЕС-ЗАДАЧА:
+Нам потрібно інтегрувати MVP реферальної системи в клієнтський та майстерський інтерфейси. Ми вже маємо бекенд для створення лінків (referrals.ts) та обробки нагород. Тепер треба: 1) Зробити механізм "перехоплення" реферального коду з URL; 2) Передавати цей код при реєстрації та створенні запису; 3) Додати красиві кнопки "Поділитися" в UI.
 
-SWARM MISSION (Coder & Architect):
-Do not use native editing. Use your Ruflo MCP tool to implement a bulletproof global visibilitychange and focus listener that acts as a defibrillator for the app.
+ВЕКТОР ДІЙ:
 
-IMPLEMENTATION REQUIREMENTS:
+Перехоплення коду (URL -> LocalStorage):
 
-Universal Wake-Up Hook: Go to src/lib/providers/QueryProvider.tsx (or the relevant sleep/wake hook). This logic MUST apply globally to the web app, not just in standalone PWA mode.
+Відкрий src/app/layout.tsx (або Providers.tsx).
 
-Time Tracking: Track the exact timestamp when document.visibilityState === 'hidden'.
+Додай логіку (useEffect + useSearchParams), яка перевіряє наявність ?ref=... в URL. Якщо параметр є — записуй його в localStorage.setItem('bookit_ref', code). Це потрібно, щоб код "вижив" під час редиректів авторизації.
 
-The Wake-Up Threshold (1 MINUTE): When the state changes back to 'visible', calculate the elapsed time. If the app was sleeping for more than 1 minute (60,000 ms), trigger the Aggressive Wake-Up sequence.
+Ін'єкція коду (Auth & Booking):
 
-Aggressive Wake-Up Sequence:
+Auth: Відкрий src/components/auth/RegisterForm.tsx (або Server Action реєстрації processRegistrationReferral). При успішній реєстрації читай код з localStorage, передавай його в бекенд і потім роби localStorage.removeItem('bookit_ref').
 
-Step 1: Force a network request to renew the token: await supabase.auth.refreshSession().
+Booking: Відкрий src/components/public/BookingFlow.tsx (або екшен createBooking). При сабміті форми читай ref з localStorage, додавай його до payload бронювання (наприклад, у поле notes з префіксом [REF:...], або в окреме поле, якщо ти його створив), і очищай localStorage.
 
-Step 2: Violently wipe the React Query error states and force a refetch of all active data: queryClient.resetQueries({ type: 'active' }).
+UI Майстра (ReferralPage.tsx):
 
-Step 3 (Fallback): If refreshSession() throws a fatal error (meaning the user's session is completely unrecoverable), ONLY THEN use window.location.reload() to hard-reset the app.
+Відкрий src/components/master/referral/ReferralPage.tsx.
 
-Debounce/Lock: Ensure this logic is debounced or locked by a ref so it doesn't fire multiple times if the user switches tabs rapidly.
+Зроби UI-редизайн. Додай Card: "Запросити колегу". Текст: "Подаруйте колезі преміум-інструмент і отримайте +30 днів підписки Pro безкоштовно".
 
-ACTION: Deploy the Swarm, inject this 1-minute aggressive wake-up logic for all environments, and confirm when it's done.
+Додай кнопку "Згенерувати лінк", яка викликає getOrCreateReferralLink(..., 'B2B').
+
+Відобрази лінк в інпуті readOnly з кнопкою "Копіювати" та кнопкою "Поділитися" (navigator.share, якщо підтримується).
+
+UI Клієнта (MyProfilePage.tsx або ClientRealtimeSync.tsx):
+
+На сторінці профілю клієнта або в деталях майстра додай Card: "Подаруй подрузі знижку".
+
+Текст: "Поділіться своїм майстром з подругою. Вона отримає знижку 10%, а ви — бонус на наступний візит!"
+
+Логіка така ж: генерація C2C лінка, копіювання/шарінг.
+
+ЖОРСТКІ ОБМЕЖЕННЯ:
+
+DO NOT run build or typecheck.
+
+UI має виглядати дорого і нативно (Tailwind), використовуй іконки з lucide-react (Copy, Share2, Gift).
+
+Забезпеч безпечне читання з localStorage (перевірка typeof window !== 'undefined').
+
+Відповідай українською мовою. Видай код логіки перехоплення (п.1 і 2) та оновлені компоненти UI для майстра і клієнта.

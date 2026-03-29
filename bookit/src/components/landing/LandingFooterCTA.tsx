@@ -1,15 +1,17 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-// Static number generated at module init — stable per page load
-const todayCount = Math.floor(Math.random() * 5) + 3; // 3–7
-
 export function LandingFooterCTA() {
   const ref = useRef(null);
+  const [todayCount, setTodayCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    setTodayCount(Math.floor(Math.random() * 5) + 3);
+  }, []);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
@@ -50,7 +52,7 @@ export function LandingFooterCTA() {
           </p>
           <p className="text-xs text-[#A8928D]">
             Сьогодні вже зареєструвалось{' '}
-            <span className="font-semibold text-[#789A99]">{todayCount} майстрів</span>
+            <span className="font-semibold text-[#789A99]">{todayCount ?? '…'} майстрів</span>
           </p>
         </div>
       </motion.div>

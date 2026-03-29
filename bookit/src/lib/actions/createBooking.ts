@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { applyDynamicPricing, type PricingRules } from '@/lib/utils/dynamicPricing';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
+import { sendTelegramMessage, buildBookingMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
 
 // ── Payload schema ────────────────────────────────────────────────────────────
@@ -46,6 +47,8 @@ const schema = z.object({
   // Якщо false — ігнорувати pricing_rules (майстер вирішив не застосовувати dynamic pricing).
   // true за замовчуванням, щоб не зламати існуючі записи клієнтів.
   applyDynamicPricing: z.boolean().default(true),
+  // Реферальний код (C2C: при завершенні бронювання DB тригер активує знижку власнику лінка)
+  referral_code_used: z.string().max(20).optional().nullable().default(null),
 });
 
 export type CreateBookingPayload = z.input<typeof schema>;
@@ -96,7 +99,7 @@ export async function createBooking(
   // 3. Master profile — pricing rules + subscription tier + trial counter
   const { data: mp } = await admin
     .from('master_profiles')
-    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned')
+    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id')
     .eq('id', p.masterId)
     .single();
 
@@ -248,6 +251,7 @@ export async function createBooking(
     source: p.source === 'manual' ? 'manual' : 'public_page',
     dynamic_pricing_label: dynamicResult?.label ?? null,
     dynamic_extra_kopecks: dynamicExtraKopecks,
+    referral_code_used: p.referral_code_used ?? null,
   });
 
   if (bErr) {
@@ -324,6 +328,24 @@ export async function createBooking(
 
   // Clear Next.js server-side data cache
   revalidatePath('/', 'layout');
+
+  // 13. Telegram-сповіщення майстру (fire-and-forget, не блокуємо відповідь)
+  const masterTgChatId = (mp as any).telegram_chat_id as string | null;
+  if (masterTgChatId) {
+    const serviceNames = canonicalServices.map(s => s.name).join(', ');
+    void sendTelegramMessage(
+      masterTgChatId,
+      buildBookingMessage({
+        clientName: p.clientName,
+        date: p.date,
+        startTime: p.startTime,
+        services: serviceNames,
+        totalPrice: finalTotal,
+        notes: p.notes,
+        products: canonicalProducts.map(cp => ({ name: cp.name, quantity: cp.quantity })),
+      }),
+    );
+  }
 
   return { bookingId, error: null, finalTotal };
 }

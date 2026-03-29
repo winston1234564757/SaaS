@@ -2,22 +2,54 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Check, Gift, Users, Sparkles, Crown } from 'lucide-react';
+import { Copy, Check, Gift, Users, Sparkles, Crown, Share2, Loader2 } from 'lucide-react';
 import { pluralize } from '@/lib/utils/dates';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
+import { getOrCreateReferralLink } from '@/lib/actions/referrals';
 
 interface Props {
+  masterId: string;
   referralCode: string;
   referralCount: number;
   subscriptionTier: string;
   subscriptionExpiresAt: string | null;
 }
 
-export function ReferralPage({ referralCode, referralCount, subscriptionTier, subscriptionExpiresAt }: Props) {
+export function ReferralPage({ masterId, referralCode, referralCount, subscriptionTier, subscriptionExpiresAt }: Props) {
   const [copied, setCopied] = useState(false);
+  const [b2bLink, setB2bLink] = useState<string | null>(null);
+  const [b2bCopied, setB2bCopied] = useState(false);
+  const [b2bLoading, setB2bLoading] = useState(false);
   const { currentStep, nextStep, closeTour } = useTour('referral', 1);
+
+  async function handleGenerateB2B() {
+    setB2bLoading(true);
+    const result = await getOrCreateReferralLink(masterId, 'master', 'B2B');
+    setB2bLoading(false);
+    if (result.success) setB2bLink(result.link);
+  }
+
+  async function handleCopyB2B() {
+    if (!b2bLink) return;
+    await navigator.clipboard.writeText(b2bLink);
+    setB2bCopied(true);
+    setTimeout(() => setB2bCopied(false), 2000);
+  }
+
+  async function handleShareB2B() {
+    if (!b2bLink) return;
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Bookit — запрошення колеги',
+        text: 'Подаруйте колезі преміум-інструмент і отримайте +30 днів підписки Pro безкоштовно 🎁',
+        url: b2bLink,
+      });
+    } else {
+      handleCopyB2B();
+    }
+  }
 
   const referralLink = `https://bookit-five-psi.vercel.app/register?ref=${referralCode}`;
 
@@ -64,6 +96,67 @@ export function ReferralPage({ referralCode, referralCount, subscriptionTier, su
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Реферальна програма</h1>
         <p className="text-sm text-[#A8928D]">Запрошуй колег — отримуйте бонуси разом</p>
       </div>
+
+      {/* B2B: Запросити колегу-майстра */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.04, type: 'spring', stiffness: 280, damping: 24 }}
+        className="bento-card p-5"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-2xl bg-[#D4935A]/12 flex items-center justify-center flex-shrink-0">
+            <Gift size={18} className="text-[#D4935A]" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-[#2C1A14]">Запросити колегу</p>
+            <p className="text-xs text-[#A8928D]">Подаруйте колезі преміум-інструмент і отримайте +30 днів Pro</p>
+          </div>
+        </div>
+
+        {!b2bLink ? (
+          <button
+            onClick={handleGenerateB2B}
+            disabled={b2bLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#D4935A] text-white text-sm font-semibold hover:bg-[#c07d45] transition-colors disabled:opacity-60"
+          >
+            {b2bLoading ? <Loader2 size={15} className="animate-spin" /> : <Gift size={15} />}
+            {b2bLoading ? 'Генеруємо...' : 'Згенерувати лінк'}
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center rounded-2xl border border-white/80 bg-white/60 overflow-hidden">
+              <input
+                readOnly
+                value={b2bLink}
+                className="flex-1 px-4 py-3 text-xs text-[#2C1A14] bg-transparent outline-none truncate"
+              />
+              <button
+                onClick={handleCopyB2B}
+                className="px-4 py-3 text-[#789A99] hover:bg-[#789A99]/10 transition-colors border-l border-white/80 flex-shrink-0"
+              >
+                {b2bCopied ? <Check size={15} className="text-[#5C9E7A]" /> : <Copy size={15} />}
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopyB2B}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#789A99]/10 text-[#789A99] text-sm font-semibold hover:bg-[#789A99]/20 transition-colors"
+              >
+                {b2bCopied ? <Check size={14} /> : <Copy size={14} />}
+                {b2bCopied ? 'Скопійовано!' : 'Копіювати'}
+              </button>
+              <button
+                onClick={handleShareB2B}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#D4935A] text-white text-sm font-semibold hover:bg-[#c07d45] transition-colors"
+              >
+                <Share2 size={14} />
+                Поділитись
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.div>
 
       {/* How it works */}
       <motion.div

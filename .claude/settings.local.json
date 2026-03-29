@@ -80,7 +80,11 @@
       "mcp__ruflo__terminal_execute",
       "Bash(git log:*)",
       "Bash(git diff:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(ls \"C:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard/referral/\")"
     ]
   }
 }

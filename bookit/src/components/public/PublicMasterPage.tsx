@@ -92,17 +92,20 @@ function ThemedBlobBackground({ theme }: { theme: typeof moodThemes[MoodThemeKey
 // ── Flash Deals Strip ──────────────────────────────────────────────────────────
 
 function useCountdown(expiresAt: string) {
-  const calc = () => Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
-  const [secs, setSecs] = useState(calc);
+  // Start as null to avoid SSR/client Date.now() mismatch (React #418)
+  const [secs, setSecs] = useState<number | null>(null);
   useEffect(() => {
+    const calc = () => Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+    setSecs(calc());
     const id = setInterval(() => setSecs(calc), 1000);
     return () => clearInterval(id);
   }, [expiresAt]);
+  if (secs === null || secs <= 0) return null;
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
   const s = secs % 60;
   const pad = (n: number) => String(n).padStart(2, '0');
-  return secs > 0 ? (h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`) : null;
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
 function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: string; onBook: () => void }) {
@@ -197,12 +200,18 @@ export function PublicMasterPage({ master }: { master: Master }) {
   const [repeatServices, setRepeatServices] = useState<Service[] | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [activeFlashDeal, setActiveFlashDeal] = useState<FlashDeal | null>(null);
+  // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
+  const [todayDow, setTodayDow] = useState('');
   const didAutoOpen = useRef(false);
 
   useEffect(() => {
     document.body.style.backgroundColor = theme.background;
     return () => { document.body.style.backgroundColor = ''; };
   }, [theme.background]);
+
+  useEffect(() => {
+    setTodayDow(['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]);
+  }, []);
 
   // Auto-open BookingFlow with pre-selected services from ?services= or ?serviceId= query param
   useEffect(() => {
@@ -375,8 +384,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
                 const entry = master.schedule!.find(s => s.day === day);
                 const isWorking = entry?.isWorking ?? false;
                 const dayLabel: Record<string, string> = { mon:'Пн', tue:'Вт', wed:'Ср', thu:'Чт', fri:'Пт', sat:'Сб', sun:'Нд' };
-                const today = ['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()];
-                const isToday = day === today;
+                const isToday = day === todayDow;
                 return (
                   <div
                     key={day}

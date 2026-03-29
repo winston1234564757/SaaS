@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { claimMasterRole } from '@/app/(auth)/register/actions';
+import { processRegistrationReferral } from '@/lib/actions/referrals';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
 interface Props {
@@ -118,6 +119,17 @@ export function PhoneOtpForm({ mode }: Props) {
         setLoading(false);
         setError(roleError);
         return;
+      }
+    }
+
+    // Обробка реферального коду при реєстрації нового майстра
+    if (selectedRole === 'master' && data.isNew && authData.user?.id) {
+      const refCode = typeof window !== 'undefined'
+        ? localStorage.getItem('bookit_ref')
+        : null;
+      if (refCode) {
+        void processRegistrationReferral(authData.user.id, refCode);
+        localStorage.removeItem('bookit_ref');
       }
     }
 
