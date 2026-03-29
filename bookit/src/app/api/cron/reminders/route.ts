@@ -90,22 +90,30 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       if (!phone) { failed++; return; }
 
       try {
-        const smsRes = await fetch('https://api.turbosms.ua/message/send.json', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
-          },
-          body: JSON.stringify({
-            recipients: [phone],
-            sms: { sender: process.env.TURBOSMS_SENDER ?? 'BEAUTY', text: messageText },
-          }),
-        });
-        const smsData = await smsRes.json();
-        if (smsData.response_code === 800 || smsData.response_code === 0) {
+        const smsController = new AbortController();
+        const smsTimeout = setTimeout(() => smsController.abort(), 8_000);
+        let smsData: Record<string, unknown> | undefined;
+        try {
+          const smsRes = await fetch('https://api.turbosms.ua/message/send.json', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
+            },
+            body: JSON.stringify({
+              recipients: [phone],
+              sms: { sender: process.env.TURBOSMS_SENDER ?? 'BEAUTY', text: messageText },
+            }),
+            signal: smsController.signal,
+          });
+          smsData = await smsRes.json();
+        } finally {
+          clearTimeout(smsTimeout);
+        }
+        if (smsData?.response_code === 800 || smsData?.response_code === 0) {
           smsSent++;
         } else {
-          console.error('[cron/reminders] TurboSMS error for', phone, smsData.response_status);
+          console.error('[cron/reminders] TurboSMS error for', phone, smsData?.response_status);
           failed++;
         }
       } catch (e) {

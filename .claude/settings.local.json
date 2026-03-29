@@ -77,7 +77,10 @@
       "Bash(PYTHONUTF8=1 python '/c/Users/Vitossik/SaaS/.claude/skills/ui-ux-pro-max/scripts/search.py' \"drag drop image grid gallery interactive\" --domain ux -n 3)",
       "Skill(nextjs-best-practices)",
       "mcp__ruflo__terminal_create",
-      "mcp__ruflo__terminal_execute"
+      "mcp__ruflo__terminal_execute",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(cat:*)"
     ]
   }
 }

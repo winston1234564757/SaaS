@@ -148,10 +148,14 @@ export async function createFlashDeal(
 
     if (clientsWithTg && clientsWithTg.length > 0) {
       const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(params.slotTime)}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
-      await Promise.all(
+      const tgResults = await Promise.allSettled(
         clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg))
       );
-      sentCount += clientsWithTg.length;
+      const tgFailed = tgResults.filter(r => r.status === 'rejected');
+      sentCount += tgResults.length - tgFailed.length;
+      if (tgFailed.length > 0) {
+        console.warn(`[flash] telegram: ${tgFailed.length}/${tgResults.length} failed`);
+      }
     }
   }
 

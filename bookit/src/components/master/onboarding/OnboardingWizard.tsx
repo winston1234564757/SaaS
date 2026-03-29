@@ -175,14 +175,26 @@ export function OnboardingWizard() {
       if (avatarFile) {
         const ext = avatarFile.name.split('.').pop() ?? 'jpg';
         const path = `avatars/${uid}/${uid}.${ext}`;
-        const { data: up, error: upError } = await supabase.storage
-          .from('images')
-          .upload(path, avatarFile, { upsert: true });
-        if (up) {
-          const { data: urlData } = supabase.storage.from('images').getPublicUrl(path);
-          avatarUrl = urlData.publicUrl;
-        } else if (upError) {
-          console.error('[onboarding] avatar upload error:', upError.message);
+        let uploadTimeoutId: ReturnType<typeof setTimeout> | undefined;
+        try {
+          const { data: up, error: upError } = await Promise.race([
+            supabase.storage.from('images').upload(path, avatarFile, { upsert: true }),
+            new Promise<never>((_, reject) => {
+              uploadTimeoutId = setTimeout(() => reject(new Error('Timeout завантаження аватара')), 10_000);
+            }),
+          ]);
+          clearTimeout(uploadTimeoutId);
+          if (up) {
+            const { data: urlData } = supabase.storage.from('images').getPublicUrl(path);
+            avatarUrl = urlData.publicUrl;
+          } else if (upError) {
+            console.error('[onboarding] avatar upload error:', upError.message);
+            showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше в налаштуваннях' });
+          }
+        } catch (uploadErr) {
+          clearTimeout(uploadTimeoutId);
+          console.error('[onboarding] avatar upload failed:', uploadErr);
+          showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше в налаштуваннях' });
         }
       }
 

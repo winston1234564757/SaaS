@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Crown, Building2, Zap, Loader2, X, PartyPopper, CreditCard } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -65,6 +65,7 @@ const PLANS = [
 
 export function BillingPage() {
   const { masterProfile, refresh } = useMasterContext();
+  const router = useRouter();
   const currentTier = (masterProfile?.subscription_tier ?? 'starter') as Tier;
   const searchParams = useSearchParams();
 
@@ -85,7 +86,7 @@ export function BillingPage() {
     if (searchParams.get('plan')) {
       window.history.replaceState({}, '', '/dashboard/billing');
     }
-  }, []);
+  }, [searchParams]);
 
   function handleUpgrade(tier: Tier) {
     setError(null);
@@ -328,7 +329,7 @@ export function BillingPage() {
             <p className="text-xs text-[#A8928D] mt-0.5">За кожного зареєстрованого майстра за твоїм посиланням — 1 місяць Pro в подарунок</p>
             <button
               className="mt-2 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors"
-              onClick={() => window.location.href = '/dashboard/referral'}
+              onClick={() => router.push('/dashboard/referral')}
             >
               Перейти до реферальної програми →
             </button>

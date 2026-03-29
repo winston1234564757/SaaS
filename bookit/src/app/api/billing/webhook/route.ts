@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { flatUidToUuid } from '@/lib/utils/uuid';
+import { hmacMd5 } from '@/lib/utils/wayforpay';
 
 const MERCHANT = process.env.WAYFORPAY_MERCHANT_ACCOUNT!;
 const SECRET   = process.env.WAYFORPAY_MERCHANT_SECRET!;
-
-function hmacMd5(str: string): string {
-  return crypto.createHmac('md5', SECRET).update(str).digest('hex');
-}
 
 
 export async function POST(req: NextRequest) {
@@ -31,7 +27,7 @@ export async function POST(req: NextRequest) {
     authCode, cardPan, transactionStatus, reasonCode,
   ].join(';');
 
-  if (hmacMd5(sigStr) !== merchantSignature) {
+  if (hmacMd5(sigStr, SECRET) !== merchantSignature) {
     return NextResponse.json({ status: 'error', message: 'bad signature' }, { status: 400 });
   }
 
@@ -60,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   // WayForPay requires this exact response
   const now = Math.floor(Date.now() / 1000);
-  const responseSig = hmacMd5([orderReference, 'accept', now].join(';'));
+  const responseSig = hmacMd5([orderReference, 'accept', now].join(';'), SECRET);
 
   return NextResponse.json({
     orderReference,

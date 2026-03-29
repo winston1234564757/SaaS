@@ -407,6 +407,84 @@
         ],
         "tsc": "clean"
       }
+    },
+    "task-1774721281897-hxb15u": {
+      "taskId": "task-1774721281897-hxb15u",
+      "type": "bugfix",
+      "description": "\n## ПОВНИЙ REWRITE: Portfolio Upload → useMutation\n\n**Симптом:** Вибір файлу → infinite spinner, ZERO network requests, ZERO console errors. Дедлок у ручному `useState(isUploading)` + async handleFileChange до того як supabase.storage.upload навіть стартує.\n\n**Директива:** Тільки 2 файли: `src/lib/supabase/hooks/usePortfolio.ts` та `src/components/master/portfolio/PortfolioPage.tsx`.\n\n---\n\n## FILE 1: `src/lib/supabase/hooks/usePortfolio.ts`\n\n### Що видалити:\n- `const [isUploading, setIsUploading] = useState(false);`\n- `const [uploadError, setUploadError] = useState<string | null>(null);`\n- Всю функцію `async function uploadPhoto(file: File): Promise<void> { ... }` (рядки ~76-121)\n\n### Що додати — новий uploadMutation через useMutation:\n\n```typescript\nconst uploadMutation = useMutation({\n  mutationFn: async (file: File) => {\n    if (!masterId) throw new Error('Не авторизовано');\n    const supabase = createClient();\n\n    const ext = file.name.split('.').pop() ?? 'jpg';\n    const bytes = crypto.getRandomValues(new Uint8Array(6));\n    const uniqueId = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');\n    const path = `${masterId}/${Date.now()}-${uniqueId}.${ext}`;\n\n    const { error: uploadErr } = await supabase.storage\n      .from('portfolios')\n      .upload(path, file, { contentType: file.type || 'image/jpeg', upsert: false });\n\n    if (uploadErr) throw new Error('Помилка завантаження: ' + uploadErr.message);\n\n    const { data: { publicUrl } } = supabase.storage\n      .from('portfolios')\n      .getPublicUrl(path);\n\n    const currentPhotos = qc.getQueryData<PortfolioPhoto[]>(key) ?? [];\n    const nextOrder = currentPhotos.length > 0\n      ? Math.max(...currentPhotos.map(p => p.sortOrder)) + 1\n      : 0;\n\n    const { error: insertErr } = await supabase\n      .from('portfolio_photos')\n      .insert({\n        master_id: masterId,\n        url: publicUrl,\n        storage_path: path,\n        sort_order: nextOrder,\n      });\n\n    if (insertErr) throw new Error('Помилка збереження: ' + insertErr.message);\n  },\n  onSuccess: () => {\n    void qc.invalidateQueries({ queryKey: key });\n  },\n});\n```\n\n### Що змінити у return:\n```typescript\nreturn {\n  photos,\n  isLoading: isLoading && !!masterId,\n  isUploading: uploadMutation.isPending,\n  uploadPhoto: (file: File) => uploadMutation.mutateAsync(file),\n  deletePhoto: (id: string, storagePath: string) =>\n    deleteMutation.mutateAsync({ id, storagePath }),\n  updateCaption: (id: string, caption: string) =>\n    updateCaptionMutation.mutateAsync({ id, caption }),\n  updateServiceLink: (id: string, serviceId: string | null) =>\n    updateServiceLinkMutation.mutate({ id, serviceId }),\n  uploadError: uploadMutation.error\n    ? (uploadMutation.error instanceof Error\n        ? uploadMutation.error.message\n        : String(uploadMutation.error))\n    : null,\n  clearUploadError: () => uploadMutation.reset(),\n  queryError: queryError ? String((queryError as Error).message ?? queryError) : null,\n};\n```\n\n---\n\n## FILE 2: `src/components/master/portfolio/PortfolioPage.tsx`\n\n### handleFileChange — спрощений:\n```typescript\nasync function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {\n  const files = Array.from(e.target.files ?? []);\n  e.target.value = '';\n  for (const file of files) {\n    if (atLimit) break;\n    try {\n      await uploadPhoto(file);\n    } catch {\n      // uploadError відображається через хук\n    }\n  }\n}\n```\n\n**Важливо:** `e.target.value = ''` — ПЕРЕМІСТИТИ на початок (до `await`), щоб input скидався одразу і не тримав reference на File.\n\n---\n\n## ВИМОГИ:\n1. Видали `cachedPhotosRef` якщо він зараз не використовується для чогось іншого (але якщо використовується — залиш)\n2. `uploadMutation.isPending` — правильний TanStack Query v5 стейт, не `isLoading`\n3. `clearUploadError` тепер викликає `uploadMutation.reset()` — це також скидає `isPending`\n4. Не чіпай: delete, updateCaption, updateServiceLink, grid layout, UI\n5. TypeScript strict — жодних `any`, жодних `Promise<unknown>[]`\n6. Фінальна перевірка: `tsc --noEmit` = 0 помилок\n",
+      "priority": "critical",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "portfolio",
+        "upload",
+        "useMutation",
+        "rewrite"
+      ],
+      "createdAt": "2026-03-28T18:08:01.897Z",
+      "startedAt": null,
+      "completedAt": "2026-03-28T18:09:11.535Z",
+      "result": {
+        "status": "fixed",
+        "files_changed": 2,
+        "approach": "useMutation rewrite",
+        "tsc": "clean"
+      }
+    },
+    "task-1774728162966-k19e88": {
+      "taskId": "task-1774728162966-k19e88",
+      "type": "bugfix",
+      "description": "Phase 1 — Upload Anti-Deadlock Fix\n\nFILES:\n1. bookit/src/components/master/onboarding/OnboardingWizard.tsx (lines 173-187)\n2. bookit/src/components/master/services/ImageUploader.tsx (lines 38-58)\n\nTASK 1 — OnboardingWizard.tsx:\nReplace lines 178-186 with:\n```ts\ntry {\n  const { data: up, error: upError } = await Promise.race([\n    supabase.storage.from('images').upload(path, avatarFile, { upsert: true }),\n    new Promise<never>((_, reject) =>\n      setTimeout(() => reject(new Error('Timeout завантаження аватара')), 10_000)\n    ),\n  ]);\n  if (up) {\n    const { data: urlData } = supabase.storage.from('images').getPublicUrl(path);\n    avatarUrl = urlData.publicUrl;\n  } else if (upError) {\n    console.error('[onboarding] avatar upload error:', upError.message);\n  }\n} catch (uploadErr) {\n  console.error('[onboarding] avatar upload failed:', uploadErr);\n}\n```\n\nTASK 2 — ImageUploader.tsx:\nReplace the inner try block (lines 38-58):\n```ts\ntry {\n  const { error } = await Promise.race([\n    supabase.storage.from('images').upload(path, file, {\n      cacheControl: '3600',\n      upsert: false,\n    }),\n    new Promise<never>((_, reject) =>\n      setTimeout(() => reject(new Error('Timeout завантаження')), 10_000)\n    ),\n  ]);\n\n  if (error) {\n    console.error('[ImageUploader] upload error', error);\n    setPreview(value ?? null);\n    return;\n  }\n\n  const { data } = supabase.storage.from('images').getPublicUrl(path);\n  setPreview(data.publicUrl);\n  onChange(data.publicUrl);\n} catch (err) {\n  console.error('[ImageUploader] upload failed (possibly timeout):', err);\n  setPreview(value ?? null);\n} finally {\n  setUploading(false);\n}\n```\n\nRULES:\n- TypeScript strict — Promise.race return type must be inferred correctly\n- No new imports needed\n- Keep all existing logic intact",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "upload",
+        "timeout",
+        "anti-deadlock",
+        "phase1"
+      ],
+      "createdAt": "2026-03-28T20:02:42.966Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774728165157-mvq0ca": {
+      "taskId": "task-1774728165157-mvq0ca",
+      "type": "bugfix",
+      "description": "Phase 4 — BillingPage useEffect Race Condition Fix\n\nFILE: bookit/src/components/master/billing/BillingPage.tsx (line 89)\n\nTASK: Fix missing searchParams in useEffect dependency array.\nLine 89: `}, []);` → `}, [searchParams]);`\n\nThis prevents stale closure bugs when navigating back from payment gateway with ?paid=1 or ?plan= params.\n\nNo other changes needed — the existing logic is correct.",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "billing",
+        "useEffect",
+        "deps",
+        "phase4"
+      ],
+      "createdAt": "2026-03-28T20:02:45.157Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774728170233-j48kr1": {
+      "taskId": "task-1774728170233-j48kr1",
+      "type": "bugfix",
+      "description": "Phase 3 — Flash Actions Telegram try/catch\n\nFILE: bookit/src/app/(master)/dashboard/flash/actions.ts (lines 149-154)\n\nTASK: Wrap the Promise.all Telegram sends in try/catch so notification failures don't bubble up as unhandled rejections.\n\nReplace lines 149-155:\n```ts\nif (clientsWithTg && clientsWithTg.length > 0) {\n  const tgMsg = `...`;\n  try {\n    await Promise.all(\n      clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg))\n    );\n    sentCount += clientsWithTg.length;\n  } catch (tgErr) {\n    console.error('[flash] telegram send error:', tgErr);\n    // best-effort: не переривати дію якщо Telegram недоступний\n  }\n}\n```\n\nKeep existing sentCount logic inside the try block.",
+      "priority": "normal",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "flash",
+        "telegram",
+        "error-handling",
+        "phase3"
+      ],
+      "createdAt": "2026-03-28T20:02:50.233Z",
+      "startedAt": null,
+      "completedAt": null
     }
   },
   "version": "3.0.0"

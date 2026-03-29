@@ -1,17 +1,13 @@
 'use server';
 
-import crypto from 'crypto';
 import { createClient } from '@/lib/supabase/server';
+import { hmacMd5 } from '@/lib/utils/wayforpay';
 
 const MERCHANT = process.env.WAYFORPAY_MERCHANT_ACCOUNT!;
 const SECRET   = process.env.WAYFORPAY_MERCHANT_SECRET!;
 const MONO_TOKEN = process.env.MONO_API_KEY!;
 const APP_URL  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua';
 const DOMAIN   = APP_URL.replace(/^https?:\/\//, '');
-
-function hmacMd5(str: string): string {
-  return crypto.createHmac('md5', SECRET).update(str).digest('hex');
-}
 
 const PLAN: Record<string, { price: number; name: string }> = {
   pro:    { price: 700, name: 'Bookit Pro — підписка на місяць' },
@@ -38,7 +34,7 @@ export async function createBillingInvoice(
     plan.price, 'UAH', plan.name, 1, plan.price,
   ].join(';');
 
-  const signature = hmacMd5(sigStr);
+  const signature = hmacMd5(sigStr, SECRET);
 
   const payload = {
     transactionType: 'CREATE_INVOICE',

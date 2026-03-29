@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, ChevronLeft, ChevronRight, X, Images, Zap } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap } from 'lucide-react';
 import { BookingFlow } from './BookingFlow';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
@@ -37,15 +37,6 @@ interface Review {
   createdAt: string;
 }
 
-interface PortfolioPhoto {
-  id: string;
-  url: string;
-  caption: string | null;
-  serviceId?: string | null;
-  serviceName?: string | null;
-  servicePrice?: number | null;
-}
-
 export interface FlashDeal {
   id: string;
   serviceName: string;
@@ -71,7 +62,6 @@ interface Master {
   services: Service[];
   products?: Product[];
   reviews?: Review[];
-  portfolio?: PortfolioPhoto[];
   instagram: string | null;
   telegram: string | null;
   themeKey?: string;
@@ -99,152 +89,6 @@ function ThemedBlobBackground({ theme }: { theme: typeof moodThemes[MoodThemeKey
   );
 }
 
-// ── Lightbox ──────────────────────────────────────────────────────────────────
-function Lightbox({
-  photos,
-  initialIndex,
-  onClose,
-  slug,
-}: {
-  photos: PortfolioPhoto[];
-  initialIndex: number;
-  onClose: () => void;
-  slug: string;
-}) {
-  const [idx, setIdx] = useState(initialIndex);
-
-  const prev = useCallback(() => setIdx(i => (i - 1 + photos.length) % photos.length), [photos.length]);
-  const next = useCallback(() => setIdx(i => (i + 1) % photos.length), [photos.length]);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowLeft') prev();
-      if (e.key === 'ArrowRight') next();
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [prev, next, onClose]);
-
-  const photo = photos[idx];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.18 }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
-      style={{ background: 'rgba(18, 10, 7, 0.92)', backdropFilter: 'blur(16px)' }}
-      onClick={onClose}
-    >
-      {/* Close */}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors z-10"
-      >
-        <X size={18} />
-      </button>
-
-      {/* Counter */}
-      <p className="absolute top-5 left-1/2 -translate-x-1/2 text-xs text-white/60 z-10">
-        {idx + 1} / {photos.length}
-      </p>
-
-      {/* Image */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={idx}
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.18 }}
-          className="relative w-full max-w-lg px-4"
-          style={{ maxHeight: '80dvh' }}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
-            <Image
-              src={photo.url}
-              alt={photo.caption ?? `Фото ${idx + 1}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 512px"
-              priority
-            />
-          </div>
-          {photo.caption && (
-            <p className="text-center text-sm text-white/80 mt-3">{photo.caption}</p>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Floating Bar "Хочу так само" */}
-      <AnimatePresence mode="wait">
-        {photo.serviceId && photo.serviceName && (
-          <motion.div
-            key={`bar-${idx}`}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-0 left-0 right-0 z-[110] p-4"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="backdrop-blur-md bg-white/85 border border-white/60 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-lg max-w-lg mx-auto">
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-[#A8928D] font-medium">Послуга</span>
-                <span className="text-sm font-semibold text-[#2C1A14] truncate">{photo.serviceName}</span>
-                <span className="text-xs text-[#789A99] font-medium">{photo.servicePrice?.toLocaleString('uk-UA')} ₴</span>
-              </div>
-              <a
-                href={`/${slug}?serviceId=${photo.serviceId}`}
-                className="flex-shrink-0 bg-[#789A99] text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-[#6B8C8B] transition-colors active:scale-95 min-h-[44px] flex items-center"
-              >
-                Хочу так само
-              </a>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Prev / Next */}
-      {photos.length > 1 && (
-        <>
-          <button
-            onClick={e => { e.stopPropagation(); prev(); }}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); next(); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
-          >
-            <ChevronRight size={20} />
-          </button>
-
-          {/* Dots */}
-          <div className="absolute bottom-6 flex gap-1.5">
-            {photos.map((_, i) => (
-              <button
-                key={i}
-                onClick={e => { e.stopPropagation(); setIdx(i); }}
-                className="rounded-full transition-all"
-                style={{
-                  width: i === idx ? 20 : 6,
-                  height: 6,
-                  background: i === idx ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)',
-                }}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </motion.div>
-  );
-}
-
 // ── Flash Deals Strip ──────────────────────────────────────────────────────────
 
 function useCountdown(expiresAt: string) {
@@ -253,7 +97,7 @@ function useCountdown(expiresAt: string) {
   useEffect(() => {
     const id = setInterval(() => setSecs(calc), 1000);
     return () => clearInterval(id);
-  });
+  }, [expiresAt]);
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
   const s = secs % 60;
@@ -353,8 +197,6 @@ export function PublicMasterPage({ master }: { master: Master }) {
   const [repeatServices, setRepeatServices] = useState<Service[] | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [activeFlashDeal, setActiveFlashDeal] = useState<FlashDeal | null>(null);
-  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
-  const [showAllPhotos, setShowAllPhotos] = useState(false);
   const didAutoOpen = useRef(false);
 
   useEffect(() => {
@@ -392,9 +234,6 @@ export function PublicMasterPage({ master }: { master: Master }) {
   }, [searchParams, master.services]);
 
   const categories = [...new Set(master.services.map(s => s.category))];
-  const portfolio = master.portfolio ?? [];
-  const GRID_LIMIT = 9;
-  const visiblePhotos = showAllPhotos ? portfolio : portfolio.slice(0, GRID_LIMIT);
 
   function openBooking(service?: Service, flashDeal?: FlashDeal) {
     setRepeatServices(null);
@@ -483,12 +322,6 @@ export function PublicMasterPage({ master }: { master: Master }) {
                 </div>
                 <span className="text-sm font-bold text-[#2C1A14]">{master.rating}</span>
                 <span className="text-xs" style={{ color: textTertiary }}>({pluralize(master.reviewsCount, ['відгук', 'відгуки', 'відгуків'])})</span>
-                {portfolio.length > 0 && (
-                  <span className="flex items-center gap-1 text-xs" style={{ color: textTertiary }}>
-                    <Images size={11} />
-                    {portfolio.length} робіт
-                  </span>
-                )}
               </div>
             </div>
           </div>
@@ -574,63 +407,6 @@ export function PublicMasterPage({ master }: { master: Master }) {
           </motion.div>
         )}
 
-        {/* ── Portfolio ── */}
-        {portfolio.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, type: 'spring', stiffness: 280, damping: 24 }}
-            className="mb-5"
-          >
-            <div className="flex items-baseline justify-between mb-3 px-1">
-              <h2 className="heading-serif text-lg" style={{ color: theme.textPrimary }}>Портфоліо</h2>
-              <span className="text-xs" style={{ color: textTertiary }}>{portfolio.length} робіт</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-1.5">
-              {visiblePhotos.map((photo, i) => (
-                <motion.button
-                  key={photo.id}
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.14 + i * 0.03, type: 'spring', stiffness: 300, damping: 26 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setLightboxIdx(portfolio.indexOf(photo))}
-                  className="relative aspect-square rounded-2xl overflow-hidden group"
-                >
-                  <Image
-                    src={photo.url}
-                    alt={photo.caption ?? `Робота ${i + 1}`}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 768px) 33vw, 160px"
-                  />
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-[#2C1A14]/0 group-hover:bg-[#2C1A14]/20 transition-all duration-200 rounded-2xl" />
-                </motion.button>
-              ))}
-
-              {/* "Показати ще" tile */}
-              {!showAllPhotos && portfolio.length > GRID_LIMIT && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  onClick={() => setShowAllPhotos(true)}
-                  className="relative aspect-square rounded-2xl overflow-hidden flex flex-col items-center justify-center gap-1"
-                  style={{ background: `${theme.accent}18`, border: `1.5px dashed ${theme.accent}50` }}
-                >
-                  <span className="text-lg font-bold" style={{ color: theme.accent }}>
-                    +{portfolio.length - GRID_LIMIT}
-                  </span>
-                  <span className="text-[10px] font-medium" style={{ color: theme.accent }}>
-                    більше
-                  </span>
-                </motion.button>
-              )}
-            </div>
-          </motion.div>
-        )}
 
         {/* Flash Deals */}
         {(master.flashDeals?.length ?? 0) > 0 && (
@@ -847,17 +623,6 @@ export function PublicMasterPage({ master }: { master: Master }) {
         flashDeal={activeFlashDeal}
       />
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {lightboxIdx !== null && (
-          <Lightbox
-            photos={portfolio}
-            initialIndex={lightboxIdx}
-            onClose={() => setLightboxIdx(null)}
-            slug={master.slug}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 }

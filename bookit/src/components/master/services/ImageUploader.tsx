@@ -35,11 +35,18 @@ export function ImageUploader({ folder, masterId, value, onChange }: ImageUpload
     const ext = file.name.split('.').pop() ?? 'jpg';
     const path = `${folder}/${masterId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
+    let uploadTimeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
-      const { error } = await supabase.storage.from('images').upload(path, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+      const { error } = await Promise.race([
+        supabase.storage.from('images').upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+        }),
+        new Promise<never>((_, reject) => {
+          uploadTimeoutId = setTimeout(() => reject(new Error('Timeout завантаження')), 10_000);
+        }),
+      ]);
+      clearTimeout(uploadTimeoutId);
 
       if (error) {
         console.error('[ImageUploader] upload error', error);
@@ -51,7 +58,7 @@ export function ImageUploader({ folder, masterId, value, onChange }: ImageUpload
       setPreview(data.publicUrl);
       onChange(data.publicUrl);
     } catch (err) {
-      console.error('[ImageUploader] unexpected error', err);
+      console.error('[ImageUploader] upload failed (possibly timeout):', err);
       setPreview(value ?? null);
     } finally {
       setUploading(false);

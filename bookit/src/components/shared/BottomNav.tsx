@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Users, BarChart2, MoreHorizontal,
-  Scissors, GalleryHorizontalEnd, Zap, TrendingUp, Gift,
+  Scissors, Zap, TrendingUp, Gift,
   MessageSquare, Share2, Building2, CreditCard, Settings, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -21,7 +21,6 @@ const PRIMARY = [
 
 const MORE_ITEMS = [
   { href: '/dashboard/services',  icon: Scissors,       label: 'Послуги'        },
-  { href: '/dashboard/portfolio', icon: GalleryHorizontalEnd, label: 'Портфоліо' },
   { href: '/dashboard/flash',     icon: Zap,            label: 'Флеш-акції'    },
   { href: '/dashboard/pricing',   icon: TrendingUp,     label: 'Ціноутворення' },
   { href: '/dashboard/loyalty',   icon: Gift,           label: 'Лояльність'    },

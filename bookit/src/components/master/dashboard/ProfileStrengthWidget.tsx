@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
-import { createClient } from '@/lib/supabase/client';
 
 const LS_KEY = 'bookit_strength_celebrated';
 
@@ -54,9 +53,8 @@ const listItem = {
 
 export function ProfileStrengthWidget() {
   // ── All hooks at top level, unconditionally ───────────────────────────────
-  const { profile, masterProfile, isLoading, user } = useMasterContext();
+  const { profile, masterProfile, isLoading } = useMasterContext();
 
-  const [hasPortfolio, setHasPortfolio] = useState<boolean | null>(null);
   const [celebrating, setCelebrating] = useState(false);
   const [visible, setVisible] = useState(true);
   // Start as true to avoid flash — set to real value in useEffect (client only)
@@ -66,19 +64,6 @@ export function ProfileStrengthWidget() {
   useEffect(() => {
     setAlreadyCelebrated(localStorage.getItem(LS_KEY) === 'done');
   }, []);
-
-  // Fetch portfolio count
-  useEffect(() => {
-    if (!user) return;
-    const supabase = createClient();
-    supabase
-      .from('portfolio_photos')
-      .select('id', { count: 'exact', head: true })
-      .eq('master_id', user.id)
-      .then(({ count }: { count: number | null }) =>
-        setHasPortfolio((count ?? 0) > 0)
-      );
-  }, [user?.id]);
 
   // ── Derived values — never useState for these ─────────────────────────────
   const steps = [
@@ -107,13 +92,6 @@ export function ProfileStrengthWidget() {
       href: '/dashboard/settings',
     },
     {
-      key: 'portfolio',
-      done: hasPortfolio === true,
-      label: '✨ Завантажте перше фото в портфоліо',
-      sub: 'покажіть свій рівень',
-      href: '/dashboard/portfolio',
-    },
-    {
       key: 'bio',
       done: !!masterProfile?.bio?.trim(),
       label: '📝 Додайте пару слів про себе',
@@ -128,16 +106,10 @@ export function ProfileStrengthWidget() {
 
   // Trigger celebration — setState only inside useEffect, never in render body
   useEffect(() => {
-    if (
-      progress === 100 &&
-      !celebrating &&
-      !alreadyCelebrated &&
-      hasPortfolio !== null &&
-      !isLoading
-    ) {
+    if (progress === 100 && !celebrating && !alreadyCelebrated && !isLoading) {
       setCelebrating(true);
     }
-  }, [progress, celebrating, alreadyCelebrated, hasPortfolio, isLoading]);
+  }, [progress, celebrating, alreadyCelebrated, isLoading]);
 
   function handleCelebrationConfirm() {
     localStorage.setItem(LS_KEY, 'done');
@@ -145,7 +117,7 @@ export function ProfileStrengthWidget() {
   }
 
   // ── Early returns AFTER all hooks ─────────────────────────────────────────
-  if (isLoading || !masterProfile || !profile || hasPortfolio === null || alreadyCelebrated) {
+  if (isLoading || !masterProfile || !profile || alreadyCelebrated) {
     return null;
   }
 

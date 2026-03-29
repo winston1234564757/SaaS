@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings, MessageSquare, GalleryHorizontalEnd, MoreHorizontal } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings, MessageSquare, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -14,7 +14,6 @@ const navItems = [
   { href: '/dashboard/bookings',  icon: CalendarDays,          label: 'Записи',       hint: 'Всі записи та календар' },
   { href: '/dashboard/services',  icon: Scissors,              label: 'Послуги',      hint: 'Послуги та товари' },
   { href: '/dashboard/clients',   icon: Users,                 label: 'Клієнти',      hint: 'База клієнтів та CRM' },
-  { href: '/dashboard/portfolio', icon: GalleryHorizontalEnd,  label: 'Портфоліо',    hint: 'Фото ваших робіт для клієнтів' },
   { href: '/dashboard/analytics', icon: BarChart2,             label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
   { href: '/dashboard/reviews',   icon: MessageSquare,         label: 'Відгуки',      hint: 'Керування відгуками клієнтів' },
   { href: '/dashboard/more',      icon: MoreHorizontal,        label: 'Ще',           hint: 'Флеш, Ціни, Лояльність, Студія та інше' },

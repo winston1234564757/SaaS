@@ -1,33 +1,37 @@
-CRITICAL BUG FIX: PORTFOLIO UPLOAD & SERVICE LINKING (RUFLO SWARM DIRECTIVE)
+🚨 URGENT ARCHITECTURAL OVERHAUL: GLOBAL DATA PIPELINE & STATE PARALYSIS (RUFLO SWARM ONLY) 🚨
 
-CONTEXT:
-We are working on the Bookit SaaS (Next.js App Router, React Query v5, Supabase). The Portfolio feature is currently broken.
+STATUS: SYSTEMIC FAILURE. The application is suffering from catastrophic, app-wide data fetching and state management issues. We are done playing whack-a-mole with localized bugs. You must deploy your Ruflo Architect and Coder agents to implement a global fix across the entire infrastructure.
 
-SYMPTOMS:
+THE 4 FATAL SYMPTOMS WE MUST ERADICATE:
 
-Infinite Spinner: Attempting to upload a new portfolio photo results in an endless loading state. The UI never recovers.
+Silent Deadlocks & Infinite Spinners: Mutations (like image uploads or complex saves) randomly hang indefinitely. isPending stays true, but there are zero network requests and zero console errors. Promises are being swallowed before execution.
 
-Missing Services for Linking: When trying to link a service to an existing portfolio photo, the services do not render, or the list is completely empty.
+PWA Idle Death: Leaving the app in the background for 3+ minutes causes the Supabase token to expire. Upon returning, TanStack Query fires with a dead token, gets a 401, caches the error state, and permanently displays skeleton loaders until a hard F5 refresh.
 
-SUSPECTED ARCHITECTURAL VIOLATIONS:
+Cache Schizophrenia: Data becomes stale immediately after mutations. The Next.js RSC cache and React Query client cache are out of sync. revalidatePath is failing to update the client UI.
 
-The upload useMutation is likely missing queryClient.invalidateQueries({ queryKey: ['portfolio'] }) in its onSuccess callback, OR it's swallowing a Supabase storage error.
+Dead Props & Missing Data: Modals and hybrid pages (Portfolio, Flash Deals) fail to render related data (like useServices()) because they rely on stale server-side props instead of active React Query subscriptions.
 
-The modal/component handling the photo details is failing to fetch the master's services using the useServices() hook, or the data is not being hydrated properly.
+STRICT EXECUTION DIRECTIVES FOR THE SWARM:
+Do NOT use native file editing. Do NOT use single-threaded "high effort" guessing. Call your Ruflo MCP tool to execute the following GLOBAL RESURRECTION PLAN:
 
-A possible violation of the "No Blocking getSession() in QueryFn" rule.
+PHASE 1: The Promise Enforcer (Anti-Deadlock)
+Scan all critical useMutation hooks (especially storage uploads in usePortfolio). Ensure EVERY Supabase async call is wrapped in rigorous try/catch blocks. Implement Promise.race with 10-second timeout breakers for .upload() calls. Force isPending to resolve and throw visible errors. NO SILENT FAILURES ALLOWED.
 
-STRICT EXECUTION RULE (RUFLO ONLY):
-You are strictly FORBIDDEN from using your native single-threaded file-editing tools. Do NOT use "high effort" mode. You MUST invoke your Ruflo MCP tools to deploy the Swarm (Coder & Architect) to fix this bug.
+PHASE 2: The PWA Auto-Recovery (Anti-Idle Death)
+Rewrite src/lib/providers/QueryProvider.tsx.
 
-MISSIONS FOR THE SWARM:
+Fix the TanStack Query v5 focusManager (ensure onFocus(true) is called).
 
-Analyze: Scan src/components/master/portfolio (e.g., PortfolioPage.tsx and related modals/uploaders) and src/lib/supabase/hooks/usePortfolio.ts.
+Add a global onAuthStateChange listener that catches TOKEN_REFRESHED and explicitly calls queryClient.resetQueries({ type: 'active' }) to clear cached 401 errors.
 
-Fix Upload: Resolve the infinite spinner. Ensure the mutation handles loading states (isPending) correctly and invalidates the query on success.
+Ensure useDeepSleepWakeup uses a fresh token before triggering refetches.
 
-Fix Service Linking: Ensure the photo-detail component correctly fetches available services (via React Query) and allows the master to link them to the photo.
+PHASE 3: 100% Client-Side Consistency (Anti-Stale Cache)
+Strip revalidatePath from ALL Dashboard Server Actions. Every single dashboard useMutation MUST have an onSuccess block that calls queryClient.invalidateQueries() for its exact domain.
 
-Execute: Apply the exact code changes and report back.
+PHASE 4: Hydration Fixes
+Ensure modals (like Portfolio item views) actively call their respective hooks (e.g., useServices()) to fetch required relational data, rather than relying on dead prop drilling.
 
-Call the Ruflo tool NOW to begin.
+ACTION:
+Deploy the swarm. Analyze QueryProvider.tsx, usePortfolio.ts, and the main dashboard layout/mutations. Implement these structural fixes line-by-line and report back when the global pipeline is bulletproof.

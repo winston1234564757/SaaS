@@ -59,8 +59,8 @@ export default async function MasterPublicPage(
     new Date().getFullYear(), new Date().getMonth(), 1
   ).toISOString();
 
-  // Паралельно завантажуємо products, reviews, schedule, portfolio, monthly count, flash deals
-  const [productsRes, reviewsRes, scheduleRes, portfolioRes, monthlyCountRes, flashDealsRes] = await Promise.all([
+  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals
+  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price, description, emoji, stock_quantity, stock_unlimited')
@@ -79,13 +79,6 @@ export default async function MasterPublicPage(
       .from('schedule_templates')
       .select('day_of_week, start_time, end_time, is_working')
       .eq('master_id', data.id),
-    supabase
-      .from('portfolio_photos')
-      .select('id, url, caption, service_id, services(id, name, price)')
-      .eq('master_id', data.id)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: true })
-      .limit(30),
     supabase
       .from('bookings')
       .select('id', { count: 'exact', head: true })
@@ -142,18 +135,6 @@ export default async function MasterPublicPage(
     endTime: (s.end_time as string | null)?.slice(0, 5) ?? '18:00',
   }));
 
-  const portfolio = (portfolioRes.data ?? []).map((p: any) => {
-    const svc = p.services as { id: string; name: string; price: number } | null;
-    return {
-      id: p.id as string,
-      url: p.url as string,
-      caption: (p.caption as string) || null,
-      serviceId: (p.service_id as string) || null,
-      serviceName: svc?.name ?? null,
-      servicePrice: svc ? Number(svc.price) : null,
-    };
-  });
-
   const flashDeals = (flashDealsRes.data ?? []).map((d: any) => ({
     id: d.id as string,
     serviceName: d.service_name as string,
@@ -179,7 +160,6 @@ export default async function MasterPublicPage(
     services,
     products,
     reviews,
-    portfolio,
     instagram: data.instagram_url ?? null,
     telegram: data.telegram_url ?? null,
     themeKey: (data.mood_theme as string) || 'default',
