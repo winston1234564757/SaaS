@@ -36,55 +36,89 @@ function createQueryClient(showToast: ReturnType<typeof useToast>['showToast']) 
 }
 
 /**
- * Refreshes the Supabase auth session BEFORE TanStack Query refetches on tab focus.
+ * Universal aggressive wake-up — web + PWA.
  *
- * After a long background period (PWA minimised, tab switched), the Supabase JWT
- * expires silently. If React Query fires refetches *before* the token is renewed,
- * every query fails with 401/403.
+ * Відстежує час, коли вкладка йде у фон (visibilityState = 'hidden').
+ * При поверненні (visibilityState = 'visible') перевіряє elapsed:
  *
- * Strategy:
- *   1. Intercept TanStack Query's focus event via focusManager
- *   2. Await `refreshSession()` — гарантований мережевий запит, свіжий токен
- *   3. Call `onFocus(true)` — явний boolean гарантує тригер #onFocus() у TQ v5
+ *   < 60 s  → легкий refresh токена + onFocus(true)  (звичайне перемикання вкладок)
+ *   ≥ 60 s  → агресивна послідовність:
+ *               Step 1: refreshSession() з 12s timeout
+ *               Step 2: resetQueries({ type: 'active' }) — очищує error state + тригерить refetch
+ *               Step 3: якщо Supabase повертає auth error (сесія мертва) → window.location.reload()
  *
- * FIX #1: getSession() → refreshSession() — getSession() повертає кеш, НЕ оновлює токен.
- * FIX #2: onFocus() → onFocus(true) — без аргументу setFocused(undefined) не тригерить
- *         рефетч у TanStack Query v5, якщо #focused вже undefined (initial state).
+ * waking ref: debounce-lock — не дозволяє запускатись паралельно при швидкому перемиканні.
  */
-function useSessionWakeup() {
+function useAggressiveWakeup() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const supabase = createClient();
+    let hiddenAt: number | null = null;
+    let waking = false;
 
     const cleanup = focusManager.setEventListener((onFocus) => {
-      const handler = async () => {
-        if (document.visibilityState !== 'visible') return;
-
-        // FIX #1: refreshSession() робить мережевий запит і гарантує свіжий JWT.
-        // getSession() повертав токен з in-memory cache — міг бути протермінованим.
-        // 10s timeout залишаємо — мережа після сну може бути повільною.
-        try {
-          await Promise.race([
-            supabase.auth.refreshSession(),
-            new Promise(resolve => setTimeout(resolve, 10_000)),
-          ]);
-        } catch {
-          // Refresh failed — onFocus(true) нижче все одно стріляє,
-          // TanStack Query зробить retry з exponential backoff.
+      const handleVisibility = async () => {
+        if (document.visibilityState === 'hidden') {
+          hiddenAt = Date.now();
+          return;
         }
+        if (document.visibilityState !== 'visible') return;
+        if (waking) return;
 
-        // FIX #2: onFocus(true) замість onFocus().
-        // У TQ v5 setFocused(undefined) → #focused !== undefined = false → #onFocus() не викликається.
-        // setFocused(true) → завжди встановлює #focused=true і тригерить рефетч.
-        onFocus(true);
+        const elapsed = hiddenAt !== null ? Date.now() - hiddenAt : 0;
+        hiddenAt = null;
+        waking = true;
+
+        try {
+          if (elapsed >= 60_000) {
+            // ── Агресивне пробудження після 1+ хвилини ──────────────────────
+            let sessionDead = false;
+            try {
+              const { error } = await Promise.race([
+                supabase.auth.refreshSession(),
+                new Promise<never>((_, reject) =>
+                  setTimeout(() => reject(new Error('wake timeout')), 12_000)
+                ),
+              ]);
+              // error від Supabase = refresh token протермінований / сесія відкликана
+              if (error) sessionDead = true;
+            } catch {
+              // network/timeout — сесія може бути ще дійсна, продовжуємо з reset
+            }
+
+            if (sessionDead) {
+              window.location.reload();
+              return;
+            }
+
+            queryClient.resetQueries({ type: 'active' });
+          } else if (elapsed > 0) {
+            // ── Легкий refresh при короткій відсутності ──────────────────────
+            try {
+              await Promise.race([
+                supabase.auth.refreshSession(),
+                new Promise(resolve => setTimeout(resolve, 10_000)),
+              ]);
+            } catch {}
+          }
+
+          onFocus(true);
+        } finally {
+          waking = false;
+        }
       };
 
-      document.addEventListener('visibilitychange', handler);
-      window.addEventListener('focus', handler);
+      const handleFocus = () => {
+        // window focus без visibilitychange (напр. клік по вже видимому вікну)
+        if (document.visibilityState === 'visible' && !waking) onFocus(true);
+      };
+
+      document.addEventListener('visibilitychange', handleVisibility);
+      window.addEventListener('focus', handleFocus);
       return () => {
-        document.removeEventListener('visibilitychange', handler);
-        window.removeEventListener('focus', handler);
+        document.removeEventListener('visibilitychange', handleVisibility);
+        window.removeEventListener('focus', handleFocus);
       };
     });
 
@@ -169,7 +203,7 @@ function useAuthQuerySync() {
 }
 
 function SessionWakeup() {
-  useSessionWakeup();
+  useAggressiveWakeup();
   useDeepSleepWakeup();
   useAuthQuerySync();
   return null;

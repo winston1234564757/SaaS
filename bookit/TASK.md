@@ -1,37 +1,26 @@
-🚨 URGENT ARCHITECTURAL OVERHAUL: GLOBAL DATA PIPELINE & STATE PARALYSIS (RUFLO SWARM ONLY) 🚨
+🚨 GLOBAL RESILIENCE DIRECTIVE: AGGRESSIVE WAKE-UP FOR WEB & PWA (RUFLO SWARM) 🚨
 
-STATUS: SYSTEMIC FAILURE. The application is suffering from catastrophic, app-wide data fetching and state management issues. We are done playing whack-a-mole with localized bugs. You must deploy your Ruflo Architect and Coder agents to implement a global fix across the entire infrastructure.
+STATUS: Both standard browser tabs (Web App) and the PWA are completely dying after being placed in the background. When the OS or browser suspends the tab and later resumes it, the Supabase token is dead, and React Query deadlocks with infinite skeletons. We need a universal, aggressive "Force Soft-Reload" upon waking up that applies to ALL environments (Web and PWA).
 
-THE 4 FATAL SYMPTOMS WE MUST ERADICATE:
+SWARM MISSION (Coder & Architect):
+Do not use native editing. Use your Ruflo MCP tool to implement a bulletproof global visibilitychange and focus listener that acts as a defibrillator for the app.
 
-Silent Deadlocks & Infinite Spinners: Mutations (like image uploads or complex saves) randomly hang indefinitely. isPending stays true, but there are zero network requests and zero console errors. Promises are being swallowed before execution.
+IMPLEMENTATION REQUIREMENTS:
 
-PWA Idle Death: Leaving the app in the background for 3+ minutes causes the Supabase token to expire. Upon returning, TanStack Query fires with a dead token, gets a 401, caches the error state, and permanently displays skeleton loaders until a hard F5 refresh.
+Universal Wake-Up Hook: Go to src/lib/providers/QueryProvider.tsx (or the relevant sleep/wake hook). This logic MUST apply globally to the web app, not just in standalone PWA mode.
 
-Cache Schizophrenia: Data becomes stale immediately after mutations. The Next.js RSC cache and React Query client cache are out of sync. revalidatePath is failing to update the client UI.
+Time Tracking: Track the exact timestamp when document.visibilityState === 'hidden'.
 
-Dead Props & Missing Data: Modals and hybrid pages (Portfolio, Flash Deals) fail to render related data (like useServices()) because they rely on stale server-side props instead of active React Query subscriptions.
+The Wake-Up Threshold (1 MINUTE): When the state changes back to 'visible', calculate the elapsed time. If the app was sleeping for more than 1 minute (60,000 ms), trigger the Aggressive Wake-Up sequence.
 
-STRICT EXECUTION DIRECTIVES FOR THE SWARM:
-Do NOT use native file editing. Do NOT use single-threaded "high effort" guessing. Call your Ruflo MCP tool to execute the following GLOBAL RESURRECTION PLAN:
+Aggressive Wake-Up Sequence:
 
-PHASE 1: The Promise Enforcer (Anti-Deadlock)
-Scan all critical useMutation hooks (especially storage uploads in usePortfolio). Ensure EVERY Supabase async call is wrapped in rigorous try/catch blocks. Implement Promise.race with 10-second timeout breakers for .upload() calls. Force isPending to resolve and throw visible errors. NO SILENT FAILURES ALLOWED.
+Step 1: Force a network request to renew the token: await supabase.auth.refreshSession().
 
-PHASE 2: The PWA Auto-Recovery (Anti-Idle Death)
-Rewrite src/lib/providers/QueryProvider.tsx.
+Step 2: Violently wipe the React Query error states and force a refetch of all active data: queryClient.resetQueries({ type: 'active' }).
 
-Fix the TanStack Query v5 focusManager (ensure onFocus(true) is called).
+Step 3 (Fallback): If refreshSession() throws a fatal error (meaning the user's session is completely unrecoverable), ONLY THEN use window.location.reload() to hard-reset the app.
 
-Add a global onAuthStateChange listener that catches TOKEN_REFRESHED and explicitly calls queryClient.resetQueries({ type: 'active' }) to clear cached 401 errors.
+Debounce/Lock: Ensure this logic is debounced or locked by a ref so it doesn't fire multiple times if the user switches tabs rapidly.
 
-Ensure useDeepSleepWakeup uses a fresh token before triggering refetches.
-
-PHASE 3: 100% Client-Side Consistency (Anti-Stale Cache)
-Strip revalidatePath from ALL Dashboard Server Actions. Every single dashboard useMutation MUST have an onSuccess block that calls queryClient.invalidateQueries() for its exact domain.
-
-PHASE 4: Hydration Fixes
-Ensure modals (like Portfolio item views) actively call their respective hooks (e.g., useServices()) to fetch required relational data, rather than relying on dead prop drilling.
-
-ACTION:
-Deploy the swarm. Analyze QueryProvider.tsx, usePortfolio.ts, and the main dashboard layout/mutations. Implement these structural fixes line-by-line and report back when the global pipeline is bulletproof.
+ACTION: Deploy the Swarm, inject this 1-minute aggressive wake-up logic for all environments, and confirm when it's done.
