@@ -63,30 +63,38 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   useEffect(() => {
     mountedRef.current = true;
 
-    // Ініціалізація: getSession() читає з localStorage миттєво — не залежить від мережі.
-    // Це гарантує, що isLoading знімається навіть якщо onAuthStateChange з якоїсь причини
-    // не вистрілить INITIAL_SESSION (баг в Supabase JS v2.x з деякими конфігураціями).
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mountedRef.current) return;
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
-        await fetchProfile(u.id);
-      } else {
-        setProfile(null);
-        setMasterProfile(null);
-      }
-      if (mountedRef.current) setIsLoading(false);
-    });
+    // Спроба ініціалізації сесії. getSession() — швидкий і асинхронний.
+    // Додаємо .catch(), щоб уникнути "вічного" Loading у разі мережевої або конфігураційної помилки.
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mountedRef.current) return;
 
-    // onAuthStateChange — тільки для подій після початкової ініціалізації
+        const u = session?.user ?? null;
+        setUser(u);
+
+        if (u) {
+          await fetchProfile(u.id);
+        } else {
+          setProfile(null);
+          setMasterProfile(null);
+        }
+      } catch (err) {
+        console.error('[MasterProvider] Initialization error:', err);
+      } finally {
+        if (mountedRef.current) setIsLoading(false);
+      }
+    };
+
+    void initSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       if (!mountedRef.current) return;
-      // INITIAL_SESSION вже оброблений через getSession() вище — пропускаємо
       if (event === 'INITIAL_SESSION') return;
 
       const u = session?.user ?? null;
       setUser(u);
+
       if (u) {
         await fetchProfile(u.id);
       } else {
