@@ -244,22 +244,13 @@ export function PhoneOtpForm({ mode }: Props) {
 
   async function handleGoogleLogin() {
     setIsGoogleLoading(true);
-    const planMatch = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);
-    const planValue = planMatch?.[1] ?? '';
-    const isPaidPlan = planValue === 'pro' || planValue === 'studio';
-    const nextPath = selectedRole === 'master'
-      ? isPaidPlan ? `/dashboard/billing?plan=${planValue}` : '/dashboard'
-      : '/my/bookings';
-    const cbParams = new URLSearchParams({ role: selectedRole, next: nextPath });
-    if (isPaidPlan) cbParams.set('plan', planValue);
+    const next = selectedRole === 'master' ? '/dashboard' : '/my/bookings';
+    const cbParams = new URLSearchParams({ role: selectedRole, next });
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback?${cbParams.toString()}`,
-        queryParams: {
-          prompt: 'select_account',
-        },
-        data: { role: selectedRole },
+        queryParams: { prompt: 'select_account' },
       },
     });
   }
