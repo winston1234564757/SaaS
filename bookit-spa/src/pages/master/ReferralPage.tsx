@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
-// TODO: port ReferralPage component from @/components/master/referral/ReferralPage
-// import { ReferralPage as ReferralPageView } from '@/components/master/referral/ReferralPage';
+import { ReferralPage as ReferralPageView } from '@/components/master/referral/ReferralPage';
 
 export function ReferralPage() {
   const { user } = useMasterContext();
@@ -37,17 +36,12 @@ export function ReferralPage() {
   }
 
   return (
-    <div className="p-6">
-      {/* TODO: <ReferralPageView
-        masterId={masterId!}
-        referralCode={data?.referralCode ?? ''}
-        referralCount={data?.referralCount ?? 0}
-        subscriptionTier={data?.subscriptionTier ?? 'starter'}
-        subscriptionExpiresAt={data?.subscriptionExpiresAt ?? null}
-      /> */}
-      <p className="text-sm text-[#A8928D]">
-        ReferralPage — TODO (code: {data?.referralCode}, refs: {data?.referralCount})
-      </p>
-    </div>
+    <ReferralPageView
+      masterId={masterId!}
+      referralCode={data?.referralCode ?? ''}
+      referralCount={data?.referralCount ?? 0}
+      subscriptionTier={data?.subscriptionTier ?? 'starter'}
+      subscriptionExpiresAt={data?.subscriptionExpiresAt ?? null}
+    />
   );
 }

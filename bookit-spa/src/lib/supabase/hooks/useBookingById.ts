@@ -154,7 +154,7 @@ export function useBookingById(id: string | null) {
   });
 
   const rescheduleMutation = useMutation({
-    mutationFn: async ({ date, startTime, endTime }: { date: string; startTime: string; endTime: string }) => {
+    mutationFn: async ({ date, startTime }: { date: string; startTime: string; endTime: string }) => {
       const { error } = await supabase
         .from('bookings')
         .update({ slot_date: date, slot_time: startTime, status: 'confirmed' })

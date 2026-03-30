@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { StudioJoinPage as StudioJoinComponent } from '@/components/master/studio/StudioJoinPage';
 
 export function StudioJoinPage() {
   const [searchParams] = useSearchParams();
@@ -22,10 +23,5 @@ export function StudioJoinPage() {
 
   if (isLoading) return <div className="p-6 text-sm text-[#A8928D]">Завантаження...</div>;
 
-  // TODO: <StudioJoinPage studio={studio} token={token} /> from @/components/master/studio/StudioJoinPage
-  return (
-    <div className="p-6 text-sm text-[#A8928D]">
-      StudioJoinPage ({studio?.name ?? (token ? `token: ${token}` : 'відсутній токен')}) — TODO
-    </div>
-  );
+  return <StudioJoinComponent studio={studio!} token={token} />;
 }

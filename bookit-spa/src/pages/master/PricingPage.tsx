@@ -2,9 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
-// TODO: port DynamicPricingPage, PricingUpgradeGate
-// import { DynamicPricingPage } from '@/components/master/pricing/DynamicPricingPage';
-// import { PricingUpgradeGate } from '@/components/master/pricing/PricingUpgradeGate';
+import { DynamicPricingPage } from '@/components/master/pricing/DynamicPricingPage';
+import { PricingUpgradeGate } from '@/components/master/pricing/PricingUpgradeGate';
 
 const TRIAL_LIMIT_KOP = 100_000;
 
@@ -88,11 +87,10 @@ export function PricingPage() {
   if (isStarter && trialExhausted) {
     return (
       <div className="p-6">
-        {/* TODO: <PricingUpgradeGate
+        <PricingUpgradeGate
           trial={{ earned: extraEarned, limit: TRIAL_LIMIT_KOP, exhausted: true }}
           quietHoursInsight={data?.quietHoursInsight ?? null}
-        /> */}
-        <p className="text-sm text-[#A8928D]">PricingUpgradeGate (trial exhausted) — TODO</p>
+        />
       </div>
     );
   }
@@ -100,12 +98,11 @@ export function PricingPage() {
   if (isStarter) {
     return (
       <div className="p-6 flex flex-col gap-4">
-        {/* TODO: <PricingUpgradeGate
+        <PricingUpgradeGate
           trial={{ earned: extraEarned, limit: TRIAL_LIMIT_KOP, exhausted: false }}
           quietHoursInsight={data?.quietHoursInsight ?? null}
-        /> */}
-        {/* TODO: <DynamicPricingPage initial={data?.pricingRules ?? {}} /> */}
-        <p className="text-sm text-[#A8928D]">DynamicPricingPage (starter trial) — TODO</p>
+        />
+        <DynamicPricingPage initial={data?.pricingRules ?? {}} />
       </div>
     );
   }
@@ -113,16 +110,14 @@ export function PricingPage() {
   if (!isPro) {
     return (
       <div className="p-6">
-        {/* TODO: <PricingUpgradeGate /> */}
-        <p className="text-sm text-[#A8928D]">PricingUpgradeGate (no pro) — TODO</p>
+        <PricingUpgradeGate />
       </div>
     );
   }
 
   return (
     <div className="p-6">
-      {/* TODO: <DynamicPricingPage initial={data?.pricingRules ?? {}} /> */}
-      <p className="text-sm text-[#A8928D]">DynamicPricingPage (pro) — TODO</p>
+      <DynamicPricingPage initial={data?.pricingRules ?? {}} />
     </div>
   );
 }

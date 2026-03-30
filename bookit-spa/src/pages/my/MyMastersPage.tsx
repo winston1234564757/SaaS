@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
+import { MyMastersPage as MyMastersComponent } from '@/components/client/MyMastersPage';
 
 export function MyMastersPage() {
   const { user } = useMasterContext();
@@ -57,10 +58,5 @@ export function MyMastersPage() {
 
   if (isLoading) return <div className="p-6 text-sm text-[#A8928D]">Завантаження...</div>;
 
-  // TODO: <MyMastersPage masters={data ?? []} /> from @/components/client/MyMastersPage
-  return (
-    <div className="p-6 text-sm text-[#A8928D]">
-      MyMastersPage ({data?.length ?? 0} майстрів) — TODO
-    </div>
-  );
+  return <MyMastersComponent masters={data ?? []} />;
 }

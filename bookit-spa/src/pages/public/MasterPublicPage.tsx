@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { PublicMasterPage } from '@/components/public/PublicMasterPage';
 
 export function MasterPublicPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -145,10 +146,5 @@ export function MasterPublicPage() {
   if (isLoading) return <div className="p-6 text-sm text-[#A8928D]">Завантаження...</div>;
   if (!data) return <div className="p-6 text-center text-[#A8928D]">Майстра не знайдено</div>;
 
-  // TODO: <PublicMasterPage master={data} /> from @/components/public/PublicMasterPage
-  return (
-    <div className="p-6 text-sm text-[#A8928D]">
-      PublicMasterPage ({data.name}) — TODO
-    </div>
-  );
+  return <PublicMasterPage master={data} />;
 }

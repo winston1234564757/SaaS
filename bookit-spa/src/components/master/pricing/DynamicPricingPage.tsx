@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 import {
-  TrendingUp, TrendingDown, Clock, Bird, Zap,
+  TrendingUp, TrendingDown, Bird, Zap,
   CheckCircle2, Layers, ArrowUpDown,
 } from 'lucide-react';
 

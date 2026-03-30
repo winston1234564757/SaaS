@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
-// TODO: port FlashDealPage component from @/components/master/flash/FlashDealPage
-// import { FlashDealPage } from '@/components/master/flash/FlashDealPage';
+import { FlashDealPage } from '@/components/master/flash/FlashDealPage';
 
 interface FlashDealRow {
   id: string;
@@ -56,15 +55,10 @@ export function FlashPage() {
   const tier = masterProfile?.subscription_tier ?? 'starter';
 
   return (
-    <div className="p-6">
-      {/* TODO: <FlashDealPage
-        activeDeals={data?.deals ?? []}
-        tier={tier}
-        usedThisMonth={data?.usedThisMonth ?? 0}
-      /> */}
-      <p className="text-sm text-[#A8928D]">
-        FlashPage — TODO (tier: {tier}, deals: {data?.deals.length ?? 0})
-      </p>
-    </div>
+    <FlashDealPage
+      activeDeals={data?.deals ?? []}
+      tier={tier}
+      usedThisMonth={data?.usedThisMonth ?? 0}
+    />
   );
 }

@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
+import { ClientRealtimeSync } from '@/components/client/ClientRealtimeSync';
+import { MyBookingsPage as MyBookingsComponent } from '@/components/client/MyBookingsPage';
 
 export function MyBookingsPage() {
   const { user } = useMasterContext();
@@ -47,11 +49,10 @@ export function MyBookingsPage() {
 
   if (isLoading) return <div className="p-6 text-sm text-[#A8928D]">Завантаження...</div>;
 
-  // TODO: <MyBookingsPage bookings={data ?? []} /> from @/components/client/MyBookingsPage
-  // TODO: <ClientRealtimeSync userId={user!.id} /> from @/components/client/ClientRealtimeSync
   return (
-    <div className="p-6 text-sm text-[#A8928D]">
-      MyBookingsPage ({data?.length ?? 0} записів) — TODO
-    </div>
+    <>
+      <ClientRealtimeSync userId={user!.id} />
+      <MyBookingsComponent bookings={data ?? []} />
+    </>
   );
 }

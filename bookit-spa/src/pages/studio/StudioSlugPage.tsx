@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { StudioPublicPage } from '@/components/public/StudioPublicPage';
 
 export function StudioSlugPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -87,10 +88,5 @@ export function StudioSlugPage() {
   if (isLoading) return <div className="p-6 text-sm text-[#A8928D]">Завантаження...</div>;
   if (!data) return <div className="p-6 text-center text-[#A8928D]">Студію не знайдено</div>;
 
-  // TODO: <StudioPublicPage studio={data.studio} members={data.members} /> from @/components/public/StudioPublicPage
-  return (
-    <div className="p-6 text-sm text-[#A8928D]">
-      StudioPublicPage ({data.studio.name}, {data.members.length} майстрів) — TODO
-    </div>
-  );
+  return <StudioPublicPage studio={data.studio} members={data.members} />;
 }

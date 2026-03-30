@@ -1,45 +1,73 @@
-🚨 OPERATION: GLOBAL INTEGRITY SWEEP & STUB ERADICATION (PHASE 6) -USE RUFLO SWARM 🚨
 
-CONTEXT: We are finalizing the migration to the Vite SPA. In previous phases, the agent exhibited "lazy stubbing" (creating routing files with <div>TODO</div> or missing logic instead of fully porting the Next.js code). You are now the Lead Quality Assurance & Migration Enforcer.
+# PLAN: Global Integrity Sweep — Phase 6 (Stub Eradication) - ANTIGRAVITY EDITION
 
-MISSION:
-Execute a merciless global sweep of the ./bookit-spa/src/ directory. Your absolute priority is to eradicate EVERY single stub, placeholder, or half-ported file, and verify that all data connections (Supabase/React Query) and routes are fully functional.
+## Context
+We are migrating a Next.js app (`bookit`) to a pure Vite SPA (`bookit-spa`).
+**STATUS:** Batches 1, 2, 3, and 4 are SUCCESSFULLY COMPLETED. All core master dashboard components are already ported.
+**PENDING:** Batches 5, 6, 7, and 8.
 
-EXECUTION DIRECTIVES:
+Your task as the AI Agent is to execute the remaining batches to complete the frontend migration and eradicate all UI stubs ("TODO" pages).
 
-HUNT AND DESTROY STUBS (DEEP PORT):
+Source Directory: `bookit/src/` 
+Target Directory: `bookit-spa/src/`
 
-Use your search/grep tool to scan ./bookit-spa/src/pages/ and ./bookit-spa/src/components/ for the word "TODO", "todo", or files that return extremely basic empty <div> tags instead of real UI.
+---
 
-For EVERY stub you find, locate the exact original file in ./bookit/src/app/ or ./bookit/src/components/.
+## Translation Matrix (CRITICAL - APPLY TO ALL FILES)
 
-DEEP PORT: Overwrite the stub in bookit-spa with the FULL, complete code from the original file. Translate all Next.js specific code (next/link, next/image, removed "use client") to Vite/React Router standards. DO NOT truncate or skip any logic, state, or JSX.
+| Next.js Concept | Vite SPA Replacement |
+|---|---|
+| Strip `'use client'` | Delete entirely |
+| `import Link from 'next/link'` + `href=` | `import { Link } from 'react-router-dom'` + `to=` |
+| `import { useRouter } from 'next/navigation'` | `import { useNavigate } from 'react-router-dom'` |
+| `router.push(...)` or `router.replace(...)` | `Maps(...)` |
+| `import { usePathname } from 'next/navigation'` | `const location = useLocation(); location.pathname` |
+| `import { useSearchParams } from 'next/navigation'` | `import { useSearchParams } from 'react-router-dom'` |
+| `import Image from 'next/image'` | Remove import; use standard HTML `<img className="...">` |
+| `process.env.NEXT_PUBLIC_X` | `import.meta.env.VITE_X` |
+| `createClient()` (inline instantiation) | `import { supabase } from '@/lib/supabase/client'` (Singleton) |
+| `router.refresh()` | `queryClient.invalidateQueries(...)` |
+| `suppressHydrationWarning` | Delete attribute |
 
-ROUTER MATRIX INTEGRITY:
+---
 
-Scan ./bookit-spa/src/App.tsx.
+## Batch 5 — Client Area Components (PORT TO VITE)
+Read original files from `bookit/src/components/client/` and create/overwrite in `bookit-spa/src/components/client/`:
 
-Verify that every single imported page component actually exists, is fully populated (not a stub), and is correctly exported. Fix any missing or dead imports.
+1. `MyLoyaltyPage.tsx`
+2. `MyMastersPage.tsx`
+3. `MyBookingsPage.tsx` (Ensure `ClientRealtimeSync` is imported from `@/components/client/ClientRealtimeSync`)
+4. `MyProfilePage.tsx`
 
-DATA CONNECTION & HOOKS VERIFICATION:
+## Batch 6 — Public Page Components (PORT TO VITE)
+Read original files from `bookit/src/components/public/` and create/overwrite in `bookit-spa/src/components/public/`:
 
-Scan the newly ported pages. Ensure that all useQuery, useMutation (TanStack Query), and Supabase hooks (useBookings, useClients, etc.) are imported correctly from src/lib/supabase/hooks/ and are fully implemented inside the components.
+1. `StudioPublicPage.tsx`
+2. `PublicMasterPage.tsx` (Apply translation matrix carefully: change `<Image>` to `<img>`, switch router to `useNavigate`, use singleton Supabase).
 
-Ensure NO components are marked as async function (this breaks Vite React 18 rendering).
+## Batch 7 — OnboardingWizard (PORT TO VITE)
+Read original file from `bookit/src/components/master/onboarding/OnboardingWizard.tsx` and create/overwrite in `bookit-spa/src/components/master/onboarding/OnboardingWizard.tsx`:
+- This is a large, complex form component. Apply the Translation Matrix rigorously (`useNavigate`, `<img/>`, singleton supabase instance).
 
-LAZY LOADING & PERFORMANCE (OPTIONAL BUT RECOMMENDED):
+## Batch 8 — Route Integration (ERADICATE STUBS)
+Many route pages in `bookit-spa/src/pages/` are currently empty stubs returning `<div>TODO</div>` or commented-out components. You must connect the components ported in Batches 5-7 to these pages.
 
-If App.tsx has dozens of static imports, consider wrapping the heavy page routes (like Dashboard segments) in React.lazy() and <Suspense fallback={<Loader />}> to ensure the initial load is lightning fast.
+**Client Zone Pages:**
+- `bookit-spa/src/pages/my/MyBookingsPage.tsx` → Import `MyBookingsPage` from `@/components/client/MyBookingsPage` and render it.
+- `bookit-spa/src/pages/my/MyLoyaltyPage.tsx` → Import and render `MyLoyaltyPage`.
+- `bookit-spa/src/pages/my/MyMastersPage.tsx` → Import and render `MyMastersPage`.
+- `bookit-spa/src/pages/my/MyProfilePage.tsx` → Import and render `MyProfilePage`.
 
-ENFORCEMENT:
-Do not report "Done" until you have actively searched for stubs, cross-referenced with the original Next.js codebase, and fully ported the missing logic. The application must be 100% feature-complete with zero placeholders. Report back with a list of the exact files you "un-stubbed" and fixed.
+**Public/Studio Pages:**
+- `bookit-spa/src/pages/public/MasterPublicPage.tsx` → Uncomment `<PublicMasterPage master={data} />` after importing from `@/components/public/PublicMasterPage`.
+- `bookit-spa/src/pages/studio/StudioJoinPage.tsx` → Uncomment `<StudioJoinPage studio={studio} token={token} />`.
+- `bookit-spa/src/pages/studio/StudioSlugPage.tsx` → Uncomment `<StudioPublicPage studio={data.studio} members={data.members} />`.
 
-Що він робитиме:
+**Layout Updates:**
+- `bookit-spa/src/components/master/DashboardLayout.tsx`: Uncomment `import { BookingDetailsModal }` and the `<BookingDetailsModal />` component in the JSX.
+- `bookit-spa/src/pages/my/MyLayout.tsx`: Import `MasterModeBanner` from `@/components/client/MasterModeBanner` and replace the inline banner div stub.
 
-Він просканує всі файли на наявність "TODO" або пустих div-ів.
+---
 
-Знайшовши такий файл, він полізе в стару папку bookit, візьме звідти твій оригінальний величезний код і акуратно вставить його в нову папку, виправивши імпорти.
-
-Він перевірить App.tsx, щоб переконатися, що всі шляхи ведуть до реальних компонентів.
-
-Опціонально, він може налаштувати React.lazy(), щоб твоя адмінка вантажилася по шматках і працювала ще швидше.
+## Execution Directives
+Process Batches 5, 6, 7, and 8 sequentially. Do not skip logic, hooks, or state variables. Ensure zero Next.js imports leak into the new files. Report when the entire task is successfully integrated.

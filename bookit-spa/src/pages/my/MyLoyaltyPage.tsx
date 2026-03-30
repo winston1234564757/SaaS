@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
+import { MyLoyaltyPage as MyLoyaltyComponent } from '@/components/client/MyLoyaltyPage';
 
 export function MyLoyaltyPage() {
   const { user } = useMasterContext();
@@ -55,10 +56,5 @@ export function MyLoyaltyPage() {
 
   if (isLoading) return <div className="p-6 text-sm text-[#A8928D]">Завантаження...</div>;
 
-  // TODO: <MyLoyaltyPage programs={data ?? []} /> from @/components/client/MyLoyaltyPage
-  return (
-    <div className="p-6 text-sm text-[#A8928D]">
-      MyLoyaltyPage ({data?.length ?? 0} програм) — TODO
-    </div>
-  );
+  return <MyLoyaltyComponent programs={data ?? []} />;
 }

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
+import { MyProfilePage as MyProfileComponent } from '@/components/client/MyProfilePage';
 
 export function MyProfilePage() {
   const { user } = useMasterContext();
@@ -39,10 +40,5 @@ export function MyProfilePage() {
 
   if (isLoading) return <div className="p-6 text-sm text-[#A8928D]">Завантаження...</div>;
 
-  // TODO: <MyProfilePage profile={data!} /> from @/components/client/MyProfilePage
-  return (
-    <div className="p-6 text-sm text-[#A8928D]">
-      MyProfilePage ({data?.fullName || data?.phone}) — TODO
-    </div>
-  );
+  return <MyProfileComponent profile={data!} />;
 }
