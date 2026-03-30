@@ -1,13 +1,6 @@
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient as _createClient } from '@supabase/supabase-js';
 
-let browserClient: ReturnType<typeof createBrowserClient> | undefined;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-export function createClient() {
-  if (!browserClient) {
-    browserClient = createBrowserClient(
-      import.meta.env.VITE_SUPABASE_URL as string,
-      import.meta.env.VITE_SUPABASE_ANON_KEY as string
-    );
-  }
-  return browserClient;
-}
+export const supabase = _createClient(supabaseUrl, supabaseKey);

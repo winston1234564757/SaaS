@@ -13,7 +13,7 @@ import {
   MessageSquare, ShoppingBag, Plus, Minus,
 } from 'lucide-react';
 import { addMinutes, parse as parseFns, format as formatFns, addDays } from 'date-fns';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getAutoSuggestProductIds } from '@/lib/supabase/hooks/useProductLinks';
 import {
   generateAvailableSlots, scoreSlots, buildSlotRenderItems,
@@ -332,11 +332,10 @@ export function BookingWizard({
         if (name)  setClientName(name);
         if (phone) setClientPhone(phone);
         if (email) setClientEmail(email);
-        const sb = createClient();
         Promise.all([
-          sb.from('client_master_relations').select('total_visits').eq('client_id', userId).eq('master_id', masterId).maybeSingle(),
-          sb.from('loyalty_programs').select('name, target_visits, reward_type, reward_value').eq('master_id', masterId).eq('is_active', true),
-          sb.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
+          supabase.from('client_master_relations').select('total_visits').eq('client_id', userId).eq('master_id', masterId).maybeSingle(),
+          supabase.from('loyalty_programs').select('name, target_visits, reward_type, reward_value').eq('master_id', masterId).eq('is_active', true),
+          supabase.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
         ]).then(([relRes, progRes, histRes]) => {
           const history = (histRes.data ?? []).map((b: { start_time: string | null }) => b.start_time?.slice(0, 5)).filter((t: string | undefined): t is string => !!t);
           if (history.length) setClientHistoryTimes(history);

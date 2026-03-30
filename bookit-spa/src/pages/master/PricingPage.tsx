@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 // TODO: port DynamicPricingPage, PricingUpgradeGate
@@ -19,7 +19,6 @@ export function PricingPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['pricing-page', masterId],
     queryFn: async () => {
-      const supabase = createClient();
       const yearAgo = new Date();
       yearAgo.setFullYear(yearAgo.getFullYear() - 1);
 

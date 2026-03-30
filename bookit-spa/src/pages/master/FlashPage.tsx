@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 // TODO: port FlashDealPage component from @/components/master/flash/FlashDealPage
 // import { FlashDealPage } from '@/components/master/flash/FlashDealPage';
@@ -22,7 +22,6 @@ export function FlashPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['flash-page', masterId],
     queryFn: async () => {
-      const supabase = createClient();
       const monthStart = new Date();
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);

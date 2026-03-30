@@ -1,5 +1,5 @@
 import { useQuery} from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
 export interface ClientRow {
@@ -22,7 +22,6 @@ export function useClients() {
   const query = useQuery({
     queryKey: ['clients', masterId],
     queryFn: async (): Promise<ClientRow[]> => {
-      const supabase = createClient();
 
       // Server-side aggregation via RPC — avoids downloading up to 5000 booking rows client-side.
       // Migration 048 creates get_master_clients(uuid) function.

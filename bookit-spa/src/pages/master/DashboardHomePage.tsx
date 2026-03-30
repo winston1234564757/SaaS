@@ -1,21 +1,28 @@
-// TODO: port DashboardGreeting, WelcomeBanner, ProfileStrengthWidget, StatsStrip,
-//       WeeklyOverview, DashboardTourProvider, ShareCardWithHint,
-//       TodayScheduleWithHint, QuickActionsWithHint
+import { DashboardGreeting } from '@/components/master/dashboard/DashboardGreeting';
+import { WelcomeBanner } from '@/components/master/dashboard/WelcomeBanner';
+import { ProfileStrengthWidget } from '@/components/master/dashboard/ProfileStrengthWidget';
+import { StatsStrip } from '@/components/master/dashboard/StatsStrip';
+import { WeeklyOverview } from '@/components/master/dashboard/WeeklyOverview';
 import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
+import { DashboardTourProvider } from '@/components/master/dashboard/DashboardTourContext';
+import { ShareCardWithHint } from '@/components/master/dashboard/ShareCardWithHint';
+import { TodayScheduleWithHint } from '@/components/master/dashboard/TodayScheduleWithHint';
+import { QuickActionsWithHint } from '@/components/master/dashboard/QuickActionsWithHint';
 
 export function DashboardHomePage() {
   return (
-    <div className="flex flex-col gap-4">
-      {/* TODO: <DashboardTourProvider> */}
-      {/* TODO: <DashboardGreeting /> */}
-      {/* TODO: <ProfileStrengthWidget /> */}
-      {/* TODO: <WelcomeBanner /> */}
-      {/* TODO: <StatsStrip /> */}
-      {/* TODO: <TodayScheduleWithHint /> */}
-      {/* TODO: <WeeklyOverview /> */}
-      {/* TODO: <QuickActionsWithHint /> */}
-      <PushSubscribeCard />
-      {/* TODO: <ShareCardWithHint /> */}
-    </div>
+    <DashboardTourProvider>
+      <div className="flex flex-col gap-4">
+        <DashboardGreeting />
+        <ProfileStrengthWidget />
+        <WelcomeBanner />
+        <StatsStrip />
+        <TodayScheduleWithHint />
+        <WeeklyOverview />
+        <QuickActionsWithHint />
+        <PushSubscribeCard />
+        <ShareCardWithHint />
+      </div>
+    </DashboardTourProvider>
   );
 }

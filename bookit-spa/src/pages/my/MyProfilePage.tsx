@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 
 export function MyProfilePage() {
@@ -8,7 +8,6 @@ export function MyProfilePage() {
   const { data, isLoading } = useQuery({
     queryKey: ['my-profile', user?.id],
     queryFn: async () => {
-      const supabase = createClient();
       const [{ data: profile }, { data: lastBooking }] = await Promise.all([
         supabase
           .from('profiles')

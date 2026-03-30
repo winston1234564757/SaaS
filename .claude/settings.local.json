@@ -92,7 +92,11 @@
       "Bash(grep -l \"''use client''\" C:UsersVitossikSaaSbookitsrccomponentslanding*.tsx)",
       "Bash(find \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\" -name \"page.tsx\" -o -name \"layout.tsx\")",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Recurse -Path ''src'' -Include ''*.ts'',''*.tsx'' | ForEach-Object { \\(Get-Content $_.FullName -Raw\\) -replace \"\"import \\\\{ createClient \\\\} from ''@/lib/supabase/client''\"\", \"\"import { supabase } from ''@/lib/supabase/client''\"\" | Set-Content $_.FullName -NoNewline }\")",
+      "Bash(powershell -Command \"Get-ChildItem -Recurse -Path ''src/lib/supabase/hooks'' -Include ''*.ts'',''*.tsx'' | ForEach-Object { \\(Get-Content $_.FullName -Raw\\) -replace \"\"import \\\\{ createClient \\\\} from ''\\\\.\\\\./client''\"\", \"\"import { supabase } from ''../client''\"\" | Set-Content $_.FullName -NoNewline }\")",
+      "Bash(find \"C:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard\" -name \"page.tsx\")",
+      "Bash(node -e \"const lr = require\\(''lucide-react''\\); console.log\\(Object.keys\\(lr\\).filter\\(k => /gram|social|link/i.test\\(k\\)\\).join\\(''\\\\n''\\)\\)\")"
     ]
   }
 }

@@ -4,13 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, Phone, MessageSquare } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
 // TODO: Refactor Server Action to Supabase Client — may need API route if RLS blocks upsert
 async function claimMasterRole(phone: string): Promise<{ error: string | null }> {
-  const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
@@ -50,7 +49,6 @@ interface Props {
 
 export function PhoneOtpForm({ mode }: Props) {
   const navigate = useNavigate();
-  const supabase = createClient();
 
   const [selectedRole, setSelectedRole] = useState<'client' | 'master'>(
     mode === 'register' ? 'master' : 'client'

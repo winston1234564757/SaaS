@@ -1,6 +1,6 @@
 import { useQuery} from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 import { getPrevPeriodRange, type Preset } from './useDateRange';
 
@@ -98,7 +98,6 @@ export function useAnalytics(
     enabled:  !!masterId,
     staleTime: 2 * 60_000,
     queryFn: async (): Promise<AnalyticsData> => {
-      const supabase = createClient();
 
       const now          = new Date();
       // End of CURRENT month (not today) — so the current month in the trend
@@ -389,7 +388,6 @@ export async function exportAnalyticsCsv(
   startDate: string,
   endDate: string,
 ): Promise<void> {
-  const supabase = createClient();
   const { data } = await supabase
     .from('bookings')
     .select(`

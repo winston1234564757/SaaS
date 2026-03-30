@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 import type { BookingStatus } from '@/types/database';
 import { safeQuery, safeMutation } from '../safeQuery';
@@ -66,7 +66,6 @@ export function useBookings(dateFrom: string, dateTo: string) {
   const query = useQuery({
     queryKey: key,
     queryFn: async () => {
-      const supabase = createClient();
       const result = await safeQuery<any[]>(
         'bookings:list',
         () =>
@@ -92,7 +91,6 @@ export function useBookings(dateFrom: string, dateTo: string) {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: BookingStatus }) => {
-      const supabase = createClient();
       const result = await safeMutation(
         'bookings:updateStatus',
         () =>
@@ -153,7 +151,6 @@ export function useMonthlyBookingCount() {
   const { data: count = 0, isLoading } = useQuery({
     queryKey: ['monthly-booking-count', masterId, monthStart],
     queryFn: async () => {
-      const supabase = createClient();
       const { count: c } = await supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })

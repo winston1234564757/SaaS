@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
 export interface Review {
@@ -20,7 +20,6 @@ export function useReviews() {
   const query = useQuery({
     queryKey: ['reviews', masterId],
     queryFn: async (): Promise<Review[]> => {
-      const supabase = createClient();
       const { data, error } = await supabase
         .from('reviews')
         .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
@@ -45,7 +44,6 @@ export function useReviews() {
 
   const togglePublish = useMutation({
     mutationFn: async ({ id, current }: { id: string; current: boolean }) => {
-      const supabase = createClient();
       const { error } = await supabase
         .from('reviews')
         .update({ is_published: !current })

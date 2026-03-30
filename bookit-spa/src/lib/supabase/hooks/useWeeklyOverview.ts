@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
 export interface DayData {
@@ -37,7 +37,6 @@ export function useWeeklyOverview(): { data: DayData[]; isLoading: boolean } {
   const query = useQuery({
     queryKey: ['weekly-overview', masterId, from],
     queryFn: async () => {
-      const supabase = createClient();
       const { data, error } = await supabase
         .from('bookings')
         .select('date, total_price, status')

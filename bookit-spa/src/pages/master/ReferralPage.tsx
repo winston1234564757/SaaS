@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 // TODO: port ReferralPage component from @/components/master/referral/ReferralPage
 // import { ReferralPage as ReferralPageView } from '@/components/master/referral/ReferralPage';
@@ -11,7 +11,6 @@ export function ReferralPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['referral-page', masterId],
     queryFn: async () => {
-      const supabase = createClient();
       const { data: mp } = await supabase
         .from('master_profiles')
         .select('referral_code, subscription_tier, subscription_expires_at')

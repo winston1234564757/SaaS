@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
 export function clientNoteKey(masterId: string | undefined, clientPhone: string | undefined) {
@@ -13,7 +13,6 @@ export function useClientNote(clientPhone: string | undefined) {
   return useQuery<string>({
     queryKey: clientNoteKey(masterId, clientPhone),
     queryFn: async () => {
-      const supabase = createClient();
       const { data } = await supabase
         .from('master_client_notes')
         .select('note_text')

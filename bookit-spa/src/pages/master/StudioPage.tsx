@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Building2, Users, BarChart2, Layers, Bell, Check } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 
 const features = [
@@ -30,7 +30,6 @@ function WaitlistButton({ featureSlug }: { featureSlug: string }) {
     if (!user) return;
     setIsPending(true);
     try {
-      const supabase = createClient();
       await supabase.from('waitlist').upsert(
         { user_id: user.id, feature_slug: featureSlug },
         { onConflict: 'user_id,feature_slug', ignoreDuplicates: true }

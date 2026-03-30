@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 /**
  * OAuth callback handler (Google тощо).
@@ -19,7 +19,6 @@ export function AuthCallbackPage() {
   const doneRef = useRef(false);
 
   useEffect(() => {
-    const supabase = createClient();
 
     async function handleSignedIn(userId: string) {
       if (doneRef.current) return;

@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
-// TODO: useToast not yet ported — import { useToast } from '@/lib/toast/context'
+import { useToast } from '@/lib/toast/context';
 
 /**
  * Single consolidated Realtime channel for ALL booking-related invalidation.
@@ -20,11 +20,11 @@ export function useRealtimeNotifications() {
   const { masterProfile } = useMasterContext();
   const qc = useQueryClient();
   const masterId = masterProfile?.id;
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!masterId) return;
 
-    const supabase = createClient();
 
     const channel = supabase
       .channel(`bookings-realtime-${masterId}`)
@@ -46,8 +46,7 @@ export function useRealtimeNotifications() {
 
           const isManual = b.source === 'manual';
           if (!isManual) {
-            // TODO: useToast not yet ported
-            console.log('[Realtime] Новий запис:', `${b.client_name} · ${formatDate(b.date)} о ${b.start_time?.slice(0, 5)}`);
+            showToast({ type: 'success', title: 'Новий запис', message: `${b.client_name} · ${formatDate(b.date)} о ${b.start_time?.slice(0, 5)}` });
           }
 
           // Invalidate ALL booking-related caches in one place
@@ -68,8 +67,7 @@ export function useRealtimeNotifications() {
           invalidateAll(qc, masterId);
 
           if (b.status === 'cancelled') {
-            // TODO: useToast not yet ported
-            console.log('[Realtime] Запис скасовано:', `${b.client_name} скасував запис`);
+            showToast({ type: 'info', title: 'Запис скасовано', message: `${b.client_name} скасував запис` });
           }
         }
       )

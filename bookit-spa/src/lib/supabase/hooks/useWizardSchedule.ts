@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import type { TimeRange } from '@/lib/utils/smartSlots';
 
 export interface ScheduleStore {
@@ -19,7 +19,6 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
     queryKey: ['wizard-schedule', masterId, from, to],
     queryFn: async () => {
       if (!masterId) throw new Error('No masterId');
-      const supabase = createClient();
       const [tmplRes, excRes, bookRes, timeOffRes] = await Promise.all([
         supabase.from('schedule_templates')
           .select('day_of_week, is_working, start_time, end_time, break_start, break_end')

@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
 // Inline type (was imported from Next.js page route)
@@ -21,7 +21,6 @@ export function useFlashDeals(initialData?: FlashDealRow[]) {
   return useQuery<FlashDealRow[]>({
     queryKey: ['flash-deals', masterId],
     queryFn: async () => {
-      const supabase = createClient();
       const { data, error } = await supabase
         .from('flash_deals')
         .select('id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at, status')

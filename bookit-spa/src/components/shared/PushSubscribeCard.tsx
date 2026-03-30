@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell, BellOff } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -16,7 +16,6 @@ type State = 'idle' | 'subscribing' | 'subscribed' | 'denied' | 'unsupported' | 
 
 export function PushSubscribeCard() {
   const [state, setState] = useState<State>('idle');
-  const supabase = createClient();
 
   useEffect(() => {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {

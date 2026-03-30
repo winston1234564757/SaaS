@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 import { type Service, INITIAL_SERVICES } from '@/components/master/services/types';
 import { safeQuery, safeMutation } from '../safeQuery';
@@ -61,7 +61,6 @@ export function useServices() {
   const query = useQuery<Service[]>({
     queryKey: key,
     queryFn: async () => {
-      const supabase = createClient();
 
       const result = await safeQuery<ServiceRow[]>(
         'services:list',
@@ -88,7 +87,6 @@ export function useServices() {
 
   const addMutation = useMutation({
     mutationFn: async (data: Omit<Service, 'id'>) => {
-      const supabase = createClient();
 
       const result = await safeMutation<ServiceRow>(
         'services:add',
@@ -112,7 +110,6 @@ export function useServices() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Omit<Service, 'id'> }) => {
-      const supabase = createClient();
 
       const result = await safeMutation(
         'services:update',
@@ -135,7 +132,6 @@ export function useServices() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const supabase = createClient();
 
       const result = await safeMutation(
         'services:delete',
@@ -153,7 +149,6 @@ export function useServices() {
 
   const reorderMutation = useMutation({
     mutationFn: async (ordered: { id: string; sort_order: number }[]) => {
-      const supabase = createClient();
 
       const result = await safeMutation(
         'services:reorder',
@@ -193,7 +188,6 @@ export function useServices() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      const supabase = createClient();
 
       const result = await safeMutation(
         'services:toggle',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
 export interface BookingNotification {
@@ -30,7 +30,6 @@ export function useNotifications() {
     queryKey: ['notifications', masterId],
     enabled: !!masterId,
     queryFn: async () => {
-      const supabase = createClient();
       const { data, error } = await supabase
         .from('bookings')
         .select('id, client_name, date, start_time, status, created_at, booking_services(service_name)')

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 import { type Product, INITIAL_PRODUCTS } from '@/components/master/services/types';
 import { safeQuery, safeMutation } from '../safeQuery';
@@ -56,7 +56,6 @@ export function useProducts() {
   const query = useQuery<Product[]>({
     queryKey: key,
     queryFn: async () => {
-      const supabase = createClient();
 
       const result = await safeQuery<ProductRow[]>(
         'products:list',
@@ -83,7 +82,6 @@ export function useProducts() {
 
   const addMutation = useMutation({
     mutationFn: async (data: Omit<Product, 'id'>) => {
-      const supabase = createClient();
 
       const result = await safeMutation<ProductRow>(
         'products:add',
@@ -107,7 +105,6 @@ export function useProducts() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Omit<Product, 'id'> }) => {
-      const supabase = createClient();
 
       const result = await safeMutation(
         'products:update',
@@ -130,7 +127,6 @@ export function useProducts() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const supabase = createClient();
 
       const result = await safeMutation(
         'products:delete',
@@ -148,7 +144,6 @@ export function useProducts() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      const supabase = createClient();
 
       const result = await safeMutation(
         'products:toggle',

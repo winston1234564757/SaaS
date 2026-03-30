@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export function StudioJoinPage() {
   const [searchParams] = useSearchParams();
@@ -9,7 +9,6 @@ export function StudioJoinPage() {
   const { data: studio, isLoading } = useQuery({
     queryKey: ['studio-join', token],
     queryFn: async () => {
-      const supabase = createClient();
       const { data } = await supabase
         .from('studios')
         .select('id, name')

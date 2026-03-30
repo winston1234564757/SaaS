@@ -1,9 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
-// TODO: Refactor Server Action to Supabase Client
-// import { addTimeOff, removeTimeOff, type AddTimeOffPayload, type TimeOffType } from '@/app/(master)/dashboard/settings/actions';
 export type TimeOffType = 'vacation' | 'day_off' | 'short_day';
 export interface AddTimeOffPayload {
   type: TimeOffType;
@@ -32,7 +30,6 @@ export function useTimeOff() {
     queryKey: key,
     enabled: !!masterId,
     queryFn: async () => {
-      const supabase = createClient();
       const n = new Date();
       const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
       const { data, error } = await supabase
@@ -56,7 +53,6 @@ export function useTimeOff() {
 
   const addMutation = useMutation({
     mutationFn: async (payload: AddTimeOffPayload) => {
-      const supabase = createClient();
       const { error } = await supabase.from('master_time_off').insert({
         master_id: masterId!,
         type: payload.type,
@@ -75,7 +71,6 @@ export function useTimeOff() {
 
   const removeMutation = useMutation({
     mutationFn: async (id: string) => {
-      const supabase = createClient();
       const { error } = await supabase
         .from('master_time_off')
         .delete()

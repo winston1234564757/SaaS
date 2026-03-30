@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { ExplorePageView } from '@/components/public/ExplorePage';
 
 interface MasterRow {
@@ -13,7 +13,7 @@ interface MasterRow {
   categories: string[];
   subscription_tier: string;
   created_at: string;
-  profiles: { full_name: string } | null;
+  profiles: { full_name: string }[] | null;
   services: { id: string; is_active: boolean }[];
 }
 
@@ -21,7 +21,6 @@ export function ExplorePage() {
   const { data, isLoading } = useQuery({
     queryKey: ['explore-masters'],
     queryFn: async () => {
-      const supabase = createClient();
 
       const { data: masters, error } = await supabase
         .from('master_profiles')
@@ -49,7 +48,7 @@ export function ExplorePage() {
       const items = (masters ?? []).map((m: MasterRow) => ({
         id: m.id,
         slug: m.slug,
-        name: m.profiles?.full_name ?? 'Майстер',
+        name: m.profiles?.[0]?.full_name ?? 'Майстер',
         bio: m.bio || null,
         city: m.city || null,
         rating: Number(m.rating ?? 0),

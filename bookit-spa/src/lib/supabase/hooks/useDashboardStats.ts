@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { startOfWeek, format } from 'date-fns';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 
 export interface DashboardStats {
@@ -30,7 +30,6 @@ export function useDashboardStats(): DashboardStatsWithLoading {
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-stats', masterId, today],
     queryFn: async () => {
-      const supabase = createClient();
 
       type TodayRow = { status: string; total_price: string | number };
       type WeekRow  = { client_phone: string | null; client_name: string | null };

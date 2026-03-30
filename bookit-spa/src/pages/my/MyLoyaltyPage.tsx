@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 
 export function MyLoyaltyPage() {
@@ -8,7 +8,6 @@ export function MyLoyaltyPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['my-loyalty', user?.id],
     queryFn: async () => {
-      const supabase = createClient();
 
       const { data: relations } = await supabase
         .from('client_master_relations')

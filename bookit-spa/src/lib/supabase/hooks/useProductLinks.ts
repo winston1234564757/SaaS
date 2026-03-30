@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -26,7 +26,6 @@ export function useProductLinks(productId: string | null) {
   const query = useQuery({
     queryKey: key,
     queryFn: async (): Promise<ProductLink[]> => {
-      const supabase = createClient();
 
       const { data, error } = await supabase
         .from('product_service_links')
@@ -41,7 +40,6 @@ export function useProductLinks(productId: string | null) {
 
   const setLinksMutation = useMutation({
     mutationFn: async (links: ProductLink[]) => {
-      const supabase = createClient();
 
       // 1. Delete all existing links for this product
       const { error: delError } = await supabase
@@ -82,7 +80,6 @@ export function useProductLinks(productId: string | null) {
  * Call this after creating a new product to persist its links.
  */
 export async function setProductLinks(productId: string, links: ProductLink[]): Promise<void> {
-  const supabase = createClient();
 
   const { error: delError } = await supabase
     .from('product_service_links')
@@ -113,7 +110,6 @@ export async function setProductLinks(productId: string, links: ProductLink[]): 
  */
 export async function getAutoSuggestProductIds(serviceIds: string[]): Promise<string[]> {
   if (serviceIds.length === 0) return [];
-  const supabase = createClient();
 
   const { data, error } = await supabase
     .from('product_service_links')

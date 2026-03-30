@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export function StudioSlugPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -8,7 +8,6 @@ export function StudioSlugPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['studio-public', slug],
     queryFn: async () => {
-      const supabase = createClient();
 
       const { data: ownerMp } = await supabase
         .from('master_profiles')

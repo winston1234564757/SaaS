@@ -1,12 +1,9 @@
 import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import { createClient } from '../client';
+import { supabase } from '../client';
 import { useMasterContext } from '../context';
 import type { BookingWithServices } from './useBookings';
 import type { BookingStatus } from '@/types/database';
 
-// TODO: Refactor Server Action to Supabase Client
-// import { rescheduleBooking } from '@/app/(master)/dashboard/bookings/actions';
-const rescheduleBooking = async (_id: string, _date: string, _startTime: string, _endTime: string): Promise<{ error?: string }> => ({ error: 'Not implemented' });
 
 export interface BookingProduct {
   name: string;
@@ -90,7 +87,6 @@ export function useBookingById(id: string | null) {
   const query = useQuery({
     queryKey: key,
     queryFn: async () => {
-      const supabase = createClient();
       const { data, error } = await supabase
         .from('bookings')
         .select('*, booking_services(service_name, service_price, duration_minutes), booking_products(product_name, product_price, quantity)')
@@ -110,7 +106,6 @@ export function useBookingById(id: string | null) {
     queryKey: ['client-ltv', id, clientIdForLtv, masterId],
     queryFn: async () => {
       if (!booking?.client_id || !masterId) return null;
-      const supabase = createClient();
       const { data, error } = await supabase
         .from('client_master_relations')
         .select('total_visits, total_spent, average_check')
@@ -126,7 +121,6 @@ export function useBookingById(id: string | null) {
 
   const updateStatus = useMutation({
     mutationFn: async (status: BookingStatus) => {
-      const supabase = createClient();
       const { error } = await supabase
         .from('bookings')
         .update({ status, status_changed_at: new Date().toISOString() })
@@ -146,7 +140,6 @@ export function useBookingById(id: string | null) {
 
   const saveMasterNotes = useMutation({
     mutationFn: async (master_notes: string) => {
-      const supabase = createClient();
       const { error } = await supabase
         .from('bookings')
         .update({ master_notes })
@@ -162,12 +155,17 @@ export function useBookingById(id: string | null) {
 
   const rescheduleMutation = useMutation({
     mutationFn: async ({ date, startTime, endTime }: { date: string; startTime: string; endTime: string }) => {
-      const result = await rescheduleBooking(id!, date, startTime, endTime);
-      if (result.error) throw new Error(result.error);
+      const { error } = await supabase
+        .from('bookings')
+        .update({ slot_date: date, slot_time: startTime, status: 'confirmed' })
+        .eq('id', id!)
+        .eq('master_id', masterId!);
+      if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ['bookings', masterId] });
+      qc.invalidateQueries({ queryKey: ['bookingById', id] });
+      qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
