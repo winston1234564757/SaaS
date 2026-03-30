@@ -1,38 +1,34 @@
-🚨 OPERATION: ARCHITECTURE EXODUS (PHASE 2 - STATE, SUPABASE & SHARED) - RUFLO SWARM 🚨
+🚨 OPERATION: ARCHITECTURE EXODUS (PHASE 4 - SYSTEM GLUE & CONFIG) - RUFLO SWARM 🚨
 
-CONTEXT: Phase 1 is complete. We are now porting Phase 2 of the Next.js to Vite SPA migration. You are the Principal Migration Engineer.
+CONTEXT: Phases 1, 2, and 3 are completely successfully. We now have a full React tree in ./bookit-spa/src/. This is the final phase. We must fix the underlying infrastructure (Environment variables, Path Aliases, Tailwind config, and Public assets) to make the app compile and run perfectly.
 
-MISSION FOR THIS PHASE:
-Port the core data layer, hooks, and shared layout components from ./bookit to ./bookit-spa.
+MISSIONS FOR THIS PHASE:
 
-TARGET DIRECTORIES TO PORT:
-Read from ./bookit/src/ and write to ./bookit-spa/src/ for the following specific paths:
+Environment Variables Mass-Replace:
+Scan the ENTIRE ./bookit-spa/src/ directory. Find every instance of process.env.NEXT_PUBLIC_... and replace it with import.meta.env.VITE_.... Target supabase/client.ts, webhook handlers, and anywhere Supabase/WayForPay keys are used. Also, copy the .env or .env.local file from ./bookit/ to ./bookit-spa/.env and rename the keys to use the VITE_ prefix instead of NEXT_PUBLIC_.
 
-lib/constants/
+Tailwind & Global CSS Migration:
 
-lib/hooks/
+Copy ./bookit/tailwind.config.ts to ./bookit-spa/tailwind.config.ts. CRITICAL: Inside the new tailwind.config.ts, change the content array paths from ./src/app/**/*.{ts,tsx} and ./src/components/**/*.{ts,tsx} to just "./index.html" and "./src/**/*.{ts,tsx}".
 
-lib/supabase/ (CRITICAL EXCEPTION: Do NOT port server.ts or admin.ts - this is a pure SPA now. Only port client.ts, safeQuery.ts, context.tsx, and the entire hooks/ subdirectory).
+Copy ./bookit/postcss.config.mjs to ./bookit-spa/postcss.config.mjs (or .js).
 
-components/icons/
+Replace ./bookit-spa/src/index.css with the complete contents of ./bookit/src/app/globals.css.
 
-components/shared/
+Ensure ./bookit-spa/src/main.tsx explicitly imports ./index.css.
 
-STRICT TRANSLATION PROTOCOLS:
+Vite Configuration (Path Aliases & Build):
+Update ./bookit-spa/vite.config.ts.
 
-Annihilate Server Directives: Strip "use client"; from all files.
+Import tsconfigPaths from vite-tsconfig-paths and add tsconfigPaths() to the plugins array. This is non-negotiable so Vite understands the @/* imports used throughout the components.
 
-Next.js Navigation Eradication: - Replace import { useRouter, usePathname, useSearchParams } from 'next/navigation' with import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'.
+Also, ensure tsconfig.json and tsconfig.app.json in ./bookit-spa/ define "baseUrl": "." and "paths": { "@/*": ["./src/*"] } in compilerOptions.
 
-Replace const router = useRouter() with const navigate = useNavigate(). Change router.push('/path') to Maps('/path').
+Public Assets (PWA, Icons & HTML):
 
-Replace const pathname = usePathname() with const location = useLocation(); const pathname = location.pathname.
+Copy the entire contents of ./bookit/public/ into ./bookit-spa/public/. Ensure manifest.json, sw.js, and all SVG/PNG icons are transferred so the PWA functionality remains perfectly intact.
 
-Next/Link & Next/Image: - Replace <Link href="..."> with <Link to="..."> (import from react-router-dom).
-
-Replace <Image src={...} /> with <img src={...} />.
-
-No Server Actions: If you encounter any Next.js Server Actions imported in these shared components, leave a // TODO: Refactor Server Action to Supabase Client comment next to them, but port the rest of the file.
+Update ./bookit-spa/index.html. Add the <link rel="manifest" href="/manifest.json" />, <meta name="theme-color" content="#..." /> tags, and set the correct document title. Keep <div id="root"></div>.
 
 EXECUTION DIRECTIVE:
-Deploy your Ruflo Coder MCP tool. Process the target directories file-by-file. Apply the translation protocols rigorously. Do not stop until all files in these directories (excluding the forbidden server files) are successfully ported. Report back when Phase 2 is 100% complete.
+Deploy your Ruflo Coder MCP tool. Apply these infrastructure fixes meticulously. You have absolute authority over config files. Do not stop until all 4 missions in this Phase 4 are executed. Report back when the global configuration is locked in and the App is ready to boot.

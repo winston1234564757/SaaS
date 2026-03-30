@@ -474,6 +474,21 @@
       "domain": "file-migration",
       "model": "sonnet",
       "modelRoutedBy": "explicit"
+    },
+    "agent-1774851727955-8772jw": {
+      "agentId": "agent-1774851727955-8772jw",
+      "agentType": "Coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "workingDir": "C:/Users/Vitossik/SaaS/bookit-spa",
+        "model": "opus"
+      },
+      "createdAt": "2026-03-30T06:22:07.956Z",
+      "domain": "frontend",
+      "model": "opus",
+      "modelRoutedBy": "explicit"
     }
   },
   "version": "3.0.0"

@@ -86,7 +86,12 @@
       "Bash(pkill -f \"next dev\")",
       "Bash(ls \"C:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard/referral/\")",
       "Bash(find /c/Users/Vitossik/SaaS/bookit/src -type f \\\\\\(-name *loyalty* -o -name *referral* -o -name *billing* -o -name *flash* \\\\\\))",
-      "Bash(find \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\\\\dashboard\" -name \"page.tsx\")"
+      "Bash(find \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\\\\dashboard\" -name \"page.tsx\")",
+      "Bash(ls \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(auth\\)\\\\login\")",
+      "Bash(ls \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(auth\\)\\\\register\")",
+      "Bash(grep -l \"''use client''\" C:UsersVitossikSaaSbookitsrccomponentslanding*.tsx)",
+      "Bash(find \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\" -name \"page.tsx\" -o -name \"layout.tsx\")",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

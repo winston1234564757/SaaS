@@ -1,121 +1,98 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Routes, Route } from 'react-router-dom';
+import { Suspense } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Public pages
+import { HomePage } from './pages/HomePage';
+import { LoginPage } from './pages/auth/LoginPage';
+import { RegisterPage } from './pages/auth/RegisterPage';
+import { ExplorePage } from './pages/ExplorePage';
 
+// Master dashboard layout + pages
+import { MasterLayout } from './pages/master/MasterLayout';
+import { DashboardHomePage } from './pages/master/DashboardHomePage';
+import { AnalyticsPage } from './pages/master/AnalyticsPage';
+import { BookingsPage } from './pages/master/BookingsPage';
+import { ClientsPage } from './pages/master/ClientsPage';
+import { FlashPage } from './pages/master/FlashPage';
+import { LoyaltyPage } from './pages/master/LoyaltyPage';
+import { MorePage } from './pages/master/MorePage';
+import { OnboardingPage } from './pages/master/OnboardingPage';
+import { PricingPage } from './pages/master/PricingPage';
+import { ReferralPage } from './pages/master/ReferralPage';
+import { ReviewsPage } from './pages/master/ReviewsPage';
+import { ServicesPage } from './pages/master/ServicesPage';
+import { SettingsPage } from './pages/master/SettingsPage';
+import { BillingPage } from './pages/master/BillingPage';
+import { StudioPage } from './pages/master/StudioPage';
+
+// Client portal (/my/*)
+import { MyLayout } from './pages/my/MyLayout';
+import { MyBookingsPage } from './pages/my/MyBookingsPage';
+import { MyLoyaltyPage } from './pages/my/MyLoyaltyPage';
+import { MyMastersPage } from './pages/my/MyMastersPage';
+import { MyProfilePage } from './pages/my/MyProfilePage';
+
+// Public booking page (/:slug)
+import { MasterPublicPage } from './pages/public/MasterPublicPage';
+
+// Studio pages
+import { StudioJoinPage } from './pages/studio/StudioJoinPage';
+import { StudioSlugPage } from './pages/studio/StudioSlugPage';
+
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Suspense>
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/explore" element={<ExplorePage />} />
 
-      <div className="ticks"></div>
+        {/* Master dashboard — protected by MasterLayout */}
+        <Route path="/dashboard" element={<MasterLayout />}>
+          <Route index element={<DashboardHomePage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="bookings" element={<BookingsPage />} />
+          <Route path="clients" element={<ClientsPage />} />
+          <Route path="flash" element={<FlashPage />} />
+          <Route path="loyalty" element={<LoyaltyPage />} />
+          <Route path="more" element={<MorePage />} />
+          <Route path="onboarding" element={<OnboardingPage />} />
+          <Route path="pricing" element={<PricingPage />} />
+          <Route path="referral" element={<ReferralPage />} />
+          <Route path="reviews" element={<ReviewsPage />} />
+          <Route path="services" element={<ServicesPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="studio" element={<StudioPage />} />
+        </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Client portal — protected by MyLayout */}
+        <Route path="/my" element={<MyLayout />}>
+          <Route path="bookings" element={<MyBookingsPage />} />
+          <Route path="loyalty" element={<MyLoyaltyPage />} />
+          <Route path="masters" element={<MyMastersPage />} />
+          <Route path="profile" element={<MyProfilePage />} />
+        </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* Studio pages — /studio/join before /studio/:slug */}
+        <Route path="/studio/join" element={<StudioJoinPage />} />
+        <Route path="/studio/:slug" element={<StudioSlugPage />} />
+
+        {/* Public master booking page — must be after all specific routes */}
+        <Route path="/:slug" element={<MasterPublicPage />} />
+
+        {/* 404 catch-all */}
+        <Route
+          path="*"
+          element={
+            <div className="min-h-dvh flex items-center justify-center p-6 text-center text-[#A8928D]">
+              Сторінку не знайдено (404)
+            </div>
+          }
+        />
+      </Routes>
+    </Suspense>
+  );
 }
-
-export default App
