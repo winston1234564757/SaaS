@@ -234,7 +234,6 @@ export function PhoneOtpForm({ mode }: Props) {
           // and silently reuses the last account, bypassing the chooser.
           prompt: 'select_account',
         },
-        data: { role: selectedRole },
       },
     });
   }

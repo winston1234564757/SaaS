@@ -49,7 +49,6 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback?role=client&bookingId=${bookingId}`,
-        data: { role: 'client' },
       },
     });
     // browser navigates away

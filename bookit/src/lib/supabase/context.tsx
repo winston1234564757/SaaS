@@ -17,7 +17,7 @@ const MasterContext = createContext<MasterContextValue>({
   user: null,
   profile: null,
   masterProfile: null,
-  isLoading: true,
+  isLoading: false, // false — компоненти поза MasterProvider не блокуються вічним спінером
   refresh: async () => {},
 });
 
@@ -62,13 +62,26 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     if (user) await fetchProfile(user.id);
   }, [user]);
 
+  // Відстежуємо час переходу в фон для visibility recovery
+  const lastHiddenAt = useRef(Date.now());
+  // Safety timeout: якщо isLoading залишився true > 8с — знімаємо примусово
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     mountedRef.current = true;
 
+    // --- Safety timeout: запобігає вічному спінеру у найгіршому випадку ---
+    if (isLoading) {
+      loadingTimeoutRef.current = setTimeout(() => {
+        if (mountedRef.current && isLoading) {
+          console.warn('[MasterContext] isLoading застряг > 8с — примусове зняття');
+          setIsLoading(false);
+        }
+      }, 8_000);
+    }
+
     // onAuthStateChange fires INITIAL_SESSION synchronously on subscribe,
     // so we get the session in the first event without a separate getUser() call.
-    // Using only this handler avoids the double-fetch race between getUser() and
-    // INITIAL_SESSION that caused isLoading to toggle and hooks to re-enable.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       if (!mountedRef.current) return;
 
@@ -92,9 +105,25 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
       if (mountedRef.current) setIsLoading(false);
     });
 
+    // --- Visibility recovery: оновлюємо профіль після тривалого фону ---
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        lastHiddenAt.current = Date.now();
+        return;
+      }
+      const gap = Date.now() - lastHiddenAt.current;
+      // Після 2+ хв у фоні — оновлюємо профіль (дані могли застаріти)
+      if (gap > 120_000 && user) {
+        fetchProfile(user.id);
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       mountedRef.current = false;
       subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
     };
   }, []);
 
