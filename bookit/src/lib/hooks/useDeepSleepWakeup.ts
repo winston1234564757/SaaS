@@ -4,8 +4,8 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient, onlineManager } from '@tanstack/react-query';
 import { resetFetchController } from '@/lib/supabase/client';
 
-const HEARTBEAT_INTERVAL = 5_000; // 5с
-const FREEZE_THRESHOLD = 60_000;  // 60с — ловимо глибокий сон (браузер throttles setInterval до 1хв)
+const HEARTBEAT_INTERVAL = 5_000;
+const FREEZE_THRESHOLD = 60_000; // браузер throttles setInterval до ~1хв у фоні
 
 export function useDeepSleepWakeup() {
   const queryClient = useQueryClient();
@@ -25,14 +25,9 @@ export function useDeepSleepWakeup() {
       console.warn(`[DeepSleep] JS був заморожений ${Math.round(elapsed / 1000)}с — відновлення`);
 
       try {
-        onlineManager.setOnline(true);
+        if (!onlineManager.isOnline()) onlineManager.setOnline(true);
 
-        // Та сама послідовність що і в useSessionWakeup:
-        // abort → 500ms wait → cancelQueries → invalidateQueries.
-        // Без refreshSession() — з autoRefreshToken:false немає lock contention,
-        // token оновиться автоматично через __loadSession при першому API call.
         resetFetchController();
-
         await new Promise(r => setTimeout(r, 500));
 
         queryClient.cancelQueries();

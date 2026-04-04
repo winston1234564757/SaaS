@@ -19,24 +19,26 @@ const customFetch = async (url: string | URL | Request, options?: RequestInit): 
   // замість 30s, щоб не блокувати всі queries нескінченно
   const timeout = isAuth ? 8_000 : 10_000;
 
-  // 1. Глобальний kill switch — спрацьовує при resetFetchController()
+  // Глобальний kill switch — спрацьовує при resetFetchController()
   const globalSignal = globalFetchController.signal;
+  const onGlobalAbort = () => controller.abort('global-reset');
   if (globalSignal.aborted) {
     controller.abort('global-reset');
   } else {
-    globalSignal.addEventListener('abort', () => controller.abort('global-reset'), { once: true });
+    globalSignal.addEventListener('abort', onGlobalAbort, { once: true });
   }
 
-  // 2. Supabase / TanStack Query internal signal (якщо передано)
-  if (options?.signal) {
-    if (options.signal.aborted) {
+  // Supabase / TanStack Query internal signal (якщо передано)
+  const callerSignal = options?.signal;
+  const onCallerAbort = () => controller.abort('caller-signal');
+  if (callerSignal) {
+    if (callerSignal.aborted) {
       controller.abort('caller-signal');
     } else {
-      options.signal.addEventListener('abort', () => controller.abort('caller-signal'), { once: true });
+      callerSignal.addEventListener('abort', onCallerAbort, { once: true });
     }
   }
 
-  // 3. Таймаут (захист від вічного зависання при повільній мережі)
   const timeoutId = setTimeout(() => {
     controller.abort('timeout');
     console.warn('[Supabase] fetch timeout:', urlStr);
@@ -45,12 +47,15 @@ const customFetch = async (url: string | URL | Request, options?: RequestInit): 
   try {
     const response = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(timeoutId);
+    globalSignal.removeEventListener('abort', onGlobalAbort);
+    callerSignal?.removeEventListener('abort', onCallerAbort);
     return response;
   } catch (error: unknown) {
     clearTimeout(timeoutId);
-    const reason = controller.signal.reason;
+    globalSignal.removeEventListener('abort', onGlobalAbort);
+    callerSignal?.removeEventListener('abort', onCallerAbort);
     if (error instanceof DOMException && error.name === 'AbortError') {
-      console.warn(`[Supabase] fetch aborted (${reason ?? 'unknown'}):`, urlStr);
+      console.warn(`[Supabase] fetch aborted (${controller.signal.reason ?? 'unknown'}):`, urlStr);
     }
     throw error;
   }

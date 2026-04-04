@@ -107,7 +107,16 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
       const u = session?.user ?? null;
       setUser(u);
       if (u) {
-        await fetchProfile(u.id);
+        // КРИТИЧНО: fetchProfile → supabase.from().select() → getSession() → _acquireLock.
+        // Цей callback викликається з _notifyAllSubscribers всередині _recoverAndRefresh()
+        // під активним auth lock (lockAcquired = true).
+        // await fetchProfile тут = циклічний deadlock назавжди:
+        //   lock чекає на наш callback → callback чекає на lock.
+        // setTimeout(0) переносить fetchProfile в наступний macrotask —
+        // ПІСЛЯ того як lock звільниться (після _recoverAndRefresh → finally lockAcquired=false).
+        if (mountedRef.current) setIsLoading(false);
+        setTimeout(() => { if (mountedRef.current) fetchProfile(u.id); }, 0);
+        return;
       } else {
         setProfile(null);
         setMasterProfile(null);
@@ -131,8 +140,8 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
 
     return () => {
       mountedRef.current = false;
-      subscription.unsubscribe();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      subscription.unsubscribe();
       if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
     };
   }, []);

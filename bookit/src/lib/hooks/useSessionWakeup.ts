@@ -24,25 +24,17 @@ export function useSessionWakeup() {
       console.debug(`[Wakeup] gap=${gap}ms`);
 
       try {
-        // ─── КРОК 1: Kill switch ─────────────────────────────────────────────
-        // Абортуємо будь-які in-flight Supabase fetch-и (frozen DB queries тощо).
-        // З autoRefreshToken:false — немає frozen auto-refresh fetch,
-        // але DB query fetches можуть бути заморожені.
+        // Abortуємо in-flight Supabase fetches. Supabase's _onVisibilityChanged
+        // тримає lockAcquired=true під час _recoverAndRefresh() — якщо він робить
+        // мережевий fetch, abort звільнить lock раніше ніж через 8s timeout.
         resetFetchController();
 
-        // ─── КРОК 2: 500ms ──────────────────────────────────────────────────
-        // Supabase's _onVisibilityChanged → _acquireLock → _recoverAndRefresh()
-        // З autoRefreshToken:false — лише localStorage read, ~0-10ms.
-        // 500ms дає запас щоб lock точно звільнився і JS мікро-черга очистилась.
+        // 500ms: чекаємо поки Supabase's _acquireLock finally{lockAcquired=false}
+        // виконається після abort. Без цього: queries стартують поки lock ще зайнятий
+        // і потрапляють в pendingInLock.
         await new Promise(r => setTimeout(r, 500));
 
-        // ─── КРОК 3: Скасовуємо TQ запити ───────────────────────────────────
         queryClient.cancelQueries();
-
-        // ─── КРОК 4: Інвалідуємо активні queries ─────────────────────────
-        // Без refreshSession() — токен оновиться автоматично через __loadSession()
-        // при першому API call якщо token expired (lockAcquired = false, нема блокування).
-        // invalidateQueries (а не resetQueries) — зберігає кеш, нема loading flash.
         queryClient.invalidateQueries({ type: 'active' });
 
         console.debug('[Wakeup] done');
