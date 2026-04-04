@@ -97,7 +97,13 @@
       "Bash(powershell -Command \"Get-ChildItem -Recurse -Path ''src/lib/supabase/hooks'' -Include ''*.ts'',''*.tsx'' | ForEach-Object { \\(Get-Content $_.FullName -Raw\\) -replace \"\"import \\\\{ createClient \\\\} from ''\\\\.\\\\./client''\"\", \"\"import { supabase } from ''../client''\"\" | Set-Content $_.FullName -NoNewline }\")",
       "Bash(find \"C:/Users/Vitossik/SaaS/bookit/src/app/\\(master\\)/dashboard\" -name \"page.tsx\")",
       "Bash(node -e \"const lr = require\\(''lucide-react''\\); console.log\\(Object.keys\\(lr\\).filter\\(k => /gram|social|link/i.test\\(k\\)\\).join\\(''\\\\n''\\)\\)\")",
-      "Bash(xargs -I {} basename {})"
+      "Bash(xargs -I {} basename {})",
+      "Bash(sed -n '103,130p' /c/Users/Vitossik/SaaS/bookit/node_modules/@supabase/supabase-js/dist/index.cjs)",
+      "Bash(sed -n '519,545p' /c/Users/Vitossik/SaaS/bookit/node_modules/@supabase/supabase-js/dist/index.cjs)",
+      "Bash(claude mcp:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

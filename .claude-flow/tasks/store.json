@@ -521,6 +521,25 @@
       "createdAt": "2026-03-29T04:29:43.233Z",
       "startedAt": null,
       "completedAt": null
+    },
+    "task-1775280800353-wd4f6a": {
+      "taskId": "task-1775280800353-wd4f6a",
+      "type": "bugfix",
+      "description": "## Виправлення зависання запитів після перемикання вкладки браузера\n\n**Проблема:** Після перемикання вкладки і повернення в BookIT — застосунок не підвантажує свіжі дані. Відображається лише закешований вміст, нові запити зависають у скелетонах/спінерах нескінченно.\n\n---\n\n## Fix 1: `bookit/src/lib/hooks/useSessionWakeup.ts`\n\nЗамінити повністю на:\n\n```typescript\n// src/lib/hooks/useSessionWakeup.ts\n'use client';\n\nimport { useEffect, useRef } from 'react';\nimport { useQueryClient } from '@tanstack/react-query';\nimport { createClient } from '@/lib/supabase/client';\n\nconst SOFT_THRESHOLD = 5_000;   // 5с — реагуємо навіть на швидке перемикання\nconst HARD_THRESHOLD = 300_000; // 5 хв — жорстке оновлення\n\nexport function useSessionWakeup() {\n  const queryClient = useQueryClient();\n  const lastHiddenAt = useRef(Date.now());\n  const supabaseRef = useRef(createClient());\n\n  useEffect(() => {\n    function handleVisibilityChange() {\n      if (document.hidden) {\n        lastHiddenAt.current = Date.now();\n        return;\n      }\n\n      const gap = Date.now() - lastHiddenAt.current;\n      if (gap < SOFT_THRESHOLD) return;\n\n      // Спочатку чекаємо оновлення токена, ПОТІМ запускаємо запити\n      (async () => {\n        await supabaseRef.current.auth.getSession().catch(console.error);\n\n        if (gap >= HARD_THRESHOLD) {\n          // Жорстке оновлення: ігноруємо staleTime\n          queryClient.invalidateQueries({ type: 'active' });\n        } else {\n          // М'яке оновлення: перезапускаємо активні запити\n          queryClient.refetchQueries({ type: 'active' });\n        }\n      })();\n    }\n\n    document.addEventListener('visibilitychange', handleVisibilityChange);\n    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);\n  }, [queryClient]);\n}\n```\n\n---\n\n## Fix 2: `bookit/src/lib/hooks/useDeepSleepWakeup.ts`\n\nЗмінити setTimeout блок (рядки 26–30) на async:\n\n```typescript\nsetTimeout(async () => {\n  queryClient.cancelQueries();\n  await supabaseRef.current.auth.getSession().catch(() => {});\n  queryClient.invalidateQueries({ type: 'active' });\n}, 1000);\n```\n\n---\n\n## Fix 3: `bookit/src/lib/supabase/client.ts`\n\nУ функції `customFetch` після створення `controller` і визначення `timeout`, але ДО виклику `fetch` — додати злиття сигналів:\n\n```typescript\n// Якщо TanStack Query передав свій signal — propagate його в наш controller\nif (options?.signal) {\n  if (options.signal.aborted) {\n    controller.abort();\n  } else {\n    options.signal.addEventListener('abort', () => controller.abort());\n  }\n}\n```\n\nЦе вставити після рядка `const timeout = isAuth ? 30_000 : 15_000;` і до `const timeoutId = setTimeout(...)`.\n\n---\n\n## Fix 4: `bookit/src/lib/supabase/context.tsx`\n\nУ `handleVisibilityChange` (рядки 109–120) замінити:\n```typescript\nsetTimeout(() => fetchProfile(user.id), 1000);\n```\nНа:\n```typescript\nfetchProfile(user.id);\n```\n\n(fetchProfile вже є async, setTimeout-хак не потрібен)\n\n---\n\n## Правила\n- Суворий TypeScript — без нових type errors\n- Не змінювати нічого за межами описаних правок\n- Зберегти всі коментарі (оновити якщо логіка змінилась)",
+      "priority": "critical",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "wakeup",
+        "supabase",
+        "tanstack-query",
+        "tab-switch",
+        "session"
+      ],
+      "createdAt": "2026-04-04T05:33:20.353Z",
+      "startedAt": null,
+      "completedAt": null
     }
   },
   "version": "3.0.0"

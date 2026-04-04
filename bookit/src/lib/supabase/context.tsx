@@ -48,12 +48,22 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   const hasInitialData = useRef(!!initialUser);
 
   async function fetchProfile(userId: string) {
-    const [{ data: p }, { data: mp }] = await Promise.all([
+    const [{ data: p, error: pErr }, { data: mp, error: mpErr }] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).single(),
       supabase.from('master_profiles').select('*').eq('id', userId).single(),
     ]);
 
     if (!mountedRef.current) return;
+
+    // При будь-якій мережевій помилці (AbortError, timeout, offline) — НЕ обнуляємо стан.
+    // Юзер залишається залогіненим, профіль не змінився. Без цього: abort → data:null →
+    // setMasterProfile(null) → masterId=undefined → enabled:false на всіх TQ-запитах.
+    if (pErr || mpErr) {
+      console.warn('[MasterContext] fetchProfile error (keeping existing state):',
+        pErr?.message ?? mpErr?.message);
+      return;
+    }
+
     setProfile(p ?? null);
     setMasterProfile(mp ?? null);
   }

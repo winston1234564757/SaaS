@@ -1,50 +1,203 @@
-RL-адреса запиту
-https://bookit-five-psi.vercel.app/dashboard/bookings?_rsc=1u0rq
-Метод запиту
-GET
-Код статусу
-200 OK
-Віддалена адреса
-216.198.79.195:443
-Правило щодо напрямку переходу
-strict-origin-when-cross-origin
-:authority
-bookit-five-psi.vercel.app
-:method
-GET
-:path
-/dashboard/bookings?_rsc=1u0rq
-:scheme
-https
-accept
-*/*
-accept-encoding
-gzip, deflate, br, zstd
-accept-language
-uk,en-US;q=0.9,en;q=0.8,ru;q=0.7,vi;q=0.6
-cookie
-sb-sqlrxsopllgztvgrerqk-auth-token.0=base64-eyJhY2Nlc3NfdG9rZW4iOiJleUpoYkdjaU9pSkZVekkxTmlJc0ltdHBaQ0k2SW1RMFpEQTNPR1V3TFRBNE1HWXRORGRqTXkxaFlqY3hMVFUyWldObVptUm1OMlJpT1NJc0luUjVjQ0k2SWtwWFZDSjkuZXlKcGMzTWlPaUpvZEhSd2N6b3ZMM054YkhKNGMyOXdiR3huZW5SMlozSmxjbkZyTG5OMWNHRmlZWE5sTG1OdkwyRjFkR2d2ZGpFaUxDSnpkV0lpT2lJMU5URmpOMkV4TVMxaE1ESmlMVFE1TkRRdE9XSXpOQzAxT1RSak5ERmpZMkk1TlRFaUxDSmhkV1FpT2lKaGRYUm9aVzUwYVdOaGRHVmtJaXdpWlhod0lqb3hOemMxTWpReE5qWTVMQ0pwWVhRaU9qRTNOelV5TXpnd05qa3NJbVZ0WVdsc0lqb2lkbWxyZEc5eUxtdHZjMmhsYkRJMFFHZHRZV2xzTG1OdmJTSXNJbkJvYjI1bElqb2lJaXdpWVhCd1gyMWxkR0ZrWVhSaElqcDdJbkJ5YjNacFpHVnlJam9pWjI5dloyeGxJaXdpY0hKdmRtbGtaWEp6SWpwYkltZHZiMmRzWlNKZGZTd2lkWE5sY2w5dFpYUmhaR0YwWVNJNmV5SmhkbUYwWVhKZmRYSnNJam9pYUhSMGNITTZMeTlzYURNdVoyOXZaMnhsZFhObGNtTnZiblJsYm5RdVkyOXRMMkV2UVVObk9HOWpTVzg0VVd0aVVFa3hXV1Y2U2xZMFFuSlpabkF6YjB4U1kxaE5hakZaZVZSNUxVeHpORzFOU2pGQ2NWbGhVRlI0UlQxek9UWXRZeUlzSW1WdFlXbHNJam9pZG1scmRHOXlMbXR2YzJobGJESTBRR2R0WVdsc0xtTnZiU0lzSW1WdFlXbHNYM1psY21sbWFXVmtJanAwY25WbExDSm1kV3hzWDI1aGJXVWlPaUpXYVd0MGIzSWdTMjl6YUdWc0lpd2lhWE56SWpvaWFIUjBjSE02THk5aFkyTnZkVzUwY3k1bmIyOW5iR1V1WTI5dElpd2libUZ0WlNJNklsWnBhM1J2Y2lCTGIzTm9aV3dpTENKd2FHOXVaVjkyWlhKcFptbGxaQ0k2Wm1Gc2MyVXNJbkJwWTNSMWNtVWlPaUpvZEhSd2N6b3ZMMnhvTXk1bmIyOW5iR1YxYzJWeVkyOXVkR1Z1ZEM1amIyMHZZUzlCUTJjNGIyTkpiemhSYTJKUVNURlpaWHBLVmpSQ2NsbG1jRE52VEZKaldFMXFNVmw1VkhrdFRITTBiVTFLTVVKeFdXRlFWSGhGUFhNNU5pMWpJaXdpY0hKdmRtbGtaWEpmYVdRaU9pSXhNVGd6TWpZd01qVTFOemsyTWpFeE56YzNOalVpTENKemRXSWlPaUl4TVRnek1qWXdNalUxTnprMk1qRXhOemMzTmpVaWZTd2ljbTlzWlNJNkltRjFkR2hsYm5ScFkyRjBaV1FpTENKaFlXd2lPaUpoWVd3eElpd2lZVzF5SWpwYmV5SnRaWFJvYjJRaU9pSnZZWFYwYUNJc0luUnBiV1Z6ZEdGdGNDSTZNVGMzTlRJek9EQTJPWDFkTENKelpYTnphVzl1WDJsa0lqb2lZek0wWXpJeE1UTXROREkyWlMwME1UQmhMV0UzWTJNdE5EUTNOR0kyTWpObE9EWmxJaXdpYVhOZllXNXZibmx0YjNWeklqcG1ZV3h6WlgwLmF0NzFRMGFsV3Z6a29DWFdzcHp3ZDIyc0VjVm81RHZaZldQYy10dWIzYVpkR0h2ZW41bGFkeVQ5cUFwUlBBUWJGR3RWZXNrenByOTNfUFdCU0RCYWJ3IiwidG9rZW5fdHlwZSI6ImJlYXJlciIsImV4cGlyZXNfaW4iOjM2MDAsImV4cGlyZXNfYXQiOjE3NzUyNDE2NjksInJlZnJlc2hfdG9rZW4iOiI3cXhveHV3YWtkcnkiLCJ1c2VyIjp7ImlkIjoiNTUxYzdhMTEtYTAyYi00OTQ0LTliMzQtNTk0YzQxY2NiOTUxIiwiYXVkIjoiYXV0aGVudGljYXRlZCIsInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiZW1haWwiOiJ2aWt0b3Iua29zaGVsMjRAZ21haWwuY29tIiwiZW1haWxfY29uZmlybWVkX2F0IjoiMjAyNi0wMy0xM1QyMDozNzoxMS4xMTk4NDNaIiwicGhvbmUiOiIiLCJjb25maXJtZWRfYXQiOiIyMDI2LTAzLTEzVDIwOjM3OjExLjExOTg0M1oiLCJsYXN0X3NpZ25faW5fYXQiOiIyMDI2LTA0LTAzVDE3OjQxOjA5LjY0NDk4OTQ3OVoiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJnb29nbGUiLCJwcm92aWRlcnMiOlsiZ29vZ2xlIl19LCJ1c2VyX21ldGFkYXRhIjp7ImF2YXRhcl91cmwiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NJbzhRa2JQSTFZZXpKVjRCcllmcDNvTFJjWE1qMVl5VHktTHM0bU1KMUJxWWFQVHhFPXM5Ni1jIiwiZW1haWwiOiJ2aWt0b3Iua29zaGVsMjRAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZ1bGxfbmFtZSI6IlZpa3RvciBLb3NoZWwiLCJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYW1lIjoiVmlrdG9yIEtvc2hlbCIsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0lvOFFrYlBJMVllekpWNEJyWWZwM29MUmNYTWoxWXlUeS1MczRtTUoxQnFZYVBUeEU9czk2LWMiLCJwcm92aWRlcl9pZCI6IjExODMyNjAyNTU3OTYyMTE3Nzc2NSIsInN1YiI6IjExODMyNjAyNTU3OTYyMTE3Nzc2NSJ9LCJpZGVudGl0aWVzIjpbeyJpZGVudGl0eV9pZCI6IjU0ZjBjMTQ5LWZmOTAtNGM3Zi04N; sb-sqlrxsopllgztvgrerqk-auth-token.1=jNlLTRmZGQxNGRjY2NmYiIsImlkIjoiMTE4MzI2MDI1NTc5NjIxMTc3NzY1IiwidXNlcl9pZCI6IjU1MWM3YTExLWEwMmItNDk0NC05YjM0LTU5NGM0MWNjYjk1MSIsImlkZW50aXR5X2RhdGEiOnsiYXZhdGFyX3VybCI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0lvOFFrYlBJMVllekpWNEJyWWZwM29MUmNYTWoxWXlUeS1MczRtTUoxQnFZYVBUeEU9czk2LWMiLCJlbWFpbCI6InZpa3Rvci5rb3NoZWwyNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiVmlrdG9yIEtvc2hlbCIsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsIm5hbWUiOiJWaWt0b3IgS29zaGVsIiwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSW84UWtiUEkxWWV6SlY0QnJZZnAzb0xSY1hNajFZeVR5LUxzNG1NSjFCcVlhUFR4RT1zOTYtYyIsInByb3ZpZGVyX2lkIjoiMTE4MzI2MDI1NTc5NjIxMTc3NzY1Iiwic3ViIjoiMTE4MzI2MDI1NTc5NjIxMTc3NzY1In0sInByb3ZpZGVyIjoiZ29vZ2xlIiwibGFzdF9zaWduX2luX2F0IjoiMjAyNi0wMy0xM1QyMDozNzoxMS4xMTUwOVoiLCJjcmVhdGVkX2F0IjoiMjAyNi0wMy0xM1QyMDozNzoxMS4xMTUxMzlaIiwidXBkYXRlZF9hdCI6IjIwMjYtMDQtMDNUMTc6NDE6MDguNzI4MTY0WiIsImVtYWlsIjoidmlrdG9yLmtvc2hlbDI0QGdtYWlsLmNvbSJ9XSwiY3JlYXRlZF9hdCI6IjIwMjYtMDMtMTNUMjA6Mzc6MTEuMTA2NjQ1WiIsInVwZGF0ZWRfYXQiOiIyMDI2LTA0LTAzVDE3OjQxOjA5LjY5MzQ1N1oiLCJpc19hbm9ueW1vdXMiOmZhbHNlfSwicHJvdmlkZXJfdG9rZW4iOiJ5YTI5LmEwQWE3TVlpcWxGczZpR0MxekxyYUxtTXFZZ1hwRG91Z2ZQTlFjeHlibGkyYTBzdVRib25PN1Rwc1VHcG1PbGh2WDlGbjdpaTUtelhwLXNxZHQwMHU3VXU0eEJkYnZyRUtlRVZ4VFdSVXUzZmdGVks1VHYwTzZJQlF2RXlQTHFmQUVpNjJhWjg2UlpLYkIydmswU1RTUFN1RXdqWUhfU1B1UW5qU05nYnkzY0ZZdWNFTnpuWW1CWHhEdDJqaWVGSUFBbFcwT2ZXRzhXWVVsS0pWNHlialpxQTA1eUJfMXpoZDR0Q2MxV2hEMTNRSU40SVQxZ19qbmZqQXNaQ3dUUFE4RXNneldCUW5ZZjVHRWVIX2Z2aWxyMFRvMEEyOGFDZ1lLQWE4U0FSSVNGUUhHWDJNaXhSOGJGSmhoTWwtRGFMQ0VVNW9KTFEwMjkwIn0; user_role=master
-next-router-state-tree
-%5B%22%22%2C%7B%22children%22%3A%5B%22(master)%22%2C%7B%22children%22%3A%5B%22dashboard%22%2C%7B%22children%22%3A%5B%22bookings%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2Cnull%2C%22refetch%22%2C0%5D%7D%2Cnull%2Cnull%2C4%5D%7D%2Cnull%2Cnull%2C12%5D%7D%2Cnull%2Cnull%2C8%5D%7D%2Cnull%2Cnull%2C24%5D
-next-url
-/dashboard
-priority
-u=1, i
-referer
-https://bookit-five-psi.vercel.app/dashboard
-rsc
-1
-sec-ch-ua
-"Not:A-Brand";v="99", "Opera";v="129", "Chromium";v="145"
-sec-ch-ua-mobile
-?0
-sec-ch-ua-platform
-"Windows"
-sec-fetch-dest
-empty
-sec-fetch-mode
-cors
-sec-fetch-site
-same-origin
-user-agent
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 OPR/129.0.0.0
+[
+    {
+        "key": [
+            "dashboard-stats",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-04-04"
+        ],
+        "s": "success",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-04-01",
+            "2026-04-30",
+            true
+        ],
+        "s": "success",
+        "f": "idle"
+    },
+    {
+        "key": [
+            "booking",
+            null
+        ],
+        "s": "pending",
+        "f": "idle"
+    },
+    {
+        "key": [
+            "client-ltv",
+            null,
+            null,
+            "551c7a11-a02b-4944-9b34-594c41ccb951"
+        ],
+        "s": "pending",
+        "f": "idle"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-04-04",
+            "2026-04-04",
+            true
+        ],
+        "s": "success",
+        "f": "idle"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-04-03",
+            "2026-04-03",
+            true
+        ],
+        "s": "success",
+        "f": "idle"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-04-02",
+            "2026-04-02",
+            true
+        ],
+        "s": "success",
+        "f": "idle"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-04-01",
+            "2026-04-01",
+            true
+        ],
+        "s": "success",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-03-31",
+            "2026-03-31",
+            true
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-03-30",
+            "2026-03-30",
+            true
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-03-29",
+            "2026-03-29",
+            true
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-03-28",
+            "2026-03-28",
+            true
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-03-27",
+            "2026-03-27",
+            true
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "analytics-v2",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-03-26",
+            "2026-03-26",
+            true
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "notifications",
+            "551c7a11-a02b-4944-9b34-594c41ccb951"
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "bookings",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-04-04",
+            "2026-04-04"
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "weekly-overview",
+            "551c7a11-a02b-4944-9b34-594c41ccb951",
+            "2026-03-30"
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "services",
+            "551c7a11-a02b-4944-9b34-594c41ccb951"
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "products",
+            "551c7a11-a02b-4944-9b34-594c41ccb951"
+        ],
+        "s": "pending",
+        "f": "fetching"
+    },
+    {
+        "key": [
+            "wizard-schedule",
+            null,
+            "2026-04-04",
+            "2026-05-03"
+        ],
+        "s": "pending",
+        "f": "idle"
+    }
+]

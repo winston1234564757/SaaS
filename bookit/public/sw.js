@@ -1,15 +1,13 @@
 // Bookit Service Worker
-// Стратегії: Static → Cache First | Dashboard → Network First | API → Network Only
+// Стратегії: Static → Cache First | API/Navigation/Supabase → Network Only (bypass)
 // BUMP версію при кожному деплої щоб примусово очистити старий кеш
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `bookit-${CACHE_VERSION}`;
 const STATIC_CACHE = `bookit-static-${CACHE_VERSION}`;
 
 // Ресурси для попереднього кешування
 const PRECACHE_URLS = [
-  '/',
-  '/offline',
   '/manifest.json',
   '/icons/192',
   '/icons/512',
@@ -46,8 +44,23 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (!url.protocol.startsWith('http')) return;
 
-  // API запити — завжди мережа (Network Only)
-  if (url.pathname.startsWith('/api/') || url.pathname.includes('supabase')) {
+  // Крос-оріджин (Supabase REST/Auth, CDN) — browser handles directly.
+  // url.pathname.includes('supabase') НЕ працює для external URL!
+  // https://xxx.supabase.co/rest/v1/... → pathname=/rest/v1/... (без 'supabase')
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Page navigations — browser handles directly (NO respondWith).
+  // SW's networkFirst causes permanent hangs if SW is killed in background tab:
+  // SW frozen → setTimeout never fires → fetch inside SW hangs → page hangs forever.
+  // Bypassing SW for navigation lets the browser use its own robust retry logic.
+  if (request.mode === 'navigate') {
+    return;
+  }
+
+  // Внутрішні API роути — мережа (Network Only)
+  if (url.pathname.startsWith('/api/')) {
     return;
   }
 
@@ -56,13 +69,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Статичні ресурси Next.js — Cache First (Stale While Revalidate)
+  // Статичні ресурси Next.js — Cache First
   if (url.pathname.startsWith('/_next/static/')) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 
-  // Зображення — Cache First
+  // Зображення та іконки — Cache First
   if (
     request.destination === 'image' ||
     url.pathname.startsWith('/icons/') ||
@@ -72,14 +85,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Dashboard — Network First (свіжі дані завжди)
-  if (url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/my/')) {
-    event.respondWith(networkFirst(request, CACHE_NAME));
-    return;
-  }
-
-  // Публічні сторінки майстрів — Network First з fallback
-  event.respondWith(networkFirst(request, CACHE_NAME));
+  // Всі інші запити — мережа (Network Only, без SW interception)
+  // Раніше тут був networkFirst для /dashboard і публічних сторінок,
+  // але це викликало вічні зависання якщо SW вбивався у фоні.
 });
 
 // ── Стратегії ─────────────────────────────────────────────────────────────────
@@ -96,27 +104,6 @@ async function cacheFirst(request, cacheName) {
     return response;
   } catch {
     return new Response('Offline', { status: 503 });
-  }
-}
-
-async function networkFirst(request, cacheName) {
-  // 7s timeout — prevents SW hanging on slow networks after deep sleep
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7_000);
-  try {
-    const response = await fetch(request, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    if (response.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    clearTimeout(timeoutId);
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    const offline = await caches.match('/offline');
-    return offline || new Response('Offline', { status: 503 });
   }
 }
 

@@ -1,45 +1,54 @@
+// src/lib/hooks/useSessionWakeup.ts
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useQueryClient, focusManager } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { resetFetchController } from '@/lib/supabase/client';
 
-const SOFT_THRESHOLD = 60_000;  // 1 хв — м'яке оновлення (stale check)
-const HARD_THRESHOLD = 300_000; // 5 хв — жорстке оновлення (invalidate active)
-
-/**
- * Слухає visibilitychange і відновлює сесію + TanStack Query після фону.
- * getSession() тут дозволений — це event handler, не queryFn (DEV_RULES §12).
- */
 export function useSessionWakeup() {
   const queryClient = useQueryClient();
   const lastHiddenAt = useRef(Date.now());
-  const supabaseRef = useRef(createClient());
+  const isRunning = useRef(false);
 
   useEffect(() => {
-    function handleVisibilityChange() {
+    async function handleVisibilityChange() {
       if (document.hidden) {
         lastHiddenAt.current = Date.now();
         return;
       }
 
+      if (isRunning.current) return;
+      isRunning.current = true;
+
       const gap = Date.now() - lastHiddenAt.current;
+      console.debug(`[Wakeup] gap=${gap}ms`);
 
-      if (gap < SOFT_THRESHOLD) return;
+      try {
+        // ─── КРОК 1: Kill switch ─────────────────────────────────────────────
+        // Абортуємо будь-які in-flight Supabase fetch-и (frozen DB queries тощо).
+        // З autoRefreshToken:false — немає frozen auto-refresh fetch,
+        // але DB query fetches можуть бути заморожені.
+        resetFetchController();
 
-      // Оновлюємо токен (може бути протухлий після фону)
-      supabaseRef.current.auth.getSession().then(() => {
-        if (gap >= HARD_THRESHOLD) {
-          // Жорстке оновлення — інвалідуємо всі активні запити
-          queryClient.invalidateQueries({ type: 'active' });
-        } else {
-          // М'яке оновлення — TQ перевірить staleTime і оновить за потреби
-          focusManager.setFocused(undefined);
-        }
-      }).catch(() => {
-        // Токен не оновився — все одно пробуємо оновити дані
+        // ─── КРОК 2: 500ms ──────────────────────────────────────────────────
+        // Supabase's _onVisibilityChanged → _acquireLock → _recoverAndRefresh()
+        // З autoRefreshToken:false — лише localStorage read, ~0-10ms.
+        // 500ms дає запас щоб lock точно звільнився і JS мікро-черга очистилась.
+        await new Promise(r => setTimeout(r, 500));
+
+        // ─── КРОК 3: Скасовуємо TQ запити ───────────────────────────────────
+        queryClient.cancelQueries();
+
+        // ─── КРОК 4: Інвалідуємо активні queries ─────────────────────────
+        // Без refreshSession() — токен оновиться автоматично через __loadSession()
+        // при першому API call якщо token expired (lockAcquired = false, нема блокування).
+        // invalidateQueries (а не resetQueries) — зберігає кеш, нема loading flash.
         queryClient.invalidateQueries({ type: 'active' });
-      });
+
+        console.debug('[Wakeup] done');
+      } finally {
+        isRunning.current = false;
+      }
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange);

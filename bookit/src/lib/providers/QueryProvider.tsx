@@ -1,13 +1,22 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSessionWakeup } from '@/lib/hooks/useSessionWakeup';
 import { useDeepSleepWakeup } from '@/lib/hooks/useDeepSleepWakeup';
 
-function WakeupGuard({ children }: { children: React.ReactNode }) {
+function WakeupGuard({ children, queryClient }: { children: React.ReactNode; queryClient: QueryClient }) {
   useSessionWakeup();
   useDeepSleepWakeup();
+
+  // Дебаг-хелпер: window.__qc = queryClient
+  // Після деплою: window.__qc.getQueryCache().getAll().map(q => ({key: q.queryKey, ...q.state}))
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as unknown as Record<string, unknown>).__qc = queryClient;
+    }
+  }, [queryClient]);
+
   return <>{children}</>;
 }
 
@@ -31,7 +40,7 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
 
   return (
     <QueryClientProvider client={queryClient}>
-      <WakeupGuard>{children}</WakeupGuard>
+      <WakeupGuard queryClient={queryClient}>{children}</WakeupGuard>
     </QueryClientProvider>
   );
 }
