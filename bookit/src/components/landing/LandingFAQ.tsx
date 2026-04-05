@@ -7,7 +7,7 @@ import { ChevronDown } from 'lucide-react';
 const faqs = [
   {
     q: 'Чи потрібен окремий додаток моїм клієнтам?',
-    a: "Ні. Клієнти записуються через звичайний браузер — просто відкривають ваше посилання. PWA-додаток можна встановити за бажанням: один тап, і Bookit з'являється на домашньому екрані смартфона.",
+    a: 'Ні. Клієнти записуються через звичайний браузер — просто відкривають ваше посилання. PWA-додаток можна встановити за бажанням: один тап, і Bookit з\'являється на домашньому екрані смартфона.',
   },
   {
     q: 'Скільки часу займе налаштування?',
@@ -64,17 +64,11 @@ export function LandingFAQ() {
             initial={{ opacity: 0, y: 16 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.1 + i * 0.06, type: 'spring', stiffness: 300, damping: 28 }}
-            className="bento-card overflow-hidden transition-colors"
-            style={{
-              background:
-                openIndex === i
-                  ? 'rgba(120,154,153,0.06)'
-                  : undefined,
-            }}
+            className="bento-card overflow-hidden"
           >
             <button
               onClick={() => toggle(i)}
-              className="w-full flex items-center justify-between gap-4 p-5 text-left cursor-pointer transition-colors hover:bg-[rgba(120,154,153,0.04)]"
+              className="w-full flex items-center justify-between gap-4 p-5 text-left"
             >
               <span className="text-base font-semibold text-[#2C1A14] leading-snug">
                 {faq.q}
@@ -84,10 +78,7 @@ export function LandingFAQ() {
                 transition={{ type: 'spring', stiffness: 300, damping: 26 }}
                 className="flex-shrink-0"
               >
-                <ChevronDown
-                  size={18}
-                  style={{ color: openIndex === i ? '#C9956A' : '#789A99' }}
-                />
+                <ChevronDown size={18} className="text-[#789A99]" />
               </motion.div>
             </button>
 

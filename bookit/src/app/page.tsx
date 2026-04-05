@@ -42,7 +42,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/register"
-              className="text-sm font-semibold bg-[#C9956A] text-white px-4 py-2 rounded-xl hover:bg-[#B07A52] transition-colors shadow-[0_4px_12px_rgba(201,149,106,0.35)] cursor-pointer"
+              className="text-sm font-semibold bg-[#789A99] text-white px-4 py-2 rounded-xl hover:bg-[#5C7E7D] transition-colors shadow-[0_4px_12px_rgba(120,154,153,0.35)]"
             >
               Спробувати
             </Link>

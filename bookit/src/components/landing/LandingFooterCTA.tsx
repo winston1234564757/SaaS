@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export function LandingFooterCTA() {
   const ref = useRef(null);
@@ -12,7 +12,6 @@ export function LandingFooterCTA() {
   useEffect(() => {
     setTodayCount(Math.floor(Math.random() * 5) + 3);
   }, []);
-
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
@@ -21,29 +20,19 @@ export function LandingFooterCTA() {
         initial={{ opacity: 0, y: 28, scale: 0.98 }}
         animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
         transition={{ type: 'spring', stiffness: 280, damping: 24 }}
-        className="max-w-5xl mx-auto rounded-3xl px-8 sm:px-16 py-16 text-center flex flex-col items-center gap-7"
-        style={{ background: '#16100C' }}
+        className="bento-card p-10 sm:p-14 text-center flex flex-col items-center gap-7"
+        style={{
+          background:
+            'linear-gradient(140deg, rgba(120,154,153,0.1) 0%, rgba(255,210,194,0.35) 60%, rgba(255,255,255,0.5) 100%)',
+        }}
       >
-        {/* Decorative icon */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 22 }}
-        >
-          <Sparkles size={36} style={{ color: '#C9956A' }} />
-        </motion.div>
+        <span className="text-6xl">🚀</span>
 
         <div>
-          <h2
-            className="display-md mb-4 text-balance"
-            style={{ color: '#F5EDE8' }}
-          >
-            Ваш наступний клієнт вже шукає майстра.
+          <h2 className="display-md text-[#2C1A14] mb-3 text-balance">
+            Ваш наступний клієнт вже шукає майстра
           </h2>
-          <p
-            className="max-w-md mx-auto leading-relaxed text-lg text-balance"
-            style={{ color: 'rgba(245,237,232,0.65)' }}
-          >
+          <p className="text-[#6B5750] max-w-md mx-auto leading-relaxed text-lg text-balance">
             500+ майстрів вже використовують Bookit для автоматичного заповнення
             розкладу та утримання клієнтів. Приєднуйтесь — налаштування займе менше 2 хвилин.
           </p>
@@ -51,27 +40,19 @@ export function LandingFooterCTA() {
 
         <Link
           href="/register"
-          className="inline-flex items-center gap-2.5 h-14 px-10 rounded-2xl font-bold text-lg text-white transition-colors cursor-pointer active:scale-[0.97]"
-          style={{
-            background: '#C9956A',
-            boxShadow: '0 8px 24px rgba(201,149,106,0.4)',
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#B07A52'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#C9956A'; }}
+          className="inline-flex items-center gap-2.5 h-14 px-10 rounded-2xl bg-[#789A99] text-white font-bold text-lg hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_24px_rgba(120,154,153,0.4)] active:scale-[0.97]"
         >
           Почати заробляти більше — безкоштовно
           <ArrowRight size={20} />
         </Link>
 
         <div className="flex flex-col items-center gap-1">
-          <p className="text-sm" style={{ color: 'rgba(245,237,232,0.4)' }}>
+          <p className="text-sm text-[#A8928D]">
             Стартовий план — назавжди безкоштовно · Без кредитної картки
           </p>
-          <p className="text-xs" style={{ color: 'rgba(245,237,232,0.5)' }}>
+          <p className="text-xs text-[#A8928D]">
             Сьогодні вже зареєструвалось{' '}
-            <span className="font-semibold" style={{ color: '#C9956A' }}>
-              {todayCount ?? '…'} майстрів
-            </span>
+            <span className="font-semibold text-[#789A99]">{todayCount ?? '…'} майстрів</span>
           </p>
         </div>
       </motion.div>
