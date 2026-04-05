@@ -150,6 +150,9 @@ export interface Booking {
   cancellation_reason: string | null;
   next_visit_suggestion: string | null;
   flash_deal_id: string | null;
+  dynamic_pricing_label: string | null;     // migration 050
+  dynamic_extra_kopecks: number;            // migration 050
+  referral_code_used: string | null;        // migration 057
   created_at: string;
   updated_at: string;
 }
@@ -177,6 +180,7 @@ export interface ClientMasterRelation {
   is_vip: boolean;
   client_tag: string | null;
   loyalty_points: number;
+  has_referral_discount_active: boolean;    // migration 057
   created_at: string;
   updated_at: string;
 }
