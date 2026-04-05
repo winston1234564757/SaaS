@@ -50,7 +50,6 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       if (!existing) {
-        // Record payment first (unique constraint prevents duplicates on concurrent requests)
         const { error: paymentError } = await supabase.from('payments').insert({
           provider:           'wayforpay',
           external_reference: orderReference,
@@ -58,7 +57,10 @@ export async function POST(req: NextRequest) {
           tier,
         });
 
-        // Only extend subscription if payment was successfully recorded
+        if (paymentError && paymentError.code !== '23505') {
+          // 23505 = concurrent webhook race — UNIQUE constraint caught it, safe to ignore
+          console.error('[wayforpay-webhook] payment insert failed:', paymentError.message);
+        }
         if (!paymentError) {
           const { error: updateError } = await supabase
             .from('master_profiles')
@@ -70,9 +72,6 @@ export async function POST(req: NextRequest) {
           if (updateError) {
             console.error('[wayforpay-webhook] subscription update failed:', updateError.message, { userId, tier });
           }
-        } else if (paymentError.code !== '23505') {
-          // 23505 = unique_violation (concurrent webhook) — safe to ignore
-          console.error('[wayforpay-webhook] payment insert failed:', paymentError.message);
         }
       }
     }

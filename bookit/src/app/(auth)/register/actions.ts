@@ -40,11 +40,12 @@ export async function claimMasterRole(
 
   // PS-01: Use DB transaction function — eliminates orphaned auth user risk.
   // If either profiles or master_profiles insert fails, both are rolled back atomically.
-  const { data: result, error: rpcError } = await admin.rpc('fn_claim_master_role', {
+  const { data, error: rpcError } = await admin.rpc('fn_claim_master_role', {
     p_user_id: user.id,
     p_phone:   phone,
     p_slug:    slug,
-  }) as { data: string | null; error: { message: string } | null };
+  });
+  const result = data as string | null;
 
   if (rpcError || result !== 'ok') {
     console.error('[register] fn_claim_master_role failed:', rpcError?.message ?? result);
