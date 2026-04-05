@@ -36,32 +36,18 @@ export async function claimMasterRole(
   if (!user) return { error: 'Не авторизований' };
 
   const admin = createAdminClient();
+  const slug  = generatePlaceholderSlug();
 
-  const { error: profileError } = await admin
-    .from('profiles')
-    .upsert(
-      { id: user.id, role: 'master', phone },
-      { onConflict: 'id', ignoreDuplicates: false },
-    );
+  // PS-01: Use DB transaction function — eliminates orphaned auth user risk.
+  // If either profiles or master_profiles insert fails, both are rolled back atomically.
+  const { data: result, error: rpcError } = await admin.rpc('fn_claim_master_role', {
+    p_user_id: user.id,
+    p_phone:   phone,
+    p_slug:    slug,
+  }) as { data: string | null; error: { message: string } | null };
 
-  if (profileError) {
-    console.error('[register] profiles upsert failed:', profileError.message);
-    return { error: profileError.message };
-  }
-
-  const slug = generatePlaceholderSlug();
-
-  const { error: masterError } = await admin
-    .from('master_profiles')
-    .upsert(
-      { id: user.id, slug, is_published: false },
-      { onConflict: 'id', ignoreDuplicates: true }, // don't overwrite if already exists
-    );
-
-  if (masterError) {
-    // Rollback: remove profiles row to avoid orphaned 'master' without master_profiles
-    await admin.from('profiles').delete().eq('id', user.id);
-    console.error('[register] master_profiles upsert failed:', masterError.message);
+  if (rpcError || result !== 'ok') {
+    console.error('[register] fn_claim_master_role failed:', rpcError?.message ?? result);
     return { error: 'Помилка ініціалізації профілю майстра. Спробуйте ще раз.' };
   }
 
