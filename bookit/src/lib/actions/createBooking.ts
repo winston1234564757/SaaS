@@ -222,7 +222,12 @@ export async function createBooking(
     ? Math.round(grandTotal * flashDealDiscountPct / 100)
     : 0;
 
-  const finalTotal = Math.max(0, grandTotal - discountAmount - flashDealAmount);
+  // BL-05: Cap aggregate discount (loyalty + flash deal) at 50% of grandTotal.
+  // Dynamic pricing is a separate mechanism and is not included in this cap.
+  const MAX_COMBINED_DISCOUNT_PCT = 50;
+  const maxDiscountAmount = Math.round(grandTotal * MAX_COMBINED_DISCOUNT_PCT / 100);
+  const cappedDiscount = Math.min(discountAmount + flashDealAmount, maxDiscountAmount);
+  const finalTotal = Math.max(0, grandTotal - cappedDiscount);
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
