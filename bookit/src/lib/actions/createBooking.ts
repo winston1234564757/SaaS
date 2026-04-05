@@ -202,8 +202,39 @@ export async function createBooking(
 
   const adjustedServicesPrice = dynamicResult?.adjustedPrice ?? totalServicesPrice;
   const grandTotal = adjustedServicesPrice + totalProductsPrice;
-  const discountAmount = p.discountPercent > 0
-    ? Math.round(grandTotal * p.discountPercent / 100)
+  // BL-02: For online bookings, NEVER trust client-supplied discountPercent.
+  // Re-query DB to find the applicable loyalty discount for this client.
+  // For manual bookings, the master is authenticated and trusted.
+  let effectiveDiscountPct = p.source === 'manual' ? p.discountPercent : 0;
+
+  if (p.source === 'online' && p.clientId) {
+    const { data: relation } = await admin
+      .from('client_master_relations')
+      .select('total_visits')
+      .eq('client_id', p.clientId)
+      .eq('master_id', p.masterId)
+      .maybeSingle();
+
+    if (relation) {
+      const { data: programs } = await admin
+        .from('loyalty_programs')
+        .select('reward_value, target_visits')
+        .eq('master_id', p.masterId)
+        .eq('reward_type', 'percent_discount')
+        .eq('is_active', true)
+        .lte('target_visits', relation.total_visits)
+        .order('reward_value', { ascending: false })
+        .limit(1);
+
+      if (programs && programs.length > 0) {
+        // Cap at 50% to guard against uncapped loyalty_programs.reward_value (DB-03)
+        effectiveDiscountPct = Math.min(Number(programs[0].reward_value), 50);
+      }
+    }
+  }
+
+  const discountAmount = effectiveDiscountPct > 0
+    ? Math.round(grandTotal * effectiveDiscountPct / 100)
     : 0;
 
   // Flash deal — server verifies and applies discount
