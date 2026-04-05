@@ -226,6 +226,22 @@ export async function createBooking(
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
+  // 7.5 Server-side slot availability guard (CR-01 / BL-01)
+  // The DB EXCLUDE constraint is the last line of defense — this check gives
+  // a user-friendly error before hitting the DB constraint violation.
+  const { count: slotConflicts } = await admin
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('master_id', p.masterId)
+    .eq('date', p.date)
+    .in('status', ['pending', 'confirmed'])
+    .lt('start_time', endTime)
+    .gt('end_time', p.startTime);
+
+  if ((slotConflicts ?? 0) > 0) {
+    return { bookingId: null, error: 'Цей слот вже зайнятий. Оберіть інший час.' };
+  }
+
   // 8. Insert booking
   // Зберігаємо результат динамічного ціноутворення для аналітики + trigger-обліку
   const dynamicExtraKopecks = dynamicResult && dynamicResult.modifier > 0
