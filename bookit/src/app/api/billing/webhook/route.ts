@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
 
   // Only process successful payments
   if (transactionStatus === 'Approved') {
-    // orderReference format: bookit_{tier}_{uid32}_{timestamp}
     const parts = orderReference.split('_');
     const tier  = parts[1] as 'pro' | 'studio';
     const uid32 = parts[2];
@@ -41,15 +40,40 @@ export async function POST(req: NextRequest) {
     if ((tier === 'pro' || tier === 'studio') && uid32?.length === 32) {
       const userId = flatUidToUuid(uid32);
       const supabase = createAdminClient();
-      const { error: updateError } = await supabase
-        .from('master_profiles')
-        .update({
-          subscription_tier: tier,
-          subscription_expires_at: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString(),
-        })
-        .eq('id', userId);
-      if (updateError) {
-        console.error('[wayforpay-webhook] subscription update failed:', updateError.message, { userId, tier });
+
+      // CR-03: Idempotency — skip if this webhook was already processed
+      const { data: existing } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('provider', 'wayforpay')
+        .eq('external_reference', orderReference)
+        .maybeSingle();
+
+      if (!existing) {
+        // Record payment first (unique constraint prevents duplicates on concurrent requests)
+        const { error: paymentError } = await supabase.from('payments').insert({
+          provider:           'wayforpay',
+          external_reference: orderReference,
+          master_id:          userId,
+          tier,
+        });
+
+        // Only extend subscription if payment was successfully recorded
+        if (!paymentError) {
+          const { error: updateError } = await supabase
+            .from('master_profiles')
+            .update({
+              subscription_tier:       tier,
+              subscription_expires_at: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString(),
+            })
+            .eq('id', userId);
+          if (updateError) {
+            console.error('[wayforpay-webhook] subscription update failed:', updateError.message, { userId, tier });
+          }
+        } else if (paymentError.code !== '23505') {
+          // 23505 = unique_violation (concurrent webhook) — safe to ignore
+          console.error('[wayforpay-webhook] payment insert failed:', paymentError.message);
+        }
       }
     }
   }

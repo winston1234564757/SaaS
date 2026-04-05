@@ -83,7 +83,6 @@ export async function POST(req: NextRequest) {
   const { status, reference } = body as { status: string; reference: string };
 
   if (status === 'success' && typeof reference === 'string') {
-    // reference format: bookit_{tier}_{uid32}_{timestamp}
     const parts = reference.split('_');
     const tier  = parts[1] as 'pro' | 'studio';
     const uid32 = parts[2];
@@ -92,36 +91,63 @@ export async function POST(req: NextRequest) {
       const userId = flatUidToUuid(uid32);
       const admin = createAdminClient();
 
-      const { data: mp, error: selectError } = await admin
-        .from('master_profiles')
-        .select('subscription_expires_at')
-        .eq('id', userId)
+      // CR-04: Idempotency check
+      const { data: existing } = await admin
+        .from('payments')
+        .select('id')
+        .eq('provider', 'monobank')
+        .eq('external_reference', reference)
         .maybeSingle();
 
-      if (selectError) {
-        console.error('[mono-webhook] master_profiles select failed:', selectError.message, { userId });
-        return NextResponse.json({ status: 'ok' }); // ack webhook, log error for investigation
-      }
-      if (!mp) {
-        console.error('[mono-webhook] userId not found in master_profiles:', userId);
-        return NextResponse.json({ status: 'ok' }); // ack to prevent retry loop
+      if (existing) {
+        return NextResponse.json({ status: 'ok' });
       }
 
-      const currentExpiry = mp.subscription_expires_at
-        ? new Date(mp.subscription_expires_at)
-        : new Date();
-      if (currentExpiry < new Date()) currentExpiry.setTime(Date.now());
-      currentExpiry.setDate(currentExpiry.getDate() + 31);
+      // Record payment before updating subscription
+      const { error: paymentError } = await admin.from('payments').insert({
+        provider:           'monobank',
+        external_reference: reference,
+        master_id:          userId,
+        tier,
+      });
 
-      const { error: updateError } = await admin
-        .from('master_profiles')
-        .update({
-          subscription_tier: tier,
-          subscription_expires_at: currentExpiry.toISOString(),
-        })
-        .eq('id', userId);
-      if (updateError) {
-        console.error('[mono-webhook] subscription update failed:', updateError.message, { userId, tier });
+      if (paymentError && paymentError.code !== '23505') {
+        console.error('[mono-webhook] payment insert failed:', paymentError.message, { userId });
+        return NextResponse.json({ status: 'ok' });
+      }
+
+      if (!paymentError) {
+        const { data: mp, error: selectError } = await admin
+          .from('master_profiles')
+          .select('subscription_expires_at')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (selectError) {
+          console.error('[mono-webhook] master_profiles select failed:', selectError.message, { userId });
+          return NextResponse.json({ status: 'ok' });
+        }
+        if (!mp) {
+          console.error('[mono-webhook] userId not found in master_profiles:', userId);
+          return NextResponse.json({ status: 'ok' });
+        }
+
+        const currentExpiry = mp.subscription_expires_at
+          ? new Date(mp.subscription_expires_at)
+          : new Date();
+        if (currentExpiry < new Date()) currentExpiry.setTime(Date.now());
+        currentExpiry.setDate(currentExpiry.getDate() + 31);
+
+        const { error: updateError } = await admin
+          .from('master_profiles')
+          .update({
+            subscription_tier:       tier,
+            subscription_expires_at: currentExpiry.toISOString(),
+          })
+          .eq('id', userId);
+        if (updateError) {
+          console.error('[mono-webhook] subscription update failed:', updateError.message, { userId, tier });
+        }
       }
     }
   }
