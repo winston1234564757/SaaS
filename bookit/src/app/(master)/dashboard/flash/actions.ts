@@ -8,6 +8,16 @@ import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { pluralize } from '@/lib/utils/dates';
+import { z } from 'zod';
+
+const createFlashDealSchema = z.object({
+  serviceId:      z.string().uuid(),
+  slotDate:       z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Невірний формат дати'),
+  slotTime:       z.string().regex(/^\d{2}:\d{2}$/, 'Невірний формат часу'),
+  originalPrice:  z.number().positive().max(100_000),
+  discountPct:    z.number().int().min(5).max(90),
+  expiresInHours: z.union([z.literal(2), z.literal(4), z.literal(8)]),
+});
 
 export interface CreateFlashDealParams {
   serviceId: string;     // UUID послуги
@@ -21,8 +31,14 @@ export interface CreateFlashDealParams {
 const STARTER_LIMIT = 5;
 
 export async function createFlashDeal(
-  params: CreateFlashDealParams
+  params: unknown
 ): Promise<{ error: string | null; sentTo: number }> {
+  const parseResult = createFlashDealSchema.safeParse(params);
+  if (!parseResult.success) {
+    return { error: parseResult.error.issues[0]?.message ?? 'Невірні дані', sentTo: 0 };
+  }
+  const p = parseResult.data;
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований', sentTo: 0 };
@@ -39,7 +55,7 @@ export async function createFlashDeal(
     admin
       .from('services')
       .select('name')
-      .eq('id', params.serviceId)
+      .eq('id', p.serviceId)
       .eq('master_id', user.id)
       .single(),
   ]);
@@ -65,18 +81,18 @@ export async function createFlashDeal(
   }
 
   const serviceName = service.name;
-  const expiresAt = new Date(Date.now() + params.expiresInHours * 3600 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + p.expiresInHours * 3600 * 1000).toISOString();
 
   const { data: deal, error: dealErr } = await admin
     .from('flash_deals')
     .insert({
       master_id:      user.id,
-      service_id:     params.serviceId,
+      service_id:     p.serviceId,
       service_name:   serviceName,
-      slot_date:      params.slotDate,
-      slot_time:      params.slotTime,
-      original_price: params.originalPrice * 100,
-      discount_pct:   params.discountPct,
+      slot_date:      p.slotDate,
+      slot_time:      p.slotTime,
+      original_price: p.originalPrice * 100,
+      discount_pct:   p.discountPct,
       expires_at:     expiresAt,
       status:         'active',
     })
@@ -93,16 +109,16 @@ export async function createFlashDeal(
     .single();
 
   const masterName     = profile?.full_name ?? 'Майстер';
-  const discountedPrice = Math.round(params.originalPrice * (1 - params.discountPct / 100));
+  const discountedPrice = Math.round(p.originalPrice * (1 - p.discountPct / 100));
   const bookingUrl     = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp?.slug}`;
-  const dateStr        = format(new Date(params.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
+  const dateStr        = format(new Date(p.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
 
   const notifTitle = `⚡ Флеш-акція від ${masterName}!`;
-  const notifBody  = `${serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}!`;
+  const notifBody  = `${serviceName} ${dateStr} о ${p.slotTime} — ${discountedPrice} ₴ замість ${p.originalPrice} ₴ (-${p.discountPct}%). Акція діє ${pluralize(p.expiresInHours, ['годину', 'години', 'годин'])}!`;
 
   // ── Смарт-таргетинг: виключно через SQL RPC (±48 год) ──
   // Слот у київський час (+03:00), PostgreSQL конвертує в UTC при порівнянні
-  const slotTimestamp = `${params.slotDate}T${params.slotTime}:00+03:00`;
+  const slotTimestamp = `${p.slotDate}T${p.slotTime}:00+03:00`;
   const { data: eligibleRows } = await admin
     .rpc('get_eligible_flash_deal_clients', {
       p_master_id:      user.id,
@@ -147,7 +163,7 @@ export async function createFlashDeal(
       .not('telegram_chat_id', 'is', null);
 
     if (clientsWithTg && clientsWithTg.length > 0) {
-      const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(params.slotTime)}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
+      const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(p.slotTime)}\n💰 <s>${p.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${p.discountPct}%)\n⏰ Акція діє ${pluralize(p.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
       const tgResults = await Promise.allSettled(
         clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg))
       );

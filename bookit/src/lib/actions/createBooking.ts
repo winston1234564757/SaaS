@@ -366,13 +366,22 @@ export async function createBooking(
     }
   }
 
-  // 11. Mark flash deal as claimed
+  // 11. Mark flash deal as claimed — atomic (BL-03: prevents double-claim race)
   if (p.flashDealId && flashDealDiscountPct > 0) {
-    await admin
-      .from('flash_deals')
-      .update({ status: 'claimed', claimed_by: p.clientId ?? null, booking_id: bookingId })
-      .eq('id', p.flashDealId)
-      .eq('status', 'active');
+    const { data: claimed, error: claimError } = await admin
+      .rpc('fn_claim_flash_deal_atomic', {
+        p_deal_id:    p.flashDealId,
+        p_booking_id: bookingId,
+      });
+
+    if (claimError || !claimed) {
+      // Another concurrent booking already claimed this deal — rollback our booking
+      await admin.from('bookings').delete().eq('id', bookingId);
+      return {
+        bookingId: null,
+        error: 'Флеш-акція вже використана. Спробуйте забронювати без знижки.',
+      };
+    }
   }
 
   // 12. Trial accounting — облік ведеться DB trigger'ом (fn_dp_trial_earned_on_complete)
