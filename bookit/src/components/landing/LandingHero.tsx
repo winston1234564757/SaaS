@@ -1,183 +1,314 @@
 'use client';
 
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Star, Zap } from 'lucide-react';
+import { ArrowRight, Zap, Star } from 'lucide-react';
 
-export function LandingHero() {
+/* ─────────────────────────────────────────── FloatingBadge ── */
+interface FloatingBadgeProps {
+  children: React.ReactNode;
+  dotColor: string;
+  style?: React.CSSProperties;
+}
+
+function FloatingBadge({ children, dotColor, style }: FloatingBadgeProps) {
   return (
-    <section className="pt-28 pb-12 flex flex-col items-center text-center">
-
-      {/* Social proof chip */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bento-card mb-10"
-      >
-        <div className="flex -space-x-1.5">
-          {['💅', '✂️', '👁️', '💄'].map((emoji, i) => (
-            <div
-              key={i}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-sm border-2 border-white/80"
-              style={{ background: 'rgba(255,210,194,0.6)' }}
-            >
-              {emoji}
-            </div>
-          ))}
-        </div>
-        <span className="text-sm text-[#2C1A14]">
-          <strong>500+</strong> майстрів вже заробляють більше
-        </span>
-        <div className="flex gap-0.5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} size={11} className="fill-[#D4935A] text-[#D4935A]" />
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Main headline */}
-      <motion.h1
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18, type: 'spring', stiffness: 260, damping: 22 }}
-        className="display-xl text-[#2C1A14] max-w-3xl text-balance leading-tight"
-      >
-        Ваш бізнес не повинен{' '}
-        <em className="not-italic text-[#789A99]">забирати весь ваш час.</em>
-      </motion.h1>
-
-      {/* Sub */}
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.28 }}
-        className="mt-6 text-xl text-[#6B5750] max-w-xl leading-relaxed text-balance"
-      >
-        Перша CRM, яка не просто записує клієнтів, а сама заповнює порожні вікна,
-        продає палаючі слоти і повертає втрачених клієнтів.{' '}
-        <span className="text-[#2C1A14] font-medium">Поки ви відпочиваєте.</span>
-      </motion.p>
-
-      {/* CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.36 }}
-        className="mt-9 flex flex-col sm:flex-row items-center gap-3"
-      >
-        <Link
-          href="/register"
-          className="inline-flex items-center gap-2.5 h-14 px-9 rounded-2xl bg-[#789A99] text-white font-semibold text-lg hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_28px_rgba(120,154,153,0.4)] active:scale-[0.97]"
-        >
-          Спробувати безкоштовно
-          <ArrowRight size={19} />
-        </Link>
-        <span className="text-sm text-[#A8928D]">Без кредитної картки · Старт за 2 хвилини</span>
-      </motion.div>
-
-      {/* Demo mockup */}
-      <motion.div
-        initial={{ opacity: 0, y: 44, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ delay: 0.46, type: 'spring', stiffness: 200, damping: 24 }}
-        className="mt-16 w-full max-w-[380px] mx-auto"
-      >
-        <DemoMockup />
-      </motion.div>
-    </section>
+    <div
+      className="bento-card absolute flex items-center gap-2 px-3 py-2 text-sm font-semibold text-[#2C1A14] whitespace-nowrap"
+      style={style}
+    >
+      <span
+        className="w-2 h-2 rounded-full flex-shrink-0"
+        style={{ background: dotColor }}
+      />
+      {children}
+    </div>
   );
 }
 
-function DemoMockup() {
+/* ─────────────────────────────────────────── DemoPhoneCard ── */
+function DemoPhoneCard() {
   return (
-    <div className="bento-card p-5 text-left">
-      {/* Flash deal banner */}
+    <div
+      className="relative mx-auto overflow-hidden"
+      style={{
+        width: 280,
+        borderRadius: '2.5rem',
+        border: '2px solid rgba(255,255,255,0.12)',
+        background: '#F5EDE8',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.45)',
+      }}
+    >
+      {/* Status bar notch */}
       <div
-        className="flex items-center gap-2 px-3 py-2 rounded-2xl mb-4 text-sm font-semibold"
-        style={{ background: 'rgba(212,147,90,0.12)', color: '#D4935A' }}
+        className="flex items-center justify-center py-2"
+        style={{ background: '#1a1210' }}
       >
-        <Zap size={14} className="fill-[#D4935A] flex-shrink-0" />
-        <span>Флеш-акція · -25% до 20:00 · лишилось 2 місця</span>
+        <div className="w-20 h-5 rounded-full" style={{ background: '#0e0b09' }} />
       </div>
 
-      {/* Master header */}
-      <div className="flex items-center gap-3.5 mb-5">
+      {/* Content */}
+      <div className="px-4 pt-4 pb-6 flex flex-col gap-3">
+        {/* Flash banner */}
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
-          style={{ background: 'rgba(255,210,194,0.5)' }}
+          className="flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-semibold"
+          style={{ background: 'rgba(201,149,106,0.18)', color: '#C9956A' }}
         >
-          💅
+          <Zap size={12} style={{ fill: '#C9956A', color: '#C9956A' }} />
+          Flash -25% · лишилось 2 місця
         </div>
-        <div>
-          <h3 className="heading-serif text-lg text-[#2C1A14] leading-tight">
-            Анна Коваленко
-          </h3>
-          <p className="text-sm text-[#6B5750] mt-0.5">Манікюр · Київ</p>
-          <div className="flex items-center gap-1 mt-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={10} className="fill-[#D4935A] text-[#D4935A]" />
-            ))}
-            <span className="text-xs text-[#A8928D] ml-1">4.9 (128)</span>
-          </div>
-        </div>
-      </div>
 
-      {/* Services */}
-      <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-widest mb-2.5">
-        Послуги
-      </p>
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        {[
-          { name: 'Класичний манікюр', price: '375 ₴', oldPrice: '500 ₴', time: '60 хв', popular: true },
-          { name: 'Покриття гелем', price: 'від 525 ₴', time: '90 хв', popular: false },
-          { name: 'Педикюр', price: '650 ₴', time: '75 хв', popular: false },
-          { name: 'Дизайн', price: '50–200 ₴', time: '20 хв', popular: false },
-        ].map((s, i) => (
+        {/* Master info */}
+        <div className="flex items-center gap-3">
           <div
-            key={i}
-            className={`rounded-2xl p-3 border transition-all ${
-              s.popular
-                ? 'col-span-2 border-[#D4935A]/30'
-                : 'border-white/60'
-            }`}
-            style={{
-              background: s.popular
-                ? 'rgba(212,147,90,0.08)'
-                : 'rgba(255,255,255,0.5)',
-            }}
+            className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(120,154,153,0.2)' }}
           >
-            <p className="text-sm font-semibold text-[#2C1A14] leading-snug">{s.name}</p>
-            <div className="flex items-center justify-between mt-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-[#D4935A]">{s.price}</span>
-                {s.oldPrice && (
-                  <span className="text-xs text-[#A8928D] line-through">{s.oldPrice}</span>
-                )}
-              </div>
-              <span className="text-xs text-[#A8928D]">{s.time}</span>
+            <span style={{ color: '#789A99', fontWeight: 700, fontSize: 16 }}>А</span>
+          </div>
+          <div>
+            <p className="heading-serif text-sm text-[#2C1A14] leading-tight">Анна К.</p>
+            <p className="text-xs text-[#6B5750]">Манікюр · Київ</p>
+            <div className="flex gap-0.5 mt-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} size={8} style={{ fill: '#D4935A', color: '#D4935A' }} />
+              ))}
+              <span className="text-[10px] text-[#A8928D] ml-1">4.9</span>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Services */}
+        <div className="flex flex-col gap-1.5">
+          {[
+            { name: 'Класичний манікюр', price: '375 ₴', old: '500 ₴', flash: true },
+            { name: 'Покриття гелем', price: 'від 525 ₴', flash: false },
+            { name: 'Педикюр', price: '650 ₴', flash: false },
+          ].map((s, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl"
+              style={{
+                background: s.flash
+                  ? 'rgba(201,149,106,0.12)'
+                  : 'rgba(255,255,255,0.55)',
+                border: s.flash
+                  ? '1px solid rgba(201,149,106,0.3)'
+                  : '1px solid rgba(255,255,255,0.6)',
+              }}
+            >
+              <span className="text-xs font-medium text-[#2C1A14]">{s.name}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold" style={{ color: '#C9956A' }}>{s.price}</span>
+                {s.old && (
+                  <span className="text-[10px] text-[#A8928D] line-through">{s.old}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button
+          className="w-full h-10 rounded-xl text-white text-sm font-semibold cursor-pointer"
+          style={{
+            background: '#C9956A',
+            boxShadow: '0 4px 14px rgba(201,149,106,0.4)',
+          }}
+        >
+          Записатися
+        </button>
+
+        <p className="text-center text-[9px] text-[#A8928D]">
+          Powered by <span className="font-semibold" style={{ color: '#789A99' }}>Bookit</span>
+        </p>
       </div>
-
-      {/* Loyalty points */}
-      <div
-        className="flex items-center justify-between px-3 py-2 rounded-2xl mb-3 text-xs"
-        style={{ background: 'rgba(92,158,122,0.1)' }}
-      >
-        <span className="text-[#5C9E7A] font-medium">🎁 Ваші бонуси: 240 балів</span>
-        <span className="text-[#5C9E7A] font-semibold">= 48 ₴</span>
-      </div>
-
-      {/* CTA */}
-      <button className="w-full h-12 rounded-2xl bg-[#789A99] text-white font-semibold text-sm shadow-[0_4px_14px_rgba(120,154,153,0.35)] transition-colors hover:bg-[#5C7E7D]">
-        Записатися
-      </button>
-
-      <p className="text-center text-[10px] text-[#A8928D] mt-3">
-        Powered by <span className="font-semibold text-[#789A99]">Bookit</span>
-      </p>
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────── LandingHero ── */
+export function LandingHero() {
+  const ref = useRef(null);
+
+  return (
+    <section
+      ref={ref}
+      className="relative min-h-[92dvh] flex items-center overflow-hidden"
+      style={{ background: '#16100C' }}
+    >
+      {/* Subtle radial glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 70% 60% at 70% 50%, rgba(201,149,106,0.08) 0%, transparent 70%)',
+        }}
+      />
+
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 pt-28 pb-16 flex flex-col md:flex-row items-center gap-12 md:gap-8">
+
+        {/* ── LEFT: Text ── */}
+        <div className="flex-1 flex flex-col items-start gap-6">
+
+          {/* Tag */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest"
+            style={{
+              background: 'rgba(120,154,153,0.15)',
+              border: '1px solid rgba(120,154,153,0.3)',
+              color: '#789A99',
+            }}
+          >
+            Для б&apos;юті-майстрів
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 280, damping: 24 }}
+            className="display-xl leading-tight text-balance"
+            style={{ color: '#F5EDE8' }}
+          >
+            Система, що сама заповнює ваш графік.
+          </motion.h1>
+
+          {/* Subtext */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 280, damping: 24 }}
+            className="text-lg leading-relaxed max-w-lg text-balance"
+            style={{ color: 'rgba(245,237,232,0.7)' }}
+          >
+            Перша CRM для б&apos;юті-майстра, яка не просто записує клієнтів — а заробляє для вас.
+            Флеш-акції, смарт-слоти, лояльність. Поки ви зайняті.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, type: 'spring', stiffness: 280, damping: 24 }}
+            className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
+          >
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2.5 h-14 px-9 rounded-2xl font-bold text-lg text-white transition-colors cursor-pointer active:scale-[0.97]"
+              style={{
+                background: '#C9956A',
+                boxShadow: '0 8px_28px rgba(201,149,106,0.4)',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#B07A52'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#C9956A'; }}
+            >
+              Спробувати безкоштовно →
+            </Link>
+            <Link
+              href="/explore"
+              className="inline-flex items-center gap-2 h-14 px-7 rounded-2xl font-semibold text-base transition-colors cursor-pointer"
+              style={{
+                border: '1px solid rgba(245,237,232,0.2)',
+                color: 'rgba(245,237,232,0.8)',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,237,232,0.5)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,237,232,0.2)'; }}
+            >
+              Переглянути демо
+            </Link>
+          </motion.div>
+
+          {/* Trust line */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-sm"
+            style={{ color: 'rgba(245,237,232,0.4)' }}
+          >
+            500+ майстрів · Без кредитки · Старт за 2 хвилини
+          </motion.p>
+
+          {/* Mobile inline metrics (shown only on mobile) */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.55 }}
+            className="flex md:hidden items-center gap-3 flex-wrap"
+          >
+            <span
+              className="px-3 py-1.5 rounded-full text-xs font-semibold"
+              style={{ background: 'rgba(201,149,106,0.15)', color: '#C9956A' }}
+            >
+              500+ майстрів
+            </span>
+            <span
+              className="px-3 py-1.5 rounded-full text-xs font-semibold"
+              style={{ background: 'rgba(92,158,122,0.15)', color: '#5C9E7A' }}
+            >
+              +₴4 800/міс середньо
+            </span>
+          </motion.div>
+        </div>
+
+        {/* ── RIGHT: Phone mockup ── */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 28 }}
+          className="hidden md:flex flex-shrink-0 relative"
+          style={{ width: 340, height: 560 }}
+        >
+          {/* Phone */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <DemoPhoneCard />
+          </div>
+
+          {/* Badge 1 — top right */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, type: 'spring', stiffness: 280, damping: 22 }}
+            className="absolute"
+            style={{ top: 28, right: -24 }}
+          >
+            <FloatingBadge dotColor="#C9956A">
+              +₴4 800/міс
+            </FloatingBadge>
+          </motion.div>
+
+          {/* Badge 2 — left middle */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, type: 'spring', stiffness: 280, damping: 22 }}
+            className="absolute"
+            style={{ top: '40%', left: -32 }}
+          >
+            <FloatingBadge dotColor="#789A99">
+              98% завантаженість
+            </FloatingBadge>
+          </motion.div>
+
+          {/* Badge 3 — bottom right */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7, type: 'spring', stiffness: 280, damping: 22 }}
+            className="absolute"
+            style={{ bottom: 40, right: -20 }}
+          >
+            <FloatingBadge dotColor="#5C9E7A">
+              Flash: 3 записи за 12 хв
+            </FloatingBadge>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
   );
 }

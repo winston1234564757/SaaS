@@ -103,12 +103,15 @@ export function LandingPricing() {
             transition={{ delay: i * 0.1, type: 'spring', stiffness: 300, damping: 24 }}
             className={`bento-card p-6 flex flex-col gap-5 relative ${
               plan.highlight
-                ? 'ring-2 ring-[#789A99]/60 shadow-[0_8px_32px_rgba(120,154,153,0.22)]'
+                ? 'ring-2 ring-[#C9956A]/50 shadow-[0_8px_32px_rgba(201,149,106,0.2)]'
                 : ''
             }`}
           >
             {plan.badge && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 bg-[#789A99] text-white text-xs font-semibold rounded-full shadow-md whitespace-nowrap">
+              <div
+                className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 text-white text-xs font-semibold rounded-full shadow-md whitespace-nowrap"
+                style={{ background: '#C9956A' }}
+              >
                 <Sparkles size={10} />
                 {plan.badge}
               </div>
@@ -149,13 +152,32 @@ export function LandingPricing() {
               type="button"
               onClick={() => !plan.disabled && handleSelectPlan(plan.name.toLowerCase())}
               disabled={'disabled' in plan && plan.disabled}
-              className={`mt-auto flex items-center justify-center h-12 rounded-2xl font-semibold text-sm transition-colors ${
+              className={`mt-auto flex items-center justify-center h-12 rounded-2xl font-semibold text-sm transition-colors cursor-pointer ${
                 'disabled' in plan && plan.disabled
                   ? 'bg-white/50 text-[#A8928D] cursor-not-allowed'
-                  : plan.highlight
-                  ? 'bg-[#789A99] text-white hover:bg-[#5C7E7D] shadow-[0_4px_14px_rgba(120,154,153,0.35)]'
-                  : 'bg-white/70 text-[#2C1A14] hover:bg-white/90'
+                  : ''
               }`}
+              style={
+                !('disabled' in plan && plan.disabled)
+                  ? plan.highlight
+                    ? {
+                        background: '#C9956A',
+                        color: '#fff',
+                        boxShadow: '0 4px 14px rgba(201,149,106,0.35)',
+                      }
+                    : { background: 'rgba(255,255,255,0.7)', color: '#2C1A14' }
+                  : undefined
+              }
+              onMouseEnter={e => {
+                if (!('disabled' in plan && plan.disabled) && plan.highlight) {
+                  (e.currentTarget as HTMLElement).style.background = '#B07A52';
+                }
+              }}
+              onMouseLeave={e => {
+                if (!('disabled' in plan && plan.disabled) && plan.highlight) {
+                  (e.currentTarget as HTMLElement).style.background = '#C9956A';
+                }
+              }}
             >
               {plan.cta}
             </button>

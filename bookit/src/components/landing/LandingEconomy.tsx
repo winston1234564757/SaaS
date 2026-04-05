@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { TrendingDown, ArrowRight } from 'lucide-react';
+import { TrendingDown, ArrowRight, CalendarDays, Calendar, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 
 function clamp(val: number, min: number, max: number) {
@@ -22,14 +22,17 @@ export function LandingEconomy() {
   const monthsToPayoff = monthlyLoss > 0 ? Math.ceil(700 / (monthlyLoss / 1)) : 1;
 
   return (
-    <section ref={ref} className="py-16">
+    <section ref={ref} className="py-20">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <p className="text-sm font-semibold text-[#D4935A] uppercase tracking-widest mb-3">
+        <p
+          className="text-xs font-semibold uppercase tracking-widest mb-4"
+          style={{ color: '#D4935A' }}
+        >
           Математика
         </p>
         <h2 className="display-md text-[#2C1A14] text-balance">
@@ -46,13 +49,14 @@ export function LandingEconomy() {
         className="bento-card p-8 sm:p-10 max-w-2xl mx-auto"
         style={{
           background:
-            'linear-gradient(140deg, rgba(255,210,194,0.35) 0%, rgba(255,255,255,0.65) 100%)',
+            'linear-gradient(140deg, rgba(120,154,153,0.08) 0%, rgba(255,255,255,0.7) 100%)',
         }}
       >
         {/* Calculator steps */}
         <div className="flex flex-col gap-3 mb-8">
+          {/* Empty slots */}
           <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/50">
-            <span className="text-2xl">📅</span>
+            <CalendarDays size={22} style={{ color: '#789A99' }} className="flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6B5750]">Порожніх слотів на тиждень</p>
             </div>
@@ -70,8 +74,9 @@ export function LandingEconomy() {
             <span className="text-lg font-light">×</span>
           </div>
 
+          {/* Weeks */}
           <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/50">
-            <span className="text-2xl">🗓️</span>
+            <Calendar size={22} style={{ color: '#789A99' }} className="flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6B5750]">Тижнів на місяць</p>
             </div>
@@ -89,8 +94,9 @@ export function LandingEconomy() {
             <span className="text-lg font-light">×</span>
           </div>
 
+          {/* Avg price */}
           <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/50">
-            <span className="text-2xl">💳</span>
+            <CreditCard size={22} style={{ color: '#789A99' }} className="flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6B5750]">Середній чек</p>
             </div>
@@ -141,11 +147,18 @@ export function LandingEconomy() {
           <p className="text-base text-[#6B5750] leading-relaxed mb-2 text-balance">
             <span className="font-semibold text-[#789A99]">Pro-план Bookit — 700 ₴.</span>{' '}
             {monthlyLoss >= 700
-              ? <>Він окупить себе після ПЕРШОГО врятованого слота.{' '}
-                  <span className="font-semibold text-[#2C1A14]">Решту 29 днів — чистий прибуток.</span></>
-              : <>Навіть один врятований слот покриває підписку на{' '}
-                  <span className="font-semibold text-[#2C1A14]">{monthsToPayoff} міс.</span></>
-            }
+              ? (
+                <>
+                  Він окупить себе після ПЕРШОГО врятованого слота.{' '}
+                  <span className="font-semibold text-[#2C1A14]">Решту 29 днів — чистий прибуток.</span>
+                </>
+              )
+              : (
+                <>
+                  Навіть один врятований слот покриває підписку на{' '}
+                  <span className="font-semibold text-[#2C1A14]">{monthsToPayoff} міс.</span>
+                </>
+              )}
           </p>
           <p className="text-sm text-[#A8928D] text-balance">
             700 ₴ — це вартість одного манікюру. Один флеш-слот = повна окупність за місяць.
@@ -153,7 +166,13 @@ export function LandingEconomy() {
 
           <Link
             href="/register?plan=pro"
-            className="inline-flex items-center gap-2 mt-6 h-12 px-7 rounded-2xl bg-[#789A99] text-white font-semibold text-sm hover:bg-[#5C7E7D] transition-colors shadow-[0_4px_14px_rgba(120,154,153,0.35)]"
+            className="inline-flex items-center gap-2 mt-6 h-12 px-7 rounded-2xl text-white font-semibold text-sm transition-colors cursor-pointer"
+            style={{
+              background: '#C9956A',
+              boxShadow: '0 4px 14px rgba(201,149,106,0.35)',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#B07A52'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#C9956A'; }}
           >
             Спробувати Pro безкоштовно
             <ArrowRight size={16} />
