@@ -33,11 +33,13 @@ ALTER TABLE bookings
 ALTER TABLE referral_links ENABLE ROW LEVEL SECURITY;
 
 -- Власник може читати свої лінки
+DROP POLICY IF EXISTS "referral_links: owner reads own" ON referral_links;
 CREATE POLICY "referral_links: owner reads own"
   ON referral_links FOR SELECT
   USING (owner_id = auth.uid());
 
 -- Service role керує всім (Server Actions через admin client)
+DROP POLICY IF EXISTS "referral_links: service role all" ON referral_links;
 CREATE POLICY "referral_links: service role all"
   ON referral_links FOR ALL
   USING (auth.role() = 'service_role');
