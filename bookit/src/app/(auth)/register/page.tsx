@@ -1,17 +1,7 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { RegisterForm } from '@/components/auth/RegisterForm';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Реєстрація майстра — Bookit',
-};
-
 export default function RegisterPage() {
-  return (
-    <Suspense>
-      <RegisterForm />
-    </Suspense>
-  );
+  redirect('/login');
 }
