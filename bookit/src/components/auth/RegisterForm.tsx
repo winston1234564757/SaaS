@@ -3,5 +3,5 @@
 import { PhoneOtpForm } from './PhoneOtpForm';
 
 export function RegisterForm() {
-  return <PhoneOtpForm mode="register" />;
+  return <PhoneOtpForm />;
 }

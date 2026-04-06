@@ -3,5 +3,5 @@
 import { PhoneOtpForm } from './PhoneOtpForm';
 
 export function LoginForm() {
-  return <PhoneOtpForm mode="login" />;
+  return <PhoneOtpForm />;
 }
