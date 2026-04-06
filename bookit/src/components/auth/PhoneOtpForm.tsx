@@ -4,7 +4,10 @@ import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'reac
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Phone, MessageSquare } from 'lucide-react';
+import {
+  ArrowLeft, Loader2, Phone, MessageSquare,
+  UserRound, Scissors, CheckCircle2,
+} from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
@@ -12,18 +15,35 @@ import { claimMasterRole } from '@/app/(auth)/register/actions';
 import { processRegistrationReferral } from '@/lib/actions/referrals';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
-interface Props {
-  mode: 'login' | 'register';
-}
+type Step = 'role_select' | 'phone' | 'otp';
+type Role = 'client' | 'master';
 
-export function PhoneOtpForm({ mode }: Props) {
+const ROLES: {
+  id: Role;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    id: 'client',
+    label: 'Я Клієнт',
+    description: 'Записуюсь до майстрів онлайн',
+    icon: <UserRound size={32} strokeWidth={1.5} />,
+  },
+  {
+    id: 'master',
+    label: 'Я Майстер',
+    description: 'Керую записами, клієнтами та доходом',
+    icon: <Scissors size={32} strokeWidth={1.5} />,
+  },
+];
+
+export function PhoneOtpForm() {
   const router = useRouter();
   const supabase = createClient();
 
-  const [selectedRole, setSelectedRole] = useState<'client' | 'master'>(
-    mode === 'register' ? 'master' : 'client'
-  );
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  const [step, setStep] = useState<Step>('role_select');
+  const [selectedRole, setSelectedRole] = useState<Role>('client');
   const [phone, setPhone] = useState('');
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
@@ -34,7 +54,17 @@ export function PhoneOtpForm({ mode }: Props) {
   const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => () => { if (cooldownRef.current) clearInterval(cooldownRef.current); }, []);
+  // ── Cleanup cooldown on unmount ──────────────────────────────────────────
+  useEffect(() => () => {
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+  }, []);
+
+  // ── Fix: скидаємо Google loading коли юзер повертається (відмінив OAuth) ──
+  useEffect(() => {
+    const handleFocus = () => setIsGoogleLoading(false);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   function handlePhoneChange(val: string) {
     setPhone(normalizePhoneInput(val));
@@ -73,12 +103,10 @@ export function PhoneOtpForm({ mode }: Props) {
   }
 
   // ── Крок 2: Верифікація OTP ──────────────────────────────────────────────
-  async function handleVerifyOtp() {
-    const otp = digits.join('');
-    if (otp.length < 6) {
-      setError('Введіть 6-значний код');
-      return;
-    }
+  // Fix: приймає otpOverride щоб уникнути stale state в auto-submit
+  async function handleVerifyOtp(otpOverride?: string) {
+    const otp = otpOverride ?? digits.join('');
+    if (otp.length < 6) return; // silent guard
     setLoading(true);
     setError('');
 
@@ -110,11 +138,8 @@ export function PhoneOtpForm({ mode }: Props) {
       return;
     }
 
-    // For new masters — create master_profiles (placeholder slug + role claim)
     if (selectedRole === 'master') {
-      const { error: roleError } = await claimMasterRole(
-        getCleanPhone(),
-      );
+      const { error: roleError } = await claimMasterRole(getCleanPhone());
       if (roleError) {
         setLoading(false);
         setError(roleError);
@@ -122,7 +147,6 @@ export function PhoneOtpForm({ mode }: Props) {
       }
     }
 
-    // Обробка реферального коду при реєстрації нового майстра
     if (selectedRole === 'master' && data.isNew && authData.user?.id) {
       const refCode = typeof window !== 'undefined'
         ? localStorage.getItem('bookit_ref')
@@ -159,8 +183,9 @@ export function PhoneOtpForm({ mode }: Props) {
     setDigits(next);
     setError('');
     if (char && index < 5) digitRefs.current[index + 1]?.focus();
+    // Fix: передаємо next.join('') напряму, уникаємо stale state
     if (next.every(d => d !== '') && char) {
-      setTimeout(() => handleVerifyOtp(), 80);
+      setTimeout(() => handleVerifyOtp(next.join('')), 80);
     }
   }
 
@@ -179,9 +204,13 @@ export function PhoneOtpForm({ mode }: Props) {
     setDigits(next);
     const lastFilled = Math.min(pasted.length, 5);
     digitRefs.current[lastFilled]?.focus();
+    // Auto-submit якщо вставили повний код
+    if (pasted.length === 6) {
+      setTimeout(() => handleVerifyOtp(pasted), 80);
+    }
   }
 
-  // ── Cooldown для re-send ─────────────────────────────────────────────────
+  // ── Cooldown ─────────────────────────────────────────────────────────────
   function startResendCooldown() {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
     setResendCooldown(60);
@@ -213,89 +242,162 @@ export function PhoneOtpForm({ mode }: Props) {
     }
   }
 
+  // ── Google OAuth ─────────────────────────────────────────────────────────
   async function handleGoogleLogin() {
+    // Fix: guard від дублікатів
+    if (isGoogleLoading) return;
     setIsGoogleLoading(true);
+    setError('');
+
     const planMatch = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);
     const planValue = planMatch?.[1] ?? '';
     const isPaidPlan = planValue === 'pro' || planValue === 'studio';
-    // For paid plans embed billing URL in `next` so it survives OAuth redirect even if cookie is lost
     const nextPath = selectedRole === 'master'
       ? isPaidPlan ? `/dashboard/billing?plan=${planValue}` : '/dashboard'
       : '/my/bookings';
     const cbParams = new URLSearchParams({ role: selectedRole, next: nextPath });
     if (isPaidPlan) cbParams.set('plan', planValue);
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?${cbParams.toString()}`,
-        queryParams: {
-          // Force Google account chooser on every sign-in.
-          // Without this, iOS PWA (WKWebView) caches the Google session cookie
-          // and silently reuses the last account, bypassing the chooser.
-          prompt: 'select_account',
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?${cbParams.toString()}`,
+          queryParams: { prompt: 'select_account' },
         },
-      },
-    });
+      });
+      // Fix: якщо помилка — скидаємо loading і показуємо error
+      if (error) {
+        setIsGoogleLoading(false);
+        setError(error.message || 'Помилка входу через Google');
+      }
+      // Якщо успіх — redirect відбувається сам, loading лишається true до переходу сторінки
+    } catch {
+      setIsGoogleLoading(false);
+      setError('Помилка входу через Google. Спробуйте ще раз.');
+    }
   }
 
-  const isLogin = mode === 'login';
+  const roleLabel = selectedRole === 'client' ? 'Клієнт' : 'Майстер';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: 'spring' as const, stiffness: 300, damping: 24 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >
       <Card>
-        {/* Role toggle — iOS segmented control */}
-        <div className="flex p-1 rounded-2xl bg-[#F0E6E0] mb-6">
-          {(['client', 'master'] as const).map(r => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setSelectedRole(r)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                selectedRole === r
-                  ? 'bg-white text-[#2C1A14] shadow-sm'
-                  : 'text-[#A8928D] hover:text-[#6B5750]'
-              }`}
-            >
-              {r === 'client' ? 'Я Клієнт' : 'Я Майстер'}
-            </button>
-          ))}
-        </div>
-
-        {/* Header */}
-        <div className="mb-7 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">
-            {step === 'phone' ? (
-              <Phone size={24} className="text-[#789A99]" />
-            ) : (
-              <MessageSquare size={24} className="text-[#789A99]" />
-            )}
-          </div>
-          <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1.5">
-            {step === 'phone'
-              ? isLogin ? 'Вхід у Bookit' : 'Реєстрація в Bookit'
-              : 'Введіть код'}
-          </h1>
-          <p className="text-sm text-[#A8928D]">
-            {step === 'phone'
-              ? 'Введіть номер телефону — надішлемо SMS з кодом'
-              : `Код надіслано на +38 ${formatPhoneDisplay(phone)}`}
-          </p>
-        </div>
-
         <AnimatePresence mode="wait">
-          {/* ── Крок 1: Телефон ───────────────────────────────────────────── */}
+
+          {/* ══ Step: role_select ════════════════════════════════════════════ */}
+          {step === 'role_select' && (
+            <motion.div
+              key="role_select"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.22 }}
+            >
+              {/* Header */}
+              <div className="text-center mb-7">
+                <h1 className="heading-serif text-2xl text-[#2C1A14] mb-2">
+                  Ласкаво просимо
+                </h1>
+                <p className="text-sm text-[#A8928D]">
+                  Як ви хочете використовувати Bookit?
+                </p>
+              </div>
+
+              {/* Role cards */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {ROLES.map(role => {
+                  const isSelected = selectedRole === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      onClick={() => setSelectedRole(role.id)}
+                      className={`
+                        relative flex flex-col items-center text-center gap-3
+                        p-5 rounded-2xl border-2 transition-all duration-150
+                        ${isSelected
+                          ? 'border-[#789A99] bg-[#789A99]/8 text-[#2C1A14] scale-[1.02]'
+                          : 'border-[#E8D0C8] bg-white text-[#6B5750] hover:border-[#C4A89E]'
+                        }
+                      `}
+                    >
+                      {isSelected && (
+                        <span className="absolute top-2.5 right-2.5 text-[#789A99]">
+                          <CheckCircle2 size={16} strokeWidth={2} />
+                        </span>
+                      )}
+                      <span className={isSelected ? 'text-[#789A99]' : 'text-[#A8928D]'}>
+                        {role.icon}
+                      </span>
+                      <div>
+                        <p className="font-semibold text-sm leading-tight mb-1">
+                          {role.label}
+                        </p>
+                        <p className="text-xs text-[#A8928D] leading-snug">
+                          {role.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* CTA */}
+              <button
+                type="button"
+                onClick={() => setStep('phone')}
+                className="flex items-center justify-center w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25"
+              >
+                Продовжити
+              </button>
+
+              {/* Footer */}
+              <p className="text-center text-sm text-[#6B5750] mt-5">
+                Вже маєш акаунт?{' '}
+                <Link href="/login" className="text-[#789A99] font-medium hover:underline">
+                  Увійти
+                </Link>
+              </p>
+            </motion.div>
+          )}
+
+          {/* ══ Step: phone ══════════════════════════════════════════════════ */}
           {step === 'phone' && (
             <motion.div
               key="phone"
-              initial={{ opacity: 0, x: -16 }}
+              initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 16 }}
+              exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2 }}
             >
+              {/* Role badge — клік повертає до вибору ролі */}
+              <button
+                type="button"
+                onClick={() => { setStep('role_select'); setError(''); }}
+                className="flex items-center gap-1.5 text-xs font-medium text-[#789A99] bg-[#789A99]/10 rounded-full px-3 py-1.5 mb-5 hover:bg-[#789A99]/18 transition-colors"
+              >
+                <ArrowLeft size={13} />
+                {roleLabel}
+              </button>
+
+              {/* Header */}
+              <div className="mb-7 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">
+                  <Phone size={24} className="text-[#789A99]" />
+                </div>
+                <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1.5">
+                  Вхід у Bookit
+                </h1>
+                <p className="text-sm text-[#A8928D]">
+                  Введіть номер — надішлемо SMS з кодом
+                </p>
+              </div>
+
               {/* Google OAuth */}
               <button
                 type="button"
@@ -317,6 +419,7 @@ export function PhoneOtpForm({ mode }: Props) {
                 </div>
               </div>
 
+              {/* Phone field */}
               <div className="mb-4">
                 <div className="flex items-center gap-0 rounded-2xl border border-[#E8D0C8] bg-white overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
                   <span className="pl-4 pr-2 text-[#6B5750] font-medium text-base select-none shrink-0">
@@ -348,22 +451,10 @@ export function PhoneOtpForm({ mode }: Props) {
                 {loading ? <Loader2 size={18} className="animate-spin" /> : null}
                 {loading ? 'Відправляємо...' : 'Отримати код'}
               </button>
-
-              <p className="text-center text-sm text-[#6B5750] mt-5">
-                {isLogin ? (
-                  <>Ще не зареєстровані?{' '}
-                    <Link href="/register" className="text-[#789A99] font-medium hover:underline">Створити акаунт</Link>
-                  </>
-                ) : (
-                  <>Вже є акаунт?{' '}
-                    <Link href="/login" className="text-[#789A99] font-medium hover:underline">Увійти</Link>
-                  </>
-                )}
-              </p>
             </motion.div>
           )}
 
-          {/* ── Крок 2: OTP ───────────────────────────────────────────────── */}
+          {/* ══ Step: otp ════════════════════════════════════════════════════ */}
           {step === 'otp' && (
             <motion.div
               key="otp"
@@ -372,6 +463,19 @@ export function PhoneOtpForm({ mode }: Props) {
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2 }}
             >
+              {/* Header */}
+              <div className="mb-7 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">
+                  <MessageSquare size={24} className="text-[#789A99]" />
+                </div>
+                <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1.5">
+                  Введіть код
+                </h1>
+                <p className="text-sm text-[#A8928D]">
+                  Код надіслано на +38 {formatPhoneDisplay(phone)}
+                </p>
+              </div>
+
               {/* 6-digit boxes */}
               <div className="flex justify-center gap-2.5 mb-5">
                 {digits.map((d, i) => (
@@ -397,7 +501,7 @@ export function PhoneOtpForm({ mode }: Props) {
 
               <button
                 type="button"
-                onClick={handleVerifyOtp}
+                onClick={() => handleVerifyOtp()}
                 disabled={loading || digits.some(d => !d)}
                 className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -431,6 +535,7 @@ export function PhoneOtpForm({ mode }: Props) {
               </div>
             </motion.div>
           )}
+
         </AnimatePresence>
       </Card>
     </motion.div>
