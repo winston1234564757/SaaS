@@ -55,6 +55,7 @@ export interface MasterProfile {
   telegram_url: string | null;
   telegram_chat_id: string | null;
   avatar_emoji: string;
+  has_seen_tour: boolean;
   pricing_rules: PricingRules | null;
   working_hours: WorkingHoursConfig | null;
   created_at: string;
