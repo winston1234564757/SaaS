@@ -131,7 +131,7 @@ export function PhoneOtpForm() {
     const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email: data.email,
       token: data.token,
-      type: 'magiclink',
+      type: 'email',
     });
 
     if (authError || !authData.session) {

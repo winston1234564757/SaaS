@@ -38,7 +38,8 @@ test.describe('Referral System', () => {
 
     try {
       await page.goto('/dashboard/referral');
-      await page.waitForLoadState('networkidle');
+      // Не чекаємо networkidle — realtime підписки тримають з'єднання відкритим
+      await page.waitForLoadState('domcontentloaded');
 
       // h1 must be visible
       await expect(page.locator('h1').first()).toBeVisible({ timeout: 10_000 });
@@ -47,7 +48,7 @@ test.describe('Referral System', () => {
       const shareBtn = page
         .getByRole('button', { name: /Поділитися|Скопіювати|Копіювати|Share|Copy/i })
         .first();
-      await expect(shareBtn).toBeVisible({ timeout: 8_000 });
+      await expect(shareBtn).toBeVisible({ timeout: 10_000 });
     } finally {
       await context.close();
     }

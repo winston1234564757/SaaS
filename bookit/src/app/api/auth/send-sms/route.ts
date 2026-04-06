@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
   const { error: dbError } = await supabaseAdmin
     .from('sms_otps')
-    .upsert({ phone, otp }, { onConflict: 'phone' });
+    .upsert({ phone, otp, created_at: new Date().toISOString() }, { onConflict: 'phone' });
 
   if (dbError) {
     console.error('[send-sms] DB error:', dbError.message);
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 8_000);
 
-  let smsData: { response_code?: number; response_status?: string };
+  let smsData: { response_code?: number; response_status?: string; [key: string]: unknown };
   try {
     const smsRes = await fetch('https://api.turbosms.ua/message/send.json', {
       method: 'POST',
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         recipients: [phone],
         sms: {
-          sender: 'BEAUTY',
+          sender: 'BookIT',
           text: `Код підтвердження BookIt: ${otp}`,
         },
       }),
@@ -116,14 +116,23 @@ export async function POST(req: NextRequest) {
     clearTimeout(timeoutId);
   }
 
-  // TurboSMS: response_code 800 або 0 = успіх
-  if (smsData.response_code !== 800 && smsData.response_code !== 0) {
-    console.error('[send-sms] TurboSMS error:', smsData.response_code, smsData.response_status);
+  // TurboSMS: 800=queued, 801=sent, 0=ok; або response_status містить SUCCESS/OK
+  const isSuccess =
+    smsData.response_code === 800 ||
+    smsData.response_code === 801 ||
+    smsData.response_code === 0 ||
+    smsData.response_status === 'OK' ||
+    smsData.response_status === 'SUCCESS_MESSAGE_SENT';
+
+  if (!isSuccess) {
+    console.error('[send-sms] TurboSMS unexpected response:', JSON.stringify(smsData));
     return NextResponse.json(
       { success: false, error: 'Не вдалося надіслати SMS. Спробуйте пізніше.' },
       { status: 400 }
     );
   }
+
+  console.log('[send-sms] TurboSMS success:', smsData.response_code, smsData.response_status);
 
   return NextResponse.json({ success: true });
 }

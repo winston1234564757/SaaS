@@ -13,13 +13,29 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'retain-on-failure',
-    video: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    video: 'on',
+    screenshot: 'on',
+    // Природні паузи між діями — імітація живої людини
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // 120ms між кожною дією — "людська" швидкість
+        launchOptions: { slowMo: 120 },
+      },
+    },
+    {
+      name: 'mobile-chrome',
+      use: {
+        ...devices['Pixel 7'],
+        launchOptions: { slowMo: 120 },
+      },
+      // Тільки smoke тести на мобілі
+      testMatch: '**/16-mobile-smoke.spec.ts',
     },
   ],
   webServer: {

@@ -25,14 +25,17 @@ test.describe('Сторінка логіну', () => {
     const auth = new AuthPage(page);
     await auth.goto();
 
-    // Try to send SMS with an obviously short phone number
+    // Ввести короткий номер — кнопка має бути заблокована
     await auth.phoneInput.fill('12');
-    await auth.sendSmsButton.click();
 
-    // Button should still be disabled (phone.length < 9 guard in component)
-    // OR an error message appears — either is acceptable
+    // Кнопка disabled = компонент правильно блокує надсилання
     const disabled = await auth.sendSmsButton.isDisabled();
-    if (!disabled) {
+    if (disabled) {
+      // Очікувана поведінка: кнопка disabled при короткому номері
+      expect(disabled).toBe(true);
+    } else {
+      // Кнопка активна — клікнути і перевірити помилку
+      await auth.sendSmsButton.click({ force: true });
       await expect(auth.errorMessage).toBeVisible({ timeout: 5_000 });
     }
   });

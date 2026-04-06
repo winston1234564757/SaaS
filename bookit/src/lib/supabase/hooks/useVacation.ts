@@ -40,8 +40,19 @@ export function useVacation() {
     staleTime: 60_000,
   });
 
-  const addMutation = useMutation({
-    mutationFn: async ({ date, reason }: { date: string; reason?: string }) => {
+  const addMutation = useMutation<void, Error, { date: string; reason?: string }, { prev: BlockedDate[] | undefined }>({
+    onMutate: async (_input) => {
+      // Скасовуємо активні запити, щоб уникнути перезапису оптимістичного стану
+      await qc.cancelQueries({ queryKey: key });
+      // Зберігаємо попередній стан для rollback (id невідомий до відповіді сервера)
+      const prev = qc.getQueryData<BlockedDate[]>(key);
+      return { prev };
+    },
+    onError: (_err, _input, ctx) => {
+      // Відновлюємо попередній стан при помилці
+      if (ctx?.prev !== undefined) qc.setQueryData<BlockedDate[]>(key, ctx.prev);
+    },
+    mutationFn: async ({ date, reason }) => {
       const supabase = createClient();
       await supabase.from('schedule_exceptions').upsert({
         master_id: masterId!,
@@ -53,8 +64,22 @@ export function useVacation() {
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   });
 
-  const removeMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const removeMutation = useMutation<void, Error, string, { prev: BlockedDate[] | undefined }>({
+    onMutate: async (id) => {
+      // Скасовуємо активні запити, щоб уникнути перезапису оптимістичного стану
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<BlockedDate[]>(key);
+      // Оптимістично видаляємо запис з кешу
+      qc.setQueryData<BlockedDate[]>(key, old =>
+        (old ?? []).filter(b => b.id !== id)
+      );
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      // Відновлюємо попередній стан при помилці
+      if (ctx?.prev !== undefined) qc.setQueryData<BlockedDate[]>(key, ctx.prev);
+    },
+    mutationFn: async (id) => {
       const supabase = createClient();
       await supabase.from('schedule_exceptions').delete().eq('id', id);
     },

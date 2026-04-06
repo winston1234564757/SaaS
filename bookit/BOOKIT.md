@@ -2,7 +2,7 @@
 
 > **Ukrainian SaaS для онлайн-запису у б'юті-індустрії**
 > "Твій розумний link in bio, який заробляє гроші"
-> *Оновлено: 21.03.2026 · Версія: 3.0 (22+ ітерації)*
+> *Оновлено: 04.04.2026 · Версія: 3.1 (23+ ітерації)*
 
 ---
 
@@ -49,9 +49,9 @@
 
 | Тариф | Ціна | Ключові обмеження |
 |-------|------|--------------------|
-| **Starter** | 0₴ | 30 записів/місяць, 2 flash-акції/місяць, вотермарка, 9 фото |
-| **Pro** | 349₴/місяць | Необмежено записів, повна аналітика, CRM, CSV, без вотермарки |
-| **Studio** | 199₴/майстер/місяць | Мультимайстер, спільний бренд, invite-flow |
+| **Starter** | 0₴ | 30 записів/місяць, 2 flash-акції/місяць, вотермарка, 9 фото, dynamic pricing trial до 1000 UAH |
+| **Pro** | 700₴/місяць | Необмежено записів, повна аналітика, CRM, CSV, Telegram, без вотермарки, dynamic pricing |
+| **Studio** | 299₴/майстер/місяць | Мультимайстер, спільний бренд, invite-flow, all Pro per master |
 
 ---
 
@@ -317,20 +317,25 @@ src/
 ├── lib/
 │   ├── supabase/
 │   │   ├── admin.ts                   — ЄДИНИЙ admin client (service_role_key тут і тільки тут)
-│   │   ├── client.ts                  — singleton browser client
+│   │   ├── client.ts                  — singleton browser client (pwaDummyLock, resetFetchController, autoRefreshToken:false)
 │   │   ├── server.ts                  — SSR client (cookies)
-│   │   ├── context.tsx                — SupabaseProvider
-│   │   └── hooks/                     — useBookings, useServices, useNotifications, etc.
+│   │   ├── context.tsx                — MasterProvider / MasterContext (user, profile, masterProfile, isLoading)
+│   │   └── hooks/                     — useBookings, useServices, useNotifications, useTimeOff, useWizardSchedule, etc.
+│   ├── providers/
+│   │   └── QueryProvider.tsx          — TanStack Query client + useSessionWakeup + useDeepSleepWakeup
+│   ├── hooks/
+│   │   ├── useSessionWakeup.ts        — visibility change → resetFetchController → invalidateQueries
+│   │   └── useDeepSleepWakeup.ts      — JS freeze detection → onlineManager + invalidateQueries
 │   ├── telegram.ts                    — sendTelegramMessage, buildBookingMessage, escHtml
 │   ├── push.ts                        — broadcastPush(subscriptions[], payload)
 │   ├── utils/
-│   │   ├── dates.ts                   — formatDate, formatDateFull, timeAgo, pluralize, ...
-│   │   ├── dynamicPricing.ts          — calculateDynamicPrice
-│   │   ├── smartSlots.ts              — generateSlots
+│   │   ├── dates.ts                   — formatDate, formatDateFull, timeAgo, formatDurationFull, ...
+│   │   ├── pluralUk.ts                — pluralUk(n, one, few, many) — ЄДИНИЙ plural helper (не ternary!)
+│   │   ├── dynamicPricing.ts          — calculateDynamicPrice, stackRules (DISCOUNT_FLOOR=-30, MARKUP_CEIL=50)
+│   │   ├── smartSlots.ts              — generateAvailableSlots, scoreSlots, buildSlotRenderItems
 │   │   └── cn.ts                      — clsx + tailwind-merge
 │   └── constants/                     — categories, themes
-├── types/database.ts                  — авто-генеровані типи Supabase
-└── middleware.ts                      — ЗАСТАРІЛИЙ, Next.js 16 ігнорує (використовується proxy.ts)
+└── types/database.ts                  — авто-генеровані типи Supabase
 ```
 
 ---
@@ -342,7 +347,7 @@ src/
 | Таблиця | Ключові колонки | Мета |
 |---------|----------------|------|
 | `profiles` | `id` (FK auth.users), `full_name`, `phone`, `role`, `telegram_chat_id` | Базовий профіль всіх користувачів |
-| `master_profiles` | `id`, `slug`, `subscription_tier`, `pricing_rules` (jsonb), `working_hours` (jsonb), `telegram_chat_id` | Бізнес-профіль майстра |
+| `master_profiles` | `id`, `slug`, `subscription_tier`, `pricing_rules` (jsonb), `working_hours` (jsonb), `telegram_chat_id`, `dynamic_pricing_extra_earned` | Бізнес-профіль майстра |
 | `client_master_relations` | `(client_id, master_id)` PK, `total_visits`, `total_spent`, `average_check`, `last_visit_at`, `is_vip`, `tags[]` | CRM-зв'язок клієнт↔майстер |
 
 > **Важливо:** `profiles.telegram_chat_id` — клієнтський Telegram (нагадування). `master_profiles.telegram_chat_id` — бізнес Telegram майстра (нові записи). Сторінка налаштувань зберігає у `master_profiles`.
@@ -361,15 +366,16 @@ src/
 | Таблиця | Ключові колонки | Мета |
 |---------|----------------|------|
 | `schedule_templates` | `master_id`, `day_of_week`, `start_time`, `end_time`, `is_enabled` | Шаблон робочих годин (резерв) |
-| `schedule_exceptions` | `master_id`, `date`, `type` ('vacation'/'blocked') | Заблоковані дати (відпустки) |
+| `schedule_exceptions` | `master_id`, `date`, `type` ('vacation'/'blocked') | Старі заблоковані дати (legacy) |
+| `master_time_off` | `master_id`, `date`, `type` ('vacation'/'day_off'/'short_day'), `end_time` | Вихідні, відпустки, короткі дні (migration 051) |
 
-> `working_hours` jsonb в `master_profiles` — основний спосіб зберігання розкладу: `{ mon: { start: "09:00", end: "18:00", enabled: true }, ... }`
+> `working_hours` jsonb в `master_profiles` — основний розклад: `{ mon: { start: "09:00", end: "18:00", enabled: true }, ... }`. `master_time_off` є headless override для конкретних дат — підтримується в SmartSlots та BookingWizard.
 
 ### Bookings
 
 | Таблиця | Ключові колонки | Мета |
 |---------|----------------|------|
-| `bookings` | `master_id`, `client_id`, `service_id`, `status`, `slot_date`, `slot_time`, `total_duration`, `total_price`, `source` | Основна таблиця записів |
+| `bookings` | `master_id`, `client_id`, `service_id`, `status`, `slot_date`, `slot_time`, `total_duration`, `total_price`, `source`, `dynamic_pricing_label`, `dynamic_extra_kopecks` | Основна таблиця записів |
 | `booking_services` | `booking_id`, `service_id`, `duration`, `price` | Деталізація послуг у multi-service |
 | `booking_products` | `booking_id`, `product_id`, `quantity`, `product_price` | Товари в записі (ціна на момент запису) |
 
@@ -445,6 +451,29 @@ const admin = createAdminClient();
 
 `src/lib/supabase/admin.ts` — єдине місце з `service_role_key`. Використовується скрізь де потрібен bypass RLS: server actions, API webhooks, cron routes.
 
+### Supabase Browser Client — PWA Wakeup Architecture
+
+**Проблема:** після переходу між вкладками (будь-який інтервал) — нескінченні скелетони.
+
+**Причина:** `_recoverAndRefresh()` (Supabase) тримає `lockAcquired=true` і викликає `_notifyAllSubscribers`. Якщо `onAuthStateChange` callback викликав `await fetchProfile()` → `getSession()` → `_acquireLock` → **циклічний deadlock**.
+
+**Рішення:**
+```typescript
+// context.tsx: НІКОЛИ await fetchProfile() всередині onAuthStateChange callback
+// setTimeout(0) переносить в наступний macrotask — ПІСЛЯ lockAcquired=false
+setTimeout(() => { if (mountedRef.current) fetchProfile(u.id); }, 0);
+```
+
+**Додаткові заходи в `client.ts`:**
+- `pwaDummyLock` — обходить Web Locks API (не блокує `_acquireLock`)
+- `autoRefreshToken: false` — вимикає фоновий timer refresh (усуває timer-triggered deadlock)
+- `resetFetchController()` — global `AbortController` kill switch для in-flight запитів
+- Custom fetch: timeout 8s (auth) / 10s (інші) + глобальний abort signal
+
+**Wakeup hooks:**
+- `useSessionWakeup` — visibility change → `resetFetchController` → 500ms → `invalidateQueries`
+- `useDeepSleepWakeup` — JS freeze detection (setInterval drift) → `onlineManager` + `invalidateQueries`
+
 ### React Query Conventions
 
 | Hook / Дані | staleTime |
@@ -467,15 +496,17 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { uk } from 'date-fns/locale';
 
 // Утиліти в src/lib/utils/dates.ts:
-formatDate(date)          // "21 берез."
-formatDateFull(date)      // "21 березня 2026"
-formatDayFull(date)       // "субота, 21 березня"
-timeAgo(date)             // "3 год. тому"
-pluralize(n, forms)       // "1 запис / 2 записи / 5 записів"
-formatDurationFull(mins)  // "1 год. 30 хв."
+formatDate(date)                    // "21 берез."
+formatDateFull(date)                // "21 березня 2026"
+formatDayFull(date)                 // "субота, 21 березня"
+timeAgo(date)                       // "3 год. тому"
+formatDurationFull(mins)            // "1 год. 30 хв."
+
+// src/lib/utils/pluralUk.ts — ЄДИНИЙ plural helper:
+pluralUk(n, 'запис', 'записи', 'записів')  // "1 запис / 2 записи / 5 записів"
 ```
 
-**ЗАБОРОНЕНО:** хардкод масиви місяців/днів (`['Січень','Лютий',...]`), ternary плюралізація (`n === 1 ? 'запис' : 'записи'`).
+**ЗАБОРОНЕНО:** хардкод масиви місяців/днів (`['Січень','Лютий',...]`), ternary плюралізація (`n === 1 ? 'запис' : 'записи'`), або `pluralize()` — тільки `pluralUk()`.
 
 ### Security Rules
 
@@ -700,10 +731,12 @@ if (!user && (pathname startsWith /dashboard|/my|/onboarding))
 
 | Тип ресурсу | Стратегія | Деталі |
 |------------|----------|--------|
-| Статичні файли (JS, CSS, шрифти) | **Cache First** | Кеш → мережа (fallback) |
-| Публічні сторінки (`/[slug]`, `/explore`) | **Cache First** | 24г TTL |
-| Dashboard та `/my/` | **Network First** | Мережа → кеш (якщо offline) |
-| API Supabase | **Network Only** | Ніколи не кешувати |
+| Статичні файли `/_next/static/` | **Cache First** | Кеш → мережа (fallback) |
+| Зображення та іконки | **Cache First** | `/icons/`, `/images/`, `destination === 'image'` |
+| Page navigations (`mode === 'navigate'`) | **Bypass SW** | Browser handles directly (уникає зависань при freeze SW в фоні) |
+| API routes `/api/` | **Network Only** | Bypass SW |
+| RSC / Next.js data (`_rsc`, `/_next/data/`) | **Network Only** | Bypass SW |
+| Cross-origin (Supabase REST/Auth) | **Bypass SW** | Browser handles directly |
 | Offline fallback | `/offline` | При повній відсутності мережі |
 
 ### Push Notifications
@@ -771,8 +804,8 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 - [ ] `src/proxy.ts` — `export function proxy` (не middleware!)
 - [ ] Всі RLS policies активні в Supabase
-- [ ] Міграції 016 (`sms_verify_attempts`) та 017 (`master_profiles.telegram_chat_id`) застосовані
-- [ ] Ліміти Starter: 30 записів/місяць, 2 flash-акції/місяць, 9 фото портфоліо
+- [ ] Всі міграції до 051 застосовані (`npx supabase db push`)
+- [ ] Ліміти Starter: 30 записів/місяць, 2 flash-акції/місяць, 9 фото, dynamic pricing trial до 1000 UAH
 - [ ] WayForPay + Monobank webhooks верифікують підпис
 - [ ] `CRON_SECRET` в env, всі cron routes перевіряють `Authorization: Bearer`
 - [ ] `VAPID_PRIVATE_KEY` + `NEXT_PUBLIC_VAPID_KEY` в env

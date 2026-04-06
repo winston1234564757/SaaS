@@ -28,6 +28,7 @@ import { notifyMasterOnBooking, ensureClientProfile } from '@/app/[slug]/actions
 import { PostBookingAuth } from '@/components/public/PostBookingAuth';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { formatDurationFull, pluralize } from '@/lib/utils/dates';
+import { useToast } from '@/lib/toast/context';
 import type { WorkingHoursConfig } from '@/types/database';
 
 // ── Public types ──────────────────────────────────────────────────────────────
@@ -189,6 +190,8 @@ export function BookingWizard({
   onSuccess, flashDeal,
 }: BookingWizardProps) {
 
+  const { showToast } = useToast();
+
   // ── Step navigation ──────────────────────────────────────────────────────────
   const [step, setStep]           = useState<WizardStep>('services');
   const [direction, setDirection] = useState(1);
@@ -256,6 +259,8 @@ export function BookingWizard({
   // ── Submit state ──────────────────────────────────────────────────────────────
   const [saving, setSaving]             = useState(false);
   const [saveError, setSaveError]       = useState('');
+  const [nameError, setNameError]       = useState('');
+  const [phoneError, setPhoneError]     = useState('');
   const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
 
   // ── Refs ───────────────────────────────────────────────────────────────────────
@@ -355,6 +360,13 @@ export function BookingWizard({
       .then(ids => setSuggestedProductIds(new Set(ids)))
       .catch(() => setSuggestedProductIds(new Set()));
   }, [selectedServices, availableProducts.length]);
+
+  // ── saveError → Toast ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (saveError) {
+      showToast({ type: 'error', title: 'Помилка запису', message: saveError });
+    }
+  }, [saveError]);
 
   // ── Schedule-derived: breaks for selected date ────────────────────────────────
   const selectedDayBreaks = useMemo<TimeRange[]>(() => {
@@ -566,7 +578,7 @@ export function BookingWizard({
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-2 flex-shrink-0">
               <button onClick={goBack}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
                 <ChevronLeft size={16} />
               </button>
               <div className="text-center">
@@ -580,7 +592,7 @@ export function BookingWizard({
                 )}
               </div>
               <button onClick={closeWizard}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
                 <X size={14} />
               </button>
             </div>
@@ -846,7 +858,7 @@ export function BookingWizard({
                                 const prev = addDays(base, -1);
                                 if (prev >= days[0]) { setSelectedDate(prev); setSelectedTime(null); }
                               }}
-                              className="w-8 h-8 rounded-full bg-white/70 border border-stone-200 flex items-center justify-center flex-shrink-0 hover:bg-white transition-colors text-stone-500"
+                              className="w-11 h-11 rounded-full bg-white/70 border border-stone-200 flex items-center justify-center flex-shrink-0 hover:bg-white transition-colors text-stone-500"
                             >
                               <ChevronLeft size={14} />
                             </button>
@@ -918,7 +930,7 @@ export function BookingWizard({
                                 const next = addDays(base, 1);
                                 if (next <= days[days.length - 1]) { setSelectedDate(next); setSelectedTime(null); }
                               }}
-                              className="w-8 h-8 rounded-full bg-white/70 border border-stone-200 flex items-center justify-center flex-shrink-0 hover:bg-white transition-colors text-stone-500"
+                              className="w-11 h-11 rounded-full bg-white/70 border border-stone-200 flex items-center justify-center flex-shrink-0 hover:bg-white transition-colors text-stone-500"
                             >
                               <ChevronRight size={14} />
                             </button>
@@ -1084,19 +1096,19 @@ export function BookingWizard({
                                 </div>
                                 {qty === 0 ? (
                                   <button onClick={() => addToCart(p)}
-                                    className="w-8 h-8 rounded-full bg-[#789A99] text-white flex items-center justify-center hover:bg-[#5C7E7D] transition-colors">
+                                    className="w-11 h-11 rounded-full bg-[#789A99] text-white flex items-center justify-center hover:bg-[#5C7E7D] transition-colors">
                                     <Plus size={15} />
                                   </button>
                                 ) : (
                                   <div className="flex items-center gap-2">
                                     <button onClick={() => removeFromCart(p.id)}
-                                      className="w-8 h-8 rounded-full bg-[#F5E8E3] text-[#6B5750] flex items-center justify-center hover:bg-[#EDD9D1] transition-colors">
+                                      className="w-11 h-11 rounded-full bg-[#F5E8E3] text-[#6B5750] flex items-center justify-center hover:bg-[#EDD9D1] transition-colors">
                                       <Minus size={14} />
                                     </button>
                                     <span className="text-sm font-bold text-[#2C1A14] w-4 text-center">{qty}</span>
                                     <button onClick={() => addToCart(p)}
                                       disabled={p.stock !== null && p.stock !== undefined && qty >= (p.stock ?? Infinity)}
-                                      className="w-8 h-8 rounded-full bg-[#789A99] text-white flex items-center justify-center hover:bg-[#5C7E7D] transition-colors disabled:opacity-40">
+                                      className="w-11 h-11 rounded-full bg-[#789A99] text-white flex items-center justify-center hover:bg-[#5C7E7D] transition-colors disabled:opacity-40">
                                       <Plus size={14} />
                                     </button>
                                   </div>
@@ -1162,8 +1174,13 @@ export function BookingWizard({
                             <input type="text"
                               placeholder={mode === 'master' ? 'Олена Петрова' : 'Твоє імʼя та прізвище'}
                               value={clientName} onChange={e => setClientName(e.target.value)}
+                              onBlur={() => {
+                                if (clientName.trim().length < 2) setNameError('Мінімум 2 символи');
+                                else setNameError('');
+                              }}
                               className="w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
                             />
+                            {nameError && <p className="text-[#C05B5B] text-xs mt-1 ml-1">{nameError}</p>}
                           </div>
                           <div>
                             <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">
@@ -1171,8 +1188,13 @@ export function BookingWizard({
                             </label>
                             <input type="tel" placeholder="+380 XX XXX XX XX"
                               value={clientPhone} onChange={e => setClientPhone(e.target.value)}
+                              onBlur={() => {
+                                if (clientPhone.replace(/\D/g, '').length < 9) setPhoneError('Введіть коректний номер');
+                                else setPhoneError('');
+                              }}
                               className="w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
                             />
+                            {phoneError && <p className="text-[#C05B5B] text-xs mt-1 ml-1">{phoneError}</p>}
                           </div>
                           <div>
                             <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">
@@ -1256,7 +1278,6 @@ export function BookingWizard({
                           </div>
                         </div>
 
-                        {saveError && <p className="text-xs text-[#C05B5B] text-center mb-3">{saveError}</p>}
                         {mode === 'client' && (
                           <p className="text-xs text-[#A8928D] text-center mb-3">
                             Майстер отримає сповіщення та підтвердить запис

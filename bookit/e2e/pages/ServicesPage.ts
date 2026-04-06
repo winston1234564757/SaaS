@@ -44,17 +44,7 @@ export class ServicesPage {
   }
 
   async goto() {
-    // Listen for master_profiles BEFORE navigating — confirms MasterContext loaded
-    const masterProfileReady = this.page.waitForResponse(
-      res => res.url().includes('/rest/v1/master_profiles'),
-      { timeout: 15_000 }
-    ).catch(() => {
-      // If it never fires, MasterContext likely couldn't load (missing master_profiles row)
-      console.warn('[ServicesPage] master_profiles response not received — check DB setup');
-    });
-
     await this.page.goto('/dashboard/services');
-    await masterProfileReady;
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -77,8 +67,10 @@ export class ServicesPage {
 
   async openProductForm() {
     await this.productsTab.click();
+    // Дати React оновити стан tab перед кліком FAB
+    await this.page.waitForTimeout(300);
     await this.fab.click();
-    await this.productSheetTitle.waitFor({ state: 'visible' });
+    await this.productSheetTitle.waitFor({ state: 'visible', timeout: 10_000 });
   }
 
   async addProduct(name: string, price: number) {

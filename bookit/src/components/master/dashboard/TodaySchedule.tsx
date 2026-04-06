@@ -299,7 +299,6 @@ function StatsView({ bookings }: { bookings: BookingWithServices[] }) {
 }
 
 export function TodaySchedule() {
-  const [mounted, setMounted] = useState(false);
   const [view, setView] = useState<ViewMode>('today');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('list');
   const range = getDateRange(view);
@@ -313,8 +312,6 @@ export function TodaySchedule() {
     params.set('bookingId', id);
     router.push(`?${params.toString()}`, { scroll: false });
   };
-
-  useEffect(() => setMounted(true), []);
 
   const filtered = useMemo(
     () => allBookings.filter(b => b.status !== 'cancelled'),
@@ -407,7 +404,7 @@ export function TodaySchedule() {
           exit={{ opacity: 0, x: -8 }}
           transition={{ duration: 0.15 }}
         >
-          {!mounted || isLoading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center py-8 gap-2">
               <Loader2 size={18} className="text-[#789A99] animate-spin" />
               <span className="text-sm text-[#A8928D]">Завантаження...</span>

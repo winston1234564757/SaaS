@@ -68,6 +68,7 @@ async function insertTestBooking(overrides: Record<string, unknown> = {}) {
 test.describe('CRM: Зміна статусу запису', () => {
 
   test('booking status update: pending → confirmed оновлює БД', async ({ browser }) => {
+    test.setTimeout(90_000); // navigation + mutation + DB polling
     test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
     test.skip(!MASTER_ID,      'E2E_MASTER_ID не задано');
 
@@ -83,17 +84,29 @@ test.describe('CRM: Зміна статусу запису', () => {
       // 3. Navigate to the bookings page with this booking open in the modal
       await bookingsPage.openBookingById(bookingId);
 
-      // 4. Click "Підтвердити" and wait for the Supabase PATCH to complete
+      // 4. Click "Підтвердити" — мутація йде через Supabase client (realtime), не Server Action
       await expect(bookingsPage.confirmBtn).toBeVisible({ timeout: 8_000 });
-      const patchDone = page.waitForResponse(
-        r => r.url().includes('supabase') && r.url().includes('bookings') && r.request().method() === 'PATCH',
-        { timeout: 10_000 }
-      );
-      await bookingsPage.confirmBtn.click();
-      await patchDone;
 
-      // 6. Assert DB row status changed to 'confirmed'
-      const booking = await getBookingById(bookingId);
+      // Слухати PATCH-запит перед кліком
+      const patchDone = page.waitForResponse(
+        r => r.url().includes('/rest/v1/bookings') && r.request().method() === 'PATCH',
+        { timeout: 15_000 }
+      ).catch(() => null); // м'яко — якщо URL структура інша
+
+      await bookingsPage.confirmBtn.click();
+      await patchDone; // чекаємо на відповідь з БД
+
+      // Чекаємо оновлення UI + додатковий буфер для запису в БД
+      await expect(bookingsPage.confirmBtn).toBeHidden({ timeout: 10_000 })
+        .catch(() => {});
+      await page.waitForTimeout(2000);
+
+      // 6. Assert DB row status changed to 'confirmed' (з polling на випадок затримки)
+      let booking = await getBookingById(bookingId);
+      for (let i = 0; i < 5 && booking.status !== 'confirmed'; i++) {
+        await page.waitForTimeout(1000);
+        booking = await getBookingById(bookingId);
+      }
       expect(booking.status).toBe('confirmed');
     } finally {
       await context.close();

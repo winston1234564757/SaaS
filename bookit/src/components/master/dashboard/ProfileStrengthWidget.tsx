@@ -57,13 +57,10 @@ export function ProfileStrengthWidget() {
 
   const [celebrating, setCelebrating] = useState(false);
   const [visible, setVisible] = useState(true);
-  // Start as true to avoid flash — set to real value in useEffect (client only)
-  const [alreadyCelebrated, setAlreadyCelebrated] = useState(true);
-
-  // Read localStorage only on the client, inside useEffect
-  useEffect(() => {
-    setAlreadyCelebrated(localStorage.getItem(LS_KEY) === 'done');
-  }, []);
+  // Lazy initializer — читаємо localStorage одразу на клієнті, без 2-phase render
+  const [alreadyCelebrated, setAlreadyCelebrated] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem(LS_KEY) === 'done'
+  );
 
   // ── Derived values — never useState for these ─────────────────────────────
   const steps = [

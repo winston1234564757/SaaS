@@ -39,10 +39,11 @@ export class BookingsPage {
     // Modal / sheet — framer-motion div, no [role="dialog"]; identified by unique rounded-t-3xl + heading
     this.modalOverlay = page.locator('div[class*="rounded-t-3xl"]').filter({ has: page.locator('h2', { hasText: 'Деталі запису' }) }).first();
 
-    // Action buttons inside the modal (visible only for pending/confirmed status)
-    this.confirmBtn  = page.getByRole('button', { name: 'Підтвердити' });
-    this.completeBtn = page.getByRole('button', { name: 'Завершити' });
-    this.cancelBtn   = page.getByRole('button', { name: 'Скасувати' });
+    // Action buttons inside the modal sheet — scoped to avoid matching quick-action buttons in card list
+    const sheet = page.locator('div[class*="rounded-t-3xl"]').filter({ has: page.locator('h2', { hasText: 'Деталі запису' }) });
+    this.confirmBtn  = sheet.getByRole('button', { name: 'Підтвердити' }).first();
+    this.completeBtn = sheet.getByRole('button', { name: 'Завершити' }).first();
+    this.cancelBtn   = sheet.getByRole('button', { name: 'Скасувати' }).first();
   }
 
   async goto() {

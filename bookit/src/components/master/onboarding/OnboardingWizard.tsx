@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Camera, Check, Loader2, Copy, ExternalLink, Plus, X } from 'lucide-react';
@@ -119,6 +119,14 @@ export function OnboardingWizard() {
   const [phone, setPhone] = useState('');
   const [specialization, setSpecialization] = useState('💅');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (step === 'BASIC') {
+      const t = setTimeout(() => firstInputRef.current?.focus(), 150);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
 
   // SCHEDULE_FORM: Schedule + working hours
   const [schedule, setSchedule] = useState<Record<DayKey, DaySchedule>>(DEFAULT_SCHEDULE);
@@ -374,7 +382,7 @@ export function OnboardingWizard() {
               <div className="flex flex-col gap-4">
                 <div>
                   <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">{"Ім'я та прізвище"}</label>
-                  <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ксенія Коваль" className={inputCls} />
+                  <input ref={firstInputRef} value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ксенія Коваль" className={inputCls} />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Мобільний телефон</label>

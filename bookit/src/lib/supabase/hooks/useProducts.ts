@@ -130,7 +130,18 @@ export function useProducts() {
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<void, Error, string, { prev: Product[] | undefined }>({
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<Product[]>(key);
+      qc.setQueryData<Product[]>(key, old =>
+        (old ?? []).filter(p => p.id !== id)
+      );
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev) qc.setQueryData(key, ctx.prev);
+    },
     mutationFn: async (id: string) => {
       const supabase = createClient();
 

@@ -102,7 +102,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             },
             body: JSON.stringify({
               recipients: [phone],
-              sms: { sender: process.env.TURBOSMS_SENDER ?? 'BEAUTY', text: messageText },
+              sms: { sender: process.env.TURBOSMS_SENDER ?? 'BookIT', text: messageText },
             }),
             signal: smsController.signal,
           });

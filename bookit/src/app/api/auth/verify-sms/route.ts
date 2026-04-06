@@ -118,24 +118,36 @@ export async function POST(req: NextRequest) {
   });
   if (!createError) isNew = true;
 
-  // 8. Generate one-time magiclink token — never expose the password
+  // 8. Generate one-time magiclink token і одразу обмінюємо на сесію server-side.
+  //    Supabase JS клієнт v2 видаляє type:'magiclink' як deprecated → verifyOtp ламається.
+  //    Пряме REST звернення до /auth/v1/verify приймає type:'magiclink' і повертає сесію.
   const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
     type: 'magiclink',
     email: virtualEmail,
   });
 
-  if (linkError || !linkData) {
-    console.error('[verify-sms] generateLink error:', linkError);
+  if (linkError || !linkData?.properties?.email_otp) {
+    console.error('[verify-sms] generateLink error:', linkError, 'properties:', linkData?.properties);
     return NextResponse.json(
       { success: false, error: 'Помилка авторизації. Спробуйте ще раз.' },
       { status: 500 }
     );
   }
 
+  // 8b. Синхронізуємо телефон у profiles (тригер створює профіль без phone).
+  //     linkData.user.id — userId доступний і для нових, і для існуючих юзерів.
+  if (linkData.user?.id) {
+    await supabaseAdmin
+      .from('profiles')
+      .update({ phone: cleanPhone })
+      .eq('id', linkData.user.id);
+  }
+
+  // email_otp — це OTP-код для verifyOtp({ type: 'email' }) на клієнті.
   return NextResponse.json({
     success: true,
     email: virtualEmail,
-    token: linkData.properties.hashed_token,
+    token: linkData.properties.email_otp,
     isNew,
   });
 }

@@ -133,6 +133,17 @@ export function useBookingById(id: string | null) {
         .eq('master_id', masterId!);
       if (error) throw error;
     },
+    onMutate: async (status: BookingStatus) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData(key);
+      qc.setQueryData(key, (old: BookingWithServicesAndProducts | undefined) =>
+        old ? { ...old, status } : old
+      );
+      return { prev };
+    },
+    onError: (_err: unknown, _status: BookingStatus, ctx: { prev: unknown } | undefined) => {
+      qc.setQueryData(key, ctx?.prev);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ['bookings', masterId] });
@@ -152,6 +163,17 @@ export function useBookingById(id: string | null) {
         .eq('id', id!)
         .eq('master_id', masterId!);
       if (error) throw error;
+    },
+    onMutate: async (master_notes: string) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData(key);
+      qc.setQueryData(key, (old: BookingWithServicesAndProducts | undefined) =>
+        old ? { ...old, master_notes } : old
+      );
+      return { prev };
+    },
+    onError: (_err: unknown, _master_notes: string, ctx: { prev: unknown } | undefined) => {
+      qc.setQueryData(key, ctx?.prev);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });

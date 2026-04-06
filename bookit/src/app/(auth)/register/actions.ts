@@ -40,7 +40,7 @@ export async function claimMasterRole(
   const { error: profileError } = await admin
     .from('profiles')
     .upsert(
-      { id: user.id, role: 'master', phone },
+      { id: user.id, role: 'master', phone, full_name: '' },
       { onConflict: 'id', ignoreDuplicates: false },
     );
 

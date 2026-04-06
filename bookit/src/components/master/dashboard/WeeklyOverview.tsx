@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWeeklyOverview, type DayData } from '@/lib/supabase/hooks/useWeeklyOverview';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const DAYS_FULL  = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя'];
@@ -91,71 +92,81 @@ export function WeeklyOverview() {
 
       {/* Bar chart */}
       <div className="flex items-end gap-2" style={{ height: BAR_MAX_PX + 4 }}>
-        {weekData.map((day, i) => {
-          const barH    = day.bookings === 0 ? 4 : Math.round((day.bookings / maxBookings) * BAR_MAX_PX);
-          const isToday = i === todayIdx;
-          const isPast  = i < todayIdx;
-
-          return (
-            <div
+        {isLoading ? (
+          Array.from({ length: 7 }).map((_, i) => (
+            <Skeleton
               key={i}
-              className="flex-1 flex flex-col items-center justify-end h-full relative"
-              onMouseEnter={() => setActiveBar(i)}
-              onMouseLeave={() => setActiveBar(null)}
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveBar(prev => prev === i ? null : i);
-              }}
-            >
-              {/* Touch/hover tooltip */}
-              <AnimatePresence>
-                {activeBar === i && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-                    style={{
-                      background: 'rgba(255,248,244,0.97)',
-                      backdropFilter: 'blur(16px)',
-                      border: '1px solid rgba(255,255,255,0.72)',
-                      boxShadow: '0 8px 24px rgba(44,26,20,0.12)',
-                      borderRadius: 14,
-                      padding: '8px 12px',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <BarTooltipContent
-                      dayFull={DAYS_FULL[i]}
-                      bookings={day.bookings}
-                      revenue={day.revenue}
-                      isToday={isToday}
-                      isPast={isPast}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              className="flex-1 rounded-t-sm"
+              style={{ height: `${30 + (i % 3) * 15}px` }}
+            />
+          ))
+        ) : (
+          weekData.map((day, i) => {
+            const barH    = day.bookings === 0 ? 4 : Math.round((day.bookings / maxBookings) * BAR_MAX_PX);
+            const isToday = i === todayIdx;
+            const isPast  = i < todayIdx;
 
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: isLoading ? 4 : barH }}
-                transition={{ delay: 0.4 + i * 0.06, type: 'spring', stiffness: 260, damping: 22 }}
-                style={{
-                  borderRadius: '5px 5px 3px 3px',
-                  background: isToday
-                    ? '#789A99'
-                    : isPast
-                    ? 'rgba(120, 154, 153, 0.4)'
-                    : 'rgba(120, 154, 153, 0.18)',
-                  cursor: 'pointer',
-                  width: '100%',
+            return (
+              <div
+                key={i}
+                className="flex-1 flex flex-col items-center justify-end h-full relative"
+                onMouseEnter={() => setActiveBar(i)}
+                onMouseLeave={() => setActiveBar(null)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveBar(prev => prev === i ? null : i);
                 }}
-                whileHover={{ background: isToday ? '#5C7E7D' : isPast ? 'rgba(120,154,153,0.6)' : 'rgba(120,154,153,0.35)' }}
-              />
-            </div>
-          );
-        })}
+              >
+                {/* Touch/hover tooltip */}
+                <AnimatePresence>
+                  {activeBar === i && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+                      style={{
+                        background: 'rgba(255,248,244,0.97)',
+                        backdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(255,255,255,0.72)',
+                        boxShadow: '0 8px 24px rgba(44,26,20,0.12)',
+                        borderRadius: 14,
+                        padding: '8px 12px',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <BarTooltipContent
+                        dayFull={DAYS_FULL[i]}
+                        bookings={day.bookings}
+                        revenue={day.revenue}
+                        isToday={isToday}
+                        isPast={isPast}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: barH }}
+                  transition={{ delay: 0.4 + i * 0.06, type: 'spring', stiffness: 260, damping: 22 }}
+                  style={{
+                    borderRadius: '5px 5px 3px 3px',
+                    background: isToday
+                      ? '#789A99'
+                      : isPast
+                      ? 'rgba(120, 154, 153, 0.4)'
+                      : 'rgba(120, 154, 153, 0.18)',
+                    cursor: 'pointer',
+                    width: '100%',
+                  }}
+                  whileHover={{ background: isToday ? '#5C7E7D' : isPast ? 'rgba(120,154,153,0.6)' : 'rgba(120,154,153,0.35)' }}
+                />
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Day labels */}

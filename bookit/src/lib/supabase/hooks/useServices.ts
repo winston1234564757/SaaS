@@ -135,7 +135,18 @@ export function useServices() {
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<void, Error, string, { prev: Service[] | undefined }>({
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<Service[]>(key);
+      qc.setQueryData<Service[]>(key, old =>
+        (old ?? []).filter(s => s.id !== id)
+      );
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev) qc.setQueryData(key, ctx.prev);
+    },
     mutationFn: async (id: string) => {
       const supabase = createClient();
 

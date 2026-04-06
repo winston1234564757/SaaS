@@ -52,11 +52,9 @@ CRON_SECRET=
 ```bash
 # Застосувати нові міграції
 npx supabase db push
-
-# Або через Supabase Dashboard → SQL Editor:
-# supabase/migrations/016_sms_verify_attempts.sql
-# supabase/migrations/017_master_telegram_chat_id.sql
 ```
+
+> Усі міграції: `supabase/migrations/` (001 → 051+)
 
 ## Структура
 

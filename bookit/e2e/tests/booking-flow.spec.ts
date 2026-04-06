@@ -59,11 +59,12 @@ test.describe('Публічна сторінка + Booking Flow', () => {
     await expect(firstCard).toBeVisible({ timeout: 8_000 });
     await firstCard.click();
 
-    // nextBtn should become enabled and match "Далі · N посл. · X ₴"
+    // nextBtn should become enabled and match "Далі · 1 послуга · X ₴"
+    // pluralize(1, ['послуга','послуги','послуг']) → "1 послуга"
     await expect(pub.nextBtn).toBeEnabled();
     const btnText = await pub.getNextBtnText();
-    expect(btnText).toMatch(/^Далі · \d+ посл\. · [\d\s]+ ₴$/);
-    expect(btnText).toContain('1 посл.');
+    expect(btnText).toMatch(/^Далі · \d+ посл.* · [\d\s]+ ₴$/);
+    expect(btnText).toMatch(/1 послуга/);
   });
 
   test('вибір двох послуг — лічильник і сума оновлюються', async ({ page }) => {
@@ -71,9 +72,8 @@ test.describe('Публічна сторінка + Booking Flow', () => {
     await pub.goto(SLUG!);
     await pub.openBookingFlow();
 
-    // We need at least 2 service cards
-    const cards = pub.page
-      .locator('.fixed.bottom-0.left-0.right-0.z-50 button.rounded-2xl.border');
+    // We need at least 2 service cards (all inside wizard panel z-[60])
+    const cards = pub.page.locator('div[class*="z-\\[60\\]"] button.w-full.text-left');
     const count = await cards.count();
 
     if (count < 2) {
@@ -83,7 +83,7 @@ test.describe('Публічна сторінка + Booking Flow', () => {
 
     await cards.nth(0).click();
     const textAfterFirst = await pub.getNextBtnText();
-    // Extract price from "Далі · 1 посл. · X ₴"
+    // Extract price from "Далі · 1 послуга · X ₴"
     const priceMatch1 = textAfterFirst.match(/([\d\s]+)\s*₴/);
     const price1 = priceMatch1 ? parseInt(priceMatch1[1].replace(/\s/g, '')) : 0;
 
@@ -92,7 +92,7 @@ test.describe('Публічна сторінка + Booking Flow', () => {
     const priceMatch2 = textAfterSecond.match(/([\d\s]+)\s*₴/);
     const price2 = priceMatch2 ? parseInt(priceMatch2[1].replace(/\s/g, '')) : 0;
 
-    expect(textAfterSecond).toContain('2 посл.');
+    expect(textAfterSecond).toMatch(/2 посл/); // "2 послуги"
     // Total price after selecting two services must be greater than first alone
     expect(price2).toBeGreaterThan(price1);
   });

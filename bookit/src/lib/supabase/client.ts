@@ -88,6 +88,11 @@ export function createClient() {
         // lock звільняється миттєво. Token refresh відбувається автоматично через
         // __loadSession при першому API call якщо token expired.
         autoRefreshToken: false,
+        // flowType: 'implicit' — необхідно для verifyOtp({ type: 'email', token: hashed_token }).
+        // PKCE flow (default в @supabase/ssr) вимагає code verifier якого немає
+        // при server-side generateLink → verifyOtp повертає session: null.
+        // Примітка: type: 'magiclink' deprecated в @supabase/auth-js v2 → використовувати 'email'.
+        flowType: 'implicit',
       },
       global: {
         fetch: customFetch,

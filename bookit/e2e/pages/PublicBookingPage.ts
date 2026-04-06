@@ -20,18 +20,17 @@ export class PublicBookingPage {
     // h1 on public master page
     this.masterName = page.locator('h1').first();
 
-    // Sticky "Записатися" button at the bottom
-    this.bookBtn = page.getByRole('button', { name: 'Записатися' });
+    // Sticky CTA — matched by unique class h-14 (flash-deal btn uses py-2, not h-14)
+    this.bookBtn = page.locator('button.h-14');
 
-    // Inside BookingFlow: step header text "Обери послуги" (step = 'service')
-    this.flowServiceHeader = page.locator('p').filter({ hasText: 'Обери послуги' });
+    // Inside BookingFlow wizard panel (z-[60]): step header
+    this.flowServiceHeader = page.locator('p.font-semibold').filter({ hasText: 'Обери послуги' }).first();
 
     // Inside BookingFlow: master name shown above step title
     this.flowMasterName = page.locator('p.text-xs').filter({ hasText: /\S/ }).first();
 
-    // "Далі …" or "Обери послугу" — the primary CTA inside the flow
-    // We locate it by role=button with text that starts with Далі or Обери послугу
-    this.nextBtn = page.getByRole('button', { name: /^(Далі|Обери послугу)/ });
+    // "Далі …" or "Обери послугу" CTA inside wizard — scoped to panel
+    this.nextBtn = page.locator('div[class*="z-\\[60\\]"]').getByRole('button', { name: /^(Далі|Обери)/ }).last();
   }
 
   async goto(slug: string) {
@@ -40,31 +39,34 @@ export class PublicBookingPage {
   }
 
   async openBookingFlow() {
-    await this.bookBtn.click();
-    await this.flowServiceHeader.waitFor({ state: 'visible', timeout: 8_000 });
+    // MyBottomNav (pointer-events-none container) has children that intercept coordinate clicks.
+    // Use evaluate to click h-14 CTA directly via JS, bypassing overlay issues.
+    await this.page.evaluate(() => {
+      const btn = document.querySelector<HTMLButtonElement>('button.h-14');
+      btn?.click();
+    });
+    await this.flowServiceHeader.waitFor({ state: 'visible', timeout: 10_000 });
   }
 
-  /** Returns the text content of the "Далі" / "Обери послугу" button */
+  /** Returns the text content of the "Далі" / "Обери" button */
   async getNextBtnText(): Promise<string> {
     return (await this.nextBtn.textContent()) ?? '';
   }
 
   /**
    * Clicks the n-th service card inside BookingFlow (0-indexed).
-   * Service cards are <button> elements that contain the service name.
+   * Wizard panel is z-[60]; service buttons are w-full text-left inside.
    */
   serviceCard(index: number): Locator {
-    // Service step: buttons inside the scrollable content area of the flow sheet
-    // They have class "flex items-center gap-3 p-4 rounded-2xl border text-left"
     return this.page
-      .locator('.fixed.bottom-0.left-0.right-0.z-50 button.rounded-2xl.border')
+      .locator('div[class*="z-\\[60\\]"] button.w-full.text-left')
       .nth(index);
   }
 
   /** Clicks a service card by its visible name text */
   serviceCardByName(name: string): Locator {
     return this.page
-      .locator('.fixed.bottom-0.left-0.right-0.z-50 button')
+      .locator('div[class*="z-\\[60\\]"] button.w-full.text-left')
       .filter({ hasText: name });
   }
 }

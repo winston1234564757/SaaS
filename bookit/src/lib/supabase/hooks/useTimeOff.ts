@@ -46,8 +46,19 @@ export function useTimeOff() {
     staleTime: 60_000,
   });
 
-  const addMutation = useMutation({
-    mutationFn: async (payload: AddTimeOffPayload) => {
+  const addMutation = useMutation<void, Error, AddTimeOffPayload, { prev: TimeOffEntry[] | undefined }>({
+    onMutate: async (_input) => {
+      // Скасовуємо активні запити, щоб уникнути перезапису оптимістичного стану
+      await qc.cancelQueries({ queryKey: key });
+      // Зберігаємо попередній стан для rollback (id невідомий до відповіді сервера)
+      const prev = qc.getQueryData<TimeOffEntry[]>(key);
+      return { prev };
+    },
+    onError: (_err, _input, ctx) => {
+      // Відновлюємо попередній стан при помилці
+      if (ctx?.prev !== undefined) qc.setQueryData<TimeOffEntry[]>(key, ctx.prev);
+    },
+    mutationFn: async (payload) => {
       const result = await addTimeOff(payload);
       if (result.error) throw new Error(result.error);
     },
@@ -57,8 +68,22 @@ export function useTimeOff() {
     },
   });
 
-  const removeMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const removeMutation = useMutation<void, Error, string, { prev: TimeOffEntry[] | undefined }>({
+    onMutate: async (id) => {
+      // Скасовуємо активні запити, щоб уникнути перезапису оптимістичного стану
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<TimeOffEntry[]>(key);
+      // Оптимістично видаляємо запис з кешу
+      qc.setQueryData<TimeOffEntry[]>(key, old =>
+        (old ?? []).filter(t => t.id !== id)
+      );
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      // Відновлюємо попередній стан при помилці
+      if (ctx?.prev !== undefined) qc.setQueryData<TimeOffEntry[]>(key, ctx.prev);
+    },
+    mutationFn: async (id) => {
       const result = await removeTimeOff(id);
       if (result.error) throw new Error(result.error);
     },

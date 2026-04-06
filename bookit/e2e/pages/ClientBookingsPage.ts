@@ -29,8 +29,9 @@ export class ClientBookingsPage {
 
     this.heading = page.locator('h1').first();
 
-    this.upcomingTab = page.getByRole('button', { name: /^Майбутні/ });
-    this.pastTab     = page.getByRole('button', { name: /^Минулі/ });
+    // /my/bookings має секції (p.text-xs), а не вкладки-кнопки
+    this.upcomingTab = page.locator('p').filter({ hasText: /Майбутні записи/ }).first();
+    this.pastTab     = page.locator('p').filter({ hasText: /Минулі записи/ }).first();
 
     this.bookingCards = page.locator('[data-testid="booking-card"]');
 

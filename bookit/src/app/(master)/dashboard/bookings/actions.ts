@@ -102,7 +102,7 @@ export async function notifyClientOnStatusChange(
         },
         body: JSON.stringify({
           recipients: [booking.client_phone],
-          sms: { sender: 'BEAUTY', text: body },
+          sms: { sender: 'BookIT', text: body },
         }),
       });
     }

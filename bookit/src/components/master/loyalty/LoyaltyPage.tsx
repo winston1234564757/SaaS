@@ -323,9 +323,13 @@ export function LoyaltyPage() {
                               <span className="text-xs text-[#C05B5B] font-medium whitespace-nowrap ml-1">Видалити?</span>
                               <button
                                 onClick={() => deleteMutation.mutate(p.id)}
-                                className="px-2.5 h-7 rounded-lg bg-[#C05B5B] text-white text-xs font-semibold hover:bg-[#a84a4a] transition-colors"
+                                disabled={deleteMutation.isPending}
+                                aria-disabled={deleteMutation.isPending}
+                                className="px-2.5 h-7 rounded-lg bg-[#C05B5B] text-white text-xs font-semibold hover:bg-[#a84a4a] transition-colors disabled:opacity-60 flex items-center gap-1"
                               >
-                                Так
+                                {deleteMutation.isPending
+                                  ? <Loader2 size={12} className="animate-spin" />
+                                  : 'Так'}
                               </button>
                               <button
                                 onClick={() => setConfirmDelete(null)}
@@ -347,7 +351,9 @@ export function LoyaltyPage() {
 
                       <button
                         onClick={() => toggleMutation.mutate({ id: p.id, isActive: p.isActive })}
-                        className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${p.isActive ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'}`}
+                        disabled={toggleMutation.isPending}
+                        aria-disabled={toggleMutation.isPending}
+                        className={`relative w-11 h-6 rounded-full transition-colors duration-200 disabled:opacity-60 ${p.isActive ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'}`}
                       >
                         <motion.div
                           animate={{ x: p.isActive ? 20 : 2 }}

@@ -6,13 +6,7 @@
 - Do not guess or hallucinate. If a type or component is missing, read the file system first.
 - This project runs on **Next.js 16+ App Router** (Turbopack). `middleware.ts` is **DEPRECATED** — routing protection lives in `src/proxy.ts` with `export function proxy`.
 
-## 2. Agent Orchestration (Ruflo MCP Protocol)
-- **Primary Execution Engine:** You are connected to the Ruflo MCP server. For complex refactoring, multi-file architectural changes, or generating new features, you MUST delegate the work to the Ruflo Swarm.
-- **No Native Solo-Coding for Complex Tasks:** DO NOT use your native file-editing tools or get stuck in long "high effort" reasoning loops for tasks that require widespread code changes. 
-- **Tool Invocation:** Explicitly call the available Ruflo MCP tools (e.g., tools starting with `mcp__ruflo__...`) to assign tasks to the Architect, Coder, or Reviewer agents.
-- **Workflow:** Analyze the request -> Formulate the prompt/task -> Pass it to the Ruflo MCP tool -> Wait for the Swarm to execute -> Report the result. Use native tools ONLY for minor typo fixes or simple single-line changes.
-
-## 3. Strict Architectural Rules
+## 2. Strict Architectural Rules
 
 ### Reactivity (No F5 Required)
 - All **Server Actions** MUST end with `revalidatePath(...)` or `revalidateTag(...)` outside of the `/dashboard` 100% Client-Side zone.
@@ -56,7 +50,7 @@
 - No emojis in the professional desktop UI unless explicitly requested by the user.
 - Mobile-first layout. Server Components by default; `"use client"` only for interactivity.
 
-## 4. Tech Stack (Locked)
+## 3. Tech Stack (Locked)
 | Layer | Technology |
 |---|---|
 | Framework | Next.js 16+ App Router, Turbopack |
@@ -69,7 +63,7 @@
 | Animation | Framer Motion |
 | Icons | Lucide React |
 
-## 5. Design System (Locked)
+## 4. Design System (Locked)
 | Token | Value |
 |---|---|
 | Background | `#FFE8DC` (peach/salmon) |
@@ -89,14 +83,14 @@
 - Blob background: peach + sage + cream blobs, `z-index: -1`
 - Grain overlay: fixed, `z-index: 9999`, `opacity: 0.03`
 
-## 6. Auth Flow (SMS OTP → Magiclink)
+## 5. Auth Flow (SMS OTP → Magiclink)
 1. `send-sms` → writes OTP to `sms_otps` table (10 min TTL, rate-limited)
 2. `verify-sms` → verifies OTP, calls `admin.generateLink({ type: 'magiclink' })`, returns `{ email, token, isNew }`
 3. Client calls `supabase.auth.verifyOtp({ email, token, type: 'magiclink' })`
 - `sms_verify_attempts` table enforces max 10 attempts per 15 min.
 - NEVER return password in API response.
 
-## 7. Monetization Tiers
+## 6. Monetization Tiers
 | Tier | Price | Key Limits |
 |---|---|---|
 | Starter | 0₴ | 30 bookings/month, watermark |
