@@ -14,6 +14,9 @@ BEGIN
   IF NEW.phone IS NOT NULL
      AND (OLD IS NULL OR OLD.phone IS DISTINCT FROM NEW.phone)
   THEN
+    -- NOTE: SECURITY DEFINER bypasses RLS on bookings intentionally.
+    -- This trigger must link bookings regardless of the calling user's role.
+    -- Phone format assumed to be E.164 (380XXXXXXXXX) — enforced at application layer.
     UPDATE bookings
     SET client_id = NEW.id
     WHERE client_phone = NEW.phone
@@ -23,6 +26,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_link_bookings_on_phone ON profiles;
 CREATE TRIGGER trg_link_bookings_on_phone
   AFTER INSERT OR UPDATE OF phone ON profiles
   FOR EACH ROW
