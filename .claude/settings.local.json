@@ -105,7 +105,10 @@
       "Bash(npx playwright:*)",
       "Bash(xargs wc:*)",
       "Bash(node_modules/.bin/tsc:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(supabase db:*)",
+      "Bash(where supabase:*)",
+      "Read(//c/Users/Vitossik/SaaS/bookit/**)"
     ]
   }
 }

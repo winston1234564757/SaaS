@@ -13,6 +13,7 @@ import {
   saveOnboardingSchedule,
   saveOnboardingService,
 } from '@/app/(master)/dashboard/onboarding/actions';
+import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
 type Step =
   | 'BASIC'
@@ -116,7 +117,9 @@ export function OnboardingWizard() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
-  const [phone, setPhone] = useState('');
+  // Якщо авторизація через SMS — phone вже збережений у profile, поле не показуємо
+  const [phone, setPhone] = useState(() => e164ToInputPhone(profile?.phone));
+  const hasPhone = !!profile?.phone;
   const [specialization, setSpecialization] = useState('💅');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
@@ -221,7 +224,7 @@ export function OnboardingWizard() {
 
       const { error } = await saveOnboardingProfile({
         fullName: fullName.trim(),
-        phone: phone.trim() || null,
+        phone: phone.trim() ? toFullPhone(phone) : null,
         avatarUrl,
         avatarEmoji: specialization,
         slug: finalSlug,
@@ -384,10 +387,22 @@ export function OnboardingWizard() {
                   <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">{"Ім'я та прізвище"}</label>
                   <input ref={firstInputRef} value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ксенія Коваль" className={inputCls} />
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Мобільний телефон</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+38 (050) 000-00-00" className={inputCls} />
-                </div>
+                {!hasPhone && (
+                  <div>
+                    <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Мобільний телефон</label>
+                    <div className="flex items-center gap-0 rounded-2xl border border-white/80 bg-white/70 overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
+                      <span className="pl-4 pr-2 text-[#6B5750] font-medium text-sm select-none shrink-0">+38</span>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder="0XX XXX XX XX"
+                        value={formatPhoneDisplay(phone)}
+                        onChange={e => setPhone(normalizePhoneInput(e.target.value))}
+                        className="flex-1 py-3 pr-4 text-[#2C1A14] text-sm bg-transparent outline-none placeholder:text-[#A8928D]"
+                      />
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label className="text-xs font-medium text-[#6B5750] mb-2 block">Спеціалізація</label>
                   <div className="grid grid-cols-4 gap-2">

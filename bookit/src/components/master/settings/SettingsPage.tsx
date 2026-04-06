@@ -16,6 +16,7 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { useToast } from '@/lib/toast/context';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import type { BreakWindow } from '@/types/database';
+import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, normalizeToE164, toFullPhone } from '@/lib/utils/phone';
 
 const AVATAR_EMOJIS = ['💅','👑','✂️','💆','💇','🌸','✨','💎','🌺','🪞','🖌️','💄'];
 
@@ -81,7 +82,7 @@ export function SettingsPage() {
     if (formInitialized.current || !profile || !masterProfile) return;
     formInitialized.current = true;
     setFullName(profile.full_name ?? '');
-    setPhone(profile.phone ?? '');
+    setPhone(e164ToInputPhone(profile.phone));
     setAvatarUrl(profile.avatar_url ?? null);
     setBio(masterProfile.bio ?? '');
     setSlug(masterProfile.slug ?? '');
@@ -153,8 +154,9 @@ export function SettingsPage() {
     const supabase = createClient();
 
     try {
+      const cleanPhone = phone.trim() ? (normalizeToE164(toFullPhone(phone)) ?? null) : null;
       await Promise.all([
-        supabase.from('profiles').update({ full_name: fullName, phone: phone.trim() || null, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
+        supabase.from('profiles').update({ full_name: fullName, phone: cleanPhone, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
         supabase.from('master_profiles').update({
           bio, city, slug,
           avatar_emoji: avatar,
@@ -267,7 +269,17 @@ export function SettingsPage() {
 
           <div>
             <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Мобільний телефон</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+38 (050) 000-00-00" className={inputCls} />
+            <div className="flex items-center gap-0 rounded-2xl border border-white/80 bg-white/70 overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
+              <span className="pl-4 pr-2 text-[#6B5750] font-medium text-sm select-none shrink-0">+38</span>
+              <input
+                type="tel"
+                inputMode="numeric"
+                placeholder="0XX XXX XX XX"
+                value={formatPhoneDisplay(phone)}
+                onChange={e => setPhone(normalizePhoneInput(e.target.value))}
+                className="flex-1 py-3 pr-4 text-[#2C1A14] text-sm bg-transparent outline-none placeholder:text-[#A8928D]"
+              />
+            </div>
           </div>
 
           <div>

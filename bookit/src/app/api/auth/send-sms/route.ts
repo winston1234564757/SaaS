@@ -39,6 +39,27 @@ export async function POST(req: NextRequest) {
 
   const supabaseAdmin = createAdminClient();
 
+  // Перевірка: чи не зайнятий цей номер іншим акаунтом.
+  // SMS-власник телефону має email = `${phone}@bookit.app`.
+  // Якщо в profiles є рядок з цим phone, але з іншим email — конфлікт.
+  {
+    const virtualEmail = `${phone}@bookit.app`;
+    const { data: conflict } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('phone', phone)
+      .neq('email', virtualEmail)
+      .not('email', 'is', null)
+      .maybeSingle();
+
+    if (conflict) {
+      return NextResponse.json(
+        { success: false, error: 'Цей номер вже прив\'язаний до іншого акаунту. Увійдіть через Google або зверніться до підтримки.' },
+        { status: 409 },
+      );
+    }
+  }
+
   // Atomic rate-limit check via PostgreSQL RPC (fixes TOCTOU race condition).
   // check_and_log_sms_send() uses pg_advisory_xact_lock to serialize
   // concurrent requests for the same phone/IP, preventing SELECT+INSERT race.

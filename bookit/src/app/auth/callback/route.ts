@@ -71,8 +71,20 @@ export async function GET(request: NextRequest) {
         ?? '';
       const slug = baseName ? `${baseName}-${suffix}` : `master-${suffix}`;
 
+      // referral_code ЗАВЖДИ в payload: PostgreSQL перевіряє NOT NULL до ON CONFLICT DO NOTHING.
+      // Якщо рядок вже існує — existingMaster != null, тому читаємо його referral_code.
+      // Якщо рядок новий — генеруємо код тут.
+      let referralCode: string;
+      if (existingMaster) {
+        const { data: mp } = await admin
+          .from('master_profiles').select('referral_code').eq('id', user.id).single();
+        referralCode = mp?.referral_code ?? crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
+      } else {
+        referralCode = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
+      }
+
       await admin.from('master_profiles').upsert(
-        { id: user.id, slug },
+        { id: user.id, slug, referral_code: referralCode },
         { onConflict: 'id', ignoreDuplicates: true }
       );
 

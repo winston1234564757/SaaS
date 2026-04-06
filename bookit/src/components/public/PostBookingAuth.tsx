@@ -79,8 +79,9 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
   }
 
   // ── SMS: крок 2 ──────────────────────────────────────────────────────────
-  async function handleVerify() {
-    const otp = digits.join('');
+  // otpOverride — передається з auto-submit щоб уникнути stale state (як у PhoneOtpForm)
+  async function handleVerify(otpOverride?: string) {
+    const otp = otpOverride ?? digits.join('');
     if (otp.length < 6) { setError('Введіть 6-значний код'); return; }
     setLoading(true);
     setError('');
@@ -112,13 +113,6 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
       return;
     }
 
-    // Прив'язуємо записи до акаунту за номером телефону
-    await fetch('/api/auth/link-booking', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bookingId, phone: getCleanPhone() }),
-    }).catch(() => {});
-
     router.push('/my/bookings');
     router.refresh();
   }
@@ -131,7 +125,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
     setDigits(next);
     setError('');
     if (char && i < 5) digitRefs.current[i + 1]?.focus();
-    if (next.every(d => d !== '') && char) setTimeout(() => handleVerify(), 80);
+    if (next.every(d => d !== '') && char) setTimeout(() => handleVerify(next.join('')), 80);
   }
 
   function handleDigitKeyDown(i: number, e: KeyboardEvent<HTMLInputElement>) {
@@ -415,7 +409,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
 
             <button
               type="button"
-              onClick={handleVerify}
+              onClick={() => handleVerify()}
               disabled={loading || digits.some(d => !d)}
               className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-md shadow-[#789A99]/20 disabled:opacity-50"
             >

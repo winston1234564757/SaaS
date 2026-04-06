@@ -1,3 +1,28 @@
+/**
+ * Нормалізує будь-який введений український номер до E.164: 380XXXXXXXXX
+ * Приймає: '0967953488', '380967953488', '+380967953488', '967953488'
+ * Повертає null якщо формат не розпізнано.
+ */
+export function normalizeToE164(raw: string): string | null {
+  const digits = raw.replace(/\D/g, '');
+  if (/^380\d{9}$/.test(digits)) return digits;          // вже E.164
+  if (/^0\d{9}$/.test(digits))   return '38' + digits;  // 0XX → 380XX
+  if (/^\d{9}$/.test(digits))    return '380' + digits; // 9 цифр без префікса
+  return null;
+}
+
+/**
+ * Конвертує збережений E.164 номер (380XXXXXXXXX або 0XXXXXXXXX)
+ * у 9-цифровий формат для input полів з префіксом +38.
+ */
+export function e164ToInputPhone(stored: string | null | undefined): string {
+  if (!stored) return '';
+  const digits = stored.replace(/\D/g, '');
+  if (digits.startsWith('380') && digits.length === 12) return digits.slice(3);
+  if (digits.startsWith('0') && digits.length === 10)  return digits.slice(1);
+  return digits.slice(0, 9);
+}
+
 /** Format 9-digit phone (without leading 0) as "0XX XXX XX XX" */
 export function formatPhoneDisplay(raw: string): string {
   const d = '0' + raw.replace(/\D/g, '');

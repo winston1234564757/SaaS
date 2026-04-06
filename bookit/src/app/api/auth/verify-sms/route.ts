@@ -134,13 +134,23 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 8b. Синхронізуємо телефон у profiles (тригер створює профіль без phone).
-  //     linkData.user.id — userId доступний і для нових, і для існуючих юзерів.
+  // 8b. Синхронізуємо телефон у profiles.
+  //     Використовуємо upsert (не update) — якщо тригер handle_new_user впав із swallowed
+  //     exception, profiles рядок може не існувати. .update() в такому разі поверне
+  //     { error: null } з 0 affected rows і телефон silently зникне.
+  //     upsert з onConflict:'id' гарантує: або INSERT новий рядок, або UPDATE phone у наявному.
+  //     23505 (UNIQUE violation on phone) — ігноруємо: означає що номер вже є в іншого юзера.
+  //     Перевірка відбувається в send-sms; тут лише graceful fallback для race condition.
   if (linkData.user?.id) {
-    await supabaseAdmin
+    const { error: upsertError } = await supabaseAdmin
       .from('profiles')
-      .update({ phone: cleanPhone })
-      .eq('id', linkData.user.id);
+      .upsert(
+        { id: linkData.user.id, phone: cleanPhone },
+        { onConflict: 'id', ignoreDuplicates: false },
+      );
+    if (upsertError && upsertError.code !== '23505') {
+      console.error('[verify-sms] profiles upsert error:', upsertError.message);
+    }
   }
 
   // email_otp — це OTP-код для verifyOtp({ type: 'email' }) на клієнті.

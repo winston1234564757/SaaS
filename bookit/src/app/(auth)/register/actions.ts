@@ -50,19 +50,20 @@ export async function claimMasterRole(
   }
 
   const slug = generatePlaceholderSlug();
+  const referralCode = generateReferralCode();
 
   const { error: masterError } = await admin
     .from('master_profiles')
     .upsert(
-      { id: user.id, slug, is_published: false },
+      { id: user.id, slug, is_published: false, referral_code: referralCode },
       { onConflict: 'id', ignoreDuplicates: true }, // don't overwrite if already exists
     );
 
   if (masterError) {
     // Rollback: remove profiles row to avoid orphaned 'master' without master_profiles
     await admin.from('profiles').delete().eq('id', user.id);
-    console.error('[register] master_profiles upsert failed:', masterError.message);
-    return { error: 'Помилка ініціалізації профілю майстра. Спробуйте ще раз.' };
+    console.error('[register] master_profiles upsert failed:', masterError.message, masterError.code, masterError.details);
+    return { error: `[DEBUG] master_profiles: ${masterError.message} (${masterError.code})` };
   }
 
   revalidatePath('/dashboard', 'layout');

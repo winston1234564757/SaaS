@@ -174,7 +174,6 @@ export function PhoneOtpForm() {
     } else {
       router.push('/my/bookings');
     }
-    router.refresh();
   }
 
   // ── OTP Input handlers ───────────────────────────────────────────────────
