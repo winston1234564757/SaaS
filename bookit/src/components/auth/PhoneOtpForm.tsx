@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -53,6 +52,7 @@ export function PhoneOtpForm() {
 
   const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const oauthRedirectingRef = useRef(false);
 
   // ── Cleanup cooldown on unmount ──────────────────────────────────────────
   useEffect(() => () => {
@@ -61,7 +61,9 @@ export function PhoneOtpForm() {
 
   // ── Fix: скидаємо Google loading коли юзер повертається (відмінив OAuth) ──
   useEffect(() => {
-    const handleFocus = () => setIsGoogleLoading(false);
+    const handleFocus = () => {
+      if (!oauthRedirectingRef.current) setIsGoogleLoading(false);
+    };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
@@ -148,14 +150,14 @@ export function PhoneOtpForm() {
     }
 
     if (selectedRole === 'master' && data.isNew && authData.user?.id) {
-      const refCode = typeof window !== 'undefined'
-        ? localStorage.getItem('bookit_ref')
-        : null;
+      const refCode = localStorage.getItem('bookit_ref');
       if (refCode) {
         void processRegistrationReferral(authData.user.id, refCode);
         localStorage.removeItem('bookit_ref');
       }
     }
+
+    setLoading(false);
 
     if (selectedRole === 'master') {
       const match = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);
@@ -270,6 +272,8 @@ export function PhoneOtpForm() {
       if (error) {
         setIsGoogleLoading(false);
         setError(error.message || 'Помилка входу через Google');
+      } else {
+        oauthRedirectingRef.current = true; // redirect initiated — don't reset loading on focus
       }
       // Якщо успіх — redirect відбувається сам, loading лишається true до переходу сторінки
     } catch {
@@ -356,13 +360,6 @@ export function PhoneOtpForm() {
                 Продовжити
               </button>
 
-              {/* Footer */}
-              <p className="text-center text-sm text-[#6B5750] mt-5">
-                Вже маєш акаунт?{' '}
-                <Link href="/login" className="text-[#789A99] font-medium hover:underline">
-                  Увійти
-                </Link>
-              </p>
             </motion.div>
           )}
 
