@@ -128,16 +128,24 @@ export function PhoneOtpForm() {
       return;
     }
 
-    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
-      email: data.email,
-      token: data.token,
-      type: 'email',
-    });
+    let userId: string | undefined;
 
-    if (authError || !authData.session) {
-      setLoading(false);
-      setError('Помилка авторизації. Спробуйте знову.');
-      return;
+    if (!data.isExistingSession) {
+      const { data: authData, error: authError } = await supabase.auth.verifyOtp({
+        email: data.email,
+        token: data.token,
+        type: 'email',
+      });
+
+      if (authError || !authData.session) {
+        setLoading(false);
+        setError('Помилка авторизації. Спробуйте знову.');
+        return;
+      }
+      userId = authData.user?.id;
+    } else {
+      const { data: userData } = await supabase.auth.getUser();
+      userId = userData.user?.id;
     }
 
     if (selectedRole === 'master') {
@@ -149,15 +157,17 @@ export function PhoneOtpForm() {
       }
     }
 
-    if (selectedRole === 'master' && data.isNew && authData.user?.id) {
+    if (selectedRole === 'master' && data.isNew && userId) {
       const refCode = localStorage.getItem('bookit_ref');
       if (refCode) {
-        void processRegistrationReferral(authData.user.id, refCode);
+        void processRegistrationReferral(userId, refCode);
         localStorage.removeItem('bookit_ref');
       }
     }
 
     setLoading(false);
+    
+    router.refresh();
 
     if (selectedRole === 'master') {
       const match = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);

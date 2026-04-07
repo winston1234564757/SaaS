@@ -8,6 +8,19 @@ import { computeEndTime } from '@/lib/utils/bookingEngine';
 import { sendTelegramMessage, buildBookingMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
 
+// ── Phone normalization ──────────────────────────────────────────────────────
+/** Normalize any Ukrainian phone format to 380XXXXXXXXX (digits only, no +) */
+function normalizePhoneE164(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  // 0XXXXXXXXX → 380XXXXXXXXX
+  if (digits.length === 10 && digits.startsWith('0')) return '38' + digits;
+  // +380XXXXXXXXX → 380XXXXXXXXX (already stripped +)
+  if (digits.length === 12 && digits.startsWith('380')) return digits;
+  // 80XXXXXXXXX → 380XXXXXXXXX
+  if (digits.length === 11 && digits.startsWith('80')) return '3' + digits;
+  return digits;
+}
+
 // ── Payload schema ────────────────────────────────────────────────────────────
 
 const serviceLineSchema = z.object({
@@ -238,7 +251,7 @@ export async function createBooking(
     master_id: p.masterId,
     client_id: p.clientId ?? null,
     client_name: p.clientName.trim(),
-    client_phone: p.clientPhone.trim(),
+    client_phone: normalizePhoneE164(p.clientPhone),
     client_email: p.clientEmail ?? null,
     date: p.date,
     start_time: p.startTime,

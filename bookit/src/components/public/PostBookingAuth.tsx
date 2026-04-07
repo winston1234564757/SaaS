@@ -101,18 +101,21 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
       return;
     }
 
-    const { error: authError } = await supabase.auth.verifyOtp({
-      email: verifyData.email,
-      token: verifyData.token,
-      type: 'email',
-    });
+    if (!verifyData.isExistingSession) {
+      const { error: authError } = await supabase.auth.verifyOtp({
+        email: verifyData.email,
+        token: verifyData.token,
+        type: 'email',
+      });
 
-    if (authError) {
-      setLoading(false);
-      setError('Помилка авторизації. Спробуйте знову.');
-      return;
+      if (authError) {
+        setLoading(false);
+        setError('Помилка авторизації. Спробуйте знову.');
+        return;
+      }
     }
 
+    router.refresh();
     router.push('/my/bookings');
   }
 

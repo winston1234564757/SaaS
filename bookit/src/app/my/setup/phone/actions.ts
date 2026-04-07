@@ -83,21 +83,63 @@ export async function confirmPhone(
     return { error: "Цей номер вже прив'язаний до іншого акаунту. Зверніться до підтримки." };
   }
 
-  // 9. Upsert profile phone → trigger trg_link_bookings_on_phone fires automatically
-  const { error: upsertError } = await admin
-    .from('profiles')
-    .upsert(
-      { id: user.id, phone: cleanPhone },
-      { onConflict: 'id', ignoreDuplicates: false },
-    );
-  if (upsertError) {
-    // 23505 = unique_violation on profiles.phone (race with another account claiming same phone)
-    if (upsertError.code === '23505') {
-      return { error: "Цей номер вже прив'язаний до іншого акаунту. Зверніться до підтримки." };
-    }
-    console.error('[confirmPhone] upsert error:', upsertError.message);
-    return { error: 'Помилка збереження номеру. Спробуйте ще раз.' };
+  // STEP 1: Ensure Profile Identity exists (with metadata)
+  // This satisfies the FK for client_profiles.id -> profiles.id
+  const assignedRole = (user.user_metadata?.role as any) || 'client';
+  const fullName = user.user_metadata?.full_name || user.user_metadata?.name || `User ${cleanPhone.slice(-4)}`;
+
+  const { error: profileUpsertError } = await admin.from('profiles').upsert(
+    { 
+      id: user.id, 
+      full_name: fullName, 
+      role: assignedRole,
+      email: user.email 
+    },
+    { onConflict: 'id', ignoreDuplicates: false }
+  );
+  if (profileUpsertError) {
+    console.error('[confirmPhone] IDENTITY UPSERT ERROR:', profileUpsertError.message);
+    return { error: 'Помилка ідентифікації профілю' };
   }
+
+  // STEP 2: Ensure Client Profile existence
+  // This satisfies the FK for bookings.client_id -> client_profiles.id
+  const { error: clientProfileError } = await admin.from('client_profiles').upsert(
+    { id: user.id },
+    { onConflict: 'id', ignoreDuplicates: true }
+  );
+  if (clientProfileError) {
+    console.error('[confirmPhone] CLIENT_PROFILE UPSERT ERROR:', clientProfileError.message);
+    return { error: 'Помилка ініціалізації клієнтського профілю' };
+  }
+
+  // STEP 3: Set Phone Number & Activate Linkage Trigger
+  const { error: phoneUpdateError } = await admin
+    .from('profiles')
+    .update({ phone: cleanPhone })
+    .eq('id', user.id);
+
+  if (phoneUpdateError) {
+    console.error('[confirmPhone] PHONE UPDATE ERROR:', JSON.stringify({
+      code: phoneUpdateError.code,
+      message: phoneUpdateError.message,
+      userId: user.id,
+      phone: cleanPhone,
+    }));
+    return { error: `Помилка збереження: ${phoneUpdateError.code}` };
+  }
+
+  // STEP 4: Explicit Booking Linkage (Redundancy for trigger)
+  const phoneSuffix = cleanPhone.slice(-10);
+  const { data: linkedBookings } = await admin
+    .from('bookings')
+    .update({ client_id: user.id })
+    .like('client_phone', `%${phoneSuffix}`)
+    .is('client_id', null)
+    .select('id');
+
+  console.log('[confirmPhone] LINKAGE COMPLETE:', { userId: user.id, linked: linkedBookings?.length ?? 0 });
+
 
   return { success: true };
 }
