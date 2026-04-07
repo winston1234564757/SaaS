@@ -140,6 +140,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
     pasted.split('').forEach((c, i) => { if (i < 6) next[i] = c; });
     setDigits(next);
     digitRefs.current[Math.min(pasted.length, 5)]?.focus();
+    if (pasted.length === 6) setTimeout(() => handleVerify(pasted), 80);
   }
 
   function startCooldown() {
