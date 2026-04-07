@@ -45,13 +45,22 @@ export async function GET(request: NextRequest) {
   if (user) {
     const admin = createAdminClient();
 
+    // CRITICAL: Clear stale user_role cookie so proxy.ts re-reads role from DB.
+    // Without this, a browser that previously had user_role=master will route a
+    // new client session into /dashboard, causing redirect loops.
+    cookieStore.set('user_role', '', { path: '/', maxAge: 0 });
+
     const displayName =
       user.user_metadata?.full_name ||
       user.user_metadata?.name ||
       user.email?.split('@')[0] ||
       'Користувач';
 
-    const assignedRole = role === 'master' ? 'master' : 'client';
+    // SMS-authenticated users always have email ending in @bookit.app.
+    // NEVER trust the ?role= URL param for them — it can be stale/crafted.
+    // Only Google OAuth users can legitimately become masters via callback.
+    const isSmsUser = user.email?.endsWith('@bookit.app') ?? false;
+    const assignedRole = (!isSmsUser && role === 'master') ? 'master' : 'client';
 
     // 1. Sync base profile — role explicitly set from URL param (user's choice in toggle)
     await admin.from('profiles').upsert(

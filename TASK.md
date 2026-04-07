@@ -1,21 +1,32 @@
 **SYSTEM ROLE & CONTEXT:**
-You are a Principal Next.js App Router Expert. We are debugging an infinite Client-Side navigation loop in "BookIT". 
-The user previously fixed the backend profile creation (setting `role: 'client'`), but the browser is still endlessly spamming requests to `/dashboard/onboarding?_rsc=...` after a B2C Client successfully enters their SMS OTP.
+You are a Principal Backend & Security Engineer for "BookIT". 
+We have discovered two critical vulnerabilities in the B2C Client Auth flow:
+1. Google-authenticated users who are asked for a phone number can simply navigate away (change the URL) and browse the B2C app (`/my/*`) with a `null` phone number. There is no strict server-side layout guard enforcing phone collection.
+2. The SMS OTP verification fails/errors out when attempting to attach a phone number to an existing Google-authenticated user. Consequently, guest bookings are never linked.
 
-**THE BUG:**
-This `?_rsc=` parameter means Next.js is trapped in a client-side layout/router loop. A Client is somehow being pushed into the Master's route group (`/dashboard/*`), where the Master layout rejects them, or a `useEffect` in the auth component is infinitely triggering `router.push()`/`router.refresh()`.
+**MISSION:**
+Implement a 100% strict, inescapable Identity Flow and Auto-Linkage system.
 
-**TASKS TO FIX THIS FOREVER:**
+**SURGICAL TASKS (EXECUTE IN ORDER):**
 
-1. **Fix the Post-Booking Redirect (The Trigger):**
-   - Inspect `src/components/public/PostBookingAuth.tsx` or wherever the SMS OTP success mutation is handled.
-   - ENSURE that upon success, the router EXPLICITLY pushes to `/my/bookings` (the B2C portal). Do NOT use a generic `router.refresh()` or push to `/dashboard`.
+1. **The Iron Gate (Server-Side Layout Guard):**
+   - Edit `src/app/my/layout.tsx` (The B2C layout).
+   - Fetch the current user profile. If the user is authenticated BUT `profile.phone` is `null` or empty, strictly `redirect()` them to the dedicated phone collection page/modal (e.g., `/onboarding` or `/my/profile` depending on where our client phone setup lives). 
+   - They MUST NOT be able to render `children` in `/my/bookings` or any other protected route until `phone` is populated in the DB.
 
-2. **Audit `(master)/layout.tsx` Guard:**
-   - Look at `src/app/(master)/layout.tsx`. If a user with `role === 'client'` accidentally lands here, DO NOT redirect them to `/dashboard/onboarding`. Redirect them to `/my/bookings`. The onboarding redirect should ONLY happen for users who are officially `role: 'master'` but lack a complete profile.
+2. **Force Profile Phone Persistence (The Source of Truth):**
+   - Locate `src/app/api/auth/verify-sms/route.ts`.
+   - Fix the error occurring when a Google user submits an OTP. Ensure the Supabase Auth user is updated, and then you MUST explicitly UPSERT the `profiles` table using `supabaseAdmin` (Service Role Key).
+   - Payload must be exactly: `{ id: user.id, phone: cleanPhone, role: 'client' }`. Do NOT rely on Database Triggers. Do it synchronously here.
 
-3. **Audit Global Middleware / Auth Guards:**
-   - If there is a `middleware.ts` or a hook like `useSessionWakeup.ts` / `useProtectedRoute`, check its redirection logic. Prevent it from forcing B2C users into B2B onboarding.
+3. **Atomic Booking Linkage (Auto-Linkage):**
+   - Immediately after the `profiles` UPSERT is successful in `verify-sms/route.ts`, execute an `UPDATE` on the `bookings` table.
+   - Logic: `UPDATE bookings SET client_id = user.id WHERE client_phone = cleanPhone AND client_id IS NULL;`
+   - Wrap this in proper error handling/logging so it doesn't silently fail.
 
-**REQUIREMENT:**
-Do not change the backend `verify-sms` logic again. Find the frontend/layout routing bug causing the `?_rsc=` spam and neutralize it. Show me the exact lines you change.
+4. **Cleanup Frontend Redirect:**
+   - In the frontend component that submits the OTP (e.g., `PostBookingAuth.tsx` or `PhoneOtpForm.tsx`), ensure that upon receiving a 200 OK, it performs `router.push('/my/bookings')`. 
+
+**REQUIREMENTS:**
+- Ensure you use `supabaseAdmin` for the `profiles` and `bookings` DB updates in the API route to bypass RLS constraints during the auth state transition.
+- Output the exact code changes for `src/app/my/layout.tsx` and `verify-sms/route.ts`.

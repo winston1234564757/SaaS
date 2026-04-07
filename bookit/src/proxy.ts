@@ -7,7 +7,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  // Clone request headers so we can forward x-pathname to server layouts
+  const requestHeaders = new Headers(request.headers);
+  const { pathname } = request.nextUrl;
+  requestHeaders.set('x-pathname', pathname);
+
+  let supabaseResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,7 +26,7 @@ export async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -30,8 +37,6 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
   const needsRoleCheck =
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/my') ||
@@ -40,8 +45,9 @@ export async function proxy(request: NextRequest) {
     pathname === '/register';
 
   if (user && needsRoleCheck) {
-    // Role is immutable after onboarding — cache in cookie to avoid a DB hit on every navigation.
-    // Cookie is set on first visit and cleared on sign-out.
+    // Role is cached in a cookie to avoid a DB hit on every navigation.
+    // IMPORTANT: We always re-fetch from DB if the cookie is absent to prevent
+    // stale role leaks (e.g. a master cookie persisting into a new client session).
     let role = request.cookies.get('user_role')?.value ?? null;
 
     if (!role) {
@@ -59,12 +65,14 @@ export async function proxy(request: NextRequest) {
       }
     }
 
-    // /dashboard — masters only
-    if (pathname.startsWith('/dashboard') && role !== 'master') {
+    // /dashboard — masters only. If role is null (profile not yet created by trigger),
+    // allow pass-through rather than redirect looping — the layout will handle it.
+    if (pathname.startsWith('/dashboard') && role !== null && role !== 'master') {
       return NextResponse.redirect(new URL('/my/bookings', request.url));
     }
 
-    // /my — clients only (masters with view_mode=client cookie can pass through)
+    // /my — clients only. Masters with view_mode=client cookie can pass through.
+    // If role is null, treat as client (new user, profile may not exist yet).
     if (pathname.startsWith('/my') && role === 'master') {
       const viewMode = request.cookies.get('view_mode')?.value;
       if (viewMode !== 'client') {
@@ -72,8 +80,9 @@ export async function proxy(request: NextRequest) {
       }
     }
 
-    // Guest-only pages — redirect to home
-    if (pathname === '/' || pathname === '/login' || pathname === '/register') {
+    // Guest-only pages — redirect authenticated users to their home.
+    // Skip if role is null (race: profile not yet created) to avoid redirect loops.
+    if (role && (pathname === '/' || pathname === '/login' || pathname === '/register')) {
       if (role === 'master') {
         const intendedPlan = request.cookies.get('intended_plan')?.value;
         if (intendedPlan === 'pro' || intendedPlan === 'studio') {
@@ -91,9 +100,6 @@ export async function proxy(request: NextRequest) {
   if (!user && (pathname.startsWith('/dashboard') || pathname.startsWith('/my') || pathname === '/onboarding')) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
-
-  // Expose pathname to server layouts via request header
-  supabaseResponse.headers.set('x-pathname', pathname);
 
   return supabaseResponse;
 }

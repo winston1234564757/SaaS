@@ -134,30 +134,79 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 8b. Синхронізуємо телефон у profiles.
-  //     Використовуємо upsert (не update) — якщо тригер handle_new_user впав із swallowed
-  //     exception, profiles рядок може не існувати. .update() в такому разі поверне
-  //     { error: null } з 0 affected rows і телефон silently зникне.
-  //     upsert з onConflict:'id' гарантує: або INSERT новий рядок, або UPDATE phone у наявному.
-  //     23505 (UNIQUE violation on phone) — ігноруємо: означає що номер вже є в іншого юзера.
-  //     Перевірка відбувається в send-sms; тут лише graceful fallback для race condition.
-  if (linkData.user?.id) {
-    const { error: upsertError } = await supabaseAdmin
+  // 8b. Отримуємо user.id надійно.
+  //     generateLink повертає linkData.user для нових юзерів, але може бути null для існуючих.
+  //     Використовуємо кастомний RPC get_user_id_by_email — це найбільш прямий та
+  //     швидкий спосіб знайти Auth ID за email без пагінації чи затримок тригерів.
+  let userId: string | null = linkData.user?.id ?? null;
+
+  if (!userId) {
+    const { data: rpcId, error: rpcError } = await supabaseAdmin.rpc(
+      'get_user_id_by_email',
+      { p_email: virtualEmail }
+    );
+    if (rpcError) console.error('[verify-sms] rpc get_user_id_by_email error:', rpcError.message);
+    userId = rpcId;
+  }
+
+  // Останній фоллбек — таблиця profiles
+  if (!userId) {
+    const { data: profileByEmail } = await supabaseAdmin
       .from('profiles')
-      .upsert(
-        { id: linkData.user.id, phone: cleanPhone, role: role ?? 'client' },
-        { onConflict: 'id', ignoreDuplicates: false },
-      );
-    if (upsertError && upsertError.code !== '23505') {
-      console.error('[verify-sms] profiles upsert error:', upsertError.message);
-    }
+      .select('id')
+      .eq('email', virtualEmail)
+      .maybeSingle();
+    userId = profileByEmail?.id ?? null;
+  }
+
+  if (!userId) {
+    console.error('[verify-sms] cannot resolve user id for', virtualEmail);
+    return NextResponse.json(
+      { success: false, error: 'Помилка ідентифікації. Спробуйте ще раз.' },
+      { status: 500 }
+    );
+  }
+
+  // STEP 1: Синхронізація IDENTITY (Auth Metadata + Profiles Table).
+  //         Якщо юзер вже існував, то при createUser нічого не змінилось у Auth.
+  //         Тому МУСИМО оновити Auth Metadata через admin.updateUserById,
+  //         щоб майбутні системні перевірки (тригери, middleware) бачили актуальну роль.
+  const assignedRole = (role === 'master') ? 'master' : 'client';
+
+  await Promise.all([
+    // 1a. Оновлюємо Auth Metadata (джерело правди для сесій)
+    supabaseAdmin.auth.admin.updateUserById(userId, {
+      user_metadata: { phone: cleanPhone, role: assignedRole }
+    }),
+    // 1b. Force-upsert profiles (джерело правди для запитів)
+    supabaseAdmin.from('profiles').upsert(
+      { id: userId, phone: cleanPhone, role: assignedRole },
+      { onConflict: 'id', ignoreDuplicates: false }
+    )
+  ]);
+
+  // STEP 2: Атомічний linkage гостьових бронювань за номером телефону.
+  const { error: bookingLinkError } = await supabaseAdmin
+    .from('bookings')
+    .update({ client_id: userId })
+    .eq('client_phone', cleanPhone)
+    .is('client_id', null);
+  if (bookingLinkError) {
+    console.error('[verify-sms] booking linkage error:', bookingLinkError.message);
   }
 
   // email_otp — це OTP-код для verifyOtp({ type: 'email' }) на клієнті.
-  return NextResponse.json({
+  const response = NextResponse.json({
     success: true,
     email: virtualEmail,
     token: linkData.properties.email_otp,
     isNew,
   });
+
+  // Clear stale user_role cookie so proxy.ts re-reads from DB on next navigation.
+  // Prevents a browser with user_role=master from routing a fresh client session
+  // into /dashboard after SMS login.
+  response.cookies.set('user_role', '', { path: '/', maxAge: 0, httpOnly: true, sameSite: 'lax' });
+
+  return response;
 }
