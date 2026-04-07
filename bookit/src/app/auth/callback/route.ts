@@ -119,11 +119,14 @@ export async function GET(request: NextRequest) {
 
       // Clients without a confirmed phone → mandatory onboarding.
       // trg_link_bookings_on_phone will auto-link any guest bookings after setup.
-      const { data: clientProfile } = await admin
+      const { data: clientProfile, error: profileFetchError } = await admin
         .from('profiles')
         .select('phone')
         .eq('id', user.id)
         .single();
+      if (profileFetchError) {
+        console.error('[auth/callback] profiles phone fetch error:', profileFetchError.message);
+      }
 
       if (!clientProfile?.phone) {
         return NextResponse.redirect(new URL('/my/setup/phone', origin));
