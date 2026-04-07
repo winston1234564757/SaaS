@@ -166,8 +166,8 @@ export function PhoneSetupForm() {
             disabled={isSubmitting || phone.length < 9}
             className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50"
           >
-            {loading && <Loader2 size={18} className="animate-spin" />}
-            {loading ? 'Відправляємо...' : 'Отримати код'}
+            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
+            {isSubmitting ? 'Відправляємо...' : 'Отримати код'}
           </button>
         </motion.div>
       )}

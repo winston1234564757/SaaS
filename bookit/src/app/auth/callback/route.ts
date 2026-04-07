@@ -9,7 +9,8 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/my/bookings';
   // role passed via redirectTo from the auth toggle UI
   const role = searchParams.get('role') ?? 'client';
-  // bookingId passed via redirectTo to link a booking after Google OAuth
+  // bookingId — used only in the master branch for email-based bid linking.
+  // Client booking linkage is handled server-side by trg_link_bookings_on_phone trigger.
   const bid = searchParams.get('bid');
 
   if (!code) {

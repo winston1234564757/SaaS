@@ -90,7 +90,11 @@ export async function confirmPhone(
       { id: user.id, phone: cleanPhone },
       { onConflict: 'id', ignoreDuplicates: false },
     );
-  if (upsertError && upsertError.code !== '23505') {
+  if (upsertError) {
+    // 23505 = unique_violation on profiles.phone (race with another account claiming same phone)
+    if (upsertError.code === '23505') {
+      return { error: "Цей номер вже прив'язаний до іншого акаунту. Зверніться до підтримки." };
+    }
     console.error('[confirmPhone] upsert error:', upsertError.message);
     return { error: 'Помилка збереження номеру. Спробуйте ще раз.' };
   }
