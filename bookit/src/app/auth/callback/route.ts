@@ -116,16 +116,18 @@ export async function GET(request: NextRequest) {
         { id: user.id },
         { onConflict: 'id', ignoreDuplicates: true }
       );
-    }
 
-    // Link a pending booking for clients
-    // Verify email ownership to prevent IDOR via crafted ?bid= URL param
-    if (bid && user.email) {
-      await admin.from('bookings')
-        .update({ client_id: user.id })
-        .eq('id', bid)
-        .eq('client_email', user.email)
-        .is('client_id', null);
+      // Clients without a confirmed phone → mandatory onboarding.
+      // trg_link_bookings_on_phone will auto-link any guest bookings after setup.
+      const { data: clientProfile } = await admin
+        .from('profiles')
+        .select('phone')
+        .eq('id', user.id)
+        .single();
+
+      if (!clientProfile?.phone) {
+        return NextResponse.redirect(new URL('/my/setup/phone', origin));
+      }
     }
   }
 
