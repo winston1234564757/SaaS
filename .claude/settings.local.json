@@ -108,7 +108,14 @@
       "Bash(npx vitest:*)",
       "Bash(supabase db:*)",
       "Bash(where supabase:*)",
-      "Read(//c/Users/Vitossik/SaaS/bookit/**)"
+      "Read(//c/Users/Vitossik/SaaS/bookit/**)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"TSC exit: $?\")",
+      "Bash(rm:*)",
+      "Bash(echo \"TSC_EXIT:$?\")",
+      "Bash(node -e \"const ts = require\\('typescript'\\); const prog = ts.createProgram\\(['src/app/auth/callback/route.ts'], {strict: true, noEmit: true}\\); const diags = ts.getPreEmitDiagnostics\\(prog\\); if\\(diags.length\\) { diags.forEach\\(d => console.log\\(d.messageText\\)\\); } else { console.log\\('No errors'\\); }\")",
+      "Bash(node:*)",
+      "Bash(git:*)"
     ]
   }
 }
