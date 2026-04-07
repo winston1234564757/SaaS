@@ -1,26 +1,21 @@
 **SYSTEM ROLE & CONTEXT:**
-You are a Principal Backend Engineer & Auth Specialist for "BookIT". We are fixing a critical funnel leak in the Client Post-Booking Registration flow.
+You are a Principal Next.js App Router Expert. We are debugging an infinite Client-Side navigation loop in "BookIT". 
+The user previously fixed the backend profile creation (setting `role: 'client'`), but the browser is still endlessly spamming requests to `/dashboard/onboarding?_rsc=...` after a B2C Client successfully enters their SMS OTP.
 
+**THE BUG:**
+This `?_rsc=` parameter means Next.js is trapped in a client-side layout/router loop. A Client is somehow being pushed into the Master's route group (`/dashboard/*`), where the Master layout rejects them, or a `useEffect` in the auth component is infinitely triggering `router.push()`/`router.refresh()`.
 
-**MISSION:**
-Ensure 100% reliable linkage between a newly created guest booking and the client's newly provisioned account via SMS OTP. Zero orphaned bookings allowed.
+**TASKS TO FIX THIS FOREVER:**
 
-**TASKS (EXECUTE IN ORDER):**
+1. **Fix the Post-Booking Redirect (The Trigger):**
+   - Inspect `src/components/public/PostBookingAuth.tsx` or wherever the SMS OTP success mutation is handled.
+   - ENSURE that upon success, the router EXPLICITLY pushes to `/my/bookings` (the B2C portal). Do NOT use a generic `router.refresh()` or push to `/dashboard`.
 
-1. **Audit Post-Booking Auth Flow:**
-   - Review `src/components/public/PostBookingAuth.tsx`, `src/app/api/auth/verify-sms/route.ts`, and `src/app/api/auth/link-booking/route.ts`.
-   - Currently, a guest creates a booking (saved with `client_phone` but `client_id = null`). Then they verify via SMS.
-   - Ensure that inside the `verify-sms` route, immediately after creating/fetching the user via Supabase Auth Admin, the backend ATOMICALLY links the pending `bookingId` to the `user.id`. Do not rely on the client to send a second `link-booking` request, as network drops will cause orphaned bookings.
+2. **Audit `(master)/layout.tsx` Guard:**
+   - Look at `src/app/(master)/layout.tsx`. If a user with `role === 'client'` accidentally lands here, DO NOT redirect them to `/dashboard/onboarding`. Redirect them to `/my/bookings`. The onboarding redirect should ONLY happen for users who are officially `role: 'master'` but lack a complete profile.
 
-2. **Implement Fallback Auto-Linkage (The "Safety Net"):**
-   - What if the user books as a guest, ignores the SMS prompt, closes the tab, and registers directly tomorrow? 
-   - Implement a robust auto-linkage mechanism. When a user logs in or registers successfully (via Phone or Google), the system must search the `bookings` table for any records where `client_phone` matches the user's verified phone AND `client_id IS NULL`, and automatically attach them to this `user.id`. (This can be done via a Supabase DB Trigger on `profiles` creation/login or inside the core auth callback).
+3. **Audit Global Middleware / Auth Guards:**
+   - If there is a `middleware.ts` or a hook like `useSessionWakeup.ts` / `useProtectedRoute`, check its redirection logic. Prevent it from forcing B2C users into B2B onboarding.
 
-3. **Session & Redirect Polish:**
-   - Ensure that after successful Post-Booking Auth, the Next.js session is fully established, and the user is seamlessly redirected to `/my/bookings`.
-   - Ensure `react-query` cache is invalidated so the newly linked booking appears instantly on the screen without a manual page reload.
-
-**REQUIREMENTS:**
-- Do not break the existing master auth flow or Google OAuth flow.
-- Focus heavily on fault tolerance (handling edge cases like closed tabs or dropped connections during OTP).
-- Output a summary of how you solved the auto-linkage problem before committing.
+**REQUIREMENT:**
+Do not change the backend `verify-sms` logic again. Find the frontend/layout routing bug causing the `?_rsc=` spam and neutralize it. Show me the exact lines you change.

@@ -129,7 +129,10 @@ export async function GET(request: NextRequest) {
         console.error('[auth/callback] profiles phone fetch error:', profileFetchError.message);
       }
 
-      if (!clientProfile?.phone) {
+      const isSmsAuth = user.email?.endsWith('@bookit.app') || user.app_metadata?.provider === 'phone';
+      const needsOnboarding = !clientProfile?.phone && !isSmsAuth;
+
+      if (needsOnboarding) {
         return NextResponse.redirect(new URL('/my/setup/phone', origin));
       }
     }

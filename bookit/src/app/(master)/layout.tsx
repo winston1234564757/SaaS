@@ -19,16 +19,10 @@ export default async function MasterLayout({ children }: { children: React.React
 
   if (profile?.role === 'client') redirect('/my/bookings');
 
-  // Onboarding guard — new masters haven't set avatar_emoji yet
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') ?? '';
-  const isOnboarding = pathname.includes('/dashboard/onboarding');
-  const isBilling = pathname.includes('/dashboard/billing');
-
-  if (!masterProfile?.avatar_emoji && !isOnboarding && !isBilling) {
-    redirect('/dashboard/onboarding');
-  }
-
+  // Onboarding guard is now handled entirely client-side via MasterRouteGuard
+  // inside DashboardLayout, because proxy.ts is not executing as middleware,
+  // making x-pathname consistently empty and causing infinite loops.
+  
   return (
     <DashboardLayout
       initialUser={user}

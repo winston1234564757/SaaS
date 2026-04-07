@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
     const { error: upsertError } = await supabaseAdmin
       .from('profiles')
       .upsert(
-        { id: linkData.user.id, phone: cleanPhone },
+        { id: linkData.user.id, phone: cleanPhone, role: role ?? 'client' },
         { onConflict: 'id', ignoreDuplicates: false },
       );
     if (upsertError && upsertError.code !== '23505') {

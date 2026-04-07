@@ -114,7 +114,6 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
     }
 
     router.push('/my/bookings');
-    router.refresh();
   }
 
   // ── OTP box handlers ─────────────────────────────────────────────────────
