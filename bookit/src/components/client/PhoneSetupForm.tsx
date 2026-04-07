@@ -204,7 +204,7 @@ export function PhoneSetupForm() {
                 value={d}
                 onChange={e => handleDigitChange(i, e.target.value)}
                 onKeyDown={e => handleDigitKeyDown(i, e)}
-                onPaste={i === 0 ? handlePaste : undefined}
+                onPaste={handlePaste}
                 autoFocus={i === 0}
                 className="w-11 h-14 text-center text-xl font-bold text-[#2C1A14] rounded-2xl border-2 border-[#E8D0C8] bg-white outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
               />
