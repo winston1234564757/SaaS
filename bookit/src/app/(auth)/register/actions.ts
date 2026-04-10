@@ -30,6 +30,7 @@ function generatePlaceholderSlug(): string {
  */
 export async function claimMasterRole(
   phone: string,
+  referredBy?: string | null,
 ): Promise<{ error: string | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -37,6 +38,7 @@ export async function claimMasterRole(
 
   const admin = createAdminClient();
 
+  // 1. Ensure Profile Identity
   const { error: profileError } = await admin
     .from('profiles')
     .upsert(
@@ -49,21 +51,81 @@ export async function claimMasterRole(
     return { error: profileError.message };
   }
 
+  // 2. Prepare Master Profile Data
   const slug = generatePlaceholderSlug();
-  const referralCode = generateReferralCode();
+  const masterReferralCode = generateReferralCode().slice(0, 6); 
+  
+  let subscriptionTier: 'starter' | 'pro' = 'starter';
+  let subscriptionExpiresAt: string | null = null;
+  let finalReferredBy: string | null = null;
 
+  // 3. Referral Logic (Parallel Check)
+  if (referredBy) {
+    const [masterRes, clientRes] = await Promise.all([
+      admin.from('master_profiles').select('id, subscription_expires_at').eq('referral_code', referredBy).maybeSingle(),
+      admin.from('client_profiles').select('id').eq('referral_code', referredBy).maybeSingle()
+    ]);
+
+    const mReferrer = masterRes.data;
+    const cReferrer = clientRes.data;
+
+    if (mReferrer && mReferrer.id !== user.id) {
+      finalReferredBy = referredBy;
+      subscriptionTier = 'pro';
+      
+      const newBonus = new Date();
+      newBonus.setDate(newBonus.getDate() + 30);
+      subscriptionExpiresAt = newBonus.toISOString();
+
+      const baseDate = mReferrer.subscription_expires_at ? new Date(mReferrer.subscription_expires_at) : new Date();
+      const refStart = baseDate > new Date() ? baseDate : new Date();
+      refStart.setDate(refStart.getDate() + 30);
+
+      await admin.from('master_profiles').update({ subscription_expires_at: refStart.toISOString() }).eq('id', mReferrer.id);
+      console.log(`[claimMasterRole] M2M Referral applied: ${referredBy} -> ${user.id}`);
+    } 
+    else if (cReferrer) {
+      finalReferredBy = referredBy;
+      subscriptionTier = 'pro';
+      
+      const newBonus = new Date();
+      newBonus.setDate(newBonus.getDate() + 30);
+      subscriptionExpiresAt = newBonus.toISOString();
+
+      try {
+        await admin.from('client_promocodes').insert({
+          client_id: cReferrer.id,
+          master_id: user.id,
+          discount_percentage: 50
+        });
+      } catch (err: any) {
+        console.log('[claimMasterRole] Promocode skip (duplicate or error)', err.message);
+      }
+      
+      await admin.rpc('increment_client_master_invite_count', { p_client_id: cReferrer.id });
+      console.log(`[claimMasterRole] C2M Barter applied: ${referredBy} -> ${user.id}`);
+    }
+  }
+
+  // 4. Upsert Master Profile
   const { error: masterError } = await admin
     .from('master_profiles')
     .upsert(
-      { id: user.id, slug, is_published: false, referral_code: referralCode },
-      { onConflict: 'id', ignoreDuplicates: true }, // don't overwrite if already exists
+      { 
+        id: user.id, 
+        slug, 
+        is_published: false, 
+        referral_code: masterReferralCode, 
+        referred_by: finalReferredBy,
+        subscription_tier: subscriptionTier,
+        subscription_expires_at: subscriptionExpiresAt
+      },
+      { onConflict: 'id' } 
     );
 
   if (masterError) {
-    // Rollback: remove profiles row to avoid orphaned 'master' without master_profiles
-    await admin.from('profiles').delete().eq('id', user.id);
-    console.error('[register] master_profiles upsert failed:', masterError.message, masterError.code, masterError.details);
-    return { error: `[DEBUG] master_profiles: ${masterError.message} (${masterError.code})` };
+    console.error('[register] master_profiles upsert failed:', masterError.message);
+    return { error: `master_profiles error: ${masterError.message}` };
   }
 
   revalidatePath('/dashboard', 'layout');
@@ -122,29 +184,46 @@ export async function createMasterProfileAfterSignup(params: {
   let subscriptionExpiresAt: string | null = null;
 
   if (params.referredBy) {
-    const { data: referrer } = await admin
-      .from('master_profiles')
-      .select('id, subscription_tier, subscription_expires_at')
-      .eq('referral_code', params.referredBy)
-      .maybeSingle();
+    const [masterRes, clientRes] = await Promise.all([
+      admin.from('master_profiles').select('id, subscription_expires_at').eq('referral_code', params.referredBy).maybeSingle(),
+      admin.from('client_profiles').select('id').eq('referral_code', params.referredBy).maybeSingle()
+    ]);
 
-    if (referrer) {
+    const mReferrer = masterRes.data;
+    const cReferrer = clientRes.data;
+
+    // SCENARIO A: Master Referral (M2M)
+    if (mReferrer && mReferrer.id !== params.userId) {
       subscriptionTier = 'pro';
-      subscriptionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const newBonus = new Date();
+      newBonus.setDate(newBonus.getDate() + 30);
+      subscriptionExpiresAt = newBonus.toISOString();
 
-      const referrerExpiresAt = referrer.subscription_expires_at
-        ? new Date(referrer.subscription_expires_at)
-        : new Date();
-      if (referrerExpiresAt < new Date()) referrerExpiresAt.setTime(Date.now());
-      referrerExpiresAt.setDate(referrerExpiresAt.getDate() + 30);
+      const referrerExpiresAt = mReferrer.subscription_expires_at ? new Date(mReferrer.subscription_expires_at) : new Date();
+      const refStart = referrerExpiresAt > new Date() ? referrerExpiresAt : new Date();
+      refStart.setDate(refStart.getDate() + 30);
 
-      await admin
-        .from('master_profiles')
-        .update({
+      await admin.from('master_profiles').update({
           subscription_tier: 'pro',
-          subscription_expires_at: referrerExpiresAt.toISOString(),
-        })
-        .eq('id', referrer.id);
+          subscription_expires_at: refStart.toISOString(),
+        }).eq('id', mReferrer.id);
+    } 
+    // SCENARIO B: Client Referral (C2M - Barter)
+    else if (cReferrer) {
+      subscriptionTier = 'pro';
+      const newBonus = new Date();
+      newBonus.setDate(newBonus.getDate() + 30);
+      subscriptionExpiresAt = newBonus.toISOString();
+
+      try {
+        await admin.from('client_promocodes').insert({
+          client_id: cReferrer.id,
+          master_id: params.userId,
+          discount_percentage: 50
+        });
+      } catch (err) {}
+          
+      await admin.rpc('increment_client_master_invite_count', { p_client_id: cReferrer.id });
     }
   }
 

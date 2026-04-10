@@ -4,6 +4,7 @@ import  QueryProvider  from '@/lib/providers/QueryProvider';
 import { ToastProvider } from '@/lib/toast/context';
 import { MyBottomNav } from '@/components/client/MyBottomNav';
 import { ServiceWorkerRegistration } from '@/components/shared/ServiceWorkerRegistration';
+import { RefCapture } from '@/components/shared/RefCapture';
 import './globals.css';
 
 const inter = Inter({
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <div className="grain-overlay" aria-hidden="true" />
         <ServiceWorkerRegistration />
+        <RefCapture />
         <QueryProvider><ToastProvider>{children}</ToastProvider></QueryProvider>
         <MyBottomNav />
       </body>

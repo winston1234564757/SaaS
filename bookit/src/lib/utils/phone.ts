@@ -43,3 +43,13 @@ export function normalizePhoneInput(val: string): string {
 export function toFullPhone(phone9: string): string {
   return `380${phone9}`;
 }
+
+/** 
+ * Bulletproof virtual email generation for SMS Auth.
+ * Strips ALL non-numeric characters and appends @bookit.app.
+ * e.g., "+380 96 123 45 67" -> "380961234567@bookit.app"
+ */
+export const generateVirtualEmail = (phone: string): string => {
+  const digits = phone.replace(/\D/g, '');
+  return `${digits}@bookit.app`;
+};

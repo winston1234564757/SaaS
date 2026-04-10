@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { generateVirtualEmail } from '@/lib/utils/phone';
 
 export async function POST(req: NextRequest) {
   let body;
@@ -40,10 +41,9 @@ export async function POST(req: NextRequest) {
   const supabaseAdmin = createAdminClient();
 
   // Перевірка: чи не зайнятий цей номер іншим акаунтом.
-  // SMS-власник телефону має email = `${phone}@bookit.app`.
-  // Якщо в profiles є рядок з цим phone, але з іншим email — конфлікт.
+  // SMS-власник телефону має email = generateVirtualEmail(phone).
   {
-    const virtualEmail = `${phone}@bookit.app`;
+    const virtualEmail = generateVirtualEmail(phone);
     const { data: conflict } = await supabaseAdmin
       .from('profiles')
       .select('id')

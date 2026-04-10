@@ -14,6 +14,7 @@ const navItems = [
   { href: '/dashboard/bookings',  icon: CalendarDays,          label: 'Записи',       hint: 'Всі записи та календар' },
   { href: '/dashboard/services',  icon: Scissors,              label: 'Послуги',      hint: 'Послуги та товари' },
   { href: '/dashboard/clients',   icon: Users,                 label: 'Клієнти',      hint: 'База клієнтів та CRM' },
+  { href: '/dashboard/partners',  icon: Users,                 label: 'Партнери',     hint: 'Партнерська мережа та крос-промо' },
   { href: '/dashboard/analytics', icon: BarChart2,             label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
   { href: '/dashboard/reviews',   icon: MessageSquare,         label: 'Відгуки',      hint: 'Керування відгуками клієнтів' },
   { href: '/dashboard/more',      icon: MoreHorizontal,        label: 'Ще',           hint: 'Флеш, Ціни, Лояльність, Студія та інше' },

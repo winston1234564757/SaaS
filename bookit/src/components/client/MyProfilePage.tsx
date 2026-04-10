@@ -134,10 +134,12 @@ export function MyProfilePage({ profile }: Props) {
           <p className="text-base font-semibold text-[#2C1A14] truncate">
             {fullName || 'Ваше ім\'я'}
           </p>
-          <div className="flex items-center gap-1 mt-1">
-            <Mail size={11} className="text-[#A8928D]" />
-            <span className="text-xs text-[#A8928D] truncate">{profile.email}</span>
-          </div>
+          {!profile.email.endsWith('@bookit.app') && (
+            <div className="flex items-center gap-1 mt-1">
+              <Mail size={11} className="text-[#A8928D]" />
+              <span className="text-xs text-[#A8928D] truncate">{profile.email}</span>
+            </div>
+          )}
           {memberSinceFormatted && (
             <div className="flex items-center gap-1 mt-0.5">
               <CalendarDays size={11} className="text-[#A8928D]" />
@@ -182,15 +184,17 @@ export function MyProfilePage({ profile }: Props) {
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Email</label>
-            <input
-              value={profile.email}
-              disabled
-              className={`${inputCls} opacity-50 cursor-not-allowed`}
-            />
-            <p className="text-[11px] text-[#A8928D] mt-1">Email змінити неможливо</p>
-          </div>
+          {!profile.email.endsWith('@bookit.app') && (
+            <div>
+              <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Email</label>
+              <input
+                value={profile.email}
+                disabled
+                className={`${inputCls} opacity-50 cursor-not-allowed`}
+              />
+              <p className="text-[11px] text-[#A8928D] mt-1">Email змінити неможливо</p>
+            </div>
+          )}
         </div>
       </motion.div>
 

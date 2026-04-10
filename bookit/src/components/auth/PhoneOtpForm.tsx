@@ -13,6 +13,7 @@ import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { claimMasterRole } from '@/app/(auth)/register/actions';
 import { processRegistrationReferral } from '@/lib/actions/referrals';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
+import Cookies from 'js-cookie';
 
 type Step = 'role_select' | 'phone' | 'otp';
 type Role = 'client' | 'master';
@@ -149,19 +150,18 @@ export function PhoneOtpForm() {
     }
 
     if (selectedRole === 'master') {
-      const { error: roleError } = await claimMasterRole(getCleanPhone());
+      const refCodeFromCookie = Cookies.get('bookit_ref') || null;
+      const { error: roleError } = await claimMasterRole(getCleanPhone(), refCodeFromCookie);
+      
       if (roleError) {
         setLoading(false);
         setError(roleError);
         return;
       }
-    }
 
-    if (selectedRole === 'master' && data.isNew && userId) {
-      const refCode = localStorage.getItem('bookit_ref');
-      if (refCode) {
-        void processRegistrationReferral(userId, refCode);
-        localStorage.removeItem('bookit_ref');
+      if (refCodeFromCookie) {
+        console.log('[PhoneOtpForm] Referral code applied via claimMasterRole:', refCodeFromCookie);
+        Cookies.remove('bookit_ref');
       }
     }
 

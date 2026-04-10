@@ -105,14 +105,18 @@ export async function createBooking(
     }
   }
 
-  // 3. Master profile — pricing rules + subscription tier + trial counter + timezone
-  const { data: mp } = await admin
+  // 3. Master profile — pricing rules + subscription tier + trial counter
+  console.log('[createBooking] Fetching master profile for ID:', p.masterId);
+  const { data: mp, error: masterError } = await admin
     .from('master_profiles')
-    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id, timezone')
+    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id')
     .eq('id', p.masterId)
     .single();
 
-  if (!mp) return { bookingId: null, error: 'Майстра не знайдено' };
+  if (masterError || !mp) {
+    console.error('[createBooking] Master Query Error:', masterError);
+    return { bookingId: null, error: 'Майстра не знайдено' };
+  }
 
   // 4. Starter booking limit (30/month)
   if (mp.subscription_tier === 'starter') {

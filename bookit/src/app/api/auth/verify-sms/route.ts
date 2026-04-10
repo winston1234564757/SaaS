@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { generateVirtualEmail } from '@/lib/utils/phone';
 
 // ── Zod schema ────────────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ export async function POST(req: NextRequest) {
 
   let isNew = false;
   let userId: string | null = null;
-  const virtualEmail = `${cleanPhone}@bookit.app`;
+  const virtualEmail = generateVirtualEmail(cleanPhone);
   let emailOtpToken: string | undefined;
 
   if (currentUser) {
@@ -173,8 +174,6 @@ export async function POST(req: NextRequest) {
   }
 
   // STEP 1: Синхронізація IDENTITY (Auth Metadata + Profiles Table).
-  // SMART ROLE ASSIGNMENT: Extract role from request body. If body.role === 'master', use 'master'.
-  // If null/missing, default to 'client'. If user already exists in profiles, DO NOT overwrite their existing role with a lower-tier one.
   let assignedRole = role === 'master' ? 'master' : 'client';
 
   if (currentUser) {
@@ -203,7 +202,6 @@ export async function POST(req: NextRequest) {
   }
 
   // STEP 1: Ensure Profile Identity exists (without phone yet)
-  // This satisfies the FK for client_profiles.id -> profiles.id
   const fallbackName = currentUser?.user_metadata?.full_name
     || currentUser?.user_metadata?.name
     || `User ${cleanPhone.slice(-4)}`;
@@ -218,7 +216,6 @@ export async function POST(req: NextRequest) {
   }
 
   // STEP 2: Ensure Client Profile existence
-  // This satisfies the FK for bookings.client_id -> client_profiles.id
   const { error: clientProfileError } = await supabaseAdmin.from('client_profiles').upsert(
     { id: userId },
     { onConflict: 'id', ignoreDuplicates: true }
@@ -229,7 +226,6 @@ export async function POST(req: NextRequest) {
   }
 
   // STEP 3: Set Phone Number & Activate Linkage Trigger
-  // Now that client_profiles exists, the trigger trg_link_bookings_on_phone will satisfy the FK.
   const { error: phoneUpdateError } = await supabaseAdmin
     .from('profiles')
     .update({ phone: cleanPhone })
@@ -251,8 +247,6 @@ export async function POST(req: NextRequest) {
   console.log('[verify-sms] IDENTITY SYNC COMPLETE:', { userId, phone: cleanPhone, role: assignedRole });
 
   // STEP 2: Атомічний linkage гостьових бронювань за номером телефону.
-  // Використовуємо останні 10 цифр для resilient matching (старі бронювання
-  // могли зберігати номер як 0961234567 замість 380961234567).
   const phoneSuffix = cleanPhone.slice(-10);
   const { data: linkedBookings, error: bookingLinkError } = await supabaseAdmin
     .from('bookings')

@@ -88,13 +88,54 @@ export async function GET(request: NextRequest) {
       if (existingMaster) {
         const { data: mp } = await admin
           .from('master_profiles').select('referral_code').eq('id', user.id).single();
-        referralCode = mp?.referral_code ?? crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
+        referralCode = mp?.referral_code ?? crypto.randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
       } else {
-        referralCode = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
+        referralCode = crypto.randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
+      }
+
+      const refCodeFromCookie = cookieStore.get('bookit_ref')?.value || null;
+      let subscriptionTier: 'starter' | 'pro' = 'starter';
+      let subscriptionExpiresAt: string | null = null;
+      let finalReferredBy: string | null = null;
+
+      // 3. Referral Bonus Logic (Atomic)
+      if (isNewMaster && refCodeFromCookie) {
+        const { data: referrer } = await admin
+          .from('master_profiles')
+          .select('id, subscription_expires_at')
+          .eq('referral_code', refCodeFromCookie)
+          .single();
+
+        if (referrer && referrer.id !== user.id) {
+          finalReferredBy = refCodeFromCookie;
+          subscriptionTier = 'pro';
+          
+          const newBonus = new Date();
+          newBonus.setDate(newBonus.getDate() + 30);
+          subscriptionExpiresAt = newBonus.toISOString();
+
+          const baseDate = referrer.subscription_expires_at ? new Date(referrer.subscription_expires_at) : new Date();
+          const refStart = baseDate > new Date() ? baseDate : new Date();
+          refStart.setDate(refStart.getDate() + 30);
+
+          await admin
+            .from('master_profiles')
+            .update({ subscription_expires_at: refStart.toISOString() })
+            .eq('id', referrer.id);
+          
+          cookieStore.set('bookit_ref', '', { path: '/', maxAge: 0 });
+        }
       }
 
       await admin.from('master_profiles').upsert(
-        { id: user.id, slug, referral_code: referralCode },
+        { 
+          id: user.id, 
+          slug, 
+          referral_code: referralCode,
+          referred_by: finalReferredBy,
+          subscription_tier: subscriptionTier,
+          subscription_expires_at: subscriptionExpiresAt
+        },
         { onConflict: 'id', ignoreDuplicates: true }
       );
 

@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
 import {
@@ -234,6 +235,7 @@ export function BookingWizard({
   const [createdBookingId, setCreatedBookingId]     = useState<string | null>(null);
   const [clientHistoryTimes, setClientHistoryTimes] = useState<string[]>([]);
   const [loyaltyDiscount, setLoyaltyDiscount]       = useState<{ name: string; percent: number } | null>(null);
+  const [partners, setPartners]                     = useState<{ id: string; name: string; slug: string; emoji: string; category?: string }[]>([]);
 
   // ── Schedule data ─────────────────────────────────────────────────────────────
   const days = useMemo(() => getDays(30), []);
@@ -402,7 +404,8 @@ export function BookingWizard({
           sb.from('client_master_relations').select('total_visits').eq('client_id', userId).eq('master_id', masterId).maybeSingle(),
           sb.from('loyalty_programs').select('name, target_visits, reward_type, reward_value').eq('master_id', masterId).eq('is_active', true),
           sb.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
-        ]).then(([relRes, progRes, histRes]) => {
+          sb.from('master_partners').select('partner_id, status, master_profiles!master_partners_partner_id_fkey(id, slug, avatar_emoji, categories, profiles(full_name))').eq('master_id', masterId).eq('status', 'accepted').limit(5),
+        ]).then(([relRes, progRes, histRes, partRes]) => {
           const history = (histRes.data ?? []).map((b: { start_time: string | null }) => b.start_time?.slice(0, 5)).filter((t: string | undefined): t is string => !!t);
           if (history.length) setClientHistoryTimes(history);
           const visits = relRes.data?.total_visits ?? 0;
@@ -411,6 +414,20 @@ export function BookingWizard({
             .filter((p: { reward_type: string; target_visits: number }) => p.reward_type === 'percent_discount' && totalVisitsWithThisOne >= p.target_visits)
             .sort((a: { reward_value: unknown }, b: { reward_value: unknown }) => Number(b.reward_value) - Number(a.reward_value))[0];
           if (best) setLoyaltyDiscount({ name: best.name as string, percent: Number(best.reward_value) });
+          
+          if (partRes.data) {
+            setPartners(partRes.data.map((p: any) => {
+              const mp = Array.isArray(p.master_profiles) ? p.master_profiles[0] : p.master_profiles;
+              const profile = Array.isArray(mp?.profiles) ? mp.profiles[0] : mp?.profiles;
+              return {
+                id: mp?.id,
+                slug: mp?.slug,
+                emoji: mp?.avatar_emoji || '💅',
+                name: profile?.full_name || 'Майстер',
+                category: mp?.categories?.[0] || 'Beauty',
+              };
+            }));
+          }
         }).catch(() => {});
       }).catch(() => {});
     }
@@ -774,7 +791,40 @@ export function BookingWizard({
                           </div>
                         ))}
 
-                        {/* Master: duration override — CSS grid accordion, no jump */}
+                        {/* Recommended Partners Section (Cartel) */}
+                        {partners.length > 0 && (
+                          <div className="mt-8 mb-4">
+                            <div className="flex items-center justify-between mb-3 px-1">
+                               <p className="text-[11px] font-bold text-[#A8928D] uppercase tracking-widest">
+                                 Рекомендуємо також
+                               </p>
+                               <span className="text-[10px] font-semibold text-[#789A99] bg-[#789A99]/10 px-2 py-0.5 rounded-full">
+                                  Наші партнери
+                               </span>
+                            </div>
+                            
+                            <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide">
+                               {partners.map(p => (
+                                 <Link 
+                                   key={p.id}
+                                   href={`/${p.slug}`}
+                                   className="flex-shrink-0 w-[140px] bento-card p-3 flex flex-col items-center text-center gap-2 hover:bg-white/90 active:scale-95 transition-all scroll-ml-1"
+                                 >
+                                    <div className="w-12 h-12 rounded-2xl bg-[#F5E8E3] flex items-center justify-center text-2xl mb-1">
+                                      {p.emoji}
+                                    </div>
+                                    <div className="min-w-0 w-full">
+                                      <p className="text-xs font-bold text-[#2C1A14] truncate">{p.name}</p>
+                                      <p className="text-[10px] text-[#A8928D] truncate lowercase italic">{p.category}</p>
+                                    </div>
+                                    <div className="mt-1 text-[10px] font-bold text-[#789A99] border-t border-[#E8D0C8] pt-2 w-full">
+                                      Дивитись →
+                                    </div>
+                                 </Link>
+                               ))}
+                            </div>
+                          </div>
+                        )}
                         {mode === 'master' && (
                           <div
                             style={{

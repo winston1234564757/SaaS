@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Check, Gift, Users, Sparkles, Crown, Share2, Loader2 } from 'lucide-react';
 import { pluralize } from '@/lib/utils/dates';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
-import { getOrCreateReferralLink } from '@/lib/actions/referrals';
+import { getOrGenerateReferralCode } from '@/lib/actions/referrals';
 
 interface Props {
   masterId: string;
@@ -17,55 +17,47 @@ interface Props {
   subscriptionExpiresAt: string | null;
 }
 
-export function ReferralPage({ masterId, referralCode, referralCount, subscriptionTier, subscriptionExpiresAt }: Props) {
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://bookit.com.ua');
+
+export function ReferralPage({ masterId, referralCode: initialCode, referralCount, subscriptionTier, subscriptionExpiresAt }: Props) {
   const [copied, setCopied] = useState(false);
-  const [b2bLink, setB2bLink] = useState<string | null>(null);
-  const [b2bCopied, setB2bCopied] = useState(false);
-  const [b2bLoading, setB2bLoading] = useState(false);
+  const [code, setCode] = useState(initialCode);
+  const [loading, setLoading] = useState(!initialCode);
   const { currentStep, nextStep, closeTour } = useTour('referral', 1);
 
-  async function handleGenerateB2B() {
-    setB2bLoading(true);
-    const result = await getOrCreateReferralLink(masterId, 'master', 'B2B');
-    setB2bLoading(false);
-    if (result.success) setB2bLink(result.link);
-  }
-
-  async function handleCopyB2B() {
-    if (!b2bLink) return;
-    await navigator.clipboard.writeText(b2bLink);
-    setB2bCopied(true);
-    setTimeout(() => setB2bCopied(false), 2000);
-  }
-
-  async function handleShareB2B() {
-    if (!b2bLink) return;
-    if (navigator.share) {
-      await navigator.share({
-        title: 'Bookit — запрошення колеги',
-        text: 'Подаруйте колезі преміум-інструмент і отримайте +30 днів підписки Pro безкоштовно 🎁',
-        url: b2bLink,
-      });
-    } else {
-      handleCopyB2B();
+  // Автоматична генерація коду, якщо його немає
+  useEffect(() => {
+    if (!initialCode) {
+      async function ensureCode() {
+        const res = await getOrGenerateReferralCode(masterId);
+        if (res.success && res.code) setCode(res.code);
+        setLoading(false);
+      }
+      ensureCode();
     }
-  }
+  }, [initialCode, masterId]);
 
-  const referralLink = `https://bookit-five-psi.vercel.app/register?ref=${referralCode}`;
+  const referralLink = `${SITE_URL}/invite/${code}`;
 
   const handleCopy = async () => {
+    if (!code) return;
     await navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShare = async () => {
+    if (!code) return;
     if (navigator.share) {
-      await navigator.share({
-        title: 'Bookit — онлайн-запис для майстрів',
-        text: `Приєднуйся до Bookit — персональна сторінка запису для майстрів. Реєструйся за моїм посиланням і отримаємо обидва місяць Pro безкоштовно 🎁`,
-        url: referralLink,
-      });
+      try {
+        await navigator.share({
+          title: 'Bookit — онлайн-запис для майстрів',
+          text: `Приєднуйся до Bookit — найкраща платформа для б'юті-майстрів. Реєструйся за моїм посиланням і отримаємо обидва 30 днів Pro безкоштовно 🎁`,
+          url: referralLink,
+        });
+      } catch (e) {
+        handleCopy();
+      }
     } else {
       handleCopy();
     }
@@ -81,76 +73,71 @@ export function ReferralPage({ masterId, referralCode, referralCount, subscripti
     <div className="flex flex-col gap-4 pb-8">
       {/* Header */}
       <div className={cn(
-        'relative bento-card p-5 transition-all duration-500',
+        'relative bento-card p-5 transition-all duration-500 shadow-sm',
         currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
       )}>
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
           title="🤝 Амбасадори бренду"
-          text="Перетворіть клієнтів на своїх менеджерів з продажу. Даруйте їм знижку за кожного приведеного друга — це найдешевший спосіб залучення."
+          text="Запрошуйте колег та отримуйте бонуси разом. Це найпростіший спосіб подовжити вашу Pro-підписку безкоштовно."
           position="bottom"
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
         <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Реферальна програма</h1>
-        <p className="text-sm text-[#A8928D]">Запрошуй колег — отримуйте бонуси разом</p>
+        <p className="text-sm text-[#A8928D]">Запрошуй колег — отримуйте по 30 днів Pro разом</p>
       </div>
 
-      {/* B2B: Запросити колегу-майстра */}
+      {/* Main Referral Card */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.04, type: 'spring', stiffness: 280, damping: 24 }}
-        className="bento-card p-5"
+        transition={{ delay: 0.05, type: 'spring', stiffness: 280, damping: 24 }}
+        className="bento-card p-5 border-2 border-[#789A99]/20"
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-2xl bg-[#D4935A]/12 flex items-center justify-center flex-shrink-0">
-            <Gift size={18} className="text-[#D4935A]" />
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-2xl bg-[#789A99]/12 flex items-center justify-center flex-shrink-0">
+            <Gift size={18} className="text-[#789A99]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#2C1A14]">Запросити колегу</p>
-            <p className="text-xs text-[#A8928D]">Подаруйте колезі преміум-інструмент і отримайте +30 днів Pro</p>
+            <p className="text-sm font-semibold text-[#2C1A14]">Твоє особисте посилання</p>
+            <p className="text-xs text-[#A8928D]">Скопіюй та надішли колезі-майстру</p>
           </div>
         </div>
 
-        {!b2bLink ? (
-          <button
-            onClick={handleGenerateB2B}
-            disabled={b2bLoading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#D4935A] text-white text-sm font-semibold hover:bg-[#c07d45] transition-colors disabled:opacity-60"
-          >
-            {b2bLoading ? <Loader2 size={15} className="animate-spin" /> : <Gift size={15} />}
-            {b2bLoading ? 'Генеруємо...' : 'Згенерувати лінк'}
-          </button>
+        {loading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="animate-spin text-[#789A99]" size={24} />
+          </div>
         ) : (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center rounded-2xl border border-white/80 bg-white/60 overflow-hidden">
-              <input
-                readOnly
-                value={b2bLink}
-                className="flex-1 px-4 py-3 text-xs text-[#2C1A14] bg-transparent outline-none truncate"
-              />
+          <div className="flex flex-col gap-3">
+            {/* Link display */}
+            <div className="flex items-center rounded-2xl border border-[#E8D0C8] bg-white/60 overflow-hidden shadow-inner">
+              <p className="flex-1 px-4 py-3 text-xs text-[#2C1A14] truncate font-mono">
+                {referralLink.replace(/https?:\/\//, '')}
+              </p>
               <button
-                onClick={handleCopyB2B}
-                className="px-4 py-3 text-[#789A99] hover:bg-[#789A99]/10 transition-colors border-l border-white/80 flex-shrink-0"
+                onClick={handleCopy}
+                className="px-4 py-3 text-[#789A99] hover:bg-[#789A99]/10 transition-colors flex-shrink-0 border-l border-[#E8D0C8]"
               >
-                {b2bCopied ? <Check size={15} className="text-[#5C9E7A]" /> : <Copy size={15} />}
+                {copied ? <Check size={16} className="text-[#5C9E7A]" /> : <Copy size={16} />}
               </button>
             </div>
-            <div className="flex gap-2">
+
+            <div className="flex gap-2.5">
               <button
-                onClick={handleCopyB2B}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#789A99]/10 text-[#789A99] text-sm font-semibold hover:bg-[#789A99]/20 transition-colors"
+                onClick={handleCopy}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white border border-[#E8D0C8] text-[#2C1A14] text-sm font-semibold hover:bg-[#F5E8E3] active:scale-[0.98] transition-all"
               >
-                {b2bCopied ? <Check size={14} /> : <Copy size={14} />}
-                {b2bCopied ? 'Скопійовано!' : 'Копіювати'}
+                {copied ? <Check size={15} /> : <Copy size={15} />}
+                {copied ? 'Скопійовано!' : 'Копіювати'}
               </button>
               <button
-                onClick={handleShareB2B}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#D4935A] text-white text-sm font-semibold hover:bg-[#c07d45] transition-colors"
+                onClick={handleShare}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/20"
               >
-                <Share2 size={14} />
+                <Share2 size={15} />
                 Поділитись
               </button>
             </div>
@@ -158,141 +145,81 @@ export function ReferralPage({ masterId, referralCode, referralCount, subscripti
         )}
       </motion.div>
 
-      {/* How it works */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05, type: 'spring', stiffness: 280, damping: 24 }}
-        className="bento-card p-5"
-      >
-        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-4">Як це працює</p>
-        <div className="flex flex-col gap-3">
-          {[
-            { icon: '🔗', title: 'Поділись посиланням', desc: 'Надішли своє реферальне посилання колезі-майстру' },
-            { icon: '✅', title: 'Колега реєструється', desc: 'Вони створюють акаунт за твоїм посиланням' },
-            { icon: '🎁', title: 'Обидва отримують бонус', desc: 'По 30 днів Pro безкоштовно — тобі і новому майстру' },
-          ].map((step, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-[#789A99]/10 flex items-center justify-center text-lg flex-shrink-0">
-                {step.icon}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[#2C1A14]">{step.title}</p>
-                <p className="text-xs text-[#A8928D] mt-0.5">{step.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Referral link */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
-        className="bento-card p-5"
-      >
-        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-3">Твоє посилання</p>
-
-        {/* Link display */}
-        <div className="flex items-center rounded-2xl border border-white/80 bg-white/60 overflow-hidden mb-3">
-          <p className="flex-1 px-4 py-3 text-sm text-[#2C1A14] truncate font-mono">
-            bookit-five-psi.vercel.app/register?ref=<span className="font-bold text-[#789A99]">{referralCode}</span>
-          </p>
-          <button
-            onClick={handleCopy}
-            className="px-4 py-3 text-[#789A99] hover:bg-[#789A99]/10 transition-colors flex-shrink-0 border-l border-white/80"
-          >
-            {copied ? <Check size={16} className="text-[#5C9E7A]" /> : <Copy size={16} />}
-          </button>
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={handleCopy}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#789A99]/10 text-[#789A99] text-sm font-semibold hover:bg-[#789A99]/20 transition-colors"
-          >
-            {copied ? <Check size={15} /> : <Copy size={15} />}
-            {copied ? 'Скопійовано!' : 'Копіювати'}
-          </button>
-          <button
-            onClick={handleShare}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors"
-          >
-            <Sparkles size={15} />
-            Поділитись
-          </button>
-        </div>
-      </motion.div>
-
       {/* Stats */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, type: 'spring', stiffness: 280, damping: 24 }}
+        transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
         className="grid grid-cols-2 gap-3"
       >
-        <div className="bento-card p-4 flex flex-col items-center gap-1">
-          <Users size={18} className="text-[#789A99]" />
-          <p className="text-2xl font-bold text-[#2C1A14]">{referralCount}</p>
-          <p className="text-xs text-[#A8928D] text-center">Запрошено майстрів</p>
+        <div className="bento-card p-4 flex flex-col items-center gap-1 shadow-sm">
+          <Users size={18} className="text-[#6B5750]" />
+          <p className="text-2xl font-bold text-[#2C1A14] leading-none mt-1">{referralCount}</p>
+          <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider text-center pt-1">Запрошено</p>
         </div>
-        <div className="bento-card p-4 flex flex-col items-center gap-1">
-          <Gift size={18} className="text-[#D4935A]" />
-          <p className="text-2xl font-bold text-[#2C1A14]">{referralCount * 30}</p>
-          <p className="text-xs text-[#A8928D] text-center">Днів Pro зароблено</p>
+        <div className="bento-card p-4 flex flex-col items-center gap-1 shadow-sm">
+          <Sparkles size={18} className="text-[#D4935A]" />
+          <p className="text-2xl font-bold text-[#2C1A14] leading-none mt-1">{referralCount * 30}</p>
+          <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider text-center pt-1">Днів Pro бонусом</p>
         </div>
       </motion.div>
 
       {/* Current bonus status */}
-      {isTrialFromReferral && trialDaysLeft !== null && trialDaysLeft > 0 && (
+      {isTrialFromReferral && trialDaysLeft !== null && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 280, damping: 24 }}
-          className="bento-card p-5"
+          transition={{ delay: 0.15, type: 'spring', stiffness: 280, damping: 24 }}
+          className="bento-card p-5 bg-[#D4935A]/5 border border-[#D4935A]/20"
         >
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-[#D4935A]/15 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#D4935A]/15 flex items-center justify-center flex-shrink-0">
               <Crown size={20} className="text-[#D4935A]" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#2C1A14]">Pro активний</p>
-              <p className="text-xs text-[#A8928D]">Залишилось {pluralize(trialDaysLeft, ['день', 'дні', 'днів'])} Pro доступу</p>
+              <p className="text-sm font-semibold text-[#2C1A14]">Активні бонуси Pro</p>
+              <p className="text-xs text-[#A8928D]">
+                {trialDaysLeft > 0 
+                  ? `Залишилось ${pluralize(trialDaysLeft, ['день', 'дні', 'днів'])} доступу`
+                  : 'Сьогодні останній день'}
+              </p>
             </div>
           </div>
-          <div className="mt-3 h-1.5 bg-[#F5E8E3] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#D4935A]/60 rounded-full transition-all duration-700"
-              style={{ width: `${Math.min(100, Math.round((trialDaysLeft / 30) * 100))}%` }}
+          <div className="mt-4 h-2 bg-[#E8D0C8]/40 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.round((trialDaysLeft / 30) * 100))}%` }}
+              className="h-full bg-[#D4935A] rounded-full shadow-sm shadow-[#D4935A]/20"
             />
           </div>
         </motion.div>
       )}
 
-      {/* Invite message preview */}
+      {/* How it works */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.22, type: 'spring', stiffness: 280, damping: 24 }}
+        transition={{ delay: 0.2, type: 'spring', stiffness: 280, damping: 24 }}
         className="bento-card p-5"
       >
-        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-3">Текст для запрошення</p>
-        <div className="p-4 rounded-2xl bg-white/50 border border-white/70">
-          <p className="text-sm text-[#2C1A14] leading-relaxed">
-            Привіт! 👋 Я використовую Bookit для онлайн-запису клієнтів — дуже зручно. Спробуй теж, за моїм посиланням обидва отримаємо місяць Pro безкоштовно 🎁{'\n\n'}
-            {referralLink}
-          </p>
+        <p className="text-xs font-bold text-[#6B5750] uppercase tracking-widest mb-5 opacity-60">Як отримати бонус</p>
+        <div className="flex flex-col gap-4">
+          {[
+            { icon: '🔗', title: 'Надішли посилання', desc: 'Поділись інвайтом з колегою-майстром' },
+            { icon: '🚀', title: 'Колега реєструється', desc: 'Він створює акаунт за твоїм посиланням' },
+            { icon: '💎', title: 'Отримайте Pro', desc: 'Вам обом автоматично нараховується 30 днів Pro' },
+          ].map((step, i) => (
+            <div key={i} className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-white border border-[#E8D0C8] flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
+                {step.icon}
+              </div>
+              <div className="pt-0.5">
+                <p className="text-sm font-semibold text-[#2C1A14]">{step.title}</p>
+                <p className="text-xs text-[#A8928D] leading-relaxed mt-0.5">{step.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
-        <button
-          onClick={() => navigator.clipboard.writeText(
-            `Привіт! 👋 Я використовую Bookit для онлайн-запису клієнтів — дуже зручно. Спробуй теж, за моїм посиланням обидва отримаємо місяць Pro безкоштовно 🎁\n\n${referralLink}`
-          )}
-          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-[#789A99]/30 text-[#789A99] text-xs font-semibold hover:bg-[#789A99]/8 transition-colors"
-        >
-          <Copy size={13} />
-          Копіювати текст
-        </button>
       </motion.div>
     </div>
   );

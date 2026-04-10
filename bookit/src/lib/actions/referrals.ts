@@ -2,25 +2,69 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
-// ── Генератор коду (8 символів, base36, crypto-safe) ─────────────
+// ── Генератор коду (6 символів, читабельний алфавіт) ──────────────
 
-function generateCode(length = 8): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+function generateCode(length = 6): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Без 0, O, I, 1 для усунення плутанини
   const bytes = crypto.getRandomValues(new Uint8Array(length));
   return Array.from(bytes)
     .map(b => chars[b % chars.length])
     .join('');
 }
 
-// ── getOrCreateReferralLink ───────────────────────────────────────
+// ── getOrGenerateReferralCode ─────────────────────────────────────
 
 /**
- * Повертає існуючий або створює новий реферальний лінк.
- *
- * - B2B: Master → Master (ownerId = master user id, role='master')
- * - C2M: Client → Master (ownerId = client user id, role='client')
- * - C2C: Client → Client до конкретного майстра (потрібен targetMasterId)
+ * Гарантує наявність реферального коду для профілю (майстра або клієнта).
  */
+export async function getOrGenerateProfileReferralCode(
+  id: string,
+  type: 'master' | 'client' = 'master'
+): Promise<{ success: boolean; code?: string; error?: string }> {
+  try {
+    const admin = createAdminClient();
+    const table = type === 'master' ? 'master_profiles' : 'client_profiles';
+
+    // 1. Шукаємо існуючий
+    const { data: profile } = await admin
+      .from(table)
+      .select('referral_code')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (profile?.referral_code) {
+      return { success: true, code: profile.referral_code };
+    }
+
+    // 2. Генеруємо новий з retry при колізіях
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const code = generateCode(6);
+      const { error } = await admin
+        .from(table)
+        .update({ referral_code: code })
+        .eq('id', id)
+        .is('referral_code', null);
+
+      if (!error) return { success: true, code };
+      // 23505 = unique_violation
+      if (error.code !== '23505') return { success: false, error: error.message };
+    }
+
+    return { success: false, error: 'Не вдалося згенерувати унікальний код після декількох спроб' };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * @deprecated Use getOrGenerateProfileReferralCode
+ */
+export async function getOrGenerateReferralCode(masterId: string) {
+  return getOrGenerateProfileReferralCode(masterId, 'master');
+}
+
+// ── getOrCreateReferralLink (Legacy wrapper for backward compat) ──
+
 export async function getOrCreateReferralLink(
   ownerId: string,
   role: 'master' | 'client',
@@ -30,71 +74,26 @@ export async function getOrCreateReferralLink(
   | { success: true; code: string; link: string }
   | { success: false; error: string }
 > {
-  try {
-    const admin = createAdminClient();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
-
-    // Шукаємо існуючий лінк для цієї комбінації
-    let query = admin
-      .from('referral_links')
-      .select('code')
-      .eq('owner_id', ownerId)
-      .eq('target_type', targetType);
-
-    if (targetMasterId) {
-      query = query.eq('target_master_id', targetMasterId);
-    } else {
-      query = query.is('target_master_id', null);
+  // Тепер ми просто повертаємо код з профілю для B2B
+  const appUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua';
+  
+  if (targetType === 'B2B') {
+    const res = await getOrGenerateReferralCode(ownerId);
+    if (res.success && res.code) {
+      return { success: true, code: res.code, link: `${appUrl}/invite/${res.code}` };
     }
-
-    const { data: existing } = await query.maybeSingle();
-    if (existing) {
-      return {
-        success: true,
-        code: existing.code,
-        link: `${appUrl}/invite/${existing.code}`,
-      };
-    }
-
-    // Створюємо новий — retry при коліжн (надзвичайно рідко)
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const code = generateCode(8);
-      const { error } = await admin.from('referral_links').insert({
-        code,
-        owner_id: ownerId,
-        owner_role: role,
-        target_type: targetType,
-        target_master_id: targetMasterId ?? null,
-      });
-
-      if (!error) {
-        return {
-          success: true,
-          code,
-          link: `${appUrl}/invite/${code}`,
-        };
-      }
-
-      // 23505 = unique_violation → спробуємо новий код
-      if (error.code !== '23505') {
-        return { success: false, error: error.message };
-      }
-    }
-
-    return { success: false, error: 'Не вдалося згенерувати унікальний код' };
-  } catch (e: unknown) {
-    return { success: false, error: (e as Error)?.message ?? 'Невідома помилка' };
+    return { success: false, error: res.error || 'Помилка' };
   }
+
+  // Для решти типів поки лишаємо як було або ігноруємо (згідно з MVP цілями)
+  return { success: false, error: 'Метод застарів для цього типу. Використовуйте Classic Referral.' };
 }
 
 // ── processRegistrationReferral ───────────────────────────────────
 
 /**
  * Викликається після реєстрації нового майстра (newMasterId).
- *
- * B2B: власнику лінка (майстру) +30 днів до subscription_expires_at.
- * C2M: між клієнтом-власником та новим майстром → INSERT client_master_relations
- *       з loyalty_points = 500.
+ * Зберігає зв'язок та нараховує бонуси.
  */
 export async function processRegistrationReferral(
   newMasterId: string,
@@ -103,76 +102,54 @@ export async function processRegistrationReferral(
   try {
     const admin = createAdminClient();
 
-    const { data: link } = await admin
-      .from('referral_links')
-      .select('owner_id, owner_role, target_type')
-      .eq('code', refCode)
+    // 1. Знаходимо реферера (власника коду)
+    const { data: referrer } = await admin
+      .from('master_profiles')
+      .select('id, subscription_expires_at')
+      .eq('referral_code', refCode)
       .single();
 
-    if (!link) return { success: false, error: 'Реферальний код не знайдено' };
+    if (!referrer) return { success: false, error: 'Реферальний код не знайдено' };
+    if (referrer.id === newMasterId) return { success: false, error: 'Самореферал заборонено' };
 
-    // ── B2B: Майстер запросив Майстра → +30 днів ─────────────────
-    if (link.target_type === 'B2B' && link.owner_role === 'master') {
-      const { data: mp } = await admin
-        .from('master_profiles')
-        .select('subscription_expires_at')
-        .eq('id', link.owner_id)
-        .single();
+    // 2. Оновлюємо нового майстра (referred_by)
+    await admin
+      .from('master_profiles')
+      .update({ referred_by: refCode })
+      .eq('id', newMasterId);
 
-      const base = mp?.subscription_expires_at
-        ? new Date(mp.subscription_expires_at)
-        : new Date();
-      base.setDate(base.getDate() + 30);
+    // 3. Нараховуємо бонус рефереру (+30 днів)
+    const baseDate = referrer.subscription_expires_at
+      ? new Date(referrer.subscription_expires_at)
+      : new Date();
+    
+    // Якщо підписка вже закінчилась, рахуємо від сьогодні
+    const start = baseDate > new Date() ? baseDate : new Date();
+    start.setDate(start.getDate() + 30);
 
-      const { error } = await admin
-        .from('master_profiles')
-        .update({ subscription_expires_at: base.toISOString() })
-        .eq('id', link.owner_id);
+    const { error: promoError } = await admin
+      .from('master_profiles')
+      .update({ subscription_expires_at: start.toISOString() })
+      .eq('id', referrer.id);
 
-      if (error) return { success: false, error: error.message };
-      return { success: true };
-    }
+    // 4. Нараховуємо бонус новому майстру (+30 днів пробного періоду Pro)
+    // (Логіка залежить від того, чи хочемо ми давати бонус і новачкові відразу)
+    // Для MVP даємо обом:
+    const newMasterBonus = new Date();
+    newMasterBonus.setDate(newMasterBonus.getDate() + 30);
+    
+    await admin
+      .from('master_profiles')
+      .update({ 
+        subscription_expires_at: newMasterBonus.toISOString(),
+        subscription_tier: 'pro' // Даємо Pro тріал
+      })
+      .eq('id', newMasterId);
 
-    // ── C2M: Клієнт запросив Майстра → 500 лоял. балів ───────────
-    if (link.target_type === 'C2M' && link.owner_role === 'client') {
-      // Гарантуємо запис у client_profiles
-      await admin
-        .from('client_profiles')
-        .upsert({ id: link.owner_id }, { onConflict: 'id', ignoreDuplicates: true });
-
-      // Upsert relation: якщо вже є — додаємо бали через rpc або вставляємо новий запис
-      const { data: existing } = await admin
-        .from('client_master_relations')
-        .select('id, loyalty_points')
-        .eq('client_id', link.owner_id)
-        .eq('master_id', newMasterId)
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await admin
-          .from('client_master_relations')
-          .update({ loyalty_points: (existing.loyalty_points ?? 0) + 500 })
-          .eq('id', existing.id);
-        if (error) return { success: false, error: error.message };
-      } else {
-        const { error } = await admin
-          .from('client_master_relations')
-          .insert({
-            client_id: link.owner_id,
-            master_id: newMasterId,
-            loyalty_points: 500,
-          });
-        if (error) return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    }
-
-    return {
-      success: false,
-      error: `Непідтримуваний тип реф-лінка для реєстрації: ${link.target_type}`,
-    };
-  } catch (e: unknown) {
-    return { success: false, error: (e as Error)?.message ?? 'Невідома помилка' };
+    if (promoError) return { success: false, error: promoError.message };
+    
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
   }
 }

@@ -59,6 +59,8 @@ export interface MasterProfile {
   pricing_rules: PricingRules | null;
   working_hours: WorkingHoursConfig | null;
   timezone: string | null;
+  referral_code: string | null;
+  referred_by: string | null;
   created_at: string;
   updated_at: string;
 }

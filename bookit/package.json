@@ -28,6 +28,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "3.2.0",
     "framer-motion": "^12.35.1",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.577.0",
     "next": "^16.2.0",
     "react": "19.2.3",
@@ -41,6 +42,7 @@
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
