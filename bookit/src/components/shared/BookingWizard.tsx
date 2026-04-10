@@ -325,17 +325,31 @@ export function BookingWizard({
   const rawFlashDiscount      = flashDeal ? Math.round(grandTotal * flashDeal.discountPct / 100) : 0;
   const rawMasterDiscount     = Math.round(grandTotal * discountPercent / 100);
 
-  // Apply sequential logic and 40% cap similarly to backend
+  // ── 7.6. Comprehensive Discount Resolution & Safety Cap (40%) ──────────────
   const originalTotal = totalServicesPrice + totalProductsPrice;
   const maxAllowedDiscount = Math.floor(originalTotal * 0.40);
   
-  // Combine all manual/loyalty/flash discounts for the cap (excluding dynamic base price adjustment)
-  const totalDiscounts = Math.min(maxAllowedDiscount, rawLoyaltyDiscount + rawFlashDiscount + rawMasterDiscount);
-  
-  const finalTotal = Math.max(0, grandTotal - totalDiscounts);
-  const loyaltyDiscountAmount = Math.min(totalDiscounts, rawLoyaltyDiscount); // for display
-  const masterDiscountAmount = Math.min(totalDiscounts - loyaltyDiscountAmount, rawMasterDiscount); // for display
-  const flashDealAmount = Math.min(totalDiscounts - loyaltyDiscountAmount - masterDiscountAmount, rawFlashDiscount); // for display
+  // Total discount requested relative to the Original Total price
+  const requestedDynamicDiscount = dynamicPricing ? totalServicesPrice - dynamicPricing.adjustedPrice : 0;
+  const totalRequestedDiscountSum = (useDynamicPrice ? requestedDynamicDiscount : 0) + rawLoyaltyDiscount + rawFlashDiscount + rawMasterDiscount;
+
+  // If we are giving a net discount (not a net markup), we must cap it.
+  const effectiveTotalDiscount = totalRequestedDiscountSum > 0 
+    ? Math.min(maxAllowedDiscount, totalRequestedDiscountSum) 
+    : totalRequestedDiscountSum; // don't cap markups (peak hours)
+
+  const finalTotal = Math.max(0, originalTotal - effectiveTotalDiscount);
+
+  // Breakdown for summary display (approximate proportional split for visual aid)
+  const loyaltyDiscountAmount = totalRequestedDiscountSum > 0 
+    ? Math.round(effectiveTotalDiscount * (rawLoyaltyDiscount / totalRequestedDiscountSum)) 
+    : 0;
+  const masterDiscountAmount = totalRequestedDiscountSum > 0 
+    ? Math.round(effectiveTotalDiscount * (rawMasterDiscount / totalRequestedDiscountSum)) 
+    : 0;
+  const flashDealAmount = totalRequestedDiscountSum > 0 
+    ? Math.round(effectiveTotalDiscount * (rawFlashDiscount / totalRequestedDiscountSum)) 
+    : 0;
 
   // ── Reset + fetch client history on open ───────────────────────────────────
   useEffect(() => {

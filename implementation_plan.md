@@ -1,41 +1,45 @@
-# Implementation Plan - Fix Phantom VIP Toggle
+# План виправлення - Pricing Engine Bugfix
 
-Migrate the VIP toggle logic to a Server Action to ensure database persistence and fix the "Phantom Toggle" bug on the Master's Clients page.
+Ми виявили дві критичні причини, чому знижки перестали застосовуватися. Основна — некоректне отримання дати через `toISOString()`, що зміщувало слот на день назад.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> The implementation will use `supabaseAdmin` (via `createAdminClient`) to bypass RLS for the `client_master_relations` table, as requested. The action will verify the `master_id` against the authenticated user to maintain security.
+> **Математика сумарної знижки (40% Cap):** 
+> Я пропоную змінити розрахунок так, щоб ліміт у 40% стосувався **всіх** знижок сумарно (Dynamic + Loyalty + Flash). 
+> Якщо Dynamic Pricing дає знижку 20%, а Loyalty ще 30%, то сумарна знижка буде обмежена до 40% від оригінальної ціни. 
+> Націнки (markup) у пікові години не обмежуються цим лімітом.
 
 ## Proposed Changes
 
-### Master Clients Backend
+### 1. Виправлення дати (Bug 4.1)
 
-#### [MODIFY] [actions.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/app/(master)/dashboard/clients/actions.ts)
-- Add `toggleClientVip(clientId: string, isVip: boolean)` server action.
-- Get current master ID using `supabase.auth.getUser()`.
-- Update `is_vip` in `client_master_relations` for the specific `master_id` and `client_id`.
+#### [MODIFY] [dynamicPricing.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/utils/dynamicPricing.ts)
+- Видалити `toISOString().split('T')[0]`.
+- Впровадити надійний метод отримання локальної дати у форматі `YYYY-MM-DD` без UTC-зміщення.
+- Це гарантує, що `slotDateTime` створюється на правильний день, і `hoursAhead` буде позитивним для майбутніх слотів.
 
----
+### 2. Корекція ліміту знижок (Bug 5.1)
 
-### Master Clients Frontend
+#### [MODIFY] [createBooking.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/actions/createBooking.ts)
+- Змінити розрахунок `finalTotal`:
+    1. Рахуємо `originalTotal` (Services + Products без жодних знижок).
+    2. Рахуємо `requestedDynamicDiscount = originalServicesPrice - adjustedServicesPrice`.
+    3. Рахуємо `totalRequestedDiscount = requestedDynamicDiscount + loyaltyDiscountAmount + flashDealAmount`.
+    4. Якщо `totalRequestedDiscount > 0` (тобто це знижка, а не націнка), обмежуємо її до `originalTotal * 0.40`.
+    5. `finalTotal = originalTotal - effectiveDiscount`.
 
-#### [MODIFY] [ClientDetailSheet.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/master/clients/ClientDetailSheet.tsx)
-- Import `toggleClientVip` from the actions file.
-- Implement `useTransition` to manage the loading state of the toggle.
-- Update `handleToggleVip` to call the Server Action.
-- Invalidate React Query caches (`['clients']`) after successful update.
+### 3. Перевірка БД (Профілактика)
 
-## Open Questions
-
-- Should I also invalidate a specific client query? The task mentions `(and any specific client detail query key)`. I need to check if there's a specific `['client', id]` query used in the application.
+#### [MODIFY] [createBooking.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/actions/createBooking.ts)
+- Видалити спроби запису у колонки `discount_amount` та `loyalty_label`, якщо вони ще не існують у схемі (я перевірю схему через `view_file` типів ще раз, але про всяк випадок буду обережним). *Примітка: в попередньому кроці я бачив, що я їх додав у код запису, але в типах `Booking` їх немає.*
 
 ## Verification Plan
 
 ### Automated Tests
-- Since this is a UI/DB integration, I will perform manual verification of the flow using the browser tool if possible, or at least ensure the code is syntactically correct and follows the project patterns.
+- Оновити `scratch/debugPricing.ts` для перевірки правильності вибору дати.
+- Запустити build для перевірки типів.
 
 ### Manual Verification
-1. Toggle VIP status in the Client Detail Sheet.
-2. Observe optimistic UI update or loading state.
-3. Refresh the page to confirm the status persists in the database.
+1. Створити правило `last_minute` і переконатися, що ціна у віджеті бронювання зменшується.
+2. Перевірити, що при поєднанні знижок вони не перевищують 40%.

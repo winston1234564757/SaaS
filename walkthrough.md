@@ -1,27 +1,26 @@
-# Walkthrough - Epic 1: State Management & Client Linkage
+**FEEDBACK ON YOUR PLAN:**
 
-We have resolved several critical issues regarding data persistence, cache synchronization, and security guards.
+Your analysis is spot on. You correctly identified the financial vulnerabilities (timezone mismatch and lack of backend validation).
 
-## Key Fixes
+**ANSWERS TO OPEN QUESTIONS:**
 
-### 1. Booking Confirmation & Cancellation (Server Actions)
-Replaced the fragile client-side mutations in `BookingCard.tsx` with robust Server Actions in `src/app/(master)/dashboard/bookings/actions.ts`.
-- **Reason for Failure:** The old client-side updates were failing for online/guest bookings due to RLS restrictions and were unable to trigger Next.js cache revalidation.
-- **Result:** Confirmation/Cancellation now uses `supabaseAdmin` for guaranteed success, includes strict **IDOR protection** (ownership check), and calls `revalidatePath` to refresh the dashboard UI instantly.
+1. **Discount Combination:** APPROVED. The sequence is excellent for business logic:
+   - Step 1: Apply `Dynamic Pricing` ONLY to the specific service price.
+   - Step 2: Add Product prices (if any) to get the Subtotal.
+   - Step 3: Apply `Loyalty` (and/or Flash Deal) to the Subtotal.
+   This encourages retail sales while dynamically filling slots.
 
-### 2. Authenticated Client Identifier Retention
-Modified `createBooking.ts` to automatically detect and attach the `client_id` for logged-in users.
-- **Impact:** Even if a user completes a booking as a "guest", if they are authenticated via Google/SMS, their visit and revenue statistics will correctly accumulate under their profile, allowing the Master to assign VIP status and track loyalty.
+2. **Safety Limit (Discount Cap):** YES. Implement a strict MAXIMUM TOTAL DISCOUNT of 40%.
+   - Rule: Regardless of how many discounts stack (Dynamic + Loyalty + Flash), the `Final Price` MUST NEVER be less than `Original Total * 0.60`.
+   - Enforce this cap at the very end of the pricing calculation engine.
 
-### 3. Fortified Route Guard
-Tightened `B2CRouteGuard.tsx` to handle unauthorized states synchronously.
-- **Improvement:** The guard now returns `null` immediately if a phone number is required but missing, preventing any "flicker" or temporary rendering of sensitive children components while the redirect is in progress.
+3. **Timezone Strategy:** Do NOT completely hardcode it without an escape hatch. 
+   - You must pass or fetch the `masterTimezone` from the Master's settings/profile context. 
+   - If (and only if) it's missing or undefined, strictly fallback to `Europe/Kyiv`. This makes our SaaS scalable for other countries while fixing the immediate Vercel UTC bug for the current market.
 
-## Verification Results
-
-### Automated Verification
-- [x] **Production Build:** `npm run build` completed without TypeScript errors.
-- [x] **Deployment:** Successfully deployed to https://bookit-five-psi.vercel.app.
-
-### Technical Analysis of "Online Confirmation Bug"
-The bug was a classic **Cache-Linkage Mismatch**. A master would update a booking status on the client, which updated the database but left the Server-Side Rendered (SSR) Dashboard cache in a stale state. Furthermore, RLS likely blocked mutations on bookings where the `client_id` was `null` (guests) because of ambiguous permission resolution on the client key. Moving this logic to the server with an Administrative client and explicit cache revalidation solves both issues at the root.
+**EXECUTION INSTRUCTIONS:**
+Proceed immediately with rewriting the Pricing Engine. 
+1. Fix the time-math using `date-fns-tz`.
+2. Implement the strict backend Loyalty count check in the booking action.
+3. Implement the 40% max discount cap.
+Output the core pricing calculation function so I can review the math and the discount cap logic.

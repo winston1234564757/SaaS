@@ -1,5 +1,5 @@
 import { differenceInHours, parseISO } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 export interface PricingRules {
   peak?: { days: string[]; hours: [number, number]; markup_pct: number };
@@ -18,14 +18,12 @@ export interface PricingResult {
   label: string | null;
 }
 
-// Захист: максимальна сукупна знижка та націнка на рівні Dynamic Pricing
-// (Ці ліміти стосуються лише цього двигуна, глобальний ліміт 40% буде в createBooking)
-const DISCOUNT_FLOOR = -30; // не більше -30%
-const MARKUP_CEIL    =  50; // не більше +50%
+const DISCOUNT_FLOOR = -30; // Max dynamic discount -30% (global cap in createBooking will still apply)
+const MARKUP_CEIL    =  50; // Max dynamic markup +50%
 
 /**
  * Applies dynamic pricing rules based on the time of the booking slot.
- * Fixes timezone issues by using the master's timezone (or Kyiv fallback).
+ * Fixes timezone issues by constructing date without UTC-drift.
  */
 export function applyDynamicPricing(
   basePrice: number,
@@ -42,26 +40,30 @@ export function applyDynamicPricing(
   const now = toZonedTime(new Date(), masterTimezone);
 
   // 2. Build target slot datetime in master's timezone
-  const dateStr = date.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  // Fix Bug 4.1: Do NOT use toISOString() which shifts date back by hours for GMT+3.
+  // We extract YYYY-MM-DD from the local parts of the 'date' object.
+  const year  = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day   = String(date.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
+  
   const slotDateTime = toZonedTime(`${dateStr}T${time}:00`, masterTimezone);
 
   const dayKey = DAY_MAP[slotDateTime.getDay()];
   const hour = slotDateTime.getHours();
 
   // 3. Calculate differences
-  // For 'days ahead', we compare dates regardless of hours
   const todayYMD = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const slotYMD  = new Date(slotDateTime.getFullYear(), slotDateTime.getMonth(), slotDateTime.getDate());
   const daysAhead = Math.round((slotYMD.getTime() - todayYMD.getTime()) / 86_400_000);
   
-  // For 'hours ahead', we use precise difference
+  // Real hours difference (absolute)
   const hoursAhead = (slotDateTime.getTime() - now.getTime()) / 3_600_000;
 
   const appliedRules: string[] = [];
   let totalModifier = 0;
 
   // ── Early Bird vs Last Minute ──────────────────────────────────────────────
-  // Ці правила взаємовиключні: якщо Last Minute активний — Early Bird ігнорується
   const earlyBirdActive  = !!(rules.early_bird  && daysAhead >= rules.early_bird.days_ahead);
   const lastMinuteActive = !!(rules.last_minute && hoursAhead <= rules.last_minute.hours_ahead && hoursAhead > 0);
 

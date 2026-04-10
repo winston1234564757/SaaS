@@ -216,12 +216,11 @@ export async function createBooking(
   const adjustedServicesPrice = dynamicResult?.adjustedPrice ?? totalServicesPrice;
   const subTotal = adjustedServicesPrice + totalProductsPrice;
 
-  // ── 7.5. Loyalty Engine (Bug 5 Fix: Backend validation) ─────────────────────
+  // ── 7.5. Loyalty Engine (Backend validation) ──────────────────────────────
   let loyaltyDiscountPercent = 0;
   let loyaltyLabel = '';
 
   if (p.source === 'online') {
-    // 1. Count past COMPLETED visits for this specific master + phone
     const { count: pastVisitsCount } = await admin
       .from('bookings')
       .select('id', { count: 'exact', head: true })
@@ -231,7 +230,6 @@ export async function createBooking(
 
     const totalVisitsWithThisOne = (pastVisitsCount ?? 0) + 1;
 
-    // 2. Fetch active loyalty rules for the master
     const { data: loyaltyRules } = await admin
       .from('loyalty_programs')
       .select('name, target_visits, reward_type, reward_value')
@@ -239,7 +237,6 @@ export async function createBooking(
       .eq('is_active', true)
       .order('target_visits', { ascending: false });
 
-    // 3. Find the best qualifying rule (e.g. 10% on 2nd visit)
     const qualifyingRule = (loyaltyRules ?? []).find(r => 
       r.reward_type === 'percent_discount' && totalVisitsWithThisOne >= r.target_visits
     );
@@ -249,13 +246,14 @@ export async function createBooking(
       loyaltyLabel = qualifyingRule.name;
     }
   } else {
-    // For manual bookings, we trust the master's applied discount
     loyaltyDiscountPercent = p.discountPercent;
   }
 
+  // Raw loyalty discount calculated from service + product subtotal 
+  // (after potential dynamic pricing adjustments)
   const loyaltyDiscountAmount = Math.round(subTotal * loyaltyDiscountPercent / 100);
 
-  // Flash deal — server verifies and applies discount
+  // Flash deal
   let flashDealDiscountPct = 0;
   if (p.flashDealId) {
     const { data: deal } = await admin
@@ -271,17 +269,21 @@ export async function createBooking(
     ? Math.round(subTotal * flashDealDiscountPct / 100)
     : 0;
 
-  // ── 7.6. Discount Resolution & Safety Cap (40%) ────────────────────────────
-  // Rule: Final Price MUST NEVER be less than 60% of original Total (Max 40% discount)
+  // ── 7.6. Comprehensive Discount Resolution & Safety Cap (40%) ──────────────
+  // We sum ALL discounts (Dynamic + Loyalty + Flash) and compare to 40% of Original Total.
   const originalTotal = totalServicesPrice + totalProductsPrice;
   const maxAllowedDiscount = Math.floor(originalTotal * 0.40);
   
-  const rawDiscountSum = loyaltyDiscountAmount + flashDealAmount;
-  // Apply cap only to discretionary discounts (Loyalty/Flash), 
-  // Dynamic Pricing is a base price modifier (Step 1).
-  const effectiveDiscounts = Math.min(maxAllowedDiscount, rawDiscountSum);
+  // Total discount requested relative to the Original Total price
+  const requestedDynamicDiscount = totalServicesPrice - adjustedServicesPrice; // positive if discount, negative if markup
+  const totalRequestedDiscountSum = requestedDynamicDiscount + loyaltyDiscountAmount + flashDealAmount;
 
-  const finalTotal = Math.max(0, subTotal - effectiveDiscounts);
+  // If we are giving a net discount (not a net markup), we must cap it.
+  const effectiveTotalDiscount = totalRequestedDiscountSum > 0 
+    ? Math.min(maxAllowedDiscount, totalRequestedDiscountSum) 
+    : totalRequestedDiscountSum; // don't cap markups (peak hours)
+
+  const finalTotal = Math.max(0, originalTotal - effectiveTotalDiscount);
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
@@ -306,8 +308,6 @@ export async function createBooking(
     total_services_price: totalServicesPrice,
     total_products_price: totalProductsPrice,
     total_price: finalTotal,
-    discount_amount: effectiveDiscounts,
-    loyalty_label: loyaltyLabel || null,
     notes: p.notes?.trim() ?? null,
     source: p.source === 'manual' ? 'manual' : 'public_page',
     dynamic_pricing_label: dynamicResult?.label ?? null,
