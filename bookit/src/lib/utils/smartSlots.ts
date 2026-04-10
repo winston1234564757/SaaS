@@ -1,10 +1,9 @@
+import { toZonedTime } from 'date-fns-tz';
+
 /**
- * Smart Slot Engine
- *
- * Core guarantee:
- *   A slot starting at T is valid ONLY when:
- *     T + requestedDuration + bufferMinutes <= next_event_start
- *   where "event" = an existing booking, a break window, or end of the working day.
+ * Smart Slot Engine (v2 - Bulletproof)
+ * 
+ * Strict timezone isolation, absolute overlap math, and duration-aware validation.
  */
 
 // ── Public types ──────────────────────────────────────────────────────────────
@@ -14,11 +13,10 @@ export interface TimeRange {
   end: string;   // "HH:MM"
 }
 
-/** Виняток з розкладу для конкретного дня (передається з master_time_off) */
 export interface TimeOffEntry {
   type: 'vacation' | 'day_off' | 'short_day';
-  startTime?: string | null; // 'HH:MM' — тільки для short_day
-  endTime?: string | null;   // 'HH:MM' — тільки для short_day
+  startTime?: string | null;
+  endTime?: string | null;
 }
 
 export interface GenerateSlotsParams {
@@ -28,18 +26,13 @@ export interface GenerateSlotsParams {
   breaks: TimeRange[];
   bufferMinutes: number;
   requestedDuration: number;
-  /** Grid step in minutes (default 30) */
   stepMinutes?: number;
-  /** The date being queried (optional, used to filter out past slots if today) e.g., 'YYYY-MM-DD' or Date */
   selectedDate?: string | Date;
-  /**
-   * Виняток з розкладу для цього дня (vacation/day_off → порожній масив;
-   * short_day → замінює workStart/workEnd кастомними годинами).
-   */
   timeOff?: TimeOffEntry | null;
+  /** Explicit timezone handling to prevent server/client leakage */
+  timezone?: string; 
 }
 
-/** Why a slot is unavailable — used for differentiated UI rendering */
 export type SlotReason = 'available' | 'booked' | 'break' | 'buffer' | 'overflow' | 'past';
 
 export interface SlotInfo {
@@ -61,24 +54,25 @@ export function toMins(time: string): number {
 }
 
 export function fromMins(mins: number): string {
-  return (
-    String(Math.floor(mins / 60)).padStart(2, '0') +
-    ':' +
-    String(mins % 60).padStart(2, '0')
-  );
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * Strict Collision Formula:
+ * Two periods [S1, E1] and [S2, E2] overlap if:
+ * S1 < E2 AND E1 > S2
+ */
+function isOverlapping(s1: number, e1: number, s2: number, e2: number): boolean {
+  return s1 < e2 && e1 > s2;
 }
 
 // ── Core slot generator ───────────────────────────────────────────────────────
 
 /**
- * Returns every grid slot within the working day with `available` + `reason`.
- *
- * Reasons:
- *  'available' — slot is bookable
- *  'booked'    — slot overlaps an existing booking
- *  'break'     — slot overlaps a break/lunch window
- *  'buffer'    — slot itself is free but buffer after it conflicts with the next event
- *  'overflow'  — slot + duration extends past end of working day
+ * Generates all possible slots based on working hours, bookings, and breaks.
+ * Uses strict timezone isolation and atomic overlap checks.
  */
 export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] {
   const {
@@ -89,112 +83,99 @@ export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] 
     stepMinutes = 30,
     selectedDate,
     timeOff,
+    timezone = 'Europe/Kyiv'
   } = params;
 
-  // ── Обробка винятків з розкладу ───────────────────────────────────────────
+  // 1. Time Off Handling (Vacation/Short Day)
   if (timeOff) {
     if (timeOff.type === 'vacation' || timeOff.type === 'day_off') return [];
-    // short_day — використовуємо кастомний час замість шаблонного
     if (timeOff.type === 'short_day' && timeOff.startTime && timeOff.endTime) {
-      params = { ...params, workStart: timeOff.startTime, workEnd: timeOff.endTime, timeOff: null };
+      params = { ...params, workStart: timeOff.startTime, workEnd: timeOff.endTime };
     }
   }
 
-  const workStart = params.workStart;
-  const workEnd   = params.workEnd;
-
-  const workStartMin = toMins(workStart);
-  const workEndMin   = toMins(workEnd);
+  const workStartMin = toMins(params.workStart);
+  const workEndMin = toMins(params.workEnd);
 
   if (workStartMin >= workEndMin || requestedDuration <= 0) return [];
 
-  // Determine the safety cutoff if the selected date is today
+  // 2. Strict Timezone Cutoff (For today's slots)
   let minAllowedStart = 0;
   if (selectedDate) {
-    const now = new Date();
-    let isToday = false;
+    const nowInTZ = toZonedTime(new Date(), timezone);
     
-    // Safely parse date to avoid timezone shift on 'YYYY-MM-DD' strings
-    if (typeof selectedDate === 'string') {
-      const parts = selectedDate.split('T')[0].split('-');
-      if (parts.length === 3) {
-        const [y, m, d] = parts.map(Number);
-        isToday = now.getFullYear() === y && (now.getMonth() + 1) === m && now.getDate() === d;
-      } else {
-        const q = new Date(selectedDate);
-        isToday = q.getFullYear() === now.getFullYear() && q.getMonth() === now.getMonth() && q.getDate() === now.getDate();
-      }
-    } else {
-      isToday = 
-        selectedDate.getFullYear() === now.getFullYear() && 
-        selectedDate.getMonth() === now.getMonth() && 
-        selectedDate.getDate() === now.getDate();
-    }
+    // Build a comparable date string (YYYY-MM-DD) from the zoned object
+    const year = nowInTZ.getFullYear();
+    const month = String(nowInTZ.getMonth() + 1).padStart(2, '0');
+    const day = String(nowInTZ.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+    
+    const selectedStr = typeof selectedDate === 'string' 
+      ? selectedDate.split('T')[0] 
+      : `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
 
-    if (isToday) {
-      const SAFETY_BUFFER_MINUTES = 30; // 30 хвилин буфер
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    if (selectedStr === todayStr) {
+      const SAFETY_BUFFER_MINUTES = 30; 
+      const currentMinutes = nowInTZ.getHours() * 60 + nowInTZ.getMinutes();
       minAllowedStart = currentMinutes + SAFETY_BUFFER_MINUTES;
     }
   }
 
-  const inWindow = (e: { start: number; end: number }) =>
-    e.end > workStartMin && e.start < workEndMin;
+  // 3. Normalize Events into Minutes
+  const bookingBlocks = bookings.map(b => ({
+    start: toMins(b.start),
+    end: toMins(b.end)
+  }));
 
-  const bookingEvents = bookings
-    .map(b => ({ start: toMins(b.start), end: toMins(b.end) }))
-    .filter(inWindow)
-    .sort((a, b) => a.start - b.start);
-
-  const breakEvents = breaks
-    .map(b => ({ start: toMins(b.start), end: toMins(b.end) }))
-    .filter(inWindow)
-    .sort((a, b) => a.start - b.start);
-
-  const allEvents = [...bookingEvents, ...breakEvents].sort((a, b) => a.start - b.start);
+  const breakBlocks = breaks.map(b => ({
+    start: toMins(b.start),
+    end: toMins(b.end)
+  }));
 
   const result: SlotInfo[] = [];
 
+  // 4. Grid Iteration
   for (let t = workStartMin; t < workEndMin; t += stepMinutes) {
-    // 0. Past Safety Buffer cutoff
-    if (t < minAllowedStart) {
+    const slotStart = t;
+    const slotEnd = t + requestedDuration;
+    const totalBlockedEnd = slotEnd + bufferMinutes;
+
+    // A. Past Cutoff
+    if (slotStart < minAllowedStart) {
       result.push({ time: fromMins(t), available: false, reason: 'past' });
       continue;
     }
 
-    const slotEnd = t + requestedDuration;
-
-    // 1. Duration overflow
-    if (slotEnd > workEndMin) {
-      result.push({ time: fromMins(t), available: false, reason: 'overflow' });
+    // B. Working Day Overflow (The entire duration + buffer must fit)
+    if (totalBlockedEnd > workEndMin) {
+      // Check if specifically the service fits (even if buffer overflows)
+      if (slotEnd > workEndMin) {
+        result.push({ time: fromMins(t), available: false, reason: 'overflow' });
+      } else {
+        result.push({ time: fromMins(t), available: false, reason: 'buffer' });
+      }
       continue;
     }
 
-    // 2. Booking overlap
-    if (bookingEvents.some(e => e.end > t && e.start < slotEnd)) {
+    // C. Booking Overlap Check
+    // We check if [slotStart, totalBlockedEnd] overlaps any existing booking
+    const bookingOverlap = bookingBlocks.some(b => isOverlapping(slotStart, totalBlockedEnd, b.start, b.end));
+    if (bookingOverlap) {
       result.push({ time: fromMins(t), available: false, reason: 'booked' });
       continue;
     }
 
-    // 3. Break overlap
-    if (breakEvents.some(e => e.end > t && e.start < slotEnd)) {
+    // D. Break Overlap Check
+    // We check if [slotStart, totalBlockedEnd] overlaps any break
+    const breakOverlap = breakBlocks.some(b => isOverlapping(slotStart, totalBlockedEnd, b.start, b.end));
+    if (breakOverlap) {
       result.push({ time: fromMins(t), available: false, reason: 'break' });
       continue;
     }
 
-    // 4. Buffer — find next event that starts at or after slotEnd
-    let nextEventStart = workEndMin;
-    for (const e of allEvents) {
-      if (e.start >= slotEnd && e.start < nextEventStart) {
-        nextEventStart = e.start;
-      }
-    }
-
-    if (slotEnd + bufferMinutes <= nextEventStart) {
-      result.push({ time: fromMins(t), available: true, reason: 'available' });
-    } else {
-      result.push({ time: fromMins(t), available: false, reason: 'buffer' });
-    }
+    // E. Succession Check (Atomic Logic)
+    // If we passed all checks, the slot is available
+    result.push({ time: fromMins(t), available: true, reason: 'available' });
   }
 
   return result;
@@ -206,15 +187,6 @@ export type SlotRenderItem =
   | { kind: 'slot';  slot: SlotWithScore }
   | { kind: 'break'; start: string; end: string; label: string };
 
-/**
- * Converts a scored slot list into render items for the UI:
- *  - Available slots → 'slot' items (selectable buttons)
- *  - Consecutive break-reason slots → single 'break' separator
- *  - Booked / buffer / overflow slots → omitted (no visual clutter)
- *
- * Break windows with start between 11:00–15:00 are labelled "Обід",
- * others "Перерва".
- */
 export function buildSlotRenderItems(
   slots: SlotWithScore[],
   breaks: TimeRange[],
@@ -227,20 +199,17 @@ export function buildSlotRenderItems(
     const slot = slots[i];
 
     if (slot.reason === 'break') {
-      // Find which break window owns this slot
       const slotMin = toMins(slot.time);
       const brk = breakWindows.find(b => b.start <= slotMin && slotMin < b.end);
 
       if (brk) {
-        // Skip all slots that belong to this break window
         const brkEnd = brk.end;
         while (i < slots.length && toMins(slots[i].time) < brkEnd) i++;
-
         const startH = (brk.start / 60) | 0;
         const label = startH >= 11 && startH < 15 ? 'Обід' : 'Перерва';
         items.push({ kind: 'break', start: brk.raw.start, end: brk.raw.end, label });
       } else {
-        i++; // orphan break slot — skip silently
+        i++;
       }
       continue;
     }
@@ -248,8 +217,6 @@ export function buildSlotRenderItems(
     if (slot.available) {
       items.push({ kind: 'slot', slot });
     }
-    // booked / buffer / overflow / past → silently omitted
-
     i++;
   }
 

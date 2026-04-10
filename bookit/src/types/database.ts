@@ -58,6 +58,7 @@ export interface MasterProfile {
   has_seen_tour: boolean;
   pricing_rules: PricingRules | null;
   working_hours: WorkingHoursConfig | null;
+  timezone: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -180,4 +181,16 @@ export interface ClientMasterRelation {
   loyalty_points: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface LoyaltyProgram {
+  id: string;
+  master_id: string;
+  name: string;
+  description: string | null;
+  target_visits: number;
+  reward_type: 'percent_discount' | 'fixed_discount' | 'free_service';
+  reward_value: number;
+  is_active: boolean;
+  created_at: string;
 }

@@ -137,18 +137,31 @@ export async function POST(req: NextRequest) {
     clearTimeout(timeoutId);
   }
 
+  // 1. Перевірка токена
+  if (!process.env.TURBOSMS_TOKEN) {
+    console.error('[send-sms] CRITICAL: TURBOSMS_TOKEN is missing!');
+    return NextResponse.json({ success: false, error: 'Помилка конфігурації СМС-шлюзу' }, { status: 500 });
+  }
+
   // TurboSMS: 800=queued, 801=sent, 0=ok; або response_status містить SUCCESS/OK
+  const isAltSuccess = smsData?.response_status?.includes('SUCCESS') || smsData?.response_status?.includes('OK');
   const isSuccess =
     smsData.response_code === 800 ||
     smsData.response_code === 801 ||
     smsData.response_code === 0 ||
-    smsData.response_status === 'OK' ||
-    smsData.response_status === 'SUCCESS_MESSAGE_SENT';
+    isAltSuccess;
 
   if (!isSuccess) {
-    console.error('[send-sms] TurboSMS unexpected response:', JSON.stringify(smsData));
+    console.error('[send-sms] TurboSMS FAILURE:', JSON.stringify(smsData));
+    
+    // Спробуємо дістати зрозумілу помилку від TurboSMS
+    const detailedError = smsData.response_status || `Код: ${smsData.response_code}`;
+    
     return NextResponse.json(
-      { success: false, error: 'Не вдалося надіслати SMS. Спробуйте пізніше.' },
+      { 
+        success: false, 
+        error: `Шлюз не надіслав SMS: ${detailedError}. Перевірте баланс/токен.` 
+      },
       { status: 400 }
     );
   }

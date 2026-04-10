@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   X, Clock, Phone, Globe, PenLine,
   CheckCircle2, XCircle, Star, Save, Loader2,
@@ -18,7 +18,10 @@ import type { WorkingHoursConfig } from '@/types/database';
 import { formatPrice } from '@/components/master/services/types';
 import { formatDurationFull, getDayOfWeek } from '@/lib/utils/dates';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
-import { notifyClientOnStatusChange } from '@/app/(master)/dashboard/bookings/actions';
+import { 
+  updateBookingStatus, 
+  updateMasterNotes 
+} from '@/app/(master)/dashboard/bookings/actions';
 import type { BookingStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
@@ -339,6 +342,7 @@ export function BookingDetailsModal() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('bookingId');
   const { masterProfile } = useMasterContext();
+  const qc = useQueryClient();
 
   const {
     booking, isLoading,
@@ -373,11 +377,23 @@ export function BookingDetailsModal() {
     return () => document.removeEventListener('keydown', handler);
   }, [close]);
 
+  const [isPendingStatus, startStatusTransition] = useTransition();
+
   const handleStatus = (status: BookingStatus) => {
-    updateStatus(status);
-    if (status === 'confirmed' || status === 'cancelled') {
-      notifyClientOnStatusChange(booking!.id, status).catch(() => {});
-    }
+    startStatusTransition(async () => {
+      const { error } = await updateBookingStatus(booking!.id, status);
+      if (!error) {
+        const masterId = masterProfile?.id;
+        await Promise.all([
+          qc.invalidateQueries({ queryKey: ['booking', booking!.id] }),
+          qc.invalidateQueries({ queryKey: ['bookings', masterId] }),
+          qc.invalidateQueries({ queryKey: ['dashboard-stats', masterId] }),
+          qc.invalidateQueries({ queryKey: ['weekly-overview', masterId] }),
+        ]);
+      } else {
+        console.error(error);
+      }
+    });
   };
 
   const handleSaveNotes = () => {
@@ -615,19 +631,19 @@ export function BookingDetailsModal() {
                         {booking.status === 'pending' && (
                           <button
                             onClick={() => handleStatus('confirmed')}
-                            disabled={isUpdatingStatus}
+                            disabled={isPendingStatus}
                             className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                           >
-                            {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                            {isPendingStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                             Підтвердити
                           </button>
                         )}
                         <button
                           onClick={() => handleStatus('completed')}
-                          disabled={isUpdatingStatus}
+                          disabled={isPendingStatus}
                           className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#5C9E7A]/10 text-[#5C9E7A] hover:bg-[#5C9E7A]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
-                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
+                          {isPendingStatus ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
                           Завершити
                         </button>
                         <button
@@ -639,16 +655,16 @@ export function BookingDetailsModal() {
                         </button>
                         <button
                           onClick={() => handleStatus('cancelled')}
-                          disabled={isUpdatingStatus}
+                          disabled={isPendingStatus}
                           className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#C05B5B]/10 text-[#C05B5B] hover:bg-[#C05B5B]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
-                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                          {isPendingStatus ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
                           Скасувати
                         </button>
                         {booking.status === 'confirmed' && (
                           <button
                             onClick={() => handleStatus('no_show')}
-                            disabled={isUpdatingStatus}
+                            disabled={isPendingStatus}
                             className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#A8928D]/10 text-[#A8928D] hover:bg-[#A8928D]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                           >
                             Не прийшов

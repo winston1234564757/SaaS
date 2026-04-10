@@ -1,5 +1,6 @@
 'use client';
 
+import { useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +9,10 @@ import { createClient } from '@/lib/supabase/client';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import type { BookingStatus } from '@/types/database';
 import { formatPrice } from '@/components/master/services/types';
-import { notifyClientOnStatusChange } from '@/app/(master)/dashboard/bookings/actions';
+import { 
+  confirmBooking, 
+  cancelBooking 
+} from '@/app/(master)/dashboard/bookings/actions';
 
 interface BookingCardProps {
   booking: BookingWithServices;
@@ -36,43 +40,40 @@ export function BookingCard({ booking, index }: BookingCardProps) {
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  const invalidateAll = () => {
-    qc.invalidateQueries({ queryKey: ['bookings'] });
-    qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
-    qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
-    qc.invalidateQueries({ queryKey: ['weekly-overview'] });
-    qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
+  const invalidateAll = async () => {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ['bookings'] }),
+      qc.invalidateQueries({ queryKey: ['wizard-schedule'] }),
+      qc.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+      qc.invalidateQueries({ queryKey: ['weekly-overview'] }),
+      qc.invalidateQueries({ queryKey: ['monthly-booking-count'] }),
+    ]);
   };
 
-  const confirmMutation = useMutation({
-    mutationFn: async () => {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: 'confirmed', status_changed_at: new Date().toISOString() })
-        .eq('id', booking.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      invalidateAll();
-      notifyClientOnStatusChange(booking.id, 'confirmed').catch(() => {});
-    },
-  });
+  const [isPendingConfirm, startConfirm] = useTransition();
+  const [isPendingCancel, startCancel] = useTransition();
 
-  const cancelMutation = useMutation({
-    mutationFn: async () => {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: 'cancelled', status_changed_at: new Date().toISOString() })
-        .eq('id', booking.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      invalidateAll();
-      notifyClientOnStatusChange(booking.id, 'cancelled').catch(() => {});
-    },
-  });
+  const handleConfirm = () => {
+    startConfirm(async () => {
+      const { error } = await confirmBooking(booking.id);
+      if (error) {
+        console.error(error);
+        return;
+      }
+      await invalidateAll();
+    });
+  };
+
+  const handleCancel = () => {
+    startCancel(async () => {
+      const { error } = await cancelBooking(booking.id);
+      if (error) {
+        console.error(error);
+        return;
+      }
+      await invalidateAll();
+    });
+  };
 
   return (
     <motion.div
@@ -119,22 +120,22 @@ export function BookingCard({ booking, index }: BookingCardProps) {
           onClick={e => e.stopPropagation()}
         >
           <button
-            onClick={() => confirmMutation.mutate()}
-            disabled={confirmMutation.isPending || cancelMutation.isPending}
+            onClick={handleConfirm}
+            disabled={isPendingConfirm || isPendingCancel}
             className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#789A99]/12 text-[#789A99] hover:bg-[#789A99]/22 text-xs font-semibold transition-colors disabled:opacity-50"
           >
-            {confirmMutation.isPending
+            {isPendingConfirm
               ? <Loader2 size={11} className="animate-spin" />
               : <Check size={11} />
             }
             Підтвердити
           </button>
           <button
-            onClick={() => cancelMutation.mutate()}
-            disabled={confirmMutation.isPending || cancelMutation.isPending}
+            onClick={handleCancel}
+            disabled={isPendingConfirm || isPendingCancel}
             className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#C05B5B]/12 text-[#C05B5B] hover:bg-[#C05B5B]/22 text-xs font-semibold transition-colors disabled:opacity-50"
           >
-            {cancelMutation.isPending
+            {isPendingCancel
               ? <Loader2 size={11} className="animate-spin" />
               : <X size={11} />
             }

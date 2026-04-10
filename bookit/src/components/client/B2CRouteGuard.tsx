@@ -22,7 +22,14 @@ export function B2CRouteGuard({ children, phone }: Props) {
     }
   }, [phone, pathname, router]);
 
-  // Optionally return a skeletal loader here if not ready, but usually null avoids layout shift
+  // ── Bulletproof Phone Guard ──────────────────────────────────────────────
+  // Even before the useEffect triggers the router.replace, we MUST NOT render
+  // children if the phone is missing and we aren't on the phone setup page.
+  // This prevents layout/data "flickers" or leaks.
+  if (!phone && pathname !== '/my/setup/phone') {
+    return null; 
+  }
+
   if (!isReady) return null;
 
   return <>{children}</>;

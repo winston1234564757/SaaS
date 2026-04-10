@@ -5,7 +5,11 @@ import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import type { BookingWithServices } from './useBookings';
 import type { BookingStatus } from '@/types/database';
-import { rescheduleBooking } from '@/app/(master)/dashboard/bookings/actions';
+import { 
+    rescheduleBooking, 
+    updateBookingStatus, 
+    updateMasterNotes 
+} from '@/app/(master)/dashboard/bookings/actions';
 
 export interface BookingProduct {
   name: string;
@@ -125,13 +129,8 @@ export function useBookingById(id: string | null) {
 
   const updateStatus = useMutation({
     mutationFn: async (status: BookingStatus) => {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status, status_changed_at: new Date().toISOString() })
-        .eq('id', id!)
-        .eq('master_id', masterId!);
-      if (error) throw error;
+      const result = await updateBookingStatus(id!, status);
+      if (result.error) throw new Error(result.error);
     },
     onMutate: async (status: BookingStatus) => {
       await qc.cancelQueries({ queryKey: key });
@@ -154,15 +153,10 @@ export function useBookingById(id: string | null) {
     },
   });
 
-  const saveMasterNotes = useMutation({
-    mutationFn: async (master_notes: string) => {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('bookings')
-        .update({ master_notes })
-        .eq('id', id!)
-        .eq('master_id', masterId!);
-      if (error) throw error;
+  const saveMasterNotesMutation = useMutation({
+    mutationFn: async (notes: string) => {
+      const result = await updateMasterNotes(id!, notes);
+      if (result.error) throw new Error(result.error);
     },
     onMutate: async (master_notes: string) => {
       await qc.cancelQueries({ queryKey: key });
@@ -200,8 +194,8 @@ export function useBookingById(id: string | null) {
     clientLtv: ltvQuery.data ?? null,
     updateStatus: (status: BookingStatus) => updateStatus.mutate(status),
     isUpdatingStatus: updateStatus.isPending,
-    saveMasterNotes: (notes: string) => saveMasterNotes.mutate(notes),
-    isSavingNotes: saveMasterNotes.isPending,
+    saveMasterNotes: (notes: string) => saveMasterNotesMutation.mutate(notes),
+    isSavingNotes: saveMasterNotesMutation.isPending,
     reschedule: (params: { date: string; startTime: string; endTime: string }) => rescheduleMutation.mutate(params),
     isRescheduling: rescheduleMutation.isPending,
     rescheduleError: rescheduleMutation.error?.message ?? null,

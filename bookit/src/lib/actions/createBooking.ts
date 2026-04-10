@@ -7,19 +7,9 @@ import { applyDynamicPricing, type PricingRules } from '@/lib/utils/dynamicPrici
 import { computeEndTime } from '@/lib/utils/bookingEngine';
 import { sendTelegramMessage, buildBookingMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
+import { bookingClientSchema } from '@/lib/validations/booking';
 
-// ── Phone normalization ──────────────────────────────────────────────────────
-/** Normalize any Ukrainian phone format to 380XXXXXXXXX (digits only, no +) */
-function normalizePhoneE164(raw: string): string {
-  const digits = raw.replace(/\D/g, '');
-  // 0XXXXXXXXX → 380XXXXXXXXX
-  if (digits.length === 10 && digits.startsWith('0')) return '38' + digits;
-  // +380XXXXXXXXX → 380XXXXXXXXX (already stripped +)
-  if (digits.length === 12 && digits.startsWith('380')) return digits;
-  // 80XXXXXXXXX → 380XXXXXXXXX
-  if (digits.length === 11 && digits.startsWith('80')) return '3' + digits;
-  return digits;
-}
+// Phone normalization is now handled by Zod preprocessing in bookingClientSchema
 
 // ── Payload schema ────────────────────────────────────────────────────────────
 
@@ -39,8 +29,7 @@ const productLineSchema = z.object({
 
 const schema = z.object({
   masterId:      z.string().uuid(),
-  clientName:    z.string().min(2,  'Введіть ім\'я (мінімум 2 символи)'),
-  clientPhone:   z.string().min(9,  'Введіть номер телефону'),
+  ...bookingClientSchema.shape,
   clientEmail:   z.string().email().optional().nullable(),
   clientId:      z.string().uuid().optional().nullable(),
   date:          z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Невірний формат дати'),
@@ -101,18 +90,25 @@ export async function createBooking(
   const supabase = await createClient();
   const admin = createAdminClient();
 
-  // 2. Auth gate — manual bookings must come from the master themselves
+  // 2. Auth gate & Identity resolution
+  let resolvedClientId = p.clientId ?? null;
+  const { data: { user } } = await supabase.auth.getUser();
+
   if (p.source === 'manual') {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.id !== p.masterId) {
       return { bookingId: null, error: 'Не авторизований' };
     }
+  } else if (p.source === 'online') {
+    // If an authenticated user is booking online, ensure we link their profile ID
+    if (user) {
+      resolvedClientId = user.id;
+    }
   }
 
-  // 3. Master profile — pricing rules + subscription tier + trial counter
+  // 3. Master profile — pricing rules + subscription tier + trial counter + timezone
   const { data: mp } = await admin
     .from('master_profiles')
-    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id')
+    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id, timezone')
     .eq('id', p.masterId)
     .single();
 
@@ -208,16 +204,56 @@ export async function createBooking(
   const extraEarned = (mp.dynamic_pricing_extra_earned as number) ?? 0;
   const trialExhausted = mp.subscription_tier === 'starter' && extraEarned >= TRIAL_LIMIT_KOP;
   const pricingRules = (!trialExhausted ? mp.pricing_rules : null) as PricingRules | null;
+  
+  // Bug 4 Fix: Pass master's timezone (fallback to Kyiv)
+  const masterTimezone = (mp as any).timezone || 'Europe/Kyiv';
+  
   const dynamicResult =
     p.applyDynamicPricing && pricingRules && Object.keys(pricingRules).length > 0
-      ? applyDynamicPricing(totalServicesPrice, pricingRules, bookingDate, p.startTime)
+      ? applyDynamicPricing(totalServicesPrice, pricingRules, bookingDate, p.startTime, masterTimezone)
       : null;
 
   const adjustedServicesPrice = dynamicResult?.adjustedPrice ?? totalServicesPrice;
-  const grandTotal = adjustedServicesPrice + totalProductsPrice;
-  const discountAmount = p.discountPercent > 0
-    ? Math.round(grandTotal * p.discountPercent / 100)
-    : 0;
+  const subTotal = adjustedServicesPrice + totalProductsPrice;
+
+  // ── 7.5. Loyalty Engine (Bug 5 Fix: Backend validation) ─────────────────────
+  let loyaltyDiscountPercent = 0;
+  let loyaltyLabel = '';
+
+  if (p.source === 'online') {
+    // 1. Count past COMPLETED visits for this specific master + phone
+    const { count: pastVisitsCount } = await admin
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('master_id', p.masterId)
+      .eq('client_phone', p.clientPhone)
+      .eq('status', 'completed');
+
+    const totalVisitsWithThisOne = (pastVisitsCount ?? 0) + 1;
+
+    // 2. Fetch active loyalty rules for the master
+    const { data: loyaltyRules } = await admin
+      .from('loyalty_programs')
+      .select('name, target_visits, reward_type, reward_value')
+      .eq('master_id', p.masterId)
+      .eq('is_active', true)
+      .order('target_visits', { ascending: false });
+
+    // 3. Find the best qualifying rule (e.g. 10% on 2nd visit)
+    const qualifyingRule = (loyaltyRules ?? []).find(r => 
+      r.reward_type === 'percent_discount' && totalVisitsWithThisOne >= r.target_visits
+    );
+
+    if (qualifyingRule) {
+      loyaltyDiscountPercent = Number(qualifyingRule.reward_value);
+      loyaltyLabel = qualifyingRule.name;
+    }
+  } else {
+    // For manual bookings, we trust the master's applied discount
+    loyaltyDiscountPercent = p.discountPercent;
+  }
+
+  const loyaltyDiscountAmount = Math.round(subTotal * loyaltyDiscountPercent / 100);
 
   // Flash deal — server verifies and applies discount
   let flashDealDiscountPct = 0;
@@ -232,10 +268,20 @@ export async function createBooking(
     }
   }
   const flashDealAmount = flashDealDiscountPct > 0
-    ? Math.round(grandTotal * flashDealDiscountPct / 100)
+    ? Math.round(subTotal * flashDealDiscountPct / 100)
     : 0;
 
-  const finalTotal = Math.max(0, grandTotal - discountAmount - flashDealAmount);
+  // ── 7.6. Discount Resolution & Safety Cap (40%) ────────────────────────────
+  // Rule: Final Price MUST NEVER be less than 60% of original Total (Max 40% discount)
+  const originalTotal = totalServicesPrice + totalProductsPrice;
+  const maxAllowedDiscount = Math.floor(originalTotal * 0.40);
+  
+  const rawDiscountSum = loyaltyDiscountAmount + flashDealAmount;
+  // Apply cap only to discretionary discounts (Loyalty/Flash), 
+  // Dynamic Pricing is a base price modifier (Step 1).
+  const effectiveDiscounts = Math.min(maxAllowedDiscount, rawDiscountSum);
+
+  const finalTotal = Math.max(0, subTotal - effectiveDiscounts);
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
@@ -249,9 +295,9 @@ export async function createBooking(
   const { error: bErr } = await admin.from('bookings').insert({
     id: bookingId,
     master_id: p.masterId,
-    client_id: p.clientId ?? null,
+    client_id: resolvedClientId,
     client_name: p.clientName.trim(),
-    client_phone: normalizePhoneE164(p.clientPhone),
+    client_phone: p.clientPhone, // Already normalized by Zod preprocessor to +380XXXXXXXXX
     client_email: p.clientEmail ?? null,
     date: p.date,
     start_time: p.startTime,
@@ -260,6 +306,8 @@ export async function createBooking(
     total_services_price: totalServicesPrice,
     total_products_price: totalProductsPrice,
     total_price: finalTotal,
+    discount_amount: effectiveDiscounts,
+    loyalty_label: loyaltyLabel || null,
     notes: p.notes?.trim() ?? null,
     source: p.source === 'manual' ? 'manual' : 'public_page',
     dynamic_pricing_label: dynamicResult?.label ?? null,

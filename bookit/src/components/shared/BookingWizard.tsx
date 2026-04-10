@@ -29,6 +29,9 @@ import { PostBookingAuth } from '@/components/public/PostBookingAuth';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import { useToast } from '@/lib/toast/context';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { bookingClientSchema, type BookingClientData } from '@/lib/validations/booking';
 import type { WorkingHoursConfig } from '@/types/database';
 
 // ── Public types ──────────────────────────────────────────────────────────────
@@ -259,9 +262,36 @@ export function BookingWizard({
   // ── Submit state ──────────────────────────────────────────────────────────────
   const [saving, setSaving]             = useState(false);
   const [saveError, setSaveError]       = useState('');
-  const [nameError, setNameError]       = useState('');
-  const [phoneError, setPhoneError]     = useState('');
   const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
+
+  // ── Validation Form (targeted approach for details step) ──────────────────
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    trigger,
+    reset: resetForm,
+  } = useForm<BookingClientData>({
+    resolver: zodResolver(bookingClientSchema),
+    defaultValues: {
+      clientName: '',
+      clientPhone: '',
+    },
+  });
+
+  const watchName = watch('clientName');
+  const watchPhone = watch('clientPhone');
+
+  // Sync manual state with form state (to keep rest of wizard happy)
+  useEffect(() => {
+    setClientName(watchName || '');
+  }, [watchName]);
+
+  useEffect(() => {
+    setClientPhone(watchPhone || '');
+  }, [watchPhone]);
 
   // ── Refs ───────────────────────────────────────────────────────────────────────
   const dateStripRef  = useRef<HTMLDivElement>(null);
@@ -291,10 +321,21 @@ export function BookingWizard({
   ) ? dynamicPricing.adjustedPrice : totalServicesPrice;
   const totalProductsPrice    = useMemo(() => cart.reduce((s, ci) => s + ci.product.price * ci.quantity, 0), [cart]);
   const grandTotal            = effectiveServicesPrice + totalProductsPrice;
-  const loyaltyDiscountAmount = loyaltyDiscount ? Math.round(grandTotal * loyaltyDiscount.percent / 100) : 0;
-  const masterDiscountAmount  = Math.round(grandTotal * discountPercent / 100);
-  const flashDealAmount       = flashDeal ? Math.round(grandTotal * flashDeal.discountPct / 100) : 0;
-  const finalTotal            = Math.max(0, grandTotal - loyaltyDiscountAmount - masterDiscountAmount - flashDealAmount);
+  const rawLoyaltyDiscount    = loyaltyDiscount ? Math.round(grandTotal * loyaltyDiscount.percent / 100) : 0;
+  const rawFlashDiscount      = flashDeal ? Math.round(grandTotal * flashDeal.discountPct / 100) : 0;
+  const rawMasterDiscount     = Math.round(grandTotal * discountPercent / 100);
+
+  // Apply sequential logic and 40% cap similarly to backend
+  const originalTotal = totalServicesPrice + totalProductsPrice;
+  const maxAllowedDiscount = Math.floor(originalTotal * 0.40);
+  
+  // Combine all manual/loyalty/flash discounts for the cap (excluding dynamic base price adjustment)
+  const totalDiscounts = Math.min(maxAllowedDiscount, rawLoyaltyDiscount + rawFlashDiscount + rawMasterDiscount);
+  
+  const finalTotal = Math.max(0, grandTotal - totalDiscounts);
+  const loyaltyDiscountAmount = Math.min(totalDiscounts, rawLoyaltyDiscount); // for display
+  const masterDiscountAmount = Math.min(totalDiscounts - loyaltyDiscountAmount, rawMasterDiscount); // for display
+  const flashDealAmount = Math.min(totalDiscounts - loyaltyDiscountAmount - masterDiscountAmount, rawFlashDiscount); // for display
 
   // ── Reset + fetch client history on open ───────────────────────────────────
   useEffect(() => {
@@ -323,14 +364,24 @@ export function BookingWizard({
       setLoyaltyDiscount(null);
       setSuggestedProductIds(new Set());
       setSaveError('');
+      resetForm({
+        clientName: '',
+        clientPhone: '',
+      });
     }
 
     if (mode === 'client' && masterId) {
       ensureClientProfile().then(({ userId, name, phone, email }) => {
         if (!userId) return;
         setClientUserId(userId);
-        if (name)  setClientName(name);
-        if (phone) setClientPhone(phone);
+        if (name) {
+          setClientName(name);
+          setValue('clientName', name);
+        }
+        if (phone) {
+          setClientPhone(phone);
+          setValue('clientPhone', phone);
+        }
         if (email) setClientEmail(email);
         const sb = createClient();
         Promise.all([
@@ -341,8 +392,9 @@ export function BookingWizard({
           const history = (histRes.data ?? []).map((b: { start_time: string | null }) => b.start_time?.slice(0, 5)).filter((t: string | undefined): t is string => !!t);
           if (history.length) setClientHistoryTimes(history);
           const visits = relRes.data?.total_visits ?? 0;
+          const totalVisitsWithThisOne = visits + 1;
           const best = (progRes.data ?? [])
-            .filter((p: { reward_type: string; target_visits: number }) => p.reward_type === 'percent_discount' && visits >= p.target_visits)
+            .filter((p: { reward_type: string; target_visits: number }) => p.reward_type === 'percent_discount' && totalVisitsWithThisOne >= p.target_visits)
             .sort((a: { reward_value: unknown }, b: { reward_value: unknown }) => Number(b.reward_value) - Number(a.reward_value))[0];
           if (best) setLoyaltyDiscount({ name: best.name as string, percent: Number(best.reward_value) });
         }).catch(() => {});
@@ -482,12 +534,17 @@ export function BookingWizard({
   // ── Submit ────────────────────────────────────────────────────────────────────
   async function handleSubmit() {
     if (!selectedDate || !selectedTime) return;
+    
+    // Validate form first
+    const isValid = await trigger();
+    if (!isValid) return;
+
     setSaving(true);
     setSaveError('');
     const result = await createBooking({
       masterId,
-      clientName:              clientName.trim(),
-      clientPhone:             clientPhone.trim(),
+      clientName:              watchName.trim(),
+      clientPhone:             watchPhone.trim(),
       clientEmail:             mode === 'client' ? (clientEmail.trim().toLowerCase() || null) : null,
       clientId:                mode === 'client' ? (clientUserId || null) : null,
       date:                    toISO(selectedDate),
@@ -520,7 +577,7 @@ export function BookingWizard({
       if (typeof window !== 'undefined') localStorage.removeItem('bookit_ref');
       setCreatedBookingId(result.bookingId);
       notifyMasterOnBooking({
-        masterId, clientName: clientName.trim(),
+        masterId, clientName: watchName.trim(),
         date: toISO(selectedDate), startTime: selectedTime,
         services: selectedServices.map(s => s.name).join(', '),
         totalPrice: result.finalTotal ?? finalTotal,
@@ -535,7 +592,7 @@ export function BookingWizard({
   // ── Computed flags ────────────────────────────────────────────────────────────
   const canGoToDatetime    = selectedServices.length > 0;
   const canProceedDatetime = !!selectedDate && !!selectedTime;
-  const canSubmit          = clientName.trim().length >= 2 && clientPhone.trim().length >= 9;
+  const canSubmit          = (watchName?.trim()?.length ?? 0) >= 2 && (watchPhone?.length ?? 0) >= 13;
 
   const sortedProducts = useMemo(() => {
     if (!suggestedProductIds.size) return availableProducts;
@@ -1171,30 +1228,42 @@ export function BookingWizard({
                               <User size={13} className="text-[#A8928D]" />
                               {mode === 'master' ? "Ім'я клієнта" : "Ім'я"}
                             </label>
-                            <input type="text"
+                            <input
+                              type="text"
                               placeholder={mode === 'master' ? 'Олена Петрова' : 'Твоє імʼя та прізвище'}
-                              value={clientName} onChange={e => setClientName(e.target.value)}
-                              onBlur={() => {
-                                if (clientName.trim().length < 2) setNameError('Мінімум 2 символи');
-                                else setNameError('');
-                              }}
-                              className="w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+                              {...register('clientName')}
+                              className={`w-full h-12 px-4 rounded-xl bg-white/75 border text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none transition-all ${
+                                errors.clientName ? 'border-[#C05B5B] focus:ring-[#C05B5B]/20' : 'border-white/80 focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20'
+                              }`}
                             />
-                            {nameError && <p className="text-[#C05B5B] text-xs mt-1 ml-1">{nameError}</p>}
+                            {errors.clientName && <p className="text-[#C05B5B] text-[10px] mt-1 ml-1">{errors.clientName.message}</p>}
                           </div>
                           <div>
                             <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">
                               <Phone size={13} className="text-[#A8928D]" /> Телефон
                             </label>
-                            <input type="tel" placeholder="+380 XX XXX XX XX"
-                              value={clientPhone} onChange={e => setClientPhone(e.target.value)}
-                              onBlur={() => {
-                                if (clientPhone.replace(/\D/g, '').length < 9) setPhoneError('Введіть коректний номер');
-                                else setPhoneError('');
-                              }}
-                              className="w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
-                            />
-                            {phoneError && <p className="text-[#C05B5B] text-xs mt-1 ml-1">{phoneError}</p>}
+                            <div className="relative">
+                              <input
+                                type="tel"
+                                placeholder="+380 XX XXX XX XX"
+                                value={watchPhone}
+                                onChange={e => {
+                                  let val = e.target.value;
+                                  // Always force +380 prefix
+                                  if (!val.startsWith('+380')) {
+                                    val = '+380' + val.replace(/\D/g, '').slice(-9);
+                                  }
+                                  // Limit to +380 + 9 digits
+                                  const digitsOnly = val.replace(/\D/g, '').slice(0, 12);
+                                  const final = '+' + digitsOnly;
+                                  setValue('clientPhone', final, { shouldValidate: true });
+                                }}
+                                className={`w-full h-12 px-4 rounded-xl bg-white/75 border text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none transition-all ${
+                                  errors.clientPhone ? 'border-[#C05B5B] focus:ring-[#C05B5B]/20' : 'border-white/80 focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20'
+                                }`}
+                              />
+                            </div>
+                            {errors.clientPhone && <p className="text-[#C05B5B] text-[10px] mt-1 ml-1">{errors.clientPhone.message}</p>}
                           </div>
                           <div>
                             <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">

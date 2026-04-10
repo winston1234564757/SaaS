@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
 import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2 } from 'lucide-react';
-import { sendChurnReminder, saveClientNote } from '@/app/(master)/dashboard/clients/actions';
+import { sendChurnReminder, saveClientNote, toggleClientVip } from '@/app/(master)/dashboard/clients/actions';
 import { isChurned } from './ClientsPage';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -38,9 +39,10 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 
 export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
+  const queryClient = useQueryClient();
+  const [isPending, startTransition] = useTransition();
   const [bookings, setBookings] = useState<RecentBooking[]>([]);
   const [loading, setLoading] = useState(false);
-  const [toggling, setToggling] = useState(false);
   const [reminding, setReminding] = useState(false);
   const [reminderResult, setReminderResult] = useState<string | null>(null);
 
@@ -109,16 +111,19 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   }
 
   async function handleToggleVip() {
-    if (!client || !masterProfile?.id || toggling || !client.relation_id) return;
-    setToggling(true);
-    const supabase = createClient();
-    const newVip = !client.is_vip;
-    await supabase
-      .from('client_master_relations')
-      .update({ is_vip: newVip })
-      .eq('id', client.relation_id);
-    onVipChange(client.id, newVip);
-    setToggling(false);
+    if (!client || !masterProfile?.id || isPending || !client.client_id) return;
+    
+    startTransition(async () => {
+      const newVip = !client.is_vip;
+      const { error } = await toggleClientVip(client.client_id!, newVip);
+      
+      if (!error) {
+        onVipChange(client.id, newVip);
+        // Invalidate both the list and potential detail queries
+        await queryClient.invalidateQueries({ queryKey: ['clients'] });
+        await queryClient.invalidateQueries({ queryKey: ['client', client.client_id] });
+      }
+    });
   }
 
   return (
@@ -259,7 +264,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                 {client.relation_id ? (
                   <button
                     onClick={handleToggleVip}
-                    disabled={toggling}
+                    disabled={isPending}
                     className={`flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold transition-all ${
                       client.is_vip
                         ? 'bg-[#D4935A]/12 text-[#D4935A] hover:bg-[#D4935A]/20'

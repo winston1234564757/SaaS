@@ -4,6 +4,93 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { sendPush } from '@/lib/push';
 
+import { revalidatePath } from 'next/cache';
+
+export async function confirmBooking(bookingId: string): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизовано' };
+
+    const admin = createAdminClient();
+
+    // 1. Ownership Verify (Security Gate)
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('master_id')
+      .eq('id', bookingId)
+      .single();
+
+    if (!booking) return { error: 'Запис не знайдено' };
+    if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+
+    // 2. Atomic Update
+    const { error } = await admin
+      .from('bookings')
+      .update({ 
+        status: 'confirmed', 
+        status_changed_at: new Date().toISOString() 
+      })
+      .eq('id', bookingId);
+
+    if (error) return { error: error.message };
+
+    // 3. Revalidate & Notify
+    revalidatePath('/(master)/dashboard', 'layout');
+    revalidatePath('/my/bookings');
+    
+    // Fire-and-forget notification
+    notifyClientOnStatusChange(bookingId, 'confirmed').catch(console.error);
+
+    return { error: null };
+  } catch (err) {
+    console.error('[confirmBooking]', err);
+    return { error: 'Помилка сервера' };
+  }
+}
+
+export async function cancelBooking(bookingId: string): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизовано' };
+
+    const admin = createAdminClient();
+
+    // 1. Ownership Verify
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('master_id')
+      .eq('id', bookingId)
+      .single();
+
+    if (!booking) return { error: 'Запис не знайдено' };
+    if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+
+    // 2. Atomic Update
+    const { error } = await admin
+      .from('bookings')
+      .update({ 
+        status: 'cancelled', 
+        status_changed_at: new Date().toISOString() 
+      })
+      .eq('id', bookingId);
+
+    if (error) return { error: error.message };
+
+    // 3. Revalidate & Notify
+    revalidatePath('/(master)/dashboard', 'layout');
+    revalidatePath('/my/bookings');
+    
+    notifyClientOnStatusChange(bookingId, 'cancelled').catch(console.error);
+
+    return { error: null };
+  } catch (err) {
+    console.error('[cancelBooking]', err);
+    return { error: 'Помилка сервера' };
+  }
+}
+
 export async function rescheduleBooking(
   bookingId: string,
   date: string,
@@ -38,9 +125,140 @@ export async function rescheduleBooking(
 
     if (error) return { error: error.message };
 
+    revalidatePath('/(master)/dashboard', 'layout');
+    revalidatePath('/my/bookings');
+
     return { error: null };
   } catch (err) {
     console.error('[rescheduleBooking]', err);
+    return { error: 'Помилка сервера' };
+  }
+}
+
+export async function updateBookingStatus(
+  bookingId: string,
+  status: string,
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизовано' };
+
+    const admin = createAdminClient();
+
+    // 1. Ownership Verify
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('master_id')
+      .eq('id', bookingId)
+      .single();
+
+    if (!booking) return { error: 'Запис не знайдено' };
+    if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+
+    // 2. Atomic Update
+    const { error } = await admin
+      .from('bookings')
+      .update({ 
+        status: status as any, 
+        status_changed_at: new Date().toISOString() 
+      })
+      .eq('id', bookingId);
+
+    if (error) return { error: error.message };
+
+    // 3. Revalidate & Notify
+    revalidatePath('/(master)/dashboard', 'layout');
+    revalidatePath('/my/bookings');
+    
+    // Notify client for specific statuses
+    if (status === 'confirmed' || status === 'cancelled') {
+        notifyClientOnStatusChange(bookingId, status).catch(console.error);
+    }
+
+    return { error: null };
+  } catch (err) {
+    console.error('[updateBookingStatus]', err);
+    return { error: 'Помилка сервера' };
+  }
+}
+
+export async function completeBooking(bookingId: string): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизовано' };
+
+    const admin = createAdminClient();
+
+    // 1. Ownership Verify
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('master_id')
+      .eq('id', bookingId)
+      .single();
+
+    if (!booking) return { error: 'Запис не знайдено' };
+    if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+
+    // 2. Atomic Update
+    const { error } = await admin
+      .from('bookings')
+      .update({ 
+        status: 'completed', 
+        status_changed_at: new Date().toISOString() 
+      })
+      .eq('id', bookingId);
+
+    if (error) return { error: error.message };
+
+    // 3. Revalidate
+    revalidatePath('/(master)/dashboard', 'layout');
+    revalidatePath('/(master)/dashboard/bookings');
+    revalidatePath('/my/bookings');
+
+    return { error: null };
+  } catch (err) {
+    console.error('[completeBooking]', err);
+    return { error: 'Помилка сервера' };
+  }
+}
+
+export async function updateMasterNotes(
+  bookingId: string,
+  notes: string,
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизовано' };
+
+    const admin = createAdminClient();
+
+    // 1. Ownership Verify
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('master_id')
+      .eq('id', bookingId)
+      .single();
+
+    if (!booking) return { error: 'Запис не знайдено' };
+    if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+
+    // 2. Update Notes
+    const { error } = await admin
+      .from('bookings')
+      .update({ master_notes: notes })
+      .eq('id', bookingId);
+
+    if (error) return { error: error.message };
+
+    // No need to notify client for master-only notes
+    revalidatePath('/(master)/dashboard', 'layout');
+
+    return { error: null };
+  } catch (err) {
+    console.error('[updateMasterNotes]', err);
     return { error: 'Помилка сервера' };
   }
 }

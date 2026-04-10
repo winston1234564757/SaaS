@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, ChevronRight, Loader2, CheckCircle2, Star, Package, LayoutList, CalendarDays, BarChart2 } from 'lucide-react';
@@ -10,7 +10,9 @@ import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useB
 import { formatPrice } from '@/components/master/services/types';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
+import { confirmBooking, completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ViewMode = 'today' | 'tomorrow' | 'week';
 type DisplayMode = 'list' | 'calendar' | 'stats';
@@ -302,7 +304,54 @@ export function TodaySchedule() {
   const [view, setView] = useState<ViewMode>('today');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('list');
   const range = getDateRange(view);
-  const { bookings, isLoading, updateStatus } = useBookings(range.from, range.to);
+  const { bookings, isLoading } = useBookings(range.from, range.to);
+  const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
+  const [loadingAction, setLoadingAction] = useState<{ id: string; type: 'confirm' | 'complete' } | null>(null);
+  const { masterProfile } = useMasterContext();
+  const masterId = masterProfile?.id;
+
+  const invalidateAll = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['bookings', masterId] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats', masterId] }),
+      queryClient.invalidateQueries({ queryKey: ['weekly-overview', masterId] }),
+      queryClient.invalidateQueries({ queryKey: ['monthly-booking-count', masterId] }),
+    ]);
+  };
+
+  const handleConfirm = (id: string) => {
+    setLoadingAction({ id, type: 'confirm' });
+    startTransition(async () => {
+      try {
+        const { error } = await confirmBooking(id);
+        if (!error) {
+          await invalidateAll();
+        } else {
+          console.error('[handleConfirm]', error);
+        }
+      } finally {
+        setLoadingAction(null);
+      }
+    });
+  };
+
+  const handleComplete = (id: string) => {
+    setLoadingAction({ id, type: 'complete' });
+    startTransition(async () => {
+      try {
+        const { error } = await completeBooking(id);
+        if (!error) {
+          await invalidateAll();
+        } else {
+          console.error('[handleComplete]', error);
+        }
+      } finally {
+        setLoadingAction(null);
+      }
+    });
+  };
+
   const allBookings: BookingWithServices[] = bookings ?? [];
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -468,6 +517,8 @@ export function TodaySchedule() {
                 const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
                 const svcName = b.services[0]?.name ?? 'Послуга';
                 const isCurrent = view === 'today' && isNextBooking(b, filtered);
+                const isConfirming = loadingAction?.id === b.id && loadingAction?.type === 'confirm';
+                const isCompleting = loadingAction?.id === b.id && loadingAction?.type === 'complete';
 
                 return (
                   <div
@@ -524,17 +575,19 @@ export function TodaySchedule() {
                         <div className="flex items-center gap-1.5 mt-1.5">
                           {b.status === 'pending' && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); updateStatus(b.id, 'confirmed'); }}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#789A99]/10 text-[#789A99] text-[10px] font-semibold hover:bg-[#789A99]/20 transition-colors"
+                              onClick={(e) => { e.stopPropagation(); handleConfirm(b.id); }}
+                              disabled={isPending}
+                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#789A99]/10 text-[#789A99] text-[10px] font-semibold hover:bg-[#789A99]/20 transition-colors disabled:opacity-50"
                             >
-                              <CheckCircle2 size={10} /> Підтвердити
+                              {isConfirming ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />} Підтвердити
                             </button>
                           )}
                           <button
-                            onClick={(e) => { e.stopPropagation(); updateStatus(b.id, 'completed'); }}
-                            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#5C9E7A]/10 text-[#5C9E7A] text-[10px] font-semibold hover:bg-[#5C9E7A]/20 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); handleComplete(b.id); }}
+                            disabled={isPending}
+                            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#5C9E7A]/10 text-[#5C9E7A] text-[10px] font-semibold hover:bg-[#5C9E7A]/20 transition-colors disabled:opacity-50"
                           >
-                            <Star size={10} /> Завершити
+                            {isCompleting ? <Loader2 size={10} className="animate-spin" /> : <Star size={10} />} Завершити
                           </button>
                         </div>
                       )}

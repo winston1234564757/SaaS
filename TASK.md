@@ -1,37 +1,25 @@
 **SYSTEM ROLE & CONTEXT:**
-You are a Principal Backend Engineer debugging a P0 error in "BookIT". 
-When a user authenticates via Google and gets redirected to `/my/setup/phone` to confirm their phone number, submitting the form throws exactly this error message: "Помилка ідентифікації профілю" (Profile identification error).
+You are a Principal Backend Engineer. We are continuing "Epic 2: Validation & Money" for "BookIT".
+We must fix the Pricing Engine. Currently, there are two massive financial bugs in production:
+1. **Bug 4 (Dynamic Pricing Leak):** The "Last Minute Discount" (discount if booked < N hours before the slot) is applying to ALL slots. The time-difference math is broken.
+2. **Bug 5 (Loyalty Program Failure):** The Master's loyalty rules (e.g., 10% off on the 2nd visit) are ignored during booking. The system does not count the client's past completed visits by phone number to apply the discount.
 
-**MISSION:**
-Locate where this exact error is thrown and fix the underlying session/profile retrieval issue.
+**MISSION: REWRITE THE PRICING CALCULATION**
 
 **SURGICAL TASKS:**
 
-1. **Locate the Error:**
-   - Search the codebase (specifically `src/app/my/setup/phone/actions.ts` or `src/components/client/PhoneSetupForm.tsx`) for the string "Помилка ідентифікації профілю" or its English equivalent if localized.
+1. **Fix Dynamic Pricing Math (Time Awareness):**
+   - Locate the dynamic pricing evaluation logic (likely in `src/lib/utils/dynamicPricing.ts` or the slot generation API).
+   - Fix the time comparison using `date-fns`. 
+   - Calculate the precise difference between the CURRENT real time (Now) and the `slotStartTime`. The discount must ONLY apply if `differenceInHours(slotStartTime, now) <= rule.hoursBefore`. Account for timezones if necessary using `date-fns-tz`.
 
-2. **Fix the Session/Profile Retrieval (The Root Cause):**
-   - The error occurs because `supabase.auth.getUser()` is failing, OR the `profiles` table does not yet have a row for this Google-authenticated user.
-   - Modify the action: 
-     a) Ensure you correctly instantiate the Supabase Server Client with cookies to reliably get the `user.id`.
-     b) Instead of a strict `update` that fails if the profile doesn't exist yet, use an **UPSERT** via `supabaseAdmin` to guarantee the profile is created/updated.
-     ```typescript
-     // Example fix logic:
-     const { data: { user }, error: userError } = await supabase.auth.getUser();
-     if (userError || !user) throw new Error("Auth session missing");
+2. **Fix Loyalty Engine at Checkout/Booking (`createBooking.ts` or pricing API):**
+   - Before returning the final price or creating the booking, you MUST fetch the client's visit history.
+   - Using `supabaseAdmin` or a secure query, COUNT the number of bookings where `master_id = [currentMaster]` AND `client_phone = [clientPhone]` AND `status = 'completed'`.
+   - Fetch the Master's Loyalty settings. If the client's `pastVisitsCount + 1` matches the loyalty threshold (e.g., 2nd visit), calculate and apply the percentage discount to the total price.
 
-     const { error: upsertError } = await supabaseAdmin
-       .from('profiles')
-       .upsert({ id: user.id, phone: cleanPhone, role: 'client' }, { onConflict: 'id' });
-     ```
-
-3. **Ensure Auto-Linkage is Executed Here Too:**
-   - After successfully upserting the phone number on this screen, you MUST run the Auto-Linkage logic for guest bookings (just like we did in `verify-sms`):
-     ```typescript
-     const phoneSuffix = cleanPhone.slice(-10);
-     await supabaseAdmin.from('bookings').update({ client_id: user.id })
-       .like('client_phone', `%${phoneSuffix}`).is('client_id', null);
-     ```
+3. **Discount Resolution Rule:**
+   - If a slot qualifies for BOTH Dynamic Pricing and Loyalty, implement a clear rule (e.g., apply the highest discount, or apply them sequentially). Document this rule in the code comments.
 
 **OUTPUT REQUIREMENT:**
-Show me the exact file where you found the error message and the complete refactored code for that action/route.
+Show me the refactored dynamic pricing time-math and the database query logic used to fetch past visits and calculate the final loyalty price.

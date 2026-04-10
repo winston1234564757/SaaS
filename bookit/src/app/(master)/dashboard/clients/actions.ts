@@ -91,3 +91,21 @@ export async function sendChurnReminder(
 
   return { sent: true, error: null };
 }
+
+export async function toggleClientVip(
+  clientId: string,
+  isVip: boolean
+): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('client_master_relations')
+    .update({ is_vip: isVip })
+    .eq('master_id', user.id)
+    .eq('client_id', clientId);
+
+  return { error: error?.message ?? null };
+}
