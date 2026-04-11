@@ -59,7 +59,9 @@ export function DashboardTourProvider({
   function finishTour() {
     setTourStep(-1);
     localStorage.setItem(LS_KEY, 'true');
-    void markTourSeen(); // fire-and-forget, DB persistence
+    markTourSeen().catch(err =>
+      console.error('[Tour] Failed to persist tour completion to DB:', err)
+    );
   }
 
   return (
