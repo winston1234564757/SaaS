@@ -221,6 +221,10 @@ export function BookingWizard({
   const [selectedServices, setSelectedServices] = useState<WizardService[]>([]);
   const [cart, setCart]                         = useState<CartItem[]>([]);
   const [selectedDate, setSelectedDate]         = useState<Date | null>(null);
+  // Ref kept in sync with selectedDate every render — read by auto-select effect
+  // to avoid adding selectedDate to deps (would re-run on every user date-click).
+  const selectedDateRef = useRef<Date | null>(null);
+  selectedDateRef.current = selectedDate;
   const [selectedTime, setSelectedTime]         = useState<string | null>(null);
   const [clientName, setClientName]             = useState('');
   const [clientPhone, setClientPhone]           = useState('');
@@ -355,7 +359,11 @@ export function BookingWizard({
 
   // ── Reset + fetch client history on open ───────────────────────────────────
   useEffect(() => {
-    if (!isOpen) { wasOpenRef.current = false; return; }
+    // Race condition guard: prevents stale async callbacks from updating state
+    // after the modal closes or masterId changes mid-flight.
+    let cancelled = false;
+
+    if (!isOpen) { wasOpenRef.current = false; return () => { cancelled = true; }; }
 
     const isRetry = wasOpenRef.current;
     wasOpenRef.current = true;
@@ -388,7 +396,7 @@ export function BookingWizard({
 
     if (mode === 'client' && masterId) {
       ensureClientProfile().then(({ userId, name, phone, email }) => {
-        if (!userId) return;
+        if (cancelled || !userId) return;
         setClientUserId(userId);
         if (name) {
           setClientName(name);
@@ -406,6 +414,7 @@ export function BookingWizard({
           sb.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
           sb.from('master_partners').select('partner_id, status, master_profiles!master_partners_partner_id_fkey(id, slug, avatar_emoji, categories, profiles(full_name))').eq('master_id', masterId).eq('status', 'accepted').limit(5),
         ]).then(([relRes, progRes, histRes, partRes]) => {
+          if (cancelled) return;
           const history = (histRes.data ?? []).map((b: { start_time: string | null }) => b.start_time?.slice(0, 5)).filter((t: string | undefined): t is string => !!t);
           if (history.length) setClientHistoryTimes(history);
           const visits = relRes.data?.total_visits ?? 0;
@@ -414,9 +423,14 @@ export function BookingWizard({
             .filter((p: { reward_type: string; target_visits: number }) => p.reward_type === 'percent_discount' && totalVisitsWithThisOne >= p.target_visits)
             .sort((a: { reward_value: unknown }, b: { reward_value: unknown }) => Number(b.reward_value) - Number(a.reward_value))[0];
           if (best) setLoyaltyDiscount({ name: best.name as string, percent: Number(best.reward_value) });
-          
+
           if (partRes.data) {
-            setPartners(partRes.data.map((p: any) => {
+            type PartnerRow = {
+              partner_id: string;
+              status: string;
+              master_profiles: { id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null } | null } | Array<{ id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null } | null }> | null;
+            };
+            setPartners(partRes.data.map((p: PartnerRow) => {
               const mp = Array.isArray(p.master_profiles) ? p.master_profiles[0] : p.master_profiles;
               const profile = Array.isArray(mp?.profiles) ? mp.profiles[0] : mp?.profiles;
               return {
@@ -428,10 +442,21 @@ export function BookingWizard({
               };
             }));
           }
-        }).catch(() => {});
-      }).catch(() => {});
+        }).catch((e: unknown) => {
+          if (process.env.NODE_ENV !== 'production') console.error('[BookingWizard] client data fetch failed:', e);
+        });
+      }).catch((e: unknown) => {
+        if (process.env.NODE_ENV !== 'production') console.error('[BookingWizard] ensureClientProfile failed:', e);
+      });
     }
+
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Intentionally limited to [isOpen, masterId]:
+  //   initialServices — stable per wizard lifecycle (parent closes+reopens to change it)
+  //   mode            — constant per component instance
+  //   resetForm/setValue — RHF stable refs, never change identity
+  //   ensureClientProfile — imported stable function from actions module
   }, [isOpen, masterId]);
 
   // ── Auto-suggest products ─────────────────────────────────────────────────────
@@ -521,7 +546,7 @@ export function BookingWizard({
   // Only auto-selects when selectedDate is still null (never overrides user).
   useEffect(() => {
     if (step !== 'datetime' || !scheduleStore) return;
-    if (selectedDate !== null) return;
+    if (selectedDateRef.current !== null) return;
 
     const firstAvailable = days.find(d => {
       const str = toISO(d);
@@ -529,8 +554,7 @@ export function BookingWizard({
     });
 
     if (firstAvailable) setSelectedDate(firstAvailable);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, scheduleStore, fullyBookedDates]);
+  }, [step, scheduleStore, fullyBookedDates, days, offDayDates]);
 
   // ── Scroll date strip whenever selectedDate changes ───────────────────────
   useEffect(() => {
