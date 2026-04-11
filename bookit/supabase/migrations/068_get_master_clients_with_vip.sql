@@ -34,10 +34,12 @@ AS $$
     COALESCE(BOOL_OR(r.is_vip), false)       AS is_vip,
     MAX(r.id::text)::uuid                    AS relation_id
   FROM bookings b
+  -- Only bookings with a registered client_id can match a relation row.
+  -- Bookings with client_id IS NULL naturally produce no match (NULL = anything is false),
+  -- so they correctly show is_vip=false without an explicit filter.
   LEFT JOIN client_master_relations r
-         ON r.master_id  = p_master_id
-        AND r.client_id  = b.client_id
-        AND b.client_id IS NOT NULL
+         ON r.master_id = p_master_id
+        AND r.client_id = b.client_id
   WHERE b.master_id  = p_master_id
     AND b.status    != 'cancelled'
     AND b.client_phone IS NOT NULL
