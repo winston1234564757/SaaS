@@ -95,19 +95,22 @@ export async function GET(req: Request) {
     const body = `Час для наступного візиту — запишіться на ${targetDate} або інший зручний день.`;
     const tgMsg = `💅 <b>${escHtml(masterName)}</b> нагадує про ваш наступний візит!\n\nРекомендована дата: <b>${escHtml(targetDate)}</b>\n\n<a href="${escHtml(bookingUrl)}">Записатися →</a>`;
 
-    let wasSent = false;
-
     const userPushSubs = pushSubsByUser.get(clientId) ?? [];
-    if (userPushSubs.length > 0) {
-      const count = await broadcastPush(userPushSubs as any, { title, body, url: bookingUrl });
-      if (count > 0) wasSent = true;
-    }
-
     const tgChatId = tgChatByUser.get(clientId);
-    if (tgChatId) {
-      await sendTelegramMessage(tgChatId, tgMsg);
-      wasSent = true;
-    }
+
+    // PERF: run push + telegram in parallel — both are fire-and-forget notifications,
+    // a failure in one must not block or cancel the other.
+    const [pushResult, tgResult] = await Promise.allSettled([
+      userPushSubs.length > 0
+        ? broadcastPush(userPushSubs as any, { title, body, url: bookingUrl })
+        : Promise.resolve(0),
+      tgChatId
+        ? sendTelegramMessage(tgChatId, tgMsg)
+        : Promise.resolve(null),
+    ]);
+    const wasSent =
+      (pushResult.status === 'fulfilled' && Number(pushResult.value) > 0) ||
+      (tgResult.status === 'fulfilled' && !!tgChatId);
 
     if (wasSent) {
       sentBookingIds.push(booking.id);
