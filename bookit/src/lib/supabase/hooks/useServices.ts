@@ -70,7 +70,7 @@ export function useServices() {
         () =>
           supabase
             .from('services')
-            .select('*')
+            .select('id, name, emoji, category, price, duration_minutes, is_popular, is_active, sort_order, description, image_url')
             .eq('master_id', masterId!)
             .order('sort_order', { ascending: true })
             .order('created_at', { ascending: true })

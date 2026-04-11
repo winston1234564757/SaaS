@@ -65,7 +65,7 @@ export function useProducts() {
         () =>
           supabase
             .from('products')
-            .select('*')
+            .select('id, name, emoji, price, stock_unlimited, stock_quantity, is_active, sort_order, description, image_url')
             .eq('master_id', masterId!)
             .order('sort_order', { ascending: true })
             .order('created_at', { ascending: true })
