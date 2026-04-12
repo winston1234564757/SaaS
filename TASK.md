@@ -1,25 +1,43 @@
-**SYSTEM ROLE & CONTEXT:**
-You are a Principal Backend Engineer. The founder has correctly identified that the virtual email logic in our custom SMS Auth flow is fragile and causing 409 Conflict errors and login hangs due to formatting mismatches (e.g., `+380...` vs `380...`).
-We need to abstract the virtual email generation into a single, bulletproof utility function and completely decouple the client's mental model from emails.
+Ану, глянь повний бек-лог
+Можеш видалити вже завершені пробелми, сформувати новий, актуальний, розширений деталізований і доповнений бек-лог задач?
+Можеш із власного аналізу - додати проблеми,баги, або нововведення, у тебе повна свобода, ти тут керуєш
 
-**SURGICAL FIX REQUIREMENTS:**
 
-1. **Create the Core Utility:**
-   - Open or create `src/lib/utils/phone.ts` (or similar utility file).
-   - Create and export a function: `export const generateVirtualEmail = (phone: string): string => { ... }`.
-   - **Crucial Logic:** This function MUST strip ALL non-numeric characters (remove `+`, spaces, dashes, parentheses). It must return ONLY digits appended with `@bookit.app`. (e.g., `+380 99 123-45-67` becomes `380991234567@bookit.app`).
 
-2. **Refactor `send-sms/route.ts`:**
-   - Import and use `generateVirtualEmail(body.phone)` to define the `virtualEmail`.
-   - Update the conflict check query: `.eq('email', virtualEmail)` so it perfectly matches the standardized format.
 
-3. **Refactor `verify-sms/route.ts`:**
-   - Import and use `generateVirtualEmail(body.phone)` to define the `virtualEmail`.
-   - Ensure `admin.auth.admin.createUser` uses exactly this `virtualEmail`.
-   - Ensure the response passed back to the frontend (`{ email: virtualEmail, ... }`) perfectly matches so `PhoneOtpForm` can successfully call `verifyOtp`.
 
-4. **Verify Client Form:**
-   - Ensure `PhoneOtpForm.tsx` (or wherever the frontend calls `verifyOtp`) just passes the email received from `verify-sms` blindly. It should not try to construct the email itself.
+А ось повний бек-лог:
+Ану ще раз переглянь бек-лок, я трохи додав там.
 
-**OUTPUT REQUIREMENT:**
-Output the code for the new `generateVirtualEmail` function, and the updated sections of BOTH `send-sms/route.ts` and `verify-sms/route.ts`.
+#BUGS
+
+
+6. Фото профілю на /dasboard/settings дуже криво відображається, треба зробити професійну UX логіку тут, бо на мобілці геть горизонтальний скрол зявляється.
+
+7. на /dasboard/settings При зміні наприклад опису, юзера треба листати в самий низ до кнопки зберегти зміни, що на пк, що на мобілці, давай щоб вона флоатом зявлялась пісня внесення змін.
+
+C2C рефералку треба підтягнути лінк не фомується.
+
+11. Mobile UX - розділ клієнти, перемикання вигляду (списком чи блоками майже нічого не змінює) Треба перепрацювати і гарно все зробити) 
+
+12.Отут теж пункт 9
+На дашборді в списку запсиів одразу є екшн кнопки: завершити/підтвердити запис) а на сторінці записів немає такого, ну бля...
+
+13.Пункт прогноз виручки в аналітиці, треба зробити МАКСИМАЛЬНО ПРОЗОРИМ (логічно, не візуально), і  взагалі переосмислити його концепцію.
+
+14. Меню, тулбар треба щось зробити з кнопкою ЩЕ, на ПК наприклад можна майже всі пункти меню вмістити в сайдбар
+на мобілці хз, якось це краще, знаєш як монобанк зробив ахуєнно?
+
+15. Скасування запису зі сторони клієнта не працює.
+
+Install Banner - треба зробити ідеальний флоу для мобільних версій, щоб мінімізувати тертя для вставновлення  PWA
+
+Якщо застосовані будь-які знижки ( ціноутворення, флеш-акціїї, чи програми лояльності для запису - на дошборді і в усіх деталях запису треба це відображати.
+
+Згадки про ПРО. Звичайний, недалекий майстер, може навіть не протикати всі кнопки, і навіть не дізнається що у нас є Pro тариф, треба більше згадок про нього, зокрема на дашборді ( нативно, не агресивно)
+
+Опис Studio - один із тестувальників сказав наступне: а чому я будучи майстром не можу взяти собі тариф студіо всього за 300 грн і користуватись всім тим самим?
+
+in-app notification - ну тут понятно, це треба розробити з нуля
+notification про відгуки - додати, на всі флоу: тг, телефон, in-app, push
+тугл публічних відгуків - при перемиканні видимості відгугу - безкінечни спінер

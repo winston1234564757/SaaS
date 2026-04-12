@@ -285,6 +285,27 @@ export function BillingPage() {
               ))}
             </div>
 
+            {/* Studio breakeven hint */}
+            {plan.key === 'studio' && (
+              <div className="mb-4 px-3 py-2.5 rounded-2xl bg-[#5C9E7A]/8 border border-[#5C9E7A]/20">
+                <p className="text-[11px] font-semibold text-[#2C1A14] mb-1.5">Коли Studio вигідніше Pro?</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 text-center">
+                    <p className="text-[10px] text-[#A8928D]">2 майстри</p>
+                    <p className="text-xs font-bold text-[#5C9E7A]">598 ₴/міс</p>
+                  </div>
+                  <div className="text-[10px] text-[#A8928D]">vs</div>
+                  <div className="flex-1 text-center">
+                    <p className="text-[10px] text-[#A8928D]">2 × Pro</p>
+                    <p className="text-xs font-bold text-[#D4935A]">1400 ₴/міс</p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-[#6B5750] mt-1.5 leading-relaxed">
+                  Якщо ти один — <span className="font-semibold">Pro за 700 ₴</span> вигідніше
+                </p>
+              </div>
+            )}
+
             {/* CTA */}
             {isCurrent ? (
               <div

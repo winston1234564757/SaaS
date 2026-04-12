@@ -110,6 +110,11 @@ export function BookingCard({ booking, index }: BookingCardProps) {
             {cfg.label}
           </span>
           <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(booking.total_price)}</p>
+          {booking.dynamic_pricing_label && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-lg bg-[#789A99]/10 text-[#789A99] leading-none">
+              {booking.dynamic_pricing_label}
+            </span>
+          )}
         </div>
       </button>
 

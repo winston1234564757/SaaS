@@ -74,7 +74,7 @@ export function ImageUploader({ folder, masterId, value, onChange }: ImageUpload
   return (
     <div className="flex flex-col gap-2">
       {preview ? (
-        <div className="relative w-100 h-100 aspect-square shrink-0 rounded-xl overflow-hidden border border-border bg-muted object-center" >
+        <div className="relative w-full aspect-square shrink-0 rounded-xl overflow-hidden border border-border bg-muted object-center">
           <Image src={preview} alt="preview" fill className="object-contain" unoptimized />
           <button
             type="button"

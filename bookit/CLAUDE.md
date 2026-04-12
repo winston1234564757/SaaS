@@ -26,12 +26,8 @@ Skills живуть у `.claude/skills/`. Викликати через `Skill` 
 | Skill | Коли викликати |
 |---|---|
 | `ui-ux-pro-max` | Будь-яка задача на UI: новий компонент, сторінка, редизайн, питання про колір/типографіку/layout |
-| `senior-frontend` | React/Next.js компоненти, оптимізація bundle, state management, performance |
-| `nextjs-best-practices` | Питання Server/Client components, data fetching, routing, caching, Server Actions |
-| `senior-backend` | API routes, Supabase queries, DB migrations, server actions, безпека |
-| `code-reviewer` | Code review, перевірка PR, аудит якості, пошук антипатернів |
 
-**Правило:** Перед написанням будь-якого UI-коду → спочатку `ui-ux-pro-max`. Перед backend логікою → `senior-backend`. Не чекай, поки користувач попросить.
+**Правило:** Перед написанням будь-якого UI-коду → спочатку `ui-ux-pro-max`. Не чекай, поки користувач попросить.
 
 ### Python Skills — ПРАВИЛЬНИЙ ВИКЛИК (Windows)
 

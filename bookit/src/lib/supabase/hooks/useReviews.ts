@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
+import { useToast } from '@/lib/toast/context';
 
 export interface Review {
   id: string;
@@ -18,6 +19,7 @@ export function useReviews() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
+  const { showToast } = useToast();
 
   const query = useQuery({
     queryKey: ['reviews', masterId],
@@ -31,11 +33,21 @@ export function useReviews() {
 
       if (error) throw error;
 
-      return (data ?? []).map((r: any) => ({
+      type ReviewRow = {
+        id: string;
+        rating: number;
+        comment: string | null;
+        client_name: string;
+        is_published: boolean;
+        created_at: string;
+        bookings: { date: string } | null;
+      };
+
+      return (data ?? []).map((r: ReviewRow) => ({
         id: r.id,
         rating: r.rating,
         comment: r.comment || null,
-        client_name: r.client_name || '\u041a\u043b\u0456\u0454\u043d\u0442',
+        client_name: r.client_name || 'Клієнт',
         is_published: r.is_published,
         created_at: r.created_at,
         booking_date: r.bookings?.date ?? null,
@@ -64,6 +76,7 @@ export function useReviews() {
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(['reviews', masterId], ctx.prev);
+      showToast({ type: 'error', title: 'Помилка', message: 'Не вдалося змінити видимість відгуку' });
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['reviews', masterId] });
@@ -75,6 +88,6 @@ export function useReviews() {
     isLoading: query.isLoading && !!masterId,
     error: query.error,
     togglePublish: (id: string, current: boolean) => togglePublish.mutate({ id, current }),
-    isToggling: togglePublish.variables?.id ?? null,
+    isToggling: togglePublish.isPending ? (togglePublish.variables?.id ?? null) : null,
   };
 }

@@ -25,8 +25,6 @@ function RefCaptureInner() {
     }
 
     if (refCode && refCode.length >= 3 && refCode.length <= 16) {
-      console.log('[RefCapture] Captured referral code:', refCode);
-      
       // Зберігаємо на 30 днів
       Cookies.set('bookit_ref', refCode, { 
         expires: 30, 

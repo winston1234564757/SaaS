@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { generateSecureToken, sha256Hex } from '@/lib/utils/token';
 
 export async function joinStudio(token: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
@@ -10,10 +11,11 @@ export async function joinStudio(token: string): Promise<{ error: string | null 
 
   const admin = createAdminClient();
 
+  const tokenHash = await sha256Hex(token);
   const { data: studio } = await admin
     .from('studios')
     .select('id, owner_id, name, invite_token_expires_at')
-    .eq('invite_token', token)
+    .eq('invite_token_hash', tokenHash)
     .single();
 
   if (!studio) return { error: 'Недійсне посилання або студія не знайдена' };
@@ -39,16 +41,19 @@ export async function joinStudio(token: string): Promise<{ error: string | null 
 
   if (mp?.studio_id) return { error: 'Ви вже у іншій студії' };
 
-  // Optimistic lock: rotate token first, matching original value.
+  // Optimistic lock: rotate token first, matching original hash.
   // If two masters arrive simultaneously, only one matches — the second gets 0 rows.
+  const newRawToken = generateSecureToken(32);
+  const newTokenHash = await sha256Hex(newRawToken);
   const { data: rotated, error: rotateErr } = await admin
     .from('studios')
     .update({
-      invite_token: crypto.randomUUID(),
+      invite_token: newRawToken,
+      invite_token_hash: newTokenHash,
       invite_token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     })
     .eq('id', studio.id)
-    .eq('invite_token', token)
+    .eq('invite_token_hash', tokenHash)
     .select('id');
 
   if (rotateErr || !rotated?.length) {

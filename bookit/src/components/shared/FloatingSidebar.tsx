@@ -3,22 +3,33 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings, MessageSquare, MoreHorizontal } from 'lucide-react';
+import {
+  LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings,
+  MessageSquare, Zap, TrendingUp, Gift, Share2, Building2, CreditCard,
+} from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 
-const navItems = [
-  { href: '/dashboard',           icon: LayoutDashboard,       label: 'Головна',      hint: 'Огляд дня та статистика' },
-  { href: '/dashboard/bookings',  icon: CalendarDays,          label: 'Записи',       hint: 'Всі записи та календар' },
-  { href: '/dashboard/services',  icon: Scissors,              label: 'Послуги',      hint: 'Послуги та товари' },
-  { href: '/dashboard/clients',   icon: Users,                 label: 'Клієнти',      hint: 'База клієнтів та CRM' },
-  { href: '/dashboard/partners',  icon: Users,                 label: 'Партнери',     hint: 'Партнерська мережа та крос-промо' },
-  { href: '/dashboard/analytics', icon: BarChart2,             label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
-  { href: '/dashboard/reviews',   icon: MessageSquare,         label: 'Відгуки',      hint: 'Керування відгуками клієнтів' },
-  { href: '/dashboard/more',      icon: MoreHorizontal,        label: 'Ще',           hint: 'Флеш, Ціни, Лояльність, Студія та інше' },
-  { href: '/dashboard/settings',  icon: Settings,              label: 'Налаштування', hint: 'Профіль, тема, інтеграції' },
+const PRIMARY_ITEMS = [
+  { href: '/dashboard',           icon: LayoutDashboard, label: 'Головна',      hint: 'Огляд дня та статистика' },
+  { href: '/dashboard/bookings',  icon: CalendarDays,    label: 'Записи',       hint: 'Всі записи та календар' },
+  { href: '/dashboard/services',  icon: Scissors,        label: 'Послуги',      hint: 'Послуги та товари' },
+  { href: '/dashboard/clients',   icon: Users,           label: 'Клієнти',      hint: 'База клієнтів та CRM' },
+  { href: '/dashboard/analytics', icon: BarChart2,       label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
+];
+
+const SECONDARY_ITEMS = [
+  { href: '/dashboard/reviews',   icon: MessageSquare,   label: 'Відгуки',       hint: 'Керування відгуками клієнтів' },
+  { href: '/dashboard/flash',     icon: Zap,             label: 'Флеш-акції',    hint: 'Термінові пропозиції для клієнтів' },
+  { href: '/dashboard/pricing',   icon: TrendingUp,      label: 'Ціноутворення', hint: 'Динамічне ціноутворення' },
+  { href: '/dashboard/loyalty',   icon: Gift,            label: 'Лояльність',    hint: 'Програма лояльності клієнтів' },
+  { href: '/dashboard/referral',  icon: Share2,          label: 'Запроси друга', hint: 'Реферальна програма' },
+  { href: '/dashboard/partners',  icon: Users,           label: 'Партнери',      hint: 'Партнерська мережа та крос-промо' },
+  { href: '/dashboard/studio',    icon: Building2,       label: 'Студія',        hint: 'Управління командою майстрів' },
+  { href: '/dashboard/billing',   icon: CreditCard,      label: 'Тариф',         hint: 'Підписка та оплата' },
+  { href: '/dashboard/settings',  icon: Settings,        label: 'Налаштування',  hint: 'Профіль, тема, інтеграції' },
 ];
 
 export function FloatingSidebar() {
@@ -41,10 +52,9 @@ export function FloatingSidebar() {
       </Link>
 
       {/* Nav */}
-      <nav className="flex flex-col gap-1 flex-1">
-        {navItems.map(({ href, icon: Icon, label, hint }) => {
-          const isActive =
-            pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+      <nav className="flex flex-col gap-1 flex-1 overflow-y-auto">
+        {PRIMARY_ITEMS.map(({ href, icon: Icon, label, hint }) => {
+          const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
           const showBadge = href === '/dashboard/bookings' && todayPending > 0;
           return (
             <Tooltip key={href} content={
@@ -57,9 +67,7 @@ export function FloatingSidebar() {
                 href={href}
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-150 w-full',
-                  isActive
-                    ? 'bg-[#789A99]/12 text-[#5C7E7D]'
-                    : 'text-[#6B5750] hover:bg-white/55 hover:text-[#2C1A14]'
+                  isActive ? 'bg-[#789A99]/12 text-[#5C7E7D]' : 'text-[#6B5750] hover:bg-white/55 hover:text-[#2C1A14]'
                 )}
               >
                 <div className="relative shrink-0">
@@ -76,6 +84,32 @@ export function FloatingSidebar() {
                     {todayPending} нові
                   </span>
                 )}
+              </Link>
+            </Tooltip>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="my-1 mx-4 h-px bg-[#E8D5CF]/60" />
+
+        {SECONDARY_ITEMS.map(({ href, icon: Icon, label, hint }) => {
+          const isActive = pathname.startsWith(href);
+          return (
+            <Tooltip key={href} content={
+              <div>
+                <p className="text-[11px] font-semibold text-[#2C1A14]">{label}</p>
+                <p className="text-[11px] text-[#6B5750]">{hint}</p>
+              </div>
+            } position="right" delay={500}>
+              <Link
+                href={href}
+                className={cn(
+                  'flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150 w-full',
+                  isActive ? 'bg-[#789A99]/12 text-[#5C7E7D]' : 'text-[#6B5750] hover:bg-white/55 hover:text-[#2C1A14]'
+                )}
+              >
+                <Icon size={16} strokeWidth={isActive ? 2.5 : 2} className="shrink-0" />
+                {label}
               </Link>
             </Tooltip>
           );

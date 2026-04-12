@@ -45,13 +45,14 @@ export async function safeQuery<T>(label: string, builder: QueryBuilder<T>): Pro
       isRlsError,
       message,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const e = err as Record<string, unknown>;
     const fallback: PostgrestError = {
       name: 'PostgrestError',
-      message: err?.message ?? 'Unknown Supabase error',
-      details: err?.details ?? null,
-      hint: err?.hint ?? null,
-      code: err?.code ?? 'unknown',
+      message: typeof e.message === 'string' ? e.message : 'Unknown Supabase error',
+      details: typeof e.details === 'string' ? e.details : '',
+      hint: typeof e.hint === 'string' ? e.hint : '',
+      code: typeof e.code === 'string' ? e.code : 'unknown',
     };
 
     const { isRlsError, message } = classifyError(fallback);

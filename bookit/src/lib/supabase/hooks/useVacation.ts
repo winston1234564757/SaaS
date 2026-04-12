@@ -31,10 +31,13 @@ export function useVacation() {
         .gte('date', today)
         .order('date', { ascending: true });
       if (error) throw error;
-      return (data ?? []).map((r: any) => ({
-        id: r.id as string,
-        date: r.date as string,
-        reason: (r.reason as string) || null,
+
+      type ExceptionRow = { id: string; date: string; reason: string | null };
+
+      return (data ?? []).map((r: ExceptionRow) => ({
+        id: r.id,
+        date: r.date,
+        reason: r.reason || null,
       }));
     },
     staleTime: 60_000,

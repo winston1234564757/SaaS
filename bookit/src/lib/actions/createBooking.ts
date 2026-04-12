@@ -95,7 +95,16 @@ export async function createBooking(
   const { data: { user } } = await supabase.auth.getUser();
 
   if (p.source === 'manual') {
+    // SEC-HIGH-3: verify caller is the master AND has master role — clients cannot create manual bookings
     if (!user || user.id !== p.masterId) {
+      return { bookingId: null, error: 'Не авторизований' };
+    }
+    const { data: callerProfile } = await admin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (callerProfile?.role !== 'master') {
       return { bookingId: null, error: 'Не авторизований' };
     }
   } else if (p.source === 'online') {
@@ -106,15 +115,21 @@ export async function createBooking(
   }
 
   // 3. Master profile — pricing rules + subscription tier + trial counter
+  // SEC-CRIT-2: include is_published to block calendar spam on unpublished masters (online source)
   console.log('[createBooking] Fetching master profile for ID:', p.masterId);
   const { data: mp, error: masterError } = await admin
     .from('master_profiles')
-    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id')
+    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id, is_published')
     .eq('id', p.masterId)
     .single();
 
   if (masterError || !mp) {
     console.error('[createBooking] Master Query Error:', masterError);
+    return { bookingId: null, error: 'Майстра не знайдено' };
+  }
+
+  // SEC-CRIT-2: prevent calendar spam — online bookings only allowed on published masters
+  if (p.source === 'online' && !mp.is_published) {
     return { bookingId: null, error: 'Майстра не знайдено' };
   }
 
@@ -250,7 +265,8 @@ export async function createBooking(
       loyaltyLabel = qualifyingRule.name;
     }
   } else {
-    loyaltyDiscountPercent = p.discountPercent;
+    // SEC: cap manual master discount at 50% — prevents zeroing out bookings
+    loyaltyDiscountPercent = Math.min(p.discountPercent, 50);
   }
 
   // Raw loyalty discount calculated from service + product subtotal 

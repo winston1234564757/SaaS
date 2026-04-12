@@ -7,39 +7,60 @@ interface Props {
   params: Promise<{ code: string }>;
 }
 
-async function getInviteMaster(slug: string) {
+async function getInviter(code: string) {
   const supabase = await createClient();
-  const { data } = await supabase
+
+  // 1. Try to match a published master's slug
+  const { data: master } = await supabase
     .from('master_profiles')
     .select('id, slug, bio, city, avatar_emoji, profiles!inner ( full_name )')
-    .eq('slug', slug)
+    .eq('slug', code)
     .eq('is_published', true)
-    .single();
-  return data;
+    .maybeSingle();
+  if (master) return { type: 'master' as const, data: master };
+
+  // 2. Try to match a master's referral_code
+  const { data: masterByCode } = await supabase
+    .from('master_profiles')
+    .select('id, slug, bio, city, avatar_emoji, profiles!inner ( full_name )')
+    .eq('referral_code', code)
+    .eq('is_published', true)
+    .maybeSingle();
+  if (masterByCode) return { type: 'master' as const, data: masterByCode };
+
+  // 3. Try to match a client's referral_code
+  const { data: client } = await supabase
+    .from('client_profiles')
+    .select('id, profiles ( full_name )')
+    .eq('referral_code', code)
+    .maybeSingle();
+  if (client) return { type: 'client' as const, data: client };
+
+  return null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params;
-  const master = await getInviteMaster(code);
-  const name = master
-    ? (master.profiles as unknown as { full_name: string }).full_name
+  const result = await getInviter(code);
+  const name = result
+    ? (Array.isArray(result.data.profiles) ? result.data.profiles[0] : result.data.profiles as any)?.full_name ?? 'Майстер'
     : 'Майстер';
   return {
     title: `${name} запрошує тебе до Bookit`,
-    description: 'Зареєструйся та отримай бонус від свого майстра',
+    description: 'Зареєструйся та отримай бонус',
   };
 }
 
 export default async function InvitePage({ params }: Props) {
   const { code } = await params;
-  const master = await getInviteMaster(code);
+  const result = await getInviter(code);
 
-  const name = master
-    ? (master.profiles as unknown as { full_name: string }).full_name
-    : null;
-  const emoji = (master?.avatar_emoji as string) || '💅';
-  const bio = (master?.bio as string) || null;
-  const city = (master?.city as string) || null;
+  const isMaster = result?.type === 'master';
+  const profileRaw = result ? (Array.isArray(result.data.profiles) ? result.data.profiles[0] : result.data.profiles) : null;
+  const name = (profileRaw as any)?.full_name ?? null;
+  const emoji = isMaster ? ((result!.data as any).avatar_emoji as string) || '💅' : '👤';
+  const bio = isMaster ? ((result!.data as any).bio as string) || null : null;
+  const city = isMaster ? ((result!.data as any).city as string) || null : null;
 
   return (
     <div className="min-h-dvh flex items-center justify-center px-4 py-12">
@@ -63,7 +84,7 @@ export default async function InvitePage({ params }: Props) {
             {emoji}
           </div>
 
-          {master ? (
+          {name ? (
             <>
               <h1 className="heading-serif text-xl text-[#2C1A14] mb-1">
                 {name} запрошує тебе!
@@ -109,9 +130,9 @@ export default async function InvitePage({ params }: Props) {
             Зареєструватися безкоштовно
           </Link>
 
-          {master && (
+          {isMaster && (result!.data as any).slug && (
             <Link
-              href={`/${master.slug}`}
+              href={`/${(result!.data as any).slug}`}
               className="mt-3 block text-sm text-[#789A99] hover:text-[#5C7E7D] transition-colors"
             >
               Переглянути сторінку {name} →

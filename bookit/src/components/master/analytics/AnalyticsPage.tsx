@@ -789,10 +789,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
           {/* Прогноз виручки */}
           <div className="bento-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wider">Прогноз виручки</p>
-              <span className="text-[10px] text-[#A8928D] bg-[#F5E8E3] px-2 py-0.5 rounded-full">Лінійна регресія</span>
-            </div>
+            <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wider mb-4">Прогноз виручки</p>
             {isLoading ? (
               <div className="flex flex-col gap-3">
                 <Skeleton h="h-16" rounded="rounded-2xl" />
@@ -847,17 +844,36 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     <span className="text-[9px] font-semibold text-[#789A99]">{nextMonth.slice(0, 3)}</span>
                   </Tooltip>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1.5 bg-[#F5E8E3] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#789A99]/60 rounded-full transition-all duration-700"
-                      style={{ width: `${Math.round(forecast.r2 * 100)}%` }} />
+
+                {/* Transparent breakdown — показує логіку розрахунку */}
+                {bento && bento.avgCheck.current > 0 && summary.bookings > 0 && (
+                  <div className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[#F5E8E3]/60">
+                    <p className="text-[11px] text-[#6B5750] font-medium">Як рахується прогноз</p>
+                    <div className="flex items-center gap-1.5 text-xs text-[#A8928D]">
+                      <span className="font-semibold text-[#2C1A14]">{summary.bookings}</span>
+                      <span>записів за цей місяць</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-[#A8928D]">
+                      <span>×</span>
+                      <span className="font-semibold text-[#2C1A14]">{formatPrice(bento.avgCheck.current)}</span>
+                      <span>середній чек</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs border-t border-[#E8D5CF] pt-1.5 mt-0.5">
+                      <span className="text-[#A8928D]">=</span>
+                      <span className="font-bold text-[#2C1A14]">{formatPrice(summary.bookings * bento.avgCheck.current)}</span>
+                      <span className="text-[#A8928D]">простий прогноз</span>
+                    </div>
                   </div>
-                  <Tooltip content={<div className="max-w-[220px]"><p className="text-sm font-semibold text-[#2C1A14] mb-1">Точність прогнозу</p><p className="text-sm text-[#6B5750] leading-relaxed">Розраховується на основі стабільності твого доходу. Чим менше різких стрибків між місяцями, тим точніший прогноз.</p></div>}>
-                    <span className="text-[10px] text-[#A8928D] flex-shrink-0 cursor-default underline decoration-dotted">
-                      Точність: {Math.round(forecast.r2 * 100)}%
-                    </span>
-                  </Tooltip>
-                </div>
+                )}
+
+                {forecastDelta > 0 && forecastPct !== null && forecastPct >= 5 && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-[#5C9E7A]/8 border border-[#5C9E7A]/20">
+                    <span className="text-base">🎉</span>
+                    <p className="text-xs font-semibold text-[#5C9E7A]">
+                      Ви зростаєте! Прогноз на {nextMonth} краще за минулий місяць на {forecastPct}%
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-[#A8928D] text-center py-4">Потрібно мінімум 2 місяці даних для прогнозу</p>

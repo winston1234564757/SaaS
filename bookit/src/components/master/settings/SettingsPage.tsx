@@ -5,7 +5,7 @@ import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut, Plus, Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { VacationManager } from './VacationManager';
@@ -17,6 +17,7 @@ import { useToast } from '@/lib/toast/context';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import type { BreakWindow } from '@/types/database';
 import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, normalizeToE164, toFullPhone } from '@/lib/utils/phone';
+import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
 
 const AVATAR_EMOJIS = ['💅','👑','✂️','💆','💇','🌸','✨','💎','🌺','🪞','🖌️','💄'];
 
@@ -73,6 +74,20 @@ export function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [slugStatus, setSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Snapshots captured on first load — used for dirty detection and cancel reset
+  const initialFormSnap = useRef<{
+    fullName: string; phone: string; bio: string; slug: string;
+    city: string; instagram: string; telegram: string; telegramChatId: string;
+    isPublished: boolean; avatar: string; themeKey: MoodThemeKey;
+    avatarUrl: string | null; bufferTime: number; breaks: BreakWindow[];
+  } | null>(null);
+  const initialScheduleSnap = useRef<Schedule | null>(null);
+
+  // Telegram connect token flow (SEC-HIGH-2: one-time token instead of public slug)
+  const [tgConnectToken, setTgConnectToken] = useState<string | null>(null);
+  const [tgConnectLoading, setTgConnectLoading] = useState(false);
 
 
   // Ініціалізація з даних — runs once when both profile and masterProfile first arrive.
@@ -96,6 +111,22 @@ export function SettingsPage() {
     const wh = masterProfile.working_hours;
     setBufferTime(wh?.buffer_time_minutes ?? 0);
     setBreaks(wh?.breaks ?? []);
+    initialFormSnap.current = {
+      fullName: profile.full_name ?? '',
+      phone: e164ToInputPhone(profile.phone),
+      bio: masterProfile.bio ?? '',
+      slug: masterProfile.slug ?? '',
+      city: masterProfile.city ?? '',
+      instagram: masterProfile.instagram_url ?? '',
+      telegram: masterProfile.telegram_url ?? '',
+      telegramChatId: masterProfile.telegram_chat_id ?? '',
+      isPublished: masterProfile.is_published ?? false,
+      avatar: masterProfile.avatar_emoji ?? '💅',
+      themeKey: (masterProfile.mood_theme as MoodThemeKey) ?? 'default',
+      avatarUrl: profile.avatar_url ?? null,
+      bufferTime: wh?.buffer_time_minutes ?? 0,
+      breaks: wh?.breaks ?? [],
+    };
   }, [profile, masterProfile]);
 
   // Перевірка доступності slug
@@ -122,6 +153,8 @@ export function SettingsPage() {
   useEffect(() => {
     if (scheduleInitialized.current || !masterProfile?.id) return;
     scheduleInitialized.current = true;
+    // Set default schedule snapshot immediately so dirty detection works even if fetch is slow
+    initialScheduleSnap.current = { ...DEFAULT_SCHEDULE };
     const supabase = createClient();
     supabase
       .from('schedule_templates')
@@ -141,9 +174,49 @@ export function SettingsPage() {
             }
           });
           setSchedule(s);
+          initialScheduleSnap.current = s;
         }
       });
   }, [masterProfile?.id]);
+
+  // Dirty detection — compares current field values against initial snapshot
+  useEffect(() => {
+    if (!initialFormSnap.current || !initialScheduleSnap.current) return;
+    const f = initialFormSnap.current;
+    const formChanged =
+      fullName !== f.fullName || phone !== f.phone || bio !== f.bio ||
+      slug !== f.slug || city !== f.city || instagram !== f.instagram ||
+      telegram !== f.telegram || telegramChatId !== f.telegramChatId ||
+      isPublished !== f.isPublished || avatar !== f.avatar ||
+      themeKey !== f.themeKey || avatarUrl !== f.avatarUrl ||
+      bufferTime !== f.bufferTime ||
+      JSON.stringify(breaks) !== JSON.stringify(f.breaks);
+    const scheduleChanged =
+      JSON.stringify(schedule) !== JSON.stringify(initialScheduleSnap.current);
+    setIsDirty(formChanged || scheduleChanged);
+  }, [fullName, phone, bio, slug, city, instagram, telegram, telegramChatId,
+      isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, schedule]);
+
+  function handleCancel() {
+    const f = initialFormSnap.current;
+    if (!f) return;
+    setFullName(f.fullName);
+    setPhone(f.phone);
+    setBio(f.bio);
+    setSlug(f.slug);
+    setCity(f.city);
+    setInstagram(f.instagram);
+    setTelegram(f.telegram);
+    setTelegramChatId(f.telegramChatId);
+    setIsPublished(f.isPublished);
+    setAvatar(f.avatar);
+    setThemeKey(f.themeKey);
+    setAvatarUrl(f.avatarUrl);
+    setBufferTime(f.bufferTime);
+    setBreaks(f.breaks);
+    if (initialScheduleSnap.current) setSchedule(initialScheduleSnap.current);
+    setIsDirty(false);
+  }
 
   async function handleSave() {
     if (!masterProfile?.id || !profile?.id) {
@@ -183,6 +256,10 @@ export function SettingsPage() {
       setSaved(true);
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);
+      // Update snapshots so cancel would reset to the freshly saved state
+      initialFormSnap.current = { fullName, phone, bio, slug, city, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks };
+      initialScheduleSnap.current = { ...schedule };
+      setIsDirty(false);
       // Оновлюємо контекст у фоні — не блокуємо UI
       refresh().catch(() => {});
     } catch (error: any) {
@@ -190,6 +267,18 @@ export function SettingsPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleGenerateTelegramToken() {
+    setTgConnectLoading(true);
+    setTgConnectToken(null);
+    const { token, error } = await generateTelegramConnectToken();
+    setTgConnectLoading(false);
+    if (error || !token) {
+      showToast({ type: 'error', title: 'Помилка', message: error ?? 'Спробуйте ще раз' });
+      return;
+    }
+    setTgConnectToken(token);
   }
 
   function addBreak() {
@@ -400,22 +489,47 @@ export function SettingsPage() {
             <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">
               Telegram сповіщення
             </label>
-            {process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME && masterProfile?.slug ? (
+            {process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME ? (
               <div className="flex flex-col gap-2">
                 {telegramChatId ? (
                   <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#5C9E7A]/8 border border-[#5C9E7A]/20">
-                    <span className="text-xs text-[#5C9E7A] font-medium flex-1">✅ Telegram підключено (ID: {telegramChatId})</span>
-                    <button onClick={() => setTelegramChatId('')} className="text-[11px] text-[#C05B5B] hover:underline">Відключити</button>
+                    <span className="text-xs text-[#5C9E7A] font-medium flex-1">Telegram підключено (ID: {telegramChatId})</span>
+                    <button
+                      onClick={() => { setTelegramChatId(''); setTgConnectToken(null); }}
+                      className="text-[11px] text-[#C05B5B] hover:underline"
+                    >
+                      Відключити
+                    </button>
+                  </div>
+                ) : tgConnectToken ? (
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href={`https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}?start=${tgConnectToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#229ED9] text-white text-sm font-semibold hover:bg-[#1a85c4] transition-colors"
+                    >
+                      <Send size={14} /> Відкрити Telegram бота
+                    </a>
+                    <p className="text-[11px] text-[#A8928D]">
+                      Натисніть кнопку вище — бот підтвердить підключення автоматично. Токен діє одноразово.
+                    </p>
+                    <button
+                      onClick={handleGenerateTelegramToken}
+                      className="text-xs text-[#789A99] hover:underline self-start"
+                    >
+                      Згенерувати новий токен
+                    </button>
                   </div>
                 ) : (
-                  <a
-                    href={`https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}?start=${masterProfile.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#229ED9] text-white text-sm font-semibold hover:bg-[#1a85c4] transition-colors"
+                  <button
+                    onClick={handleGenerateTelegramToken}
+                    disabled={tgConnectLoading}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#229ED9] text-white text-sm font-semibold hover:bg-[#1a85c4] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <Send size={14} /> Підключити Telegram бота
-                  </a>
+                    {tgConnectLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                    Підключити Telegram бота
+                  </button>
                 )}
                 <p className="text-[11px] text-[#A8928D]">Після підключення бот надсилатиме сповіщення про нові записи</p>
               </div>
@@ -428,7 +542,7 @@ export function SettingsPage() {
                   className={inputCls}
                 />
                 <p className="text-[11px] text-[#A8928D] mt-1">
-                  Напишіть боту <code className="bg-white/60 px-1 rounded">/start {masterProfile?.slug}</code> та вставте свій Chat ID
+                  Вставте свій Telegram Chat ID
                 </p>
               </div>
             )}
@@ -703,6 +817,47 @@ export function SettingsPage() {
         <LogOut size={15} />
         Вийти з акаунту
       </button>
+
+      {/* Floating save bar — appears when form has unsaved changes */}
+      <AnimatePresence>
+        {isDirty && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+            className="fixed bottom-[84px] lg:bottom-6 left-1/2 -translate-x-1/2 z-50
+                       w-[calc(100%-2rem)] max-w-md"
+          >
+            <div className="bento-card px-4 py-3 flex items-center gap-3
+                            border-[#789A99]/25 bg-white/95 backdrop-blur-md shadow-xl">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-[#2C1A14]">Незбережені зміни</p>
+              </div>
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className="px-3 py-1.5 rounded-xl text-xs font-medium text-[#6B5750]
+                           bg-white/80 border border-white/80 hover:bg-white
+                           disabled:opacity-50 transition-colors"
+              >
+                Скасувати
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || slugStatus === 'taken'}
+                className="px-4 py-1.5 rounded-xl text-xs font-semibold text-white
+                           bg-[#789A99] hover:bg-[#6B8C8B] disabled:opacity-50
+                           transition-colors flex items-center gap-1.5"
+              >
+                {saving
+                  ? <><Loader2 size={12} className="animate-spin" /> Збереження...</>
+                  : 'Зберегти'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

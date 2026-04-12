@@ -319,10 +319,16 @@ export function useAnalytics(
       if (activePhones.length > 0) {
         // No .in(activePhones) filter — avoids PostgREST URL length limit for masters with
         // hundreds of clients. JS loop below filters by activePhones set, so results are identical.
+        // PERF: bound retention scan to last 2 years — avoids full-history table scan
+        const twoYearsAgo = new Date();
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+        const retentionStartDate = twoYearsAgo.toISOString().slice(0, 10);
+
         const { data: allVisitsData } = await supabase
           .from('bookings')
           .select('client_phone')
           .eq('master_id', masterId!)
+          .gte('date', retentionStartDate)
           .lte('date', endDate)
           .neq('status', 'cancelled');
 

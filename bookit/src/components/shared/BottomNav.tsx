@@ -19,8 +19,12 @@ const PRIMARY = [
   { href: '/dashboard/analytics',icon: BarChart2,       label: 'Аналітика' },
 ];
 
+// Icon-only shortcuts promoted from the drawer
+const QUICK = [
+  { href: '/dashboard/services', icon: Scissors, label: 'Послуги' },
+];
+
 const MORE_ITEMS = [
-  { href: '/dashboard/services',  icon: Scissors,       label: 'Послуги'        },
   { href: '/dashboard/flash',     icon: Zap,            label: 'Флеш-акції'    },
   { href: '/dashboard/pricing',   icon: TrendingUp,     label: 'Ціноутворення' },
   { href: '/dashboard/loyalty',   icon: Gift,           label: 'Лояльність'    },
@@ -64,6 +68,24 @@ export function BottomNav() {
                   )}
                 </div>
                 <span className="text-[10px] font-medium">{label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Quick-access icon-only shortcuts */}
+          {QUICK.map(({ href, icon: Icon, label }) => {
+            const isActive = pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-label={label}
+                className={cn(
+                  'flex flex-col items-center justify-center px-2 py-1.5 rounded-xl flex-1 transition-all duration-150',
+                  isActive ? 'text-[#789A99]' : 'text-[#A8928D]'
+                )}
+              >
+                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
               </Link>
             );
           })}

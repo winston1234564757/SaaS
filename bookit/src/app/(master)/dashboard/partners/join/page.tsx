@@ -17,8 +17,9 @@ export default async function JoinPartnerPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    // Redirect to login but keep the join intent
-    redirect(`/login?next=/dashboard/partners/join?token=${token}`);
+    // Redirect to login but keep the join intent, properly encoded
+    const nextPath = encodeURIComponent(`/dashboard/partners/join?token=${token}`);
+    redirect(`/login?next=${nextPath}`);
   }
 
   const admin = createAdminClient();
@@ -50,6 +51,7 @@ export default async function JoinPartnerPage({
     redirect('/dashboard/partners');
   }
 
+  // inviter.profiles should be an object in this query structure
   const inviterProfile = Array.isArray(inviter.profiles) ? inviter.profiles[0] : inviter.profiles;
   const inviterData = {
     name: inviterProfile?.full_name || 'Майстер',

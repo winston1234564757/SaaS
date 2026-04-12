@@ -7,11 +7,15 @@ import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { useReviews } from '@/lib/supabase/hooks/useReviews';
+import { useMasterContext } from '@/lib/supabase/context';
+import Link from 'next/link';
 
 
 export function ReviewsPage() {
   const { reviews, isLoading, togglePublish, isToggling } = useReviews();
   const { currentStep, nextStep, closeTour } = useTour('reviews', 1);
+  const { masterProfile } = useMasterContext();
+  const isStarter = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
 
   const published = reviews.filter(r => r.is_published).length;
   const avgRating = reviews.length > 0
@@ -51,6 +55,20 @@ export function ReviewsPage() {
               <p className="text-[10px] text-[#A8928D]">{s.label}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pro nudge for Starter */}
+      {isStarter && reviews.length > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#789A99]/8 border border-[#789A99]/20">
+          <span className="text-base flex-shrink-0">⭐</span>
+          <p className="text-xs text-[#6B5750] flex-1 leading-relaxed">
+            З <span className="font-semibold text-[#2C1A14]">Pro</span> — автоматичні нагадування клієнтам залишити відгук після завершення запису
+          </p>
+          <Link href="/dashboard/billing?plan=pro"
+            className="flex-shrink-0 text-[11px] font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors whitespace-nowrap">
+            Спробувати →
+          </Link>
         </div>
       )}
 

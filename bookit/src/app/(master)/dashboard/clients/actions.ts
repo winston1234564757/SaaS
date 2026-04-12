@@ -34,17 +34,11 @@ export async function sendChurnReminder(
 
   const admin = createAdminClient();
 
-  const { data: mp } = await admin
-    .from('master_profiles')
-    .select('slug')
-    .eq('id', user.id)
-    .single();
-
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('full_name')
-    .eq('id', user.id)
-    .single();
+  // PERF-HIGH: parallelize two independent reads instead of sequential round-trips
+  const [{ data: mp }, { data: profile }] = await Promise.all([
+    admin.from('master_profiles').select('slug').eq('id', user.id).single(),
+    admin.from('profiles').select('full_name').eq('id', user.id).single(),
+  ]);
 
   const masterName = profile?.full_name ?? 'Ваш майстер';
   const bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp?.slug}`;
@@ -101,11 +95,15 @@ export async function toggleClientVip(
   if (!user) return { error: 'Не авторизований' };
 
   const admin = createAdminClient();
-  const { error } = await admin
+
+  const { data: updated, error } = await admin
     .from('client_master_relations')
     .update({ is_vip: isVip })
     .eq('master_id', user.id)
-    .eq('client_id', clientId);
+    .eq('client_id', clientId)
+    .select('id')
+    .single();
 
+  if (error?.code === 'PGRST116') return { error: 'Клієнта не знайдено' };
   return { error: error?.message ?? null };
 }

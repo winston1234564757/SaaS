@@ -1,15 +1,22 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CalendarDays, TrendingUp, Users } from 'lucide-react';
+import { CalendarDays, TrendingUp, Users, Zap } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
+import { useMonthlyBookingCount } from '@/lib/supabase/hooks/useBookings';
+import { useMasterContext } from '@/lib/supabase/context';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 function fmt(n: number) { return n.toLocaleString('uk-UA') + ' ₴'; }
 
 export function StatsStrip() {
   const s = useDashboardStats();
+  const { masterProfile } = useMasterContext();
+  const { count: monthCount } = useMonthlyBookingCount();
+  const isStarter = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
+  const showProNudge = isStarter && monthCount >= 15;
 
   if (s.isLoading) {
     return (
@@ -84,6 +91,7 @@ export function StatsStrip() {
   ];
 
   return (
+    <div className="flex flex-col gap-3">
     <div className="grid grid-cols-3 gap-3 items-stretch">
       {stats.map((stat, i) => {
         const Icon = stat.icon;
@@ -112,6 +120,26 @@ export function StatsStrip() {
           </motion.div>
         );
       })}
+    </div>
+    {showProNudge && (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 24 }}
+        className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#789A99]/8 border border-[#789A99]/20"
+      >
+        <div className="w-8 h-8 rounded-xl bg-[#789A99]/15 flex items-center justify-center flex-shrink-0">
+          <Zap size={14} className="text-[#789A99]" />
+        </div>
+        <p className="text-xs text-[#6B5750] flex-1 leading-relaxed">
+          Ви вже активний майстер — <span className="font-semibold text-[#2C1A14]">Pro</span> розблокує аналітику, CRM та автоматичні нагадування
+        </p>
+        <Link href="/dashboard/billing?plan=pro"
+          className="flex-shrink-0 text-[11px] font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors whitespace-nowrap">
+          Спробувати →
+        </Link>
+      </motion.div>
+    )}
     </div>
   );
 }

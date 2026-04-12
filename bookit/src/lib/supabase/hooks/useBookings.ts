@@ -20,6 +20,8 @@ export interface BookingWithServices {
   notes: string | null;
   master_notes: string | null;
   source: string | null;
+  dynamic_pricing_label: string | null;
+  dynamic_extra_kopecks: number;
   services: { name: string; price: number; duration: number }[];
 }
 
@@ -35,6 +37,8 @@ interface BookingRow {
   notes: string | null;
   master_notes: string | null;
   source: string | null;
+  dynamic_pricing_label: string | null;
+  dynamic_extra_kopecks: number | null;
   booking_services: { service_name: string; service_price: number | string; duration_minutes: number }[] | null;
 }
 
@@ -51,6 +55,8 @@ function rowToBooking(row: BookingRow): BookingWithServices {
     notes: row.notes,
     master_notes: row.master_notes ?? null,
     source: row.source ?? null,
+    dynamic_pricing_label: row.dynamic_pricing_label ?? null,
+    dynamic_extra_kopecks: row.dynamic_extra_kopecks ?? 0,
     services: (row.booking_services ?? []).map(s => ({
       name: s.service_name,
       price: Number(s.service_price),

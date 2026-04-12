@@ -1,7 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { sendTelegramMessage, buildCancellationMessage } from '@/lib/telegram';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { sendTelegramMessage, buildCancellationMessage, buildReviewMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
 export async function cancelBooking(bookingId: string): Promise<void> {
   const supabase = await createClient();
@@ -16,7 +17,8 @@ export async function cancelBooking(bookingId: string): Promise<void> {
     .in('status', ['pending', 'confirmed']);
 
   if (error) throw error;
-  revalidatePath('/', 'layout');
+  // MEDIUM-PERF: targeted invalidation — don't bust entire app layout cache on client actions
+  revalidatePath('/my/bookings');
 
   // Notify master via Telegram
   const { data: booking } = await supabase
@@ -106,5 +108,36 @@ export async function submitReview(params: {
     });
 
   if (error) throw error;
-  revalidatePath('/', 'layout');
+  // MEDIUM-PERF: targeted invalidation — don't bust entire app layout cache on client actions
+  revalidatePath('/my/bookings');
+
+  // Notify master via all channels (fire-and-forget)
+  const masterId = booking.master_id;
+  const notifBody = `${clientName} · ${params.rating}/5`;
+
+  const admin = createAdminClient();
+  const [masterResult] = await Promise.allSettled([
+    supabase
+      .from('master_profiles')
+      .select('telegram_chat_id')
+      .eq('id', masterId)
+      .single(),
+    admin.from('notifications').insert({
+      recipient_id: masterId,
+      title: 'Новий відгук',
+      body: notifBody,
+      type: 'new_review',
+      related_master_id: masterId,
+    }),
+  ]);
+
+  const chatId = masterResult.status === 'fulfilled'
+    ? (masterResult.value.data?.telegram_chat_id as string | null)
+    : null;
+  if (chatId) {
+    await sendTelegramMessage(
+      chatId,
+      buildReviewMessage({ clientName, rating: params.rating, comment: params.comment || null }),
+    ).catch(() => {});
+  }
 }

@@ -36,7 +36,8 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
     if (error) return { error: error.message };
 
     // 3. Revalidate & Notify
-    revalidatePath('/(master)/dashboard', 'layout');
+    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
+    revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
     // Fire-and-forget notification
@@ -79,7 +80,8 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
     if (error) return { error: error.message };
 
     // 3. Revalidate & Notify
-    revalidatePath('/(master)/dashboard', 'layout');
+    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
+    revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
     notifyClientOnStatusChange(bookingId, 'cancelled').catch(console.error);
@@ -125,7 +127,8 @@ export async function rescheduleBooking(
 
     if (error) return { error: error.message };
 
-    revalidatePath('/(master)/dashboard', 'layout');
+    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
+    revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
     return { error: null };
@@ -168,7 +171,8 @@ export async function updateBookingStatus(
     if (error) return { error: error.message };
 
     // 3. Revalidate & Notify
-    revalidatePath('/(master)/dashboard', 'layout');
+    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
+    revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
     // Notify client for specific statuses
@@ -213,8 +217,8 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
     if (error) return { error: error.message };
 
     // 3. Revalidate
-    revalidatePath('/(master)/dashboard', 'layout');
-    revalidatePath('/(master)/dashboard/bookings');
+    // PERF-HIGH-1: granular — completing a booking does not change layout-level data
+    revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
     return { error: null };
@@ -253,8 +257,8 @@ export async function updateMasterNotes(
 
     if (error) return { error: error.message };
 
-    // No need to notify client for master-only notes
-    revalidatePath('/(master)/dashboard', 'layout');
+    // PERF-HIGH-1: notes-only change — no layout bust needed
+    revalidatePath('/dashboard/bookings');
 
     return { error: null };
   } catch (err) {

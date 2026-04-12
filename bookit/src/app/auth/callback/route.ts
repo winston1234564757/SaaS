@@ -1,16 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { applyReferralRewards } from '@/lib/actions/referrals';
+import { generateSecureToken } from '@/lib/utils/token';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/my/bookings';
-  // role passed via redirectTo from the auth toggle UI
-  const role = searchParams.get('role') ?? 'client';
-  // bookingId — used only in the master branch for email-based bid linking.
-  // Client booking linkage is handled server-side by trg_link_bookings_on_phone trigger.
+
+  // SEC-CRIT-1: Neutralise open-redirect via //attacker.com or /%2F%2F — extract pathname only
+  const rawNext = searchParams.get('next') ?? '/my/bookings';
+  const next = (() => {
+    if (!rawNext.startsWith('/')) return '/my/bookings';
+    try {
+      const url = new URL(rawNext, 'https://x');
+      return url.pathname + url.search;
+    } catch {
+      return '/my/bookings';
+    }
+  })();
+
+  // SEC-HIGH-1: Role from URL param alone is forgeable via external links.
+  // Actual assignment happens below after cookieStore is available.
+  const roleFromParam = searchParams.get('role') ?? 'client';
   const bid = searchParams.get('bid');
 
   if (!code) {
@@ -18,6 +31,14 @@ export async function GET(request: NextRequest) {
   }
 
   const cookieStore = await cookies();
+
+  // SEC-HIGH-1: Only assign master role when BOTH the URL param AND the short-lived cookie agree.
+  // The cookie (bookit_reg_role=master, max-age=300) is set by PhoneOtpForm.tsx right before
+  // triggering Google OAuth — external crafted links cannot set same-origin cookies.
+  const roleFromCookie = cookieStore.get('bookit_reg_role')?.value;
+  const role = (roleFromParam === 'master' && roleFromCookie === 'master') ? 'master' : 'client';
+  cookieStore.set('bookit_reg_role', '', { path: '/', maxAge: 0 });
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -44,10 +65,6 @@ export async function GET(request: NextRequest) {
 
   if (user) {
     const admin = createAdminClient();
-
-    // CRITICAL: Clear stale user_role cookie so proxy.ts re-reads role from DB.
-    // Without this, a browser that previously had user_role=master will route a
-    // new client session into /dashboard, causing redirect loops.
     cookieStore.set('user_role', '', { path: '/', maxAge: 0 });
 
     const displayName =
@@ -56,91 +73,57 @@ export async function GET(request: NextRequest) {
       user.email?.split('@')[0] ||
       'Користувач';
 
-    // SMS-authenticated users always have email ending in @bookit.app.
-    // NEVER trust the ?role= URL param for them — it can be stale/crafted.
-    // Only Google OAuth users can legitimately become masters via callback.
     const isSmsUser = user.email?.endsWith('@bookit.app') ?? false;
     const assignedRole = (!isSmsUser && role === 'master') ? 'master' : 'client';
 
-    // 1. Sync base profile — role explicitly set from URL param (user's choice in toggle)
+    // 1. Sync base profile
     await admin.from('profiles').upsert(
       { id: user.id, role: assignedRole, full_name: displayName, email: user.email },
       { onConflict: 'id' }
     );
 
-    // 2. Guarantee the matching sub-profile exists
     if (assignedRole === 'master') {
       const { data: existingMaster } = await admin
         .from('master_profiles').select('id').eq('id', user.id).maybeSingle();
       const isNewMaster = !existingMaster;
 
-      const bytes = crypto.getRandomValues(new Uint8Array(4));
-      const suffix = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').slice(0, 6);
+      const suffix = generateSecureToken(6).toLowerCase();
       const baseName = (user.user_metadata?.name as string | undefined)
         ?.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 20)
         ?? '';
       const slug = baseName ? `${baseName}-${suffix}` : `master-${suffix}`;
 
-      // referral_code ЗАВЖДИ в payload: PostgreSQL перевіряє NOT NULL до ON CONFLICT DO NOTHING.
-      // Якщо рядок вже існує — existingMaster != null, тому читаємо його referral_code.
-      // Якщо рядок новий — генеруємо код тут.
       let referralCode: string;
       if (existingMaster) {
         const { data: mp } = await admin
           .from('master_profiles').select('referral_code').eq('id', user.id).single();
-        referralCode = mp?.referral_code ?? crypto.randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
+        referralCode = mp?.referral_code ?? generateSecureToken(6);
       } else {
-        referralCode = crypto.randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
+        referralCode = generateSecureToken(6);
       }
 
       const refCodeFromCookie = cookieStore.get('bookit_ref')?.value || null;
-      let subscriptionTier: 'starter' | 'pro' = 'starter';
-      let subscriptionExpiresAt: string | null = null;
-      let finalReferredBy: string | null = null;
 
-      // 3. Referral Bonus Logic (Atomic)
-      if (isNewMaster && refCodeFromCookie) {
-        const { data: referrer } = await admin
-          .from('master_profiles')
-          .select('id, subscription_expires_at')
-          .eq('referral_code', refCodeFromCookie)
-          .single();
-
-        if (referrer && referrer.id !== user.id) {
-          finalReferredBy = refCodeFromCookie;
-          subscriptionTier = 'pro';
-          
-          const newBonus = new Date();
-          newBonus.setDate(newBonus.getDate() + 30);
-          subscriptionExpiresAt = newBonus.toISOString();
-
-          const baseDate = referrer.subscription_expires_at ? new Date(referrer.subscription_expires_at) : new Date();
-          const refStart = baseDate > new Date() ? baseDate : new Date();
-          refStart.setDate(refStart.getDate() + 30);
-
-          await admin
-            .from('master_profiles')
-            .update({ subscription_expires_at: refStart.toISOString() })
-            .eq('id', referrer.id);
-          
-          cookieStore.set('bookit_ref', '', { path: '/', maxAge: 0 });
-        }
-      }
+      const bonus = (isNewMaster && refCodeFromCookie)
+        ? await applyReferralRewards(user.id, refCodeFromCookie)
+        : { subscriptionTier: 'starter' as const, subscriptionExpiresAt: null, finalReferredBy: null };
 
       await admin.from('master_profiles').upsert(
-        { 
-          id: user.id, 
-          slug, 
+        {
+          id: user.id,
+          slug,
           referral_code: referralCode,
-          referred_by: finalReferredBy,
-          subscription_tier: subscriptionTier,
-          subscription_expires_at: subscriptionExpiresAt
+          referred_by: bonus.finalReferredBy,
+          subscription_tier: bonus.subscriptionTier,
+          subscription_expires_at: bonus.subscriptionExpiresAt,
         },
-        { onConflict: 'id', ignoreDuplicates: true }
+        { onConflict: 'id', ignoreDuplicates: true },
       );
 
-      // 3. Link a pending booking to the newly authenticated user
-      // Verify email ownership to prevent IDOR via crafted ?bid= URL param
+      if (bonus.finalReferredBy) {
+        cookieStore.set('bookit_ref', '', { path: '/', maxAge: 0 });
+      }
+
       if (bid && user.email) {
         await admin.from('bookings')
           .update({ client_id: user.id })
@@ -149,35 +132,24 @@ export async function GET(request: NextRequest) {
           .is('client_id', null);
       }
 
-      // Redirect: any master with a paid plan intent → billing; new masters → onboarding; others → dashboard
-      // Cookie may be lost during Google OAuth redirect chain (SameSite=Lax), so also read from URL param as fallback
       const intendedPlan = cookieStore.get('intended_plan')?.value || searchParams.get('plan') || null;
       cookieStore.set('intended_plan', '', { path: '/', maxAge: 0 });
 
       if (intendedPlan === 'pro' || intendedPlan === 'studio') {
         return NextResponse.redirect(new URL(`/dashboard/billing?plan=${intendedPlan}`, origin));
       }
-      // `next` may already point to /dashboard/billing (embedded by handleGoogleLogin as fallback)
       if (isNewMaster && !next.startsWith('/dashboard/billing')) {
         return NextResponse.redirect(new URL('/dashboard/onboarding', origin));
       }
       return NextResponse.redirect(new URL(next, origin));
     } else {
-      await admin.from('client_profiles').upsert(
-        { id: user.id },
-        { onConflict: 'id', ignoreDuplicates: true }
-      );
-
-      // Clients without a confirmed phone → mandatory onboarding.
-      // trg_link_bookings_on_phone will auto-link any guest bookings after setup.
-      const { data: clientProfile, error: profileFetchError } = await admin
-        .from('profiles')
-        .select('phone')
-        .eq('id', user.id)
-        .single();
-      if (profileFetchError) {
-        console.error('[auth/callback] profiles phone fetch error:', profileFetchError.message);
-      }
+      const [, { data: clientProfile }] = await Promise.all([
+        admin.from('client_profiles').upsert(
+          { id: user.id },
+          { onConflict: 'id', ignoreDuplicates: true }
+        ),
+        admin.from('profiles').select('phone').eq('id', user.id).single(),
+      ]);
 
       const isSmsAuth = user.email?.endsWith('@bookit.app') || user.app_metadata?.provider === 'phone';
       const needsOnboarding = !clientProfile?.phone && !isSmsAuth;

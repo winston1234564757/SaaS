@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Loader2, Phone, MessageSquare,
@@ -40,7 +40,20 @@ const ROLES: {
 
 export function PhoneOtpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  const nextParam = searchParams.get('next');
+  
+  // Extract pathname only — guards against /%2F%2F and other encoded open-redirects
+  const getSafeRedirect = (defaultPath: string) => {
+    if (!nextParam) return defaultPath;
+    try {
+      return new URL(nextParam, 'https://x').pathname || defaultPath;
+    } catch {
+      return defaultPath;
+    }
+  };
 
   const [step, setStep] = useState<Step>('role_select');
   const [selectedRole, setSelectedRole] = useState<Role>('client');
@@ -152,7 +165,7 @@ export function PhoneOtpForm() {
     if (selectedRole === 'master') {
       const refCodeFromCookie = Cookies.get('bookit_ref') || null;
       const { error: roleError } = await claimMasterRole(getCleanPhone(), refCodeFromCookie);
-      
+
       if (roleError) {
         setLoading(false);
         setError(roleError);
@@ -160,7 +173,6 @@ export function PhoneOtpForm() {
       }
 
       if (refCodeFromCookie) {
-        console.log('[PhoneOtpForm] Referral code applied via claimMasterRole:', refCodeFromCookie);
         Cookies.remove('bookit_ref');
       }
     }
@@ -170,19 +182,19 @@ export function PhoneOtpForm() {
     router.refresh();
 
     if (selectedRole === 'master') {
-      const match = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);
-      const intendedPlan = match ? match[1] : null;
-      document.cookie = 'intended_plan=; path=/; max-age=0';
+      const intendedPlan = Cookies.get('intended_plan') ?? null;
+      Cookies.remove('intended_plan');
 
       if (intendedPlan === 'pro' || intendedPlan === 'studio') {
         router.push(`/dashboard/billing?plan=${intendedPlan}`);
       } else if (data.isNew) {
-        router.push('/dashboard/onboarding');
+        // nextParam has priority even over initial onboarding if the user specifically wanted another link
+        router.push(getSafeRedirect('/dashboard/onboarding'));
       } else {
-        router.push('/dashboard');
+        router.push(getSafeRedirect('/dashboard'));
       }
     } else {
-      router.push('/my/bookings');
+      router.push(getSafeRedirect('/my/bookings'));
     }
   }
 
@@ -260,14 +272,24 @@ export function PhoneOtpForm() {
     setIsGoogleLoading(true);
     setError('');
 
-    const planMatch = document.cookie.match(/(?:^|; )intended_plan=([^;]*)/);
-    const planValue = planMatch?.[1] ?? '';
+    const planValue = Cookies.get('intended_plan') ?? '';
     const isPaidPlan = planValue === 'pro' || planValue === 'studio';
-    const nextPath = selectedRole === 'master'
+    
+    // Default paths
+    let nextPath = selectedRole === 'master'
       ? isPaidPlan ? `/dashboard/billing?plan=${planValue}` : '/dashboard'
       : '/my/bookings';
+    
+    // Override if next param is provided and safe
+    nextPath = getSafeRedirect(nextPath);
+
     const cbParams = new URLSearchParams({ role: selectedRole, next: nextPath });
     if (isPaidPlan) cbParams.set('plan', planValue);
+
+    // SEC-HIGH-1: set role intent cookie (max 5 min) so callback can verify it wasn't forged via URL
+    document.cookie = selectedRole === 'master'
+      ? 'bookit_reg_role=master; path=/; max-age=300; SameSite=Lax'
+      : 'bookit_reg_role=; path=/; max-age=0';
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({

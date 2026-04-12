@@ -54,6 +54,19 @@ export function buildCancellationMessage(params: {
   return msg;
 }
 
+export function buildReviewMessage(params: {
+  clientName: string;
+  rating: number;
+  comment?: string | null;
+}): string {
+  const { clientName, rating, comment } = params;
+  const stars = '⭐'.repeat(rating);
+  let msg = `${stars} <b>Новий відгук</b>\n\n`;
+  msg += `👤 <b>${escHtml(clientName)}</b> — ${rating}/5\n`;
+  if (comment) msg += `💬 ${escHtml(comment)}\n`;
+  return msg;
+}
+
 export const UA_MONTHS = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
 
 export function buildBookingMessage(params: {

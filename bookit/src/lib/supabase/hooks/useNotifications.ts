@@ -1,70 +1,75 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
-export interface BookingNotification {
+export interface MasterNotification {
   id: string;
-  clientName: string;
-  date: string;
-  startTime: string;
-  status: string;
-  services: string;
+  type: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  bookingId: string | null;
   createdAt: string;
 }
-
-const LS_KEY = 'bookit_notifications_last_seen';
 
 // Realtime invalidation is handled by the consolidated channel
 // in useRealtimeNotifications — no separate channel needed here.
 export function useNotifications() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
+  const qc = useQueryClient();
 
-  const [lastSeenAt, setLastSeenAt] = useState<string>(() => {
-    if (typeof window === 'undefined') return new Date(0).toISOString();
-    return localStorage.getItem(LS_KEY) ?? new Date(0).toISOString();
-  });
-
-  const { data: notifications = [] } = useQuery<BookingNotification[]>({
+  const { data: notifications = [] } = useQuery<MasterNotification[]>({
     queryKey: ['notifications', masterId],
     enabled: !!masterId,
     queryFn: async () => {
       const supabase = createClient();
       const { data, error } = await supabase
-        .from('bookings')
-        .select('id, client_name, date, start_time, status, created_at, booking_services(service_name)')
-        .eq('master_id', masterId!)
+        .from('notifications')
+        .select('id, type, title, body, is_read, related_booking_id, created_at')
+        .eq('recipient_id', masterId!)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (error) throw error;
 
-      return (data ?? []).map((b: any) => ({
-        id: b.id as string,
-        clientName: b.client_name as string,
-        date: b.date as string,
-        startTime: (b.start_time as string | null)?.slice(0, 5) ?? '',
-        status: b.status as string,
-        services: ((b.booking_services ?? []) as any[]).map((s: any) => s.service_name).join(', ') || 'Послуга',
-        createdAt: b.created_at as string,
+      type Row = {
+        id: string;
+        type: string;
+        title: string;
+        body: string;
+        is_read: boolean;
+        related_booking_id: string | null;
+        created_at: string;
+      };
+
+      return (data ?? []).map((n: Row) => ({
+        id: n.id,
+        type: n.type,
+        title: n.title,
+        body: n.body,
+        isRead: n.is_read,
+        bookingId: n.related_booking_id,
+        createdAt: n.created_at,
       }));
     },
     staleTime: 30_000,
   });
 
-  const unreadCount = notifications.filter(n => n.createdAt > lastSeenAt).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  function markAllRead() {
-    const now = new Date().toISOString();
-    setLastSeenAt(now);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(LS_KEY, now);
-    }
+  async function markAllRead() {
+    if (!masterId || unreadCount === 0) return;
+    const supabase = createClient();
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('recipient_id', masterId)
+      .eq('is_read', false);
+    qc.invalidateQueries({ queryKey: ['notifications', masterId] });
   }
 
   return { notifications, unreadCount, markAllRead };
 }
-
