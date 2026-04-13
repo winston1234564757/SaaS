@@ -11,6 +11,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBookingScheduleData } from './wizard/useBookingScheduleData';
+import { useBookingPricing } from './wizard/useBookingPricing';
 import {
   X, ChevronLeft, ChevronRight, Check, Clock, User, Phone,
   MessageSquare, ShoppingBag, Plus, Minus,
@@ -23,7 +24,6 @@ import {
   buildSlotRenderItems,
   toMins as slotToMins, fromMins as slotFromMins,
 } from '@/lib/utils/smartSlots';
-import { applyDynamicPricing } from '@/lib/utils/dynamicPricing';
 import { notifyMasterOnBooking, ensureClientProfile } from '@/app/[slug]/actions';
 import { PostBookingAuth } from '@/components/public/PostBookingAuth';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
@@ -139,12 +139,17 @@ export function BookingWizard({
 
   const isAtLimit = mode === 'client' && subscriptionTier === 'starter' && bookingsThisMonth >= 30;
 
-  // ── Derived totals ────────────────────────────────────────────────────────────
-  const totalDuration = useMemo(
-    () => selectedServices.reduce((s, sv) => s + sv.duration, 0),
-    [selectedServices]
-  );
-  const effectiveDuration = durationOverride ?? totalDuration;
+  // ── Pricing ───────────────────────────────────────────────────────────────────
+  const {
+    totalDuration, effectiveDuration,
+    totalServicesPrice, dynamicPricing, effectiveServicesPrice,
+    totalProductsPrice, grandTotal, originalTotal, finalTotal,
+    loyaltyDiscountAmount, masterDiscountAmount, flashDealAmount,
+  } = useBookingPricing({
+    selectedServices, cart, durationOverride,
+    selectedDate, selectedTime, pricingRules,
+    useDynamicPrice, loyaltyDiscount, flashDeal, discountPercent,
+  });
 
   // ── Schedule data ─────────────────────────────────────────────────────────────
   const {
@@ -156,51 +161,6 @@ export function BookingWizard({
     clientHistoryTimes, workingHours,
     setSelectedDate,
   });
-
-  const totalServicesPrice = useMemo(
-    () => selectedServices.reduce((s, sv) => s + sv.price, 0),
-    [selectedServices]
-  );
-  const dynamicPricing = useMemo(() => {
-    if (!selectedDate || !selectedTime || !pricingRules) return null;
-    return applyDynamicPricing(totalServicesPrice, pricingRules as Record<string, unknown>, selectedDate, selectedTime);
-  }, [totalServicesPrice, pricingRules, selectedDate, selectedTime]);
-
-  // Якщо майстер вимкнув toggle — використовуємо базову ціну
-  const effectiveServicesPrice = (
-    dynamicPricing && dynamicPricing.adjustedPrice !== totalServicesPrice && useDynamicPrice
-  ) ? dynamicPricing.adjustedPrice : totalServicesPrice;
-  const totalProductsPrice    = useMemo(() => cart.reduce((s, ci) => s + ci.product.price * ci.quantity, 0), [cart]);
-  const grandTotal            = effectiveServicesPrice + totalProductsPrice;
-  const rawLoyaltyDiscount    = loyaltyDiscount ? Math.round(grandTotal * loyaltyDiscount.percent / 100) : 0;
-  const rawFlashDiscount      = flashDeal ? Math.round(grandTotal * flashDeal.discountPct / 100) : 0;
-  const rawMasterDiscount     = Math.round(grandTotal * discountPercent / 100);
-
-  // ── 7.6. Comprehensive Discount Resolution & Safety Cap (40%) ──────────────
-  const originalTotal = totalServicesPrice + totalProductsPrice;
-  const maxAllowedDiscount = Math.floor(originalTotal * 0.40);
-  
-  // Total discount requested relative to the Original Total price
-  const requestedDynamicDiscount = dynamicPricing ? totalServicesPrice - dynamicPricing.adjustedPrice : 0;
-  const totalRequestedDiscountSum = (useDynamicPrice ? requestedDynamicDiscount : 0) + rawLoyaltyDiscount + rawFlashDiscount + rawMasterDiscount;
-
-  // If we are giving a net discount (not a net markup), we must cap it.
-  const effectiveTotalDiscount = totalRequestedDiscountSum > 0 
-    ? Math.min(maxAllowedDiscount, totalRequestedDiscountSum) 
-    : totalRequestedDiscountSum; // don't cap markups (peak hours)
-
-  const finalTotal = Math.max(0, originalTotal - effectiveTotalDiscount);
-
-  // Breakdown for summary display (approximate proportional split for visual aid)
-  const loyaltyDiscountAmount = totalRequestedDiscountSum > 0 
-    ? Math.round(effectiveTotalDiscount * (rawLoyaltyDiscount / totalRequestedDiscountSum)) 
-    : 0;
-  const masterDiscountAmount = totalRequestedDiscountSum > 0 
-    ? Math.round(effectiveTotalDiscount * (rawMasterDiscount / totalRequestedDiscountSum)) 
-    : 0;
-  const flashDealAmount = totalRequestedDiscountSum > 0 
-    ? Math.round(effectiveTotalDiscount * (rawFlashDiscount / totalRequestedDiscountSum)) 
-    : 0;
 
   // ── Reset + fetch client history on open ───────────────────────────────────
   useEffect(() => {
