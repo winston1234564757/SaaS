@@ -1,0 +1,47 @@
+// src/components/shared/wizard/types.ts
+import type { WorkingHoursConfig } from '@/types/database';
+
+export interface WizardService {
+  id: string;
+  name: string;
+  price: number;
+  duration: number;
+  popular: boolean;
+  emoji: string;
+  category: string;
+  description?: string | null;
+}
+
+export interface WizardProduct {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+  emoji: string;
+  inStock?: boolean;
+  stock?: number | null;
+}
+
+export interface BookingWizardProps {
+  isOpen: boolean;
+  onClose: () => void;
+  masterId: string;
+  masterName?: string;
+  workingHours?: WorkingHoursConfig | null;
+  services: WizardService[];
+  products?: WizardProduct[];
+  initialServices?: WizardService[];
+  mode: 'client' | 'master';
+  bookingsThisMonth?: number;
+  subscriptionTier?: string;
+  pricingRules?: Record<string, unknown>;
+  onSuccess?: () => void;
+  flashDeal?: { id: string; discountPct: number; serviceName: string } | null;
+}
+
+export type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';
+
+export interface CartItem {
+  product: WizardProduct;
+  quantity: number;
+}

@@ -33,93 +33,11 @@ import { useToast } from '@/lib/toast/context';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { bookingClientSchema, type BookingClientData } from '@/lib/validations/booking';
-import type { WorkingHoursConfig } from '@/types/database';
+import type { WizardService, WizardProduct, BookingWizardProps, WizardStep, CartItem } from './wizard/types';
+import { DOW, DAY_S, MONTH_S, toISO, getDays, fmt, ALL_STEPS, PROGRESS, STEP_TITLE, slide } from './wizard/helpers';
 
-// ── Public types ──────────────────────────────────────────────────────────────
-
-export interface WizardService {
-  id: string;
-  name: string;
-  price: number;
-  duration: number;
-  popular: boolean;
-  emoji: string;
-  category: string;
-  description?: string | null;
-}
-
-export interface WizardProduct {
-  id: string;
-  name: string;
-  price: number;
-  description: string | null;
-  emoji: string;
-  inStock?: boolean;
-  stock?: number | null;
-}
-
-export interface BookingWizardProps {
-  isOpen: boolean;
-  onClose: () => void;
-  masterId: string;
-  masterName?: string;
-  workingHours?: WorkingHoursConfig | null;
-  services: WizardService[];
-  products?: WizardProduct[];
-  initialServices?: WizardService[];
-  mode: 'client' | 'master';
-  bookingsThisMonth?: number;
-  subscriptionTier?: string;
-  pricingRules?: Record<string, unknown>;
-  onSuccess?: () => void;
-  flashDeal?: { id: string; discountPct: number; serviceName: string } | null;
-}
-
-// ── Internal ──────────────────────────────────────────────────────────────────
-
-type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';
-
-interface CartItem { product: WizardProduct; quantity: number; }
-
-
-
-// ── Constants & helpers ───────────────────────────────────────────────────────
-
-const DOW     = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-const DAY_S   = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота'];
-const MONTH_S = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
-
-function toISO(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-function getDays(n = 30): Date[] {
-  const t = new Date(); t.setHours(0, 0, 0, 0); // normalize to local midnight
-  return Array.from({ length: n }, (_, i) => {
-    const d = new Date(t); d.setDate(t.getDate() + i); return d;
-  });
-}
-function fmt(n: number) { return n.toLocaleString('uk-UA') + ' ₴'; }
-
-// ── Step flow ─────────────────────────────────────────────────────────────────
-
-const ALL_STEPS: WizardStep[] = ['services', 'datetime', 'products', 'details', 'success'];
-const PROGRESS: WizardStep[]  = ['services', 'datetime', 'products', 'details'];
-
-const STEP_TITLE: Record<WizardStep, string | ((m: string) => string)> = {
-  services: 'Обери послуги',
-  datetime: 'Дата та час',
-  products: 'Додати товари',
-  details:  (m) => m === 'master' ? 'Деталі запису' : 'Твої контакти',
-  success:  '',
-};
-
-// ── Slide animation variants ──────────────────────────────────────────────────
-
-const slide = {
-  enter:  (d: number) => ({ x: d > 0 ? 52 : -52, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit:   (d: number) => ({ x: d > 0 ? -52 : 52, opacity: 0 }),
-};
+// ── Re-exports (backward compat for consumers that import from BookingWizard) ─
+export type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
