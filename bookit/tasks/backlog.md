@@ -5,22 +5,7 @@
 
 ## 🔵 ТЕХНІЧНИЙ БОРГ
 
-### DEBT-04 · OnboardingWizard — 811 рядків
-**Де:** `src/components/master/onboarding/OnboardingWizard.tsx`
-**Проблема:** 6 кроків і весь state + рендер в одному файлі — складно читати і тестувати.
-**Fix:** Екстрактувати shared types + per-step компоненти.
-
-**Деталі (план: `tasks/debt-03-04-continuation.md`, Tasks 11–15):**
-
-| # | Задача | Файли | Коміт |
-|---|--------|-------|-------|
-| 11 | Shared types + ConfettiParticles | `steps/types.ts`, `steps/ConfettiParticles.tsx` | — |
-| 12 | StepBasic | `steps/StepBasic.tsx` | — |
-| 13 | StepSchedulePrompt + StepScheduleForm | `steps/StepSchedulePrompt.tsx`, `steps/StepScheduleForm.tsx` | — |
-| 14 | StepServicesPrompt + StepServicesForm | `steps/StepServicesPrompt.tsx`, `steps/StepServicesForm.tsx` | — |
-| 15 | StepSuccess + slim OnboardingWizard | `steps/StepSuccess.tsx` | — |
-
-**Верифікація:** `wc -l OnboardingWizard.tsx` → ≤ 200 рядків. `tsc --noEmit` → 0 errors.
+*(немає активних задач)*
 
 ---
 
@@ -29,6 +14,7 @@
 | Задача | Міграція | Коміт |
 |--------|----------|-------|
 | DEBT-03: BookingWizard 1543 рядки → 8 модулів wizard/ (hooks + step components) | — | ✅ |
+| DEBT-04: OnboardingWizard 811 рядків → 6 step компонентів steps/ (283 рядки) | — | ✅ |
 | SEC-CRIT-1: Open redirect via //attacker.com | — | ✅ |
 | SEC-CRIT-2: Calendar spam (is_published check) | — | ✅ |
 | SEC-HIGH-1: Role escalation via ?role= URL param | — | ✅ |
