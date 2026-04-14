@@ -1,9 +1,10 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useMasterContext } from '@/lib/supabase/context';
+import { useToast } from '@/lib/toast/context';
 import { markTourSeen } from '@/app/(master)/dashboard/actions';
-
-const LS_KEY = 'dashboardTourComplete';
 
 interface TourContextValue {
   tourStep: number;
@@ -21,47 +22,55 @@ export function useTourStep() {
   return useContext(TourContext);
 }
 
-export function DashboardTourProvider({
-  children,
-  initialHasSeenTour,
-}: {
-  children: React.ReactNode;
-  initialHasSeenTour: boolean;
-}) {
-  // -1 = not yet initialized (prevents flash on SSR)
+export function DashboardTourProvider({ children }: { children: React.ReactNode }) {
+  const { masterProfile, isLoading, refresh } = useMasterContext();
+  const { showToast } = useToast();
   const [tourStep, setTourStep] = useState(-1);
+  // Prevents re-evaluation after profile refreshes post-completion
+  const [evaluated, setEvaluated] = useState(false);
 
   useEffect(() => {
-    // Якщо DB каже що тур вже бачили — пропускаємо на всіх пристроях
-    if (initialHasSeenTour) return;
+    // Wait for profile load; only evaluate once per mount
+    if (isLoading || evaluated) return;
+    setEvaluated(true);
 
-    const val = localStorage.getItem(LS_KEY);
-    if (val === null) {
-      localStorage.setItem(LS_KEY, 'in-progress');
-      const t = setTimeout(() => setTourStep(0), 1000);
-      return () => clearTimeout(t);
-    }
-    // 'in-progress' або 'true' — тур вже стартував або завершений
-  }, [initialHasSeenTour]);
+    const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+    const hasSeen = seenTours?.dashboard ?? masterProfile?.has_seen_tour ?? false;
+    if (hasSeen) return;
+
+    const t = setTimeout(() => setTourStep(0), 1000);
+    return () => clearTimeout(t);
+  }, [isLoading, masterProfile, evaluated]);
+
+  const { mutate: completeTour } = useMutation({
+    mutationFn: () => markTourSeen('dashboard'),
+    onMutate: () => {
+      // Optimistic: hide tour immediately before server confirms
+      setTourStep(-1);
+    },
+    onError: () => {
+      showToast({
+        type: 'error',
+        title: 'Помилка',
+        message: 'Не вдалося зберегти прогрес туру',
+      });
+    },
+    onSuccess: () => {
+      // Re-sync masterProfile so seen_tours reflects new state
+      refresh();
+    },
+  });
 
   function handleNextStep() {
     if (tourStep < 2) {
       setTourStep(prev => prev + 1);
     } else {
-      finishTour();
+      completeTour();
     }
   }
 
   function closeTour() {
-    finishTour();
-  }
-
-  function finishTour() {
-    setTourStep(-1);
-    localStorage.setItem(LS_KEY, 'true');
-    markTourSeen().catch(err =>
-      console.error('[Tour] Failed to persist tour completion to DB:', err)
-    );
+    completeTour();
   }
 
   return (
