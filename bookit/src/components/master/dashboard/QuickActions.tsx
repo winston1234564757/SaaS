@@ -36,6 +36,7 @@ export function QuickActions() {
               delay={400}
             >
               <motion.button
+                type="button"
                 whileTap={{ scale: 0.94 }}
                 onClick={() => setFlashOpen(true)}
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full"
@@ -55,6 +56,7 @@ export function QuickActions() {
               delay={400}
             >
               <motion.button
+                type="button"
                 whileTap={{ scale: 0.94 }}
                 onClick={() => setPricingOpen(true)}
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full"
