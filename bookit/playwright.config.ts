@@ -22,6 +22,8 @@ const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
 export default defineConfig({
   testDir: './e2e/tests',
   globalSetup: './e2e/global.setup.ts',
+  globalTimeout: 15 * 60 * 1000,
+  expect: { timeout: 10_000 },
 
   // Паралельне виконання безпечне — кожен spec domain має власний ізольований акаунт.
   fullyParallel: true,
@@ -83,7 +85,7 @@ export default defineConfig({
     // Local: reuseExistingServer=true so devs can keep a server running.
     command: 'npm run start',
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120_000,
     env: { NODE_ENV: 'test' },
   },

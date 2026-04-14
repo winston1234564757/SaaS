@@ -129,17 +129,18 @@ jobs:
 
       # ── 12. Run Next.js production server in background ──────────────────────
       - name: Start Next.js production server
-        run: npm run start &
+        run: npm run start > next-server.log 2>&1 &
         env:
           PORT: 3000
 
       # ── 13. Wait for server to be ready ──────────────────────────────────────
       - name: Wait for app to be ready
-        run: npx wait-on http://localhost:3000 --timeout 60000
+        run: npx wait-on http://127.0.0.1:3000 --timeout 120000
 
       # ── 14. Run Playwright E2E tests ─────────────────────────────────────────
       - name: Run Playwright tests
         run: npx playwright test --project=chromium
+        timeout-minutes: 15
         env:
           CI: true
           # Ensures playwright.config.ts uses CI-tuned retries/workers
@@ -160,6 +161,14 @@ jobs:
         with:
           name: test-results-${{ github.run_id }}
           path: bookit/test-results/
+          retention-days: 14
+
+      - name: Upload Next.js server logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-server-logs-${{ github.run_id }}
+          path: bookit/next-server.log
           retention-days: 14
 
       # ── 16. Stop Supabase (cleanup) ───────────────────────────────────────────
