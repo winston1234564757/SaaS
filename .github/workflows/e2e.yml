@@ -17,6 +17,8 @@ jobs:
     name: Playwright E2E (Chromium · Ubuntu)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
 
     defaults:
       run:
@@ -51,6 +53,20 @@ jobs:
       - name: Start Supabase local stack
         run: supabase start --ignore-health-check
         timeout-minutes: 5
+
+      - name: Wait for Supabase health
+        run: |
+          for i in {1..30}; do
+            if supabase status | grep -q 'HEALTHY'; then
+              echo "Supabase is healthy!"
+              exit 0
+            fi
+            echo "Waiting for Supabase components to be healthy... ($i/30)"
+            sleep 5
+          done
+          echo "Supabase health check timed out"
+          supabase status
+          exit 1
 
       # ── 5. Export Supabase local credentials into the env ────────────────────
       # `supabase status --output env` prints KEY=VALUE pairs we can pipe to $GITHUB_ENV.
@@ -118,7 +134,16 @@ jobs:
       - name: Seed E2E database
         run: npx tsx scripts/seed-e2e-data.ts
 
-      # ── 11. Build Next.js production bundle ──────────────────────────────────
+      # ── 11. Cache Next.js build ──────────────────────────────────────────────
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: bookit/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('bookit/package-lock.json') }}-${{ hashFiles('bookit/src/**', 'bookit/app/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('bookit/package-lock.json') }}-
+
+      # ── 12. Build Next.js production bundle ──────────────────────────────────
       # We NEVER use `next dev --turbo` in CI to avoid the bmi2 instruction
       # crash (qfilter dependency). The production build is stable everywhere.
       - name: Build Next.js (production)
