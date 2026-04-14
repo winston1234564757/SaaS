@@ -1,6 +1,6 @@
 -- Migration 029: Missing database indexes
 -- Adds indexes identified during architecture audit that were absent
--- despite being on hot query paths.
+-- despite beiаааng on hot query paths.
 -- Note: sms_otps and sms_logs are guarded with existence checks so this
 -- migration is safe to run on fresh CI environments (tables may not exist yet).
 
