@@ -3,7 +3,11 @@
 -- Note: must drop the TEXT default first, cast the type, then restore the ENUM default.
 -- Doing it in one statement fails with SQLSTATE 42804 on fresh Supabase stacks.
 
-CREATE TYPE IF NOT EXISTS flash_deal_status AS ENUM ('active', 'claimed', 'expired');
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'flash_deal_status') THEN
+        CREATE TYPE flash_deal_status AS ENUM ('active', 'claimed', 'expired');
+    END IF;
+END $$;
 
 -- Step 1: Drop the text default so Postgres can freely change the column type
 ALTER TABLE flash_deals ALTER COLUMN status DROP DEFAULT;
