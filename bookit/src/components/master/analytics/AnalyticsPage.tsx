@@ -26,7 +26,7 @@ import { pluralize } from '@/lib/utils/dates';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { ClientRow } from '@/components/master/clients/ClientsPage';
 
-// ── Prfffops ─────────────────────────────────────────────────────────────────────
+// ── Props ─────────────────────────────────────────────────────────────────────
 
 interface AnalyticsPageProps { isPro: boolean }
 
