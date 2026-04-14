@@ -26,24 +26,24 @@ import { pluralize } from '@/lib/utils/dates';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { ClientRow } from '@/components/master/clients/ClientsPage';
 
-// ── Props ─────────────────────────────────────────────────────────────────────
+// ── Prfffops ─────────────────────────────────────────────────────────────────────
 
 interface AnalyticsPageProps { isPro: boolean }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const PRESETS: { key: Preset; label: string }[] = [
-  { key: 'day',   label: 'День'     },
-  { key: 'week',  label: 'Тиждень'  },
-  { key: 'month', label: 'Місяць'   },
-  { key: 'year',  label: 'Рік'      },
-  { key: 'all',   label: 'Весь час' },
+  { key: 'day', label: 'День' },
+  { key: 'week', label: 'Тиждень' },
+  { key: 'month', label: 'Місяць' },
+  { key: 'year', label: 'Рік' },
+  { key: 'all', label: 'Весь час' },
 ];
 
-const UA_MONTHS   = ['Січень','Лютий','Березень','Квітень','Травень','Червень',
-                     'Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
-const UA_DOW      = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
-const UA_DOW_FULL = ['Неділя','Понеділок','Вівторок','Середа','Четвер','П\'ятниця','Субота'];
+const UA_MONTHS = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+  'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
+const UA_DOW = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+const UA_DOW_FULL = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота'];
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const;
 
@@ -69,11 +69,10 @@ function DateRangeBar({
       <div className="bg-[#F5E8E3]/60 p-1.5 rounded-2xl flex gap-0.5 overflow-x-auto scrollbar-hide">
         {PRESETS.map(p => (
           <button key={p.key} onClick={() => setPreset(p.key)}
-            className={`flex-1 flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${
-              preset === p.key
+            className={`flex-1 flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${preset === p.key
                 ? 'bg-white shadow-[0_2px_10px_rgb(0,0,0,0.08)] text-[#2C1A14] font-semibold'
                 : 'text-[#A8928D] hover:text-[#6B5750] hover:bg-white/30'
-            }`}>
+              }`}>
             {p.label}
           </button>
         ))}
@@ -149,7 +148,7 @@ function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
 // ── DowChart ──────────────────────────────────────────────────────────────────
 
 function DowChart({ data, bookings, bestIdx }: { data: number[]; bookings: number[]; bestIdx: number }) {
-  const max   = Math.max(...data, 1);
+  const max = Math.max(...data, 1);
   const total = data.reduce((s, v) => s + v, 0);
   const [activeBar, setActiveBar] = useState<number | null>(null);
 
@@ -234,22 +233,22 @@ function ClientSheetById({ clientId, masterId, clientName, onClose }: {
       sb.from('client_master_relations').select('id, is_vip')
         .eq('master_id', masterId).eq('client_id', clientId).maybeSingle(),
     ]).then(([bRes, rRes]) => {
-      const bs  = (bRes.data ?? []) as any[];
+      const bs = (bRes.data ?? []) as any[];
       const rel = rRes.data as any;
       const nonCancelled = bs.filter(b => b.status !== 'cancelled');
-      const completed    = bs.filter(b => b.status === 'completed');
+      const completed = bs.filter(b => b.status === 'completed');
       const spent = completed.reduce((s: number, b: any) => s + Number(b.total_price), 0);
       setRow({
-        id:            bs[0]?.client_phone ?? clientId,
-        client_id:     clientId,
-        client_name:   bs[0]?.client_name ?? clientName,
-        client_phone:  bs[0]?.client_phone ?? '',
-        total_visits:  nonCancelled.length,
-        total_spent:   spent,
+        id: bs[0]?.client_phone ?? clientId,
+        client_id: clientId,
+        client_name: bs[0]?.client_name ?? clientName,
+        client_phone: bs[0]?.client_phone ?? '',
+        total_visits: nonCancelled.length,
+        total_spent: spent,
         average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
         last_visit_at: bs[0]?.date ?? null,
-        is_vip:        rel?.is_vip ?? false,
-        relation_id:   rel?.id ?? null,
+        is_vip: rel?.is_vip ?? false,
+        relation_id: rel?.id ?? null,
       });
     });
   }, [clientId, masterId]);
@@ -288,10 +287,10 @@ function ProUpgradeCard() {
       <div className="flex flex-col gap-3 mb-6 relative">
         {[
           { icon: TrendingUp, label: 'Тренд виручки за 6 місяців + прогноз' },
-          { icon: Users,      label: 'Нові vs постійні клієнти' },
-          { icon: Star,       label: 'Топ клієнти, послуги та товари' },
-          { icon: BarChart2,  label: 'Середній чек і джерела записів' },
-          { icon: Download,   label: 'CSV-експорт усіх транзакцій' },
+          { icon: Users, label: 'Нові vs постійні клієнти' },
+          { icon: Star, label: 'Топ клієнти, послуги та товари' },
+          { icon: BarChart2, label: 'Середній чек і джерела записів' },
+          { icon: Download, label: 'CSV-експорт усіх транзакцій' },
         ].map(f => (
           <div key={f.label} className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-xl bg-[#789A99]/10 flex items-center justify-center flex-shrink-0">
@@ -391,7 +390,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     onComplete: () => markTourSeen('analytics').then(() => undefined),
   });
   const range = useDateRange();
-  const [exporting, setExporting]   = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [selectedClient, setSelectedClient] = useState<TopClient | null>(null);
 
   // Starter: тільки поточний місяць безкоштовний
@@ -404,26 +403,26 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     range.offset,
   );
 
-  const summary     = data?.summary     ?? { bookings: 0, revenue: 0, activeClients: 0, newClients: null };
-  const monthStats  = data?.monthStats  ?? [];
+  const summary = data?.summary ?? { bookings: 0, revenue: 0, activeClients: 0, newClients: null };
+  const monthStats = data?.monthStats ?? [];
   const topServices = data?.topServices ?? [];
   const topProducts = data?.topProducts ?? [];
-  const retention   = data?.retention   ?? null;
-  const bento       = data?.bento       ?? null;
+  const retention = data?.retention ?? null;
+  const bento = data?.bento ?? null;
 
-  const maxSvcRev  = Math.max(...topServices.map(s => s.revenue), 1);
+  const maxSvcRev = Math.max(...topServices.map(s => s.revenue), 1);
   const maxProdRev = Math.max(...topProducts.map(p => p.revenue), 1);
 
   const forecast = isPro && monthStats.length >= 2
     ? linearRegression(monthStats.map(m => m.revenue))
     : null;
-  const lastMonthRev  = monthStats[monthStats.length - 1]?.revenue ?? 0;
+  const lastMonthRev = monthStats[monthStats.length - 1]?.revenue ?? 0;
   const forecastDelta = forecast ? forecast.forecast - lastMonthRev : 0;
-  const forecastPct   = lastMonthRev > 0 ? Math.round((forecastDelta / lastMonthRev) * 100) : null;
-  const nextMonth     = (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return UA_MONTHS[d.getMonth()]; })();
+  const forecastPct = lastMonthRev > 0 ? Math.round((forecastDelta / lastMonthRev) * 100) : null;
+  const nextMonth = (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return UA_MONTHS[d.getMonth()]; })();
 
   const retTotal = retention ? retention.newClients + retention.returningClients : 0;
-  const retRate  = retTotal > 0 ? Math.round((retention!.returningClients / retTotal) * 100) : 0;
+  const retRate = retTotal > 0 ? Math.round((retention!.returningClients / retTotal) * 100) : 0;
 
   async function handleExport() {
     if (!masterProfile?.id) return;
@@ -482,7 +481,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       )}
 
       {/* ── Summary ── */}
-      <motion.div 
+      <motion.div
         data-testid={isLoading ? 'stats-loading' : 'stats-ready'}
         className="bento-card p-5"
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}>
@@ -506,10 +505,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {[
-              { icon: BarChart2,  label: 'Записів',   value: isLoading ? null : summary.bookings,              color: '#789A99' },
-              { icon: TrendingUp, label: 'Виручка',   value: isLoading ? null : formatPrice(summary.revenue),  color: '#5C9E7A' },
-              { icon: Users,      label: 'Клієнтів',  value: isLoading ? null : summary.activeClients,         color: '#D4935A' },
-              { icon: Star,       label: 'Нових',     value: isLoading ? null : (summary.newClients !== null ? summary.newClients : '—'), color: '#789A99' },
+              { icon: BarChart2, label: 'Записів', value: isLoading ? null : summary.bookings, color: '#789A99' },
+              { icon: TrendingUp, label: 'Виручка', value: isLoading ? null : formatPrice(summary.revenue), color: '#5C9E7A' },
+              { icon: Users, label: 'Клієнтів', value: isLoading ? null : summary.activeClients, color: '#D4935A' },
+              { icon: Star, label: 'Нових', value: isLoading ? null : (summary.newClients !== null ? summary.newClients : '—'), color: '#789A99' },
             ].map(s => (
               <div key={s.label} className="flex flex-col gap-2.5 p-3.5 rounded-3xl bg-white/50 border border-white/60">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
@@ -609,7 +608,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               <div className="flex flex-col gap-3">
                 <Skeleton h="h-3" /><Skeleton h="h-3" w="w-24" />
                 <div className="grid grid-cols-3 gap-2 mt-2">
-                  {[0,1,2].map(i => <Skeleton key={i} h="h-16" rounded="rounded-2xl" />)}
+                  {[0, 1, 2].map(i => <Skeleton key={i} h="h-16" rounded="rounded-2xl" />)}
                 </div>
               </div>
             ) : !retention || retTotal === 0 ? (
@@ -628,9 +627,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-1">
                   {[
-                    { label: 'Нових',       value: retention.newClients,       color: '#D4935A' },
-                    { label: 'Постійних',   value: retention.returningClients, color: '#789A99' },
-                    { label: 'Повторність', value: `${retRate}%`,              color: '#5C9E7A' },
+                    { label: 'Нових', value: retention.newClients, color: '#D4935A' },
+                    { label: 'Постійних', value: retention.returningClients, color: '#789A99' },
+                    { label: 'Повторність', value: `${retRate}%`, color: '#5C9E7A' },
                   ].map(item => (
                     <div key={item.label} className="flex flex-col items-center p-3 rounded-2xl bg-white/50 border border-white/80">
                       <p className="text-lg font-bold" style={{ color: item.color }}>{item.value}</p>
@@ -665,10 +664,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             <div className="bento-card p-4">
               <SectionHeader title="Розподіл" />
               {isLoading ? <Skeleton h="h-20" rounded="rounded-xl" /> : bento ? (() => {
-                const svcRev  = bento.revenueByCategory.services;
+                const svcRev = bento.revenueByCategory.services;
                 const prodRev = bento.revenueByCategory.products;
-                const total   = svcRev + prodRev;
-                const svcPct  = total > 0 ? Math.round((svcRev / total) * 100) : 0;
+                const total = svcRev + prodRev;
+                const svcPct = total > 0 ? Math.round((svcRev / total) * 100) : 0;
                 return (
                   <div className="flex flex-col gap-3">
                     <div className="h-2 rounded-full bg-[#F5E8E3] overflow-hidden flex">
@@ -677,8 +676,8 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     </div>
                     <div className="flex flex-col gap-1.5">
                       {[
-                        { dot: '#789A99', label: 'Послуги', pct: svcPct,       rev: svcRev  },
-                        { dot: '#D4935A', label: 'Товари',  pct: 100 - svcPct, rev: prodRev },
+                        { dot: '#789A99', label: 'Послуги', pct: svcPct, rev: svcRev },
+                        { dot: '#D4935A', label: 'Товари', pct: 100 - svcPct, rev: prodRev },
                       ].map(item => (
                         <Tooltip key={item.label}
                           content={<div><p className="text-sm text-[#6B5750] mb-1">{item.label}</p><p className="text-lg font-bold text-[#2C1A14]">{formatPrice(item.rev)}</p></div>}
@@ -723,14 +722,13 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               {isLoading
                 ? <Skeleton h="h-5" w="w-14" />
                 : <p className="text-base font-bold text-[#2C1A14] leading-tight">
-                    {bento && bento.avgCheck.current > 0 ? formatPrice(bento.avgCheck.current) : '—'}
-                  </p>
+                  {bento && bento.avgCheck.current > 0 ? formatPrice(bento.avgCheck.current) : '—'}
+                </p>
               }
               <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider leading-tight">Серед. чек</p>
               {bento?.avgCheck.delta !== null && bento?.avgCheck.delta !== undefined && (
-                <div className={`flex items-center gap-0.5 text-[10px] font-bold ${
-                  bento.avgCheck.delta > 0 ? 'text-[#5C9E7A]' : bento.avgCheck.delta < 0 ? 'text-[#C05B5B]' : 'text-[#A8928D]'
-                }`}>
+                <div className={`flex items-center gap-0.5 text-[10px] font-bold ${bento.avgCheck.delta > 0 ? 'text-[#5C9E7A]' : bento.avgCheck.delta < 0 ? 'text-[#C05B5B]' : 'text-[#A8928D]'
+                  }`}>
                   {bento.avgCheck.delta > 0 ? <TrendingUp size={10} /> : bento.avgCheck.delta < 0 ? <TrendingDown size={10} /> : <Minus size={10} />}
                   {bento.avgCheck.delta > 0 ? '+' : ''}{bento.avgCheck.delta}%
                 </div>
@@ -769,7 +767,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             <SectionHeader title="Найприбутковіші клієнти" />
             {isLoading ? (
               <div className="flex flex-col gap-3">
-                {[0,1,2].map(i => <Skeleton key={i} h="h-12" rounded="rounded-2xl" />)}
+                {[0, 1, 2].map(i => <Skeleton key={i} h="h-12" rounded="rounded-2xl" />)}
               </div>
             ) : bento && bento.topClients.length > 0 ? (
               <div className="flex flex-col gap-1">
@@ -779,9 +777,8 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     disabled={!c.clientId}
                     className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white/60 transition-colors cursor-pointer disabled:cursor-default text-left w-full"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      i === 0 ? 'bg-[#D4935A]/20 text-[#D4935A]' : i === 1 ? 'bg-[#789A99]/15 text-[#789A99]' : 'bg-[#F5E8E3] text-[#A8928D]'
-                    }`}>{i + 1}</div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-[#D4935A]/20 text-[#D4935A]' : i === 1 ? 'bg-[#789A99]/15 text-[#789A99]' : 'bg-[#F5E8E3] text-[#A8928D]'
+                      }`}>{i + 1}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#2C1A14] truncate">{c.clientName}</p>
                       <p className="text-[11px] text-[#A8928D]">{c.visits} відвідувань</p>
@@ -811,16 +808,14 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     <p className="text-xs text-[#A8928D] mb-1">{nextMonth} — очікувана виручка</p>
                     <p className="text-3xl font-bold tracking-tight text-[#2C1A14]">{formatPrice(forecast.forecast)}</p>
                   </div>
-                  <div className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl ${
-                    forecastDelta > 0 ? 'bg-[#5C9E7A]/10' : forecastDelta < 0 ? 'bg-[#C05B5B]/10' : 'bg-[#F5E8E3]'
-                  }`}>
+                  <div className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl ${forecastDelta > 0 ? 'bg-[#5C9E7A]/10' : forecastDelta < 0 ? 'bg-[#C05B5B]/10' : 'bg-[#F5E8E3]'
+                    }`}>
                     {forecastDelta > 0 ? <TrendingUp size={20} className="text-[#5C9E7A]" />
                       : forecastDelta < 0 ? <TrendingDown size={20} className="text-[#C05B5B]" />
-                      : <Minus size={20} className="text-[#A8928D]" />}
+                        : <Minus size={20} className="text-[#A8928D]" />}
                     {forecastPct !== null && (
-                      <span className={`text-xs font-bold ${
-                        forecastDelta > 0 ? 'text-[#5C9E7A]' : forecastDelta < 0 ? 'text-[#C05B5B]' : 'text-[#A8928D]'
-                      }`}>{forecastDelta > 0 ? '+' : ''}{forecastPct}%</span>
+                      <span className={`text-xs font-bold ${forecastDelta > 0 ? 'text-[#5C9E7A]' : forecastDelta < 0 ? 'text-[#C05B5B]' : 'text-[#A8928D]'
+                        }`}>{forecastDelta > 0 ? '+' : ''}{forecastPct}%</span>
                     )}
                   </div>
                 </div>
