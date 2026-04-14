@@ -4,8 +4,19 @@
 -- Без idx_booking_services_booking_id запит useBookings викликає колапс (5 хв Timeout) при переході на "Місяць".
 
 -- З міграції 029
-CREATE INDEX IF NOT EXISTS idx_sms_otps_phone ON sms_otps(phone);
-CREATE INDEX IF NOT EXISTS idx_sms_logs_phone_created ON sms_logs(phone, created_at DESC);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'sms_otps') THEN
+        CREATE INDEX IF NOT EXISTS idx_sms_otps_phone ON sms_otps(phone);
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'sms_logs') THEN
+        CREATE INDEX IF NOT EXISTS idx_sms_logs_phone_created ON sms_logs(phone, created_at DESC);
+    END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_bookings_next_visit ON bookings(next_visit_suggestion) WHERE next_visit_suggestion IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_push_subs_user ON push_subscriptions(user_id);
 
