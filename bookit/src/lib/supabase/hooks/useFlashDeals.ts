@@ -46,14 +46,14 @@ export function useFlashDealsCount() {
     queryKey: ['flash-deals-count', masterId],
     queryFn: async () => {
       const supabase = createClient();
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
-      const { count } = await supabase
+      const now = new Date();
+      const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      const { count, error } = await supabase
         .from('flash_deals')
         .select('id', { count: 'exact', head: true })
         .eq('master_id', masterId!)
         .gte('created_at', monthStart.toISOString());
+      if (error) throw error;
       return count ?? 0;
     },
     enabled: !!masterId,
