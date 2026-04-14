@@ -57,11 +57,12 @@ export interface MasterProfile {
   avatar_emoji: string;
   has_seen_tour: boolean;
   seen_tours: Record<string, boolean>;
-  pricing_rules: PricingRules | null;
-  working_hours: WorkingHoursConfig | null;
-  timezone: string | null;
-  referral_code: string | null;
-  referred_by: string | null;
+  pricing_rules?: PricingRules | null;
+  working_hours?: WorkingHoursConfig | null;
+  timezone?: string | null;
+  referral_code?: string | null;
+  referred_by?: string | null;
+  dynamic_pricing_extra_earned?: number | null;
   created_at: string;
   updated_at: string;
 }
