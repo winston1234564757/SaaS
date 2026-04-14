@@ -1,43 +1,59 @@
-Ану, глянь повний бек-лог
-Можеш видалити вже завершені пробелми, сформувати новий, актуальний, розширений деталізований і доповнений бек-лог задач?
-Можеш із власного аналізу - додати проблеми,баги, або нововведення, у тебе повна свобода, ти тут керуєш
+DIRECTIVE: GLOBAL PLAYWRIGHT E2E & TIME-SERIES TEST SUITE
+ROLE: Principal QA Automation Engineer & Enterprise SDET.
+CONTEXT: We are doing the FINAL PROJECT CHECK for "BookIT" (B2B2C SaaS CRM for independent service providers). We need a global, bulletproof Playwright E2E testing infrastructure.
 
+CRITICAL CHALLENGE: The application contains complex, time-dependent algorithms and data-heavy features. Examples:
 
+"Smart Slots": Recommending booking times to clients based on their historical visit patterns.
 
+Dynamic Pricing: Prices changing automatically "N hours before" a slot.
 
+Loyalty Programs: Discounts applying automatically on the 2nd/3rd visit.
+To test these, you cannot just click through a blank UI. You must simulate historical data mass and manipulate browser/system time.
 
-А ось повний бек-лог:
-Ану ще раз переглянь бек-лок, я трохи додав там.
+DIRECTIVE & ACTION PLAN:
 
-#BUGS
+1. Infrastructure & Global Setup (playwright.config.ts):
 
+Configure Playwright to run in the browser (Chromium, WebKit, Mobile Safari).
 
-6. Фото профілю на /dasboard/settings дуже криво відображається, треба зробити професійну UX логіку тут, бо на мобілці геть горизонтальний скрол зявляється.
+Implement Authentication State Caching (global.setup.ts). Do NOT login via UI in every test. Generate and save storageState (cookies/localStorage) for 3 static test profiles: TestMaster, TestClient, TestStudioAdmin.
 
-7. на /dasboard/settings При зміні наприклад опису, юзера треба листати в самий низ до кнопки зберегти зміни, що на пк, що на мобілці, давай щоб вона флоатом зявлялась пісня внесення змін.
+2. The "Time Machine" & Data Seeder (CRITICAL):
 
-C2C рефералку треба підтягнути лінк не фомується.
+Create a scripts/seed-e2e-data.ts utility that interacts directly with Supabase Admin client.
 
-11. Mobile UX - розділ клієнти, перемикання вигляду (списком чи блоками майже нічого не змінює) Треба перепрацювати і гарно все зробити) 
+This script MUST generate massive historical data for TestMaster:
 
-12.Отут теж пункт 9
-На дашборді в списку запсиів одразу є екшн кнопки: завершити/підтвердити запис) а на сторінці записів немає такого, ну бля...
+Create 50+ past bookings spanning the last 6 months for specific clients to trigger the "Smart Slots" algorithm.
 
-13.Пункт прогноз виручки в аналітиці, треба зробити МАКСИМАЛЬНО ПРОЗОРИМ (логічно, не візуально), і  взагалі переосмислити його концепцію.
+Create future bookings to test schedule conflicts.
 
-14. Меню, тулбар треба щось зробити з кнопкою ЩЕ, на ПК наприклад можна майже всі пункти меню вмістити в сайдбар
-на мобілці хз, якось це краще, знаєш як монобанк зробив ахуєнно?
+Setup loyalty rules and dynamic pricing rules in the DB.
 
-15. Скасування запису зі сторони клієнта не працює.
+In tests requiring time manipulation, utilize Playwright's page.clock API (page.clock.install(), page.clock.setFixedTime()) to trick the frontend into thinking it's exactly 2 hours before a booking to verify Dynamic Pricing triggers correctly.
 
-Install Banner - треба зробити ідеальний флоу для мобільних версій, щоб мінімізувати тертя для вставновлення  PWA
+3. Test Epics to Implement (Spec Files):
 
-Якщо застосовані будь-які знижки ( ціноутворення, флеш-акціїї, чи програми лояльності для запису - на дошборді і в усіх деталях запису треба це відображати.
+01-auth-guards.spec.ts: Verify unauthenticated redirects. Ensure Google OAuth users who skip the phone number step are hard-locked on /my/setup/phone.
 
-Згадки про ПРО. Звичайний, недалекий майстер, може навіть не протикати всі кнопки, і навіть не дізнається що у нас є Pro тариф, треба більше згадок про нього, зокрема на дашборді ( нативно, не агресивно)
+02-time-travel-logic.spec.ts: - Mock time to 3 days ago, book an appointment. Mock time to today, check if Loyalty discount applies for the second booking.
 
-Опис Studio - один із тестувальників сказав наступне: а чому я будучи майстром не можу взяти собі тариф студіо всього за 300 грн і користуватись всім тим самим?
+Verify Dynamic Pricing: Fast-forward time to "2 hours before slot", assert the UI shows the discounted/surged price.
 
-in-app notification - ну тут понятно, це треба розробити з нуля
-notification про відгуки - додати, на всі флоу: тг, телефон, in-app, push
-тугл публічних відгуків - при перемиканні видимості відгугу - безкінечни спінер
+Verify Smart Slots: Authenticate as TestClient who has 5 morning bookings in history, assert the booking widget highlights morning slots as "Recommended".
+
+03-referral-engine.spec.ts: Test the C2B Barter and B2B2C Cartel links. Ensure cookies/referral parameters are correctly captured across the public booking flow and stored in the DB after auth.
+
+04-master-crm-smoke.spec.ts: Heavy data rendering. Navigate the Master Dashboard with 500 seeded clients and 1000 bookings. Assert pagination, infinite scroll, and analytics calculations (Revenue Forecast) load correctly and display accurate numbers.
+
+4. Execution Standards:
+
+Use Page Object Model (POM) for all major screens.
+
+Avoid page.waitForTimeout(). Use precise locator assertions (await expect(locator).toBeVisible()).
+
+Add a script in package.json: "test:e2e": "npx tsx scripts/seed-e2e-data.ts && playwright test".
+
+EXECUTE: Start by providing the playwright.config.ts, the Data Seeder script structure, and the 02-time-travel-logic.spec.ts logic.
+///Користуйся GRAPHIFY активно

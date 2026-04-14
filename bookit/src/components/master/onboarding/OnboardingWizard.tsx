@@ -13,9 +13,10 @@ import {
   saveOnboardingService,
 } from '@/app/(master)/dashboard/onboarding/actions';
 import { e164ToInputPhone, toFullPhone } from '@/lib/utils/phone';
+import { generateSecureToken } from '@/lib/utils/token';
 import {
   type Step, type DayKey, type DaySchedule,
-  STEP_ORDER, DEFAULT_SCHEDULE,
+  STEP_ORDER, DEFAULT_SCHEDULE, TEMPLATE_SCHEDULE,
 } from './steps/types';
 import { StepBasic } from './steps/StepBasic';
 import { StepSchedulePrompt } from './steps/StepSchedulePrompt';
@@ -111,9 +112,7 @@ export function OnboardingWizard() {
         .slice(0, 24);
       const finalSlug = nameSlug || `master-${uid.slice(0, 8)}`;
 
-      const arr = new Uint32Array(2);
-      crypto.getRandomValues(arr);
-      const referralCode = arr[0].toString(36).toUpperCase().slice(0, 8);
+      const referralCode = generateSecureToken(8);
 
       const { error } = await saveOnboardingProfile({
         fullName: fullName.trim(),
@@ -242,9 +241,7 @@ export function OnboardingWizard() {
               onAddBreak={() => setBreaks(prev => [...prev, { start: '13:00', end: '14:00' }])}
               onRemoveBreak={i => setBreaks(prev => prev.filter((_, idx) => idx !== i))}
               onBreakFieldChange={(i, field, val) => setBreaks(prev => prev.map((b, idx) => idx === i ? { ...b, [field]: val } : b))}
-              onApplyTemplate={() => setSchedule(Object.fromEntries(
-                (['mon','tue','wed','thu','fri','sat','sun'] as DayKey[]).map(d => [d, { is_working: !['sat','sun'].includes(d), start_time: '10:00', end_time: '19:00' }])
-              ) as Record<DayKey, DaySchedule>)}
+              onApplyTemplate={() => setSchedule(TEMPLATE_SCHEDULE)}
               onBack={() => goTo('SCHEDULE_PROMPT')}
               onSave={handleSaveSchedule}
             />

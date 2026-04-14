@@ -16,6 +16,10 @@
 /test-results
 /playwright/.auth/*.json
 
+# E2E test environment (contains local Supabase keys — never commit)
+.env.test
+.env.test.runtime
+
 # next.js
 /.next/
 /out/
