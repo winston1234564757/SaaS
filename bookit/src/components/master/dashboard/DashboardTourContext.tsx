@@ -40,7 +40,8 @@ export function DashboardTourProvider({ children }: { children: React.ReactNode 
 
     const t = setTimeout(() => setTourStep(0), 1000);
     return () => clearTimeout(t);
-  }, [isLoading, masterProfile, evaluated]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   const { mutate: completeTour } = useMutation({
     mutationFn: () => markTourSeen('dashboard'),
