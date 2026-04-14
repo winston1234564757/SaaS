@@ -135,7 +135,7 @@ jobs:
 
       # ── 13. Wait for server to be ready ──────────────────────────────────────
       - name: Wait for app to be ready
-        run: npx wait-on http://127.0.0.1:3000 --timeout 120000
+        run: npx wait-on http-get://127.0.0.1:3000 --timeout 120000
 
       # ── 14. Run Playwright E2E tests ─────────────────────────────────────────
       - name: Run Playwright tests
@@ -164,7 +164,7 @@ jobs:
           retention-days: 14
 
       - name: Upload Next.js server logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: next-server-logs-${{ github.run_id }}
@@ -174,4 +174,4 @@ jobs:
       # ── 16. Stop Supabase (cleanup) ───────────────────────────────────────────
       - name: Stop Supabase
         if: always()
-        run: supabase stop
+        run: supabase stop --no-backup || true
