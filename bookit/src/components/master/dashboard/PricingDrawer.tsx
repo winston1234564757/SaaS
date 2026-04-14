@@ -16,15 +16,15 @@ interface Props {
 export function PricingDrawer({ isOpen, onClose }: Props) {
   const { masterProfile } = useMasterContext();
   const tier = masterProfile?.subscription_tier ?? 'starter';
-  const extraEarned = (masterProfile?.dynamic_pricing_extra_earned as number | null) ?? 0;
-  const pricingRules = (masterProfile?.pricing_rules ?? {}) as PricingRules;
+  const extraEarned = masterProfile?.dynamic_pricing_extra_earned ?? 0;
+  const pricingRules: PricingRules = (masterProfile?.pricing_rules as PricingRules | null) ?? {};
 
   const isPro = tier === 'pro' || tier === 'studio';
   const isStarter = tier === 'starter';
   const trialExhausted = isStarter && extraEarned >= TRIAL_LIMIT_KOP;
 
   function renderContent() {
-    if (isStarter && trialExhausted) {
+    if (trialExhausted) {
       return (
         <PricingUpgradeGate
           trial={{ earned: extraEarned, limit: TRIAL_LIMIT_KOP, exhausted: true }}

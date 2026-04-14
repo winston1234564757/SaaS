@@ -2,7 +2,7 @@
 
 import { DashboardDrawer } from '@/components/ui/DashboardDrawer';
 import { FlashDealPage } from '@/components/master/flash/FlashDealPage';
-import { useFlashDeals, useFlashDealsCount } from '@/lib/supabase/hooks/useFlashDeals';
+import { useFlashDealsCount } from '@/lib/supabase/hooks/useFlashDeals';
 import { useMasterContext } from '@/lib/supabase/context';
 import { Loader2 } from 'lucide-react';
 
@@ -15,9 +15,7 @@ export function FlashDealDrawer({ isOpen, onClose }: Props) {
   const { masterProfile } = useMasterContext();
   const tier = masterProfile?.subscription_tier ?? 'starter';
 
-  const { data: activeDeals = [], isLoading: dealsLoading } = useFlashDeals();
-  const { data: usedThisMonth = 0, isLoading: countLoading } = useFlashDealsCount();
-  const isLoading = dealsLoading || countLoading;
+  const { data: usedThisMonth = 0, isLoading } = useFlashDealsCount();
 
   return (
     <DashboardDrawer isOpen={isOpen} onClose={onClose} title="Флеш-акції">
@@ -27,7 +25,7 @@ export function FlashDealDrawer({ isOpen, onClose }: Props) {
         </div>
       ) : (
         <FlashDealPage
-          activeDeals={activeDeals}
+          activeDeals={[]}
           tier={tier}
           usedThisMonth={usedThisMonth}
         />
