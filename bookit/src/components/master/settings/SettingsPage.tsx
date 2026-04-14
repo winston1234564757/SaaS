@@ -18,6 +18,7 @@ import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import type { BreakWindow } from '@/types/database';
 import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, normalizeToE164, toFullPhone } from '@/lib/utils/phone';
 import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
+import { markTourSeen } from '@/app/(master)/dashboard/actions';
 
 const AVATAR_EMOJIS = ['💅','👑','✂️','💆','💇','🌸','✨','💎','🌺','🪞','🖌️','💄'];
 
@@ -41,8 +42,12 @@ const DEFAULT_SCHEDULE: Schedule = Object.fromEntries(
 ) as Schedule;
 
 export function SettingsPage() {
-  const { currentStep, nextStep, closeTour } = useTour('settings', 2);
   const { profile, masterProfile, refresh } = useMasterContext();
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('settings', 2, {
+    initialSeen: seenTours?.settings ?? false,
+    onComplete: () => markTourSeen('settings').then(() => undefined),
+  });
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const router = useRouter();

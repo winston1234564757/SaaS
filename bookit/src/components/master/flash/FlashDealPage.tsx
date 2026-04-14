@@ -11,6 +11,7 @@ import { useFlashDeals, useFlashDealsInvalidate } from '@/lib/supabase/hooks/use
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
 import { useMasterContext } from '@/lib/supabase/context';
+import { markTourSeen } from '@/app/(master)/dashboard/actions';
 import { generateAvailableSlots } from '@/lib/utils/smartSlots';
 import {
   Zap, Clock, X, Send, ChevronDown, Users,
@@ -55,11 +56,15 @@ function progressBarColor(used: number): string {
 }
 
 export function FlashDealPage({ activeDeals: initialDeals, tier, usedThisMonth }: Props) {
-  const { currentStep, nextStep, closeTour } = useTour('flash', 2);
+  const { masterProfile } = useMasterContext();
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('flash', 2, {
+    initialSeen: seenTours?.flash ?? false,
+    onComplete: () => markTourSeen('flash').then(() => undefined),
+  });
   const invalidateDeals = useFlashDealsInvalidate();
   const { data: activeDeals = initialDeals } = useFlashDeals(initialDeals);
   const { services } = useServices();
-  const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
 
   const activeServices = services.filter(s => s.active);

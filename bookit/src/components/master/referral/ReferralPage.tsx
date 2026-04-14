@@ -8,6 +8,8 @@ import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { getOrGenerateReferralCode } from '@/lib/actions/referrals';
+import { useMasterContext } from '@/lib/supabase/context';
+import { markTourSeen } from '@/app/(master)/dashboard/actions';
 
 interface Props {
   masterId: string;
@@ -23,7 +25,12 @@ export function ReferralPage({ masterId, referralCode: initialCode, referralCoun
   const [copied, setCopied] = useState(false);
   const [code, setCode] = useState(initialCode);
   const [loading, setLoading] = useState(!initialCode);
-  const { currentStep, nextStep, closeTour } = useTour('referral', 1);
+  const { masterProfile } = useMasterContext();
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('referral', 1, {
+    initialSeen: seenTours?.referral ?? false,
+    onComplete: () => markTourSeen('referral').then(() => undefined),
+  });
 
   // Автоматична генерація коду, якщо його немає
   useEffect(() => {

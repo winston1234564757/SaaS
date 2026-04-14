@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Pencil, Trash2, Gift, Users, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
+import { markTourSeen } from '@/app/(master)/dashboard/actions';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
@@ -104,9 +105,13 @@ function ProgramForm({
 
 export function LoyaltyPage() {
   const { masterProfile } = useMasterContext();
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
-  const { currentStep, nextStep, closeTour } = useTour('loyalty', 2);
+  const { currentStep, nextStep, closeTour } = useTour('loyalty', 2, {
+    initialSeen: seenTours?.loyalty ?? false,
+    onComplete: () => markTourSeen('loyalty').then(() => undefined),
+  });
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
