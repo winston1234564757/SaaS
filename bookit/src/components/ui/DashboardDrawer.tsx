@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -11,6 +12,11 @@ interface Props {
 }
 
 export function DashboardDrawer({ isOpen, onClose, title, children }: Props) {
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -21,7 +27,7 @@ export function DashboardDrawer({ isOpen, onClose, title, children }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-[#2C1A14]/40 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -36,6 +42,7 @@ export function DashboardDrawer({ isOpen, onClose, title, children }: Props) {
               <h2 className="heading-serif text-lg text-[#2C1A14]">{title}</h2>
               <button
                 onClick={onClose}
+                aria-label="Закрити"
                 className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/50 transition-colors"
               >
                 <X size={18} className="text-[#6B5750]" />
