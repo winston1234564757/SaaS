@@ -9,13 +9,18 @@ DO $$ BEGIN
     END IF;
 END $$;
 
--- Step 1: Drop the text default so Postgres can freely change the column type
+-- Step 1: Drop the text default and the RLS policy that depends on the 'status' column
+-- Postgres won't allow ALTER COLUMN TYPE if the column is used in a policy.
 ALTER TABLE flash_deals ALTER COLUMN status DROP DEFAULT;
+DROP POLICY IF EXISTS "Anyone can read active flash deals" ON flash_deals;
 
 -- Step 2: Cast existing rows to the new ENUM
 ALTER TABLE flash_deals
   ALTER COLUMN status TYPE flash_deal_status
     USING status::flash_deal_status;
 
--- Step 3: Restore the default as the ENUM value
+-- Step 3: Restore the default and the RLS policy
 ALTER TABLE flash_deals ALTER COLUMN status SET DEFAULT 'active'::flash_deal_status;
+
+CREATE POLICY "Anyone can read active flash deals" ON flash_deals
+  FOR SELECT USING (status = 'active'::flash_deal_status);
