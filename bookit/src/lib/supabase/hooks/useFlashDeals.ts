@@ -37,3 +37,26 @@ export function useFlashDealsInvalidate() {
   const masterId = masterProfile?.id;
   return () => qc.invalidateQueries({ queryKey: ['flash-deals', masterId] });
 }
+
+export function useFlashDealsCount() {
+  const { masterProfile } = useMasterContext();
+  const masterId = masterProfile?.id;
+
+  return useQuery<number>({
+    queryKey: ['flash-deals-count', masterId],
+    queryFn: async () => {
+      const supabase = createClient();
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from('flash_deals')
+        .select('id', { count: 'exact', head: true })
+        .eq('master_id', masterId!)
+        .gte('created_at', monthStart.toISOString());
+      return count ?? 0;
+    },
+    enabled: !!masterId,
+    staleTime: 60_000,
+  });
+}
