@@ -3,5 +3,5 @@
 -- але тригер залишився і викликає runtime error при кожному INSERT INTO bookings:
 -- "column bookings_this_month of relation master_profiles does not exist"
 
-DROP TRIGGER IF EXISTS increment_booking_counter ON bookings;
+DROP TRIGGER IF EXISTS trg_increment_booking_counter ON bookings;
 DROP FUNCTION IF EXISTS increment_booking_counter();
