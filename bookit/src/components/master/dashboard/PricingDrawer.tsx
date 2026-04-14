@@ -43,6 +43,7 @@ export function PricingDrawer({ isOpen, onClose }: Props) {
         </div>
       );
     }
+    // Safety net for future tiers that are neither starter nor pro/studio
     if (!isPro) {
       return <PricingUpgradeGate />;
     }
