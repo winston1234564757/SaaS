@@ -100,10 +100,12 @@ export function ProductCart({
 
       <div className="flex gap-3">
         <button onClick={onContinue}
+          data-testid="wizard-skip-products-btn"
           className="flex-1 py-3.5 rounded-2xl border border-[#E8D5CF] text-sm font-semibold text-[#6B5750] hover:bg-[#F5E8E3] transition-all">
           Пропустити
         </button>
         <button onClick={onContinue}
+          data-testid="wizard-next-btn"
           className="flex-1 py-3.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#6B8C8B] active:scale-[0.98] transition-all">
           {cart.length > 0 ? `Далі · ${fmt(totalProductsPrice)}` : 'Далі'}
         </button>

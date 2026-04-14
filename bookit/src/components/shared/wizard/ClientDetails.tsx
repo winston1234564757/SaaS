@@ -1,6 +1,6 @@
 'use client';
 // src/components/shared/wizard/ClientDetails.tsx
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User, Phone, MessageSquare } from 'lucide-react';
 import type { UseFormRegister, FieldErrors } from 'react-hook-form';
 import type { BookingClientData } from '@/lib/validations/booking';
@@ -34,6 +34,7 @@ interface ClientDetailsProps {
   finalTotal: number;
   canSubmit: boolean;
   saving: boolean;
+  saveError?: string;
   onSubmit: () => void;
   direction: number;
 }
@@ -64,6 +65,7 @@ export function ClientDetails({
   finalTotal,
   canSubmit,
   saving,
+  saveError,
   onSubmit,
   direction,
 }: ClientDetailsProps) {
@@ -100,6 +102,7 @@ export function ClientDetails({
             {mode === 'master' ? "Ім'я клієнта" : "Ім'я"}
           </label>
           <input
+            data-testid="wizard-name-input"
             type="text"
             placeholder={mode === 'master' ? 'Олена Петрова' : 'Твоє імʼя та прізвище'}
             {...register('clientName')}
@@ -115,6 +118,7 @@ export function ClientDetails({
           </label>
           <div className="relative">
             <input
+              data-testid="wizard-phone-input"
               type="tel"
               placeholder="+380 XX XXX XX XX"
               value={watchPhone}
@@ -222,7 +226,21 @@ export function ClientDetails({
         </p>
       )}
 
+      <AnimatePresence>
+        {saveError && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-3 px-3 py-2.5 rounded-xl bg-[#C05B5B]/10 border border-[#C05B5B]/20 text-center"
+          >
+            <p className="text-xs font-medium text-[#C05B5B]">{saveError}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <button
+        data-testid="wizard-submit-btn"
         disabled={!canSubmit || saving}
         onClick={onSubmit}
         className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${

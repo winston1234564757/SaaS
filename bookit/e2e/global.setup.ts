@@ -34,8 +34,10 @@ interface AccountConfig {
   label: string;
   emailEnvVar: string;
   stateFile: string;
-  /** Regex that the final URL must match after login redirect. */
-  expectedUrlPattern: RegExp;
+  /** Path prefix that the final URL must resolve to after auth bootstrap. */
+  expectedPathPrefix: string;
+  /** Paths that indicate auth/setup is not in a valid deterministic state. */
+  disallowedPathPrefixes: string[];
   /**
    * Page to navigate after cookie injection.
    * Proxy.ts will redirect to the correct location based on role.
@@ -48,43 +50,50 @@ const ACCOUNTS: AccountConfig[] = [
     label: 'master-timetravel',
     emailEnvVar: 'E2E_MASTER_TIMETRAVEL_EMAIL',
     stateFile: 'playwright/.auth/master-timetravel.json',
-    expectedUrlPattern: /\/dashboard/,
+    expectedPathPrefix: '/dashboard',
+    disallowedPathPrefixes: ['/login', '/register', '/my/setup/phone', '/dashboard/onboarding'],
     landingPath: '/dashboard',
   },
   {
     label: 'master-crm',
     emailEnvVar: 'E2E_MASTER_CRM_EMAIL',
     stateFile: 'playwright/.auth/master-crm.json',
-    expectedUrlPattern: /\/dashboard/,
+    expectedPathPrefix: '/dashboard',
+    disallowedPathPrefixes: ['/login', '/register', '/my/setup/phone', '/dashboard/onboarding'],
     landingPath: '/dashboard',
   },
   {
     label: 'master-auth',
     emailEnvVar: 'E2E_MASTER_AUTH_EMAIL',
     stateFile: 'playwright/.auth/master-auth.json',
-    expectedUrlPattern: /\/dashboard/,
+    expectedPathPrefix: '/dashboard',
+    disallowedPathPrefixes: ['/login', '/register', '/my/setup/phone', '/dashboard/onboarding'],
     landingPath: '/dashboard',
   },
   {
     label: 'master-referral',
     emailEnvVar: 'E2E_MASTER_REFERRAL_EMAIL',
     stateFile: 'playwright/.auth/master-referral.json',
-    expectedUrlPattern: /\/dashboard/,
+    expectedPathPrefix: '/dashboard',
+    disallowedPathPrefixes: ['/login', '/register', '/my/setup/phone', '/dashboard/onboarding'],
     landingPath: '/dashboard',
   },
   {
     label: 'client',
     emailEnvVar: 'E2E_CLIENT_EMAIL',
     stateFile: 'playwright/.auth/client.json',
-    // proxy.ts redirects clients from /dashboard → /my/bookings
-    expectedUrlPattern: /\/my/,
+    // proxy.ts redirects clients from /dashboard → /my/bookings.
+    // Use strict /my/bookings contract so /my/setup/phone is treated as a setup failure.
+    expectedPathPrefix: '/my/bookings',
+    disallowedPathPrefixes: ['/login', '/register', '/my/setup/phone'],
     landingPath: '/dashboard',
   },
   {
     label: 'studio-admin',
     emailEnvVar: 'E2E_STUDIO_ADMIN_EMAIL',
     stateFile: 'playwright/.auth/studio-admin.json',
-    expectedUrlPattern: /\/dashboard/,
+    expectedPathPrefix: '/dashboard',
+    disallowedPathPrefixes: ['/login', '/register', '/my/setup/phone'],
     landingPath: '/dashboard',
   },
 ];
@@ -109,6 +118,22 @@ function chunkString(str: string, maxLen: number): string[] {
     chunks.push(str.slice(i, i + maxLen));
   }
   return chunks;
+}
+
+function assertLandingUrl(currentUrl: string, account: AccountConfig): void {
+  const path = new URL(currentUrl).pathname;
+
+  if (account.disallowedPathPrefixes.some((prefix) => path.startsWith(prefix))) {
+    throw new Error(
+      `[setup:${account.label}] Landed on disallowed path "${path}" after auth bootstrap`,
+    );
+  }
+
+  if (!path.startsWith(account.expectedPathPrefix)) {
+    throw new Error(
+      `[setup:${account.label}] Path mismatch: got "${path}", expected prefix "${account.expectedPathPrefix}"`,
+    );
+  }
 }
 
 // ─── Core auth builder ────────────────────────────────────────────────────────
@@ -197,15 +222,14 @@ async function buildAuthState(
   await page.goto(account.landingPath, { waitUntil: 'load', timeout: 120_000 });
 
   const currentUrl = page.url();
-  if (!account.expectedUrlPattern.test(currentUrl)) {
+  try {
+    assertLandingUrl(currentUrl, account);
+  } catch (error) {
     const screenshotPath = `playwright/.auth/setup-fail-${account.label}.png`;
     await page.screenshot({ path: screenshotPath });
     await context.close();
     await browser.close();
-    throw new Error(
-      `[setup:${account.label}] URL mismatch: got "${currentUrl}", ` +
-      `expected pattern ${account.expectedUrlPattern}. Screenshot: ${screenshotPath}`,
-    );
+    throw new Error(`${(error as Error).message}. Screenshot: ${screenshotPath}`);
   }
 
   await context.storageState({ path: account.stateFile });

@@ -37,6 +37,13 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Unauthenticated request: clear role cache cookies to prevent stale role
+  // leaking into the next authenticated session in the same browser profile.
+  if (!user) {
+    supabaseResponse.cookies.set('user_role', '', { path: '/', maxAge: 0 });
+    supabaseResponse.cookies.set('user_role_uid', '', { path: '/', maxAge: 0 });
+  }
+
   const needsRoleCheck =
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/my') ||
@@ -48,7 +55,10 @@ export async function proxy(request: NextRequest) {
     // Role is cached in a cookie to avoid a DB hit on every navigation.
     // IMPORTANT: We always re-fetch from DB if the cookie is absent to prevent
     // stale role leaks (e.g. a master cookie persisting into a new client session).
-    let role = request.cookies.get('user_role')?.value ?? null;
+    const cachedRole = request.cookies.get('user_role')?.value ?? null;
+    const cachedRoleUid = request.cookies.get('user_role_uid')?.value ?? null;
+    // Reuse cached role only if it belongs to the same authenticated user.
+    let role = cachedRoleUid === user.id ? cachedRole : null;
 
     if (!role) {
       const { data: profile } = await supabase
@@ -59,6 +69,10 @@ export async function proxy(request: NextRequest) {
       role = profile?.role ?? null;
       if (role) {
         supabaseResponse.cookies.set('user_role', role, {
+          path: '/', maxAge: 60 * 60 * 24 * 30, // 30 days
+          httpOnly: true, sameSite: 'lax',
+        });
+        supabaseResponse.cookies.set('user_role_uid', user.id, {
           path: '/', maxAge: 60 * 60 * 24 * 30, // 30 days
           httpOnly: true, sameSite: 'lax',
         });

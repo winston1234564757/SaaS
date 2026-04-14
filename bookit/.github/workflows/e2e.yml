@@ -1,0 +1,168 @@
+name: E2E Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-flight runs on the same branch to avoid spending CI minutes
+# on superseded commits.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright E2E (Chromium · Ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: bookit
+
+    # ── Supabase local stack ──────────────────────────────────────────────────
+    # Services block intentionally empty — Supabase is started via CLI below.
+    # We use the official supabase/setup-cli action to get a pinned binary.
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node 20 + npm cache ─────────────────────────────────────────
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: bookit/package-lock.json
+
+      # ── 3. Install Supabase CLI ───────────────────────────────────────────────
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # ── 4. Start local Supabase ───────────────────────────────────────────────
+      # supabase start boots Postgres + Auth + Storage + REST API locally.
+      # --ignore-health-check skips Studio health check (not needed in CI).
+      - name: Start Supabase local stack
+        run: supabase start --ignore-health-check
+        timeout-minutes: 5
+
+      # ── 5. Export Supabase local credentials into the env ────────────────────
+      # `supabase status --output env` prints KEY=VALUE pairs we can pipe to $GITHUB_ENV.
+      - name: Export Supabase credentials
+        run: |
+          supabase status --output env | grep -E '^(ANON_KEY|SERVICE_ROLE_KEY|API_URL)' >> $GITHUB_ENV
+
+      # ── 6. Build .env.test for the E2E runner ─────────────────────────────────
+      # Supabase CLI exports: API_URL, ANON_KEY, SERVICE_ROLE_KEY
+      - name: Write .env.test
+        run: |
+          cat > .env.test <<EOF
+          NEXT_PUBLIC_SUPABASE_URL=${API_URL}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}
+          SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
+          E2E_BASE_URL=http://localhost:3000
+          E2E_ALLOW_REMOTE=false
+          E2E_MASTER_TIMETRAVEL_EMAIL=e2e_master_timetravel@test.com
+          E2E_MASTER_CRM_EMAIL=e2e_master_crm@test.com
+          E2E_MASTER_AUTH_EMAIL=e2e_master_auth@test.com
+          E2E_MASTER_REFERRAL_EMAIL=e2e_master_referral@test.com
+          E2E_CLIENT_EMAIL=e2e_client@test.com
+          E2E_CLIENT_TIMETRAVEL_EMAIL=e2e_client_timetravel@test.com
+          E2E_CLIENT_CRM_EMAIL=e2e_client_crm@test.com
+          E2E_CLIENT_AUTH_EMAIL=e2e_client_auth@test.com
+          E2E_CLIENT_REFERRAL_EMAIL=e2e_client_referral@test.com
+          E2E_STUDIO_ADMIN_EMAIL=e2e_studioadmin@test.com
+          EOF
+
+      # ── 7. Write .env.local (Next.js build-time vars) ────────────────────────
+      # Supabase URL/key come from the local stack (step 5).
+      # Other NEXT_PUBLIC_* vars are injected from GitHub Secrets.
+      # Required secrets to configure in the repo:
+      #   NEXT_PUBLIC_APP_URL, NEXT_PUBLIC_SITE_URL,
+      #   NEXT_PUBLIC_VAPID_PUBLIC_KEY, NEXT_PUBLIC_TELEGRAM_BOT_NAME
+      - name: Write .env.local (Next.js public vars)
+        run: |
+          cat > .env.local <<EOF
+          NEXT_PUBLIC_SUPABASE_URL=${API_URL}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+          NEXT_PUBLIC_TELEGRAM_BOT_NAME=${{ secrets.NEXT_PUBLIC_TELEGRAM_BOT_NAME }}
+          VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT=${{ secrets.VAPID_SUBJECT }}
+          CRON_SECRET=${{ secrets.CRON_SECRET }}
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          TURBOSMS_TOKEN=${{ secrets.TURBOSMS_TOKEN }}
+          WAYFORPAY_MERCHANT_ACCOUNT=${{ secrets.WAYFORPAY_MERCHANT_ACCOUNT }}
+          WAYFORPAY_MERCHANT_SECRET=${{ secrets.WAYFORPAY_MERCHANT_SECRET }}
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          EOF
+
+      # ── 8. Install npm dependencies ──────────────────────────────────────────
+      - name: Install npm dependencies
+        run: npm ci
+
+      # ── 9. Install Playwright browsers (Chromium only in CI) ─────────────────
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      # ── 10. Seed E2E data ────────────────────────────────────────────────────
+      # Creates isolated e2e_*@test.com accounts and deterministic fixtures.
+      - name: Seed E2E database
+        run: npx tsx scripts/seed-e2e-data.ts
+
+      # ── 11. Build Next.js production bundle ──────────────────────────────────
+      # We NEVER use `next dev --turbo` in CI to avoid the bmi2 instruction
+      # crash (qfilter dependency). The production build is stable everywhere.
+      - name: Build Next.js (production)
+        run: npm run build
+        env:
+          # Prevent OOM on constrained GH runners (default heap ~400MB)
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      # ── 12. Run Next.js production server in background ──────────────────────
+      - name: Start Next.js production server
+        run: npm run start &
+        env:
+          PORT: 3000
+
+      # ── 13. Wait for server to be ready ──────────────────────────────────────
+      - name: Wait for app to be ready
+        run: npx wait-on http://localhost:3000 --timeout 60000
+
+      # ── 14. Run Playwright E2E tests ─────────────────────────────────────────
+      - name: Run Playwright tests
+        run: npx playwright test --project=chromium
+        env:
+          CI: true
+          # Ensures playwright.config.ts uses CI-tuned retries/workers
+          PLAYWRIGHT_HTML_REPORT: playwright-report
+
+      # ── 15. Upload artifacts on failure ──────────────────────────────────────
+      - name: Upload Playwright HTML report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: bookit/playwright-report/
+          retention-days: 14
+
+      - name: Upload Playwright test results (traces + videos)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: bookit/test-results/
+          retention-days: 14
+
+      # ── 16. Stop Supabase (cleanup) ───────────────────────────────────────────
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop

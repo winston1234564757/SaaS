@@ -23,19 +23,18 @@ export class SettingsPage {
     this.page = page;
     this.heading = page.locator('h1').first();
 
-    this.nameInput      = page.getByPlaceholder(/Ваше ім.я|Олена|ім'я/i).first();
-    this.slugInput      = page.locator('input[name="slug"], input[placeholder*="slug"], input[placeholder*="посилання"]').first();
-    this.bioTextarea    = page.locator('textarea').first();
-    this.instagramInput = page.locator('input[name="instagram_url"], input[placeholder*="instagram"]').first();
-    this.telegramInput  = page.locator('input[name="telegram_url"], input[placeholder*="telegram"]').first();
+    this.nameInput      = page.getByTestId('settings-name-input');
+    this.slugInput      = page.getByTestId('settings-slug-input');
+    this.bioTextarea    = page.getByTestId('settings-bio-textarea');
+    this.instagramInput = page.getByTestId('settings-instagram-input');
+    this.telegramInput  = page.getByTestId('settings-telegram-input');
     this.slugStatus     = page.locator('[data-testid="slug-status"], .slug-status, [class*="slug"]').first();
 
-    this.saveProfileBtn  = page.getByRole('button', { name: /Зберегти профіль|Зберегти зміни|Оновити/i }).first();
+    this.saveProfileBtn  = page.getByTestId('settings-save-profile-btn');
     this.saveScheduleBtn = page.getByRole('button', { name: /Зберегти графік|Зберегти розклад/i }).first();
 
     // Понеділок — перший день у списку
-    this.mondayToggle = page.locator('[data-day="1"], [data-day="monday"]').first()
-      .or(page.locator('label').filter({ hasText: /Понеділок|Пн/i }).first());
+    this.mondayToggle = page.getByTestId('settings-day-toggle-mon');
   }
 
   async goto() {

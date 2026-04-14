@@ -71,8 +71,9 @@ test.describe('Unauthenticated → /login redirects', () => {
     await page.goto('/login');
     // Should stay on /login — NOT redirected
     await expect(page).toHaveURL(/\/login/);
-    // Phone input must be present (SMS OTP flow)
-    await expect(page.locator('input[type="tel"]')).toBeVisible({ timeout: 8_000 });
+    // Login starts with role-select step, then proceeds to phone OTP.
+    await expect(page.getByRole('button', { name: /Продовжити/i })).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByRole('button', { name: /Я Клієнт/i })).toBeVisible({ timeout: 8_000 });
 
     await context.close();
   });

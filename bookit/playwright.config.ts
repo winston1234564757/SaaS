@@ -26,7 +26,10 @@ export default defineConfig({
   // Паралельне виконання безпечне — кожен spec domain має власний ізольований акаунт.
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
+  // CI: 2 retries guard against transient network blips; local: 0 for fast feedback.
   retries: process.env.CI ? 2 : 0,
+  // CI: 2 workers (GH Actions ubuntu-latest has 2 real vCPUs);
+  // local: undefined → Playwright picks the optimal count automatically.
   workers: process.env.CI ? 2 : undefined,
 
   reporter: [['html', { open: 'never' }], ['list']],
@@ -73,7 +76,12 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
+    // PRODUCTION build is used deliberately in all environments:
+    //   • Avoids the Turbopack `bmi2` CPU instruction panic (qfilter dep).
+    //   • Mirrors exactly what Vercel deploys — no webpack/turbo divergence.
+    // CI: reuseExistingServer=false so GH Actions always starts a clean server.
+    // Local: reuseExistingServer=true so devs can keep a server running.
+    command: 'npm run start',
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

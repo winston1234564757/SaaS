@@ -57,6 +57,7 @@ export function ServiceSelector({
                 <button
                   key={svc.id}
                   onClick={() => onToggle(svc)}
+                  data-testid="service-card"
                   className={`flex items-start gap-3 px-4 pt-4 pb-4 rounded-2xl border text-left w-full transition-colors ${
                     sel
                       ? 'bg-[#789A99]/10 border-[#789A99]/40'
@@ -239,6 +240,7 @@ export function ServiceSelector({
         <button
           disabled={!canGoToDatetime}
           onClick={onContinue}
+          data-testid="wizard-next-btn"
           className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
             canGoToDatetime
               ? 'bg-[#789A99] text-white hover:bg-[#6B8C8B] active:scale-[0.98]'

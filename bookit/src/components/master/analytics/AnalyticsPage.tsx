@@ -267,6 +267,7 @@ function ClientSheetById({ clientId, masterId, clientName, onClose }: {
 function ProUpgradeCard() {
   return (
     <motion.div
+      data-testid="upgrade-prompt"
       className="bento-card p-6 relative overflow-hidden"
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.1 }}
     >
@@ -481,7 +482,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       )}
 
       {/* ── Summary ── */}
-      <motion.div className="bento-card p-5"
+      <motion.div 
+        data-testid={isLoading ? 'stats-loading' : 'stats-ready'}
+        className="bento-card p-5"
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -491,9 +494,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         </div>
 
         {isLockedDateRange ? (
-          <div className="flex flex-col items-center py-6 gap-2.5">
+          <div className="flex flex-col items-center py-6 gap-2.5" data-testid="locked-date-range">
             <div className="w-12 h-12 rounded-2xl bg-[#789A99]/10 flex items-center justify-center">
-              <Crown size={20} className="text-[#789A99]" />
+              <Crown size={20} className="text-[#789A99]" data-testid="paywall-lock" />
             </div>
             <p className="text-sm font-bold text-[#2C1A14]">Виберіть поточний місяць</p>
             <p className="text-[12px] text-[#A8928D] text-center max-w-[200px]">

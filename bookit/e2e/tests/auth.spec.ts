@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import { AuthPage } from '../pages/AuthPage';
 
-const hasMasterState = fs.existsSync('playwright/.auth/master.json');
+const hasMasterState = fs.existsSync('playwright/.auth/master-auth.json');
 const hasClientState = fs.existsSync('playwright/.auth/client.json');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -10,12 +10,17 @@ const hasClientState = fs.existsSync('playwright/.auth/client.json');
 //    Bookit uses SMS OTP only. No email/password form exists.
 // ─────────────────────────────────────────────────────────────────────────────
 test.describe('Сторінка логіну', () => {
-  test('відображає h1 та поля форми (phone OTP)', async ({ page }) => {
+  test('відображає рольовий крок і перехід на phone OTP', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.goto();
 
     await expect(auth.heading).toBeVisible();
-    await expect(auth.heading).toContainText('Вхід');
+    await expect(auth.heading).toContainText('Ласкаво просимо');
+    await expect(auth.roleClientCard).toBeVisible();
+    await expect(auth.roleMasterCard).toBeVisible();
+    await expect(auth.continueButton).toBeVisible();
+
+    await auth.goToPhoneStep();
     await expect(auth.phoneInput).toBeVisible();
     await expect(auth.sendSmsButton).toBeVisible();
     await expect(auth.googleButton).toBeVisible();
@@ -24,6 +29,7 @@ test.describe('Сторінка логіну', () => {
   test('показує помилку при неповному номері', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.goto();
+    await auth.goToPhoneStep();
 
     // Ввести короткий номер — кнопка має бути заблокована
     await auth.phoneInput.fill('12');
@@ -61,10 +67,10 @@ test.describe('Захист роутів (без авторизації)', () =>
 // ─────────────────────────────────────────────────────────────────────────────
 test.describe('Логін майстра (storageState)', () => {
   test('майстер → /dashboard', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json — запусти global.setup');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-auth.json — запусти global.setup');
 
     const context = await browser.newContext({
-      storageState: 'playwright/.auth/master.json',
+      storageState: 'playwright/.auth/master-auth.json',
     });
     const page = await context.newPage();
 
@@ -113,10 +119,10 @@ test.describe('Безпека ролей', () => {
   });
 
   test('майстер на /dashboard → залишається на /dashboard', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json — запусти global.setup');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-auth.json — запусти global.setup');
 
     const context = await browser.newContext({
-      storageState: 'playwright/.auth/master.json',
+      storageState: 'playwright/.auth/master-auth.json',
     });
     const page = await context.newPage();
 

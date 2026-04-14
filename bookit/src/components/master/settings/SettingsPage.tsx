@@ -358,7 +358,7 @@ export function SettingsPage() {
 
           <div>
             <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Повне ім'я</label>
-            <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ваше ім'я та прізвище" className={inputCls} />
+            <input data-testid="settings-name-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ваше ім'я та прізвище" className={inputCls} />
           </div>
 
           <div>
@@ -379,6 +379,7 @@ export function SettingsPage() {
           <div>
             <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Про себе</label>
             <textarea
+              data-testid="settings-bio-textarea"
               value={bio}
               onChange={e => setBio(e.target.value)}
               placeholder="Розкажіть про себе та свої послуги..."
@@ -404,6 +405,7 @@ export function SettingsPage() {
                 bookit.com.ua/
               </div>
               <input
+                data-testid="settings-slug-input"
                 value={slug}
                 onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 placeholder="your-slug"
@@ -473,6 +475,7 @@ export function SettingsPage() {
               <Instagram size={12} /> Instagram
             </label>
             <input
+              data-testid="settings-instagram-input"
               value={instagram}
               onChange={e => setInstagram(e.target.value)}
               placeholder="https://instagram.com/..."
@@ -484,6 +487,7 @@ export function SettingsPage() {
               <Send size={12} /> Telegram
             </label>
             <input
+              data-testid="settings-telegram-input"
               value={telegram}
               onChange={e => setTelegram(e.target.value)}
               placeholder="https://t.me/..."
@@ -615,6 +619,7 @@ export function SettingsPage() {
               }`}
             >
               <button
+                data-testid={`settings-day-toggle-${day}`}
                 onClick={() => toggleDay(day)}
                 className={`relative w-10 h-5 rounded-full transition-colors duration-200 flex-shrink-0 ${
                   schedule[day].is_working ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'
@@ -774,6 +779,7 @@ export function SettingsPage() {
 
       {/* Кнопка збереження */}
       <button
+        data-testid="settings-save-profile-btn"
         onClick={handleSave}
         disabled={saving}
         className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${

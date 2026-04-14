@@ -8,7 +8,7 @@
  * - ручне додавання запису (FAB → форма → збереження)
  *
  * Потрібно:
- *   - playwright/.auth/master.json
+ *   - playwright/.auth/master-crm.json
  *   - E2E_MASTER_ID (для DB cleanup)
  */
 import { test, expect } from '@playwright/test';
@@ -17,10 +17,10 @@ import { supabaseAdmin } from '../utils/supabase';
 import { BookingsManagePage } from '../pages/BookingsManagePage';
 import { humanType, think, scrollAndFocus } from '../utils/human';
 
-const hasMasterState = fs.existsSync('playwright/.auth/master.json');
+const hasMasterState = fs.existsSync('playwright/.auth/master-crm.json');
 const MASTER_ID = process.env.E2E_MASTER_ID;
 const RUN_ID = Date.now().toString().slice(-6);
-const TEST_CLIENT_NAME = `E2E Бронювання ${RUN_ID}`;
+const TEST_CLIENT_NAME = 'Тестове Бронювання';
 const TEST_CLIENT_PHONE = `380670000${RUN_ID.slice(-3)}`;
 
 // Cleanup після тестів
@@ -35,16 +35,16 @@ test.afterAll(async () => {
     try {
       await supabaseAdmin.from('bookings').delete()
         .eq('master_id', MASTER_ID)
-        .like('client_name', 'E2E Бронювання %');
+        .eq('client_name', TEST_CLIENT_NAME);
     } catch {}
   }
 });
 
 test.describe('Master Bookings — перегляд і навігація', () => {
   test('сторінка рендериться з кнопками режимів', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
     const page = await context.newPage();
     const bookings = new BookingsManagePage(page);
 
@@ -53,21 +53,18 @@ test.describe('Master Bookings — перегляд і навігація', () =
       await expect(bookings.heading).toBeVisible({ timeout: 10_000 });
 
       // Перевірити наявність режимів перегляду
-      const dayVisible   = await bookings.dayViewBtn.isVisible().catch(() => false);
-      const weekVisible  = await bookings.weekViewBtn.isVisible().catch(() => false);
-      const monthVisible = await bookings.monthViewBtn.isVisible().catch(() => false);
-
-      // Хоча б один режим має бути видимим
-      expect(dayVisible || weekVisible || monthVisible).toBe(true);
+      await expect(bookings.dayViewBtn).toBeVisible({ timeout: 10_000 });
+      await expect(bookings.weekViewBtn).toBeVisible({ timeout: 10_000 });
+      await expect(bookings.monthViewBtn).toBeVisible({ timeout: 10_000 });
     } finally {
       await context.close();
     }
   });
 
   test('перемикання режимів Day → Week → Month', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
     const page = await context.newPage();
     const bookings = new BookingsManagePage(page);
 
@@ -106,9 +103,9 @@ test.describe('Master Bookings — перегляд і навігація', () =
   });
 
   test('навігація стрілками ← →', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
     const page = await context.newPage();
     const bookings = new BookingsManagePage(page);
 
@@ -142,26 +139,20 @@ test.describe('Master Bookings — перегляд і навігація', () =
 
 test.describe('Master Bookings — пошук', () => {
   test('пошук по імені клієнта', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
     const page = await context.newPage();
     const bookings = new BookingsManagePage(page);
 
     try {
       await bookings.goto();
 
-      const searchInput = page.getByPlaceholder(/Пошук|Клієнт|Ім.я/i).first();
-      const searchVisible = await searchInput.isVisible().catch(() => false);
-
-      if (!searchVisible) {
-        test.skip(true, 'Search input не знайдено');
-        return;
-      }
+      await expect(bookings.searchInput).toBeVisible({ timeout: 10_000 });
 
       await think(page, 300, 600);
-      await scrollAndFocus(searchInput);
-      await humanType(searchInput, 'Test');
+      await scrollAndFocus(bookings.searchInput);
+      await humanType(bookings.searchInput, 'Test');
       await page.waitForTimeout(500); // debounce
       await page.waitForLoadState('networkidle');
 
@@ -176,10 +167,11 @@ test.describe('Master Bookings — пошук', () => {
 
 test.describe('Master Bookings — ручне додавання', () => {
   test('FAB → ManualBookingForm → заповнити → зберегти', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+    test.setTimeout(120_000);
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
     test.skip(!MASTER_ID, 'E2E_MASTER_ID не задано — потрібен для cleanup');
 
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
     const page = await context.newPage();
     const bookings = new BookingsManagePage(page);
 
@@ -187,78 +179,70 @@ test.describe('Master Bookings — ручне додавання', () => {
       await bookings.goto();
 
       // Клікнути FAB
-      const fabVisible = await bookings.fab.isVisible().catch(() => false);
-      if (!fabVisible) {
-        test.skip(true, 'FAB кнопка не знайдена');
-        return;
-      }
-
+      await expect(bookings.fab).toBeVisible({ timeout: 10_000 });
       await think(page, 400, 700);
       await bookings.fab.click();
 
-      // Чекати появи форми
-      const formTitle = page.getByText(/Новий запис|Додати запис|Manual/i).first();
-      const formVisible = await formTitle.isVisible({ timeout: 8_000 }).catch(() => false);
+      // Чекати появи wizard
+      const wizardPanel = page.getByTestId('wizard-panel').last();
+      await expect(wizardPanel).toBeVisible({ timeout: 10_000 });
 
-      if (!formVisible) {
-        // Може бути modal або bottom sheet — шукаємо поля форми
-        const clientNameInput = page.getByPlaceholder(/Ім.я клієнта|Client name/i).first();
-        const inputVisible = await clientNameInput.isVisible({ timeout: 5_000 }).catch(() => false);
-        if (!inputVisible) {
-          test.skip(true, 'ManualBookingForm не знайдено');
-          return;
+      // Крок 1 — послуги
+      const firstService = wizardPanel.getByTestId('service-card').first();
+      await expect(firstService).toBeVisible({ timeout: 10_000 });
+      await think(page, 300, 600);
+      await firstService.click();
+      
+      const nextBtn1 = wizardPanel.getByTestId('wizard-next-btn').last();
+      await expect(nextBtn1).toBeEnabled({ timeout: 5_000 });
+      await think(page, 200, 400);
+      await nextBtn1.click();
+
+      // Крок 2 — час
+      const availableSlot = wizardPanel.locator('[data-testid="time-slot"]:not([disabled])').first();
+      await expect(availableSlot).toBeVisible({ timeout: 10_000 });
+      await scrollAndFocus(availableSlot);
+      await think(page, 300, 600);
+      await availableSlot.click();
+
+      const nextBtn2 = wizardPanel.getByTestId('wizard-next-btn').last();
+      await expect(nextBtn2).toBeEnabled({ timeout: 5_000 });
+      await think(page, 200, 400);
+      await nextBtn2.click();
+
+      // Крок 3 — товари (опціонально)
+      const skipProductsBtn = wizardPanel.getByTestId('wizard-skip-products-btn').first();
+      const skipVisible = await skipProductsBtn.isVisible().catch(() => false);
+      if (skipVisible) {
+        await think(page, 300, 500);
+        await skipProductsBtn.click();
+      } else {
+        const nextBtn3 = wizardPanel.getByTestId('wizard-next-btn').last();
+        const nextVisible = await nextBtn3.isVisible().catch(() => false);
+        if (nextVisible) {
+          await think(page, 300, 500);
+          await nextBtn3.click();
         }
       }
 
-      // Заповнити ім'я клієнта
-      const nameInput = page.getByPlaceholder(/Ім.я клієнта|Ім'я|Client name/i).first();
-      const nameVisible = await nameInput.isVisible({ timeout: 5_000 }).catch(() => false);
-      if (nameVisible) {
-        await think(page, 300, 600);
-        await humanType(nameInput, TEST_CLIENT_NAME);
-      }
-
-      // Заповнити телефон
-      const phoneInput = page.getByPlaceholder(/Телефон|380|Phone/i).first();
-      const phoneVisible = await phoneInput.isVisible().catch(() => false);
-      if (phoneVisible) {
-        await think(page, 200, 400);
-        await humanType(phoneInput, TEST_CLIENT_PHONE);
-      }
-
-      // Вибрати послугу якщо є select
-      const serviceSelect = page.locator('select').first();
-      const selectVisible = await serviceSelect.isVisible().catch(() => false);
-      if (selectVisible) {
-        await think(page, 200, 400);
-        await serviceSelect.selectOption({ index: 1 });
-      }
-
-      // Вибрати дату (якщо є date input)
-      const dateInput = page.locator('input[type="date"]').first();
-      const dateVisible = await dateInput.isVisible().catch(() => false);
-      if (dateVisible) {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const dateStr = tomorrow.toISOString().split('T')[0];
-        await think(page, 200, 400);
-        await dateInput.fill(dateStr);
-      }
+      // Крок 4 — деталі
+      await expect(bookings.clientNameInput).toBeVisible({ timeout: 10_000 });
+      await think(page, 300, 600);
+      await humanType(bookings.clientNameInput, TEST_CLIENT_NAME);
+      
+      await think(page, 200, 400);
+      await humanType(bookings.clientPhoneInput, TEST_CLIENT_PHONE);
 
       // Зберегти
-      await think(page, 400, 700); // "людина перевіряє форму"
-      const saveBtn = page.getByRole('button', { name: /Додати|Зберегти|Створити/i }).last();
-      await scrollAndFocus(saveBtn);
-      await saveBtn.click();
+      await expect(bookings.saveBookingBtn).toBeEnabled({ timeout: 5_000 });
+      await think(page, 400, 700);
+      await bookings.saveBookingBtn.click();
 
-      // Чекати на закриття форми або успішне повідомлення
-      await page.waitForTimeout(2000);
-      await page.waitForLoadState('networkidle');
+      // У режимі master success екран не показується, вікно просто закривається
+      await expect(wizardPanel).toBeHidden({ timeout: 15_000 });
 
-      // Перевірити що форма закрилась (modal не visible)
-      const stillOpen = await formTitle.isVisible().catch(() => false);
-      // Форма може залишитись відкритою якщо є помилки валідації — це теж ок для тесту
-
+      // Перевірити що запис з'явився (базово перевіряємо, що ми залишились на сторінці і немає помилок)
+      expect(page.url()).toContain('/dashboard/bookings');
     } finally {
       await context.close();
     }

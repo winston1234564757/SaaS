@@ -8,12 +8,11 @@
  * (playwright.config.ts та package.json вже налаштовані)
  *
  * Що сідується:
- *   TimeTravelMaster — 50 past bookings, 1 future booking (+2h), pricing_rules, loyalty
- *   CrmMaster        — 100 guest bookings для smoke тестів CRM/Analytics
- *   AuthMaster       — мінімальний профіль для тестів auth guards
- *   ReferralMaster   — referral_code для тестів реферальної системи
+ *   TimeTravelMaster — isolated client + deterministic time machine fixtures
+ *   CrmMaster        — isolated client + 100 guest bookings for CRM/Analytics
+ *   AuthMaster       — isolated client + minimal auth fixtures
+ *   ReferralMaster   — isolated client + deterministic referral fixture
  *   StudioAdmin      — foundation (тести ще не написані)
- *   TestClient       — shared клієнт (використовується в timetravel + loyalty тестах)
  */
 
 // ── dotenv MUST be first ────────────────────────────────────────────────────────
@@ -63,6 +62,17 @@ const SLUGS = {
   studioAdmin:      'e2e-studioadmin',
 } as const;
 
+const FIXTURE_CONTRACT = {
+  referralCode: 'E2EREFREF001',
+  services: {
+    timeTravel: 'Манікюр E2E',
+    crm: 'Манікюр CRM E2E',
+    auth: 'Послуга AuthMaster E2E',
+    referral: 'Послуга Referral E2E',
+    studio: 'Studio Service E2E',
+  },
+} as const;
+
 // ─── Safety guards ────────────────────────────────────────────────────────────
 
 function assertSafeEnvironment(): void {
@@ -110,7 +120,10 @@ const ACCOUNTS = {
   masterCrm:        process.env.E2E_MASTER_CRM_EMAIL        ?? 'e2e_master_crm@test.com',
   masterAuth:       process.env.E2E_MASTER_AUTH_EMAIL        ?? 'e2e_master_auth@test.com',
   masterReferral:   process.env.E2E_MASTER_REFERRAL_EMAIL    ?? 'e2e_master_referral@test.com',
-  client:           process.env.E2E_CLIENT_EMAIL             ?? 'e2e_client@test.com',
+  clientTimeTravel: process.env.E2E_CLIENT_TIMETRAVEL_EMAIL  ?? 'e2e_client_timetravel@test.com',
+  clientCrm:        process.env.E2E_CLIENT_CRM_EMAIL         ?? 'e2e_client_crm@test.com',
+  clientAuth:       process.env.E2E_CLIENT_AUTH_EMAIL        ?? 'e2e_client_auth@test.com',
+  clientReferral:   process.env.E2E_CLIENT_REFERRAL_EMAIL    ?? 'e2e_client_referral@test.com',
   studioAdmin:      process.env.E2E_STUDIO_ADMIN_EMAIL       ?? 'e2e_studioadmin@test.com',
 } as const;
 
@@ -122,19 +135,19 @@ Object.entries(ACCOUNTS).forEach(([key, email]) =>
 // ─── Date/time helpers ────────────────────────────────────────────────────────
 
 function fmtDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
 
 function fmtTime(d: Date): string {
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
 }
 
 function addDays(d: Date, days: number): Date {
   const r = new Date(d);
-  r.setDate(r.getDate() + days);
+  r.setUTCDate(r.getUTCDate() + days);
   return r;
 }
 
@@ -149,7 +162,7 @@ function addMinutes(d: Date, m: number): Date {
 /** Skip Sunday (day 0) — TestMaster doesn't work Sundays */
 function skipSunday(d: Date): Date {
   const r = new Date(d);
-  if (r.getDay() === 0) r.setDate(r.getDate() + 1);
+  if (r.getUTCDay() === 0) r.setUTCDate(r.getUTCDate() + 1);
   return r;
 }
 
@@ -396,7 +409,7 @@ async function insertBooking(params: {
 
 // ─── Wipe helpers ─────────────────────────────────────────────────────────────
 
-async function wipeMasterData(masterIds: string[]): Promise<void> {
+async function wipeMasterData(masterIds: string[], clientIds: string[]): Promise<void> {
   if (masterIds.length === 0) return;
   console.log(`\n[wipe] Cleaning data for ${masterIds.length} E2E master(s)...`);
 
@@ -416,15 +429,21 @@ async function wipeMasterData(masterIds: string[]): Promise<void> {
   }
 
   // Delete master-owned records
-  await Promise.all([
-    admin.from('bookings').delete().in('master_id', masterIds),
-    admin.from('loyalty_programs').delete().in('master_id', masterIds),
-    admin.from('client_master_relations').delete().in('master_id', masterIds),
-    admin.from('reviews').delete().in('master_id', masterIds),
-  ]);
+  await admin.from('bookings').delete().in('master_id', masterIds);
+  await admin.from('loyalty_programs').delete().in('master_id', masterIds);
+  await admin.from('client_master_relations').delete().in('master_id', masterIds);
+  await admin.from('client_master_relations').delete().in('client_id', clientIds);
+  await admin.from('reviews').delete().in('master_id', masterIds);
+  await admin.from('reviews').delete().in('client_id', clientIds);
+  await admin.from('master_client_notes').delete().in('master_id', masterIds);
+  await admin.from('flash_deals').delete().in('master_id', masterIds);
+  await admin.from('master_time_off').delete().in('master_id', masterIds);
+  await admin.from('schedule_exceptions').delete().in('master_id', masterIds);
+  await admin.from('notifications').delete().in('recipient_id', [...masterIds, ...clientIds]);
 
   // Services (bookings already gone, FK safe)
   await admin.from('services').delete().in('master_id', masterIds);
+  await admin.from('products').delete().in('master_id', masterIds);
   await admin.from('schedule_templates').delete().in('master_id', masterIds);
 
   console.log(`  [wipe] ✓ Done`);
@@ -448,7 +467,7 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
   console.log('\n[seed] TimeTravelMaster...');
 
   await upsertScheduleTemplates(masterId);
-  const serviceId = await ensureService(masterId, 'Манікюр E2E', 500, 60);
+  const serviceId = await ensureService(masterId, FIXTURE_CONTRACT.services.timeTravel, 500, 60);
 
   // 1. pricing_rules stored as JSONB in master_profiles
   const { error: prErr } = await admin
@@ -465,18 +484,21 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
   if (prErr) throw new Error(`pricing_rules update: ${prErr.message}`);
 
   // 2. Loyalty program
-  await admin.from('loyalty_programs').insert({
-    master_id:    masterId,
-    name:         'E2E Лояльність: кожен 5-й',
-    description:  'Тест — кожен 5-й візит знижка 15%',
+  const { error: loyaltyErr } = await admin.from('loyalty_programs').insert({
+    master_id:     masterId,
+    name:          'E2E Лояльність: кожен 5-й',
     target_visits: 5,
-    reward_type:  'percent_discount',
-    reward_value: 15,
-    is_active:    true,
+    reward_type:   'percent_discount',
+    reward_value:  15,
+    is_active:     true,
   });
+  if (loyaltyErr) throw new Error(`loyalty insert: ${loyaltyErr.message}`);
 
   // 3. Historical bookings
+  // Deterministic anchor: UTC-rounded "now" (minutes/seconds zeroed) to avoid
+  // timezone edge-cases near date boundaries while keeping data relative to current run.
   const now = new Date();
+  now.setUTCMinutes(0, 0, 0);
   const inserts: Promise<string>[] = [];
 
   // 30 morning bookings → Smart Slots will prefer mornings
@@ -489,7 +511,7 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
 
     inserts.push(insertBooking({
       masterId, serviceId, clientId,
-      serviceName:    'Манікюр E2E',
+      serviceName:    FIXTURE_CONTRACT.services.timeTravel,
       servicePrice:   500,
       serviceDuration: 60,
       clientName:     'E2E TestClient',
@@ -510,7 +532,7 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
 
     inserts.push(insertBooking({
       masterId, serviceId, clientId,
-      serviceName:    'Манікюр E2E',
+      serviceName:    FIXTURE_CONTRACT.services.timeTravel,
       servicePrice:   500,
       serviceDuration: 60,
       clientName:     'E2E TestClient',
@@ -532,14 +554,14 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
   //    which is < 3h → dynamic pricing fires on the frontend.
   let futureSlot = addMinutes(now, 150); // +2h30m
   // Round up to next :00 or :30
-  const mins = futureSlot.getMinutes();
-  if (mins > 0 && mins <= 30)       futureSlot.setMinutes(30, 0, 0);
-  else if (mins > 30)               { futureSlot.setHours(futureSlot.getHours() + 1, 0, 0, 0); }
+  const mins = futureSlot.getUTCMinutes();
+  if (mins > 0 && mins <= 30)       futureSlot.setUTCMinutes(30, 0, 0);
+  else if (mins > 30)               { futureSlot.setUTCHours(futureSlot.getUTCHours() + 1, 0, 0, 0); }
 
   // If it's past 18:00 (would end after 19:00), push to 10:00 next working day
-  if (futureSlot.getHours() >= 18) {
+  if (futureSlot.getUTCHours() >= 18) {
     futureSlot = skipSunday(addDays(now, 1));
-    futureSlot.setHours(10, 0, 0, 0);
+    futureSlot.setUTCHours(10, 0, 0, 0);
   }
 
   const futureStart = fmtTime(futureSlot);
@@ -547,7 +569,7 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
 
   await insertBooking({
     masterId, serviceId, clientId,
-    serviceName:     'Манікюр E2E',
+    serviceName:     FIXTURE_CONTRACT.services.timeTravel,
     servicePrice:    500,
     serviceDuration: 60,
     clientName:      'E2E TestClient',
@@ -587,11 +609,11 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
  * Pro tier → Analytics and CRM pages are unlocked.
  * Enough data to exercise pagination, scroll, and analytics calculations.
  */
-async function seedCrmMaster(masterId: string): Promise<void> {
+async function seedCrmMaster(masterId: string, clientId: string): Promise<void> {
   console.log('\n[seed] CrmMaster...');
 
   await upsertScheduleTemplates(masterId);
-  const serviceId = await ensureService(masterId, 'Манікюр CRM E2E', 600, 60);
+  const serviceId = await ensureService(masterId, FIXTURE_CONTRACT.services.crm, 600, 60);
 
   const now       = new Date();
   const statuses  = ['completed', 'completed', 'completed', 'confirmed', 'cancelled'] as const;
@@ -610,7 +632,7 @@ async function seedCrmMaster(masterId: string): Promise<void> {
 
     inserts.push(insertBooking({
       masterId, serviceId,
-      serviceName:     'Манікюр CRM E2E',
+      serviceName:     FIXTURE_CONTRACT.services.crm,
       servicePrice:    600,
       serviceDuration: 60,
       clientId:        null, // guest booking — no auth required for CRM smoke
@@ -637,6 +659,21 @@ async function seedCrmMaster(masterId: string): Promise<void> {
     is_active:     true,
   });
 
+  // Domain-specific CRM relation (used by trigger/status-transition tests).
+  await admin.from('client_master_relations').upsert(
+    {
+      client_id: clientId,
+      master_id: masterId,
+      total_visits: 3,
+      total_spent: 1_800,
+      average_check: 600,
+      last_visit_at: new Date().toISOString(),
+      is_vip: false,
+      loyalty_points: 0,
+    },
+    { onConflict: 'client_id,master_id' },
+  );
+
   console.log(`  [seed] CrmMaster ✓`);
 }
 
@@ -649,7 +686,7 @@ async function seedCrmMaster(masterId: string): Promise<void> {
 async function seedAuthMaster(masterId: string): Promise<void> {
   console.log('\n[seed] AuthMaster (minimal)...');
   await upsertScheduleTemplates(masterId);
-  await ensureService(masterId, 'Послуга AuthMaster E2E', 300, 45);
+  await ensureService(masterId, FIXTURE_CONTRACT.services.auth, 300, 45);
   console.log(`  [seed] AuthMaster ✓`);
 }
 
@@ -662,8 +699,8 @@ async function seedAuthMaster(masterId: string): Promise<void> {
 async function seedReferralMaster(masterId: string): Promise<string> {
   console.log('\n[seed] ReferralMaster...');
 
-  // Use a deterministic, readable code for easy debugging
-  const referralCode = `E2EREF${masterId.slice(0, 6).toUpperCase()}`;
+  // Canonical deterministic code required by e2e referral fixtures.
+  const referralCode = FIXTURE_CONTRACT.referralCode;
 
   const { error } = await admin
     .from('master_profiles')
@@ -673,7 +710,7 @@ async function seedReferralMaster(masterId: string): Promise<string> {
   if (error) throw new Error(`referral_code update: ${error.message}`);
 
   await upsertScheduleTemplates(masterId);
-  await ensureService(masterId, 'Послуга Referral E2E', 400, 60);
+  await ensureService(masterId, FIXTURE_CONTRACT.services.referral, 400, 60);
 
   console.log(`  [seed] ReferralMaster ✓ (code: ${referralCode})`);
   return referralCode;
@@ -689,8 +726,92 @@ async function seedReferralMaster(masterId: string): Promise<string> {
 async function seedStudioAdmin(masterId: string): Promise<void> {
   console.log('\n[seed] StudioAdmin (foundation)...');
   await upsertScheduleTemplates(masterId);
-  await ensureService(masterId, 'Studio Service E2E', 1_000, 90);
+  await ensureService(masterId, FIXTURE_CONTRACT.services.studio, 1_000, 90);
   console.log(`  [seed] StudioAdmin ✓`);
+}
+
+// ─── Post-seed verification ───────────────────────────────────────────────────
+
+async function verifySeedIntegrity(input: {
+  timeTravelMasterId: string;
+  crmMasterId: string;
+  referralMasterId: string;
+  referralCode: string;
+  clientTimeTravelId: string;
+  clientCrmId: string;
+}): Promise<void> {
+  console.log('\n[verify] Running post-seed integrity checks...');
+
+  const [
+    referralMaster,
+    timeTravelPricing,
+    timeTravelLoyalty,
+    timeTravelRelation,
+    crmRelation,
+    crmBookings,
+  ] = await Promise.all([
+    admin
+      .from('master_profiles')
+      .select('id, slug, referral_code')
+      .eq('id', input.referralMasterId)
+      .single(),
+    admin
+      .from('master_profiles')
+      .select('pricing_rules')
+      .eq('id', input.timeTravelMasterId)
+      .single(),
+    admin
+      .from('loyalty_programs')
+      .select('id')
+      .eq('master_id', input.timeTravelMasterId),
+    admin
+      .from('client_master_relations')
+      .select('total_visits')
+      .eq('master_id', input.timeTravelMasterId)
+      .eq('client_id', input.clientTimeTravelId)
+      .maybeSingle(),
+    admin
+      .from('client_master_relations')
+      .select('total_visits')
+      .eq('master_id', input.crmMasterId)
+      .eq('client_id', input.clientCrmId)
+      .maybeSingle(),
+    admin
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('master_id', input.crmMasterId),
+  ]);
+
+  if (referralMaster.error || !referralMaster.data) {
+    throw new Error(`[verify] referral master missing: ${referralMaster.error?.message}`);
+  }
+  if (referralMaster.data.referral_code !== input.referralCode) {
+    throw new Error(
+      `[verify] referral code mismatch: got "${referralMaster.data.referral_code}", expected "${input.referralCode}"`,
+    );
+  }
+
+  if (timeTravelPricing.error || !timeTravelPricing.data?.pricing_rules) {
+    throw new Error(`[verify] missing pricing_rules for timetravel master`);
+  }
+
+  if (timeTravelLoyalty.error || (timeTravelLoyalty.data ?? []).length === 0) {
+    throw new Error(`[verify] missing loyalty program for timetravel master`);
+  }
+
+  if (timeTravelRelation.error || !timeTravelRelation.data) {
+    throw new Error(`[verify] missing client_master_relations for timetravel domain`);
+  }
+
+  if (crmRelation.error || !crmRelation.data) {
+    throw new Error(`[verify] missing client_master_relations for CRM domain`);
+  }
+
+  if (crmBookings.error || (crmBookings.count ?? 0) < 100) {
+    throw new Error(`[verify] CRM bookings count is too low: ${crmBookings.count ?? 0}`);
+  }
+
+  console.log('  [verify] ✓ Integrity checks passed');
 }
 
 // ─── Runtime ID export ────────────────────────────────────────────────────────
@@ -721,13 +842,26 @@ async function main(): Promise<void> {
 
   // ── Step 1: Resolve/create auth users ──────────────────────────────────────
   console.log('\n[step 1] Resolving auth users...');
-  const [timeTravelId, crmId, authId, referralId, clientId, studioAdminId] =
+  const [
+    timeTravelId,
+    crmId,
+    authId,
+    referralId,
+    clientTimeTravelId,
+    clientCrmId,
+    clientAuthId,
+    clientReferralId,
+    studioAdminId,
+  ] =
     await Promise.all([
       getOrCreateUser(ACCOUNTS.masterTimeTravel, 'E2E TimeTravelMaster'),
       getOrCreateUser(ACCOUNTS.masterCrm,        'E2E CrmMaster'),
       getOrCreateUser(ACCOUNTS.masterAuth,        'E2E AuthMaster'),
       getOrCreateUser(ACCOUNTS.masterReferral,    'E2E ReferralMaster'),
-      getOrCreateUser(ACCOUNTS.client,            'E2E TestClient'),
+      getOrCreateUser(ACCOUNTS.clientTimeTravel,  'E2E TimeTravelClient'),
+      getOrCreateUser(ACCOUNTS.clientCrm,         'E2E CrmClient'),
+      getOrCreateUser(ACCOUNTS.clientAuth,        'E2E AuthClient'),
+      getOrCreateUser(ACCOUNTS.clientReferral,    'E2E ReferralClient'),
       getOrCreateUser(ACCOUNTS.studioAdmin,       'E2E StudioAdmin'),
     ]);
 
@@ -738,7 +872,10 @@ async function main(): Promise<void> {
     upsertProfile(crmId,         ACCOUNTS.masterCrm,        'E2E CrmMaster',        'master'),
     upsertProfile(authId,        ACCOUNTS.masterAuth,       'E2E AuthMaster',       'master'),
     upsertProfile(referralId,    ACCOUNTS.masterReferral,   'E2E ReferralMaster',   'master'),
-    upsertProfile(clientId,      ACCOUNTS.client,           'E2E TestClient',       'client'),
+    upsertProfile(clientTimeTravelId, ACCOUNTS.clientTimeTravel, 'E2E TimeTravelClient', 'client'),
+    upsertProfile(clientCrmId,        ACCOUNTS.clientCrm,        'E2E CrmClient',        'client'),
+    upsertProfile(clientAuthId,       ACCOUNTS.clientAuth,       'E2E AuthClient',       'client'),
+    upsertProfile(clientReferralId,   ACCOUNTS.clientReferral,   'E2E ReferralClient',   'client'),
     upsertProfile(studioAdminId, ACCOUNTS.studioAdmin,      'E2E StudioAdmin',      'master'),
   ]);
 
@@ -753,24 +890,41 @@ async function main(): Promise<void> {
   ]);
 
   // Client profile (separate table from master_profiles)
-  await upsertClientProfile(clientId);
+  await Promise.all([
+    upsertClientProfile(clientTimeTravelId),
+    upsertClientProfile(clientCrmId),
+    upsertClientProfile(clientAuthId),
+    upsertClientProfile(clientReferralId),
+  ]);
 
   // ── Step 4: Wipe existing E2E transactional data ───────────────────────────
   console.log('\n[step 4] Wiping stale E2E data...');
-  await wipeMasterData([timeTravelId, crmId, authId, referralId, studioAdminId]);
+  await wipeMasterData(
+    [timeTravelId, crmId, authId, referralId, studioAdminId],
+    [clientTimeTravelId, clientCrmId, clientAuthId, clientReferralId],
+  );
 
   // ── Step 5: Seed per domain ────────────────────────────────────────────────
   console.log('\n[step 5] Seeding domain data...');
   // TimeTravelMaster has the most work — run first, sequentially
-  await seedTimeTravelMaster(timeTravelId, clientId);
+  await seedTimeTravelMaster(timeTravelId, clientTimeTravelId);
 
   // Remaining domains are independent — run in parallel
   const [referralCode] = await Promise.all([
     seedReferralMaster(referralId),
-    seedCrmMaster(crmId),
+    seedCrmMaster(crmId, clientCrmId),
     seedAuthMaster(authId),
     seedStudioAdmin(studioAdminId),
   ]);
+
+  await verifySeedIntegrity({
+    timeTravelMasterId: timeTravelId,
+    crmMasterId: crmId,
+    referralMasterId: referralId,
+    referralCode,
+    clientTimeTravelId,
+    clientCrmId,
+  });
 
   // ── Step 6: Write runtime IDs ──────────────────────────────────────────────
   writeRuntimeEnv({
@@ -783,9 +937,16 @@ async function main(): Promise<void> {
     E2E_MASTER_REFERRAL_ID:     referralId,
     E2E_MASTER_REFERRAL_SLUG:   SLUGS.referralMaster,
     E2E_MASTER_REFERRAL_CODE:   referralCode,
-    E2E_CLIENT_ID:              clientId,
+    E2E_CLIENT_TIMETRAVEL_ID:   clientTimeTravelId,
+    E2E_CLIENT_CRM_ID:          clientCrmId,
+    E2E_CLIENT_AUTH_ID:         clientAuthId,
+    E2E_CLIENT_REFERRAL_ID:     clientReferralId,
     E2E_STUDIO_ADMIN_ID:        studioAdminId,
     E2E_STUDIO_ADMIN_SLUG:      SLUGS.studioAdmin,
+    // Backward-compatible aliases used by older specs (kept deterministic).
+    E2E_MASTER_ID:              crmId,
+    E2E_MASTER_SLUG:            SLUGS.crmMaster,
+    E2E_CLIENT_ID:              clientCrmId,
   });
 
   console.log('');

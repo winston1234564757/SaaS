@@ -34,25 +34,22 @@ export class BookingsManagePage {
     this.page = page;
     this.heading = page.locator('h1').first();
 
-    this.dayViewBtn   = page.getByRole('button', { name: /^День$/i });
-    this.weekViewBtn  = page.getByRole('button', { name: /^Тиждень$/i });
-    this.monthViewBtn = page.getByRole('button', { name: /^Місяць$/i });
+    this.dayViewBtn   = page.getByTestId('bookings-view-day');
+    this.weekViewBtn  = page.getByTestId('bookings-view-week');
+    this.monthViewBtn = page.getByTestId('bookings-view-month');
 
-    this.prevBtn = page.getByRole('button', { name: /назад|←|prev/i }).first()
-      .or(page.locator('button[aria-label*="попередн"]').first());
-    this.nextBtn = page.getByRole('button', { name: /вперед|→|next/i }).first()
-      .or(page.locator('button[aria-label*="наступн"]').first());
+    this.prevBtn = page.getByTestId('bookings-nav-prev');
+    this.nextBtn = page.getByTestId('bookings-nav-next');
 
-    this.searchInput = page.getByPlaceholder(/Пошук|Клієнт|ім.я/i).first();
+    this.searchInput = page.getByTestId('bookings-search-input');
 
     // FAB — фіксована кругла кнопка
-    this.fab = page.locator('button.fixed.rounded-full')
-      .or(page.locator('[data-testid="fab-add-booking"]'));
+    this.fab = page.getByTestId('fab-add-booking');
 
-    // ManualBookingForm
-    this.clientNameInput  = page.getByPlaceholder(/Ім.я клієнта|Ім'я/i).first();
-    this.clientPhoneInput = page.getByPlaceholder(/Телефон|380/i).first();
-    this.saveBookingBtn   = page.getByRole('button', { name: /Додати запис|Зберегти/i }).first();
+    // ManualBookingForm / Wizard
+    this.clientNameInput  = page.getByTestId('wizard-name-input');
+    this.clientPhoneInput = page.getByTestId('wizard-phone-input');
+    this.saveBookingBtn   = page.getByTestId('wizard-submit-btn');
 
     // Деталі
     this.bookingModal     = page.locator('[role="dialog"]').first();

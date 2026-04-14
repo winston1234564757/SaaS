@@ -1,59 +1,30 @@
-DIRECTIVE: GLOBAL PLAYWRIGHT E2E & TIME-SERIES TEST SUITE
-ROLE: Principal QA Automation Engineer & Enterprise SDET.
-CONTEXT: We are doing the FINAL PROJECT CHECK for "BookIT" (B2B2C SaaS CRM for independent service providers). We need a global, bulletproof Playwright E2E testing infrastructure.
-
-CRITICAL CHALLENGE: The application contains complex, time-dependent algorithms and data-heavy features. Examples:
-
-"Smart Slots": Recommending booking times to clients based on their historical visit patterns.
-
-Dynamic Pricing: Prices changing automatically "N hours before" a slot.
-
-Loyalty Programs: Discounts applying automatically on the 2nd/3rd visit.
-To test these, you cannot just click through a blank UI. You must simulate historical data mass and manipulate browser/system time.
+DIRECTIVE: EXECUTE PHASE 5 (CI/CD PIPELINE & PLATFORM STABILITY)
+ROLE: Principal DevOps & CI/CD Architect.
+PROTOCOL: "Iron Machine" — Zero merge allowed if tests are red.
+CONTEXT: Phases 1 through 4 are fully verified and stable locally. Our E2E suite is bulletproof. Now, we must execute Fix Plan 05 (docs/e2e-fix-plans/05-runtime-platform-and-ci-stability.md) to integrate this suite into a continuous integration pipeline.
 
 DIRECTIVE & ACTION PLAN:
 
-1. Infrastructure & Global Setup (playwright.config.ts):
+Analyze: Read 05-runtime-platform-and-ci-stability.md to understand the CI constraints.
 
-Configure Playwright to run in the browser (Chromium, WebKit, Mobile Safari).
+GitHub Actions Workflow (.github/workflows/e2e.yml):
 
-Implement Authentication State Caching (global.setup.ts). Do NOT login via UI in every test. Generate and save storageState (cookies/localStorage) for 3 static test profiles: TestMaster, TestClient, TestStudioAdmin.
+Create a robust GitHub Actions pipeline that triggers on pull_request and push to main.
 
-2. The "Time Machine" & Data Seeder (CRITICAL):
+Setup Node.js 20+, install dependencies, and install Playwright browsers.
 
-Create a scripts/seed-e2e-data.ts utility that interacts directly with Supabase Admin client.
+Crucial: Configure the database step. Since we rely on a seeder and Supabase, determine the best strategy for CI (either starting Supabase local via CLI npx supabase start, or defining staging environment variables).
 
-This script MUST generate massive historical data for TestMaster:
+Run the build (npm run build) and then execute the E2E suite (npm run test:e2e).
 
-Create 50+ past bookings spanning the last 6 months for specific clients to trigger the "Smart Slots" algorithm.
+Artifacts & Retries:
 
-Create future bookings to test schedule conflicts.
+Ensure the workflow uploads the playwright-report/ and test-results/ directories as artifacts if tests fail, so we can debug visually.
 
-Setup loyalty rules and dynamic pricing rules in the DB.
+Configure Playwright config specifically for CI (retries: 2, workers: 1 or optimized parallelization to avoid CI runner CPU throttling).
 
-In tests requiring time manipulation, utilize Playwright's page.clock API (page.clock.install(), page.clock.setFixedTime()) to trick the frontend into thinking it's exactly 2 hours before a booking to verify Dynamic Pricing triggers correctly.
+Vercel / Platform Tuning:
 
-3. Test Epics to Implement (Spec Files):
+If there are any next.config.ts or Vercel build command optimizations required to prevent OOM (Out of Memory) errors during build in CI, apply them now.
 
-01-auth-guards.spec.ts: Verify unauthenticated redirects. Ensure Google OAuth users who skip the phone number step are hard-locked on /my/setup/phone.
-
-02-time-travel-logic.spec.ts: - Mock time to 3 days ago, book an appointment. Mock time to today, check if Loyalty discount applies for the second booking.
-
-Verify Dynamic Pricing: Fast-forward time to "2 hours before slot", assert the UI shows the discounted/surged price.
-
-Verify Smart Slots: Authenticate as TestClient who has 5 morning bookings in history, assert the booking widget highlights morning slots as "Recommended".
-
-03-referral-engine.spec.ts: Test the C2B Barter and B2B2C Cartel links. Ensure cookies/referral parameters are correctly captured across the public booking flow and stored in the DB after auth.
-
-04-master-crm-smoke.spec.ts: Heavy data rendering. Navigate the Master Dashboard with 500 seeded clients and 1000 bookings. Assert pagination, infinite scroll, and analytics calculations (Revenue Forecast) load correctly and display accurate numbers.
-
-4. Execution Standards:
-
-Use Page Object Model (POM) for all major screens.
-
-Avoid page.waitForTimeout(). Use precise locator assertions (await expect(locator).toBeVisible()).
-
-Add a script in package.json: "test:e2e": "npx tsx scripts/seed-e2e-data.ts && playwright test".
-
-EXECUTE: Start by providing the playwright.config.ts, the Data Seeder script structure, and the 02-time-travel-logic.spec.ts logic.
-///Користуйся GRAPHIFY активно
+EXECUTE Phase 5. Generate the YAML workflow and any necessary configuration adjustments.

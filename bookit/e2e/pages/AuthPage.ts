@@ -7,6 +7,9 @@ import { type Page, type Locator } from '@playwright/test';
  */
 export class AuthPage {
   readonly page: Page;
+  readonly continueButton: Locator;
+  readonly roleClientCard: Locator;
+  readonly roleMasterCard: Locator;
   readonly phoneInput: Locator;
   readonly sendSmsButton: Locator;
   readonly googleButton: Locator;
@@ -16,6 +19,9 @@ export class AuthPage {
 
   constructor(page: Page) {
     this.page = page;
+    this.continueButton = page.getByRole('button', { name: /Продовжити/i });
+    this.roleClientCard = page.getByRole('button', { name: /Я Клієнт/i });
+    this.roleMasterCard = page.getByRole('button', { name: /Я Майстер/i });
     this.phoneInput    = page.locator('input[type="tel"]');
     this.sendSmsButton = page.getByRole('button', { name: /Отримати код/i });
     this.googleButton  = page.getByRole('button', { name: /Google/i });
@@ -27,6 +33,11 @@ export class AuthPage {
 
   async goto() {
     await this.page.goto('/login');
+    await this.page.waitForLoadState('domcontentloaded');
+  }
+
+  async goToPhoneStep() {
+    await this.continueButton.click();
     await this.page.waitForLoadState('domcontentloaded');
   }
 

@@ -173,6 +173,7 @@ export function BookingsPage() {
           {(['day', 'week', 'month'] as ViewMode[]).map(v => (
             <button
               key={v}
+              data-testid={`bookings-view-${v}`}
               onClick={() => setView(v)}
               className={`flex-1 py-2 rounded-2xl text-xs font-medium transition-all ${
                 view === v ? 'bg-[#789A99] text-white' : 'bg-white/60 text-[#6B5750] hover:bg-white/80'
@@ -186,6 +187,7 @@ export function BookingsPage() {
         {/* Навігація */}
         <div className="flex items-center justify-between mt-3">
           <button
+            data-testid="bookings-nav-prev"
             onClick={() => navigate(-1)}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white transition-colors"
           >
@@ -206,6 +208,7 @@ export function BookingsPage() {
             }
           </div>
           <button
+            data-testid="bookings-nav-next"
             onClick={() => navigate(1)}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white transition-colors"
           >
@@ -233,6 +236,7 @@ export function BookingsPage() {
       <div className="relative">
         <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D]" />
         <input
+          data-testid="bookings-search-input"
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -428,6 +432,7 @@ export function BookingsPage() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.25, type: 'spring', stiffness: 400, damping: 22 }}
         whileTap={{ scale: 0.94 }}
+        data-testid="fab-add-booking"
         id="tour-bookings-manual"
         onClick={() => setFormOpen(true)}
         className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#789A99] text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"

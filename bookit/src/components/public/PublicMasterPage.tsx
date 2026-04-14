@@ -606,6 +606,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
             transition={{ delay: 0.4, type: 'spring', stiffness: 280, damping: 24 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => openBooking()}
+            data-testid="book-button"
             className="w-full h-14 rounded-2xl text-white font-bold text-base transition-opacity hover:opacity-90"
             style={{ background: theme.accent, boxShadow: `0 8px 28px ${theme.accent}55` }}
           >

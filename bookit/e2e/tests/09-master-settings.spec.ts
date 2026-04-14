@@ -29,11 +29,9 @@ test.describe('Settings — профіль майстра', () => {
       await settings.goto();
       await expect(settings.heading).toBeVisible({ timeout: 10_000 });
 
-      // Перевірити наявність основних полів
-      const bioOrNameVisible =
-        await settings.bioTextarea.isVisible().catch(() => false) ||
-        await settings.nameInput.isVisible().catch(() => false);
-      expect(bioOrNameVisible).toBe(true);
+      // Перевірити наявність основних полів з timeout
+      await expect(settings.bioTextarea).toBeVisible({ timeout: 10_000 });
+      await expect(settings.nameInput).toBeVisible({ timeout: 10_000 });
     } finally {
       await context.close();
     }
@@ -52,7 +50,7 @@ test.describe('Settings — профіль майстра', () => {
       await settings.goto();
 
       // Знайти textarea для bio
-      const bioField = page.locator('textarea').first();
+      const bioField = settings.bioTextarea;
       const bioVisible = await bioField.isVisible().catch(() => false);
 
       if (!bioVisible) {
@@ -67,7 +65,7 @@ test.describe('Settings — профіль майстра', () => {
       await think(page, 300, 500);
 
       // Натиснути кнопку збереження
-      const saveBtn = page.getByRole('button', { name: /Зберегти|Оновити|Зберегти зміни/i }).first();
+      const saveBtn = settings.saveProfileBtn;
       await scrollAndFocus(saveBtn);
       await saveBtn.click();
 
@@ -80,7 +78,7 @@ test.describe('Settings — профіль майстра', () => {
       await page.waitForLoadState('networkidle');
 
       // Перевірити що значення збереглось
-      const currentValue = await page.locator('textarea').first().inputValue().catch(() => '');
+      const currentValue = await settings.bioTextarea.inputValue().catch(() => '');
       // Bio може бути truncated або не збережено якщо є валідація — soft assert
       if (currentValue) {
         expect(currentValue).toContain('E2E');
@@ -103,10 +101,7 @@ test.describe('Settings — профіль майстра', () => {
       await settings.goto();
 
       // Знайти slug input
-      const slugInput = page.locator('input[name="slug"]')
-        .or(page.locator('input[placeholder*="slug"]'))
-        .or(page.locator('input[placeholder*="посилання"]'))
-        .first();
+      const slugInput = settings.slugInput;
 
       const slugVisible = await slugInput.isVisible().catch(() => false);
       if (!slugVisible) {
@@ -141,20 +136,19 @@ test.describe('Settings — профіль майстра', () => {
 
     const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
     const page = await context.newPage();
+    const settings = new SettingsPage(page);
 
     try {
       await page.goto('/dashboard/settings');
       await page.waitForLoadState('networkidle');
 
-      // Знайти секцію графіку (за текстом або даними)
-      const scheduleSection = page.getByText(/Графік|Розклад|Робочі години|Schedule/i).first();
-      await expect(scheduleSection).toBeVisible({ timeout: 10_000 });
+      // Чекаємо поки день тижня стане видимим замість пошуку тексту
+      const dayToggle = settings.mondayToggle;
+      await expect(dayToggle).toBeVisible({ timeout: 10_000 });
 
-      await scrollAndFocus(scheduleSection);
+      await scrollAndFocus(dayToggle);
       await think(page, 400, 700);
 
-      // Знайти хоча б один toggle для дня тижня
-      const dayToggle = page.locator('[role="switch"], input[type="checkbox"]').first();
       const toggleVisible = await dayToggle.isVisible().catch(() => false);
 
       if (toggleVisible) {

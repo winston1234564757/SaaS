@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
+  // CI / Vercel OOM prevention is handled via NODE_OPTIONS in the GH Actions
+  // workflow (--max-old-space-size=4096) rather than in this config, because
+  // Next.js 16 Turbopack rejects a `webpack:` key when turbopack is active.
 };
 
 export default nextConfig;

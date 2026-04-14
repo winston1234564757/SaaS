@@ -48,7 +48,7 @@ export function BookingWizard({
     useDynamicPrice, setUseDynamicPrice,
     clientUserId, createdBookingId, setCreatedBookingId,
     clientHistoryTimes, loyaltyDiscount, partners,
-    saving, setSaving, setSaveError, upgradePromptOpen, setUpgradePromptOpen,
+    saving, setSaving, saveError, setSaveError, upgradePromptOpen, setUpgradePromptOpen,
     suggestedProductIds,
     register, errors, trigger, watchName, watchPhone, setValue,
     addToCart, removeFromCart, cartQty, toggleService,
@@ -153,6 +153,7 @@ export function BookingWizard({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+            data-testid="wizard-panel"
             className="fixed bottom-0 left-0 right-0 z-[60] max-h-[92dvh] flex flex-col rounded-t-[28px] overflow-hidden"
             style={{ background: 'rgba(255,248,244,0.97)', backdropFilter: 'blur(32px)' }}
           >
@@ -288,6 +289,7 @@ export function BookingWizard({
                         finalTotal={finalTotal}
                         canSubmit={canSubmit}
                         saving={saving}
+                        saveError={saveError}
                         onSubmit={handleSubmit}
                         direction={direction}
                       />

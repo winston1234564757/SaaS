@@ -238,6 +238,7 @@ export function DateTimePicker({
                       key={item.slot.time}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => onTimeSelect(item.slot.time)}
+                      data-testid="time-slot"
                       className={`relative rounded-xl py-3 text-center text-sm font-medium transition-all ${
                         selectedTime === item.slot.time
                           ? 'bg-[#789A99] text-white shadow-md ring-2 ring-[#789A99]/30 border-transparent'
@@ -310,6 +311,7 @@ export function DateTimePicker({
         <button
           disabled={!canProceedDatetime}
           onClick={onContinue}
+          data-testid="wizard-next-btn"
           className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
             canProceedDatetime
               ? 'bg-[#789A99] text-white hover:bg-[#6B8C8B] active:scale-[0.98]'

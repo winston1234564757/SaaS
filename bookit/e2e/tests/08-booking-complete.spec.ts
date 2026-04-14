@@ -12,7 +12,7 @@ import { supabaseAdmin, deleteTestBookings } from '../utils/supabase';
 import { humanType, think, scrollAndFocus } from '../utils/human';
 
 const SLUG = process.env.E2E_MASTER_SLUG;
-const TEST_CLIENT_NAME  = 'E2E Test Клієнт BookingFlow';
+const TEST_CLIENT_NAME  = 'Тестовий Клієнт';
 const TEST_CLIENT_PHONE = '380671234567';
 
 test.describe('Повний BookingFlow', () => {
@@ -35,18 +35,17 @@ test.describe('Повний BookingFlow', () => {
     await think(page);
 
     // ── Натиснути "Записатися" ───────────────────────────────────────────
-    // Знаходимо sticky CTA по унікальному класу h-14 (flash-deal кнопка має py-2, а не h-14)
-    const bookBtn = page.locator('button.h-14');
+    const bookBtn = page.getByTestId('book-button');
     await expect(bookBtn).toBeVisible({ timeout: 10_000 });
 
     // Клік через evaluate — обходить nav-overlay (pointer-events-none з дітьми що блокують координати)
     await page.evaluate(() => {
-      const btn = document.querySelector<HTMLButtonElement>('button.h-14');
+      const btn = document.querySelector<HTMLButtonElement>('[data-testid="book-button"]');
       btn?.click();
     });
 
-    // Крок 1 — wizard відкрито, перевіряємо backdropvата панель
-    const wizardPanel = page.locator('div[class*="rounded-t-"][class*="fixed"]').last();
+    // Крок 1 — wizard відкрито, перевіряємо backdrop та панель
+    const wizardPanel = page.getByTestId('wizard-panel').last();
     await expect(wizardPanel).toBeVisible({ timeout: 10_000 });
 
     // Перевіряємо заголовок кроку 1 у header wizard
@@ -54,15 +53,13 @@ test.describe('Повний BookingFlow', () => {
     await expect(stepHeader).toBeVisible({ timeout: 8_000 });
 
     // Вибрати першу доступну послугу — шукаємо ВСЕРЕДИНІ wizard panel (z-[60])
-    // Сервіс-кнопки: w-full text-left rounded-2xl border (на відміну від іконок w-9 h-9)
-    const firstService = wizardPanel.locator('button.w-full.text-left').first()
-      .or(wizardPanel.locator('[data-testid="service-card"]').first());
+    const firstService = wizardPanel.getByTestId('service-card').first();
     await expect(firstService).toBeVisible({ timeout: 10_000 });
     await think(page, 500, 1000); // "людина читає список"
     await firstService.click();
 
     // Кнопка "Далі" має стати активною
-    const nextBtn = page.getByRole('button', { name: /^Далі/i }).last();
+    const nextBtn = wizardPanel.getByTestId('wizard-next-btn').last();
     await expect(nextBtn).toBeEnabled({ timeout: 5_000 });
     await think(page, 300, 600);
     await nextBtn.click();
@@ -75,10 +72,10 @@ test.describe('Повний BookingFlow', () => {
     // Сьогоднішній день може бути вже вибрано — якщо слоти є, просто пропускаємо вибір дати
     await think(page, 400, 800); // "людина дивиться на календар"
 
-    // Слоти часу: кнопки з текстом "16:30\n17:30" (start + end) — шукаємо будь-яку кнопку з часовим паттерном
+    // Слоти часу: шукаємо потрібні кнопки по test-id
     // Вони знаходяться всередині wizard panel, мають disabled стан якщо зайняті
     await think(page, 500, 900);
-    const availableSlot = wizardPanel.locator('button:not([disabled])').filter({ hasText: /\d{1,2}:\d{2}/ }).first();
+    const availableSlot = wizardPanel.locator('[data-testid="time-slot"]:not([disabled])').first();
 
     const slotCount = await availableSlot.count();
     if (slotCount > 0) {
@@ -87,25 +84,24 @@ test.describe('Повний BookingFlow', () => {
       await availableSlot.click();
     }
 
-    // Перейти далі — кнопка змінюється на "Далі — {дата} о {час}" після вибору слоту
-    // Коли не вибрано — "Обери час"; використовуємо ширший матч
-    const nextBtn2 = wizardPanel.locator('button').filter({ hasText: /Далі|Обери час|Обери день/i }).last();
+    // Перейти далі
+    const nextBtn2 = wizardPanel.getByTestId('wizard-next-btn').last();
     await expect(nextBtn2).toBeVisible({ timeout: 5_000 });
     // Чекаємо поки кнопка стане активною (слот вибрано)
-    await expect(wizardPanel.locator('button').filter({ hasText: /^Далі/i }).last()).toBeEnabled({ timeout: 8_000 });
+    await expect(nextBtn2).toBeEnabled({ timeout: 8_000 });
     await think(page, 300, 500);
-    await wizardPanel.locator('button').filter({ hasText: /^Далі/i }).last().click();
+    await nextBtn2.click();
 
     // ── Крок 3 — товари (якщо є) або одразу крок 4 ──────────────────────
     // Спробуємо пропустити товари якщо є кнопка
-    const skipProductsBtn = page.getByRole('button', { name: /Пропустити|Skip/i }).first();
+    const skipProductsBtn = wizardPanel.getByTestId('wizard-skip-products-btn').first();
     const skipVisible = await skipProductsBtn.isVisible().catch(() => false);
     if (skipVisible) {
       await think(page, 300, 500);
       await skipProductsBtn.click();
     } else {
       // Можливо одразу крок деталей — перевіримо кнопку "Далі"
-      const nextBtn3 = page.getByRole('button', { name: /^Далі/i }).last();
+      const nextBtn3 = wizardPanel.getByTestId('wizard-next-btn').last();
       const nextVisible = await nextBtn3.isVisible().catch(() => false);
       if (nextVisible) {
         const isEnabled = await nextBtn3.isEnabled().catch(() => false);
@@ -131,14 +127,14 @@ test.describe('Повний BookingFlow', () => {
     await humanType(phoneInput, TEST_CLIENT_PHONE);
 
     // Натиснути "Підтвердити запис"
-    const confirmBtn = page.locator('button').filter({ hasText: /Підтвердити запис/i }).first();
+    const confirmBtn = wizardPanel.getByTestId('wizard-submit-btn');
     await scrollAndFocus(confirmBtn);
     await expect(confirmBtn).toBeEnabled({ timeout: 8_000 });
     await think(page, 500, 800); // "людина ще раз перевіряє"
     await confirmBtn.click();
 
     // ── Крок 5 — Success ─────────────────────────────────────────────────
-    const successMsg = page.getByText(/Запис підтверджено|Успішно|Дякуємо|Готово/i).first();
+    const successMsg = wizardPanel.getByTestId('wizard-success').first();
     await expect(successMsg).toBeVisible({ timeout: 15_000 });
 
     // Перевірити що запис є в БД

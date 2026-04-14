@@ -43,6 +43,7 @@ export function BookingSuccess({
     <motion.div key="success" custom={direction} variants={slide}
       initial="enter" animate="center" exit="exit"
       transition={{ duration: 0.22, ease: 'easeOut' }}
+      data-testid="wizard-success"
       className="flex flex-col items-center text-center py-6 gap-5">
 
       <motion.div
