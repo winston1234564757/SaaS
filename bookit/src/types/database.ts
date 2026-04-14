@@ -56,6 +56,7 @@ export interface MasterProfile {
   telegram_chat_id: string | null;
   avatar_emoji: string;
   has_seen_tour: boolean;
+  seen_tours: Record<string, boolean>;
   pricing_rules: PricingRules | null;
   working_hours: WorkingHoursConfig | null;
   timezone: string | null;
