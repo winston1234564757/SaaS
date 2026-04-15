@@ -171,7 +171,18 @@ export class BookingWidgetPage {
     const dayBtn = this.page.locator(selector);
     
     // Wait for the specific date to appear in the DOM (handles slow hydration/fetching)
-    await dayBtn.waitFor({ state: 'attached', timeout: 10_000 });
+    try {
+      await dayBtn.waitFor({ state: 'attached', timeout: 10_000 });
+    } catch (e) {
+      // Diagnostic: Log all available date IDs if the target is missing
+      const allDays = await this.page.evaluate(() => {
+        return Array.from(document.querySelectorAll('[id^="day-"]')).map(el => el.id);
+      });
+      const serverNow = await this.page.locator('#e2e-debug-now').getAttribute('data-now').catch(() => 'unknown');
+      console.error(`[E2E Error] Could not find date button ${selector}. Available date IDs:`, allDays);
+      console.error(`[E2E Error] Server-side getNow() reported: ${serverNow}`);
+      throw e;
+    }
     
     await dayBtn.scrollIntoViewIfNeeded();
     await dayBtn.click({ force: true });

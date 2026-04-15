@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-04-15)
 
 ## Corpus Check
-- 304 files · ~308,938 words
+- 304 files · ~309,457 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 822 nodes · 639 edges · 284 communities detected
+- 824 nodes · 641 edges · 284 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -298,8 +298,8 @@
 ## God Nodes (most connected - your core abstractions)
 1. `main()` - 13 edges
 2. `seedTimeTravelMaster()` - 11 edges
-3. `seedCrmMaster()` - 9 edges
-4. `BookingWidgetPage` - 7 edges
+3. `BookingWidgetPage` - 9 edges
+4. `seedCrmMaster()` - 9 edges
 5. `PublicBookingPage` - 7 edges
 6. `ServicesPage` - 7 edges
 7. `POST()` - 7 edges
@@ -336,24 +336,24 @@ Cohesion: 0.27
 Nodes (5): getCleanPhone(), handleResend(), handleSendSms(), handleVerify(), startCooldown()
 
 ### Community 4 - "Community 4"
+Cohesion: 0.2
+Nodes (1): BookingWidgetPage
+
+### Community 5 - "Community 5"
 Cohesion: 0.27
 Nodes (4): cancelBooking(), confirmBooking(), notifyClientOnStatusChange(), updateBookingStatus()
 
-### Community 5 - "Community 5"
+### Community 6 - "Community 6"
 Cohesion: 0.29
 Nodes (4): getCleanPhone(), handleResend(), handleSendSms(), startCooldown()
 
-### Community 6 - "Community 6"
+### Community 7 - "Community 7"
 Cohesion: 0.2
 Nodes (0): 
 
-### Community 7 - "Community 7"
+### Community 8 - "Community 8"
 Cohesion: 0.22
 Nodes (2): formatDurationFull(), pluralForm()
-
-### Community 8 - "Community 8"
-Cohesion: 0.25
-Nodes (1): BookingWidgetPage
 
 ### Community 9 - "Community 9"
 Cohesion: 0.25

@@ -5,6 +5,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { toZonedTime } from 'date-fns-tz';
 import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
+import { ALL_STEPS } from '@/components/shared/wizard/helpers';
+
+export const dynamic = 'force-dynamic';
 
 async function getMaster(slug: string) {
   // Admin client bypasses RLS — needed for profiles!inner join on public pages
@@ -176,5 +179,12 @@ export default async function MasterPublicPage(
     flashDeals,
   };
 
-  return <PublicMasterPage master={master} />;
+  return (
+    <>
+      <div id="e2e-debug-now" style={{ display: 'none' }} data-now={getNow().toISOString()}>
+        {getNow().toISOString()}
+      </div>
+      <PublicMasterPage master={master} />
+    </>
+  );
 }
