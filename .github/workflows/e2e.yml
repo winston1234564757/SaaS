@@ -75,18 +75,21 @@ jobs:
         run: |
           # 1. Capture local Supabase credentials from the running stack
           STATUS_ENV=$(supabase status --output env)
-          LOCAL_URL=$(echo "$STATUS_ENV" | grep API_URL | cut -d'=' -f2)
-          LOCAL_ANON=$(echo "$STATUS_ENV" | grep ANON_KEY | cut -d'=' -f2)
-          LOCAL_SERVICE=$(echo "$STATUS_ENV" | grep SERVICE_ROLE_KEY | cut -d'=' -f2)
+          # Defensive: strip optional quotes from the status output
+          LOCAL_URL=$(echo "$STATUS_ENV" | grep API_URL | cut -d'=' -f2 | sed 's/"//g')
+          LOCAL_ANON=$(echo "$STATUS_ENV" | grep ANON_KEY | cut -d'=' -f2 | sed 's/"//g')
+          LOCAL_SERVICE=$(echo "$STATUS_ENV" | grep SERVICE_ROLE_KEY | cut -d'=' -f2 | sed 's/"//g')
 
           # 2. Build .env.local (Used by Next.js build & runtime)
           # Note: CWD is 'bookit' (from defaults.run)
+          # CRITICAL: NEXT_PUBLIC_SITE_URL must be localhost in CI to avoid 
+          # absolute links pointing to production during E2E.
           cat <<EOF > .env.local
           NEXT_PUBLIC_SUPABASE_URL=${LOCAL_URL}
           NEXT_PUBLIC_SUPABASE_ANON_KEY=${LOCAL_ANON}
           SUPABASE_SERVICE_ROLE_KEY=${LOCAL_SERVICE}
           NEXT_PUBLIC_APP_URL=http://localhost:3000
-          NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_SITE_URL=http://localhost:3000
           NEXT_PUBLIC_VAPID_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
           NEXT_PUBLIC_TELEGRAM_BOT_NAME=${{ secrets.NEXT_PUBLIC_TELEGRAM_BOT_NAME }}
           VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}
