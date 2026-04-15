@@ -48,6 +48,9 @@ export function useBookingWizardState({
   );
 
   function go(next: WizardStep, dir: 1 | -1 = 1) {
+    if (typeof window !== 'undefined') {
+      console.log(`[Wizard] Transitioning from ${step} to ${next} (dir: ${dir})`);
+    }
     setDirection(dir); setStep(next);
   }
   function goBack() {

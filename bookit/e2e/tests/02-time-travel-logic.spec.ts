@@ -24,8 +24,7 @@
  *
  * Seeder: scripts/seed-e2e-data.ts must have run first.
  */
-import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
+import { test, expect, type ConsoleMessage } from '@playwright/test';
 import { BookingWidgetPage } from '../pages/BookingWidgetPage';
 import { rt, isSeeded } from '../utils/runtimeEnv';
 
@@ -33,16 +32,13 @@ test.use({ timezoneId: 'Europe/Kyiv' });
 
 // Helper to bridge browser console logs to Playwright terminal
 function setupConsoleBridge(page: any) {
-  page.on('console', msg => {
-    const text = msg.text();
-    if (text.includes('[getNow]') || text.includes('[DynamicPricing]') || text.includes('[Wizard]')) {
-      console.log(`[Browser] ${text}`);
-    }
+  page.on('console', (msg: any) => {
+    console.log(`[Browser ${msg.type()}] ${msg.text()}`);
+  });
+  page.on('pageerror', (err: Error) => {
+    console.error(`[Browser Error] ${err.message}`);
   });
 }
-
-const hasMasterAuth = fs.existsSync('playwright/.auth/master-timetravel.json');
-const hasClientAuth = fs.existsSync('playwright/.auth/client.json');
 
 // ─── Dynamic Pricing: Peak hours (+20%) ──────────────────────────────────────
 
@@ -234,7 +230,6 @@ test.describe('Smart Slots — Morning recommendation', () => {
    */
   test('morning slots show Рекомендовано badge for returning client', async ({ browser }) => {
     test.skip(!isSeeded(),    'Seeder not run — missing runtime IDs');
-    test.skip(!hasClientAuth, 'playwright/.auth/client.json not found');
 
     const context = await browser.newContext({ storageState: 'playwright/.auth/client.json' });
     const page    = await context.newPage();
@@ -302,7 +297,6 @@ test.describe('Loyalty Discount', () => {
    */
   test('loyalty discount banner visible for eligible client', async ({ browser }) => {
     test.skip(!isSeeded(),    'Seeder not run — missing runtime IDs');
-    test.skip(!hasClientAuth, 'playwright/.auth/client.json not found');
 
     const context = await browser.newContext({ storageState: 'playwright/.auth/client.json' });
     const page    = await context.newPage();
@@ -362,10 +356,9 @@ test.describe('Loyalty Discount', () => {
    * Verify that the master's loyalty program page renders the seeded program.
    */
   test('loyalty program visible in master dashboard', async ({ browser }) => {
-    test.skip(!hasMasterAuth, 'playwright/.auth/master-timetravel.json not found');
-
     const context = await browser.newContext({ storageState: 'playwright/.auth/master-timetravel.json' });
     const page    = await context.newPage();
+    setupConsoleBridge(page);
 
     try {
       await page.goto('/dashboard/loyalty');

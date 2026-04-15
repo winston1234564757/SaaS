@@ -1,5 +1,6 @@
 'use client';
 // src/components/shared/wizard/DateTimePicker.tsx
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { addDays, parse as parseFns, format as formatFns, addMinutes } from 'date-fns';
@@ -41,8 +42,6 @@ interface DateTimePickerProps {
   onContinue: () => void;
 }
 
-import { useState, useEffect } from 'react';
-
 export function DateTimePicker({
   days,
   scheduleStore: _scheduleStore,
@@ -72,10 +71,17 @@ export function DateTimePicker({
 
   const canProceedDatetime = !!selectedDate && !!selectedTime;
   
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <div className="flex justify-center py-10" id="hydration-waiting">
+        <div className="w-6 h-6 border-2 border-[#789A99] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <motion.div key="datetime" custom={direction} variants={slide}
+      id="datetime-picker-mounted"
       initial="enter" animate="center" exit="exit"
       transition={{ duration: 0.2, ease: 'easeInOut' }}>
 
@@ -315,8 +321,10 @@ export function DateTimePicker({
               </div>
             </button>
           )}
-        </>
-      )}
+          </>
+        )}
+      </>
+    )}
 
       {/* Continue CTA */}
       <div className="sticky bottom-0 pt-3 pb-1 bg-gradient-to-t from-[rgba(255,248,244,1)] to-transparent">
