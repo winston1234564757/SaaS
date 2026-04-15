@@ -162,9 +162,16 @@ jobs:
           # Prevent OOM on constrained GH runners (default heap ~400MB)
           NODE_OPTIONS: --max-old-space-size=4096
 
+      - name: Install faketime
+        run: sudo apt-get update && sudo apt-get install -y faketime
+
       # ── 12. Run Next.js production server in background ──────────────────────
+      # We use faketime to force the server into May 2026, matching the seeded
+      # anchor date. This ensures server-side dynamic pricing and loyalty
+      # logic (which uses 'new Date()') stays in sync with Playwright tests.
       - name: Start Next.js production server
-        run: npm run start > next-server.log 2>&1 &
+        run: |
+          faketime '2026-05-01 11:00:00' npm run start > next-server.log 2>&1 &
         env:
           PORT: 3000
 
