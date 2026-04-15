@@ -223,9 +223,10 @@ async function upsertProfile(
   email: string,
   fullName: string,
   role: 'master' | 'client',
+  phone: string | null = '+380500000001', // Default phone to bypass onboarding
 ): Promise<void> {
   const { error } = await admin.from('profiles').upsert(
-    { id, email, full_name: fullName, phone: null, role, avatar_url: null, telegram_chat_id: null },
+    { id, email, full_name: fullName, phone, role, avatar_url: null, telegram_chat_id: null },
     { onConflict: 'id' },
   );
   if (error) throw new Error(`upsertProfile(${email}): ${error.message}`);
@@ -867,15 +868,15 @@ async function main(): Promise<void> {
   // ── Step 2: Upsert profiles ────────────────────────────────────────────────
   console.log('\n[step 2] Upserting profiles...');
   await Promise.all([
-    upsertProfile(timeTravelId,  ACCOUNTS.masterTimeTravel, 'E2E TimeTravelMaster', 'master'),
-    upsertProfile(crmId,         ACCOUNTS.masterCrm,        'E2E CrmMaster',        'master'),
-    upsertProfile(authId,        ACCOUNTS.masterAuth,       'E2E AuthMaster',       'master'),
-    upsertProfile(referralId,    ACCOUNTS.masterReferral,   'E2E ReferralMaster',   'master'),
-    upsertProfile(clientTimeTravelId, ACCOUNTS.clientTimeTravel, 'E2E TimeTravelClient', 'client'),
-    upsertProfile(clientCrmId,        ACCOUNTS.clientCrm,        'E2E CrmClient',        'client'),
-    upsertProfile(clientAuthId,       ACCOUNTS.clientAuth,       'E2E AuthClient',       'client'),
-    upsertProfile(clientReferralId,   ACCOUNTS.clientReferral,   'E2E ReferralClient',   'client'),
-    upsertProfile(studioAdminId, ACCOUNTS.studioAdmin,      'E2E StudioAdmin',      'master'),
+    upsertProfile(timeTravelId,  ACCOUNTS.masterTimeTravel, 'E2E TimeTravelMaster', 'master', '+380501111111'),
+    upsertProfile(crmId,         ACCOUNTS.masterCrm,        'E2E CrmMaster',        'master', '+380502222222'),
+    upsertProfile(authId,        ACCOUNTS.masterAuth,       'E2E AuthMaster',       'master', '+380503333333'),
+    upsertProfile(referralId,    ACCOUNTS.masterReferral,   'E2E ReferralMaster',   'master', '+380504444444'),
+    upsertProfile(clientTimeTravelId, ACCOUNTS.clientTimeTravel, 'E2E TimeTravelClient', 'client', '+380991111111'),
+    upsertProfile(clientCrmId,        ACCOUNTS.clientCrm,        'E2E CrmClient',        'client', '+380992222222'),
+    upsertProfile(clientAuthId,       ACCOUNTS.clientAuth,       'E2E AuthClient',       'client', '+380993333333'),
+    upsertProfile(clientReferralId,   ACCOUNTS.clientReferral,   'E2E ReferralClient',   'client', '+380994444444'),
+    upsertProfile(studioAdminId, ACCOUNTS.studioAdmin,      'E2E StudioAdmin',      'master', '+380500000000'),
   ]);
 
   // ── Step 3: Upsert master_profiles ────────────────────────────────────────
@@ -945,7 +946,8 @@ async function main(): Promise<void> {
     // Backward-compatible aliases used by older specs (kept deterministic).
     E2E_MASTER_ID:              crmId,
     E2E_MASTER_SLUG:            SLUGS.crmMaster,
-    E2E_CLIENT_ID:              clientCrmId,
+    // Fix: point E2E_CLIENT_ID to the Time Travel client to match E2E_CLIENT_EMAIL in CI.
+    E2E_CLIENT_ID:              clientTimeTravelId,
   });
 
   console.log('');
