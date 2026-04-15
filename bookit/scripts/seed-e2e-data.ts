@@ -495,10 +495,9 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
   if (loyaltyErr) throw new Error(`loyalty insert: ${loyaltyErr.message}`);
 
   // 3. Historical bookings
-  // Deterministic anchor: UTC-rounded "now" (minutes/seconds zeroed) to avoid
-  // timezone edge-cases near date boundaries while keeping data relative to current run.
-  const now = new Date();
-  now.setUTCMinutes(0, 0, 0);
+  // Deterministic anchor: Friday, May 1st 2026.
+  // This matches the frozen clock in 02-time-travel-logic.spec.ts.
+  const now = new Date('2026-05-01T11:00:00.000Z');
   const inserts: Promise<string>[] = [];
 
   // 30 morning bookings → Smart Slots will prefer mornings

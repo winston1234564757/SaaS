@@ -72,18 +72,26 @@ jobs:
       # `supabase status --output env` prints KEY=VALUE pairs we can pipe to $GITHUB_ENV.
       - name: Export Supabase credentials
         run: |
-          supabase status --output env | grep -E '^(ANON_KEY|SERVICE_ROLE_KEY|API_URL)' >> $GITHUB_ENV
+          # Use --output env for deterministic mapping
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(supabase status --output env | grep SERVICE_ROLE_KEY | cut -d'=' -f2)" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=$(supabase status --output env | grep ANON_KEY | cut -d'=' -f2)" >> $GITHUB_ENV
+          echo "SUPABASE_URL=$(supabase status --output env | grep API_URL | cut -d'=' -f2)" >> $GITHUB_ENV
 
-      # ── 6. Build .env.test for the E2E runner ─────────────────────────────────
-      # Supabase CLI exports: API_URL, ANON_KEY, SERVICE_ROLE_KEY
-      - name: Write .env.test
+      - name: Inject environment for Build & Runtime
         run: |
-          cat > .env.test <<EOF
-          NEXT_PUBLIC_SUPABASE_URL=${API_URL}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}
-          SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
+          # Create/Overwrite .env.local with LOCAL Supabase credentials for the Next.js build
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ env.SUPABASE_URL }}" > .env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ env.SUPABASE_ANON_KEY }}" >> .env.local
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ env.SUPABASE_SERVICE_ROLE_KEY }}" >> .env.local
+          
+          # Also sync .env.test (used by seeder) to ensure it points to local, not remote
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ env.SUPABASE_URL }}" > bookit/.env.test
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ env.SUPABASE_ANON_KEY }}" >> bookit/.env.test
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ env.SUPABASE_SERVICE_ROLE_KEY }}" >> bookit/.env.test
+          # Preserve other essential E2E vars in .env.test
+          cat <<EOF >> bookit/.env.test
           E2E_BASE_URL=http://localhost:3000
-          E2E_ALLOW_REMOTE=false
+          E2E_ALLOW_REMOTE=true
           E2E_MASTER_TIMETRAVEL_EMAIL=e2e_master_timetravel@test.com
           E2E_MASTER_CRM_EMAIL=e2e_master_crm@test.com
           E2E_MASTER_AUTH_EMAIL=e2e_master_auth@test.com

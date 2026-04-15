@@ -117,13 +117,13 @@ test.describe('Referral code → /register propagation', () => {
     const ctaLink = page.getByRole('link', { name: /Зареєструватися/i });
     await ctaLink.click();
 
-    // After click, URL must be /register?ref=[code]
-    await expect(page).toHaveURL(new RegExp(`/register.*ref=${rt.masterReferralCode}`), {
-      timeout: 8_000,
-    });
+    // After click, wait for registration page to load (phone input visible)
+    await expect(page.locator('input[type="tel"]')).toBeVisible({ timeout: 10_000 });
 
-    // Phone input is visible → registration page loaded
-    await expect(page.locator('input[type="tel"]')).toBeVisible({ timeout: 8_000 });
+    // Then confirm URL still preserves the ref code after any client-side routing
+    await expect(page).toHaveURL(new RegExp(`/register.*ref=${rt.masterReferralCode}`), {
+      timeout: 5_000,
+    });
   });
 });
 
