@@ -104,6 +104,12 @@ jobs:
           NEXT_PUBLIC_DEBUG_NOW=2026-05-01T11:00:00Z
           EOF
 
+          # 3. Build .env.production (Used by Next.js production server)
+          cat <<EOF > .env.production
+          NEXT_PUBLIC_DEBUG_NOW=2026-05-01T11:00:00Z
+          TZ=Europe/Kyiv
+          EOF
+
           # 3. Build .env.test (Used by E2E seeder & Playwright runner)
           cat <<EOF > .env.test
           NEXT_PUBLIC_SUPABASE_URL=${LOCAL_URL}
@@ -172,6 +178,8 @@ jobs:
           npm run start > next-server.log 2>&1 &
         env:
           PORT: 3000
+          NEXT_PUBLIC_DEBUG_NOW: 2026-05-01T11:00:00Z
+          TZ: Europe/Kyiv
 
       # ── 13. Wait for server to be ready ──────────────────────────────────────
       - name: Wait for app to be ready

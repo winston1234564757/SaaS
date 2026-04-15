@@ -100,8 +100,7 @@ test.describe('Referral code → /register propagation', () => {
     await page.waitForLoadState('networkidle');
 
     // URL must preserve the ref param (might stay on /register or redirect to /login)
-    expect(page.url()).toMatch(/\/(register|login).*ref=/);
-    expect(page.url()).toContain(`ref=${rt.masterReferralCode}`);
+    await expect(page).toHaveURL(new RegExp(`/(register|login).*ref=${rt.masterReferralCode}`), { timeout: 10_000 });
 
     // Registration page renders (SMS OTP form)
     const phoneInput = page.locator('input[type="tel"]');
