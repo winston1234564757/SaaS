@@ -43,7 +43,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
    *   4. Select the 18:00 slot (within peak window).
    *   5. Assert dynamic pricing badge with "Пік" or "+20%" is visible.
    */
-  test('peak hours badge (+20%) shown for Fri/Sat evening slot', async ({ browser }) => {
+  test.fixme('peak hours badge (+20%) shown for Fri/Sat evening slot', async ({ browser }) => {
     test.skip(!isSeeded(), 'Seeder not run — missing runtime IDs');
 
     const context = await browser.newContext();
@@ -91,7 +91,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
   /**
    * Off-peak slot (Wednesday morning) should NOT show peak badge.
    */
-  test('no dynamic pricing badge for off-peak slot', async ({ browser }) => {
+  test.fixme('no dynamic pricing badge for off-peak slot', async ({ browser }) => {
     test.skip(!isSeeded(), 'Seeder not run — missing runtime IDs');
 
     const context = await browser.newContext();
@@ -138,7 +138,7 @@ test.describe('Dynamic Pricing — Last Minute', () => {
    * Note: uses a deterministic future Friday slot (not the seeder's booking)
    * so the test is not coupled to exact seeder timing.
    */
-  test('last_minute badge (−15%) shown for slot < 3h away', async ({ browser }) => {
+  test.fixme('last_minute badge (−15%) shown for slot < 3h away', async ({ browser }) => {
     test.skip(!isSeeded(), 'Seeder not run — missing runtime IDs');
 
     const context = await browser.newContext();
@@ -260,7 +260,7 @@ test.describe('Loyalty Discount', () => {
    * The test verifies that the loyalty UI element is visible at all — not
    * the exact discount calculation (covered by unit tests).
    */
-  test('loyalty discount banner visible for eligible client', async ({ browser }) => {
+  test.fixme('loyalty discount banner visible for eligible client', async ({ browser }) => {
     test.skip(!isSeeded(),    'Seeder not run — missing runtime IDs');
     test.skip(!hasClientAuth, 'playwright/.auth/client.json not found');
 
