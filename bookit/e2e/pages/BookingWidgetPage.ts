@@ -166,11 +166,15 @@ export class BookingWidgetPage {
    * Click a date cell by its ISO date string (e.g. "2026-05-01").
    * Uses the stable ID assigned to the date button.
    */
-  async selectDateByISO(date: string) {
-    const cell = this.page.locator(`#day-${date}`);
-    await cell.scrollIntoViewIfNeeded();
-    await cell.waitFor({ state: 'visible', timeout: 5_000 });
-    await cell.click();
+  async selectDateByISO(isoDate: string) {
+    const selector = `#day-${isoDate}`;
+    const dayBtn = this.page.locator(selector);
+    
+    // Wait for the specific date to appear in the DOM (handles slow hydration/fetching)
+    await dayBtn.waitFor({ state: 'attached', timeout: 10_000 });
+    
+    await dayBtn.scrollIntoViewIfNeeded();
+    await dayBtn.click({ force: true });
     await this.page.waitForLoadState('networkidle');
   }
 

@@ -27,7 +27,7 @@ export function useBookingScheduleData({
   selectedDate, selectedDateRef, clientHistoryTimes,
   workingHours, setSelectedDate,
 }: UseBookingScheduleDataParams) {
-  const days = useMemo(() => getDays(30), []);
+  const days = useMemo(() => getDays(30), [getNow().toDateString()]);
   const fromDateStr = useMemo(() => toISO(days[0]), [days]);
   const toDateStr   = useMemo(() => toISO(days[days.length - 1]), [days]);
 
