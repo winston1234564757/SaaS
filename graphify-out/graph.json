@@ -358,7 +358,7 @@
       "label": ".selectDateByDay()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L209",
+      "source_location": "L216",
       "id": "bookingwidgetpage_bookingwidgetpage_selectdatebyday",
       "community": 4,
       "norm_label": ".selectdatebyday()"
@@ -7878,7 +7878,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L209",
+      "source_location": "L216",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_selectdatebyday",
