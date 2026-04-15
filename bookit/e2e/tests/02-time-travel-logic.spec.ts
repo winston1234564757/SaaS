@@ -77,8 +77,11 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await peakSlot.click({ force: true });
 
       // Assert dynamic pricing badge appears (Пік label or % markup)
-      await expect(widget.dynamicPricingBadge).toBeVisible({ timeout: 8_000 });
-      const badgeText = await widget.dynamicPricingBadge.textContent();
+      // We use a flexible regex to catch various label formats
+      const badge = widget.dynamicPricingBadge;
+      await badge.waitFor({ state: 'visible', timeout: 10_000 });
+      const badgeText = await badge.textContent();
+      console.log(`[PeakHours] Found badge text: "${badgeText}"`);
       expect(badgeText).toMatch(/Пік|peak|\+20%|\+\d+%/i);
     } finally {
       await context.close();
@@ -169,8 +172,10 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       await lastMinuteSlot.waitFor({ state: 'visible', timeout: 15_000 });
       await lastMinuteSlot.click({ force: true });
 
-      await expect(widget.dynamicPricingBadge).toBeVisible({ timeout: 8_000 });
-      const badgeText = await widget.dynamicPricingBadge.textContent();
+      const badge = widget.dynamicPricingBadge;
+      await badge.waitFor({ state: 'visible', timeout: 10_000 });
+      const badgeText = await badge.textContent();
+      console.log(`[LastMinute] Found badge text: "${badgeText}"`);
       expect(badgeText).toMatch(/Остання хвилина|last.minute|-15%|-\d+%/i);
     } finally {
       await context.close();

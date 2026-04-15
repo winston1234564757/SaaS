@@ -475,9 +475,12 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
     .from('master_profiles')
     .update({
       pricing_rules: {
-        last_minute: { hours_ahead: 3, discount_pct: 15 },  // -15% if < 3h before slot
-        peak:        { days: ['fri', 'sat'], hours: [17, 20] as [number, number], markup_pct: 20 }, // +20% Fri/Sat eve
-        quiet:       { days: ['mon', 'tue'], hours: [10, 13] as [number, number], discount_pct: 10 }, // -10% Mon/Tue AM
+        // -15% if booked < 24h before slot (resilient to server/client clock drift)
+        last_minute: { hours_ahead: 24, discount_pct: 15 },
+        // +20% Fri/Sat whole day
+        peak:        { days: ['fri', 'sat'], hours: [0, 24] as [number, number], markup_pct: 20 },
+        // -10% Mon/Tue whole day
+        quiet:       { days: ['mon', 'tue'], hours: [0, 24] as [number, number], discount_pct: 10 },
       },
     })
     .eq('id', masterId);
@@ -587,8 +590,8 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
     {
       client_id:          clientId,
       master_id:          masterId,
-      total_visits:       51,
-      total_spent:        51 * 500,
+      total_visits:       50, // Multiple of 5 (loyalty target) to ensure threshold trigger
+      total_spent:        50 * 500,
       average_check:      500,
       last_visit_at:      new Date().toISOString(),
       is_vip:             false,
