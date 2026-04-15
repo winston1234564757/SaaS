@@ -1,20 +1,25 @@
-DIRECTIVE: FIX CI DEADLOCK
-ROLE: Principal DevOps.CONTEXT: The GitHub Actions E2E pipeline hung for over 60 minutes on the "Run tests" step. It deadlocked.
+DIRECTIVE: EXPOSE SILENT CI CRASHES
+ROLE: Principal DevOps.
+CONTEXT: The CI pipeline is correctly timing out and failing, which means wait-on is never seeing the Next.js server boot up on port 3000. The server is crashing silently in the background.
 
 DIRECTIVE & ACTION PLAN:
 
-Audit Workflow Execution (.github/workflows/e2e.yml):
+Fix Silent Failures in .github/workflows/e2e.yml:
 
-The deadlock is likely caused by wait-on waiting infinitely for the Next.js server to boot, but the server silently failed (or hung) in the background.
+Currently, npm run start & npx wait-on ... swallows the Next.js runtime errors.
 
-Fix: Add a strict timeout to wait-on. Example: npx wait-on http://127.0.0.1:3000 --timeout 120000 (2 minutes max). If it fails to boot, the CI must fail immediately, not hang.
+Modify the "Run tests" step to pipe the Next.js server logs to a file (e.g., server.log).
 
-Ensure the Next.js server logs are piped to stdout or a file so we can see WHY it failed to boot during the test step.
+Example: npm run start > server.log 2>&1 &
 
-Audit Playwright Config (playwright.config.ts):
+Add a Debug Step:
 
-Ensure a hard globalTimeout is set (e.g., globalTimeout: 15 * 60 * 1000 // 15 minutes) so the runner forces an exit if the test suite hangs completely.
+Add a conditional step right after the test step that runs if: failure().
 
-Ensure expect and action timeouts are explicitly configured.
+This step MUST output the contents of the log file: cat server.log. This ensures that if wait-on times out or tests fail, we can immediately see the Next.js boot errors in the GitHub Actions UI.
 
-EXECUTE: Provide the updated e2e.yml and playwright.config.ts configurations to prevent infinite hangs.
+Verify Environment Variables:
+
+Double-check that the e2e.yml workflow explicitly passes all required .env variables to the npm run start and npm run test:e2e processes. If a runtime variable is missing in the CI environment, Next.js 15 will crash on boot.
+
+EXECUTE: Output the updated .github/workflows/e2e.yml file.

@@ -1,35 +1,26 @@
-# План виправлення нарахування реферальних бонусів
+# Expose Silent CI Crashes in E2E Pipeline
 
-Користувачі скаржаться, що бонуси (PRO-тариф для майстрів та 50% знижки для клієнтів) не нараховуються при реєстрації. Ми переробимо логіку в `src/app/(auth)/register/actions.ts`, щоб зробити її атомарною та стійкою до помилок.
+The goal is to eliminate "silent" failures where the Next.js server crashes on boot in CI, but the error is swallowed by the background process. We will print the logs directly to the GH Actions console on failure and ensure all critical environment variables are present at runtime.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> Ми змінимо поведінку `upsert` у `claimMasterRole`. Замість `ignoreDuplicates: true` (який ігнорував оновлення, якщо профіль вже існував), ми будемо оновлювати поля підписки та реферера, якщо вони ще не встановлені.
-
-> [!WARNING]
-> Ми виділимо логіку "хто власник коду" в окремий блок, який перевірятиме обидві таблиці (`master_profiles` та `client_profiles`) паралельно для швидкості та надійності.
+> [!NOTE]
+> I am adding a `cat next-server.log` step that executes only if the server fails to become ready within 2 minutes. This will show the exact stack trace in your GitHub Actions UI.
 
 ## Proposed Changes
 
-### 1. Серверні дії: Реєстрація та Нагороди
+### [GitHub Workflow]
 
-#### [MODIFY] [actions.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/app/(auth)/register/actions.ts)
-- Оновити функцію `claimMasterRole`:
-    - Додати логіку пошуку реферера в обох таблицях.
-    - Реалізувати Scenario A (Client Code): нарахування PRO новому майстру та створення запису в `client_promocodes`.
-    - Реалізувати Scenario B (Master Code): нарахування PRO обом майстрам.
-    - Використати `upsert` без `ignoreDuplicates: true`, щоб гарантувати оновлення даних при повторних спробах реєстрації.
-- Аналогічно оновити `createMasterProfileAfterSignup` для підстраховки.
+#### [MODIFY] [e2e.yml](file:///C:/Users/Vitossik/SaaS/.github/workflows/e2e.yml)
+- **Inject Service Role Key**: Add `SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}` to the `.env.local` file. This is often required for server-side auth operations during tests.
+- **Immediate Debug Step**: Add a step `if: failure()` immediately after the `Wait for app to be ready` step that runs `cat next-server.log`. 
+- **Secondary Debug**: Ensure the same `cat` step exists after the Playwright test run step to catch runtime crashes that happen mid-test.
 
 ## Verification Plan
 
 ### Automated Tests
-- Зареєструвати майстра за кодом клієнта. Перевірити:
-    1. У нового майстра `subscription_tier = 'pro'`.
-    2. У таблиці `client_promocodes` з'явився запис зі знижкою 50%.
-    3. Викликано rpc `increment_client_master_invite_count`.
+- Syntax validation of the updated YAML.
+- Verify that the `grep` and `cat` commands are standard and compatible with the `ubuntu-latest` runner.
 
 ### Manual Verification
-- Перевірити логи сервера на наявність повідомлень `[claimMasterRole] Client-to-Master (Barter) applied`.
-- Перевірити БД через Supabase Dashboard.
+- The USER should trigger a run. If the server crashes, the logs will now appear directly in the step output on failure.
