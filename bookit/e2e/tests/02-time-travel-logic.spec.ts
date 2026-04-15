@@ -51,8 +51,9 @@ test.describe('Dynamic Pricing — Peak hours', () => {
     const widget  = new BookingWidgetPage(page);
 
     try {
-      // Freeze time: Friday 2026-05-01 at 17:00 local (UTC+3 → UTC 14:00)
-      const frozenFriday = new Date('2026-05-01T14:00:00.000Z'); // 17:00 Kyiv time
+      // Freeze time: Friday 2026-05-01 at 15:00 Kyiv time (UTC 12:00)
+      // Earlier frozen time ensures slots like 17:30, 18:00 are not too close to "now"
+      const frozenFriday = new Date('2026-05-01T12:00:00.000Z'); 
       await page.clock.install({ time: frozenFriday.getTime() });
 
       await widget.goto(rt.masterTimeTravelSlug);
@@ -62,8 +63,8 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await widget.selectDateByDay(1);
       await widget.waitForSlots();
 
-      // Select a slot in the peak window (17:30 or 18:00)
-      const slotTime = '18:00';
+      // Select a slot in the peak window (17:00-20:00)
+      const slotTime = '17:30';
       const peakSlot = page.locator('button').filter({ hasText: new RegExp(`^${slotTime}`) }).first();
       
       const isVisible = await peakSlot.isVisible().catch(() => false);
@@ -150,12 +151,21 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
 
-      // 14:00 slot is 2.5h from frozen clock time → last_minute rule fires
+      // 4. Future booking at NOW + 2.5h (inside the 3h last_minute window)
       // Ensure May 1st is selected
       await widget.selectDateByDay(1);
       await widget.waitForSlots();
 
-      const lastMinuteSlot = page.locator('button').filter({ hasText: /^14:00/ }).first();
+      // The seeder books 14:00. We click 14:30 (also < 3h from 11:30)
+      const slotTime = '14:30';
+      const lastMinuteSlot = page.locator('button').filter({ hasText: new RegExp(`^${slotTime}`) }).first();
+      
+      const isVisible = await lastMinuteSlot.isVisible().catch(() => false);
+      if (!isVisible) {
+        const allButtons = await page.locator('button').allInnerTexts();
+        console.log(`[LastMinute Debug] ${slotTime} slot not visible. Available:`, allButtons.filter(t => /^\d{2}:\d{2}$/.test(t)));
+      }
+
       await lastMinuteSlot.waitFor({ state: 'visible', timeout: 15_000 });
       await lastMinuteSlot.click({ force: true });
 
