@@ -1,0 +1,10 @@
+
+> bookit@0.1.0 start
+> next start
+
+▲ Next.js 16.2.1
+- Local:         http://localhost:3000
+- Network:       http://10.1.0.100:3000
+✓ Ready in 143ms
+[createBooking] Fetching master profile for ID: 9f9b3fb2-18c7-45a9-a95f-73d59a72a313
+[createBooking] Fetching master profile for ID: 7022176e-860f-4203-a1da-96e4c85d2627

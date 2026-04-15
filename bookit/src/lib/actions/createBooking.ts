@@ -139,8 +139,8 @@ export async function createBooking(
 
   // 4. Starter booking limit (30/month)
   if (mp.subscription_tier === 'starter') {
-    const now = getNow(masterTimezone);
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const nowInTZ = toZonedTime(getNow(), masterTimezone);
+    const monthStart = new Date(nowInTZ.getFullYear(), nowInTZ.getMonth(), 1).toISOString();
     const { count } = await admin
       .from('bookings')
       .select('id', { count: 'exact', head: true })

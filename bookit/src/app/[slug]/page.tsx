@@ -57,7 +57,7 @@ export default async function MasterPublicPage(
 
   // Межа місячного ліміту — рахуємо динамічно з bookings (не з лічильника bookings_this_month)
   const masterTimezone = (data as any).timezone || 'Europe/Kyiv';
-  const nowInMasterTZ = getNow(masterTimezone);
+  const nowInMasterTZ = toZonedTime(getNow(), masterTimezone);
   const monthStart = new Date(
     nowInMasterTZ.getFullYear(), nowInMasterTZ.getMonth(), 1
   ).toISOString();
@@ -93,7 +93,7 @@ export default async function MasterPublicPage(
       .select('id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at')
       .eq('master_id', data.id)
       .eq('status', 'active')
-      .gt('expires_at', nowInMasterTZ.toISOString())
+      .gt('expires_at', getNow().toISOString())
       .order('expires_at', { ascending: true })
       .limit(5),
   ]);

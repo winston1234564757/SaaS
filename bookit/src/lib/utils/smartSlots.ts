@@ -103,7 +103,7 @@ export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] 
   // 2. Strict Timezone Cutoff (For today's slots)
   let minAllowedStart = 0;
   if (selectedDate) {
-    const nowInTZ = getNow(timezone);
+    const nowInTZ = toZonedTime(getNow(), timezone);
     
     // Build a comparable date string (YYYY-MM-DD) from the zoned object
     const year = nowInTZ.getFullYear();

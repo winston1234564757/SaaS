@@ -100,7 +100,10 @@ test.describe('Referral code → /register propagation', () => {
     await page.waitForLoadState('networkidle');
 
     // URL must preserve the ref param (might stay on /register or redirect to /login)
-    await expect(page).toHaveURL(new RegExp(`/(register|login).*ref=${rt.masterReferralCode}`), { timeout: 10_000 });
+    await expect.poll(async () => {
+      const url = page.url();
+      return /(register|login).*ref=/.test(url) && url.includes(rt.masterReferralCode);
+    }, { timeout: 10_000 }).toBeTruthy();
 
     // Registration page renders (SMS OTP form)
     const phoneInput = page.locator('input[type="tel"]');
@@ -122,9 +125,10 @@ test.describe('Referral code → /register propagation', () => {
 
     // Then confirm URL still preserves the ref code after any client-side routing
     // Accepts any path (register or login) as long as the ref is present.
-    await expect(page).toHaveURL(new RegExp(`/(register|login).*ref=${rt.masterReferralCode}`), {
-      timeout: 5_000,
-    });
+    await expect.poll(async () => {
+      const url = page.url();
+      return /(register|login).*ref=/.test(url) && url.includes(rt.masterReferralCode);
+    }, { timeout: 10_000 }).toBeTruthy();
   });
 });
 

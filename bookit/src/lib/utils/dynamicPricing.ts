@@ -36,8 +36,8 @@ export function applyDynamicPricing(
     return { adjustedPrice: basePrice, modifier: 0, label: null };
   }
 
-  // 1. Get current time in master's timezone
-  const now = getNow(masterTimezone);
+  // 1. Get current time (UTC)
+  const now = getNow();
 
   // 2. Build target slot datetime in master's timezone
   // Fix Bug 4.1: Do NOT use toISOString() which shifts date back by hours for GMT+3.
