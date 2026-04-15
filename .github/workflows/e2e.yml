@@ -107,6 +107,7 @@ jobs:
           cat > .env.local <<EOF
           NEXT_PUBLIC_SUPABASE_URL=${API_URL}
           NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}
+          SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
           NEXT_PUBLIC_APP_URL=http://localhost:3000
           NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
           NEXT_PUBLIC_VAPID_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
@@ -162,6 +163,10 @@ jobs:
       - name: Wait for app to be ready
         run: npx wait-on http-get://127.0.0.1:3000 --timeout 120000
 
+      - name: Output server logs on boot failure
+        if: failure()
+        run: cat next-server.log
+
       # ── 14. Run Playwright E2E tests ─────────────────────────────────────────
       - name: Run Playwright tests
         run: npx playwright test --project=chromium
@@ -170,6 +175,10 @@ jobs:
           CI: true
           # Ensures playwright.config.ts uses CI-tuned retries/workers
           PLAYWRIGHT_HTML_REPORT: playwright-report
+
+      - name: Output server logs on test failure
+        if: failure()
+        run: cat next-server.log
 
       # ── 15. Upload artifacts on failure ──────────────────────────────────────
       - name: Upload Playwright HTML report
