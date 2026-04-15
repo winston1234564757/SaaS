@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
 
 async function getMaster(slug: string) {
@@ -55,8 +56,10 @@ export default async function MasterPublicPage(
   const supabase = await createClient();
 
   // Межа місячного ліміту — рахуємо динамічно з bookings (не з лічильника bookings_this_month)
+  const masterTimezone = (data as any).timezone || 'Europe/Kyiv';
+  const nowInMasterTZ = getNow(masterTimezone);
   const monthStart = new Date(
-    new Date().getFullYear(), new Date().getMonth(), 1
+    nowInMasterTZ.getFullYear(), nowInMasterTZ.getMonth(), 1
   ).toISOString();
 
   // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals
@@ -90,7 +93,7 @@ export default async function MasterPublicPage(
       .select('id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at')
       .eq('master_id', data.id)
       .eq('status', 'active')
-      .gt('expires_at', new Date().toISOString())
+      .gt('expires_at', nowInMasterTZ.toISOString())
       .order('expires_at', { ascending: true })
       .limit(5),
   ]);

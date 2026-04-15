@@ -101,6 +101,7 @@ jobs:
           WAYFORPAY_MERCHANT_SECRET=${{ secrets.WAYFORPAY_MERCHANT_SECRET }}
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
           TZ=Europe/Kyiv
+          NEXT_PUBLIC_DEBUG_NOW=2026-05-01T11:00:00Z
           EOF
 
           # 3. Build .env.test (Used by E2E seeder & Playwright runner)
@@ -122,6 +123,7 @@ jobs:
           E2E_CLIENT_AUTH_EMAIL=e2e_client_auth@test.com
           E2E_CLIENT_REFERRAL_EMAIL=e2e_client_referral@test.com
           E2E_STUDIO_ADMIN_EMAIL=e2e_studioadmin@test.com
+          NEXT_PUBLIC_DEBUG_NOW=2026-05-01T11:00:00Z
           TZ=Europe/Kyiv
           EOF
 
@@ -161,17 +163,13 @@ jobs:
         env:
           # Prevent OOM on constrained GH runners (default heap ~400MB)
           NODE_OPTIONS: --max-old-space-size=4096
-
-      - name: Install faketime
-        run: sudo apt-get update && sudo apt-get install -y faketime
+          NEXT_PUBLIC_DEBUG_NOW: 2026-05-01T11:00:00Z
 
       # ── 12. Run Next.js production server in background ──────────────────────
-      # We use faketime to force the server into May 2026, matching the seeded
-      # anchor date. This ensures server-side dynamic pricing and loyalty
-      # logic (which uses 'new Date()') stays in sync with Playwright tests.
+      # Note: NEXT_PUBLIC_DEBUG_NOW is already baked in and loaded from .env.local
       - name: Start Next.js production server
         run: |
-          faketime '2026-05-01 11:00:00' npm run start > next-server.log 2>&1 &
+          npm run start > next-server.log 2>&1 &
         env:
           PORT: 3000
 

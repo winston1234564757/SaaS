@@ -1,4 +1,5 @@
 import { toZonedTime } from 'date-fns-tz';
+import { getNow } from './now';
 
 /**
  * Smart Slot Engine (v2 - Bulletproof)
@@ -102,7 +103,7 @@ export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] 
   // 2. Strict Timezone Cutoff (For today's slots)
   let minAllowedStart = 0;
   if (selectedDate) {
-    const nowInTZ = toZonedTime(new Date(), timezone);
+    const nowInTZ = getNow(timezone);
     
     // Build a comparable date string (YYYY-MM-DD) from the zoned object
     const year = nowInTZ.getFullYear();

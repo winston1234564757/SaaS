@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { applyDynamicPricing, type PricingRules } from '@/lib/utils/dynamicPricing';
+import { getNow } from '@/lib/utils/now';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
 import { sendTelegramMessage, buildBookingMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
@@ -135,7 +136,7 @@ export async function createBooking(
 
   // 4. Starter booking limit (30/month)
   if (mp.subscription_tier === 'starter') {
-    const now = new Date();
+    const now = getNow(masterTimezone);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const { count } = await admin
       .from('bookings')

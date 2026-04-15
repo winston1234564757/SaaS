@@ -1,5 +1,5 @@
-import { differenceInHours, parseISO } from 'date-fns';
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { getNow } from './now';
 
 export interface PricingRules {
   peak?: { days: string[]; hours: [number, number]; markup_pct: number };
@@ -37,7 +37,7 @@ export function applyDynamicPricing(
   }
 
   // 1. Get current time in master's timezone
-  const now = toZonedTime(new Date(), masterTimezone);
+  const now = getNow(masterTimezone);
 
   // 2. Build target slot datetime in master's timezone
   // Fix Bug 4.1: Do NOT use toISOString() which shifts date back by hours for GMT+3.
