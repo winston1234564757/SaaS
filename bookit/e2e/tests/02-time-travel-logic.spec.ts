@@ -43,7 +43,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
    *   4. Select the 18:00 slot (within peak window).
    *   5. Assert dynamic pricing badge with "Пік" or "+20%" is visible.
    */
-  test.fixme('peak hours badge (+20%) shown for Fri/Sat evening slot', async ({ browser }) => {
+  test('peak hours badge (+20%) shown for Fri/Sat evening slot', async ({ browser }) => {
     test.skip(!isSeeded(), 'Seeder not run — missing runtime IDs');
 
     const context = await browser.newContext();
@@ -52,9 +52,16 @@ test.describe('Dynamic Pricing — Peak hours', () => {
 
     try {
       // Freeze time: Friday 2026-05-01 at 15:00 Kyiv time (UTC 12:00)
-      // Earlier frozen time ensures slots like 17:30, 18:00 are not too close to "now"
       const frozenFriday = new Date('2026-05-01T12:00:00.000Z'); 
       await page.clock.install({ time: frozenFriday.getTime() });
+
+      // Synchronize server-side getNow() via cookie
+      await context.addCookies([{
+        name: 'next-public-debug-now',
+        value: frozenFriday.toISOString(),
+        domain: 'localhost',
+        path: '/',
+      }]);
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
@@ -91,7 +98,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
   /**
    * Off-peak slot (Wednesday morning) should NOT show peak badge.
    */
-  test.fixme('no dynamic pricing badge for off-peak slot', async ({ browser }) => {
+  test('no dynamic pricing badge for off-peak slot', async ({ browser }) => {
     test.skip(!isSeeded(), 'Seeder not run — missing runtime IDs');
 
     const context = await browser.newContext();
@@ -102,6 +109,14 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       // Wednesday 2026-04-29 at 10:00 — no peak, no quiet (quiet is Mon/Tue)
       const frozenWed = new Date('2026-04-29T07:00:00.000Z'); // 10:00 Kyiv
       await page.clock.install({ time: frozenWed.getTime() });
+
+      // Synchronize server-side getNow() via cookie
+      await context.addCookies([{
+        name: 'next-public-debug-now',
+        value: frozenWed.toISOString(),
+        domain: 'localhost',
+        path: '/',
+      }]);
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
@@ -138,7 +153,7 @@ test.describe('Dynamic Pricing — Last Minute', () => {
    * Note: uses a deterministic future Friday slot (not the seeder's booking)
    * so the test is not coupled to exact seeder timing.
    */
-  test.fixme('last_minute badge (−15%) shown for slot < 3h away', async ({ browser }) => {
+  test('last_minute badge (−15%) shown for slot < 3h away', async ({ browser }) => {
     test.skip(!isSeeded(), 'Seeder not run — missing runtime IDs');
 
     const context = await browser.newContext();
@@ -150,6 +165,14 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       // The 14:00 slot is 2.5h away → within last_minute threshold of 3h
       const frozenTime = new Date('2026-05-01T08:30:00.000Z'); // 11:30 Kyiv
       await page.clock.install({ time: frozenTime.getTime() });
+
+      // Synchronize server-side getNow() via cookie
+      await context.addCookies([{
+        name: 'next-public-debug-now',
+        value: frozenTime.toISOString(),
+        domain: 'localhost',
+        path: '/',
+      }]);
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
@@ -260,7 +283,7 @@ test.describe('Loyalty Discount', () => {
    * The test verifies that the loyalty UI element is visible at all — not
    * the exact discount calculation (covered by unit tests).
    */
-  test.fixme('loyalty discount banner visible for eligible client', async ({ browser }) => {
+  test('loyalty discount banner visible for eligible client', async ({ browser }) => {
     test.skip(!isSeeded(),    'Seeder not run — missing runtime IDs');
     test.skip(!hasClientAuth, 'playwright/.auth/client.json not found');
 
@@ -269,6 +292,18 @@ test.describe('Loyalty Discount', () => {
     const widget  = new BookingWidgetPage(page);
 
     try {
+      // Freeze time to match the seeder's anchor (May 1st, 2026)
+      const frozenTime = new Date('2026-05-01T10:00:00.000Z');
+      await page.clock.install({ time: frozenTime.getTime() });
+
+      // Synchronize server-side getNow() via cookie
+      await context.addCookies([{
+        name: 'next-public-debug-now',
+        value: frozenTime.toISOString(),
+        domain: 'localhost',
+        path: '/',
+      }]);
+
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
 
@@ -277,7 +312,7 @@ test.describe('Loyalty Discount', () => {
       await widget.waitForSlots();
 
       const firstSlot = page.locator('button').filter({ hasText: /^\d{2}:\d{2}$/ }).first();
-      await firstSlot.waitFor({ state: 'visible', timeout: 12_000 });
+      await firstSlot.waitFor({ state: 'visible', timeout: 15_000 });
       await firstSlot.click({ force: true });
 
       // Allow wizard to transition to summary step
