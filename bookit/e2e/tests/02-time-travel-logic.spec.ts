@@ -92,7 +92,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       }
 
       await peakSlot.waitFor({ state: 'visible', timeout: 15_000 });
-      await peakSlot.click({ force: true });
+      await peakSlot.click();
 
       // Assert dynamic pricing badge appears (Пік label or % markup)
       // We use a flexible regex to catch various label formats
@@ -140,7 +140,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       // Select a morning slot
       const wednesdaySlot = page.locator('button').filter({ hasText: /^(10:00|10:30|11:00)/ }).first();
       await wednesdaySlot.waitFor({ state: 'visible', timeout: 15_000 });
-      await wednesdaySlot.click({ force: true });
+      await wednesdaySlot.click();
 
       // Dynamic pricing badge should NOT be visible (no rule matches Wed 10:00)
       await expect(widget.dynamicPricingBadge).not.toBeVisible({ timeout: 5_000 });
@@ -206,7 +206,7 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       }
 
       await lastMinuteSlot.waitFor({ state: 'visible', timeout: 15_000 });
-      await lastMinuteSlot.click({ force: true });
+      await lastMinuteSlot.click();
 
       const badge = widget.dynamicPricingBadge;
       await badge.waitFor({ state: 'visible', timeout: 10_000 });
@@ -242,8 +242,7 @@ test.describe('Smart Slots — Morning recommendation', () => {
       await widget.nextButton.click();
 
       // Wait for slot grid to render (the async schedule + scoring fetch)
-      await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1_500); // Smart Slots scoring is async
+      await page.getByTestId('slots-grid').waitFor({ state: 'visible', timeout: 15_000 });
 
       // Assert at least one slot in the morning window has a star/recommended badge
       // The app renders a star icon (Lucide Star) or "Рекомендовано" text near the slot
@@ -326,10 +325,10 @@ test.describe('Loyalty Discount', () => {
 
       const firstSlot = page.locator('button').filter({ hasText: /^\d{2}:\d{2}$/ }).first();
       await firstSlot.waitFor({ state: 'visible', timeout: 15_000 });
-      await firstSlot.click({ force: true });
+      await firstSlot.click();
 
       // Allow wizard to transition to summary step
-      await page.waitForLoadState('networkidle');
+      await widget.bookingSummary.waitFor({ state: 'visible', timeout: 15_000 });
 
       // Loyalty banner should appear in the booking summary
       const loyaltyEl = page
@@ -363,12 +362,11 @@ test.describe('Loyalty Discount', () => {
 
     try {
       await page.goto('/dashboard/loyalty');
-      await page.waitForLoadState('networkidle');
 
       // The seeded loyalty program name
       await expect(
         page.getByText(/E2E Лояльність/i),
-      ).toBeVisible({ timeout: 10_000 });
+      ).toBeVisible({ timeout: 15_000 });
     } finally {
       await context.close();
     }

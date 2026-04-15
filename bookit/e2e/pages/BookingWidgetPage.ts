@@ -132,14 +132,14 @@ export class BookingWidgetPage {
   /** Navigate to a master's public page by slug. */
   async goto(slug: string) {
     await this.page.goto(`/${slug}`);
-    await this.page.waitForLoadState('networkidle');
+    await this.masterName.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   /** Click the first service's "Записатися" button to open BookingFlow. */
   async openBookingFlow() {
     await this.firstBookButton.click();
     // Wait for the sheet/modal to appear
-    await this.page.waitForLoadState('networkidle');
+    await this.bookingSheet.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   /** Click the service with a specific name. */
@@ -147,7 +147,7 @@ export class BookingWidgetPage {
     const serviceCard = this.page.locator('div, article, section').filter({ hasText: serviceName }).first();
     const btn = serviceCard.getByRole('button', { name: /Записатися/i });
     await btn.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.bookingSheet.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   /**
@@ -176,9 +176,14 @@ export class BookingWidgetPage {
     const selector = `#day-${isoDate}`;
     const dayBtn = this.page.locator(selector);
     
-    // Wait for the specific date to appear in the DOM (handles slow hydration/fetching)
+    // 1. Wait for schedule loader to be hidden (ensure calendar data is fetched)
+    await this.page.getByTestId('schedule-loader').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {
+      console.warn('[E2E Warning] schedule-loader did not appear or was already gone.');
+    });
+
+    // 2. Wait for the specific date to be visible in the DOM
     try {
-      await dayBtn.waitFor({ state: 'attached', timeout: 10_000 });
+      await dayBtn.waitFor({ state: 'visible', timeout: 10_000 });
     } catch (e) {
       // Diagnostic: Log all available date IDs if the target is missing
       const allDays = await this.page.evaluate(() => {
@@ -187,20 +192,22 @@ export class BookingWidgetPage {
       const serverNow = await this.page.locator('#e2e-debug-now').getAttribute('data-now').catch(() => 'unknown');
       
       // Check for loading or error states
-      const isLoading = await this.page.locator('.animate-spin').isVisible().catch(() => false);
+      const isLoading = await this.page.getByTestId('schedule-loader').isVisible().catch(() => false);
       const isError   = await this.page.getByText('Не вдалося завантажити розклад').isVisible().catch(() => false);
 
       console.error(`[E2E Error] Could not find date button ${selector}. Available date IDs:`, allDays);
       console.error(`[E2E Error] Server-side getNow() reported: ${serverNow}`);
-      if (isLoading) console.error(`[E2E Error] Component is stuck in LOADING state.`);
+      if (isLoading) console.error(`[E2E Error] Component is stuck in LOADING state (loader visible).`);
       if (isError)   console.error(`[E2E Error] Component is in ERROR state.`);
 
       throw e;
     }
     
     await dayBtn.scrollIntoViewIfNeeded();
-    await dayBtn.click({ force: true });
-    await this.page.waitForLoadState('networkidle');
+    await dayBtn.click(); // No force: true
+
+    // 3. Wait for the slots grid to be visible after date selection
+    await this.page.getByTestId('slots-grid').waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   /**
@@ -211,6 +218,6 @@ export class BookingWidgetPage {
     await cell.scrollIntoViewIfNeeded();
     await cell.waitFor({ state: 'visible', timeout: 5_000 });
     await cell.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.getByTestId('slots-grid').waitFor({ state: 'visible', timeout: 15_000 });
   }
 }

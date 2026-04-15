@@ -209,7 +209,7 @@ export function DateTimePicker({
           </button>
         </div>
       ) : scheduleLoading ? (
-        <div className="flex justify-center py-6 mb-4">
+        <div className="flex justify-center py-6 mb-4" data-testid="schedule-loader">
           <div className="w-5 h-5 border-2 border-[#789A99] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
@@ -240,7 +240,7 @@ export function DateTimePicker({
             );
 
             return (
-              <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="grid grid-cols-3 gap-3 mb-4" data-testid="slots-grid">
                 {renderItems.map((item, idx) =>
                   item.kind === 'break' ? (
                     /* Break separator spans all 3 columns */
