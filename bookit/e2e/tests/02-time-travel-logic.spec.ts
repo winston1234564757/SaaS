@@ -32,6 +32,7 @@ test.use({ timezoneId: 'Europe/Kyiv' });
 
 // Helper to bridge browser console logs to Playwright terminal
 function setupConsoleBridge(page: any) {
+  console.log(`[E2E] Base URL for cookies: ${rt.baseUrl}`);
   page.on('console', (msg: any) => {
     console.log(`[Browser ${msg.type()}] ${msg.text()}`);
   });
