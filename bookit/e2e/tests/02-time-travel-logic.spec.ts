@@ -69,7 +69,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await context.addCookies([{
         name: 'next-public-debug-now',
         value: encodeURIComponent(frozenFriday.toISOString()),
-        url: rt.baseUrl, 
+        domain: 'localhost',
         path: '/',
       }]);
 
@@ -125,7 +125,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await context.addCookies([{
         name: 'next-public-debug-now',
         value: encodeURIComponent(frozenWed.toISOString()),
-        url: rt.baseUrl,
+        domain: 'localhost',
         path: '/',
       }]);
 
@@ -182,7 +182,7 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       await context.addCookies([{
         name: 'next-public-debug-now',
         value: encodeURIComponent(frozenTime.toISOString()),
-        url: rt.baseUrl,
+        domain: 'localhost',
         path: '/',
       }]);
 
@@ -312,7 +312,7 @@ test.describe('Loyalty Discount', () => {
       await context.addCookies([{
         name: 'next-public-debug-now',
         value: encodeURIComponent(frozenTime.toISOString()),
-        url: rt.baseUrl,
+        domain: 'localhost',
         path: '/',
       }]);
 
