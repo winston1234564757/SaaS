@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { applyDynamicPricing, type PricingRules } from '@/lib/utils/dynamicPricing';
+import { toZonedTime } from 'date-fns-tz';
 import { getNow } from '@/lib/utils/now';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
 import { sendTelegramMessage, buildBookingMessage } from '@/lib/telegram';

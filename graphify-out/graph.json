@@ -7126,7 +7126,7 @@
       "label": "getNow()",
       "file_type": "code",
       "source_file": "bookit\\src\\lib\\utils\\now.ts",
-      "source_location": "L7",
+      "source_location": "L5",
       "id": "now_getnow",
       "community": 201,
       "norm_label": "getnow()"
@@ -14775,7 +14775,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\lib\\utils\\now.ts",
-      "source_location": "L7",
+      "source_location": "L5",
       "weight": 1.0,
       "_src": "bookit_src_lib_utils_now_ts",
       "_tgt": "now_getnow",
