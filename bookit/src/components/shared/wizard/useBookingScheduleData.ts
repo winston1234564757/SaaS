@@ -8,6 +8,7 @@ import {
 import { buildOffDaySet } from '@/lib/utils/bookingEngine';
 import type { WorkingHoursConfig } from '@/types/database';
 import { DOW, toISO, getDays } from './helpers';
+import { getNow } from '@/lib/utils/now';
 import type { WizardStep } from './types';
 
 interface UseBookingScheduleDataParams {
