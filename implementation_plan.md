@@ -1,26 +1,19 @@
-# Expose Silent CI Crashes in E2E Pipeline
+# Relax Supabase Health Check Criteria
 
-The goal is to eliminate "silent" failures where the Next.js server crashes on boot in CI, but the error is swallowed by the background process. We will print the logs directly to the GH Actions console on failure and ensure all critical environment variables are present at runtime.
-
-## User Review Required
-
-> [!NOTE]
-> I am adding a `cat next-server.log` step that executes only if the server fails to become ready within 2 minutes. This will show the exact stack trace in your GitHub Actions UI.
+The current health check loop is failing because it looks for the string "healthy", which is not consistently present in the `supabase status` output on GitHub Actions. We will switch to checking for the presence of the "API URL", which is a definitive sign that the local stack has initialized and assigned ports.
 
 ## Proposed Changes
 
 ### [GitHub Workflow]
 
 #### [MODIFY] [e2e.yml](file:///C:/Users/Vitossik/SaaS/.github/workflows/e2e.yml)
-- **Inject Service Role Key**: Add `SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}` to the `.env.local` file. This is often required for server-side auth operations during tests.
-- **Immediate Debug Step**: Add a step `if: failure()` immediately after the `Wait for app to be ready` step that runs `cat next-server.log`. 
-- **Secondary Debug**: Ensure the same `cat` step exists after the Playwright test run step to catch runtime crashes that happen mid-test.
+- Change `if supabase status | grep -qi 'healthy'; then` to `if supabase status | grep -qi 'API URL'; then`.
+- This ensures the loop exits as soon as the project is ready to provide credentials.
 
 ## Verification Plan
 
 ### Automated Tests
-- Syntax validation of the updated YAML.
-- Verify that the `grep` and `cat` commands are standard and compatible with the `ubuntu-latest` runner.
+- Syntax validation of the YAML.
 
 ### Manual Verification
-- The USER should trigger a run. If the server crashes, the logs will now appear directly in the step output on failure.
+- Pushing the change should result in the `Wait for Supabase health` step passing quickly (as the tables were already visible in the previous failed run's cleanup output).
