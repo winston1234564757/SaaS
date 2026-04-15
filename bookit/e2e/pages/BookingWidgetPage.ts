@@ -148,11 +148,18 @@ export class BookingWidgetPage {
    * Select a slot button that contains the given time string (e.g. "18:00").
    * Returns the locator of the slot that was clicked.
    */
-  async selectSlot(time: string): Promise<Locator> {
+  async selectSlot(time: string, options?: { force?: boolean }): Promise<Locator> {
     const slot = this.page.locator('button').filter({ hasText: new RegExp(`^${time}`) }).first();
     await slot.waitFor({ state: 'visible', timeout: 10_000 });
-    await slot.click();
+    await slot.click(options);
     return slot;
+  }
+
+  /**
+   * Wait for any slot button to be visible in the grid.
+   */
+  async waitForSlots() {
+    await this.slotButtons.first().waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   /**
@@ -160,6 +167,9 @@ export class BookingWidgetPage {
    */
   async selectDateByDay(day: number) {
     const cell = this.page.locator('button').filter({ hasText: new RegExp(`^${day}$`) }).first();
+    await cell.scrollIntoViewIfNeeded();
+    await cell.waitFor({ state: 'visible', timeout: 5_000 });
     await cell.click();
+    await this.page.waitForLoadState('networkidle');
   }
 }

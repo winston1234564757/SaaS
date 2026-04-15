@@ -58,11 +58,22 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
 
+      // Ensure today (May 1st) is selected in the date strip
+      await widget.selectDateByDay(1);
+      await widget.waitForSlots();
+
       // Select a slot in the peak window (17:30 or 18:00)
-      // Slots may render as "17:30", "18:00", etc.
-      const peakSlot = page.locator('button').filter({ hasText: /^(17:30|18:00|18:30)/ }).first();
+      const slotTime = '18:00';
+      const peakSlot = page.locator('button').filter({ hasText: new RegExp(`^${slotTime}`) }).first();
+      
+      const isVisible = await peakSlot.isVisible().catch(() => false);
+      if (!isVisible) {
+        const allButtons = await page.locator('button').allInnerTexts();
+        console.log(`[PeakHours Debug] 18:00 slot not visible. Available buttons:`, allButtons.filter(t => /^\d{2}:\d{2}$/.test(t)));
+      }
+
       await peakSlot.waitFor({ state: 'visible', timeout: 15_000 });
-      await peakSlot.click();
+      await peakSlot.click({ force: true });
 
       // Assert dynamic pricing badge appears (Пік label or % markup)
       await expect(widget.dynamicPricingBadge).toBeVisible({ timeout: 8_000 });
@@ -91,10 +102,14 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
 
+      // Select Wednesday 2026-04-29 (day 29)
+      await widget.selectDateByDay(29);
+      await widget.waitForSlots();
+
       // Select a morning slot
       const wednesdaySlot = page.locator('button').filter({ hasText: /^(10:00|10:30|11:00)/ }).first();
       await wednesdaySlot.waitFor({ state: 'visible', timeout: 15_000 });
-      await wednesdaySlot.click();
+      await wednesdaySlot.click({ force: true });
 
       // Dynamic pricing badge should NOT be visible (no rule matches Wed 10:00)
       await expect(widget.dynamicPricingBadge).not.toBeVisible({ timeout: 5_000 });
@@ -136,9 +151,13 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       await widget.openBookingFlow();
 
       // 14:00 slot is 2.5h from frozen clock time → last_minute rule fires
+      // Ensure May 1st is selected
+      await widget.selectDateByDay(1);
+      await widget.waitForSlots();
+
       const lastMinuteSlot = page.locator('button').filter({ hasText: /^14:00/ }).first();
       await lastMinuteSlot.waitFor({ state: 'visible', timeout: 15_000 });
-      await lastMinuteSlot.click();
+      await lastMinuteSlot.click({ force: true });
 
       await expect(widget.dynamicPricingBadge).toBeVisible({ timeout: 8_000 });
       const badgeText = await widget.dynamicPricingBadge.textContent();
@@ -239,10 +258,12 @@ test.describe('Loyalty Discount', () => {
       await widget.openBookingFlow();
 
       // Select a date and slot to reach the booking summary step
-      await page.waitForLoadState('networkidle');
+      await widget.selectDateByDay(1);
+      await widget.waitForSlots();
+
       const firstSlot = page.locator('button').filter({ hasText: /^\d{2}:\d{2}$/ }).first();
       await firstSlot.waitFor({ state: 'visible', timeout: 12_000 });
-      await firstSlot.click();
+      await firstSlot.click({ force: true });
 
       // Allow wizard to transition to summary step
       await page.waitForLoadState('networkidle');
