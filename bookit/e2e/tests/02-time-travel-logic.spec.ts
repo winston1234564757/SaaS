@@ -60,7 +60,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await widget.openBookingFlow();
 
       // Ensure today (May 1st) is selected in the date strip
-      await widget.selectDateByDay(1);
+      await widget.selectDateByISO('2026-05-01');
       await widget.waitForSlots();
 
       // Select a slot in the peak window (17:00-20:00)
@@ -103,8 +103,8 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
 
-      // Select Wednesday 2026-04-29 (day 29)
-      await widget.selectDateByDay(29);
+      // Select Wednesday 2026-04-29
+      await widget.selectDateByISO('2026-04-29');
       await widget.waitForSlots();
 
       // Select a morning slot
@@ -153,7 +153,7 @@ test.describe('Dynamic Pricing — Last Minute', () => {
 
       // 4. Future booking at NOW + 2.5h (inside the 3h last_minute window)
       // Ensure May 1st is selected
-      await widget.selectDateByDay(1);
+      await widget.selectDateByISO('2026-05-01');
       await widget.waitForSlots();
 
       // The seeder books 14:00. We click 14:30 (also < 3h from 11:30)
@@ -268,7 +268,7 @@ test.describe('Loyalty Discount', () => {
       await widget.openBookingFlow();
 
       // Select a date and slot to reach the booking summary step
-      await widget.selectDateByDay(1);
+      await widget.selectDateByISO('2026-05-01');
       await widget.waitForSlots();
 
       const firstSlot = page.locator('button').filter({ hasText: /^\d{2}:\d{2}$/ }).first();
