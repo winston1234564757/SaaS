@@ -51,6 +51,9 @@ export class BookingWidgetPage {
   // "Підтвердити запис" / confirm button
   readonly confirmButton: Locator;
 
+  // "Далі" / Next button in wizard steps
+  readonly nextButton: Locator;
+
   // Client info form inputs (if visible — for unauthenticated flow)
   readonly clientNameInput: Locator;
   readonly clientPhoneInput: Locator;
@@ -118,6 +121,9 @@ export class BookingWidgetPage {
     // Confirm booking button
     this.confirmButton = page.getByRole('button', { name: /Підтвердити|Записатись|Забронювати/i }).first();
 
+    // Next button
+    this.nextButton = page.getByTestId('wizard-next-btn');
+
     // Client info form
     this.clientNameInput  = page.getByPlaceholder(/Ваше ім.я|Імʼя|Ім'я|ПІБ/i).first();
     this.clientPhoneInput = page.locator('input[type="tel"]').first();
@@ -179,8 +185,16 @@ export class BookingWidgetPage {
         return Array.from(document.querySelectorAll('[id^="day-"]')).map(el => el.id);
       });
       const serverNow = await this.page.locator('#e2e-debug-now').getAttribute('data-now').catch(() => 'unknown');
+      
+      // Check for loading or error states
+      const isLoading = await this.page.locator('.animate-spin').isVisible().catch(() => false);
+      const isError   = await this.page.getByText('Не вдалося завантажити розклад').isVisible().catch(() => false);
+
       console.error(`[E2E Error] Could not find date button ${selector}. Available date IDs:`, allDays);
       console.error(`[E2E Error] Server-side getNow() reported: ${serverNow}`);
+      if (isLoading) console.error(`[E2E Error] Component is stuck in LOADING state.`);
+      if (isError)   console.error(`[E2E Error] Component is in ERROR state.`);
+
       throw e;
     }
     

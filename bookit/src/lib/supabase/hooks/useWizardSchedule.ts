@@ -36,9 +36,9 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
           .eq('master_id', masterId).lte('start_date', to).gte('end_date', from),
       ]);
 
-      if (tmplRes.error) throw tmplRes.error;
-      if (excRes.error)  throw excRes.error;
-      if (bookRes.error) throw bookRes.error;
+      if (tmplRes.error) { console.error('[useWizardSchedule] templates error:', tmplRes.error); throw tmplRes.error; }
+      if (excRes.error)  { console.error('[useWizardSchedule] exceptions error:', excRes.error); throw excRes.error; }
+      if (bookRes.error) { console.error('[useWizardSchedule] bookings error:', bookRes.error); throw bookRes.error; }
       // timeOffRes помилки не кидаємо — таблиця може ще не існувати на старих середовищах
 
       const templates: ScheduleStore['templates'] = {};

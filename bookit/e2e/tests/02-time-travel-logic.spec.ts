@@ -29,6 +29,18 @@ import * as fs from 'fs';
 import { BookingWidgetPage } from '../pages/BookingWidgetPage';
 import { rt, isSeeded } from '../utils/runtimeEnv';
 
+test.use({ timezoneId: 'Europe/Kyiv' });
+
+// Helper to bridge browser console logs to Playwright terminal
+function setupConsoleBridge(page: any) {
+  page.on('console', msg => {
+    const text = msg.text();
+    if (text.includes('[getNow]') || text.includes('[DynamicPricing]') || text.includes('[Wizard]')) {
+      console.log(`[Browser] ${text}`);
+    }
+  });
+}
+
 const hasMasterAuth = fs.existsSync('playwright/.auth/master-timetravel.json');
 const hasClientAuth = fs.existsSync('playwright/.auth/client.json');
 
@@ -48,6 +60,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
 
     const context = await browser.newContext();
     const page    = await context.newPage();
+    setupConsoleBridge(page);
     const widget  = new BookingWidgetPage(page);
 
     try {
@@ -58,13 +71,14 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       // Synchronize server-side getNow() via cookie
       await context.addCookies([{
         name: 'next-public-debug-now',
-        value: frozenFriday.toISOString(),
-        domain: 'localhost',
+        value: encodeURIComponent(frozenFriday.toISOString()),
+        url: rt.baseUrl, 
         path: '/',
       }]);
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.nextButton.click();
 
       // Ensure today (May 1st) is selected in the date strip
       await widget.selectDateByISO('2026-05-01');
@@ -113,13 +127,14 @@ test.describe('Dynamic Pricing — Peak hours', () => {
       // Synchronize server-side getNow() via cookie
       await context.addCookies([{
         name: 'next-public-debug-now',
-        value: frozenWed.toISOString(),
-        domain: 'localhost',
+        value: encodeURIComponent(frozenWed.toISOString()),
+        url: rt.baseUrl,
         path: '/',
       }]);
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.nextButton.click();
 
       // Select Wednesday 2026-04-29
       await widget.selectDateByISO('2026-04-29');
@@ -169,13 +184,14 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       // Synchronize server-side getNow() via cookie
       await context.addCookies([{
         name: 'next-public-debug-now',
-        value: frozenTime.toISOString(),
-        domain: 'localhost',
+        value: encodeURIComponent(frozenTime.toISOString()),
+        url: rt.baseUrl,
         path: '/',
       }]);
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.nextButton.click();
 
       // 4. Future booking at NOW + 2.5h (inside the 3h last_minute window)
       // Ensure May 1st is selected
@@ -227,6 +243,7 @@ test.describe('Smart Slots — Morning recommendation', () => {
     try {
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.nextButton.click();
 
       // Wait for slot grid to render (the async schedule + scoring fetch)
       await page.waitForLoadState('networkidle');
@@ -299,13 +316,14 @@ test.describe('Loyalty Discount', () => {
       // Synchronize server-side getNow() via cookie
       await context.addCookies([{
         name: 'next-public-debug-now',
-        value: frozenTime.toISOString(),
-        domain: 'localhost',
+        value: encodeURIComponent(frozenTime.toISOString()),
+        url: rt.baseUrl,
         path: '/',
       }]);
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.nextButton.click();
 
       // Select a date and slot to reach the booking summary step
       await widget.selectDateByISO('2026-05-01');

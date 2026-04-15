@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { cookies } from 'next/headers';
 import { toZonedTime } from 'date-fns-tz';
 import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
@@ -58,6 +59,9 @@ export default async function MasterPublicPage(
   if (!data) notFound();
 
   const supabase = await createClient();
+  const cookieStore = await cookies();
+  const debugNow = cookieStore.get('next-public-debug-now')?.value;
+  const now = debugNow ? new Date(decodeURIComponent(debugNow)) : getNow();
 
   // Межа місячного ліміту — рахуємо динамічно з bookings (не з лічильника bookings_this_month)
   const masterTimezone = (data as any).timezone || 'Europe/Kyiv';
@@ -181,8 +185,8 @@ export default async function MasterPublicPage(
 
   return (
     <>
-      <div id="e2e-debug-now" style={{ display: 'none' }} data-now={getNow().toISOString()}>
-        {getNow().toISOString()}
+      <div id="e2e-debug-now" style={{ display: 'none' }} data-now={now.toISOString()}>
+        {now.toISOString()}
       </div>
       <PublicMasterPage master={master} />
     </>

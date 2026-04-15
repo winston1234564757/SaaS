@@ -19,6 +19,7 @@ export const rt = {
   clientId:             process.env.E2E_CLIENT_ID              ?? '',
   studioAdminId:        process.env.E2E_STUDIO_ADMIN_ID        ?? '',
   studioAdminSlug:      process.env.E2E_STUDIO_ADMIN_SLUG      ?? 'e2e-studioadmin',
+  baseUrl:              process.env.E2E_BASE_URL               ?? 'http://localhost:3000',
 } as const;
 
 /** Returns true if the seeder has been run and runtime IDs are available. */

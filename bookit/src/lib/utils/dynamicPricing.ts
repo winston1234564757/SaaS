@@ -103,5 +103,10 @@ export function applyDynamicPricing(
   const adjustedPrice = Math.round(basePrice * (1 + clampedModifier / 100));
   const label = appliedRules.join(', ');
 
+  // Diagnostic logging for E2E debugging
+  if (typeof window !== 'undefined' && (label || (window as any).E2E_DEBUG)) {
+    console.log(`[DynamicPricing] Slot: ${dateStr}T${time}, now: ${now.toISOString()}, hoursAhead: ${hoursAhead.toFixed(2)}, label: ${label}`);
+  }
+
   return { adjustedPrice, modifier: clampedModifier, label };
 }

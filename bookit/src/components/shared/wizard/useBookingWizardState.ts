@@ -34,6 +34,12 @@ export function useBookingWizardState({
   const [step, setStep]           = useState<WizardStep>('services');
   const [direction, setDirection] = useState(1);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log(`[Wizard] Step initialized/changed to: ${step}`);
+    }
+  }, [step]);
+
   const availableProducts = useMemo(() => products.filter(p => p.inStock !== false), [products]);
   const hasProducts = availableProducts.length > 0;
   const visibleSteps = useMemo(
