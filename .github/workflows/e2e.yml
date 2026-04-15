@@ -97,6 +97,7 @@ jobs:
           WAYFORPAY_MERCHANT_ACCOUNT=${{ secrets.WAYFORPAY_MERCHANT_ACCOUNT }}
           WAYFORPAY_MERCHANT_SECRET=${{ secrets.WAYFORPAY_MERCHANT_SECRET }}
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TZ=Europe/Kyiv
           EOF
 
           # 3. Build .env.test (Used by E2E seeder & Playwright runner)
@@ -107,22 +108,25 @@ jobs:
           E2E_BASE_URL=http://localhost:3000
           E2E_ALLOW_REMOTE=true
           E2E_SEED_FIXED_DATE=2026-05-01T11:00:00.000Z
+          E2E_MASTER_SLUG=e2e-timetravel-master
           E2E_MASTER_TIMETRAVEL_EMAIL=e2e_master_timetravel@test.com
           E2E_MASTER_CRM_EMAIL=e2e_master_crm@test.com
           E2E_MASTER_AUTH_EMAIL=e2e_master_auth@test.com
           E2E_MASTER_REFERRAL_EMAIL=e2e_master_referral@test.com
-          E2E_CLIENT_EMAIL=e2e_client@test.com
+          E2E_CLIENT_EMAIL=e2e_client_timetravel@test.com
           E2E_CLIENT_TIMETRAVEL_EMAIL=e2e_client_timetravel@test.com
           E2E_CLIENT_CRM_EMAIL=e2e_client_crm@test.com
           E2E_CLIENT_AUTH_EMAIL=e2e_client_auth@test.com
           E2E_CLIENT_REFERRAL_EMAIL=e2e_client_referral@test.com
           E2E_STUDIO_ADMIN_EMAIL=e2e_studioadmin@test.com
+          TZ=Europe/Kyiv
           EOF
 
           # 4. Sync credentials to GITHUB_ENV for convenience (logging/debugging)
           echo "SUPABASE_URL=${LOCAL_URL}" >> $GITHUB_ENV
           echo "SUPABASE_ANON_KEY=${LOCAL_ANON}" >> $GITHUB_ENV
           echo "SUPABASE_SERVICE_ROLE_KEY=${LOCAL_SERVICE}" >> $GITHUB_ENV
+          echo "TZ=Europe/Kyiv" >> $GITHUB_ENV
 
       # ── 8. Install npm dependencies ──────────────────────────────────────────
       - name: Install npm dependencies

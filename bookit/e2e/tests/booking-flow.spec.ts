@@ -14,7 +14,7 @@
 import { test, expect } from '@playwright/test';
 import { PublicBookingPage } from '../pages/PublicBookingPage';
 
-const SLUG = process.env.E2E_MASTER_SLUG;
+const SLUG = process.env.E2E_MASTER_SLUG || 'e2e-timetravel-master';
 
 test.describe('Публічна сторінка + Booking Flow', () => {
   test.skip(!SLUG, 'E2E_MASTER_SLUG не задано — пропускаємо тести публічної сторінки');
