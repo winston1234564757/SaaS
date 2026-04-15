@@ -120,7 +120,7 @@ export async function createBooking(
   console.log('[createBooking] Fetching master profile for ID:', p.masterId);
   const { data: mp, error: masterError } = await admin
     .from('master_profiles')
-    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id, is_published')
+    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id, is_published, timezone')
     .eq('id', p.masterId)
     .single();
 
@@ -133,6 +133,9 @@ export async function createBooking(
   if (p.source === 'online' && !mp.is_published) {
     return { bookingId: null, error: 'Майстра не знайдено' };
   }
+
+  // Bug 4 Fix: Pass master's timezone (fallback to Kyiv)
+  const masterTimezone = (mp as any).timezone || 'Europe/Kyiv';
 
   // 4. Starter booking limit (30/month)
   if (mp.subscription_tier === 'starter') {
@@ -224,9 +227,6 @@ export async function createBooking(
   const extraEarned = (mp.dynamic_pricing_extra_earned as number) ?? 0;
   const trialExhausted = mp.subscription_tier === 'starter' && extraEarned >= TRIAL_LIMIT_KOP;
   const pricingRules = (!trialExhausted ? mp.pricing_rules : null) as PricingRules | null;
-  
-  // Bug 4 Fix: Pass master's timezone (fallback to Kyiv)
-  const masterTimezone = (mp as any).timezone || 'Europe/Kyiv';
   
   const dynamicResult =
     p.applyDynamicPricing && pricingRules && Object.keys(pricingRules).length > 0
