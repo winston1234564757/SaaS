@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
+import { getNow } from '@/lib/utils/now';
 
 export interface BlockedDate {
   id: string;
@@ -21,7 +22,7 @@ export function useVacation() {
     enabled: !!masterId,
     queryFn: async () => {
       const supabase = createClient();
-      const n = new Date();
+      const n = getNow();
       const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
       const { data, error } = await supabase
         .from('schedule_exceptions')

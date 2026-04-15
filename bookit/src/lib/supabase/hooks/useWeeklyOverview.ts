@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
+import { getNow } from '@/lib/utils/now';
 
 export interface DayData {
   bookings: number;
@@ -14,9 +15,10 @@ function toLocalYMD(d: Date): string {
 }
 
 function getWeekRange(): { from: string; to: string } {
-  const now = new Date();
+  const now = getNow();
   const day = now.getDay();
-  const monday = new Date(now);
+  const monday = getNow();
+  monday.setTime(now.getTime());
   monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
   monday.setHours(0, 0, 0, 0);
   const sunday = new Date(monday);

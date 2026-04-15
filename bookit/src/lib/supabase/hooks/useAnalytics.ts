@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import { getPrevPeriodRange, type Preset } from './useDateRange';
+import { getNow } from '@/lib/utils/now';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ export function useAnalytics(
     queryFn: async (): Promise<AnalyticsData> => {
       const supabase = createClient();
 
-      const now          = new Date();
+      const now          = getNow();
       // End of CURRENT month (not today) — so the current month in the trend
       // chart shows a full month, not truncated at today's date
       const endOfMonth   = toYMD(new Date(now.getFullYear(), now.getMonth() + 1, 0));
@@ -320,7 +321,7 @@ export function useAnalytics(
         // No .in(activePhones) filter — avoids PostgREST URL length limit for masters with
         // hundreds of clients. JS loop below filters by activePhones set, so results are identical.
         // PERF: bound retention scan to last 2 years — avoids full-history table scan
-        const twoYearsAgo = new Date();
+        const twoYearsAgo = getNow();
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
         const retentionStartDate = twoYearsAgo.toISOString().slice(0, 10);
 

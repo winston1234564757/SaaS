@@ -9,6 +9,7 @@ import {
   startOfMonth, endOfMonth,
   startOfYear, endOfYear,
 } from 'date-fns';
+import { getNow } from '@/lib/utils/now';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ export function computeRange(
   preset: Preset,
   offset: number,
 ): { start: Date; end: Date; label: string } {
-  const now = new Date();
+  const now = getNow();
 
   if (preset === 'all') {
     return { start: new Date(2020, 0, 1), end: now, label: 'За весь час' };

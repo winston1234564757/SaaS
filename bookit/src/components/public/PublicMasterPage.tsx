@@ -9,6 +9,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import Image from 'next/image';
+import { getNow } from '@/lib/utils/now';
 
 interface Service {
   id: string;
@@ -95,7 +96,7 @@ function useCountdown(expiresAt: string) {
   // Start as null to avoid SSR/client Date.now() mismatch (React #418)
   const [secs, setSecs] = useState<number | null>(null);
   useEffect(() => {
-    const calc = () => Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+    const calc = () => Math.max(0, Math.floor((new Date(expiresAt).getTime() - getNow().getTime()) / 1000));
     setSecs(calc());
     const id = setInterval(() => setSecs(calc), 1000);
     return () => clearInterval(id);
@@ -210,7 +211,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
   }, [theme.background]);
 
   useEffect(() => {
-    setTodayDow(['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]);
+    setTodayDow(['sun','mon','tue','wed','thu','fri','sat'][getNow().getDay()]);
   }, []);
 
   // Auto-open BookingFlow with pre-selected services from ?services= or ?serviceId= query param

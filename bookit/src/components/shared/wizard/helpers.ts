@@ -1,5 +1,6 @@
 // src/components/shared/wizard/helpers.ts
 import type { WizardStep } from './types';
+import { getNow } from '@/lib/utils/now';
 
 export const DOW     = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 export const DAY_S   = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота'];
@@ -10,7 +11,7 @@ export function toISO(d: Date): string {
 }
 
 export function getDays(n = 30): Date[] {
-  const t = new Date(); t.setHours(0, 0, 0, 0);
+  const t = getNow(); t.setHours(0, 0, 0, 0);
   return Array.from({ length: n }, (_, i) => {
     const d = new Date(t); d.setDate(t.getDate() + i); return d;
   });

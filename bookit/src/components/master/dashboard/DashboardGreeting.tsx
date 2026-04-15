@@ -4,12 +4,13 @@ import { useMemo } from 'react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { NotificationsBell } from './NotificationsBell';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getNow } from '@/lib/utils/now';
 
 export function DashboardGreeting() {
   const { profile, isLoading } = useMasterContext();
 
   const { greeting, emoji } = useMemo(() => {
-    const hour = new Date().getHours();
+    const hour = getNow().getHours();
     if (hour < 6)  return { greeting: 'Доброї ночі',   emoji: '🌙' };
     if (hour < 12) return { greeting: 'Доброго ранку',  emoji: '☀️' };
     if (hour < 17) return { greeting: 'Доброго дня',    emoji: '👋' };
@@ -18,7 +19,7 @@ export function DashboardGreeting() {
   }, []);
 
   const today = useMemo(() => {
-    return new Date().toLocaleDateString('uk-UA', {
+    return getNow().toLocaleDateString('uk-UA', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',

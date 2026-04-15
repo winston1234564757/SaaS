@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/client';
 import { confirmBooking, completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
+import { getNow } from '@/lib/utils/now';
 
 type ViewMode = 'today' | 'tomorrow' | 'week';
 type DisplayMode = 'list' | 'calendar' | 'stats';
@@ -44,19 +45,19 @@ function toISO(d: Date) {
 }
 
 function getDateRange(view: ViewMode): { from: string; to: string } {
-  const today = new Date();
+  const today = getNow();
   if (view === 'today') {
     const s = toISO(today);
     return { from: s, to: s };
   }
   if (view === 'tomorrow') {
-    const t = new Date(today);
+    const t = getNow();
     t.setDate(today.getDate() + 1);
     const s = toISO(t);
     return { from: s, to: s };
   }
   const day = today.getDay();
-  const monday = new Date(today);
+  const monday = getNow();
   monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
@@ -64,7 +65,7 @@ function getDateRange(view: ViewMode): { from: string; to: string } {
 }
 
 function isNextBooking(b: BookingWithServices, list: BookingWithServices[]): boolean {
-  const now = new Date();
+  const now = getNow();
   const todayStr = toISO(now);
   if (b.date !== todayStr) return false;
   const nowMins = now.getHours() * 60 + now.getMinutes();
@@ -96,16 +97,16 @@ function EmptyScheduleWidget() {
     const masterId = masterProfile?.id;
     if (!masterId) return;
     setLoading(true);
-    const today = new Date();
+    const today = getNow();
     let from: string, to: string;
     if (period === 'yesterday') {
-      const y = new Date(today);
+      const y = getNow();
       y.setDate(today.getDate() - 1);
       from = to = toISO(y);
     } else {
-      const end = new Date(today);
+      const end = getNow();
       end.setDate(today.getDate() - 1);
-      const start = new Date(today);
+      const start = getNow();
       start.setDate(today.getDate() - 7);
       from = toISO(start);
       to = toISO(end);
@@ -197,14 +198,15 @@ function EmptyScheduleWidget() {
 // ── CalendarView — тижневий стрип з індикаторами записів ──────────────────────
 
 function CalendarView({ bookings }: { bookings: BookingWithServices[] }) {
-  const today = new Date();
+  const today = getNow();
   const todayISO = toISO(today);
   const day = today.getDay();
-  const monday = new Date(today);
+  const monday = getNow();
   monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
 
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
+    const d = getNow();
+    d.setTime(monday.getTime());
     d.setDate(monday.getDate() + i);
     const iso = toISO(d);
     const count = bookings.filter(b => b.date === iso).length;

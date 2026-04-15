@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
+import { getNow } from '@/lib/utils/now';
 
 export function useFlashDeals(initialData?: FlashDealRow[]) {
   const { masterProfile } = useMasterContext();
@@ -18,7 +19,7 @@ export function useFlashDeals(initialData?: FlashDealRow[]) {
         .select('id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at, status')
         .eq('master_id', masterId!)
         .eq('status', 'active')
-        .gte('expires_at', new Date().toISOString())
+        .gte('expires_at', getNow().toISOString())
         .order('created_at', { ascending: false });
       if (error) throw error;
       return (data ?? []) as FlashDealRow[];
@@ -27,7 +28,7 @@ export function useFlashDeals(initialData?: FlashDealRow[]) {
     staleTime: 30_000,
     initialData: masterId && initialData ? initialData : undefined,
     // Позначаємо серверні дані як "щойно отримані" — без зайвого refetch при маунті
-    initialDataUpdatedAt: Date.now(),
+    initialDataUpdatedAt: getNow().getTime(),
   });
 }
 
@@ -46,7 +47,7 @@ export function useFlashDealsCount() {
     queryKey: ['flash-deals-count', masterId],
     queryFn: async () => {
       const supabase = createClient();
-      const now = new Date();
+      const now = getNow();
       const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
       const { count, error } = await supabase
         .from('flash_deals')

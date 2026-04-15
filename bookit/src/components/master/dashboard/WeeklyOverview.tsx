@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWeeklyOverview, type DayData } from '@/lib/supabase/hooks/useWeeklyOverview';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getNow } from '@/lib/utils/now';
 
 const DAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const DAYS_FULL  = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя'];
 const BAR_MAX_PX = 72;
 
 function getTodayIdx() {
-  const d = new Date().getDay();
+  const d = getNow().getDay();
   return d === 0 ? 6 : d - 1;
 }
 

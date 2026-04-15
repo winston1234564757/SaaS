@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { startOfWeek, format } from 'date-fns';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
+import { getNow } from '@/lib/utils/now';
 
 export interface DashboardStats {
   todayCount: number;
@@ -23,8 +24,9 @@ export function useDashboardStats(): DashboardStatsWithLoading {
   const masterId = masterProfile?.id;
 
   // Recomputed every render — cheap ops; queryKey change triggers new fetch after midnight
-  const today     = format(new Date(), 'yyyy-MM-dd');
-  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  const now       = getNow();
+  const today     = format(now, 'yyyy-MM-dd');
+  const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
   // Realtime invalidation is handled by the consolidated channel
   // in useRealtimeNotifications — no separate channel needed here.
