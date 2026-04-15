@@ -20,6 +20,7 @@
  *   E2E_MASTER_REFERRAL_SLUG  (from .env.test.runtime)
  */
 import { test, expect } from '@playwright/test';
+import { AuthPage } from '../pages/AuthPage';
 import { rt, isSeeded } from '../utils/runtimeEnv';
 
 // ─── /invite/[code] page ──────────────────────────────────────────────────────
@@ -105,6 +106,12 @@ test.describe('Referral code → /register propagation', () => {
       return /(register|login).*ref=/.test(url) && url.includes(rt.masterReferralCode);
     }, { timeout: 10_000 }).toBeTruthy();
 
+    // Registration page rendered (after redirect to /login)
+    // Handle the mandatory role selection step
+    const auth = new AuthPage(page);
+    await auth.continueButton.waitFor({ state: 'visible', timeout: 10_000 });
+    await auth.continueButton.click();
+
     // Registration page renders (SMS OTP form)
     const phoneInput = page.locator('input[type="tel"]');
     await expect(phoneInput).toBeVisible({ timeout: 8_000 });
@@ -120,7 +127,13 @@ test.describe('Referral code → /register propagation', () => {
     const ctaLink = page.getByRole('link', { name: /Зареєструватися/i });
     await ctaLink.click();
 
-    // After click, wait for registration page to load (phone input visible)
+    // After click, wait for registration page to load
+    // Handle the mandatory role selection step
+    const auth = new AuthPage(page);
+    await auth.continueButton.waitFor({ state: 'visible', timeout: 10_000 });
+    await auth.continueButton.click();
+
+    // Wait for phone input visible
     await expect(page.locator('input[type="tel"]')).toBeVisible({ timeout: 10_000 });
 
     // Then confirm URL still preserves the ref code after any client-side routing

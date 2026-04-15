@@ -15,8 +15,8 @@ const navItems = [
 export function MyBottomNav() {
   const pathname = usePathname();
 
-  const hiddenRoutes = ['/login', '/register', '/dashboard', '/studio/join', '/onboarding', '/explore'];
-  if (pathname === '/' || hiddenRoutes.some(route => pathname.startsWith(route))) return null;
+  const isMyRoute = pathname.startsWith('/my');
+  if (!isMyRoute) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pointer-events-none">

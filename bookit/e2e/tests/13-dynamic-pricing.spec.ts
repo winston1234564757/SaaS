@@ -89,6 +89,7 @@ test.describe('Dynamic Pricing', () => {
 
       if (inputVisible) {
         await scrollAndFocus(percentInput);
+        await percentInput.click({ force: true }); // Bypass decorative % span
         await humanType(percentInput, '15');
         await think(page, 300, 500);
 
