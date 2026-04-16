@@ -279,7 +279,7 @@
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
       "source_location": "L1",
       "id": "bookit_e2e_pages_bookingwidgetpage_ts",
-      "community": 4,
+      "community": 2,
       "norm_label": "bookingwidgetpage.ts"
     },
     {
@@ -288,7 +288,7 @@
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
       "source_location": "L14",
       "id": "bookingwidgetpage_bookingwidgetpage",
-      "community": 4,
+      "community": 2,
       "norm_label": "bookingwidgetpage"
     },
     {
@@ -297,70 +297,79 @@
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
       "source_location": "L61",
       "id": "bookingwidgetpage_bookingwidgetpage_constructor",
-      "community": 4,
+      "community": 2,
       "norm_label": ".constructor()"
     },
     {
       "label": ".goto()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L132",
+      "source_location": "L130",
       "id": "bookingwidgetpage_bookingwidgetpage_goto",
-      "community": 4,
+      "community": 2,
       "norm_label": ".goto()"
     },
     {
       "label": ".openBookingFlow()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L140",
+      "source_location": "L138",
       "id": "bookingwidgetpage_bookingwidgetpage_openbookingflow",
-      "community": 4,
+      "community": 2,
       "norm_label": ".openbookingflow()"
+    },
+    {
+      "label": ".selectServiceInWizard()",
+      "file_type": "code",
+      "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
+      "source_location": "L146",
+      "id": "bookingwidgetpage_bookingwidgetpage_selectserviceinwizard",
+      "community": 2,
+      "norm_label": ".selectserviceinwizard()"
     },
     {
       "label": ".openBookingForService()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L148",
+      "source_location": "L153",
       "id": "bookingwidgetpage_bookingwidgetpage_openbookingforservice",
-      "community": 4,
+      "community": 2,
       "norm_label": ".openbookingforservice()"
     },
     {
       "label": ".selectSlot()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L159",
+      "source_location": "L164",
       "id": "bookingwidgetpage_bookingwidgetpage_selectslot",
-      "community": 4,
+      "community": 2,
       "norm_label": ".selectslot()"
     },
     {
       "label": ".waitForSlots()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L169",
+      "source_location": "L174",
       "id": "bookingwidgetpage_bookingwidgetpage_waitforslots",
-      "community": 4,
+      "community": 2,
       "norm_label": ".waitforslots()"
     },
     {
       "label": ".selectDateByISO()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L177",
+      "source_location": "L183",
       "id": "bookingwidgetpage_bookingwidgetpage_selectdatebyiso",
-      "community": 4,
+      "community": 2,
       "norm_label": ".selectdatebyiso()"
     },
     {
       "label": ".selectDateByDay()",
       "file_type": "code",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L218",
+      "source_location": "L227",
       "id": "bookingwidgetpage_bookingwidgetpage_selectdatebyday",
-      "community": 4,
+      "community": 2,
       "norm_label": ".selectdatebyday()"
     },
     {
@@ -2574,7 +2583,7 @@
       "source_file": "bookit\\src\\app\\api\\auth\\send-sms\\route.ts",
       "source_location": "L1",
       "id": "bookit_src_app_api_auth_send_sms_route_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "route.ts"
     },
     {
@@ -2583,7 +2592,7 @@
       "source_file": "bookit\\src\\app\\api\\telegram\\webhook\\route.ts",
       "source_location": "L9",
       "id": "route_post",
-      "community": 2,
+      "community": 3,
       "norm_label": "post()"
     },
     {
@@ -2592,7 +2601,7 @@
       "source_file": "bookit\\src\\app\\api\\auth\\verify-sms\\route.ts",
       "source_location": "L1",
       "id": "bookit_src_app_api_auth_verify_sms_route_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "route.ts"
     },
     {
@@ -2601,7 +2610,7 @@
       "source_file": "bookit\\src\\app\\api\\billing\\mono-webhook\\route.ts",
       "source_location": "L1",
       "id": "bookit_src_app_api_billing_mono_webhook_route_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "route.ts"
     },
     {
@@ -2610,7 +2619,7 @@
       "source_file": "bookit\\src\\app\\api\\billing\\mono-webhook\\route.ts",
       "source_location": "L11",
       "id": "route_getmonopubkey",
-      "community": 2,
+      "community": 3,
       "norm_label": "getmonopubkey()"
     },
     {
@@ -2619,7 +2628,7 @@
       "source_file": "bookit\\src\\app\\api\\billing\\mono-webhook\\route.ts",
       "source_location": "L30",
       "id": "route_verifywithkey",
-      "community": 2,
+      "community": 3,
       "norm_label": "verifywithkey()"
     },
     {
@@ -2628,7 +2637,7 @@
       "source_file": "bookit\\src\\app\\api\\billing\\mono-webhook\\route.ts",
       "source_location": "L48",
       "id": "route_verifymonosignature",
-      "community": 2,
+      "community": 3,
       "norm_label": "verifymonosignature()"
     },
     {
@@ -2637,7 +2646,7 @@
       "source_file": "bookit\\src\\app\\api\\billing\\webhook\\route.ts",
       "source_location": "L1",
       "id": "bookit_src_app_api_billing_webhook_route_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "route.ts"
     },
     {
@@ -2700,7 +2709,7 @@
       "source_file": "bookit\\src\\app\\api\\push\\subscribe\\route.ts",
       "source_location": "L1",
       "id": "bookit_src_app_api_push_subscribe_route_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "route.ts"
     },
     {
@@ -2709,7 +2718,7 @@
       "source_file": "bookit\\src\\app\\api\\push\\subscribe\\route.ts",
       "source_location": "L33",
       "id": "route_delete",
-      "community": 2,
+      "community": 3,
       "norm_label": "delete()"
     },
     {
@@ -2718,7 +2727,7 @@
       "source_file": "bookit\\src\\app\\api\\telegram\\webhook\\route.ts",
       "source_location": "L1",
       "id": "bookit_src_app_api_telegram_webhook_route_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "route.ts"
     },
     {
@@ -5220,7 +5229,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_public_postbookingauth_tsx",
-      "community": 3,
+      "community": 4,
       "norm_label": "postbookingauth.tsx"
     },
     {
@@ -5229,7 +5238,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L42",
       "id": "postbookingauth_getcleanphone",
-      "community": 3,
+      "community": 4,
       "norm_label": "getcleanphone()"
     },
     {
@@ -5238,7 +5247,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L46",
       "id": "postbookingauth_handlephonechange",
-      "community": 3,
+      "community": 4,
       "norm_label": "handlephonechange()"
     },
     {
@@ -5247,7 +5256,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L52",
       "id": "postbookingauth_handlegoogle",
-      "community": 3,
+      "community": 4,
       "norm_label": "handlegoogle()"
     },
     {
@@ -5256,7 +5265,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L65",
       "id": "postbookingauth_handlesendsms",
-      "community": 3,
+      "community": 4,
       "norm_label": "handlesendsms()"
     },
     {
@@ -5265,7 +5274,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L83",
       "id": "postbookingauth_handleverify",
-      "community": 3,
+      "community": 4,
       "norm_label": "handleverify()"
     },
     {
@@ -5274,7 +5283,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L123",
       "id": "postbookingauth_handledigitchange",
-      "community": 3,
+      "community": 4,
       "norm_label": "handledigitchange()"
     },
     {
@@ -5283,7 +5292,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L133",
       "id": "postbookingauth_handledigitkeydown",
-      "community": 3,
+      "community": 4,
       "norm_label": "handledigitkeydown()"
     },
     {
@@ -5292,7 +5301,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L137",
       "id": "postbookingauth_handlepaste",
-      "community": 3,
+      "community": 4,
       "norm_label": "handlepaste()"
     },
     {
@@ -5301,7 +5310,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L148",
       "id": "postbookingauth_startcooldown",
-      "community": 3,
+      "community": 4,
       "norm_label": "startcooldown()"
     },
     {
@@ -5310,7 +5319,7 @@
       "source_file": "bookit\\src\\components\\public\\PostBookingAuth.tsx",
       "source_location": "L159",
       "id": "postbookingauth_handleresend",
-      "community": 3,
+      "community": 4,
       "norm_label": "handleresend()"
     },
     {
@@ -7806,7 +7815,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L132",
+      "source_location": "L130",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_goto",
@@ -7818,7 +7827,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L140",
+      "source_location": "L138",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_openbookingflow",
@@ -7830,7 +7839,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L148",
+      "source_location": "L146",
+      "weight": 1.0,
+      "_src": "bookingwidgetpage_bookingwidgetpage",
+      "_tgt": "bookingwidgetpage_bookingwidgetpage_selectserviceinwizard",
+      "source": "bookingwidgetpage_bookingwidgetpage",
+      "target": "bookingwidgetpage_bookingwidgetpage_selectserviceinwizard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
+      "source_location": "L153",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_openbookingforservice",
@@ -7842,7 +7863,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L159",
+      "source_location": "L164",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_selectslot",
@@ -7854,7 +7875,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L169",
+      "source_location": "L174",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_waitforslots",
@@ -7866,7 +7887,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L177",
+      "source_location": "L183",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_selectdatebyiso",
@@ -7878,7 +7899,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\e2e\\pages\\BookingWidgetPage.ts",
-      "source_location": "L218",
+      "source_location": "L227",
       "weight": 1.0,
       "_src": "bookingwidgetpage_bookingwidgetpage",
       "_tgt": "bookingwidgetpage_bookingwidgetpage_selectdatebyday",
