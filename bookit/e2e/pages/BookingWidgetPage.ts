@@ -174,7 +174,8 @@ export class BookingWidgetPage {
    * Wait for any slot button to be visible in the grid.
    */
   async waitForSlots() {
-    await this.slotButtons.first().waitFor({ state: 'visible', timeout: 15_000 });
+    await this.page.getByTestId('slots-grid').waitFor({ state: 'visible', timeout: 15_000 });
+    await this.slotButtons.first().waitFor({ state: 'visible', timeout: 5_000 });
   }
 
   /**
@@ -185,7 +186,10 @@ export class BookingWidgetPage {
     const selector = `#day-${isoDate}`;
     const dayBtn = this.page.locator(selector);
     
-    // 1. Wait for schedule loader to be hidden (ensure calendar data is fetched)
+    // 1. Ensure we have transitioned to the DateTime step
+    await this.page.locator('#datetime-picker-mounted').waitFor({ state: 'attached', timeout: 10_000 });
+ 
+    // 2. Wait for schedule loader to be hidden (ensure calendar data is fetched)
     await this.page.getByTestId('schedule-loader').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {
       console.warn('[E2E Warning] schedule-loader did not appear or was already gone.');
     });
