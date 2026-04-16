@@ -140,8 +140,15 @@ export class BookingWidgetPage {
   async openBookingFlow() {
     await this.firstBookButton.waitFor({ state: 'visible', timeout: 10_000 });
     await this.firstBookButton.click();
-    // Wait for the sheet/modal to appear
+    // Wait for the hydration and the sheet/modal to appear
     await this.bookingSheet.waitFor({ state: 'visible', timeout: 15_000 });
+  }
+ 
+  /** Select the first available service inside the wizard selector. */
+  async selectServiceInWizard() {
+    const serviceCard = this.page.getByTestId('service-card').first();
+    await serviceCard.waitFor({ state: 'visible', timeout: 10_000 });
+    await serviceCard.click();
   }
 
   /** Click the service with a specific name. */

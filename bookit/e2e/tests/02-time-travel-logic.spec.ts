@@ -75,6 +75,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.selectServiceInWizard();
       await widget.nextButton.click();
 
       // Ensure today (May 1st) is selected in the date strip
@@ -133,6 +134,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.selectServiceInWizard();
       await widget.nextButton.click();
 
       // Select Wednesday 2026-04-29
@@ -190,6 +192,7 @@ test.describe('Dynamic Pricing — Last Minute', () => {
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.selectServiceInWizard();
       await widget.nextButton.click();
 
       // 4. Future booking at NOW + 2.5h (inside the 3h last_minute window)
@@ -241,6 +244,7 @@ test.describe('Smart Slots — Morning recommendation', () => {
     try {
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.selectServiceInWizard();
       await widget.nextButton.click();
 
       // Wait for slot grid to render (the async schedule + scoring fetch)
@@ -318,6 +322,7 @@ test.describe('Loyalty Discount', () => {
 
       await widget.goto(rt.masterTimeTravelSlug);
       await widget.openBookingFlow();
+      await widget.selectServiceInWizard();
       await widget.nextButton.click();
 
       // Select a date and slot to reach the booking summary step
