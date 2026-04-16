@@ -88,10 +88,8 @@ export class BookingWidgetPage {
     );
 
     // Slot grid — time slot buttons
-    this.slotGrid   = page.locator('[class*="slot-grid"], [class*="SlotGrid"]').or(
-      page.locator('[class*="slot"], [class*="Slot"]').first(),
-    );
-    this.slotButtons = page.locator('button').filter({ hasText: /^\d{2}:\d{2}$/ });
+    this.slotGrid   = page.getByTestId('slots-grid');
+    this.slotButtons = page.getByTestId('time-slot');
 
     // Star badge for Smart Slot recommendations
     // The app renders a star icon (Lucide Star) alongside "Рекомендовано" text or a badge
@@ -164,7 +162,7 @@ export class BookingWidgetPage {
    * Returns the locator of the slot that was clicked.
    */
   async selectSlot(time: string, options?: { force?: boolean }): Promise<Locator> {
-    const slot = this.page.locator('button').filter({ hasText: new RegExp(`^${time}`) }).first();
+    const slot = this.page.getByTestId('time-slot').filter({ hasText: new RegExp(`^${time}`) }).first();
     await slot.waitFor({ state: 'visible', timeout: 10_000 });
     await slot.click(options);
     return slot;
