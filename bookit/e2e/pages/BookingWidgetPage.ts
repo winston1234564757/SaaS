@@ -72,10 +72,9 @@ export class BookingWidgetPage {
     // First booking trigger button
     this.firstBookButton = page.getByRole('button', { name: /Записатися/i }).first();
 
-    // BookingFlow appears as a bottom sheet / drawer
-    this.bookingSheet = page
-      .locator('[role="dialog"], [data-radix-dialog-content], [class*="sheet"], [class*="Sheet"]')
-      .first();
+    // BookingFlow appears as a custom bottom-sheet (data-testid="wizard-panel").
+    // BookingWizard renders a <motion.div data-testid="wizard-panel"> — NOT a radix dialog.
+    this.bookingSheet = page.locator('[data-testid="wizard-panel"]');
 
     // Date strip inside the booking sheet
     this.dateStrip = page.locator('[class*="date-strip"], [class*="DateStrip"]').or(

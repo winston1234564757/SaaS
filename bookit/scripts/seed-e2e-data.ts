@@ -475,8 +475,8 @@ async function seedTimeTravelMaster(masterId: string, clientId: string): Promise
     .from('master_profiles')
     .update({
       pricing_rules: {
-        // -15% if booked < 24h before slot (resilient to server/client clock drift)
-        last_minute: { hours_ahead: 24, discount_pct: 15 },
+        // -15% if booked < 3h before slot (matches E2E last_minute test assertions)
+        last_minute: { hours_ahead: 3, discount_pct: 15 },
         // +20% Fri/Sat whole day
         peak:        { days: ['fri', 'sat'], hours: [0, 24] as [number, number], markup_pct: 20 },
         // -10% Mon/Tue whole day

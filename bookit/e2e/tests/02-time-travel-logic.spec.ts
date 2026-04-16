@@ -117,8 +117,10 @@ test.describe('Dynamic Pricing — Peak hours', () => {
     const widget  = new BookingWidgetPage(page);
 
     try {
-      // Wednesday 2026-04-29 at 10:00 — no peak, no quiet (quiet is Mon/Tue)
-      const frozenWed = new Date('2026-04-29T07:00:00.000Z'); // 10:00 Kyiv
+      // Wednesday 2026-04-29 at 06:00 Kyiv (03:00 UTC).
+      // Slots at 10:00-11:00 are 4-5h away → beyond last_minute threshold (3h).
+      // Wednesday: not peak (Fri/Sat), not quiet (Mon/Tue) → zero dynamic pricing rules apply.
+      const frozenWed = new Date('2026-04-29T03:00:00.000Z'); // 06:00 Kyiv
 
 
       // Synchronize server-side getNow() via cookie
@@ -322,11 +324,18 @@ test.describe('Loyalty Discount', () => {
       await widget.selectDateByISO('2026-05-01');
       await widget.waitForSlots();
 
-      const firstSlot = page.locator('button').filter({ hasText: /^\d{2}:\d{2}$/ }).first();
+      // Use data-testid="time-slot" — avoids regex mismatch with "HH:MMhh:mm" textContent
+      const firstSlot = page.locator('[data-testid="time-slot"]').first();
       await firstSlot.waitFor({ state: 'visible', timeout: 15_000 });
       await firstSlot.click();
 
-      // Allow wizard to transition to summary step
+      // Advance wizard from 'datetime' → 'details' (ClientDetails has "Підсумок" summary).
+      // TimeTravelMaster has no products so the products step is skipped.
+      const continueBtn = page.getByTestId('wizard-next-btn');
+      await continueBtn.waitFor({ state: 'visible', timeout: 5_000 });
+      await continueBtn.click();
+
+      // "Підсумок" section is rendered inside ClientDetails
       await widget.bookingSummary.waitFor({ state: 'visible', timeout: 15_000 });
 
       // Loyalty banner should appear in the booking summary
