@@ -61,9 +61,9 @@ test.describe('Dynamic Pricing — Peak hours', () => {
     const widget  = new BookingWidgetPage(page);
 
     try {
-      // Freeze time: Friday 2026-05-01 at 15:00 Kyiv time (UTC 12:00)
+      // Friday 2026-05-01 at 15:00 Kyiv time (UTC 12:00)
       const frozenFriday = new Date('2026-05-01T12:00:00.000Z'); 
-      await page.clock.install({ time: frozenFriday.getTime() });
+
 
       // Synchronize server-side getNow() via cookie
       await context.addCookies([{
@@ -119,7 +119,7 @@ test.describe('Dynamic Pricing — Peak hours', () => {
     try {
       // Wednesday 2026-04-29 at 10:00 — no peak, no quiet (quiet is Mon/Tue)
       const frozenWed = new Date('2026-04-29T07:00:00.000Z'); // 10:00 Kyiv
-      await page.clock.install({ time: frozenWed.getTime() });
+
 
       // Synchronize server-side getNow() via cookie
       await context.addCookies([{
@@ -176,7 +176,7 @@ test.describe('Dynamic Pricing — Last Minute', () => {
       // Set clock to Friday 2026-05-01 at 11:30 Kyiv time (UTC 08:30)
       // The 14:00 slot is 2.5h away → within last_minute threshold of 3h
       const frozenTime = new Date('2026-05-01T08:30:00.000Z'); // 11:30 Kyiv
-      await page.clock.install({ time: frozenTime.getTime() });
+
 
       // Synchronize server-side getNow() via cookie
       await context.addCookies([{
@@ -305,9 +305,8 @@ test.describe('Loyalty Discount', () => {
     try {
       // Freeze time to match the seeder's anchor (May 1st, 2026)
       const frozenTime = new Date('2026-05-01T10:00:00.000Z');
-      await page.clock.install({ time: frozenTime.getTime() });
 
-      // Synchronize server-side getNow() via cookie
+      // Synchronize server-side getNow() via cookie (Primary mechanism)
       await context.addCookies([{
         name: 'next-public-debug-now',
         value: encodeURIComponent(frozenTime.toISOString()),
