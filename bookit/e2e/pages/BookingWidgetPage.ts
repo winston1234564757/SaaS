@@ -132,11 +132,14 @@ export class BookingWidgetPage {
   /** Navigate to a master's public page by slug. */
   async goto(slug: string) {
     await this.page.goto(`/${slug}`);
-    await this.masterName.waitFor({ state: 'visible', timeout: 15_000 });
+    // Wait for JS hydration to complete
+    await this.page.locator('[data-hydrated="true"]').waitFor({ state: 'attached', timeout: 15_000 });
+    await this.masterName.waitFor({ state: 'visible', timeout: 5_000 });
   }
 
   /** Click the first service's "Записатися" button to open BookingFlow. */
   async openBookingFlow() {
+    await this.firstBookButton.waitFor({ state: 'visible', timeout: 10_000 });
     await this.firstBookButton.click();
     // Wait for the sheet/modal to appear
     await this.bookingSheet.waitFor({ state: 'visible', timeout: 15_000 });

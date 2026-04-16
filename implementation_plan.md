@@ -1,50 +1,46 @@
-# Implementation Plan — Fix E2E Timeouts (No Anti-Patterns)
+# Implementation Plan — Hydration & Animation Stability
 
-This plan addresses persistent E2E failures in CI by replacing flaky "networkidle" and "timeout" logic with deterministic Playwright assertions. We will instrument the UI with test IDs and refactor the POM/Spec to use explicit state-based waits.
+This plan addresses the timeouts in CI by ensuring that tests wait for the client-side JavaScript to hydrate and for entrance animations to complete before interacting with the UI.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> This refactor introduces new `data-testid` attributes to the `DateTimePicker` component. While safe, it modifies the production component specifically to support robust testing in CI.
+> [!NOTE]
+> I am adding a `mounted` state to the `PublicMasterPage` to provide an explicit synchronization point for E2E tests. This is a standard practice for stabilizing React apps in CI.
 
 ## Proposed Changes
 
-### Component Instrumentation
+### UI Instrumentation
 
-#### [MODIFY] [DateTimePicker.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/shared/wizard/DateTimePicker.tsx)
-- Add `data-testid="schedule-loader"` to the spinner shown during schedule loading.
-- Add `data-testid="slots-grid"` to the container rendering the time slots.
+#### [MODIFY] [PublicMasterPage.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/public/PublicMasterPage.tsx)
+- Add a `mounted` state via `useEffect`.
+- Add `data-hydrated={mounted}` to the main container div.
+- This provides a deterministic way for Playwright to know when React has attached its event listeners.
 
 ---
 
 ### Page Object Refactoring
 
 #### [MODIFY] [BookingWidgetPage.ts](file:///c:/Users/Vitossik/SaaS/bookit/e2e/pages/BookingWidgetPage.ts)
-- **goto**: Wait for `this.masterName` to be visible instead of `networkidle`.
-- **openBookingFlow**: Wait for `this.bookingSheet` to be visible instead of `networkidle`.
-- **selectDateByISO**:
-    - Wait for `[data-testid="schedule-loader"]` to be hidden before interacting with the date strip.
-    - Remove `force: true` from the click.
-    - Remove `networkidle`.
-    - Wait for `[data-testid="slots-grid"]` to be visible after clicking.
+- **goto**: Wait for `[data-hydrated="true"]` to ensure the page is interactive.
+- **openBookingFlow**: 
+    - Wait for `book-button` to be visible.
+    - Add a `waitForElementState('stable')` equivalent wait (handled by default in `click()`, but reinforced via `data-hydrated`).
+- **selectDateByISO**: Ensure we wait for the hydration of the wizard sheet specifically if needed.
 
 ---
 
-### Test Suite Stabilization
+### Test Suite Clean-up
 
 #### [MODIFY] [02-time-travel-logic.spec.ts](file:///c:/Users/Vitossik/SaaS/bookit/e2e/tests/02-time-travel-logic.spec.ts)
-- Remove all instances of `page.waitForLoadState('networkidle')`.
-- In **Smart Slots** test: Replace `page.waitForTimeout(1_500)` with a wait for a slot inside the morning window to be visible.
-- Remove `force: true` from all `.click()` calls.
-- In **Loyalty Program** test: Wait for specific dashboard elements instead of `networkidle`.
+- No changes needed other than ensuring the `force: true` stays removed and we rely on the hardened POM.
 
 ## Verification Plan
 
 ### Automated Tests
 - Run the localized E2E test to verify pass/fail:
   `npx playwright test e2e/tests/02-time-travel-logic.spec.ts`
-- Target a specific test that is currently failing in CI (e.g., Dynamic Pricing):
-  `npx playwright test -g "Peak hours"`
+- Target the failing test cases:
+  `npx playwright test -g "Dynamic Pricing"`
 
 ### Manual Verification
-- Check CI logs in GitHub Actions to ensure the new `[Browser]` logs confirm loader transitions (Loader Hidden -> Slots Visible).
+- Monitor the CI logs for `[Browser]` entries to confirm the page reaches the "hydrated" state before the first click.

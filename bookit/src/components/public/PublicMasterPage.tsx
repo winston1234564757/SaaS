@@ -200,10 +200,15 @@ export function PublicMasterPage({ master }: { master: Master }) {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [repeatServices, setRepeatServices] = useState<Service[] | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [activeFlashDeal, setActiveFlashDeal] = useState<FlashDeal | null>(null);
   // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
   const [todayDow, setTodayDow] = useState('');
   const didAutoOpen = useRef(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     document.body.style.backgroundColor = theme.background;
@@ -271,7 +276,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
     <>
       <ThemedBlobBackground theme={theme} />
 
-      <div className="max-w-lg mx-auto px-4 pb-32 pt-6">
+      <div className="max-w-lg mx-auto px-4 pb-32 pt-6" data-hydrated={hydrated}>
 
         {/* Top bar */}
         <div className="flex items-center justify-end mb-4">
