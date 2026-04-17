@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { createFlashDeal, cancelFlashDeal } from '@/app/(master)/dashboard/flash/actions';
+import { useFlashDeals, useFlashDealsCount, useFlashDealsInvalidate } from '@/lib/supabase/hooks/useFlashDeals';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
-import { useFlashDeals, useFlashDealsInvalidate } from '@/lib/supabase/hooks/useFlashDeals';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -21,9 +21,10 @@ import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import Link from 'next/link';
 
 interface Props {
-  activeDeals: FlashDealRow[];
-  tier: string;
-  usedThisMonth: number;
+  activeDeals?: FlashDealRow[];
+  tier?: string;
+  usedThisMonth?: number;
+  isDrawer?: boolean;
 }
 
 const STARTER_LIMIT = 5;
@@ -55,19 +56,36 @@ function progressBarColor(used: number): string {
   return '#5C9E7A';
 }
 
-export function FlashDealPage({ activeDeals: initialDeals, tier, usedThisMonth }: Props) {
-  const { masterProfile } = useMasterContext();
+export function FlashDealPage({ activeDeals: initialDeals, tier: initialTier, usedThisMonth: initialCount, isDrawer }: Props) {
+  const { masterProfile, isLoading: masterLoading } = useMasterContext();
+  const tier = initialTier ?? masterProfile?.subscription_tier ?? 'starter';
+
+  const invalidateDeals = useFlashDealsInvalidate();
+  const { data: activeDeals = initialDeals ?? [], isLoading: dealsLoading } = useFlashDeals(initialDeals);
+  const { data: usedThisMonth = initialCount ?? 0, isLoading: countLoading } = useFlashDealsCount();
+  
+  const { services } = useServices();
+  const masterId = masterProfile?.id;
+
+  const isLoading = (masterLoading || dealsLoading || countLoading) && !initialDeals;
+
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const { currentStep, nextStep, closeTour } = useTour('flash', 2, {
     initialSeen: seenTours?.flash ?? false,
     onComplete: () => markTourSeen('flash').then(() => undefined),
   });
-  const invalidateDeals = useFlashDealsInvalidate();
-  const { data: activeDeals = initialDeals } = useFlashDeals(initialDeals);
-  const { services } = useServices();
-  const masterId = masterProfile?.id;
 
-  const activeServices = services.filter(s => s.active);
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-5 p-6 animate-pulse">
+        <div className="h-40 bg-white/40 border border-white/60 rounded-3xl" />
+        <div className="h-64 bg-white/40 border border-white/60 rounded-3xl" />
+      </div>
+    );
+  }
+
+
+  const activeServices = useMemo(() => services.filter(s => s.active), [services]);
 
   const [serviceId, setServiceId]         = useState('');
   const [slotDate, setSlotDate]           = useState(todayStr());
@@ -79,7 +97,7 @@ export function FlashDealPage({ activeDeals: initialDeals, tier, usedThisMonth }
   const [result, setResult]               = useState<{ error: string | null; sentTo: number } | null>(null);
   const [cancellingId, setCancellingId]   = useState<string | null>(null);
 
-  // ── Smart slots ───────────────────────────────────────────────────────────
+  // We only really need the schedule when we are ready to pick a slot
   const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(
     masterId, slotDate, slotDate
   );
@@ -91,7 +109,7 @@ export function FlashDealPage({ activeDeals: initialDeals, tier, usedThisMonth }
   const serviceDuration = selectedService?.duration ?? 60;
 
   const availableSlots = useMemo(() => {
-    if (!scheduleStore) return null; // ще завантажується
+    if (!scheduleStore) return null;
 
     const dow  = DOW_KEYS[new Date(slotDate + 'T12:00:00').getDay()];
     const tmpl = scheduleStore.templates[dow];
@@ -119,8 +137,6 @@ export function FlashDealPage({ activeDeals: initialDeals, tier, usedThisMonth }
     }).filter(s => s.available);
   }, [scheduleStore, slotDate, serviceDuration]);
 
-  // ─────────────────────────────────────────────────────────────────────────
-
   const discountedPrice = originalPrice
     ? Math.round(Number(originalPrice) * (1 - discountPct / 100))
     : null;
@@ -131,14 +147,14 @@ export function FlashDealPage({ activeDeals: initialDeals, tier, usedThisMonth }
 
   const handleServiceChange = (sid: string) => {
     setServiceId(sid);
-    setSlotTime(''); // скидаємо слот — тривалість могла змінитись
+    setSlotTime('');
     const svc = activeServices.find(s => s.id === sid);
     if (svc) setOriginalPrice(String(svc.price));
   };
 
   const handleDateChange = (date: string) => {
     setSlotDate(date);
-    setSlotTime(''); // скидаємо слот при зміні дати
+    setSlotTime('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -171,432 +187,371 @@ export function FlashDealPage({ activeDeals: initialDeals, tier, usedThisMonth }
     invalidateDeals();
   };
 
-  // ── Slot section helper ───────────────────────────────────────────────────
-  const renderSlotPicker = () => {
-    if (!serviceId) {
-      return (
-        <p className="text-xs text-[#A8928D] text-center py-3">
-          Спочатку оберіть послугу
-        </p>
-      );
-    }
-    if (scheduleLoading || availableSlots === null) {
-      return (
-        <div className="flex items-center justify-center gap-2 py-3">
-          <Loader2 size={14} className="text-[#D4935A] animate-spin" />
-          <span className="text-xs text-[#A8928D]">Завантаження розкладу…</span>
-        </div>
-      );
-    }
-    if (availableSlots.length === 0) {
-      return (
-        <div className="flex items-center justify-center gap-2 py-3">
-          <CalendarX size={14} className="text-[#A8928D]" />
-          <span className="text-xs text-[#A8928D]">Немає вільних слотів на цей день</span>
-        </div>
-      );
-    }
-    return (
-      <div className="grid grid-cols-4 gap-1.5">
-        {availableSlots.map(slot => (
-          <button
-            key={slot.time}
-            type="button"
-            onClick={() => setSlotTime(slot.time)}
-            className={cn(
-              'py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer',
-              slotTime === slot.time
-                ? 'bg-[#D4935A] text-white border-[#D4935A] shadow-[0_2px_8px_rgba(212,147,90,0.3)]'
-                : 'bg-white/60 text-[#6B5750] border-[#E8D5CF] hover:border-[#D4935A]/40'
-            )}
-          >
-            {slot.time}
-          </button>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-col gap-4 pb-8">
-
-      {/* ── Header ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING, delay: 0.05 }}
-        className={cn(
-          'relative bento-card p-5 transition-all duration-500',
-          currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
-        )}
-      >
-        <AnchoredTooltip
-          isOpen={currentStep === 0}
-          onClose={closeTour}
-          title="Створення акції"
-          text="Потрібно терміново заповнити завтрашній день? Створіть флеш-акцію зі знижкою."
-          position="bottom"
-          primaryButtonText="Далі →"
-          onPrimaryClick={nextStep}
+      {!isDrawer && (
+        <FlashDealHeader 
+          activeCount={activeDeals.length}
+          usedThisMonth={usedThisMonth}
+          tier={tier}
+          currentStep={currentStep}
+          closeTour={closeTour}
+          nextStep={nextStep}
         />
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-[#D4935A]/12 flex items-center justify-center shrink-0">
-            <Zap size={22} className="text-[#D4935A]" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="heading-serif text-xl text-[#2C1A14] leading-tight">Флеш-акції</h1>
-            <p className="text-sm text-[#A8928D]">Заповни вільне вікно — сповісти клієнтів</p>
-          </div>
-          {tier !== 'starter' && (
-            <span className="text-xs bg-[#789A99]/10 text-[#789A99] border border-[#789A99]/20 px-2.5 py-1 rounded-full font-semibold shrink-0">
-              Pro
-            </span>
-          )}
-        </div>
+      )}
 
-        <div className="grid grid-cols-2 gap-2.5 mt-4">
-          <div className="p-3 rounded-2xl bg-white/50 border border-white/70">
-            <p className="text-[10px] text-[#A8928D] uppercase tracking-wide">Активних акцій</p>
-            <p className="text-xl font-bold text-[#D4935A] mt-0.5">{activeDeals.length}</p>
-          </div>
-          <div className="p-3 rounded-2xl bg-white/50 border border-white/70">
-            <p className="text-[10px] text-[#A8928D] uppercase tracking-wide">За цей місяць</p>
-            <p className="text-xl font-bold text-[#2C1A14] mt-0.5">{usedThisMonth}</p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ── Starter Progress Bar ── */}
       {tier === 'starter' && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING, delay: 0.08 }}
-          className="bento-card p-4 flex flex-col gap-3"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Sparkles size={13} className="text-[#D4935A]" />
-              <span className="text-xs font-semibold text-[#6B5750]">Флеш-акції цього місяця</span>
-            </div>
-            <span className="text-xs font-bold tabular-nums" style={{ color: barColor }}>
-              {usedThisMonth} / {STARTER_LIMIT}
-            </span>
-          </div>
-          <div className="w-full h-2.5 bg-[#F0E4DF] rounded-full overflow-hidden">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ backgroundColor: barColor }}
-              initial={{ width: '0%' }}
-              animate={{ width: `${progressPct}%` }}
-              transition={{ duration: 0.9, ease: 'easeOut' }}
-            />
-          </div>
-          {isStarterBlocked ? (
-            <p className="text-xs text-[#C05B5B] font-medium">
-              Ліміт вичерпано. Перейдіть на Pro для необмеженого доступу.
-            </p>
-          ) : (
-            <p className="text-xs text-[#A8928D]">
-              Залишилось {STARTER_LIMIT - usedThisMonth} з {STARTER_LIMIT} акцій на місяць
-            </p>
-          )}
-        </motion.div>
-      )}
-
-      {/* ── Paywall at 5/5 ── */}
-      {isStarterBlocked && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bento-card p-4 flex items-center gap-3"
-          style={{ background: 'rgba(212,147,90,0.06)' }}
-        >
-          <div className="w-10 h-10 rounded-2xl bg-[#D4935A]/12 flex items-center justify-center shrink-0">
-            <Crown size={18} className="text-[#D4935A]" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#2C1A14]">Ліміт Starter вичерпано</p>
-            <p className="text-xs text-[#6B5750]">
-              {STARTER_LIMIT} флеш-акцій на місяць. Pro — необмежений доступ і смарт-таргетинг.
-            </p>
-          </div>
-          <Link
-            href="/dashboard/billing"
-            className="text-xs font-bold text-[#D4935A] whitespace-nowrap hover:underline"
-          >
-            Pro →
-          </Link>
-        </motion.div>
-      )}
-
-      {/* ── Create Form ── */}
-      <motion.form
-        onSubmit={handleSubmit}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING, delay: 0.1 }}
-        className={cn(
-          'relative bento-card p-5 flex flex-col gap-4 transition-all duration-500',
-          currentStep === 1 && 'tour-glow z-40 scale-[1.02]',
-          isStarterBlocked && 'opacity-50 pointer-events-none select-none'
-        )}
-      >
-        <AnchoredTooltip
-          isOpen={currentStep === 1}
-          onClose={closeTour}
-          title="Ефект терміновості"
-          text="Акція з'явиться на вашій сторінці з таймером. Це створює ефект FOMO та прискорює прийняття рішення клієнтом."
-          position="bottom"
-          primaryButtonText="Зрозуміло"
-          onPrimaryClick={nextStep}
+        <FlashDealStarterProgress 
+          usedThisMonth={usedThisMonth}
+          progressPct={progressPct}
+          barColor={barColor}
+          isStarterBlocked={isStarterBlocked}
         />
-
-        <div className="flex items-center gap-2">
-          <Zap size={14} className="text-[#D4935A]" />
-          <h2 className="text-sm font-bold text-[#2C1A14]">Нова флеш-акція</h2>
-        </div>
-
-        {/* Послуга */}
-        <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Послуга</label>
-          <div className="relative">
-            <select
-              value={serviceId}
-              onChange={e => handleServiceChange(e.target.value)}
-              required
-              className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-[#E8D5CF] text-sm text-[#2C1A14] focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 focus:border-[#D4935A]/50 transition-colors bg-white/60 cursor-pointer"
-            >
-              <option value="" disabled>Оберіть послугу…</option>
-              {activeServices.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.name} — {s.price} ₴
-                </option>
-              ))}
-              {activeServices.length === 0 && (
-                <option value="" disabled>Немає активних послуг</option>
-              )}
-            </select>
-            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8928D] pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Дата слоту */}
-        <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Дата слоту</label>
-          <input
-            type="date"
-            value={slotDate}
-            min={todayStr()}
-            onChange={e => handleDateChange(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-2xl border border-[#E8D5CF] text-sm text-[#2C1A14] focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 transition-colors bg-white/60"
-            required
-          />
-        </div>
-
-        {/* Час слоту — smart slot picker */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-[#6B5750]">
-              Вільний слот
-              {slotTime && (
-                <span className="ml-2 text-[#D4935A] font-bold">{slotTime}</span>
-              )}
-            </label>
-            {slotTime && (
-              <button
-                type="button"
-                onClick={() => setSlotTime('')}
-                className="text-[10px] text-[#A8928D] hover:text-[#C05B5B] transition-colors cursor-pointer"
-              >
-                скинути
-              </button>
-            )}
-          </div>
-          <div className="p-3 rounded-2xl bg-white/40 border border-[#E8D5CF] min-h-[52px] flex flex-col justify-center">
-            {renderSlotPicker()}
-          </div>
-          {/* hidden input для валідації форми */}
-          <input type="hidden" value={slotTime} required />
-        </div>
-
-        {/* Знижка */}
-        <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Знижка</label>
-          <div className="relative">
-            <select
-              value={discountPct}
-              onChange={e => setDiscountPct(Number(e.target.value))}
-              className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-[#E8D5CF] text-sm text-[#2C1A14] focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 transition-colors bg-white/60"
-            >
-              {DISCOUNT_OPTIONS.map(d => (
-                <option key={d} value={d}>{d}%</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8928D] pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Price preview */}
-        <AnimatePresence>
-          {discountedPrice !== null && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="flex items-center gap-2.5 px-4 py-3 bg-[#D4935A]/8 border border-[#D4935A]/20 rounded-2xl">
-                <Zap size={15} className="text-[#D4935A] shrink-0" />
-                <span className="text-sm text-[#2C1A14]">
-                  Клієнт заплатить{' '}
-                  <span className="font-bold text-[#D4935A]">{discountedPrice} ₴</span>
-                  {' '}замість{' '}
-                  <span className="line-through text-[#A8928D]">{originalPrice} ₴</span>
-                  {' '}
-                  <span className="text-[#D4935A] font-semibold">(-{discountPct}%)</span>
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Тривалість акції */}
-        <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Акція діє</label>
-          <div className="flex gap-2">
-            {EXPIRY_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setExpiresInHours(opt.value)}
-                className={`flex-1 py-2.5 rounded-2xl text-xs font-semibold border transition-all cursor-pointer ${
-                  expiresInHours === opt.value
-                    ? 'bg-[#D4935A] text-white border-[#D4935A] shadow-[0_2px_8px_rgba(212,147,90,0.3)]'
-                    : 'bg-white/60 text-[#6B5750] border-[#E8D5CF] hover:border-[#D4935A]/40'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Result */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl text-sm font-medium ${
-                result.error
-                  ? 'bg-[#C05B5B]/8 text-[#C05B5B] border border-[#C05B5B]/20'
-                  : 'bg-[#5C9E7A]/8 text-[#5C9E7A] border border-[#5C9E7A]/20'
-              }`}>
-                {result.error
-                  ? <AlertCircle size={15} className="shrink-0" />
-                  : <CheckCircle2 size={15} className="shrink-0" />
-                }
-                {result.error ?? `Акцію створено! Сповіщено ${pluralize(result.sentTo, ['клієнта', 'клієнти', 'клієнтів'])}.`}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading || isStarterBlocked || !slotTime}
-          className="w-full flex items-center justify-center gap-2 bg-[#D4935A] hover:bg-[#C07840] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-2xl py-3 text-sm transition-colors shadow-[0_4px_14px_rgba(212,147,90,0.3)] cursor-pointer"
-        >
-          <Send size={15} />
-          {loading ? 'Відправляємо…' : 'Запустити акцію та сповістити клієнтів'}
-        </button>
-      </motion.form>
-
-      {/* ── Active Deals ── */}
-      {activeDeals.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING, delay: 0.15 }}
-          className="bento-card p-5 flex flex-col gap-3"
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Clock size={14} className="text-[#D4935A]" />
-            <h2 className="text-sm font-bold text-[#2C1A14]">Активні акції</h2>
-            <span className="ml-auto text-xs font-bold text-[#D4935A] bg-[#D4935A]/10 px-2 py-0.5 rounded-full">
-              {activeDeals.length}
-            </span>
-          </div>
-          <div className="flex flex-col gap-2">
-            {activeDeals.map(deal => {
-              const priceUah   = Math.round(deal.original_price / 100);
-              const discounted = Math.round(priceUah * (1 - deal.discount_pct / 100));
-              return (
-                <div
-                  key={deal.id}
-                  className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#D4935A]/6 border border-[#D4935A]/15"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-[#D4935A]/12 flex items-center justify-center shrink-0">
-                    <Zap size={16} className="text-[#D4935A]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2C1A14] truncate">{deal.service_name}</p>
-                    <p className="text-xs text-[#6B5750]">
-                      {deal.slot_date} о {deal.slot_time.slice(0, 5)}
-                      {' · '}
-                      <span className="font-semibold text-[#D4935A]">{discounted} ₴</span>
-                      {' '}
-                      <span className="line-through text-[#A8928D]">{priceUah} ₴</span>
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <div className="flex items-center gap-1 text-xs text-[#D4935A] font-semibold">
-                      <Clock size={10} />
-                      {timeUntil(deal.expires_at)}
-                    </div>
-                    <button
-                      onClick={() => handleCancel(deal.id)}
-                      disabled={cancellingId === deal.id}
-                      className="p-1.5 rounded-lg hover:bg-[#C05B5B]/10 text-[#A8928D] hover:text-[#C05B5B] transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      <X size={13} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
       )}
 
-      {/* ── Empty State ── */}
-      {activeDeals.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING, delay: 0.15 }}
-          className="bento-card p-6 flex flex-col items-center gap-4 text-center"
-        >
-          <div className="w-16 h-16 rounded-3xl bg-[#D4935A]/10 flex items-center justify-center">
-            <Zap size={28} className="text-[#D4935A]" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-[#2C1A14]">Немає активних акцій</p>
-            <p className="text-xs text-[#A8928D] mt-1 leading-relaxed">
-              Запусти першу флеш-акцію, щоб заповнити вільний слот і залучити клієнтів
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#6B5750] bg-[#F5E8E3]/60 px-4 py-2 rounded-2xl">
-            <Users size={12} className="text-[#789A99]" />
-            Клієнти отримають сповіщення через Telegram та Push
-          </div>
-        </motion.div>
-      )}
+      {isStarterBlocked && <FlashDealPaywall />}
+
+      <FlashDealForm 
+        handleSubmit={handleSubmit}
+        currentStep={currentStep}
+        isStarterBlocked={isStarterBlocked}
+        serviceId={serviceId}
+        activeServices={activeServices}
+        handleServiceChange={handleServiceChange}
+        slotDate={slotDate}
+        handleDateChange={handleDateChange}
+        slotTime={slotTime}
+        setSlotTime={setSlotTime}
+        scheduleLoading={scheduleLoading}
+        availableSlots={availableSlots}
+        discountPct={discountPct}
+        setDiscountPct={setDiscountPct}
+        discountedPrice={discountedPrice}
+        originalPrice={originalPrice}
+        expiresInHours={expiresInHours}
+        setExpiresInHours={setExpiresInHours}
+        loading={loading}
+        result={result}
+        closeTour={closeTour}
+        nextStep={nextStep}
+      />
+
+      <ActiveDealsList 
+        activeDeals={activeDeals}
+        cancellingId={cancellingId}
+        handleCancel={handleCancel}
+      />
     </div>
   );
 }
+
+// ── Sub-components ──────────────────────────────────────────────────────────
+
+const FlashDealHeader = React.memo(({ activeCount, usedThisMonth, tier, currentStep, closeTour, nextStep }: any) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ ...SPRING, delay: 0.05 }}
+    className={cn(
+      'relative bento-card p-5 transition-all duration-500',
+      currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+    )}
+  >
+    <AnchoredTooltip
+      isOpen={currentStep === 0}
+      onClose={closeTour}
+      title="Створення акції"
+      text="Потрібно терміново заповнити завтрашній день? Створіть флеш-акцію зі знижкою."
+      position="bottom"
+      primaryButtonText="Далі →"
+      onPrimaryClick={nextStep}
+    />
+    <div className="flex items-center gap-3">
+      <div className="w-11 h-11 rounded-2xl bg-[#D4935A]/12 flex items-center justify-center shrink-0">
+        <Zap size={22} className="text-[#D4935A]" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h1 className="heading-serif text-xl text-[#2C1A14] leading-tight">Флеш-акції</h1>
+        <p className="text-sm text-[#A8928D]">Заповни вільне вікно — сповісти клієнтів</p>
+      </div>
+      {tier !== 'starter' && (
+        <span className="text-xs bg-[#789A99]/10 text-[#789A99] border border-[#789A99]/20 px-2.5 py-1 rounded-full font-semibold shrink-0">
+          Pro
+        </span>
+      )}
+    </div>
+
+    <div className="grid grid-cols-2 gap-2.5 mt-4">
+      <div className="p-3 rounded-2xl bg-white/50 border border-white/70">
+        <p className="text-[10px] text-[#A8928D] uppercase tracking-wide">Активних акцій</p>
+        <p className="text-xl font-bold text-[#D4935A] mt-0.5">{activeCount}</p>
+      </div>
+      <div className="p-3 rounded-2xl bg-white/50 border border-white/70">
+        <p className="text-[10px] text-[#A8928D] uppercase tracking-wide">За цей місяць</p>
+        <p className="text-xl font-bold text-[#2C1A14] mt-0.5">{usedThisMonth}</p>
+      </div>
+    </div>
+  </motion.div>
+));
+
+const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barColor, isStarterBlocked }: any) => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ ...SPRING, delay: 0.08 }}
+    className="bento-card p-4 flex flex-col gap-3"
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-1.5">
+        <Sparkles size={13} className="text-[#D4935A]" />
+        <span className="text-xs font-semibold text-[#6B5750]">Флеш-акції цього місяця</span>
+      </div>
+      <span className="text-xs font-bold tabular-nums" style={{ color: barColor }}>
+        {usedThisMonth} / {STARTER_LIMIT}
+      </span>
+    </div>
+    <div className="w-full h-2.5 bg-[#F0E4DF] rounded-full overflow-hidden">
+      <motion.div
+        className="h-full rounded-full"
+        style={{ backgroundColor: barColor }}
+        initial={{ width: '0%' }}
+        animate={{ width: `${progressPct}%` }}
+        transition={{ duration: 0.9, ease: 'easeOut' }}
+      />
+    </div>
+    {isStarterBlocked ? (
+      <p className="text-xs text-[#C05B5B] font-medium">
+        Ліміт вичерпано. Перейдіть на Pro для необмеженого доступу.
+      </p>
+    ) : (
+      <p className="text-xs text-[#A8928D]">
+        Залишилось {STARTER_LIMIT - usedThisMonth} з {STARTER_LIMIT} акцій на місяць
+      </p>
+    )}
+  </motion.div>
+));
+
+const FlashDealPaywall = React.memo(() => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bento-card p-4 flex items-center gap-3"
+    style={{ background: 'rgba(212,147,90,0.06)' }}
+  >
+    <div className="w-10 h-10 rounded-2xl bg-[#D4935A]/12 flex items-center justify-center shrink-0">
+      <Crown size={18} className="text-[#D4935A]" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold text-[#2C1A14]">Ліміт Starter вичерпано</p>
+      <p className="text-xs text-[#6B5750]">
+        {STARTER_LIMIT} флеш-акцій на місяць. Pro — необмежений доступ і смарт-таргетинг.
+      </p>
+    </div>
+    <Link
+      href="/dashboard/billing"
+      className="text-xs font-bold text-[#D4935A] whitespace-nowrap hover:underline"
+    >
+      Pro →
+    </Link>
+  </motion.div>
+));
+
+const FlashDealForm = React.memo(({
+  handleSubmit, currentStep, isStarterBlocked,
+  serviceId, activeServices, handleServiceChange,
+  slotDate, handleDateChange,
+  slotTime, setSlotTime, scheduleLoading, availableSlots,
+  discountPct, setDiscountPct, discountedPrice, originalPrice,
+  expiresInHours, setExpiresInHours,
+  loading, result, closeTour, nextStep
+}: any) => (
+  <motion.form
+    onSubmit={handleSubmit}
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ ...SPRING, delay: 0.1 }}
+    className={cn(
+      'relative bento-card p-5 flex flex-col gap-4 transition-all duration-500',
+      currentStep === 1 && 'tour-glow z-40 scale-[1.02]',
+      isStarterBlocked && 'opacity-50 pointer-events-none select-none'
+    )}
+  >
+    <AnchoredTooltip
+      isOpen={currentStep === 1}
+      onClose={closeTour}
+      title="Ефект терміновості"
+      text="Акція з'явиться на вашій сторінці з таймером. Це створює ефект FOMO та прискорює прийняття рішення клієнтом."
+      position="bottom"
+      primaryButtonText="Зрозуміло"
+      onPrimaryClick={nextStep}
+    />
+
+    <div className="flex items-center gap-2">
+      <Zap size={14} className="text-[#D4935A]" />
+      <h2 className="text-sm font-bold text-[#2C1A14]">Нова флеш-акція</h2>
+    </div>
+
+    <div>
+      <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Послуга</label>
+      <div className="relative">
+        <select
+          value={serviceId}
+          onChange={e => handleServiceChange(e.target.value)}
+          required
+          className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-[#E8D5CF] text-sm text-[#2C1A14] focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 transition-colors bg-white/60 cursor-pointer"
+        >
+          <option value="" disabled>Оберіть послугу…</option>
+          {activeServices.map((s: any) => (
+            <option key={s.id} value={s.id}>{s.name} — {s.price} ₴</option>
+          ))}
+        </select>
+        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8928D] pointer-events-none" />
+      </div>
+    </div>
+
+    <div>
+      <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Дата слоту</label>
+      <input
+        type="date"
+        value={slotDate}
+        min={todayStr()}
+        onChange={e => handleDateChange(e.target.value)}
+        className="w-full px-3.5 py-2.5 rounded-2xl border border-[#E8D5CF] text-sm text-[#2C1A14] focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 transition-colors bg-white/60"
+        required
+      />
+    </div>
+
+    <div>
+      <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Вільний слот</label>
+      <div className="p-3 rounded-2xl bg-white/40 border border-[#E8D5CF] min-h-[52px]">
+        {!serviceId ? (
+          <p className="text-xs text-[#A8928D] text-center py-3">Спочатку оберіть послугу</p>
+        ) : scheduleLoading || availableSlots === null ? (
+          <div className="flex items-center justify-center gap-2 py-3">
+            <Loader2 size={14} className="text-[#D4935A] animate-spin" />
+            <span className="text-xs text-[#A8928D]">Завантаження розкладу…</span>
+          </div>
+        ) : availableSlots.length === 0 ? (
+          <div className="flex items-center justify-center gap-2 py-3">
+            <CalendarX size={14} className="text-[#A8928D]" />
+            <span className="text-xs text-[#A8928D]">Немає вільних слотів</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-1.5">
+            {availableSlots.map((slot: any) => (
+              <button
+                key={slot.time}
+                type="button"
+                onClick={() => setSlotTime(slot.time)}
+                className={cn(
+                  'py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer',
+                  slotTime === slot.time
+                    ? 'bg-[#D4935A] text-white border-[#D4935A] shadow-[0_2px_8px_rgba(212,147,90,0.3)]'
+                    : 'bg-white/60 text-[#6B5750] border-[#E8D5CF] hover:border-[#D4935A]/40'
+                )}
+              >
+                {slot.time}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <input type="hidden" value={slotTime} required />
+    </div>
+
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Знижка</label>
+        <div className="relative">
+          <select
+            value={discountPct}
+            onChange={e => setDiscountPct(Number(e.target.value))}
+            className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-[#E8D5CF] text-sm text-[#2C1A14] bg-white/60"
+          >
+            {DISCOUNT_OPTIONS.map(d => <option key={d} value={d}>{d}%</option>)}
+          </select>
+          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8928D]" />
+        </div>
+      </div>
+      <div>
+        <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Акція діє</label>
+        <div className="flex gap-1.5">
+          {EXPIRY_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setExpiresInHours(opt.value)}
+              className={`flex-1 py-2.5 rounded-2xl text-[10px] font-bold border transition-all cursor-pointer ${
+                expiresInHours === opt.value ? 'bg-[#D4935A] text-white' : 'bg-white/60'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <AnimatePresence>
+      {discountedPrice !== null && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="px-4 py-3 bg-[#D4935A]/8 rounded-2xl">
+          <span className="text-xs text-[#2C1A14]">
+            Клієнт заплатить <span className="font-bold text-[#D4935A]">{discountedPrice} ₴</span> замість {originalPrice} ₴
+          </span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    {result && (
+      <div className={`p-3 rounded-2xl text-xs font-medium ${result.error ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+        {result.error ?? `Акцію створено! Сповіщено ${result.sentTo} клієнтів.`}
+      </div>
+    )}
+
+    <button
+      type="submit"
+      disabled={loading || isStarterBlocked || !slotTime}
+      className="w-full flex items-center justify-center gap-2 bg-[#D4935A] disabled:opacity-50 text-white font-bold rounded-2xl py-3.5 text-sm cursor-pointer shadow-lg"
+    >
+      <Send size={15} />
+      {loading ? 'Відправляємо…' : 'Запустити акцію'}
+    </button>
+  </motion.form>
+));
+
+const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel }: any) => (
+  <AnimatePresence>
+    {activeDeals.length > 0 ? (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-5 flex flex-col gap-3">
+        <div className="flex items-center gap-2 mb-1">
+          <Clock size={14} className="text-[#D4935A]" />
+          <h2 className="text-sm font-bold text-[#2C1A14]">Активні акції ({activeDeals.length})</h2>
+        </div>
+        <div className="flex flex-col gap-2">
+          {activeDeals.map((deal: any) => {
+            const priceUah   = Math.round(deal.original_price / 100);
+            const discounted = Math.round(priceUah * (1 - deal.discount_pct / 100));
+            return (
+              <div key={deal.id} className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#D4935A]/6 border border-[#D4935A]/15">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{deal.service_name}</p>
+                  <p className="text-[10px] text-[#6B5750]">{deal.slot_date} о {deal.slot_time.slice(0, 5)} · {discounted} ₴</p>
+                </div>
+                <button onClick={() => handleCancel(deal.id)} disabled={cancellingId === deal.id} className="p-2 text-[#A8928D] hover:text-[#C05B5B] cursor-pointer">
+                  <X size={14} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+    ) : (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-6 flex flex-col items-center gap-4 text-center">
+        <div className="w-16 h-16 rounded-3xl bg-[#D4935A]/10 flex items-center justify-center">
+          <Zap size={28} className="text-[#D4935A]" />
+        </div>
+        <p className="text-sm font-bold">Немає активних акцій</p>
+      </motion.div>
+    )}
+  </AnimatePresence>
+));

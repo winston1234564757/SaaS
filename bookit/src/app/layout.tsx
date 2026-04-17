@@ -5,6 +5,7 @@ import { ToastProvider } from '@/lib/toast/context';
 import { MyBottomNav } from '@/components/client/MyBottomNav';
 import { ServiceWorkerRegistration } from '@/components/shared/ServiceWorkerRegistration';
 import { RefCapture } from '@/components/shared/RefCapture';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import './globals.css';
 
 const inter = Inter({
@@ -55,7 +56,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="grain-overlay" aria-hidden="true" />
         <ServiceWorkerRegistration />
         <RefCapture />
-        <QueryProvider><ToastProvider>{children}</ToastProvider></QueryProvider>
+        <NuqsAdapter>
+          <QueryProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </QueryProvider>
+        </NuqsAdapter>
         <MyBottomNav />
       </body>
     </html>

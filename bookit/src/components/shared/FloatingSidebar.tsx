@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings,
   MessageSquare, Zap, TrendingUp, Gift, Share2, Building2, CreditCard,
+  Wallet, Rocket, BadgePercent, Network
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -21,12 +22,9 @@ const PRIMARY_ITEMS = [
 ];
 
 const SECONDARY_ITEMS = [
+  { href: '/dashboard/revenue',   icon: Wallet,          label: 'Дохід',         hint: 'Флеш-акції та ціноутворення' },
+  { href: '/dashboard/growth',    icon: Rocket,          label: 'Ріст',          hint: 'Лояльність та реферали' },
   { href: '/dashboard/reviews',   icon: MessageSquare,   label: 'Відгуки',       hint: 'Керування відгуками клієнтів' },
-  { href: '/dashboard/flash',     icon: Zap,             label: 'Флеш-акції',    hint: 'Термінові пропозиції для клієнтів' },
-  { href: '/dashboard/pricing',   icon: TrendingUp,      label: 'Ціноутворення', hint: 'Динамічне ціноутворення' },
-  { href: '/dashboard/loyalty',   icon: Gift,            label: 'Лояльність',    hint: 'Програма лояльності клієнтів' },
-  { href: '/dashboard/referral',  icon: Share2,          label: 'Запроси друга', hint: 'Реферальна програма' },
-  { href: '/dashboard/partners',  icon: Users,           label: 'Партнери',      hint: 'Партнерська мережа та крос-промо' },
   { href: '/dashboard/studio',    icon: Building2,       label: 'Студія',        hint: 'Управління командою майстрів' },
   { href: '/dashboard/billing',   icon: CreditCard,      label: 'Тариф',         hint: 'Підписка та оплата' },
   { href: '/dashboard/settings',  icon: Settings,        label: 'Налаштування',  hint: 'Профіль, тема, інтеграції' },

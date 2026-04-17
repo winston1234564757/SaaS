@@ -17,11 +17,12 @@ interface Props {
   referralCount: number;
   subscriptionTier: string;
   subscriptionExpiresAt: string | null;
+  isDrawer?: boolean;
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://bookit.com.ua');
 
-export function ReferralPage({ masterId, referralCode: initialCode, referralCount, subscriptionTier, subscriptionExpiresAt }: Props) {
+export function ReferralPage({ masterId, referralCode: initialCode, referralCount, subscriptionTier, subscriptionExpiresAt, isDrawer }: Props) {
   const [copied, setCopied] = useState(false);
   const [code, setCode] = useState(initialCode);
   const [loading, setLoading] = useState(!initialCode);
@@ -78,23 +79,24 @@ export function ReferralPage({ masterId, referralCode: initialCode, referralCoun
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Header */}
-      <div className={cn(
-        'relative bento-card p-5 transition-all duration-500 shadow-sm',
-        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
-      )}>
-        <AnchoredTooltip
-          isOpen={currentStep === 0}
-          onClose={closeTour}
-          title="🤝 Амбасадори бренду"
-          text="Запрошуйте колег та отримуйте бонуси разом. Це найпростіший спосіб подовжити вашу Pro-підписку безкоштовно."
-          position="bottom"
-          primaryButtonText="Зрозуміло"
-          onPrimaryClick={nextStep}
-        />
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Реферальна програма</h1>
-        <p className="text-sm text-[#A8928D]">Запрошуй колег — отримуйте по 30 днів Pro разом</p>
-      </div>
+      {!isDrawer && (
+        <div className={cn(
+          'relative bento-card p-5 transition-all duration-500 shadow-sm',
+          currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+        )}>
+          <AnchoredTooltip
+            isOpen={currentStep === 0}
+            onClose={closeTour}
+            title="🤝 Амбасадори бренду"
+            text="Запрошуйте колег та отримуйте бонуси разом. Це найпростіший спосіб подовжити вашу Pro-підписку безкоштовно."
+            position="bottom"
+            primaryButtonText="Зрозуміло"
+            onPrimaryClick={nextStep}
+          />
+          <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Реферальна програма</h1>
+          <p className="text-sm text-[#A8928D]">Запрошуй колег — отримуйте по 30 днів Pro разом</p>
+        </div>
+      )}
 
       {/* Main Referral Card */}
       <motion.div

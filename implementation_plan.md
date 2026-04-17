@@ -1,46 +1,83 @@
-# Implementation Plan — Hydration & Animation Stability
+# Implementation Plan: Dashboard Hubs & Bento Refactor
 
-This plan addresses the timeouts in CI by ensuring that tests wait for the client-side JavaScript to hydrate and for entrance animations to complete before interacting with the UI.
+Refactor the Master Dashboard settings navigation into two consolidated high-level hubs: **Revenue Hub** and **Growth Hub**, using a mobile-first Bento Grid design and URL-driven drawers.
 
 ## User Review Required
 
-> [!NOTE]
-> I am adding a `mounted` state to the `PublicMasterPage` to provide an explicit synchronization point for E2E tests. This is a standard practice for stabilizing React apps in CI.
+> [!IMPORTANT]
+> **Consolidation**: 5 separate pages will be removed from the sidebar and merged into 2 hubs. Users will now find these features under "Revenue" and "Growth".
+> **Navigation Change**: Closing a drawer (e.g., Flash Deals) will be handled by the browser's "Back" button or a UI close button that updates the URL.
 
 ## Proposed Changes
 
-### UI Instrumentation
+### [Component] Navigation Refactor
 
-#### [MODIFY] [PublicMasterPage.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/public/PublicMasterPage.tsx)
-- Add a `mounted` state via `useEffect`.
-- Add `data-hydrated={mounted}` to the main container div.
-- This provides a deterministic way for Playwright to know when React has attached its event listeners.
+#### [MODIFY] [FloatingSidebar.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/shared/FloatingSidebar.tsx)
+- Add "Revenue" and "Growth" items.
+- Remove "Flash", "Pricing", "Loyalty", "Referral", "Partners".
 
----
-
-### Page Object Refactoring
-
-#### [MODIFY] [BookingWidgetPage.ts](file:///c:/Users/Vitossik/SaaS/bookit/e2e/pages/BookingWidgetPage.ts)
-- **goto**: Wait for `[data-hydrated="true"]` to ensure the page is interactive.
-- **openBookingFlow**: 
-    - Wait for `book-button` to be visible.
-    - Add a `waitForElementState('stable')` equivalent wait (handled by default in `click()`, but reinforced via `data-hydrated`).
-- **selectDateByISO**: Ensure we wait for the hydration of the wizard sheet specifically if needed.
+#### [MODIFY] [BottomNav.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/shared/BottomNav.tsx)
+- Similar updates for the mobile navigation and "More" drawer.
 
 ---
 
-### Test Suite Clean-up
+### [Component] Revenue Hub
 
-#### [MODIFY] [02-time-travel-logic.spec.ts](file:///c:/Users/Vitossik/SaaS/bookit/e2e/tests/02-time-travel-logic.spec.ts)
-- No changes needed other than ensuring the `force: true` stays removed and we rely on the hardened POM.
+#### [NEW] [revenue/page.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/app/%28master%29/dashboard/revenue/page.tsx)
+- Server component fetching data for both Flash Deals and Pricing.
+- Renders a Bento Grid with two cards.
+
+#### [NEW] [RevenueHubClient.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/master/revenue/RevenueHubClient.tsx)
+- Client-side logic for managing the `?drawer=` search parameter.
+- Renders the responsive drawer wrapper.
+
+---
+
+### [Component] Growth Hub
+
+#### [NEW] [growth/page.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/app/%28master%29/dashboard/growth/page.tsx)
+- Server component fetching data for Loyalty, Referral, and Partners.
+- Renders a Bento Grid with three cards.
+
+#### [NEW] [GrowthHubClient.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/master/growth/GrowthHubClient.tsx)
+- Client-side logic for managing the `?drawer=` search parameter.
+
+---
+
+### [Component] UI & Shared Logic
+
+#### [NEW] [HubDrawer.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/shared/HubDrawer.tsx)
+- A responsive wrapper component.
+- Uses `DashboardDrawer` (side slide-over) for desktop (`lg+`).
+- Uses `BottomSheet` (bottom slide-up) for mobile (`<lg`).
+
+#### [NEW] [BentoCard.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/components/ui/BentoCard.tsx)
+- Reusable card component for the hub pages.
+- Displays stats, icons, and handles the `onClick` to update the URL.
+
+## Open Questions
+
+### 1. Libraries (nuqs / vaul)
+> [!IMPORTANT]
+> The `nuqs` (URL state) and `vaul` (drawer) libraries are NOT currently installed.
+> Should I install them, or should I stick to standard Next.js hooks and the custom `DashboardDrawer`/`BottomSheet` already in the project?
+
+### 2. Navigation Icons
+Which icons should I use for the new hubs in the sidebar and bottom nav?
+- **Revenue Hub**: Suggesting `CreditCard`, `DollarSign`, or `Zap`.
+- **Growth Hub**: Suggesting `TrendingUp`, `Users`, or `BarChart2`.
+
+### 3. Bento Card Content
+Should the Bento cards on the hub pages show only basic stats (e.g., "Active Deals: 2"), or would you like more detailed previews (e.g., a mini-list of active deals) directly in the card?
 
 ## Verification Plan
 
 ### Automated Tests
-- Run the localized E2E test to verify pass/fail:
-  `npx playwright test e2e/tests/02-time-travel-logic.spec.ts`
-- Target the failing test cases:
-  `npx playwright test -g "Dynamic Pricing"`
+- Run Playwright E2E tests for the consolidated features to ensure they still work within drawers.
+- Test URL parameter synchronization.
 
 ### Manual Verification
-- Monitor the CI logs for `[Browser]` entries to confirm the page reaches the "hydrated" state before the first click.
+- Open Flash Deals via the Revenue Hub card.
+- Verify that pressing "Back" in the browser closes the drawer.
+- Verify responsive behavior: Side drawer on desktop, Bottom sheet on mobile.
+- Check that all stats (Active Deals, Savings, etc.) are correctly displayed on the Bento cards.

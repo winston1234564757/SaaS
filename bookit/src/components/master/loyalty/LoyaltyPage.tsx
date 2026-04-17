@@ -103,7 +103,7 @@ function ProgramForm({
   );
 }
 
-export function LoyaltyPage() {
+export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
   const { masterProfile } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const masterId = masterProfile?.id;
@@ -192,22 +192,24 @@ export function LoyaltyPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <div className={cn(
-        'relative bento-card p-5 transition-all duration-500',
-        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
-      )}>
-        <AnchoredTooltip
-          isOpen={currentStep === 0}
-          onClose={closeTour}
-          title="🎁 Налаштування лояльності"
-          text="Зробіть так, щоб клієнти поверталися. Налаштуйте відсоток знижки, який вони отримуватимуть після кожного візиту."
-          position="bottom"
-          primaryButtonText="Далі →"
-          onPrimaryClick={nextStep}
-        />
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Програми лояльності</h1>
-        <p className="text-sm text-[#A8928D]">Знижки для постійних клієнтів</p>
-      </div>
+      {!isDrawer && (
+        <div className={cn(
+          'relative bento-card p-5 transition-all duration-500',
+          currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
+        )}>
+          <AnchoredTooltip
+            isOpen={currentStep === 0}
+            onClose={closeTour}
+            title="🎁 Налаштування лояльності"
+            text="Зробіть так, щоб клієнти поверталися. Налаштуйте відсоток знижки, який вони отримуватимуть після кожного візиту."
+            position="bottom"
+            primaryButtonText="Далі →"
+            onPrimaryClick={nextStep}
+          />
+          <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Програми лояльності</h1>
+          <p className="text-sm text-[#A8928D]">Знижки для постійних клієнтів</p>
+        </div>
+      )}
 
       {/* Info banner */}
       <div className="bento-card p-4 flex items-start gap-3" style={{ background: 'rgba(120, 154, 153, 0.08)' }}>

@@ -143,21 +143,31 @@ export function BookingWizard({
     <>
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-[55] flex items-end md:items-center justify-center pointer-events-none md:p-6">
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 bg-[#2C1A14]/25 backdrop-blur-sm z-[55]"
+            className="fixed inset-0 bg-[#2C1A14]/25 backdrop-blur-sm pointer-events-auto"
             onClick={closeWizard}
           />
           <motion.div
-            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+            initial={{ 
+              y: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : 0,
+              scale: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0.95,
+              opacity: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0,
+            }} 
+            animate={{ y: 0, scale: 1, opacity: 1 }} 
+            exit={{ 
+              y: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : 0,
+              scale: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0.95,
+              opacity: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0,
+            }}
+            transition={{ type: 'spring', stiffness: 350, damping: 32 }}
             data-testid="wizard-panel"
-            className="fixed bottom-0 left-0 right-0 z-[60] max-h-[92dvh] flex flex-col rounded-t-[28px] overflow-hidden"
+            className="relative z-[60] w-full max-h-[92dvh] md:max-h-[85vh] md:max-w-[800px] flex flex-col rounded-t-[28px] md:rounded-[32px] overflow-hidden pointer-events-auto shadow-2xl"
             style={{ background: 'rgba(255,248,244,0.97)', backdropFilter: 'blur(32px)' }}
           >
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0 md:hidden">
               <div className="w-10 h-1 bg-[#E8D5CF] rounded-full" />
             </div>
             <div className="flex items-center justify-between px-5 py-2 flex-shrink-0">
@@ -318,7 +328,7 @@ export function BookingWizard({
               )}
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
 
