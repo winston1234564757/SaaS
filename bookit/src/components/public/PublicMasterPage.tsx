@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap, ExternalLink } from 'lucide-react';
 import { BookingFlow } from './BookingFlow';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
@@ -54,6 +54,7 @@ interface Master {
   name: string;
   specialty: string;
   location: string;
+  mapUrl?: string | null;
   emoji: string;
   rating: number;
   reviewsCount: number;
@@ -190,6 +191,68 @@ function FlashDealsStrip({ deals, accent, onBook }: { deals: FlashDeal[]; accent
   );
 }
 
+// ── Availability hook ──────────────────────────────────────────────────────────
+type WorkingHoursDay = { start: string; end: string; enabled: boolean };
+type WorkingHours = Record<string, WorkingHoursDay>;
+
+function useAvailability(workingHours: WorkingHours | null | undefined) {
+  const [status, setStatus] = useState<{ open: boolean; label: string } | null>(null);
+
+  useEffect(() => {
+    if (!workingHours) return;
+
+    const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const DAY_UA: Record<string, string> = { mon: 'пн', tue: 'вт', wed: 'ср', thu: 'чт', fri: 'пт', sat: 'сб', sun: 'нд' };
+
+    const compute = () => {
+      const now = getNow();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      const todayKey = DOW_KEYS[now.getDay()];
+      const today = workingHours[todayKey];
+
+      if (!today?.enabled) {
+        // Знайти наступний робочий день
+        for (let i = 1; i <= 7; i++) {
+          const nextKey = DOW_KEYS[(now.getDay() + i) % 7];
+          const next = workingHours[nextKey];
+          if (next?.enabled) {
+            return { open: false, label: `Зачинено · ${DAY_UA[nextKey]} о ${next.start}` };
+          }
+        }
+        return { open: false, label: 'Вихідний' };
+      }
+
+      const [sh, sm] = today.start.split(':').map(Number);
+      const [eh, em] = today.end.split(':').map(Number);
+      const startMins = sh * 60 + sm;
+      const endMins = eh * 60 + em;
+
+      if (nowMins >= startMins && nowMins < endMins) {
+        return { open: true, label: `Відкрито · до ${today.end}` };
+      }
+      if (nowMins < startMins) {
+        return { open: false, label: `Зачинено · відкриється о ${today.start}` };
+      }
+      // Після закриття — наступний робочий день
+      for (let i = 1; i <= 7; i++) {
+        const nextKey = DOW_KEYS[(now.getDay() + i) % 7];
+        const next = workingHours[nextKey];
+        if (next?.enabled) {
+          return { open: false, label: `Зачинено · ${DAY_UA[nextKey]} о ${next.start}` };
+        }
+      }
+      return { open: false, label: 'Зачинено' };
+    };
+
+    setStatus(compute());
+    // Оновлювати кожну хвилину (для точного переходу "відкрито → зачинено")
+    const id = setInterval(() => setStatus(compute()), 60_000);
+    return () => clearInterval(id);
+  }, [workingHours]);
+
+  return status;
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 export function PublicMasterPage({ master }: { master: Master }) {
   const themeKey = (master.themeKey ?? 'default') as MoodThemeKey;
@@ -205,6 +268,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
   // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
   const [todayDow, setTodayDow] = useState('');
   const didAutoOpen = useRef(false);
+  const availability = useAvailability(master.workingHours as WorkingHours | null);
 
   useEffect(() => {
     setHydrated(true);
@@ -320,10 +384,41 @@ export function PublicMasterPage({ master }: { master: Master }) {
                 )}
               </div>
               <p className="text-sm mt-0.5" style={{ color: textSecondary }}>{master.specialty}</p>
-              <div className="flex items-center gap-1 mt-1.5">
-                <MapPin size={12} style={{ color: textTertiary }} />
-                <span className="text-xs" style={{ color: textTertiary }}>{master.location}</span>
-              </div>
+
+              {/* Availability badge — client-only, no SSR flash */}
+              {availability && (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                    availability.open
+                      ? 'bg-[#5C9E7A]/12 text-[#5C9E7A]'
+                      : 'bg-[#6B5750]/10 text-[#6B5750]'
+                  }`}>
+                    <span className={`size-1.5 rounded-full shrink-0 ${availability.open ? 'bg-[#5C9E7A] animate-pulse' : 'bg-[#A8928D]'}`} />
+                    {availability.label}
+                  </span>
+                </div>
+              )}
+
+              {/* Location → native map deep link (URL computed server-side) */}
+              {master.location && master.location !== 'Україна' && (
+                <div className="flex items-center gap-1 mt-1.5">
+                  <MapPin size={12} style={{ color: textTertiary }} />
+                  {master.mapUrl ? (
+                    <a
+                      href={master.mapUrl}
+                      target={master.mapUrl.startsWith('http') ? '_blank' : '_self'}
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-0.5 text-xs transition-opacity hover:opacity-70 group"
+                      style={{ color: textTertiary }}
+                    >
+                      <span className="underline underline-offset-2 decoration-dotted">{master.location}</span>
+                      <ExternalLink size={9} className="opacity-0 group-hover:opacity-60 transition-opacity" />
+                    </a>
+                  ) : (
+                    <span className="text-xs" style={{ color: textTertiary }}>{master.location}</span>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center gap-2 mt-2.5 flex-wrap">
                 <div className="flex items-center gap-1">

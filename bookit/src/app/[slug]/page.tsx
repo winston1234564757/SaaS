@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { toZonedTime } from 'date-fns-tz';
 import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
@@ -57,6 +57,22 @@ export default async function MasterPublicPage(
   const { slug } = await params;
   const data = await getMaster(slug);
   if (!data) notFound();
+
+  // Server-side UA detection для native map deep links (no client JS needed)
+  const headersList = await headers();
+  const ua = headersList.get('user-agent') ?? '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+
+  const locationQuery = [data.city, data.address].filter(Boolean).join(', ');
+  const encodedLocation = locationQuery ? encodeURIComponent(locationQuery) : null;
+  const mapUrl = encodedLocation
+    ? isIOS
+      ? `maps://maps.apple.com/?q=${encodedLocation}`
+      : isAndroid
+        ? `comgooglemaps://?q=${encodedLocation}`
+        : `https://maps.google.com/?q=${encodedLocation}`
+    : null;
 
   const supabase = await createClient();
   const cookieStore = await cookies();
@@ -161,7 +177,8 @@ export default async function MasterPublicPage(
     slug: data.slug,
     name: profile.full_name,
     specialty: ((data.categories as string[]) ?? []).join(', ') || 'Майстер краси',
-    location: [data.city, data.address].filter(Boolean).join(', ') || 'Україна',
+    location: locationQuery || 'Україна',
+    mapUrl,
     emoji: '💅',
     rating: Number(data.rating) || 0,
     reviewsCount: data.rating_count || 0,
