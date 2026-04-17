@@ -59,6 +59,7 @@ export function SettingsPage() {
   const [slug, setSlug] = useState('');
   const [avatar, setAvatar] = useState('💅');
   const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
   const [instagram, setInstagram] = useState('');
   const [telegram, setTelegram] = useState('');
   const [telegramChatId, setTelegramChatId] = useState('');
@@ -84,7 +85,7 @@ export function SettingsPage() {
   // Snapshots captured on first load — used for dirty detection and cancel reset
   const initialFormSnap = useRef<{
     fullName: string; phone: string; bio: string; slug: string;
-    city: string; instagram: string; telegram: string; telegramChatId: string;
+    city: string; address: string; instagram: string; telegram: string; telegramChatId: string;
     isPublished: boolean; avatar: string; themeKey: MoodThemeKey;
     avatarUrl: string | null; bufferTime: number; breaks: BreakWindow[];
   } | null>(null);
@@ -107,6 +108,7 @@ export function SettingsPage() {
     setBio(masterProfile.bio ?? '');
     setSlug(masterProfile.slug ?? '');
     setCity(masterProfile.city ?? '');
+    setAddress((masterProfile as any).address ?? '');
     setInstagram(masterProfile.instagram_url ?? '');
     setTelegram(masterProfile.telegram_url ?? '');
     setTelegramChatId(masterProfile.telegram_chat_id ?? '');
@@ -122,6 +124,7 @@ export function SettingsPage() {
       bio: masterProfile.bio ?? '',
       slug: masterProfile.slug ?? '',
       city: masterProfile.city ?? '',
+      address: (masterProfile as any).address ?? '',
       instagram: masterProfile.instagram_url ?? '',
       telegram: masterProfile.telegram_url ?? '',
       telegramChatId: masterProfile.telegram_chat_id ?? '',
@@ -190,7 +193,7 @@ export function SettingsPage() {
     const f = initialFormSnap.current;
     const formChanged =
       fullName !== f.fullName || phone !== f.phone || bio !== f.bio ||
-      slug !== f.slug || city !== f.city || instagram !== f.instagram ||
+      slug !== f.slug || city !== f.city || address !== f.address || instagram !== f.instagram ||
       telegram !== f.telegram || telegramChatId !== f.telegramChatId ||
       isPublished !== f.isPublished || avatar !== f.avatar ||
       themeKey !== f.themeKey || avatarUrl !== f.avatarUrl ||
@@ -199,7 +202,7 @@ export function SettingsPage() {
     const scheduleChanged =
       JSON.stringify(schedule) !== JSON.stringify(initialScheduleSnap.current);
     setIsDirty(formChanged || scheduleChanged);
-  }, [fullName, phone, bio, slug, city, instagram, telegram, telegramChatId,
+  }, [fullName, phone, bio, slug, city, address, instagram, telegram, telegramChatId,
       isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, schedule]);
 
   function handleCancel() {
@@ -210,6 +213,7 @@ export function SettingsPage() {
     setBio(f.bio);
     setSlug(f.slug);
     setCity(f.city);
+    setAddress(f.address);
     setInstagram(f.instagram);
     setTelegram(f.telegram);
     setTelegramChatId(f.telegramChatId);
@@ -236,7 +240,7 @@ export function SettingsPage() {
       await Promise.all([
         supabase.from('profiles').update({ full_name: fullName, phone: cleanPhone, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
         supabase.from('master_profiles').update({
-          bio, city, slug,
+          bio, city, address: address || null, slug,
           avatar_emoji: avatar,
           instagram_url: instagram || null,
           telegram_url: telegram || null,
@@ -262,7 +266,7 @@ export function SettingsPage() {
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);
       // Update snapshots so cancel would reset to the freshly saved state
-      initialFormSnap.current = { fullName, phone, bio, slug, city, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks };
+      initialFormSnap.current = { fullName, phone, bio, slug, city, address, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks };
       initialScheduleSnap.current = { ...schedule };
       setIsDirty(false);
       // Оновлюємо контекст у фоні — не блокуємо UI
@@ -391,6 +395,17 @@ export function SettingsPage() {
           <div>
             <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Місто</label>
             <input value={city} onChange={e => setCity(e.target.value)} placeholder="Київ" className={inputCls} />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Адреса (вулиця, номер)</label>
+            <input
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              placeholder="вул. Хрещатик, 1"
+              className={inputCls}
+            />
+            <p className="text-[11px] text-[#A8928D] mt-1">Клієнти зможуть відкрити адресу на картах</p>
           </div>
         </div>
       </Section>
