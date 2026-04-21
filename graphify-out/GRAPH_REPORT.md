@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-04-22)
 
 ## Corpus Check
-- 324 files · ~301,593 words
+- 324 files · ~301,440 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 870 nodes · 672 edges · 304 communities detected
+- 869 nodes · 670 edges · 304 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -330,8 +330,6 @@
 ## Surprising Connections (you probably didn't know these)
 - `POST()` --calls--> `buildAck()`  [EXTRACTED]
   bookit\src\app\api\telegram\webhook\route.ts → bookit\src\app\api\billing\webhook\route.ts
-- `GET()` --calls--> `addDays()`  [EXTRACTED]
-  bookit\src\app\auth\callback\route.ts → bookit\src\app\api\cron\rebooking\route.ts
 - `generateMetadata()` --calls--> `getInviter()`  [EXTRACTED]
   bookit\src\app\[slug]\page.tsx → bookit\src\app\invite\[code]\page.tsx
 - `cancelBooking()` --calls--> `notifyClientOnStatusChange()`  [EXTRACTED]
@@ -410,40 +408,40 @@ Cohesion: 0.52
 Nodes (6): assertLandingUrl(), buildAuthState(), chunkString(), decodeJwtPayload(), getProjectRef(), globalSetup()
 
 ### Community 17 - "Community 17"
-Cohesion: 0.33
-Nodes (2): addDays(), GET()
-
-### Community 18 - "Community 18"
 Cohesion: 0.43
 Nodes (4): generateMetadata(), getInviter(), getMaster(), MasterPublicPage()
 
-### Community 19 - "Community 19"
+### Community 18 - "Community 18"
 Cohesion: 0.33
 Nodes (2): handleCopyC2C(), handleShareC2C()
 
-### Community 20 - "Community 20"
+### Community 19 - "Community 19"
 Cohesion: 0.33
 Nodes (2): handleConfirm(), toISOLocal()
 
-### Community 21 - "Community 21"
+### Community 20 - "Community 20"
 Cohesion: 0.33
 Nodes (2): FlashDealCard(), useCountdown()
 
-### Community 22 - "Community 22"
+### Community 21 - "Community 21"
 Cohesion: 0.29
 Nodes (0): 
 
-### Community 23 - "Community 23"
+### Community 22 - "Community 22"
 Cohesion: 0.43
 Nodes (4): buildSlotRenderItems(), fromMins(), generateAvailableSlots(), toMins()
 
-### Community 24 - "Community 24"
+### Community 23 - "Community 23"
 Cohesion: 0.33
 Nodes (1): AuthPage
 
-### Community 25 - "Community 25"
+### Community 24 - "Community 24"
 Cohesion: 0.33
 Nodes (1): Page()
+
+### Community 25 - "Community 25"
+Cohesion: 0.33
+Nodes (1): GET()
 
 ### Community 26 - "Community 26"
 Cohesion: 0.33
