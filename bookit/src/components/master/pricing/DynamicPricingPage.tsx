@@ -7,7 +7,6 @@ import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { savePricingRules } from '@/app/(master)/dashboard/pricing/actions';
 import { useMasterContext } from '@/lib/supabase/context';
-import { markTourSeen } from '@/app/(master)/dashboard/actions';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 import {
   TrendingUp, TrendingDown, Clock, Bird, Zap,
@@ -77,7 +76,7 @@ export function DynamicPricingPage({ initial, isDrawer }: Props) {
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const { currentStep, nextStep, closeTour } = useTour('pricing', 2, {
     initialSeen: seenTours?.pricing ?? false,
-    onComplete: () => markTourSeen('pricing').then(() => undefined),
+    masterId: masterProfile?.id,
   });
   
   const [rules, setRules]   = useState<PricingRules>(initial ?? {});

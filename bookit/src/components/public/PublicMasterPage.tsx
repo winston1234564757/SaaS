@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap, ExternalLink } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap } from 'lucide-react';
+import { MasterLocationCard } from './MasterLocationCard';
+import { LoyaltyWidget } from './LoyaltyWidget';
 import { BookingFlow } from './BookingFlow';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
@@ -55,6 +57,10 @@ interface Master {
   specialty: string;
   location: string;
   mapUrl?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  floor?: string | null;
+  cabinet?: string | null;
   emoji: string;
   rating: number;
   reviewsCount: number;
@@ -74,6 +80,11 @@ interface Master {
   pricingRules?: Record<string, any>;
   workingHours?: Record<string, unknown> | null;
   flashDeals?: FlashDeal[];
+  loyalty?: {
+    tiers: Array<{ targetVisits: number; rewardType: string; rewardValue: number }>;
+    currentVisits: number;
+    isAuth: boolean;
+  } | null;
 }
 
 function formatPrice(price: number) {
@@ -192,63 +203,65 @@ function FlashDealsStrip({ deals, accent, onBook }: { deals: FlashDeal[]; accent
 }
 
 // ── Availability hook ──────────────────────────────────────────────────────────
-type WorkingHoursDay = { start: string; end: string; enabled: boolean };
-type WorkingHours = Record<string, WorkingHoursDay>;
+// Приймає master.schedule (з schedule_templates), а НЕ working_hours JSONB
+type ScheduleEntry = { day: string; isWorking: boolean; startTime: string; endTime: string };
 
-function useAvailability(workingHours: WorkingHours | null | undefined) {
+function useAvailability(schedule: ScheduleEntry[] | null | undefined) {
   const [status, setStatus] = useState<{ open: boolean; label: string } | null>(null);
 
   useEffect(() => {
-    if (!workingHours) return;
+    if (!schedule || schedule.length === 0) return;
 
     const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const DAY_UA: Record<string, string> = { mon: 'пн', tue: 'вт', wed: 'ср', thu: 'чт', fri: 'пт', sat: 'сб', sun: 'нд' };
+
+    // Перетворюємо масив у map для O(1) пошуку
+    const byDay = Object.fromEntries(schedule.map(s => [s.day, s]));
 
     const compute = () => {
       const now = getNow();
       const nowMins = now.getHours() * 60 + now.getMinutes();
       const todayKey = DOW_KEYS[now.getDay()];
-      const today = workingHours[todayKey];
+      const today = byDay[todayKey];
 
-      if (!today?.enabled) {
-        // Знайти наступний робочий день
+      // Сьогодні вихідний
+      if (!today?.isWorking) {
         for (let i = 1; i <= 7; i++) {
           const nextKey = DOW_KEYS[(now.getDay() + i) % 7];
-          const next = workingHours[nextKey];
-          if (next?.enabled) {
-            return { open: false, label: `Зачинено · ${DAY_UA[nextKey]} о ${next.start}` };
+          const next = byDay[nextKey];
+          if (next?.isWorking) {
+            return { open: false, label: `Зачинено · ${DAY_UA[nextKey]} о ${next.startTime}` };
           }
         }
         return { open: false, label: 'Вихідний' };
       }
 
-      const [sh, sm] = today.start.split(':').map(Number);
-      const [eh, em] = today.end.split(':').map(Number);
+      const [sh, sm] = today.startTime.split(':').map(Number);
+      const [eh, em] = today.endTime.split(':').map(Number);
       const startMins = sh * 60 + sm;
       const endMins = eh * 60 + em;
 
       if (nowMins >= startMins && nowMins < endMins) {
-        return { open: true, label: `Відкрито · до ${today.end}` };
+        return { open: true, label: `Відкрито · до ${today.endTime}` };
       }
       if (nowMins < startMins) {
-        return { open: false, label: `Зачинено · відкриється о ${today.start}` };
+        return { open: false, label: `Зачинено · відкриється о ${today.startTime}` };
       }
-      // Після закриття — наступний робочий день
+      // Після закриття — шукаємо наступний робочий день (включно з наступним тижнем)
       for (let i = 1; i <= 7; i++) {
         const nextKey = DOW_KEYS[(now.getDay() + i) % 7];
-        const next = workingHours[nextKey];
-        if (next?.enabled) {
-          return { open: false, label: `Зачинено · ${DAY_UA[nextKey]} о ${next.start}` };
+        const next = byDay[nextKey];
+        if (next?.isWorking) {
+          return { open: false, label: `Зачинено · ${DAY_UA[nextKey]} о ${next.startTime}` };
         }
       }
       return { open: false, label: 'Зачинено' };
     };
 
     setStatus(compute());
-    // Оновлювати кожну хвилину (для точного переходу "відкрито → зачинено")
     const id = setInterval(() => setStatus(compute()), 60_000);
     return () => clearInterval(id);
-  }, [workingHours]);
+  }, [schedule]);
 
   return status;
 }
@@ -268,7 +281,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
   // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
   const [todayDow, setTodayDow] = useState('');
   const didAutoOpen = useRef(false);
-  const availability = useAvailability(master.workingHours as WorkingHours | null);
+  const availability = useAvailability(master.schedule ?? null);
 
   useEffect(() => {
     setHydrated(true);
@@ -342,90 +355,72 @@ export function PublicMasterPage({ master }: { master: Master }) {
 
       <div className="max-w-lg mx-auto px-4 pb-32 pt-6" data-hydrated={hydrated}>
 
-        {/* Top bar */}
-        <div className="flex items-center justify-end mb-4">
-          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Поділитись сторінкою</p>} position="left">
-            <button
-              onClick={handleShare}
-              className="w-9 h-9 rounded-2xl bg-white/70 border border-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white/90 transition-colors"
-              style={{ color: textSecondary }}
-            >
-              <Share2 size={16} />
-            </button>
-          </Tooltip>
-        </div>
-
-        {/* Profile card */}
+        {/* ── Header card — "High-end Cozy Minimalism" ── */}
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: 'spring', stiffness: 280, damping: 24 }}
-          className="bento-card p-6 mb-4"
+          className="bento-card relative mb-4 overflow-hidden"
         >
-          <div className="flex items-start gap-4">
+          {/* Share button — absolute top-right */}
+          <button
+            onClick={handleShare}
+            aria-label="Поділитись сторінкою"
+            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-2xl bg-white/70 border border-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white/90 transition-colors cursor-pointer"
+            style={{ color: textSecondary }}
+          >
+            <Share2 size={16} />
+          </button>
+
+          {/* Hero section — centered */}
+          <div className="pt-7 pb-5 px-6 flex flex-col items-center text-center">
+            {/* Avatar */}
             <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl flex-shrink-0 relative overflow-hidden shrink-0"
-              style={{ background: avatarBg }}
+              className="w-24 h-24 rounded-[28px] flex items-center justify-center text-4xl relative overflow-hidden mb-4"
+              style={{ background: avatarBg, boxShadow: `0 8px 24px ${theme.accent}22` }}
             >
               {master.avatarUrl ? (
-                <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="80px" />
+                <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="96px" />
               ) : (
                 master.avatarEmoji ?? master.emoji
               )}
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <h1 className="heading-serif text-xl leading-tight text-[#2C1A14]">{master.name}</h1>
-                {master.isVerified && (
-                  <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Верифікований майстер Bookit</p>} position="top">
-                    <BadgeCheck size={17} style={{ color: theme.accent }} className="flex-shrink-0 cursor-default" />
-                  </Tooltip>
-                )}
+            {/* Name + verified badge */}
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <h1 className="heading-serif text-2xl leading-tight text-[#2C1A14]">{master.name}</h1>
+              {master.isVerified && (
+                <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Верифікований майстер Bookit</p>} position="top">
+                  <BadgeCheck size={18} style={{ color: theme.accent }} className="flex-shrink-0 cursor-default" />
+                </Tooltip>
+              )}
+            </div>
+
+            {/* Specialization */}
+            <p className="text-sm mb-3" style={{ color: textSecondary }}>{master.specialty}</p>
+
+            {/* Working hours / availability badge — client-only, no SSR flash */}
+            {availability && (
+              <div className="mb-3">
+                <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full ${
+                  availability.open
+                    ? 'bg-[#5C9E7A]/12 text-[#5C9E7A]'
+                    : 'bg-[#6B5750]/10 text-[#6B5750]'
+                }`}>
+                  <span className={`size-1.5 rounded-full shrink-0 ${availability.open ? 'bg-[#5C9E7A] animate-pulse' : 'bg-[#A8928D]'}`} />
+                  {availability.label}
+                </span>
               </div>
-              <p className="text-sm mt-0.5" style={{ color: textSecondary }}>{master.specialty}</p>
+            )}
 
-              {/* Availability badge — client-only, no SSR flash */}
-              {availability && (
-                <div className="flex items-center gap-1.5 mt-2">
-                  <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                    availability.open
-                      ? 'bg-[#5C9E7A]/12 text-[#5C9E7A]'
-                      : 'bg-[#6B5750]/10 text-[#6B5750]'
-                  }`}>
-                    <span className={`size-1.5 rounded-full shrink-0 ${availability.open ? 'bg-[#5C9E7A] animate-pulse' : 'bg-[#A8928D]'}`} />
-                    {availability.label}
-                  </span>
-                </div>
-              )}
-
-              {/* Location → native map deep link (URL computed server-side) */}
-              {master.location && master.location !== 'Україна' && (
-                <div className="flex items-center gap-1 mt-1.5">
-                  <MapPin size={12} style={{ color: textTertiary }} />
-                  {master.mapUrl ? (
-                    <a
-                      href={master.mapUrl}
-                      target={master.mapUrl.startsWith('http') ? '_blank' : '_self'}
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-0.5 text-xs transition-opacity hover:opacity-70 group"
-                      style={{ color: textTertiary }}
-                    >
-                      <span className="underline underline-offset-2 decoration-dotted">{master.location}</span>
-                      <ExternalLink size={9} className="opacity-0 group-hover:opacity-60 transition-opacity" />
-                    </a>
-                  ) : (
-                    <span className="text-xs" style={{ color: textTertiary }}>{master.location}</span>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                <div className="flex items-center gap-1">
+            {/* Rating row */}
+            {master.rating > 0 && (
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <div className="flex items-center gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      size={12}
+                      size={13}
                       className={i < Math.floor(master.rating) ? 'fill-[#D4935A] text-[#D4935A]' : 'text-[#E8D5CF]'}
                     />
                   ))}
@@ -433,21 +428,48 @@ export function PublicMasterPage({ master }: { master: Master }) {
                 <span className="text-sm font-bold text-[#2C1A14]">{master.rating}</span>
                 <span className="text-xs" style={{ color: textTertiary }}>({pluralize(master.reviewsCount, ['відгук', 'відгуки', 'відгуків'])})</span>
               </div>
-            </div>
+            )}
+
+            {/* Location */}
+            {master.location && master.location !== 'Україна' && (
+              <div className="flex items-center justify-center gap-1">
+                <MapPin size={12} style={{ color: textTertiary }} />
+                {master.mapUrl && !master.lat ? (
+                  <a
+                    href={master.mapUrl}
+                    target={master.mapUrl.startsWith('http') ? '_blank' : '_self'}
+                    rel="noopener noreferrer"
+                    className="text-xs underline underline-offset-2 decoration-dotted hover:opacity-70 transition-opacity cursor-pointer"
+                    style={{ color: textTertiary }}
+                  >
+                    {master.location}
+                  </a>
+                ) : (
+                  <span className="text-xs" style={{ color: textTertiary }}>{master.location}</span>
+                )}
+              </div>
+            )}
           </div>
 
+          {/* Bio — left-aligned, separated by a subtle rule */}
           {master.bio && (
-            <p className="text-sm mt-4 leading-relaxed" style={{ color: textSecondary }}>{master.bio}</p>
+            <p
+              className="text-sm px-6 pb-5 leading-relaxed border-t border-white/40 pt-4"
+              style={{ color: textSecondary }}
+            >
+              {master.bio}
+            </p>
           )}
 
+          {/* Social links */}
           {(master.instagram || master.telegram) && (
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center justify-center gap-2 px-6 pb-5 -mt-1">
               {master.instagram && (
                 <a
                   href={master.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors hover:opacity-80"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-opacity hover:opacity-80 cursor-pointer"
                   style={{ background: socialBtnBg, color: textSecondary }}
                 >
                   <Instagram size={13} /> Instagram
@@ -458,13 +480,48 @@ export function PublicMasterPage({ master }: { master: Master }) {
                   href={master.telegram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors hover:opacity-80"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-opacity hover:opacity-80 cursor-pointer"
                   style={{ background: socialBtnBg, color: textSecondary }}
                 >
                   <Send size={13} /> Telegram
                 </a>
               )}
             </div>
+          )}
+        </motion.div>
+
+        {/* Location Card — only when precise coords available */}
+        {master.lat && master.lng && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08, type: 'spring', stiffness: 280, damping: 24 }}
+            className="mb-4"
+          >
+            <MasterLocationCard
+              location={master.location}
+              mapUrl={master.mapUrl ?? null}
+              lat={master.lat}
+              lng={master.lng}
+              floor={master.floor ?? null}
+              cabinet={master.cabinet ?? null}
+            />
+          </motion.div>
+        )}
+
+        {/* Loyalty Widget */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.09, type: 'spring', stiffness: 280, damping: 24 }}
+          className="mb-4"
+        >
+          {master.loyalty && (
+            <LoyaltyWidget
+              isAuth={master.loyalty.isAuth}
+              currentVisits={master.loyalty.currentVisits}
+              tiers={master.loyalty.tiers}
+            />
           )}
         </motion.div>
 
@@ -476,11 +533,11 @@ export function PublicMasterPage({ master }: { master: Master }) {
             transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
             className="bento-card p-4 mb-4"
           >
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <Clock size={14} style={{ color: theme.accent }} />
               <h2 className="text-sm font-semibold" style={{ color: theme.textPrimary }}>Графік роботи</h2>
             </div>
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-1.5">
               {['mon','tue','wed','thu','fri','sat','sun'].map(day => {
                 const entry = master.schedule!.find(s => s.day === day);
                 const isWorking = entry?.isWorking ?? false;
@@ -489,25 +546,26 @@ export function PublicMasterPage({ master }: { master: Master }) {
                 return (
                   <div
                     key={day}
-                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-center"
+                    className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-2xl text-center"
                     style={{
                       background: isToday
                         ? `${theme.accent}22`
-                        : isWorking ? 'rgba(255,255,255,0.45)' : 'transparent',
+                        : isWorking ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.03)',
+                      border: isToday ? `1.5px solid ${theme.accent}55` : '1.5px solid transparent',
                     }}
                   >
                     <span
-                      className="text-[10px] font-semibold"
+                      className="text-[11px] font-bold"
                       style={{ color: isToday ? theme.accent : textTertiary }}
                     >
                       {dayLabel[day]}
                     </span>
                     {isWorking && entry ? (
-                      <span className="text-[9px] leading-tight" style={{ color: textSecondary }}>
+                      <span className="text-[10px] leading-tight font-medium" style={{ color: textSecondary }}>
                         {entry.startTime.slice(0,5)}<br />{entry.endTime.slice(0,5)}
                       </span>
                     ) : (
-                      <span className="text-[9px]" style={{ color: textTertiary }}>—</span>
+                      <span className="text-[11px] font-medium" style={{ color: textTertiary }}>вих.</span>
                     )}
                   </div>
                 );

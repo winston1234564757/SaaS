@@ -42,7 +42,11 @@ export function PopUpModal({ isOpen, onClose, title, children, keepMounted = fal
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  const variants = {
+  const variants = isMobile ? {
+    initial: { y: '100%', opacity: 1 },
+    animate: { y: 0, opacity: 1 },
+    exit: { y: '100%', opacity: 1 }
+  } : {
     initial: { opacity: 0, scale: 0.95 },
     animate: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 0.95 }
@@ -51,8 +55,9 @@ export function PopUpModal({ isOpen, onClose, title, children, keepMounted = fal
   const modalBody = (
     <div 
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-0 md:p-6",
-        !isOpen && keepMounted ? "pointer-events-none" : "pointer-events-none" // Outer container is always passthrough
+        "fixed inset-0 z-50 flex p-0",
+        isMobile ? "items-end justify-center" : "items-center justify-center md:p-6",
+        (!isOpen && keepMounted) && "pointer-events-none"
       )}
     >
       <AnimatePresence>
@@ -81,16 +86,29 @@ export function PopUpModal({ isOpen, onClose, title, children, keepMounted = fal
           display: keepMounted && !hasOpenedOnce ? 'none' : 'flex',
           visibility: !isOpen && keepMounted ? 'hidden' : 'visible'
         }}
-        transition={{ type: 'spring', stiffness: 350, damping: 32 }}
+        transition={isMobile 
+          ? { type: 'spring', damping: 25, stiffness: 200 }
+          : { type: 'spring', stiffness: 350, damping: 32 }
+        }
         className={cn(
-          "relative z-10 w-full overflow-hidden flex flex-col pointer-events-auto shadow-2xl bg-[#FFE8DC]",
+          "relative z-10 w-full overflow-hidden flex flex-col pointer-events-auto bg-[#FFE8DC] transition-shadow duration-500",
           isMobile 
-            ? "fixed inset-y-0 right-0 h-full max-w-[560px]" 
-            : "h-auto max-h-[90vh] max-w-[620px] rounded-[32px]"
+            ? "h-[92vh] rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]" 
+            : "h-auto max-h-[90vh] max-w-[620px] rounded-[32px] shadow-2xl"
         )}
       >
+        {/* Mobile Drag Handle */}
+        {isMobile && (
+          <div className="absolute top-0 inset-x-0 h-8 flex items-center justify-center z-20 pointer-events-none">
+            <div className="w-12 h-1.5 bg-[#2C1A14]/10 rounded-full" />
+          </div>
+        )}
+
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 bg-[#FFE8DC]/95 backdrop-blur-md border-b border-white/40">
+        <div className={cn(
+          "sticky top-0 z-10 flex items-center justify-between px-6 py-5 bg-[#FFE8DC]/95 backdrop-blur-md border-b border-white/40",
+          isMobile && "pt-8" // Add padding for drag handle
+        )}>
           <h2 className="heading-serif text-xl text-[#2C1A14]">{title}</h2>
           <button
             onClick={onClose}
@@ -103,31 +121,30 @@ export function PopUpModal({ isOpen, onClose, title, children, keepMounted = fal
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          {(!isFullyOpen && !hasOpenedOnce) || (isMobile && !isFullyOpen) ? (
-            <div className="flex flex-col gap-5 p-6 animate-pulse">
+          {(!isFullyOpen && (!hasOpenedOnce || isMobile)) ? (
+            <div className="flex flex-col gap-6 p-6 animate-pulse">
               {/* Header Ghost */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-[#789A99]/10" />
-                  <div className="space-y-2">
-                    <div className="w-32 h-5 bg-[#789A99]/10 rounded-lg" />
-                    <div className="w-48 h-3 bg-[#789A99]/5 rounded-md" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-[#D4935A]/10" />
+                  <div className="space-y-2.5">
+                    <div className="w-28 h-5 bg-[#D4935A]/10 rounded-lg" />
+                    <div className="w-40 h-3 bg-[#D4935A]/5 rounded-md" />
                   </div>
                 </div>
-                <div className="w-20 h-6 bg-[#789A99]/10 rounded-full" />
+                <div className="w-16 h-7 bg-[#D4935A]/10 rounded-full" />
               </div>
 
               {/* Bento Chips Ghost */}
-              <div className="grid grid-cols-3 gap-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-20 bg-white/40 border border-white/60 rounded-2xl" />
-                ))}
+              <div className="grid grid-cols-2 gap-3.5">
+                <div className="h-28 bg-white/60 border border-white/70 rounded-[24px]" />
+                <div className="h-28 bg-white/60 border border-white/70 rounded-[24px]" />
               </div>
 
               {/* Main Card Ghost */}
               <div className="space-y-4">
-                <div className="h-40 bg-white/40 border border-white/60 rounded-3xl" />
-                <div className="h-40 bg-white/40 border border-white/60 rounded-3xl" />
+                <div className="h-44 bg-white/60 border border-white/70 rounded-[28px]" />
+                <div className="h-44 bg-white/60 border border-white/70 rounded-[28px]" />
               </div>
             </div>
           ) : (

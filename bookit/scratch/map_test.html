@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Map Test</title>
+    <script>
+      window.gm_authFailure = function() {
+        console.log("GM_AUTH_FAILURE_TRIGGERED");
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDNxNVY--rvbX6mtOOKjRP3IqWo5jo_rCQ&libraries=places&language=uk" async defer></script>
+  </head>
+  <body>
+    <div id="map" style="height:400px;width:100%;"></div>
+    <script>
+      function initMap() {
+        console.log("MAP_INIT_SUCCESS");
+      }
+    </script>
+  </body>
+</html>

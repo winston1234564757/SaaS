@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings,
   MessageSquare, Zap, TrendingUp, Gift, Share2, Building2, CreditCard,
-  Wallet, Rocket, BadgePercent, Network
+  Wallet, Rocket, BadgePercent, Network, HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -28,6 +28,7 @@ const SECONDARY_ITEMS = [
   { href: '/dashboard/studio',    icon: Building2,       label: 'Студія',        hint: 'Управління командою майстрів' },
   { href: '/dashboard/billing',   icon: CreditCard,      label: 'Тариф',         hint: 'Підписка та оплата' },
   { href: '/dashboard/settings',  icon: Settings,        label: 'Налаштування',  hint: 'Профіль, тема, інтеграції' },
+  { href: '/dashboard/support',   icon: HelpCircle,      label: 'Підтримка',     hint: 'FAQ та зв\'язок з командою' },
 ];
 
 export function FloatingSidebar() {

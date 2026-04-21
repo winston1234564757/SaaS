@@ -8,7 +8,6 @@ import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { useReviews } from '@/lib/supabase/hooks/useReviews';
 import { useMasterContext } from '@/lib/supabase/context';
-import { markTourSeen } from '@/app/(master)/dashboard/actions';
 import Link from 'next/link';
 
 
@@ -18,7 +17,7 @@ export function ReviewsPage() {
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const { currentStep, nextStep, closeTour } = useTour('reviews', 1, {
     initialSeen: seenTours?.reviews ?? false,
-    onComplete: () => markTourSeen('reviews').then(() => undefined),
+    masterId: masterProfile?.id,
   });
   const isStarter = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
 

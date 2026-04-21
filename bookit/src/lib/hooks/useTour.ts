@@ -1,24 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { markTourSeen } from '@/app/(master)/dashboard/actions';
 
 interface UseTourOptions {
-  /** If true, tour never starts (DB says already seen on another device). */
+  /** DB value: masterProfile.seen_tours[tourName] — prevents showing on any device if seen */
   initialSeen?: boolean;
-  /** Called when tour finishes. Caller is responsible for DB persistence. */
+  /** Supabase user ID. When provided, useTour persists to DB automatically on completion. */
+  masterId?: string;
+  /**
+   * Optional extra callback after tour completes (e.g. context refresh).
+   * If NOT provided and masterId IS provided — DB is written automatically.
+   * If provided — caller is responsible for DB write (backward compat for DashboardTourContext).
+   */
   onComplete?: () => Promise<void>;
 }
 
 export function useTour(tourName: string, totalSteps: number, options?: UseTourOptions) {
-  // Destructure to stable primitives — avoids effect re-runs from new object refs
   const initialSeen = options?.initialSeen ?? false;
+  const masterId = options?.masterId;
   const onComplete = options?.onComplete;
 
   // -1 = not yet initialized (avoids SSR flash)
   const [currentStep, setCurrentStep] = useState(-1);
 
   useEffect(() => {
-    // DB says done — never show, even if localStorage is empty (new device)
+    // DB says done — never show, even on new device
     if (initialSeen) return;
 
     // Same-device cache: if localStorage marks done, skip
@@ -31,12 +38,17 @@ export function useTour(tourName: string, totalSteps: number, options?: UseTourO
   async function finishTour() {
     setCurrentStep(-1);
     localStorage.setItem(`tour_${tourName}`, 'done');
+
     if (onComplete) {
-      try {
-        await onComplete();
-      } catch (err) {
+      // Caller owns DB write (e.g. DashboardTourContext needs refresh() after)
+      try { await onComplete(); } catch (err) {
         console.error(`[useTour:${tourName}] onComplete failed:`, err);
       }
+    } else if (masterId) {
+      // DB-primary: persist automatically — no boilerplate in callers
+      markTourSeen(tourName).catch(err =>
+        console.error(`[useTour:${tourName}] markTourSeen failed:`, err)
+      );
     }
   }
 

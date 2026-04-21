@@ -15,7 +15,7 @@ interface Props {
 
 export function PricingDrawer({ isOpen, onClose, pricingRules }: Props) {
   return (
-    <PopUpModal isOpen={isOpen} onClose={onClose} title="Ціноутворення">
+    <PopUpModal isOpen={isOpen} onClose={onClose} title="Ціноутворення" keepMounted={true}>
       <div className="md:p-2">
         {isOpen && <DynamicPricingPage initial={pricingRules} isDrawer={true} />}
       </div>

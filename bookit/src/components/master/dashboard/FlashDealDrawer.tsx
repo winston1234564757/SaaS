@@ -13,7 +13,7 @@ interface Props {
 
 export function FlashDealDrawer({ isOpen, onClose }: Props) {
   return (
-    <PopUpModal isOpen={isOpen} onClose={onClose} title="Флеш-акції">
+    <PopUpModal isOpen={isOpen} onClose={onClose} title="Флеш-акції" keepMounted={true}>
       {isOpen && (
         <DynamicFlashDealPage isDrawer={true} />
       )}

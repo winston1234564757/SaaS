@@ -1,125 +1,123 @@
 // src/components/shared/wizard/useBookingPricing.ts
 import { useMemo } from 'react';
-import { applyDynamicPricing } from '@/lib/utils/dynamicPricing';
-import type { WizardService, WizardProduct, CartItem } from './types';
+import { useQuery } from '@tanstack/react-query';
+import { computeBookingPrice } from '@/lib/actions/computeBookingPrice';
+import type { WizardService, CartItem } from './types';
 
 interface UseBookingPricingParams {
+  masterId: string;
   selectedServices: WizardService[];
   cart: CartItem[];
   durationOverride: number | null;
   selectedDate: Date | null;
   selectedTime: string | null;
-  pricingRules?: Record<string, unknown>;
   useDynamicPrice: boolean;
   loyaltyDiscount: { name: string; percent: number } | null;
   flashDeal?: { id: string; discountPct: number; serviceName: string } | null;
   discountPercent: number;
 }
 
+function toYMD(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export function useBookingPricing({
+  masterId,
   selectedServices,
   cart,
   durationOverride,
   selectedDate,
   selectedTime,
-  pricingRules,
   useDynamicPrice,
   loyaltyDiscount,
   flashDeal,
   discountPercent,
 }: UseBookingPricingParams) {
+  // Duration is not a price — fine to compute locally for slot filtering
   const totalDuration = useMemo(
     () => selectedServices.reduce((s, sv) => s + sv.duration, 0),
-    [selectedServices]
-  );
-  const effectiveDuration = durationOverride ?? totalDuration;
-
-  const totalServicesPrice = useMemo(
-    () => selectedServices.reduce((s, sv) => s + sv.price, 0),
-    [selectedServices]
+    [selectedServices],
   );
 
-  const dynamicPricing = useMemo(() => {
-    if (!selectedDate || !selectedTime || !pricingRules) return null;
-    return applyDynamicPricing(
-      totalServicesPrice,
-      pricingRules as Record<string, unknown>,
-      selectedDate,
-      selectedTime
-    );
-  }, [totalServicesPrice, pricingRules, selectedDate, selectedTime]);
-
-  // Якщо майстер вимкнув toggle — використовуємо базову ціну
-  const effectiveServicesPrice =
-    dynamicPricing &&
-    dynamicPricing.adjustedPrice !== totalServicesPrice &&
-    useDynamicPrice
-      ? dynamicPricing.adjustedPrice
-      : totalServicesPrice;
-
-  const totalProductsPrice = useMemo(
-    () => cart.reduce((s, ci) => s + ci.product.price * ci.quantity, 0),
-    [cart]
+  const serviceIds = useMemo(() => selectedServices.map(s => s.id), [selectedServices]);
+  const productLines = useMemo(
+    () => cart.map(ci => ({ id: ci.product.id, quantity: ci.quantity })),
+    [cart],
   );
 
-  const grandTotal = effectiveServicesPrice + totalProductsPrice;
+  const dateStr = selectedDate ? toYMD(selectedDate) : null;
 
-  const rawLoyaltyDiscount = loyaltyDiscount
-    ? Math.round(grandTotal * loyaltyDiscount.percent / 100)
-    : 0;
-  const rawFlashDiscount = flashDeal
-    ? Math.round(grandTotal * flashDeal.discountPct / 100)
-    : 0;
-  const rawMasterDiscount = Math.round(grandTotal * discountPercent / 100);
+  const enabled =
+    !!masterId && serviceIds.length > 0 && !!dateStr && !!selectedTime;
 
-  // ── Comprehensive Discount Resolution & Safety Cap (40%) ─────────────────
-  const originalTotal = totalServicesPrice + totalProductsPrice;
-  const maxAllowedDiscount = Math.floor(originalTotal * 0.40);
+  const { data, isPending } = useQuery({
+    queryKey: [
+      'booking-price',
+      masterId,
+      serviceIds,
+      productLines,
+      dateStr,
+      selectedTime,
+      useDynamicPrice,
+      flashDeal?.id ?? null,
+      loyaltyDiscount?.percent ?? 0,
+      discountPercent,
+      durationOverride,
+    ],
+    queryFn: () =>
+      computeBookingPrice({
+        masterId,
+        serviceIds,
+        productLines,
+        date: dateStr!,
+        time: selectedTime!,
+        applyDynamic: useDynamicPrice,
+        flashDealId: flashDeal?.id ?? null,
+        loyaltyPercent: loyaltyDiscount?.percent ?? 0,
+        masterDiscountPercent: discountPercent,
+        durationOverrideMinutes: durationOverride,
+      }),
+    enabled,
+    staleTime: 30_000,
+  });
 
-  // Total discount requested relative to the Original Total price
-  const requestedDynamicDiscount = dynamicPricing
-    ? totalServicesPrice - dynamicPricing.adjustedPrice
-    : 0;
-  const totalRequestedDiscountSum =
-    (useDynamicPrice ? requestedDynamicDiscount : 0) +
-    rawLoyaltyDiscount +
-    rawFlashDiscount +
-    rawMasterDiscount;
+  // Fallback values while server is computing (show base prices, no discount)
+  const totalServicesPrice = data?.totalServicesPrice
+    ?? selectedServices.reduce((s, sv) => s + sv.price, 0);
+  const totalProductsPrice = data?.totalProductsPrice
+    ?? cart.reduce((s, ci) => s + ci.product.price * ci.quantity, 0);
 
-  // If we are giving a net discount (not a net markup), we must cap it.
-  const effectiveTotalDiscount =
-    totalRequestedDiscountSum > 0
-      ? Math.min(maxAllowedDiscount, totalRequestedDiscountSum)
-      : totalRequestedDiscountSum; // don't cap markups (peak hours)
+  const effectiveDuration = data?.effectiveDuration ?? (durationOverride ?? totalDuration);
+  const originalTotal = data?.originalTotal ?? (totalServicesPrice + totalProductsPrice);
+  const finalTotal = data?.finalTotal ?? originalTotal;
+  const adjustedServicesPrice = data?.adjustedServicesPrice ?? totalServicesPrice;
 
-  const finalTotal = Math.max(0, originalTotal - effectiveTotalDiscount);
-
-  // Breakdown for summary display (approximate proportional split for visual aid)
-  const loyaltyDiscountAmount =
-    totalRequestedDiscountSum > 0
-      ? Math.round(effectiveTotalDiscount * (rawLoyaltyDiscount / totalRequestedDiscountSum))
-      : 0;
-  const masterDiscountAmount =
-    totalRequestedDiscountSum > 0
-      ? Math.round(effectiveTotalDiscount * (rawMasterDiscount / totalRequestedDiscountSum))
-      : 0;
-  const flashDealAmount =
-    totalRequestedDiscountSum > 0
-      ? Math.round(effectiveTotalDiscount * (rawFlashDiscount / totalRequestedDiscountSum))
-      : 0;
+  // Re-shape dynamic pricing for DateTimePicker compatibility
+  const dynamicPricing =
+    data && data.dynamicModifier !== 0
+      ? {
+          label: data.dynamicLabel,
+          modifier: data.dynamicModifier,
+          adjustedPrice: data.adjustedServicesPrice,
+        }
+      : null;
 
   return {
     totalDuration,
     effectiveDuration,
     totalServicesPrice,
-    dynamicPricing,
-    effectiveServicesPrice,
     totalProductsPrice,
-    grandTotal,
+    dynamicPricing,
+    effectiveServicesPrice: adjustedServicesPrice,
+    grandTotal: originalTotal,
     originalTotal,
     finalTotal,
-    loyaltyDiscountAmount,
-    masterDiscountAmount,
-    flashDealAmount,
+    loyaltyDiscountAmount: data?.loyaltyDiscountAmount ?? 0,
+    masterDiscountAmount: data?.masterDiscountAmount ?? 0,
+    flashDealAmount: data?.flashDealAmount ?? 0,
+    isPricePending: isPending && enabled,
   };
 }

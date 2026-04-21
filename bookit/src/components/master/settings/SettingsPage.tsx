@@ -18,7 +18,13 @@ import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import type { BreakWindow } from '@/types/database';
 import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, normalizeToE164, toFullPhone } from '@/lib/utils/phone';
 import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
-import { markTourSeen } from '@/app/(master)/dashboard/actions';
+import dynamic from 'next/dynamic';
+import type { LatLng } from './LocationPicker';
+
+const LocationPicker = dynamic(
+  () => import('./LocationPicker').then(m => m.LocationPicker),
+  { ssr: false, loading: () => <div className="w-full rounded-2xl bg-white/30 animate-pulse" style={{ height: 220 }} /> }
+);
 
 const AVATAR_EMOJIS = ['💅','👑','✂️','💆','💇','🌸','✨','💎','🌺','🪞','🖌️','💄'];
 
@@ -46,7 +52,7 @@ export function SettingsPage() {
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const { currentStep, nextStep, closeTour } = useTour('settings', 2, {
     initialSeen: seenTours?.settings ?? false,
-    onComplete: () => markTourSeen('settings').then(() => undefined),
+    masterId: masterProfile?.id,
   });
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -60,6 +66,10 @@ export function SettingsPage() {
   const [avatar, setAvatar] = useState('💅');
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [floor, setFloor] = useState('');
+  const [cabinet, setCabinet] = useState('');
   const [instagram, setInstagram] = useState('');
   const [telegram, setTelegram] = useState('');
   const [telegramChatId, setTelegramChatId] = useState('');
@@ -77,6 +87,8 @@ export function SettingsPage() {
   const formInitialized = useRef(false);
   const scheduleInitialized = useRef(false);
 
+  const [retentionCycleDays, setRetentionCycleDays] = useState(30);
+
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [slugStatus, setSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
@@ -85,9 +97,11 @@ export function SettingsPage() {
   // Snapshots captured on first load — used for dirty detection and cancel reset
   const initialFormSnap = useRef<{
     fullName: string; phone: string; bio: string; slug: string;
-    city: string; address: string; instagram: string; telegram: string; telegramChatId: string;
+    city: string; address: string; lat: number | null; lng: number | null;
+    floor: string; cabinet: string; instagram: string; telegram: string; telegramChatId: string;
     isPublished: boolean; avatar: string; themeKey: MoodThemeKey;
     avatarUrl: string | null; bufferTime: number; breaks: BreakWindow[];
+    retentionCycleDays: number;
   } | null>(null);
   const initialScheduleSnap = useRef<Schedule | null>(null);
 
@@ -108,13 +122,18 @@ export function SettingsPage() {
     setBio(masterProfile.bio ?? '');
     setSlug(masterProfile.slug ?? '');
     setCity(masterProfile.city ?? '');
-    setAddress((masterProfile as any).address ?? '');
+    setAddress(masterProfile.address ?? '');
+    setLat(masterProfile.latitude ?? null);
+    setLng(masterProfile.longitude ?? null);
+    setFloor(masterProfile.floor ?? '');
+    setCabinet(masterProfile.cabinet ?? '');
     setInstagram(masterProfile.instagram_url ?? '');
     setTelegram(masterProfile.telegram_url ?? '');
     setTelegramChatId(masterProfile.telegram_chat_id ?? '');
     setIsPublished(masterProfile.is_published ?? false);
     setAvatar(masterProfile.avatar_emoji ?? '💅');
     setThemeKey((masterProfile.mood_theme as MoodThemeKey) ?? 'default');
+    setRetentionCycleDays(masterProfile.retention_cycle_days ?? 30);
     const wh = masterProfile.working_hours;
     setBufferTime(wh?.buffer_time_minutes ?? 0);
     setBreaks(wh?.breaks ?? []);
@@ -124,7 +143,11 @@ export function SettingsPage() {
       bio: masterProfile.bio ?? '',
       slug: masterProfile.slug ?? '',
       city: masterProfile.city ?? '',
-      address: (masterProfile as any).address ?? '',
+      address: masterProfile.address ?? '',
+      lat: masterProfile.latitude ?? null,
+      lng: masterProfile.longitude ?? null,
+      floor: masterProfile.floor ?? '',
+      cabinet: masterProfile.cabinet ?? '',
       instagram: masterProfile.instagram_url ?? '',
       telegram: masterProfile.telegram_url ?? '',
       telegramChatId: masterProfile.telegram_chat_id ?? '',
@@ -134,6 +157,7 @@ export function SettingsPage() {
       avatarUrl: profile.avatar_url ?? null,
       bufferTime: wh?.buffer_time_minutes ?? 0,
       breaks: wh?.breaks ?? [],
+      retentionCycleDays: masterProfile.retention_cycle_days ?? 30,
     };
   }, [profile, masterProfile]);
 
@@ -193,17 +217,20 @@ export function SettingsPage() {
     const f = initialFormSnap.current;
     const formChanged =
       fullName !== f.fullName || phone !== f.phone || bio !== f.bio ||
-      slug !== f.slug || city !== f.city || address !== f.address || instagram !== f.instagram ||
+      slug !== f.slug || city !== f.city || address !== f.address ||
+      lat !== f.lat || lng !== f.lng || floor !== f.floor || cabinet !== f.cabinet ||
+      instagram !== f.instagram ||
       telegram !== f.telegram || telegramChatId !== f.telegramChatId ||
       isPublished !== f.isPublished || avatar !== f.avatar ||
       themeKey !== f.themeKey || avatarUrl !== f.avatarUrl ||
       bufferTime !== f.bufferTime ||
-      JSON.stringify(breaks) !== JSON.stringify(f.breaks);
+      JSON.stringify(breaks) !== JSON.stringify(f.breaks) ||
+      retentionCycleDays !== f.retentionCycleDays;
     const scheduleChanged =
       JSON.stringify(schedule) !== JSON.stringify(initialScheduleSnap.current);
     setIsDirty(formChanged || scheduleChanged);
-  }, [fullName, phone, bio, slug, city, address, instagram, telegram, telegramChatId,
-      isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, schedule]);
+  }, [fullName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId,
+      isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays, schedule]);
 
   function handleCancel() {
     const f = initialFormSnap.current;
@@ -214,6 +241,10 @@ export function SettingsPage() {
     setSlug(f.slug);
     setCity(f.city);
     setAddress(f.address);
+    setLat(f.lat);
+    setLng(f.lng);
+    setFloor(f.floor);
+    setCabinet(f.cabinet);
     setInstagram(f.instagram);
     setTelegram(f.telegram);
     setTelegramChatId(f.telegramChatId);
@@ -223,6 +254,7 @@ export function SettingsPage() {
     setAvatarUrl(f.avatarUrl);
     setBufferTime(f.bufferTime);
     setBreaks(f.breaks);
+    setRetentionCycleDays(f.retentionCycleDays);
     if (initialScheduleSnap.current) setSchedule(initialScheduleSnap.current);
     setIsDirty(false);
   }
@@ -241,12 +273,15 @@ export function SettingsPage() {
         supabase.from('profiles').update({ full_name: fullName, phone: cleanPhone, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
         supabase.from('master_profiles').update({
           bio, city, address: address || null, slug,
+          latitude: lat, longitude: lng,
+          floor: floor || null, cabinet: cabinet || null,
           avatar_emoji: avatar,
           instagram_url: instagram || null,
           telegram_url: telegram || null,
           telegram_chat_id: telegramChatId.trim() || null,
           is_published: isPublished,
           mood_theme: themeKey,
+          retention_cycle_days: retentionCycleDays,
           working_hours: {
             buffer_time_minutes: bufferTime,
             breaks: breaks.filter(b => b.start && b.end),
@@ -266,7 +301,7 @@ export function SettingsPage() {
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);
       // Update snapshots so cancel would reset to the freshly saved state
-      initialFormSnap.current = { fullName, phone, bio, slug, city, address, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks };
+      initialFormSnap.current = { fullName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays };
       initialScheduleSnap.current = { ...schedule };
       setIsDirty(false);
       // Оновлюємо контекст у фоні — не блокуємо UI
@@ -393,19 +428,43 @@ export function SettingsPage() {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Місто</label>
-            <input value={city} onChange={e => setCity(e.target.value)} placeholder="Київ" className={inputCls} />
+            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">
+              Адреса
+              {lat && lng && (
+                <span className="ml-2 text-[#5C9E7A] font-normal">✓ збережено</span>
+              )}
+            </label>
+            <LocationPicker
+              value={lat && lng ? { lat, lng } : null}
+              address={[city, address].filter(Boolean).join(', ')}
+              onChange={(coords: LatLng, parsedCity: string, parsedAddress: string) => {
+                setLat(coords.lat);
+                setLng(coords.lng);
+                setCity(parsedCity);
+                setAddress(parsedAddress);
+              }}
+            />
           </div>
 
-          <div>
-            <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Адреса (вулиця, номер)</label>
-            <input
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-              placeholder="вул. Хрещатик, 1"
-              className={inputCls}
-            />
-            <p className="text-[11px] text-[#A8928D] mt-1">Клієнти зможуть відкрити адресу на картах</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Поверх</label>
+              <input
+                value={floor}
+                onChange={e => setFloor(e.target.value)}
+                placeholder="3"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Кабінет / офіс</label>
+              <input
+                value={cabinet}
+                onChange={e => setCabinet(e.target.value)}
+                placeholder="12"
+                className={inputCls}
+              />
+            </div>
           </div>
         </div>
       </Section>
@@ -479,6 +538,37 @@ export function SettingsPage() {
               />
             </div>
           </button>
+        </div>
+      </Section>
+
+      {/* CRM — Retention cycle */}
+      <Section title="CRM / Утримання клієнтів">
+        <div>
+          <p className="text-xs font-medium text-[#6B5750] mb-1">
+            Стандартний цикл візиту
+            <span className="ml-1.5 font-normal text-[#A8928D]">— як часто клієнт зазвичай повертається</span>
+          </p>
+          <p className="text-[11px] text-[#A8928D] mb-3 leading-relaxed">
+            Оберіть, як часто ваші клієнти зазвичай повертаються. За цим значенням додаток визначає, хто з клієнтів давно не приходив і потребує уваги.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {[14, 21, 30, 45, 60, 90].map(days => (
+              <button
+                key={days}
+                onClick={() => setRetentionCycleDays(days)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  retentionCycleDays === days
+                    ? 'bg-[#789A99] text-white'
+                    : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                }`}
+              >
+                {days} дн.
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-[#789A99] mt-2 font-medium">
+            Не був {retentionCycleDays}+ дн. → дрімає · {retentionCycleDays * 2}+ дн. → під ризиком · {retentionCycleDays * 3}+ дн. → втрачений
+          </p>
         </div>
       </Section>
 

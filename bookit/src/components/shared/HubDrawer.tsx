@@ -15,7 +15,7 @@ export function HubDrawer({ isOpen, onClose, title, children }: HubDrawerProps) 
   // but for the Hubs, a centered modal on PC is the priority.
   
   return (
-    <PopUpModal isOpen={isOpen} onClose={onClose} title={title}>
+    <PopUpModal isOpen={isOpen} onClose={onClose} title={title} keepMounted={true}>
       <div className="p-0 md:p-2">
         {children}
       </div>

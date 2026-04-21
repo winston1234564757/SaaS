@@ -34,6 +34,7 @@ export interface BookingWizardProps {
   mode: 'client' | 'master';
   bookingsThisMonth?: number;
   subscriptionTier?: string;
+  /** @deprecated Pricing rules are now fetched server-side in computeBookingPrice. Ignored. */
   pricingRules?: Record<string, unknown>;
   onSuccess?: () => void;
   flashDeal?: { id: string; discountPct: number; serviceName: string } | null;

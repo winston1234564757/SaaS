@@ -7,7 +7,7 @@ import {
   LayoutDashboard, CalendarDays, Users, BarChart2, MoreHorizontal,
   Scissors, Zap, TrendingUp, Gift,
   MessageSquare, Share2, Building2, CreditCard, Settings, X,
-  Wallet, Rocket, BadgePercent, Network
+  Wallet, Rocket, BadgePercent, Network, HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
@@ -32,6 +32,7 @@ const MORE_ITEMS = [
   { href: '/dashboard/studio',    icon: Building2,      label: 'Студія',       soon: true },
   { href: '/dashboard/billing',   icon: CreditCard,     label: 'Тариф'         },
   { href: '/dashboard/settings',  icon: Settings,       label: 'Налаштування'  },
+  { href: '/dashboard/support',   icon: HelpCircle,     label: 'Підтримка'     },
 ];
 
 export function BottomNav() {

@@ -1,37 +1,37 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useQueryState, parseAsString } from 'nuqs';
+import { useTransition } from 'react';
 import { BentoCard } from '@/components/ui/BentoCard';
-import { HubDrawer } from '@/components/shared/HubDrawer';
-import { Zap, BadgePercent, Wallet } from 'lucide-react';
-
-// We'll import these once we refactor them to be "drawer-ready"
-// For now, we'll use placeholders or simple versions
-import { FlashDealPage } from '@/components/master/flash/FlashDealPage';
-import { DynamicPricingPage } from '@/components/master/pricing/DynamicPricingPage';
-import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page.tsx';
-import type { PricingRules } from '@/lib/utils/dynamicPricing';
+import { Wallet, Zap, BadgePercent } from 'lucide-react';
+import { RevenueDrawers } from './RevenueDrawers';
 
 interface RevenueHubClientProps {
   flashData: {
     activeCount: number;
-    deals: FlashDealRow[];
+    deals: any[];
     tier: string;
     usedThisMonth: number;
   };
   pricingData: {
     tier: string;
     extraEarned: number;
-    rules: PricingRules;
+    rules: any;
     isPro: boolean;
   };
 }
 
 export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientProps) {
-  const [drawer, setDrawer] = useQueryState('drawer', parseAsString);
+  const [, startTransition] = useTransition();
 
-  const closeDrawer = () => setDrawer(null);
+  // window.history.pushState — nuqs intercepts this, Next.js router does NOT.
+  // Prevents server-component re-render on drawer open (fixes first-click error).
+  const openDrawer = (id: string) => {
+    startTransition(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('drawer', id);
+      window.history.pushState(null, '', url.pathname + url.search);
+    });
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -46,7 +46,7 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
         </div>
       </div>
 
-      {/* Bento Grid */}
+      {/* Bento Grid - This grid is now protected from re-renders when a drawer opens */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <BentoCard
           title="Flash Deals"
@@ -55,7 +55,7 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
           description="Створюйте моментальні знижки на вільні вікна сьогодні-завтра, щоб заповнити графік."
           icon={Zap}
           statusColor={flashData.activeCount > 0 ? 'success' : 'info'}
-          onClick={() => setDrawer('flash_deals')}
+          onClick={() => openDrawer('flash_deals')}
         />
 
         <BentoCard
@@ -65,38 +65,19 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
           hint={pricingData.isPro ? "Pro активний" : "Starter"}
           icon={BadgePercent}
           statusColor={pricingData.isPro ? 'success' : 'warning'}
-          onClick={() => setDrawer('dynamic_pricing')}
+          onClick={() => openDrawer('dynamic_pricing')}
         />
       </div>
 
-      {/* URL-Driven Drawers */}
-      <HubDrawer
-        isOpen={drawer === 'flash_deals'}
-        onClose={closeDrawer}
-        title="Флеш-акції"
-      >
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D]">Завантаження...</div>}>
-          <FlashDealPage
-            activeDeals={flashData.deals}
-            tier={flashData.tier}
-            usedThisMonth={flashData.usedThisMonth}
-            isDrawer={true} // We'll add this prop to suppress layout
-          />
-        </Suspense>
-      </HubDrawer>
-
-      <HubDrawer
-        isOpen={drawer === 'dynamic_pricing'}
-        onClose={closeDrawer}
-        title="Динамічне ціноутворення"
-      >
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D]">Завантаження...</div>}>
-          <DynamicPricingPage
-            initial={pricingData.rules}
-            isDrawer={true} // We'll add this prop to suppress layout
-          />
-        </Suspense>
-      </HubDrawer>
+      {/* 
+        Isolated Drawer Container 
+        Everything below this renders in its own branch, 
+        reading the URL state ONLY when needed.
+      */}
+      <RevenueDrawers 
+        flashData={flashData} 
+        pricingData={pricingData} 
+      />
     </div>
   );
 }

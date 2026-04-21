@@ -17,7 +17,7 @@ async function getMaster(slug: string) {
   let query = supabase
     .from('master_profiles')
     .select(`
-      id, slug, bio, city, address, rating, rating_count,
+      id, slug, bio, city, address, latitude, longitude, floor, cabinet, rating, rating_count,
       subscription_tier, instagram_url, telegram_url, categories,
       mood_theme, avatar_emoji, pricing_rules, working_hours,
       profiles!inner ( full_name, avatar_url ),
@@ -64,20 +64,35 @@ export default async function MasterPublicPage(
   const isIOS = /iPad|iPhone|iPod/.test(ua);
   const isAndroid = /Android/.test(ua);
 
-  const locationQuery = [data.city, data.address].filter(Boolean).join(', ');
-  const encodedLocation = locationQuery ? encodeURIComponent(locationQuery) : null;
-  const mapUrl = encodedLocation
+  const locationQuery = data.address && data.city && data.address.toLowerCase().includes(data.city.toLowerCase())
+    ? data.address
+    : [data.city, data.address].filter(Boolean).join(', ');
+  const lat = (data as any).latitude as number | null;
+  const lng = (data as any).longitude as number | null;
+  const hasCoords = typeof lat === 'number' && typeof lng === 'number';
+
+  // Prefer precise lat/lng deep links over text search
+  const mapUrl = hasCoords
     ? isIOS
-      ? `maps://maps.apple.com/?q=${encodedLocation}`
+      ? `maps://maps.apple.com/?ll=${lat},${lng}&q=${encodeURIComponent(locationQuery || 'Майстер')}`
       : isAndroid
-        ? `comgooglemaps://?q=${encodedLocation}`
-        : `https://maps.google.com/?q=${encodedLocation}`
-    : null;
+        ? `comgooglemaps://?center=${lat},${lng}&q=${lat},${lng}`
+        : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+    : locationQuery
+      ? isIOS
+        ? `maps://maps.apple.com/?q=${encodeURIComponent(locationQuery)}`
+        : isAndroid
+          ? `comgooglemaps://?q=${encodeURIComponent(locationQuery)}`
+          : `https://maps.google.com/?q=${encodeURIComponent(locationQuery)}`
+      : null;
 
   const supabase = await createClient();
   const cookieStore = await cookies();
   const debugNow = cookieStore.get('next-public-debug-now')?.value;
   const now = debugNow ? new Date(decodeURIComponent(debugNow)) : getNow();
+
+  // Поточний юзер (null якщо не залогінений)
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Межа місячного ліміту — рахуємо динамічно з bookings (не з лічильника bookings_this_month)
   const masterTimezone = (data as any).timezone || 'Europe/Kyiv';
@@ -86,8 +101,8 @@ export default async function MasterPublicPage(
     nowInMasterTZ.getFullYear(), nowInMasterTZ.getMonth(), 1
   ).toISOString();
 
-  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals
-  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes] = await Promise.all([
+  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty
+  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price, description, emoji, stock_quantity, stock_unlimited')
@@ -120,6 +135,20 @@ export default async function MasterPublicPage(
       .gt('expires_at', getNow().toISOString())
       .order('expires_at', { ascending: true })
       .limit(5),
+    supabase
+      .from('loyalty_programs')
+      .select('target_visits, reward_type, reward_value')
+      .eq('master_id', data.id)
+      .eq('is_active', true)
+      .order('target_visits', { ascending: true }),
+    user
+      ? supabase
+          .from('client_master_relations')
+          .select('total_visits')
+          .eq('master_id', data.id)
+          .eq('client_id', user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
 
   const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
@@ -162,6 +191,16 @@ export default async function MasterPublicPage(
     endTime: (s.end_time as string | null)?.slice(0, 5) ?? '18:00',
   }));
 
+  const loyaltyTiers = (loyaltyRes.data ?? []).map((p: any) => ({
+    targetVisits: p.target_visits as number,
+    rewardType: p.reward_type as string,
+    rewardValue: p.reward_value as number,
+  }));
+  const currentVisits = (relationRes.data?.total_visits as number | null | undefined) ?? 0;
+  const loyalty = loyaltyTiers.length > 0
+    ? { tiers: loyaltyTiers, currentVisits, isAuth: !!user }
+    : null;
+
   const flashDeals = (flashDealsRes.data ?? []).map((d: any) => ({
     id: d.id as string,
     serviceName: d.service_name as string,
@@ -179,6 +218,10 @@ export default async function MasterPublicPage(
     specialty: ((data.categories as string[]) ?? []).join(', ') || 'Майстер краси',
     location: locationQuery || 'Україна',
     mapUrl,
+    lat: lat ?? null,
+    lng: lng ?? null,
+    floor: ((data as any).floor as string | null) ?? null,
+    cabinet: ((data as any).cabinet as string | null) ?? null,
     emoji: '💅',
     rating: Number(data.rating) || 0,
     reviewsCount: data.rating_count || 0,
@@ -198,6 +241,7 @@ export default async function MasterPublicPage(
     pricingRules: (data.pricing_rules as Record<string, any>) ?? {},
     workingHours: (data.working_hours as Record<string, unknown>) ?? null,
     flashDeals,
+    loyalty,
   };
 
   return (

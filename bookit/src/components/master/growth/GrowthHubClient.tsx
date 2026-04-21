@@ -1,11 +1,10 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useTransition } from 'react';
 import { useQueryState, parseAsString } from 'nuqs';
 import { BentoCard } from '@/components/ui/BentoCard';
 import { HubDrawer } from '@/components/shared/HubDrawer';
-import { Rocket, Gift, Share2, Network, Users } from 'lucide-react';
-
+import { Rocket, Gift, Share2, Users } from 'lucide-react';
 import { LoyaltyPage } from '@/components/master/loyalty/LoyaltyPage';
 import { ReferralPage } from '@/components/master/referral/ReferralPage';
 import { PartnersPage } from '@/components/master/partners/PartnersPage';
@@ -27,10 +26,57 @@ interface GrowthHubClientProps {
   };
 }
 
-export function GrowthHubClient({ loyaltyData, referralData, partnersData }: GrowthHubClientProps) {
-  const [drawer, setDrawer] = useQueryState('drawer', parseAsString);
-
+// Isolated: only this subtree re-renders when ?drawer= changes
+function GrowthDrawers({ loyaltyData, referralData, partnersData }: GrowthHubClientProps) {
+  const [drawer, setDrawer] = useQueryState('drawer', parseAsString.withOptions({ shallow: true, scroll: false }));
   const closeDrawer = () => setDrawer(null);
+
+  return (
+    <>
+      <HubDrawer isOpen={drawer === 'loyalty'} onClose={closeDrawer} title="Лояльність">
+        <Suspense fallback={<div className="p-8 text-center text-[#A8928D] animate-pulse">Завантаження...</div>}>
+          <LoyaltyPage isDrawer={true} />
+        </Suspense>
+      </HubDrawer>
+
+      <HubDrawer isOpen={drawer === 'referral'} onClose={closeDrawer} title="Реферальна програма">
+        <Suspense fallback={<div className="p-8 text-center text-[#A8928D] animate-pulse">Завантаження...</div>}>
+          <ReferralPage
+            masterId={referralData.masterId}
+            referralCode={referralData.code}
+            referralCount={referralData.count}
+            subscriptionTier={referralData.tier}
+            subscriptionExpiresAt={referralData.expiresAt}
+            isDrawer={true}
+          />
+        </Suspense>
+      </HubDrawer>
+
+      <HubDrawer isOpen={drawer === 'partners'} onClose={closeDrawer} title="Партнерська мережа">
+        <Suspense fallback={<div className="p-8 text-center text-[#A8928D] animate-pulse">Завантаження...</div>}>
+          <PartnersPage
+            partners={partnersData.partners}
+            inviteLink={partnersData.inviteLink}
+            isDrawer={true}
+          />
+        </Suspense>
+      </HubDrawer>
+    </>
+  );
+}
+
+export function GrowthHubClient({ loyaltyData, referralData, partnersData }: GrowthHubClientProps) {
+  const [, startTransition] = useTransition();
+
+  // window.history.pushState — nuqs intercepts this, Next.js router does NOT.
+  // Prevents server-component re-render on drawer open (fixes first-click error).
+  const openDrawer = (id: string) => {
+    startTransition(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('drawer', id);
+      window.history.pushState(null, '', url.pathname + url.search);
+    });
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -45,16 +91,16 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
         </div>
       </div>
 
-      {/* Bento Grid */}
+      {/* Bento Grid — protected from re-renders when ?drawer= changes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <BentoCard
           title="Loyalty"
           metric={`${loyaltyData.activeCount} Програм`}
-          hint={loyaltyData.activeCount > 0 ? "Накопичувальні знижки" : "Не налаштовано"}
+          hint={loyaltyData.activeCount > 0 ? 'Накопичувальні знижки' : 'Не налаштовано'}
           description="Бонусна система та кешбек для утримання клієнтів та підвищення чеку."
           icon={Gift}
           statusColor={loyaltyData.activeCount > 0 ? 'success' : 'info'}
-          onClick={() => setDrawer('loyalty')}
+          onClick={() => openDrawer('loyalty')}
         />
 
         <BentoCard
@@ -64,7 +110,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
           description="Залучайте нових майстрів та отримуйте місяці Pro-підписки безкоштовно."
           icon={Share2}
           statusColor={referralData.count > 0 ? 'success' : 'info'}
-          onClick={() => setDrawer('referral')}
+          onClick={() => openDrawer('referral')}
         />
 
         <BentoCard
@@ -74,51 +120,16 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
           description="Об'єднуйтесь з іншими майстрами для перехресного просування та обміну базою."
           icon={Users}
           statusColor={partnersData.partners.length > 0 ? 'success' : 'info'}
-          onClick={() => setDrawer('partners')}
+          onClick={() => openDrawer('partners')}
         />
       </div>
 
-      {/* URL-Driven Drawers */}
-      <HubDrawer
-        isOpen={drawer === 'loyalty'}
-        onClose={closeDrawer}
-        title="Лояльність"
-      >
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D]">Завантаження...</div>}>
-          <LoyaltyPage isDrawer={true} />
-        </Suspense>
-      </HubDrawer>
-
-      <HubDrawer
-        isOpen={drawer === 'referral'}
-        onClose={closeDrawer}
-        title="Реферальна програма"
-      >
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D]">Завантаження...</div>}>
-          <ReferralPage
-            masterId={referralData.masterId}
-            referralCode={referralData.code}
-            referralCount={referralData.count}
-            subscriptionTier={referralData.tier}
-            subscriptionExpiresAt={referralData.expiresAt}
-            isDrawer={true}
-          />
-        </Suspense>
-      </HubDrawer>
-
-      <HubDrawer
-        isOpen={drawer === 'partners'}
-        onClose={closeDrawer}
-        title="Партнерська мережа"
-      >
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D]">Завантаження...</div>}>
-          <PartnersPage
-            partners={partnersData.partners}
-            inviteLink={partnersData.inviteLink}
-            isDrawer={true}
-          />
-        </Suspense>
-      </HubDrawer>
+      {/* Isolated drawer subtree — only this re-renders on URL change */}
+      <GrowthDrawers
+        loyaltyData={loyaltyData}
+        referralData={referralData}
+        partnersData={partnersData}
+      />
     </div>
   );
 }

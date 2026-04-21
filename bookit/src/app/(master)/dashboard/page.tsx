@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: 'Dashboard — Bookit',
 };
 
+import { DashboardDrawers } from '@/components/master/dashboard/DashboardDrawers';
+
 export default async function DashboardPage() {
   return (
     <DashboardTourProvider>
@@ -28,6 +30,7 @@ export default async function DashboardPage() {
         <PushSubscribeCard />
         <ShareCardWithHint />
       </div>
+      <DashboardDrawers />
     </DashboardTourProvider>
   );
 }

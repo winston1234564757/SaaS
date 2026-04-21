@@ -2,7 +2,7 @@
 
 > **Ukrainian SaaS для онлайн-запису у б'юті-індустрії**
 > "Твій розумний link in bio, який заробляє гроші"
-> *Оновлено: 04.04.2026 · Версія: 3.1 (23+ ітерації)*
+> *Оновлено: 17.04.2026 · Версія: 4.0 (26+ ітерації)*
 
 ---
 
@@ -413,7 +413,7 @@ src/
 
 | Таблиця | Ключові колонки | Мета |
 |---------|----------------|------|
-| `notifications` | `user_id`, `type`, `title`, `body`, `is_read` | In-app сповіщення |
+| `notifications` | `recipient_id` (= profiles.id), `type`, `title`, `body`, `is_read`, `related_booking_id`, `related_master_id` | In-app сповіщення (DB-тригери при INSERT/UPDATE bookings) |
 | `push_subscriptions` | `user_id`, `endpoint` UNIQUE, `subscription` (JSON) | Web Push підписки (VAPID) |
 
 ### Security
@@ -800,11 +800,69 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 ---
 
+---
+
+## 12. Журнал Ітерацій (25–27)
+
+### Ітерація 27 — Enterprise Architecture V2, Phase 1: Public Page Conversion (2026-04-17)
+
+- **Native Map Deep Links** — `app/[slug]/page.tsx` (Server Component) читає `user-agent` через `await headers()`, обчислює `mapUrl` server-side: iOS → Apple Maps, Android → Google Maps app, desktop → web. Нуль client JS.
+- **Availability Badge** — `useAvailability(workingHours)` hook в `PublicMasterPage`: real-time open/closed статус з `working_hours` JSONB, оновлення кожну хвилину, no SSR flash.
+- **Файли змінено:** `src/app/[slug]/page.tsx`, `src/components/public/PublicMasterPage.tsx`
+- **План збережено:** `docs/superpowers/plans/2026-04-17-enterprise-architecture-v2.md`
+
+### Ітерація 25 — iOS Native App Dashboard Redesign (2026-04-14)
+
+- **DashboardHero** — темний хедер `#2C1A14`, stat chips (дохід/записи/клієнти), `NotificationsBell dark prop`
+- **ScheduleWidget** — 14-денна горизонтальна смуга дат, iOS-картки бронювань
+- **QuickActions** — масивна темна CTA-кнопка + 5-клітинна squircle-сітка швидких дій + revenue rows
+- **Dashboard Layout** — 2-col бенто `md:grid-cols-[1fr_360px]` (ScheduleWidget у правій колонці)
+- **NotificationsBell** — тип-специфічні іконки, `dark?: boolean` prop
+
+### Ітерація 26 — Dashboard Marketing Hubs + Performance Fix (WIP, 2026-04-17)
+
+**Мета:** Вирішити 4–5s блокування main thread на мобільних при відкритті drawers.
+
+**Архітектурне рішення:**
+1. **Ізоляція URL-стану** — `DashboardDrawers` і `RevenueDrawers` — єдині компоненти що слухають `?drawer=` параметр. Зміна URL → тільки ці компоненти ре-рендеряться.
+2. **Animation First** — `<HubDrawer>` shell відкривається миттєво (`<100ms`). Важкий контент (`FlashDealForm`, `PricingForm`) монтується через `next/dynamic` + затримку після анімації.
+3. **React 18 Transitions** — `startTransition` при кліку на bento-картку → URL update не блокує CSS transform анімацію.
+4. **HubDrawer** — адаптивна обгортка: `DashboardDrawer` (side, lg+) або `BottomSheet` (bottom, <lg).
+
+**Нові компоненти:**
+- `src/components/master/dashboard/DashboardDrawers.tsx` — ізольований URL-listener для dashboard
+- `src/components/master/revenue/RevenueDrawers.tsx` — ізольований URL-listener для Revenue Hub
+- `src/components/shared/HubDrawer.tsx` — адаптивна обгортка (вже існувала, рефакторинг)
+
+---
+
+## 12. Agent Sync Changelog
+
+[2026-04-22] - Claude Code: **Loyalty Tier System + Bulletproof Auth**. Переписано з punch-card на tier/status модель. `page.tsx`: `loyalty_programs` тепер завантажуються ВСІ активні, відсортовані по `target_visits ASC` (не `maybeSingle`); `loyalty` shape змінено на `{ tiers[], currentVisits, isAuth }`. `LoyaltyWidget.tsx` повністю переписано — три стани: (1) unauth-тизер з першим тиром ("Знижка X% на всі візити, починаючи з N-го"); (2) прогрес до `nextTier` з current-tier badge якщо вже є знижка; (3) `maxReached` = Crown icon + повна progress bar + "Ви досягли максимального рівня! Ваша постійна знижка: X%." `currentTier` — останній тир де `targetVisits <= currentVisits`; `nextTier` — перший де `targetVisits > currentVisits`. Gracefully handles 1, 2, або 5 активних tier-ів. TypeScript: 0 помилок.
+
+[2026-04-22] - Claude Code: **LoyaltyWidget Data Binding**. `app/[slug]/page.tsx`: `supabase.auth.getUser()` визначає поточного клієнта; два нових запити додано до `Promise.all` — `loyalty_programs` (active, maybeSingle) та `client_master_relations` (total_visits, тільки якщо auth). Якщо активна програма відсутня — `loyalty: null`, віджет не рендериться. `Master` interface: нове поле `loyalty?: { targetVisits, rewardType, rewardValue, currentVisits, isAuth } | null`. `PublicMasterPage.tsx`: хардкод `-20% / 3/5` замінено умовним рендером `{master.loyalty && <LoyaltyWidget ... />}` з динамічним `rewardText` (percent_discount → `-N%`, fixed_discount → `-N ₴`, free_service → `Подарунок`). TypeScript: 0 помилок.
+
+[2026-04-21] - Claude Code: **Dynamic Retention Thresholds (Task 4)**. Migration 077: `master_profiles` отримала колонку `retention_cycle_days INT NOT NULL DEFAULT 30`. RPC `get_master_clients` перероблено — CTE `WITH cycle(n) AS (SELECT retention_cycle_days FROM master_profiles WHERE id = p_master_id)` зчитує N майстра один раз; статуси: active (<N), sleeping (N–2N), at_risk (2N–3N), lost (≥3N). `src/types/database.ts`: поле `retention_cycle_days?: number | null` в `MasterProfile`. `context.tsx`: `retention_cycle_days` включено до SELECT-рядка. `SettingsPage.tsx`: стан `retentionCycleDays`, dirty-detection, збереження (через `handleSave` → `.update({ retention_cycle_days })`), скидання в `handleCancel`; UI-секція "CRM / Утримання клієнтів" з preset-кнопками [14, 21, 30, 45, 60, 90] дн. та live-preview "Під ризиком від N*2 дн. · Втрачений від N*3 дн.". Migration застосовано (`supabase db push`). TypeScript: 0 помилок.
+
+[2026-04-22] - Claude Code: **Retention Engine Phase 1 — Churn Dashboard**. Migration 076: `get_master_clients` RPC розширено полем `retention_status TEXT` — обчислюється в SQL через `CURRENT_DATE - MAX(b.date)`: active (<30d), sleeping (30–59d), at_risk (60–89d), lost (≥90d). `useClients.ts`: додано `RetentionStatus` тип + поле в `ClientRow`. `ClientsPage.tsx`: (1) Retention filter strip — 5 pill-кнопок (Всі / Активні / Дрімають / Під ризиком / Втрачені) з лічильниками; (2) Кольоровий badge на кожній картці (список + grid); (3) Stats grid 4 колонки з "Під загрозою" лічильником; (4) `isChurned()` видалено — замінено прямою перевіркою `retention_status`. `ClientDetailSheet.tsx`: "churn reminder" тепер тригериться на `at_risk || lost`. Migration застосовано через `supabase db push`.
+
+[2026-04-21] - Claude Code: **Data Normalization Fix** — Location pipeline fully normalized. `LocationPicker.tsx`: змінено сигнатуру `onChange(coords, city, streetAddress)` — `parseAddressComponents()` повертає окремо `city` (locality) та `streetAddress` (route + street_number); `geocodeLatLng()` closure використовується і при кліку на карті, і при dragend маркера (reverse geocode в обох випадках). `SettingsPage.tsx`: видалено ручний input "Місто" — `city` тепер встановлюється виключно з Google Places API; `LocationPicker.address` prop отримує `[city, address].join(', ')` для відображення. Output layer (`page.tsx` → `locationQuery = [city, address].join(', ')`) вже коректний — без дублювань.
+
+[2026-04-21] - Claude Code: **Task 1** — LocationPicker (`settings/LocationPicker.tsx`): додано `buildShortAddress()` — парсить `address_components` Google Places/Geocoder API і повертає короткий рядок "Місто, Вулиця, Номер будинку" замість повної verbose адреси. Оновлено `fields` autocomplete + зворотне геокодування при кліку на карті. **Task 2** — PublicMasterPage (`public/PublicMasterPage.tsx`): redesign хедера у стилі "High-end Cozy Minimalism" — об'єднано Top Bar + Profile Card в єдину картку з centered layout, великим аватаром з тінню, `heading-serif` заголовком, Working Hours/Status badge, спеціалізацією, рейтингом, локацією та нативною кнопкою Share (absolute top-right). Видалено `ExternalLink`.
+
+[2026-04-21] - Antigravity: Removed legacy manual address text input from SettingsPage UI and positioned LocationPicker (Google Places Autocomplete) alongside Floor and Cabinet inputs for a unified, premium look.
+
+[2026-04-21] - Antigravity: Smart Address Rendering - Updated rendering logic for the location text in `app/[slug]/page.tsx` to conditionally exclude the city name if it is already present in the address string, preventing redundant outputs like "Березівка, Березівка, вулиця Миру, 16".
+
+[2026-04-22] - Antigravity: **Retention Engine Phase 2 — Loyalty Widget UI**. Created `LoyaltyWidget.tsx` component with two visual states (Unauthenticated/Marketing and Authenticated/Progress) using High-end Cozy Minimalism design standards. Mounted the widget in `PublicMasterPage.tsx` below the location card with temporary mock props (`isAuth={true}`, `currentVisits={3}`, `targetVisits={5}`).
+
+---
+
 ## Чеклист Перед Деплоєм
 
 - [ ] `src/proxy.ts` — `export function proxy` (не middleware!)
 - [ ] Всі RLS policies активні в Supabase
-- [ ] Всі міграції до 051 застосовані (`npx supabase db push`)
+- [ ] Всі міграції до 072 застосовані (`npx supabase db push`)
 - [ ] Ліміти Starter: 30 записів/місяць, 2 flash-акції/місяць, 9 фото, dynamic pricing trial до 1000 UAH
 - [ ] WayForPay + Monobank webhooks верифікують підпис
 - [ ] `CRON_SECRET` в env, всі cron routes перевіряють `Authorization: Bearer`
@@ -816,3 +874,4 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 - [ ] Lighthouse score > 90 (Performance, Accessibility)
 - [ ] Service Worker зареєстрований та стратегії перевірені
 - [ ] Error boundaries на всіх client компонентах з async операціями
+- [ ] Drawers: `?drawer=` URL param ізольований у `*Drawers.tsx` компонентах — не в dashboard grid

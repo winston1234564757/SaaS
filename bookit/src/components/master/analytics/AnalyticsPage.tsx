@@ -14,7 +14,6 @@ import {
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
-import { markTourSeen } from '@/app/(master)/dashboard/actions';
 import { formatPrice } from '@/components/master/services/types';
 import { useDateRange, type Preset } from '@/lib/supabase/hooks/useDateRange';
 import {
@@ -246,9 +245,10 @@ function ClientSheetById({ clientId, masterId, clientName, onClose }: {
         total_visits: nonCancelled.length,
         total_spent: spent,
         average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
-        last_visit_at: bs[0]?.date ?? null,
-        is_vip: rel?.is_vip ?? false,
-        relation_id: rel?.id ?? null,
+        last_visit_at:    bs[0]?.date ?? null,
+        is_vip:           rel?.is_vip ?? false,
+        relation_id:      rel?.id ?? null,
+        retention_status: 'active' as const,
       });
     });
   }, [clientId, masterId]);
@@ -387,7 +387,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const { currentStep, nextStep, closeTour } = useTour('analytics', 2, {
     initialSeen: seenTours?.analytics ?? false,
-    onComplete: () => markTourSeen('analytics').then(() => undefined),
+    masterId: masterProfile?.id,
   });
   const range = useDateRange();
   const [exporting, setExporting] = useState(false);

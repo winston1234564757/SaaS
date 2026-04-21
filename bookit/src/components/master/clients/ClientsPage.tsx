@@ -7,9 +7,17 @@ import { Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagra
 import { formatPrice } from '@/components/master/services/types';
 import { ClientDetailSheet } from './ClientDetailSheet';
 import { useClients } from '@/lib/supabase/hooks/useClients';
-import type { ClientRow } from '@/lib/supabase/hooks/useClients';
+import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
 
 export type { ClientRow };
+
+// ── Retention badge config ─────────────────────────────────────────────────────
+export const RETENTION_CONFIG: Record<RetentionStatus, { label: string; color: string; bg: string; dot: string }> = {
+  active:   { label: 'Активний',    color: '#5C9E7A', bg: '#5C9E7A14', dot: '#5C9E7A' },
+  sleeping: { label: 'Дрімає',      color: '#789A99', bg: '#789A9914', dot: '#789A99' },
+  at_risk:  { label: 'Під ризиком', color: '#D4935A', bg: '#D4935A14', dot: '#D4935A' },
+  lost:     { label: 'Втрачений',   color: '#C05B5B', bg: '#C05B5B14', dot: '#C05B5B' },
+};
 
 export interface AutoTag {
   label: string;
@@ -19,48 +27,30 @@ export interface AutoTag {
 
 export function getAutoTags(client: ClientRow): AutoTag[] {
   const tags: AutoTag[] = [];
-
-  const daysSinceLast = client.last_visit_at
-    ? Math.floor((Date.now() - new Date(client.last_visit_at).getTime()) / 86_400_000)
-    : null;
-
-  if (client.is_vip) {
-    tags.push({ label: 'VIP', color: '#D4935A', bg: '#D4935A15' });
-  }
-  if (client.total_visits === 1) {
-    tags.push({ label: 'Новий', color: '#789A99', bg: '#789A9915' });
-  } else if (client.total_visits >= 5) {
-    tags.push({ label: 'Постійний', color: '#5C9E7A', bg: '#5C9E7A15' });
-  }
-  if (client.average_check >= 1500) {
-    tags.push({ label: 'Великий чек', color: '#D4935A', bg: '#D4935A15' });
-  }
-
-  if (daysSinceLast !== null) {
-    if (daysSinceLast >= 120) {
-      tags.push({ label: '💤 Спить', color: '#C05B5B', bg: '#C05B5B15' });
-    } else if (daysSinceLast >= 60) {
-      tags.push({ label: '⚠️ Під ризиком', color: '#D4935A', bg: '#D4935A15' });
-    }
-  }
-
+  if (client.is_vip) tags.push({ label: 'VIP', color: '#D4935A', bg: '#D4935A15' });
+  if (client.total_visits === 1) tags.push({ label: 'Новий', color: '#789A99', bg: '#789A9915' });
+  else if (client.total_visits >= 5) tags.push({ label: 'Постійний', color: '#5C9E7A', bg: '#5C9E7A15' });
+  if (client.average_check >= 1500) tags.push({ label: 'Великий чек', color: '#D4935A', bg: '#D4935A15' });
   return tags;
-}
-
-export function isChurned(client: ClientRow): boolean {
-  if (!client.last_visit_at) return false;
-  const days = Math.floor((Date.now() - new Date(client.last_visit_at).getTime()) / 86_400_000);
-  return days >= 60;
 }
 
 type SortKey = 'visits' | 'alpha' | 'check' | 'recent';
 type ViewMode = 'list' | 'grid';
+type RetentionFilter = 'all' | RetentionStatus;
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'visits',  label: 'За візитами'   },
   { value: 'alpha',   label: 'За алфавітом'  },
   { value: 'check',   label: 'Найбільший чек' },
   { value: 'recent',  label: 'Нещодавні'     },
+];
+
+const RETENTION_FILTERS: { value: RetentionFilter; label: string }[] = [
+  { value: 'all',      label: 'Всі'          },
+  { value: 'active',   label: 'Активні'      },
+  { value: 'sleeping', label: 'Дрімають'     },
+  { value: 'at_risk',  label: 'Під ризиком'  },
+  { value: 'lost',     label: 'Втрачені'     },
 ];
 
 function sortClients(clients: ClientRow[], sort: SortKey): ClientRow[] {
@@ -84,6 +74,7 @@ export function ClientsPage() {
   const sort    = (searchParams.get('sort') as SortKey) || 'visits';
   const view    = (searchParams.get('view') as ViewMode) || 'list';
   const [search, setSearch] = useState('');
+  const [retentionFilter, setRetentionFilter] = useState<RetentionFilter>('all');
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
   const [sortOpen, setSortOpen] = useState(false);
 
@@ -98,15 +89,19 @@ export function ClientsPage() {
   }
 
   const filtered = sortClients(
-    clients.filter(c =>
-      c.client_name.toLowerCase().includes(search.toLowerCase()) ||
-      c.client_phone.includes(search)
-    ),
+    clients.filter(c => {
+      const matchesSearch =
+        c.client_name.toLowerCase().includes(search.toLowerCase()) ||
+        c.client_phone.includes(search);
+      const matchesRetention = retentionFilter === 'all' || c.retention_status === retentionFilter;
+      return matchesSearch && matchesRetention;
+    }),
     sort,
   );
 
   const totalRevenue = clients.reduce((s, c) => s + c.total_spent, 0);
   const returning    = clients.filter(c => c.total_visits > 1).length;
+  const atRiskCount  = clients.filter(c => c.retention_status === 'at_risk' || c.retention_status === 'lost').length;
 
   return (
     <div className="flex flex-col gap-4 pb-8">
@@ -116,18 +111,51 @@ export function ClientsPage() {
       </div>
 
       {!isLoading && clients.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Всього',    value: clients.length,            icon: Users,      color: '#789A99' },
-            { label: 'Повторних', value: returning,                 icon: TrendingUp, color: '#5C9E7A' },
-            { label: 'Виручка',   value: formatPrice(totalRevenue), icon: Star,       color: '#D4935A' },
+            { label: 'Всього',      value: clients.length,            icon: Users,      color: '#789A99' },
+            { label: 'Повторних',   value: returning,                 icon: TrendingUp, color: '#5C9E7A' },
+            { label: 'Під загрозою',value: atRiskCount,               icon: Star,       color: '#C05B5B' },
+            { label: 'Виручка',     value: formatPrice(totalRevenue), icon: Star,       color: '#D4935A' },
           ].map(stat => (
             <div key={stat.label} className="bento-card p-3 text-center">
-              <stat.icon size={16} className="mx-auto mb-1" style={{ color: stat.color }} />
-              <p className="text-sm font-bold text-[#2C1A14]">{stat.value}</p>
-              <p className="text-[10px] text-[#A8928D]">{stat.label}</p>
+              <stat.icon size={15} className="mx-auto mb-1" style={{ color: stat.color }} />
+              <p className="text-sm font-bold text-[#2C1A14] truncate">{stat.value}</p>
+              <p className="text-[9px] text-[#A8928D] leading-tight">{stat.label}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Retention filter chips */}
+      {!isLoading && clients.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
+          {RETENTION_FILTERS.map(f => {
+            const cfg = f.value !== 'all' ? RETENTION_CONFIG[f.value as RetentionStatus] : null;
+            const count = f.value === 'all'
+              ? clients.length
+              : clients.filter(c => c.retention_status === f.value).length;
+            const isActive = retentionFilter === f.value;
+            return (
+              <button
+                key={f.value}
+                onClick={() => setRetentionFilter(f.value)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={isActive && cfg
+                  ? { background: cfg.bg, color: cfg.color, outline: `1.5px solid ${cfg.color}40` }
+                  : isActive
+                    ? { background: '#789A9918', color: '#5C7E7D', outline: '1.5px solid #789A9940' }
+                    : { background: 'rgba(255,255,255,0.7)', color: '#6B5750', outline: '1.5px solid transparent' }
+                }
+              >
+                {cfg && (
+                  <span className="size-1.5 rounded-full flex-shrink-0" style={{ background: cfg.dot }} />
+                )}
+                {f.label}
+                <span className="opacity-60 font-normal">{count}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -145,7 +173,7 @@ export function ClientsPage() {
         <div className="relative">
           <button
             onClick={() => setSortOpen(p => !p)}
-            className="h-full px-3 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#6B5750] hover:bg-white transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            className="h-full px-3 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#6B5750] hover:bg-white transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
             <span className="hidden sm:inline">{SORT_OPTIONS.find(o => o.value === sort)?.label}</span>
             <ChevronDown size={14} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
@@ -156,7 +184,7 @@ export function ClientsPage() {
                 <button
                   key={opt.value}
                   onClick={() => { setParam('sort', opt.value); setSortOpen(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
                     sort === opt.value
                       ? 'bg-[#789A99]/12 text-[#5C7E7D] font-semibold'
                       : 'text-[#6B5750] hover:bg-[#F5E8E3]/60'
@@ -175,7 +203,7 @@ export function ClientsPage() {
             <button
               key={v}
               onClick={() => setParam('view', v)}
-              className={`px-3 py-3 transition-colors ${
+              className={`px-3 py-3 transition-colors cursor-pointer ${
                 view === v ? 'bg-[#789A99]/15 text-[#5C7E7D]' : 'text-[#A8928D] hover:text-[#6B5750]'
               }`}
             >
@@ -251,6 +279,7 @@ export function ClientsPage() {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map((client, i) => {
             const tags = getAutoTags(client);
+            const ret = RETENTION_CONFIG[client.retention_status];
             return (
               <motion.div
                 key={client.id}
@@ -279,6 +308,18 @@ export function ClientsPage() {
                     </a>
                   </div>
                 </div>
+
+                {/* Retention badge */}
+                <div className="flex items-center gap-1.5 -mt-1">
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ color: ret.color, background: ret.bg }}
+                  >
+                    <span className="size-1.5 rounded-full" style={{ background: ret.dot }} />
+                    {ret.label}
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#F5E8E3]/60">
                   <div>
                     <p className="text-[10px] text-[#A8928D]">Візитів</p>
@@ -305,59 +346,68 @@ export function ClientsPage() {
       ) : (
         /* ── List view ── */
         <div className="flex flex-col gap-3">
-          {filtered.map((client, i) => (
-            <motion.div
-              key={client.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setSelectedClient(client)}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
-                  style={{ background: client.is_vip ? 'rgba(212,147,90,0.15)' : 'rgba(255,210,194,0.4)' }}
-                >
-                  {client.is_vip ? '⭐' : client.client_name[0]?.toUpperCase() ?? '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#2C1A14] truncate">{client.client_name}</p>
-                  <a
-                    href={`tel:${client.client_phone}`}
-                    className="flex items-center gap-1 text-xs text-[#A8928D] hover:text-[#789A99] transition-colors mt-0.5"
-                    onClick={e => e.stopPropagation()}
+          {filtered.map((client, i) => {
+            const tags = getAutoTags(client);
+            const ret = RETENTION_CONFIG[client.retention_status];
+            return (
+              <motion.div
+                key={client.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedClient(client)}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
+                    style={{ background: client.is_vip ? 'rgba(212,147,90,0.15)' : 'rgba(255,210,194,0.4)' }}
                   >
-                    <Phone size={11} />
-                    {client.client_phone}
-                  </a>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(client.total_spent)}</p>
-                  <div className="flex items-center gap-1 justify-end mt-0.5">
-                    <Calendar size={10} className="text-[#A8928D]" />
-                    <span className="text-[11px] text-[#A8928D]">{client.total_visits} візит.</span>
+                    {client.is_vip ? '⭐' : client.client_name[0]?.toUpperCase() ?? '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#2C1A14] truncate">{client.client_name}</p>
+                    <a
+                      href={`tel:${client.client_phone}`}
+                      className="flex items-center gap-1 text-xs text-[#A8928D] hover:text-[#789A99] transition-colors mt-0.5"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <Phone size={11} />
+                      {client.client_phone}
+                    </a>
+                  </div>
+                  <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
+                    <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(client.total_spent)}</p>
+                    <div className="flex items-center gap-1">
+                      <Calendar size={10} className="text-[#A8928D]" />
+                      <span className="text-[11px] text-[#A8928D]">{client.total_visits} візит.</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              {(() => {
-                const tags = getAutoTags(client);
-                return tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2 border-t border-[#F5E8E3]/60">
-                    {tags.map(tag => (
-                      <span key={tag.label} className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: tag.color, background: tag.bg }}>
-                        {tag.label}
-                      </span>
-                    ))}
-                  </div>
-                ) : client.last_visit_at ? (
-                  <p className="text-[11px] text-[#A8928D] mt-2 pt-2 border-t border-[#F5E8E3]/60">
-                    Остання візита: {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })}
-                  </p>
-                ) : null;
-              })()}
-            </motion.div>
-          ))}
+
+                {/* Retention badge + auto-tags row */}
+                <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-[#F5E8E3]/60">
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ color: ret.color, background: ret.bg }}
+                  >
+                    <span className="size-1.5 rounded-full" style={{ background: ret.dot }} />
+                    {ret.label}
+                  </span>
+                  {tags.map(tag => (
+                    <span key={tag.label} className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: tag.color, background: tag.bg }}>
+                      {tag.label}
+                    </span>
+                  ))}
+                  {client.last_visit_at && (
+                    <span className="text-[10px] text-[#A8928D] ml-auto">
+                      {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 

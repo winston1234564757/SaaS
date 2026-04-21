@@ -5,12 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2 } from 'lucide-react';
 import { sendChurnReminder, saveClientNote, toggleClientVip } from '@/app/(master)/dashboard/clients/actions';
-import { isChurned } from './ClientsPage';
+import type { ClientRow } from './ClientsPage';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/components/master/services/types';
 import { formatDate } from '@/lib/utils/dates';
-import type { ClientRow } from './ClientsPage';
 import { getAutoTags } from './ClientsPage';
 import { useClientNote, useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
 
@@ -236,7 +235,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                 })()}
 
                 {/* Churn reminder */}
-                {client && isChurned(client) && (
+                {client && (client.retention_status === 'at_risk' || client.retention_status === 'lost') && (
                   <div className="space-y-2">
                     <button
                       onClick={async () => {

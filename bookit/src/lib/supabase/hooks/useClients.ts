@@ -4,6 +4,8 @@ import { useQuery} from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
+export type RetentionStatus = 'active' | 'sleeping' | 'at_risk' | 'lost';
+
 export interface ClientRow {
   id: string;
   client_id: string | null;
@@ -15,6 +17,7 @@ export interface ClientRow {
   last_visit_at: string | null;
   is_vip: boolean;
   relation_id: string | null;
+  retention_status: RetentionStatus;
 }
 
 export function useClients() {
@@ -41,17 +44,19 @@ export function useClients() {
         last_visit_at: string | null;
         is_vip: boolean;
         relation_id: string | null;
+        retention_status: string | null;
       }) => ({
-        id:            row.client_phone,
-        client_id:     row.client_id ?? null,
-        client_name:   row.client_name ?? 'Клієнт',
-        client_phone:  row.client_phone,
-        total_visits:  Number(row.total_visits),
-        total_spent:   Number(row.total_spent),
-        average_check: Number(row.average_check),
-        last_visit_at: row.last_visit_at ?? null,
-        is_vip:        row.is_vip ?? false,
-        relation_id:   row.relation_id ?? null,
+        id:               row.client_phone,
+        client_id:        row.client_id ?? null,
+        client_name:      row.client_name ?? 'Клієнт',
+        client_phone:     row.client_phone,
+        total_visits:     Number(row.total_visits),
+        total_spent:      Number(row.total_spent),
+        average_check:    Number(row.average_check),
+        last_visit_at:    row.last_visit_at ?? null,
+        is_vip:           row.is_vip ?? false,
+        relation_id:      row.relation_id ?? null,
+        retention_status: (row.retention_status as RetentionStatus) ?? 'active',
       }));
     },
     enabled: !!masterId,

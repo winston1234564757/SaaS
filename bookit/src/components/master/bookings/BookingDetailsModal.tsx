@@ -18,10 +18,11 @@ import type { WorkingHoursConfig } from '@/types/database';
 import { formatPrice } from '@/components/master/services/types';
 import { formatDurationFull, getDayOfWeek } from '@/lib/utils/dates';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
-import { 
-  updateBookingStatus, 
-  updateMasterNotes 
+import {
+  updateBookingStatus,
+  updateMasterNotes
 } from '@/app/(master)/dashboard/bookings/actions';
+import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { BookingStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
@@ -567,9 +568,16 @@ export function BookingDetailsModal() {
                       </div>
 
                       {/* Total */}
-                      <div className="mt-4 pt-3 border-t-2 border-[#F0DDD8] flex justify-between items-center">
-                        <span className="text-sm font-semibold text-[#6B5750]">Загалом</span>
-                        <span className="text-xl font-bold text-[#2C1A14]">{formatPrice(grandTotal)}</span>
+                      <div className="mt-4 pt-3 border-t-2 border-[#F0DDD8]">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-semibold text-[#6B5750]">Загалом</span>
+                          <span className="text-xl font-bold text-[#2C1A14]">{formatPrice(grandTotal)}</span>
+                        </div>
+                        {booking.dynamic_pricing_label && (
+                          <div className="mt-2">
+                            <PricingBadge dynamicLabel={booking.dynamic_pricing_label} size="md" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

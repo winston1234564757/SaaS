@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, X, Loader2 } from 'lucide-react';
+import { PricingBadge } from '@/components/shared/PricingBadge';
 import { createClient } from '@/lib/supabase/client';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import type { BookingStatus } from '@/types/database';
@@ -110,11 +111,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
             {cfg.label}
           </span>
           <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(booking.total_price)}</p>
-          {booking.dynamic_pricing_label && (
-            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-lg bg-[#789A99]/10 text-[#789A99] leading-none">
-              {booking.dynamic_pricing_label}
-            </span>
-          )}
+          <PricingBadge dynamicLabel={booking.dynamic_pricing_label} size="sm" />
         </div>
       </button>
 
