@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { broadcastPush } from '@/lib/push';
 import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 
-const DAYS_BEFORE = 3;
-
-function addDays(date: Date, n: number): string {
-  const d = new Date(date);
-  d.setDate(d.getDate() + n);
-  return d.toISOString().split('T')[0];
-}
-
+/**
+ * Vercel Cron: щодня о 10:00 Kyiv (8:00 UTC)
+ * Нагадує клієнтам перезаписатись, якщо минув стандартний цикл візиту майстра.
+ * Anti-spam: пропускає клієнтів з майбутніми записами.
+ * Idempotency: RPC перевіряє чи вже надсилали сьогодні.
+ */
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -18,112 +15,98 @@ export async function GET(req: Request) {
   }
 
   const admin = createAdminClient();
-  const targetDate = addDays(new Date(), DAYS_BEFORE);
+  const today = new Date().toISOString().slice(0, 10);
 
-  // 1. Fetch candidate bookings for targetDate (naturally bounded — one specific date)
-  const { data: candidates, error } = await admin
-    .from('bookings')
-    .select(`
-      id,
-      client_id,
-      client_name,
-      master_id,
-      master_profiles!inner(slug, subscription_tier),
-      profiles!master_id(full_name)
-    `)
-    .eq('next_visit_suggestion', targetDate)
-    .not('client_id', 'is', null);
+  // 1. Знаходимо всіх клієнтів що мають бути нагадані сьогодні
+  const { data: dueRows, error: rpcError } = await admin
+    .rpc('get_rebooking_due_clients', { p_today: today });
 
-  if (error) {
-    console.error('[rebooking cron] query error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (rpcError) {
+    console.error('[cron/rebooking] RPC error:', rpcError.message);
+    return NextResponse.json({ error: rpcError.message }, { status: 500 });
   }
 
-  const candidateList = candidates ?? [];
-
-  // 2. Check which candidate IDs already have reminders (bounded by candidateList, not full table)
-  let sentIdSet = new Set<string>();
-  if (candidateList.length > 0) {
-    const candidateIds = candidateList.map(b => b.id);
-    const { data: sentReminders } = await admin
-      .from('rebooking_reminders')
-      .select('booking_id')
-      .in('booking_id', candidateIds);
-    sentIdSet = new Set((sentReminders ?? []).map((r: any) => r.booking_id as string));
+  const due = dueRows ?? [];
+  if (due.length === 0) {
+    return NextResponse.json({ ok: true, processed: 0, notified: 0 });
   }
 
-  // 3. Filter out already-reminded bookings in memory
-  const bookings = candidateList.filter(b => !sentIdSet.has(b.id));
+  // 2. Batch-fetch client profiles (telegram_chat_id)
+  const clientIds = [...new Set(due.map((r: any) => r.client_id as string))];
+  const masterIds = [...new Set(due.map((r: any) => r.master_id as string))];
 
-  if (bookings.length === 0) {
-    return NextResponse.json({ ok: true, processed: 0, sent: 0 });
-  }
-
-  // Batch fetch push subscriptions and Telegram chat IDs for all clients at once
-  const clientIds = [...new Set(bookings.map(b => b.client_id as string))];
-
-  const [{ data: allPushSubs }, { data: allProfiles }] = await Promise.all([
-    admin.from('push_subscriptions').select('user_id, subscription').in('user_id', clientIds),
+  const [{ data: clientProfiles }, { data: masterProfiles }] = await Promise.all([
     admin.from('profiles').select('id, telegram_chat_id').in('id', clientIds),
+    admin.from('master_profiles').select('id, slug, business_name, profiles!inner(full_name)').in('id', masterIds),
   ]);
 
-  // Build O(1) lookup maps
-  const pushSubsByUser = new Map<string, any[]>();
-  for (const sub of allPushSubs ?? []) {
-    const arr = pushSubsByUser.get(sub.user_id) ?? [];
-    arr.push(sub);
-    pushSubsByUser.set(sub.user_id, arr);
+  const clientTgMap = new Map<string, string>();
+  for (const p of clientProfiles ?? []) {
+    if (p.telegram_chat_id) clientTgMap.set(p.id, p.telegram_chat_id);
   }
 
-  const tgChatByUser = new Map<string, string>();
-  for (const p of allProfiles ?? []) {
-    if (p.telegram_chat_id) tgChatByUser.set(p.id, p.telegram_chat_id);
+  const masterSlugMap = new Map<string, { slug: string; name: string }>();
+  for (const m of masterProfiles ?? []) {
+    const name = (m as any).business_name ?? (m as any).profiles?.full_name ?? 'Ваш майстер';
+    masterSlugMap.set(m.id, { slug: m.slug, name });
   }
 
-  let sent = 0;
-  const sentBookingIds: string[] = [];
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua';
 
-  for (const booking of bookings) {
-    const clientId = booking.client_id as string;
-    const mp = (booking as any).master_profiles;
-    const masterProfile = (booking as any).profiles;
-    const masterName = masterProfile?.full_name ?? 'Ваш майстер';
-    const slug = mp?.slug;
-    const bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${slug}`;
+  // 3. Обробляємо кожного клієнта
+  const notifications: { recipient_id: string; title: string; body: string; type: string; related_master_id: string }[] = [];
+  let telegramSent = 0;
 
-    const title = `${masterName} чекає на вас!`;
-    const body = `Час для наступного візиту — запишіться на ${targetDate} або інший зручний день.`;
-    const tgMsg = `💅 <b>${escHtml(masterName)}</b> нагадує про ваш наступний візит!\n\nРекомендована дата: <b>${escHtml(targetDate)}</b>\n\n<a href="${escHtml(bookingUrl)}">Записатися →</a>`;
+  await Promise.allSettled(
+    due.map(async (row: any) => {
+      const clientId  = row.client_id  as string;
+      const masterId  = row.master_id  as string;
+      const masterInfo = masterSlugMap.get(masterId);
+      const masterName = masterInfo?.name ?? 'Ваш майстер';
+      const bookingUrl = masterInfo ? `${APP_URL}/${masterInfo.slug}` : APP_URL;
 
-    const userPushSubs = pushSubsByUser.get(clientId) ?? [];
-    const tgChatId = tgChatByUser.get(clientId);
+      // In-app notification (вставляємо батчем нижче)
+      notifications.push({
+        recipient_id:      clientId,
+        title:             `${masterName} чекає на вас!`,
+        body:              'Минув час вашого стандартного візиту. Запишіться зараз, щоб обрати найкращий час!',
+        type:              'rebooking_reminder',
+        related_master_id: masterId,
+      });
 
-    // PERF: run push + telegram in parallel — both are fire-and-forget notifications,
-    // a failure in one must not block or cancel the other.
-    const [pushResult, tgResult] = await Promise.allSettled([
-      userPushSubs.length > 0
-        ? broadcastPush(userPushSubs as any, { title, body, url: bookingUrl })
-        : Promise.resolve(0),
-      tgChatId
-        ? sendTelegramMessage(tgChatId, tgMsg)
-        : Promise.resolve(null),
-    ]);
-    const wasSent =
-      (pushResult.status === 'fulfilled' && Number(pushResult.value) > 0) ||
-      (tgResult.status === 'fulfilled' && !!tgChatId);
+      // Telegram до клієнта (якщо є особистий chat_id)
+      const clientTg = clientTgMap.get(clientId);
+      if (clientTg) {
+        try {
+          await sendTelegramMessage(
+            clientTg,
+            `💅 <b>${escHtml(masterName)}</b> нагадує про ваш наступний візит!\n\n` +
+            `Запишіться зараз, щоб обрати найкращий час.\n\n` +
+            `<a href="${escHtml(bookingUrl)}">Записатися →</a>`,
+          );
+          telegramSent++;
+        } catch (e) {
+          console.warn('[cron/rebooking] Telegram error for client', clientId, e);
+        }
+      }
+    }),
+  );
 
-    if (wasSent) {
-      sentBookingIds.push(booking.id);
-      sent++;
+  // 4. Batch insert in-app notifications
+  if (notifications.length > 0) {
+    const { error: insertError } = await admin.from('notifications').insert(notifications);
+    if (insertError) {
+      console.error('[cron/rebooking] notifications insert error:', insertError.message);
     }
   }
 
-  // Batch insert reminders instead of N individual inserts
-  if (sentBookingIds.length > 0) {
-    await admin
-      .from('rebooking_reminders')
-      .insert(sentBookingIds.map(id => ({ booking_id: id })));
-  }
+  console.log(`[cron/rebooking] date=${today} processed=${due.length} notifications=${notifications.length} telegramSent=${telegramSent}`);
 
-  return NextResponse.json({ ok: true, processed: bookings.length, sent });
+  return NextResponse.json({
+    ok:            true,
+    date:          today,
+    processed:     due.length,
+    notified:      notifications.length,
+    telegramSent,
+  });
 }

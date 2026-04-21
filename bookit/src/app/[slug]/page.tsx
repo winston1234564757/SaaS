@@ -143,12 +143,12 @@ export default async function MasterPublicPage(
       .order('target_visits', { ascending: true }),
     user
       ? supabase
-          .from('client_master_relations')
-          .select('total_visits')
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
           .eq('master_id', data.id)
           .eq('client_id', user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
+          .eq('status', 'completed')
+      : Promise.resolve({ count: null, error: null }),
   ]);
 
   const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
@@ -196,7 +196,7 @@ export default async function MasterPublicPage(
     rewardType: p.reward_type as string,
     rewardValue: p.reward_value as number,
   }));
-  const currentVisits = (relationRes.data?.total_visits as number | null | undefined) ?? 0;
+  const currentVisits = relationRes.count ?? 0;
   const loyalty = loyaltyTiers.length > 0
     ? { tiers: loyaltyTiers, currentVisits, isAuth: !!user }
     : null;
