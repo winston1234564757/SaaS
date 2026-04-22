@@ -802,7 +802,15 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 ---
 
-## 12. Журнал Ітерацій (25–27)
+## 12. Журнал Ітерацій (25–28)
+
+### Ітерація 28 — Auth State Persistence (Onboarding) (2026-04-22)
+
+- **Migration 080+081**: `profiles.onboarding_step TEXT` + `profiles.onboarding_data JSONB` — CHECK constraint, master-only partial index
+- **`saveOnboardingProgress`**: нова server action — fire-and-forget tracker, без revalidatePath
+- **`OnboardingPage`** (async SC): читає `onboarding_step`/`onboarding_data` з DB; `SUCCESS` → redirect `/dashboard`
+- **`OnboardingWizard`**: `initialStep` + `initialData` props — гідрує всі useState з DB; `buildSnapshot()` + `persistProgress()` після кожного переходу (включно зі skip/back handlers); `handleComplete()` awaits фінальний save
+- **Zero data loss**: юзер закрив браузер на `SCHEDULE_FORM` → повертається на `SCHEDULE_FORM` з заповненими полями, аватаром, спеціалізацією
 
 ### Ітерація 27 — Enterprise Architecture V2, Phase 1: Public Page Conversion (2026-04-17)
 
@@ -838,6 +846,8 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 ## 12. Agent Sync Changelog
 
+[2026-04-22] - Claude Code: **E2E Suite 17 — Retention & Loyalty Engine**. `e2e/tests/17-retention-loyalty-engine.spec.ts`: 4 сценарії. Part 1 UI: (A) unauth public page → LoyaltyWidget marketing teaser з першим тиром; (B) client з 20 completed bookings → "Ви досягли максимального рівня!". Part 2 Cron API: (C) completed booking 30д тому, немає майбутніх → notification inserted, console evidence; (D) completed booking 30д тому + future pending → notification skipped (anti-spam), console evidence "Anti-Spam filter BLOCKED". Кожен тест: try/finally cleanup (bookings + notifications + retention_cycle_days restore). Skip guards на відсутні env vars. TypeScript: 0 помилок.
+
 [2026-04-22] - Claude Code: **Fix: Rebooking Cron date arithmetic (migration 079)**. Root cause: `p_today - cycle * INTERVAL '1 day'` → `DATE - INTERVAL = TIMESTAMP`; порівняння `DATE = TIMESTAMP` давало 0 результатів. Правильно: `p_today - mc.cycle` → `DATE - INTEGER = DATE`. `MAX(b.date)` тепер без `.::date` cast (колонка вже є `date`). `has_future` CTE: `date > p_today` — коректний `date > date`. Migration 079 застосовано (`CREATE OR REPLACE FUNCTION`).
 
 [2026-04-22] - Claude Code: **Retention Engine Phase 3 — Smart Rebooking Cron**. Migration 078: SQL RPC `get_rebooking_due_clients(p_today date)` — єдиний запит з 4 CTEs: `master_cycles` (retention_cycle_days на майстра), `last_visits` (GROUP BY master_id+client_id MAX date), `due` (last_date = today - cycle), фільтр `has_future` (anti-spam: клієнти з future pending/confirmed) + `already_notified` (idempotency: не слати двічі в той самий день). `api/cron/rebooking/route.ts` переписано — `CRON_SECRET` guard, виклик RPC, batch-fetch client `telegram_chat_id` + master slug, паралельний `Promise.allSettled` Telegram → клієнту, batch insert в `notifications` (type=`rebooking_reminder`). Migration застосовано. TypeScript: 0 помилок.
@@ -861,6 +871,12 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 [2026-04-21] - Antigravity: Smart Address Rendering - Updated rendering logic for the location text in `app/[slug]/page.tsx` to conditionally exclude the city name if it is already present in the address string, preventing redundant outputs like "Березівка, Березівка, вулиця Миру, 16".
 
 [2026-04-22] - Antigravity: **Retention Engine Phase 2 — Loyalty Widget UI**. Created `LoyaltyWidget.tsx` component with two visual states (Unauthenticated/Marketing and Authenticated/Progress) using High-end Cozy Minimalism design standards. Mounted the widget in `PublicMasterPage.tsx` below the location card with temporary mock props (`isAuth={true}`, `currentVisits={3}`, `targetVisits={5}`).
+
+[2026-04-22] - Claude Code: **Pre-flight Phone Validation for OTP (SMS Cost-saving)**. `PhoneOtpForm.tsx`: додано `mode?: 'login' | 'register'` prop (default `'login'`). В `handleSendSms` перед відправкою SMS — server action `checkPhoneExists(phone)` → Admin Client query `profiles.phone`. Rule A (register + exists) → "Користувач з таким номером вже зареєстрований. Увійдіть в акаунт." — SMS не відправляється. Rule B (login + not exists) → "Користувача з таким номером не знайдено. Зареєструйтеся." — SMS не відправляється. `RegisterForm.tsx` → `mode="register"`, `LoginForm.tsx` → `mode="login"`. Якщо server check повертає помилку — пропускаємо pre-flight і відправляємо SMS (graceful fallback). TypeScript: 0 помилок.
+
+[2026-04-22] - Claude Code: **Smart Client Autocomplete in ManualBookingForm**. Новий компонент `ClientCombobox.tsx` (`wizard/`) — пошуковий combobox що використовує `useClients()` (кешований RPC `get_master_clients`): фільтрація за ім'ям та телефоном, dropdown до 7 результатів з VIP-бейджем, fallback "Новий клієнт: [текст]" для нових. `ClientDetails.tsx`: в режимі `master` замість plain text input рендериться `ClientCombobox`; при виборі клієнта з дропдауну — `setValue('clientName')` + `setValue('clientPhone')` + `setSelectedClientId(client_id)`. `useBookingWizardState.ts`: додано стан `selectedClientId` + скидання при reset. `BookingWizard.tsx`: `clientId` в payload тепер = `selectedClientId` для manual bookings (якщо клієнт без акаунту — `null`, але name+phone все одно заповнені). TypeScript: 0 помилок.
+
+[2026-04-22] - Claude Code: **BookingsPage Parity & ClientDetailSheet Status Badges**. `BookingCard.tsx`: додано `completeBooking` + `updateBookingStatus('no_show')` actions; Quick Actions розширено — `pending` тепер показує [Підтвердити, Завершити, Скасувати], `confirmed` — [Завершити, Не прийшов, Скасувати]; `isAnyPending` guard блокує всі кнопки під час запиту. `ClientDetailSheet.tsx`: `STATUS_CONFIG` розширено полем `bg` (rgba кольори); статус-бейдж у "Останні записи" оновлено до pill-стилю (`px-1.5 py-0.5 rounded-full` + background) — відповідає дизайн-системі. TypeScript: 0 помилок.
 
 ---
 
