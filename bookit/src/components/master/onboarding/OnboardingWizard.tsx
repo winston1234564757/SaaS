@@ -54,6 +54,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
   // BASIC
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState(initialData.avatarUrl ?? '');
+  const [avatarCdnUrl, setAvatarCdnUrl] = useState(initialData.avatarUrl ?? '');
   const [fullName, setFullName] = useState(initialData.fullName ?? profile?.full_name ?? '');
   const [phone, setPhone] = useState(initialData.phone ?? e164ToInputPhone(profile?.phone));
   const hasPhone = !!profile?.phone;
@@ -83,7 +84,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       fullName: fullName.trim() || fullName,
       specialization,
       phone,
-      avatarUrl: avatarPreview || undefined,
+      avatarUrl: avatarCdnUrl || undefined,
       slug: savedSlug || undefined,
       schedule,
       bufferTime,
@@ -124,6 +125,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
           if (up) {
             const { data: urlData } = supabase.storage.from('images').getPublicUrl(path);
             avatarUrl = urlData.publicUrl;
+            setAvatarCdnUrl(urlData.publicUrl);
           } else if (upError) {
             console.error('[onboarding] avatar upload error:', upError.message);
             showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше в налаштуваннях' });
@@ -158,7 +160,9 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: error }); return; }
 
       setSavedSlug(finalSlug);
-      persistProgress('SCHEDULE_PROMPT');
+      saveOnboardingProgress('SCHEDULE_PROMPT', { ...buildSnapshot(), slug: finalSlug }).catch(err =>
+        console.error('[onboarding] progress save failed:', err)
+      );
       goTo('SCHEDULE_PROMPT');
     } catch (err: unknown) {
       showToast({ type: 'error', title: 'Помилка', message: err instanceof Error ? err.message : 'Щось пішло не так' });
@@ -206,12 +210,17 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
   }
 
   async function handleComplete() {
-    // Await final save — marks onboarding as done so page.tsx redirects on revisit
-    await saveOnboardingProgress('SUCCESS', buildSnapshot());
-    await revalidateAfterOnboarding();
-    await refresh();
-    if (typeof window !== 'undefined') localStorage.setItem('bookit_hints_pending', 'true');
-    router.push('/dashboard');
+    if (saving) return;
+    setSaving(true);
+    try {
+      await saveOnboardingProgress('SUCCESS', buildSnapshot());
+      await revalidateAfterOnboarding();
+      await refresh();
+      if (typeof window !== 'undefined') localStorage.setItem('bookit_hints_pending', 'true');
+      router.push('/dashboard');
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleCopyLink() {
