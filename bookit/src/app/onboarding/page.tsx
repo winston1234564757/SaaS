@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
   // Already completed onboarding — send to dashboard
   const { data: mp } = await supabase
     .from('master_profiles')
-    .select('id')
+    .select('id, slug')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -31,7 +31,16 @@ export default async function OnboardingPage() {
     .maybeSingle();
 
   const initialStep = (profile?.onboarding_step as Step | undefined) ?? 'BASIC';
-  const initialData = (profile?.onboarding_data ?? {}) as OnboardingData;
+
+  // If the user somehow lands here at SUCCESS step, send them to dashboard
+  if (initialStep === 'SUCCESS') redirect('/dashboard');
+
+  const rawData = (profile?.onboarding_data ?? {}) as OnboardingData;
+  // Hydrate slug from master_profiles if present but missing in persisted data
+  const initialData: OnboardingData = {
+    ...rawData,
+    slug: rawData.slug ?? (mp as { slug?: string } | null)?.slug ?? undefined,
+  };
 
   return (
     <>

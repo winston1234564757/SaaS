@@ -9,6 +9,7 @@ export interface OnboardingData {
   specialization?: string;   // emoji e.g. "💅"
   phone?: string;
   avatarUrl?: string;
+  slug?: string;
 
   // SCHEDULE_FORM step
   schedule?: Record<DayKey, DaySchedule>;

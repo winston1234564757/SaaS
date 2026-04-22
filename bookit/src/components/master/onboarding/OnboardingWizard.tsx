@@ -16,6 +16,7 @@ import {
 import { e164ToInputPhone, toFullPhone } from '@/lib/utils/phone';
 import { generateSecureToken } from '@/lib/utils/token';
 import type { OnboardingData } from '@/types/onboarding';
+import type { BreakWindow } from '@/types/database';
 import {
   type Step, type DayKey, type DaySchedule,
   STEP_ORDER, DEFAULT_SCHEDULE, TEMPLATE_SCHEDULE,
@@ -47,7 +48,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
   const [step, setStep] = useState<Step>(initialStep);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [saving, setSaving] = useState(false);
-  const [savedSlug, setSavedSlug] = useState('');
+  const [savedSlug, setSavedSlug] = useState(initialData.slug ?? '');
   const [copied, setCopied] = useState(false);
 
   // BASIC
@@ -63,7 +64,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
     initialData.schedule ?? DEFAULT_SCHEDULE
   );
   const [bufferTime, setBufferTime] = useState(initialData.bufferTime ?? 0);
-  const [breaks, setBreaks] = useState(initialData.breaks ?? []);
+  const [breaks, setBreaks] = useState<BreakWindow[]>(initialData.breaks ?? []);
 
   // SERVICES_FORM
   const [serviceName, setServiceName] = useState(initialData.serviceName ?? '');
@@ -79,9 +80,11 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
 
   function buildSnapshot(): OnboardingData {
     return {
-      fullName,
+      fullName: fullName.trim() || fullName,
       specialization,
       phone,
+      avatarUrl: avatarPreview || undefined,
+      slug: savedSlug || undefined,
       schedule,
       bufferTime,
       breaks,
