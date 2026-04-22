@@ -1,14 +1,34 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 import { OnboardingWizard } from '@/components/master/onboarding/OnboardingWizard';
+import type { Step, OnboardingData } from '@/types/onboarding';
 
 export const metadata: Metadata = { title: 'Налаштування профілю — Bookit' };
 
-export default function OnboardingPage() {
+export default async function OnboardingPage() {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('onboarding_step, onboarding_data')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const initialStep = (profile?.onboarding_step as Step | undefined) ?? 'BASIC';
+  const initialData = (profile?.onboarding_data ?? {}) as OnboardingData;
+
+  // User already completed onboarding — skip wizard
+  if (initialStep === 'SUCCESS') redirect('/dashboard');
+
   return (
     <>
       <BlobBackground />
-      <OnboardingWizard />
+      <OnboardingWizard initialStep={initialStep} initialData={initialData} />
     </>
   );
 }
