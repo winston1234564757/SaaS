@@ -1,4 +1,5 @@
 import type { DayKey, DaySchedule, Step } from '@/components/master/onboarding/steps/types';
+import type { BreakWindow } from '@/types/database';
 
 export type { Step };
 
@@ -12,7 +13,7 @@ export interface OnboardingData {
   // SCHEDULE_FORM step
   schedule?: Record<DayKey, DaySchedule>;
   bufferTime?: number;
-  breaks?: Array<{ start: string; end: string }>;
+  breaks?: BreakWindow[];
 
   // SERVICES_FORM step
   serviceName?: string;
