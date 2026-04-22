@@ -7,7 +7,7 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS onboarding_data JSONB  NOT NULL DEFAULT '{}'::jsonb;
 
 -- Guard: only valid wizard steps allowed at DB level
-ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_onboarding_step_check;
+-- NOT VALID skips the table scan on add; VALIDATE runs it without ACCESS EXCLUSIVE lock
 ALTER TABLE profiles ADD CONSTRAINT profiles_onboarding_step_check
   CHECK (onboarding_step IN (
     'BASIC',
@@ -16,9 +16,12 @@ ALTER TABLE profiles ADD CONSTRAINT profiles_onboarding_step_check
     'SERVICES_PROMPT',
     'SERVICES_FORM',
     'SUCCESS'
-  ));
+  )) NOT VALID;
 
--- Fast lookup when hydrating the wizard on page load
+ALTER TABLE profiles VALIDATE CONSTRAINT profiles_onboarding_step_check;
+
+-- Fast lookup when hydrating the wizard on page load (masters only)
 CREATE INDEX IF NOT EXISTS profiles_onboarding_step_idx
   ON profiles (onboarding_step)
-  WHERE onboarding_step <> 'SUCCESS';
+  WHERE onboarding_step <> 'SUCCESS'
+    AND role = 'master';
