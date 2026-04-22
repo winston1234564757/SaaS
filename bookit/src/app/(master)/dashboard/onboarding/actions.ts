@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { normalizeToE164 } from '@/lib/utils/phone';
+import type { OnboardingData, Step } from '@/types/onboarding';
 
 export async function revalidateAfterOnboarding() {
   revalidatePath('/dashboard');
@@ -135,5 +136,23 @@ export async function saveOnboardingService(params: {
   if (error) return { error: error.message };
 
   revalidatePath('/dashboard/onboarding');
+  return { error: null };
+}
+
+export async function saveOnboardingProgress(
+  step: Step,
+  data: OnboardingData,
+): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ onboarding_step: step, onboarding_data: data })
+    .eq('id', user.id);
+
+  if (error) return { error: error.message };
   return { error: null };
 }
