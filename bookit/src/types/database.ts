@@ -1,4 +1,5 @@
 export type UserRole = 'master' | 'client' | 'admin';
+export type Json = Record<string, unknown>;
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 
 // ── Working-hours scheduling config (master_profiles.working_hours JSONB) ─────
@@ -29,6 +30,8 @@ export interface Profile {
   email: string | null;
   avatar_url: string | null;
   telegram_chat_id: string | null;
+  onboarding_step: string;
+  onboarding_data: Json;
   created_at: string;
   updated_at: string;
 }
