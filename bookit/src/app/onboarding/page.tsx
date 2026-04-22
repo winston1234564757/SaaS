@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 import { OnboardingWizard } from '@/components/master/onboarding/OnboardingWizard';
+import type { Step, OnboardingData } from '@/types/onboarding';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,10 +24,19 @@ export default async function OnboardingPage() {
 
   if (mp) redirect('/dashboard');
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('onboarding_step, onboarding_data')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const initialStep = (profile?.onboarding_step as Step | undefined) ?? 'BASIC';
+  const initialData = (profile?.onboarding_data ?? {}) as OnboardingData;
+
   return (
     <>
       <BlobBackground />
-      <OnboardingWizard />
+      <OnboardingWizard initialStep={initialStep} initialData={initialData} />
     </>
   );
 }
