@@ -7,6 +7,8 @@ import type { BookingClientData } from '@/lib/validations/booking';
 import { pluralize } from '@/lib/utils/dates';
 import { MONTH_S, fmt, slide } from './helpers';
 import type { WizardService } from './types';
+import { ClientCombobox } from './ClientCombobox';
+import type { ClientRow } from '@/lib/supabase/hooks/useClients';
 
 interface ClientDetailsProps {
   selectedDate: Date | null;
@@ -16,8 +18,10 @@ interface ClientDetailsProps {
   clientUserId: string | null;
   register: UseFormRegister<BookingClientData>;
   errors: FieldErrors<BookingClientData>;
+  watchName: string;
   watchPhone: string;
   setValue: (field: keyof BookingClientData, value: string, opts?: { shouldValidate?: boolean }) => void;
+  onClientSelect?: (client: ClientRow | null) => void;
   clientNotes: string;
   setClientNotes: (v: string) => void;
   discountPercent: number;
@@ -47,8 +51,10 @@ export function ClientDetails({
   clientUserId,
   register,
   errors,
+  watchName,
   watchPhone,
   setValue,
+  onClientSelect,
   clientNotes,
   setClientNotes,
   discountPercent,
@@ -101,16 +107,27 @@ export function ClientDetails({
             <User size={13} className="text-[#A8928D]" />
             {mode === 'master' ? "Ім'я клієнта" : "Ім'я"}
           </label>
-          <input
-            data-testid="wizard-name-input"
-            type="text"
-            placeholder={mode === 'master' ? 'Олена Петрова' : 'Твоє імʼя та прізвище'}
-            {...register('clientName')}
-            className={`w-full h-12 px-4 rounded-xl bg-white/75 border text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none transition-all ${
-              errors.clientName ? 'border-[#C05B5B] focus:ring-[#C05B5B]/20' : 'border-white/80 focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20'
-            }`}
-          />
-          {errors.clientName && <p className="text-[#C05B5B] text-[10px] mt-1 ml-1">{errors.clientName.message}</p>}
+          {mode === 'master' && onClientSelect ? (
+            <ClientCombobox
+              errors={errors}
+              watchName={watchName}
+              setValue={setValue}
+              onClientSelect={onClientSelect}
+            />
+          ) : (
+            <>
+              <input
+                data-testid="wizard-name-input"
+                type="text"
+                placeholder="Твоє імʼя та прізвище"
+                {...register('clientName')}
+                className={`w-full h-12 px-4 rounded-xl bg-white/75 border text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none transition-all ${
+                  errors.clientName ? 'border-[#C05B5B] focus:ring-[#C05B5B]/20' : 'border-white/80 focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20'
+                }`}
+              />
+              {errors.clientName && <p className="text-[#C05B5B] text-[10px] mt-1 ml-1">{errors.clientName.message}</p>}
+            </>
+          )}
         </div>
         <div>
           <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">

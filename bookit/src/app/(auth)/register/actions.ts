@@ -11,6 +11,23 @@ function generatePlaceholderSlug(): string {
   return 'master-' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
 }
 
+export async function checkPhoneExists(
+  phone: string,
+): Promise<{ exists: boolean; error: string | null }> {
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('phone', phone)
+      .maybeSingle();
+    if (error) return { exists: false, error: error.message };
+    return { exists: !!data, error: null };
+  } catch {
+    return { exists: false, error: 'Помилка сервера' };
+  }
+}
+
 export async function claimMasterRole(
   phone: string,
   referredBy?: string | null,

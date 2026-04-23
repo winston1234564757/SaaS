@@ -19,7 +19,13 @@ export default async function MasterLayout({ children }: { children: React.React
 
   if (profile?.role === 'client') redirect('/my/bookings');
 
-  // Onboarding guard — new masters haven't set avatar_emoji yet.
+  // Onboarding guard — new masters must complete the multi-step onboarding.
+  // Legacy masters who have an avatar_emoji but onboarding_step 'BASIC' are treated as onboarded.
+  const isLegacyMaster = profile?.onboarding_step === 'BASIC' && !!masterProfile?.avatar_emoji;
+  const needsOnboarding = profile?.role === 'master' 
+    && profile?.onboarding_step !== 'SUCCESS' 
+    && !isLegacyMaster;
+
   // x-pathname is forwarded from proxy.ts via request headers (not response),
   // so headers().get('x-pathname') correctly reflects the current page.
   const headersList = await headers();
@@ -27,7 +33,7 @@ export default async function MasterLayout({ children }: { children: React.React
   const isOnboarding = pathname.startsWith('/dashboard/onboarding');
   const isBilling = pathname.startsWith('/dashboard/billing');
 
-  if (profile?.role === 'master' && !masterProfile?.avatar_emoji && !isOnboarding && !isBilling) {
+  if (needsOnboarding && !isOnboarding && !isBilling) {
     redirect('/dashboard/onboarding');
   }
 

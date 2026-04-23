@@ -110,9 +110,22 @@ export async function createBooking(
       return { bookingId: null, error: 'Не авторизований' };
     }
   } else if (p.source === 'online') {
-    // If an authenticated user is booking online, ensure we link their profile ID
+    // Only link booking to authenticated CLIENTS — masters visiting a public page
+    // must not be set as client_id (their ID has no client_profiles row → FK violation).
     if (user) {
-      resolvedClientId = user.id;
+      const { data: userProfile } = await admin
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (userProfile?.role === 'client') {
+        // Guarantee client_profiles FK row exists before inserting booking
+        await admin
+          .from('client_profiles')
+          .upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true });
+        resolvedClientId = user.id;
+      }
+      // masters / unknown roles → resolvedClientId stays null (anonymous booking)
     }
   }
 

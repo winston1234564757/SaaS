@@ -3,16 +3,18 @@
 import { useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, X, Loader2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Check, X, Loader2, CheckCircle2, UserX } from 'lucide-react';
 import { PricingBadge } from '@/components/shared/PricingBadge';
-import { createClient } from '@/lib/supabase/client';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import type { BookingStatus } from '@/types/database';
 import { formatPrice } from '@/components/master/services/types';
-import { 
-  confirmBooking, 
-  cancelBooking 
+import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
+import {
+  confirmBooking,
+  cancelBooking,
+  completeBooking,
+  updateBookingStatus,
 } from '@/app/(master)/dashboard/bookings/actions';
 
 interface BookingCardProps {
@@ -20,19 +22,11 @@ interface BookingCardProps {
   index: number;
 }
 
-const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
-  pending:   { label: 'Очікує',       color: '#D4935A', bg: 'rgba(212,147,90,0.12)'   },
-  confirmed: { label: 'Підтверджено', color: '#789A99', bg: 'rgba(120,154,153,0.12)' },
-  completed: { label: 'Завершено',    color: '#5C9E7A', bg: 'rgba(92,158,122,0.12)'   },
-  cancelled: { label: 'Скасовано',    color: '#C05B5B', bg: 'rgba(192,91,91,0.12)'    },
-  no_show:   { label: 'Не прийшов',   color: '#A8928D', bg: 'rgba(168,146,141,0.12)'  },
-};
-
 export function BookingCard({ booking, index }: BookingCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const qc = useQueryClient();
-  const cfg = STATUS_CONFIG[booking.status];
+  const cfg = BOOKING_STATUS_CONFIG[booking.status];
   const serviceNames = booking.services.map(s => s.name).join(', ') || 'Без послуги';
 
   const openModal = () => {
@@ -53,14 +47,15 @@ export function BookingCard({ booking, index }: BookingCardProps) {
 
   const [isPendingConfirm, startConfirm] = useTransition();
   const [isPendingCancel, startCancel] = useTransition();
+  const [isPendingComplete, startComplete] = useTransition();
+  const [isPendingNoShow, startNoShow] = useTransition();
+
+  const isAnyPending = isPendingConfirm || isPendingCancel || isPendingComplete || isPendingNoShow;
 
   const handleConfirm = () => {
     startConfirm(async () => {
       const { error } = await confirmBooking(booking.id);
-      if (error) {
-        console.error(error);
-        return;
-      }
+      if (error) { console.error(error); return; }
       await invalidateAll();
     });
   };
@@ -68,10 +63,23 @@ export function BookingCard({ booking, index }: BookingCardProps) {
   const handleCancel = () => {
     startCancel(async () => {
       const { error } = await cancelBooking(booking.id);
-      if (error) {
-        console.error(error);
-        return;
-      }
+      if (error) { console.error(error); return; }
+      await invalidateAll();
+    });
+  };
+
+  const handleComplete = () => {
+    startComplete(async () => {
+      const { error } = await completeBooking(booking.id);
+      if (error) { console.error(error); return; }
+      await invalidateAll();
+    });
+  };
+
+  const handleNoShow = () => {
+    startNoShow(async () => {
+      const { error } = await updateBookingStatus(booking.id, 'no_show');
+      if (error) { console.error(error); return; }
       await invalidateAll();
     });
   };
@@ -115,32 +123,46 @@ export function BookingCard({ booking, index }: BookingCardProps) {
         </div>
       </button>
 
-      {/* Quick Actions — тільки для pending */}
-      {booking.status === 'pending' && (
+      {/* Quick Actions */}
+      {(booking.status === 'pending' || booking.status === 'confirmed') && (
         <div
-          className="flex gap-2 px-4 pb-3"
+          className="flex flex-wrap gap-2 px-4 pb-3"
           onClick={e => e.stopPropagation()}
         >
+          {booking.status === 'pending' && (
+            <button
+              onClick={handleConfirm}
+              disabled={isAnyPending}
+              className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#789A99]/12 text-[#789A99] hover:bg-[#789A99]/22 text-xs font-semibold transition-colors disabled:opacity-50"
+            >
+              {isPendingConfirm ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+              Підтвердити
+            </button>
+          )}
           <button
-            onClick={handleConfirm}
-            disabled={isPendingConfirm || isPendingCancel}
-            className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#789A99]/12 text-[#789A99] hover:bg-[#789A99]/22 text-xs font-semibold transition-colors disabled:opacity-50"
+            onClick={handleComplete}
+            disabled={isAnyPending}
+            className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#5C9E7A]/12 text-[#5C9E7A] hover:bg-[#5C9E7A]/22 text-xs font-semibold transition-colors disabled:opacity-50"
           >
-            {isPendingConfirm
-              ? <Loader2 size={11} className="animate-spin" />
-              : <Check size={11} />
-            }
-            Підтвердити
+            {isPendingComplete ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle2 size={11} />}
+            Завершити
           </button>
+          {booking.status === 'confirmed' && (
+            <button
+              onClick={handleNoShow}
+              disabled={isAnyPending}
+              className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#A8928D]/12 text-[#A8928D] hover:bg-[#A8928D]/22 text-xs font-semibold transition-colors disabled:opacity-50"
+            >
+              {isPendingNoShow ? <Loader2 size={11} className="animate-spin" /> : <UserX size={11} />}
+              Не прийшов
+            </button>
+          )}
           <button
             onClick={handleCancel}
-            disabled={isPendingConfirm || isPendingCancel}
+            disabled={isAnyPending}
             className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#C05B5B]/12 text-[#C05B5B] hover:bg-[#C05B5B]/22 text-xs font-semibold transition-colors disabled:opacity-50"
           >
-            {isPendingCancel
-              ? <Loader2 size={11} className="animate-spin" />
-              : <X size={11} />
-            }
+            {isPendingCancel ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
             Скасувати
           </button>
         </div>

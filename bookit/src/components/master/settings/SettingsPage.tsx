@@ -20,6 +20,7 @@ import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, normalizeToE
 import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
 import dynamic from 'next/dynamic';
 import type { LatLng } from './LocationPicker';
+import { PromoTemplates } from '@/components/shared/PromoTemplates';
 
 const LocationPicker = dynamic(
   () => import('./LocationPicker').then(m => m.LocationPicker),
@@ -512,6 +513,9 @@ export function SettingsPage() {
               </span>
             </div>
           </div>
+
+          {/* Шаблони для постів */}
+          {masterProfile?.slug && <PromoTemplates slug={masterProfile.slug} />}
 
           {/* Публікація */}
           <button

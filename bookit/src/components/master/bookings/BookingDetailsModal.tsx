@@ -24,14 +24,7 @@ import {
 } from '@/app/(master)/dashboard/bookings/actions';
 import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { BookingStatus } from '@/types/database';
-
-const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
-  pending:   { label: 'Очікує',       color: '#D4935A', bg: 'rgba(212,147,90,0.12)'   },
-  confirmed: { label: 'Підтверджено', color: '#789A99', bg: 'rgba(120,154,153,0.12)' },
-  completed: { label: 'Завершено',    color: '#5C9E7A', bg: 'rgba(92,158,122,0.12)'   },
-  cancelled: { label: 'Скасовано',    color: '#C05B5B', bg: 'rgba(192,91,91,0.12)'    },
-  no_show:   { label: 'Не прийшов',   color: '#A8928D', bg: 'rgba(168,146,141,0.12)'  },
-};
+import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
 
 const UA_MONTHS = [
   'січня','лютого','березня','квітня','травня','червня',
@@ -465,9 +458,9 @@ export function BookingDetailsModal() {
                     </div>
                     <span
                       className="text-xs font-semibold px-2.5 py-1 rounded-full mt-0.5"
-                      style={{ color: STATUS_CONFIG[booking.status].color, background: STATUS_CONFIG[booking.status].bg }}
+                      style={{ color: BOOKING_STATUS_CONFIG[booking.status].color, background: BOOKING_STATUS_CONFIG[booking.status].bg }}
                     >
-                      {STATUS_CONFIG[booking.status].label}
+                      {BOOKING_STATUS_CONFIG[booking.status].label}
                     </span>
                   </div>
 

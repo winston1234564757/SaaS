@@ -79,6 +79,7 @@ export function useBookingWizardState({
 
   // ── Client-mode extras ────────────────────────────────────────────────────────
   const [clientUserId, setClientUserId]             = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId]     = useState<string | null>(null);
   const [createdBookingId, setCreatedBookingId]     = useState<string | null>(null);
   const [clientHistoryTimes, setClientHistoryTimes] = useState<string[]>([]);
   const [loyaltyDiscount, setLoyaltyDiscount]       = useState<{ name: string; percent: number } | null>(null);
@@ -149,6 +150,7 @@ export function useBookingWizardState({
       setDurationOverride(null);
       setUseDynamicPrice(true);
       setClientUserId(null);
+      setSelectedClientId(null);
       setCreatedBookingId(null);
       setClientHistoryTimes([]);
       setLoyaltyDiscount(null);
@@ -279,7 +281,8 @@ export function useBookingWizardState({
     durationOverride, setDurationOverride,
     useDynamicPrice, setUseDynamicPrice,
     // Client extras
-    clientUserId, createdBookingId, setCreatedBookingId,
+    clientUserId, selectedClientId, setSelectedClientId,
+    createdBookingId, setCreatedBookingId,
     clientHistoryTimes, loyaltyDiscount, partners,
     // Submit state
     saving, setSaving, saveError, setSaveError, upgradePromptOpen, setUpgradePromptOpen,

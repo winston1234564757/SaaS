@@ -12,6 +12,8 @@ import { formatPrice } from '@/components/master/services/types';
 import { formatDate } from '@/lib/utils/dates';
 import { getAutoTags } from './ClientsPage';
 import { useClientNote, useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
+import type { BookingStatus } from '@/types/database';
+import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
 
 interface ClientDetailSheetProps {
   client: ClientRow | null;
@@ -27,14 +29,6 @@ interface RecentBooking {
   total_price: number;
   service_name: string;
 }
-
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Очікує',       color: '#D4935A' },
-  confirmed: { label: 'Підтверджено', color: '#789A99' },
-  completed: { label: 'Завершено',    color: '#5C9E7A' },
-  cancelled: { label: 'Скасовано',    color: '#C05B5B' },
-  no_show:   { label: 'Не прийшов',   color: '#A8928D' },
-};
 
 export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
@@ -321,7 +315,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                   ) : (
                     <div className="flex flex-col gap-2">
                       {bookings.map(b => {
-                        const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
+                        const cfg = BOOKING_STATUS_CONFIG[b.status as BookingStatus] ?? BOOKING_STATUS_CONFIG.pending;
                         const d = new Date(b.date);
                         return (
                           <div key={b.id} className="flex items-center gap-3 py-2 px-3 rounded-2xl bg-white/50">
@@ -331,7 +325,12 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium text-[#2C1A14] break-words leading-tight">{b.service_name}</p>
-                              <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                              <span
+                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                                style={{ color: cfg.color, background: cfg.bg }}
+                              >
+                                {cfg.label}
+                              </span>
                             </div>
                             <p className="text-xs font-bold text-[#2C1A14] flex-shrink-0">{formatPrice(b.total_price)}</p>
                           </div>

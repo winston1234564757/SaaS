@@ -804,6 +804,39 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 ## 12. Журнал Ітерацій (25–28)
 
+### Ітерація 32 — Bugfixes: Story Generator Export, Time Travel prevention, Fluid Anchor slot logic (2026-04-23)
+
+- **Export fix** — `crossOrigin="anonymous"` на `<img>` аватара всередині canvas; toast.success "Сторі збережено!" / toast.error з реальним повідомленням замість silent fail
+- **Time Travel prevention** — якщо `selectedDate === today`, `computeSlots` фільтрує слоти де `startMin <= nowMin`; `todayNowMin` передається з `useAvailableSlots` через `new Date()`
+- **Fluid Anchor алгоритм** — `computeSlots` переписаний: замість фіксованого кроку (`t += step`) — цикл `while` що при зіткненні з перервою/бронюванням робить `t = obstacle.end` (snap). Усуває "мертві зони" типу 14:30–15:40 після перерви 13:00–14:30
+
+### Ітерація 31 — Premium SMM Hub: Adaptive Story Generator with Variant B Logic (2026-04-23)
+
+- **Variant B Slot Logic** — `useServices(masterId)` hook: вибирає активні послуги з `services` table (`id, name, duration_minutes, buffer_minutes, emoji`); auto-select першої послуги при завантаженні
+- **Service Selector** — обов'язковий для режиму "Вікна": `<select>` з послугами (назва + тривалість); передає `durationMin` у `useAvailableSlots(date, masterId, durationMin)` → реальні слоти для конкретної послуги
+- **Adaptive Grid System** — `getGridConfig(count)`: 1–3 слоти → 1 колонка, pillH=58, fontSize=20; 4–8 → 2 колонки, pillH=44, fontSize=15; 9+ → 3 колонки, pillH=36, fontSize=12
+- **Vogue Aesthetics** — прибрані всі горизонтальні лінії; дата рендериться через `SERIF = Playfair Display`; підписи через `TRACKED_LABEL` (letterSpacing: 0.22em, uppercase, fontSize: 9px); Instagram link sticker (pill, boxShadow, "🔗 Записатися онлайн")
+- **6 преміальних палітр** — Nude, Sage, Mono, Blush, Sky, Dark — кожна з bg/text/muted/pill/pillText/sticker токенами
+- **Збережено**: canvasRef stability (ніколи не ремаунтується), scale wrapper trick (360×640 at 0.7 = 252×448), html-to-image pixelRatio:3 → 1080×1920 export, avatar CORS blob, avatar toggle
+- **Файл змінено:** `src/components/master/marketing/StoryGenerator.tsx` (повний rewrite v3)
+
+### Ітерація 30 — Onboarding Phase 4: Viral Loop Success Screen (2026-04-23)
+
+- **`StepSuccess`** — повністю перероблений: святкова ConfettiParticles + Sparkles іконка + headline "Твоя студія онлайн!"
+- **3 Copy-Paste шаблони** — Stories/Reels, Bio (профіль), Швидка відповідь (Direct/Viber) — кожен з `CopyButton` що анімує Check per-item (незалежні стани через окремий `useState` всередині компонента)
+- **Web Share API** — кнопка "Поділитися посиланням" → `navigator.share({ title, text, url })`; fallback → clipboard copy якщо API недоступне
+- **"Перейти в Dashboard"** — secondary CTA → `onComplete()` → `/dashboard`
+- **Без breaking changes** — інтерфейс `StepSuccessProps` сумісний, `copied`/`onCopyLink` props збережені (ліниво ігноруються — link copy тепер всередині компонента)
+
+### Ітерація 29 — Onboarding Phase 3: Live Preview — The Premium Mirror (2026-04-23)
+
+- **`StepProfilePreview`** — новий крок між `PROFIT_PREDICTOR` і `SUCCESS`: форма для назви кабінету/студії (`businessName`) + реалтаймовий Phone Mockup що реагує на всі дані онбордингу
+- **Phone Mockup**: scaled-down (220px) телефонна рамка з темним бортом `#2C1A14`, status bar, динамічно відображає аватар / ім'я / slug / 1–3 картки послуг (derived з `CATEGORY_TEMPLATES`) / Flash Deal badge (AnimatePresence) / рейтингові зірки / CTA-кнопку "Записатись"
+- **`saveOnboardingBusinessName`** — нова server action → `master_profiles.business_name`
+- **Flow**: PROFIT_PREDICTOR → PROFILE_PREVIEW → SUCCESS (було: PROFIT_PREDICTOR → SUCCESS)
+- **`OnboardingData`** — додано `businessName?: string`; `Step` union + `STEP_ORDER` — додано `'PROFILE_PREVIEW'`
+- **Файли змінено:** `types/onboarding.ts`, `onboarding/steps/types.ts`, `onboarding/actions.ts`, `OnboardingWizard.tsx`, `StepProfilePreview.tsx` (new)
+
 ### Ітерація 28 — Auth State Persistence (Onboarding) (2026-04-22)
 
 - **Migration 080+081**: `profiles.onboarding_step TEXT` + `profiles.onboarding_data JSONB` — CHECK constraint, master-only partial index
@@ -846,6 +879,16 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 ## 12. Agent Sync Changelog
 
+[2026-04-23] - Claude Code: **Onboarding Phase 4 — Viral Loop Success Screen & Web Share API**. `StepSuccess` rewritten: ConfettiParticles + Sparkles hero, 3 copy-paste template cards (Stories, Bio, Direct) with per-item check animation, Web Share API button with clipboard fallback, secondary "Dashboard" CTA. Each template's `CopyButton` has independent `useState` — no shared copied state. TypeScript: 0 помилок.
+
+[2026-04-23] - Claude Code: **Premium SMM Hub — Adaptive Story Generator v3 (Variant B)**. Full rewrite of `StoryGenerator.tsx`: `useServices()` hook + mandatory service selector in free_slots mode, `useAvailableSlots(date, masterId, durationMin)` now uses actual service duration. Adaptive grid (1-3/4-8/9+). Vogue aesthetics: Playfair Display serif dates, tracked uppercase labels (0.22em), zero horizontal lines, Instagram link sticker pill. 6 palettes with unified token system. Canvas ref stability preserved. TypeScript: 0 помилок.
+
+[2026-04-23] - Claude Code: **Onboarding Phase 3 — Live Preview (Premium Mirror)**. New `StepProfilePreview` step inserted between PROFIT_PREDICTOR and SUCCESS. Phone mockup (220px frame, dark border) reactively shows avatar, business name, slug, up to 3 service cards derived from `CATEGORY_TEMPLATES`, animated Flash Deal badge, star rating row, and CTA. `businessName` input saves to `master_profiles.business_name` via new `saveOnboardingBusinessName` server action. `OnboardingData` + `Step` union extended. TypeScript: 0 помилок.
+
+[2026-04-23] - Claude Code: **Onboarding Phase 1: Smart Service Defaults**. Replaced manual service entry with an intelligent template generator. Added `CATEGORY_TEMPLATES` in `onboardingTemplates.ts`. Updated `StepServicesForm` to render a category grid and 3 auto-calculating service cards (Express, Standard, Premium) based on a base price. Selected services are now batched and saved via `saveOnboardingServices` to the `services` table, and state persistence tracks the user's category/price/selection choices.
+
+[2026-04-23] - Antigravity: **Auth State Persistence (Onboarding)**. Verified implementation of master onboarding state persistence. Ensured `080_onboarding_persistence.sql` adds `onboarding_step` and `onboarding_data` to `profiles`. Confirmed `actions.ts` provides `saveOnboardingProgress` and `OnboardingWizard` successfully hydrates `initialStep` and `initialData` from the server, committing progress asynchronously on each step to prevent data loss.
+
 [2026-04-22] - Claude Code: **E2E Suite 17 — Retention & Loyalty Engine**. `e2e/tests/17-retention-loyalty-engine.spec.ts`: 4 сценарії. Part 1 UI: (A) unauth public page → LoyaltyWidget marketing teaser з першим тиром; (B) client з 20 completed bookings → "Ви досягли максимального рівня!". Part 2 Cron API: (C) completed booking 30д тому, немає майбутніх → notification inserted, console evidence; (D) completed booking 30д тому + future pending → notification skipped (anti-spam), console evidence "Anti-Spam filter BLOCKED". Кожен тест: try/finally cleanup (bookings + notifications + retention_cycle_days restore). Skip guards на відсутні env vars. TypeScript: 0 помилок.
 
 [2026-04-22] - Claude Code: **Fix: Rebooking Cron date arithmetic (migration 079)**. Root cause: `p_today - cycle * INTERVAL '1 day'` → `DATE - INTERVAL = TIMESTAMP`; порівняння `DATE = TIMESTAMP` давало 0 результатів. Правильно: `p_today - mc.cycle` → `DATE - INTEGER = DATE`. `MAX(b.date)` тепер без `.::date` cast (колонка вже є `date`). `has_future` CTE: `date > p_today` — коректний `date > date`. Migration 079 застосовано (`CREATE OR REPLACE FUNCTION`).
@@ -875,6 +918,10 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 [2026-04-22] - Claude Code: **Pre-flight Phone Validation for OTP (SMS Cost-saving)**. `PhoneOtpForm.tsx`: додано `mode?: 'login' | 'register'` prop (default `'login'`). В `handleSendSms` перед відправкою SMS — server action `checkPhoneExists(phone)` → Admin Client query `profiles.phone`. Rule A (register + exists) → "Користувач з таким номером вже зареєстрований. Увійдіть в акаунт." — SMS не відправляється. Rule B (login + not exists) → "Користувача з таким номером не знайдено. Зареєструйтеся." — SMS не відправляється. `RegisterForm.tsx` → `mode="register"`, `LoginForm.tsx` → `mode="login"`. Якщо server check повертає помилку — пропускаємо pre-flight і відправляємо SMS (graceful fallback). TypeScript: 0 помилок.
 
 [2026-04-22] - Claude Code: **Smart Client Autocomplete in ManualBookingForm**. Новий компонент `ClientCombobox.tsx` (`wizard/`) — пошуковий combobox що використовує `useClients()` (кешований RPC `get_master_clients`): фільтрація за ім'ям та телефоном, dropdown до 7 результатів з VIP-бейджем, fallback "Новий клієнт: [текст]" для нових. `ClientDetails.tsx`: в режимі `master` замість plain text input рендериться `ClientCombobox`; при виборі клієнта з дропдауну — `setValue('clientName')` + `setValue('clientPhone')` + `setSelectedClientId(client_id)`. `useBookingWizardState.ts`: додано стан `selectedClientId` + скидання при reset. `BookingWizard.tsx`: `clientId` в payload тепер = `selectedClientId` для manual bookings (якщо клієнт без акаунту — `null`, але name+phone все одно заповнені). TypeScript: 0 помилок.
+
+[2026-04-23] - Claude Code: **Onboarding Phase 2: Profit Predictor & Flash Deals Upsell**. Новий крок `PROFIT_PREDICTOR` між `SERVICES_FORM` і `SUCCESS`. `StepProfitPredictor.tsx`: інтерактивний слайдер 1-15 (пусті вікна/тиждень), `monthlyLoss = slots × basePrice × 4`, анімований лічильник (RAF ease-out cubic), progress bar втрат vs Flash Deals. Flash Deals картка: золотий градієнт, toggle (spring анімація), для starter → Lock icon + "2 флеш-акції/місяць" + лінк на Pro; для Pro (referred або оплачений) → Crown icon + "необмежені Flash Deals включено". `OnboardingWizard.tsx`: `isPro = subscription_tier !== 'starter'`, нові state `emptySlots` (default 4) + `flashDealsEnabled` (default true), `handleSaveProfitPredictor` → `saveOnboardingProgress('SUCCESS')`. `OnboardingData` + `types.ts` оновлено. TypeScript: 0 помилок.
+
+[2026-04-23] - Claude Code: **Onboarding: Auto-generated Smart Defaults & Calculator**. `onboardingTemplates.ts`: розширено до 19 категорій у 5 груп (Нігті / Волосся / Обличчя / Тіло / Тату+Пірс) — реалістичні назви для українського ринку з express/standard/premium тірами та коректними `priceMult`. Додано `CATEGORY_GROUPS` для групованого рендерингу. `types.ts`: `SPECIALIZATIONS` розширено до 20 елементів з полем `group`; нові типи `SpecializationItem` / `SpecializationGroup`; новий `SPECIALIZATION_GROUPS` (6 груп). `StepBasic.tsx`: спеціалізація тепер з горизонтальними group-tabs (Нігті/Волосся/Обличчя/Тіло/Тату+Пірс/Інше) — відфільтрована 4-col grid; плавна анімація при перемиканні групи; активна група автоматично визначається з поточного `specialization`. `StepServicesForm.tsx`: категорії перегруповані з section-заголовками, 3-col grid у кожній групі; base price input з підказкою; tier cards показуються лише при `basePriceNum > 0` з пружинною анімацією; badge Базовий/Стандарт/Преміум з color coding; форматування часу `год/хв`. TypeScript: 0 помилок.
 
 [2026-04-22] - Claude Code: **BookingsPage Parity & ClientDetailSheet Status Badges**. `BookingCard.tsx`: додано `completeBooking` + `updateBookingStatus('no_show')` actions; Quick Actions розширено — `pending` тепер показує [Підтвердити, Завершити, Скасувати], `confirmed` — [Завершити, Не прийшов, Скасувати]; `isAnyPending` guard блокує всі кнопки під час запиту. `ClientDetailSheet.tsx`: `STATUS_CONFIG` розширено полем `bg` (rgba кольори); статус-бейдж у "Останні записи" оновлено до pill-стилю (`px-1.5 py-0.5 rounded-full` + background) — відповідає дизайн-системі. TypeScript: 0 помилок.
 

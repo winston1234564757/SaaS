@@ -65,7 +65,6 @@ export async function saveOnboardingProfile(params: {
 
   if (masterError) return { error: masterError.message };
 
-  revalidatePath('/dashboard/onboarding');
   revalidatePath('/dashboard');
   return { error: null };
 }
@@ -106,36 +105,55 @@ export async function saveOnboardingSchedule(params: {
 
   if (whError) return { error: whError.message };
 
-  revalidatePath('/dashboard/onboarding');
   return { error: null };
 }
 
-export async function saveOnboardingService(params: {
+export async function saveOnboardingServices(services: Array<{
   name: string;
   emoji: string;
   price: number;
   durationMinutes: number;
-}): Promise<{ error: string | null }> {
+}>): Promise<{ error: string | null }> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
-  const { error } = await supabase.from('services').insert({
-    master_id: user.id,
-    name: params.name,
-    emoji: params.emoji,
-    category: 'Інше',
-    price: params.price,
-    duration_minutes: params.durationMinutes,
-    is_active: true,
-    is_popular: false,
-    sort_order: 0,
-  });
+  if (services.length === 0) return { error: null };
+
+  const { error } = await supabase.from('services').insert(
+    services.map((s, i) => ({
+      master_id: user.id,
+      name: s.name,
+      emoji: s.emoji,
+      category: 'Основні послуги',
+      price: s.price,
+      duration_minutes: s.durationMinutes,
+      is_active: true,
+      is_popular: i === 1, // typically standard is popular
+      sort_order: i,
+    }))
+  );
 
   if (error) return { error: error.message };
 
-  revalidatePath('/dashboard/onboarding');
+  return { error: null };
+}
+
+export async function saveOnboardingBusinessName(
+  businessName: string,
+): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
+  const { error } = await supabase
+    .from('master_profiles')
+    .update({ business_name: businessName.trim() || null })
+    .eq('id', user.id);
+
+  if (error) return { error: error.message };
   return { error: null };
 }
 

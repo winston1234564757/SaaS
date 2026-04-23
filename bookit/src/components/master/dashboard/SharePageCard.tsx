@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Copy, Check, Share2, ExternalLink, QrCode, X, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMasterContext } from '@/lib/supabase/context';
+import { PromoTemplates } from '@/components/shared/PromoTemplates';
 
 export function SharePageCard() {
   const { masterProfile } = useMasterContext();
@@ -73,6 +74,8 @@ export function SharePageCard() {
           <QrCode size={13} />
         </button>
       </div>
+
+      <PromoTemplates slug={slug} />
 
       {/* QR Modal */}
       <AnimatePresence>

@@ -17,7 +17,14 @@ export interface OnboardingData {
   breaks?: BreakWindow[];
 
   // SERVICES_FORM step
-  serviceName?: string;
-  servicePrice?: string;
-  serviceDuration?: number;
+  serviceCategoryId?: string;
+  serviceBasePrice?: string;
+  selectedServiceTypes?: Record<string, boolean>; // e.g. { express: true, standard: true, premium: true }
+
+  // PROFIT_PREDICTOR step
+  emptySlots?: number;        // empty windows per week (1–15)
+  flashDealsEnabled?: boolean;
+
+  // PROFILE_PREVIEW step
+  businessName?: string;
 }

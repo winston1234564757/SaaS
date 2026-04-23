@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings,
   MessageSquare, Zap, TrendingUp, Gift, Share2, Building2, CreditCard,
-  Wallet, Rocket, BadgePercent, Network, HelpCircle
+  Wallet, Rocket, BadgePercent, Network, HelpCircle, ImagePlay,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -22,13 +22,14 @@ const PRIMARY_ITEMS = [
 ];
 
 const SECONDARY_ITEMS = [
-  { href: '/dashboard/revenue',   icon: Wallet,          label: 'Дохід',         hint: 'Флеш-акції та ціноутворення' },
-  { href: '/dashboard/growth',    icon: Rocket,          label: 'Ріст',          hint: 'Лояльність та реферали' },
-  { href: '/dashboard/reviews',   icon: MessageSquare,   label: 'Відгуки',       hint: 'Керування відгуками клієнтів' },
-  { href: '/dashboard/studio',    icon: Building2,       label: 'Студія',        hint: 'Управління командою майстрів' },
-  { href: '/dashboard/billing',   icon: CreditCard,      label: 'Тариф',         hint: 'Підписка та оплата' },
-  { href: '/dashboard/settings',  icon: Settings,        label: 'Налаштування',  hint: 'Профіль, тема, інтеграції' },
-  { href: '/dashboard/support',   icon: HelpCircle,      label: 'Підтримка',     hint: 'FAQ та зв\'язок з командою' },
+  { href: '/dashboard/revenue',    icon: Wallet,       label: 'Дохід',         hint: 'Флеш-акції та ціноутворення' },
+  { href: '/dashboard/growth',     icon: Rocket,       label: 'Ріст',          hint: 'Лояльність та реферали' },
+  { href: '/dashboard/marketing',  icon: ImagePlay,    label: 'Маркетинг',     hint: 'Генератор Сторіс для Instagram' },
+  { href: '/dashboard/reviews',    icon: MessageSquare,label: 'Відгуки',       hint: 'Керування відгуками клієнтів' },
+  { href: '/dashboard/studio',     icon: Building2,    label: 'Студія',        hint: 'Управління командою майстрів' },
+  { href: '/dashboard/billing',    icon: CreditCard,   label: 'Тариф',         hint: 'Підписка та оплата' },
+  { href: '/dashboard/settings',   icon: Settings,     label: 'Налаштування',  hint: 'Профіль, тема, інтеграції' },
+  { href: '/dashboard/support',    icon: HelpCircle,   label: 'Підтримка',     hint: 'FAQ та зв\'язок з командою' },
 ];
 
 export function FloatingSidebar() {

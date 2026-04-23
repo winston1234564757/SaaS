@@ -46,7 +46,8 @@ export function BookingWizard({
     discountPercent, setDiscountPercent,
     durationOverride, setDurationOverride,
     useDynamicPrice, setUseDynamicPrice,
-    clientUserId, createdBookingId, setCreatedBookingId,
+    clientUserId, selectedClientId, setSelectedClientId,
+    createdBookingId, setCreatedBookingId,
     clientHistoryTimes, loyaltyDiscount, partners,
     saving, setSaving, saveError, setSaveError, upgradePromptOpen, setUpgradePromptOpen,
     suggestedProductIds,
@@ -93,7 +94,7 @@ export function BookingWizard({
       clientName:              watchName.trim(),
       clientPhone:             watchPhone.trim(),
       clientEmail:             mode === 'client' ? (clientEmail.trim().toLowerCase() || null) : null,
-      clientId:                mode === 'client' ? (clientUserId || null) : null,
+      clientId:                mode === 'client' ? (clientUserId || null) : (selectedClientId || null),
       date:                    toISO(selectedDate),
       startTime:               selectedTime,
       services:                selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
@@ -282,8 +283,13 @@ export function BookingWizard({
                         clientUserId={clientUserId}
                         register={register}
                         errors={errors}
+                        watchName={watchName}
                         watchPhone={watchPhone}
                         setValue={setValue}
+                        onClientSelect={mode === 'master'
+                          ? (c) => setSelectedClientId(c?.client_id ?? null)
+                          : undefined
+                        }
                         clientNotes={clientNotes}
                         setClientNotes={setClientNotes}
                         discountPercent={discountPercent}

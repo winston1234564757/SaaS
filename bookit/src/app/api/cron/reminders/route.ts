@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendPush } from '@/lib/push';
+import { sendTurboSMS } from '@/lib/turbosms';
 
 /**
  * Vercel Cron: щодня о 9:00 Kyiv (7:00 UTC)
@@ -90,30 +91,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       if (!phone) { failed++; return; }
 
       try {
-        const smsController = new AbortController();
-        const smsTimeout = setTimeout(() => smsController.abort(), 8_000);
-        let smsData: Record<string, unknown> | undefined;
-        try {
-          const smsRes = await fetch('https://api.turbosms.ua/message/send.json', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
-            },
-            body: JSON.stringify({
-              recipients: [phone],
-              sms: { sender: process.env.TURBOSMS_SENDER ?? 'BookIT', text: messageText },
-            }),
-            signal: smsController.signal,
-          });
-          smsData = await smsRes.json();
-        } finally {
-          clearTimeout(smsTimeout);
-        }
-        if (smsData?.response_code === 800 || smsData?.response_code === 0) {
+        const { ok, code } = await sendTurboSMS(phone, messageText);
+        if (ok) {
           smsSent++;
         } else {
-          console.error('[cron/reminders] TurboSMS error for', phone, smsData?.response_status);
+          console.error('[cron/reminders] TurboSMS error for', phone, code);
           failed++;
         }
       } catch (e) {

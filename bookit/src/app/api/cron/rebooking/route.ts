@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegramMessage, escHtml } from '@/lib/telegram';
+import { sendTurboSMS } from '@/lib/turbosms';
 
 /**
  * Vercel Cron: щодня о 10:00 Kyiv (8:00 UTC)
@@ -31,18 +32,20 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, processed: 0, notified: 0 });
   }
 
-  // 2. Batch-fetch client profiles (telegram_chat_id)
+  // 2. Batch-fetch client profiles (telegram_chat_id + phone) та master slugs
   const clientIds = [...new Set(due.map((r: any) => r.client_id as string))];
   const masterIds = [...new Set(due.map((r: any) => r.master_id as string))];
 
   const [{ data: clientProfiles }, { data: masterProfiles }] = await Promise.all([
-    admin.from('profiles').select('id, telegram_chat_id').in('id', clientIds),
+    admin.from('profiles').select('id, telegram_chat_id, phone').in('id', clientIds),
     admin.from('master_profiles').select('id, slug, business_name, profiles!inner(full_name)').in('id', masterIds),
   ]);
 
-  const clientTgMap = new Map<string, string>();
+  const clientTgMap  = new Map<string, string>();
+  const clientPhoneMap = new Map<string, string>();
   for (const p of clientProfiles ?? []) {
     if (p.telegram_chat_id) clientTgMap.set(p.id, p.telegram_chat_id);
+    if (p.phone)            clientPhoneMap.set(p.id, p.phone as string);
   }
 
   const masterSlugMap = new Map<string, { slug: string; name: string }>();
@@ -53,19 +56,20 @@ export async function GET(req: Request) {
 
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua';
 
-  // 3. Обробляємо кожного клієнта
+  // 3. Обробляємо кожного клієнта: In-app + Telegram → SMS fallback
   const notifications: { recipient_id: string; title: string; body: string; type: string; related_master_id: string }[] = [];
   let telegramSent = 0;
+  let smsSent      = 0;
 
   await Promise.allSettled(
     due.map(async (row: any) => {
-      const clientId  = row.client_id  as string;
-      const masterId  = row.master_id  as string;
+      const clientId   = row.client_id as string;
+      const masterId   = row.master_id as string;
       const masterInfo = masterSlugMap.get(masterId);
       const masterName = masterInfo?.name ?? 'Ваш майстер';
       const bookingUrl = masterInfo ? `${APP_URL}/${masterInfo.slug}` : APP_URL;
 
-      // In-app notification (вставляємо батчем нижче)
+      // In-app notification (батч нижче)
       notifications.push({
         recipient_id:      clientId,
         title:             `${masterName} чекає на вас!`,
@@ -74,7 +78,7 @@ export async function GET(req: Request) {
         related_master_id: masterId,
       });
 
-      // Telegram до клієнта (якщо є особистий chat_id)
+      // ── Канал 1: Telegram ───────────────────────────────────────────────────
       const clientTg = clientTgMap.get(clientId);
       if (clientTg) {
         try {
@@ -85,9 +89,28 @@ export async function GET(req: Request) {
             `<a href="${escHtml(bookingUrl)}">Записатися →</a>`,
           );
           telegramSent++;
+          return; // Telegram доставлено — SMS не потрібен
         } catch (e) {
           console.warn('[cron/rebooking] Telegram error for client', clientId, e);
         }
+      }
+
+      // ── Канал 2: TurboSMS fallback ──────────────────────────────────────────
+      const phone = clientPhoneMap.get(clientId);
+      if (!phone || !process.env.TURBOSMS_TOKEN) return;
+
+      try {
+        const { ok, code } = await sendTurboSMS(
+          phone,
+          `${masterName} нагадує: час для вашого наступного візиту! Запишіться: ${bookingUrl}`,
+        );
+        if (ok) {
+          smsSent++;
+        } else {
+          console.warn('[cron/rebooking] TurboSMS error for', phone, code);
+        }
+      } catch (e) {
+        console.warn('[cron/rebooking] SMS fetch error for', phone, e);
       }
     }),
   );
@@ -100,7 +123,7 @@ export async function GET(req: Request) {
     }
   }
 
-  console.log(`[cron/rebooking] date=${today} processed=${due.length} notifications=${notifications.length} telegramSent=${telegramSent}`);
+  console.log(`[cron/rebooking] date=${today} processed=${due.length} notifications=${notifications.length} telegramSent=${telegramSent} smsSent=${smsSent}`);
 
   return NextResponse.json({
     ok:            true,
@@ -108,5 +131,6 @@ export async function GET(req: Request) {
     processed:     due.length,
     notified:      notifications.length,
     telegramSent,
+    smsSent,
   });
 }
