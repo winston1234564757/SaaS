@@ -58,13 +58,13 @@ CREATE POLICY "booking_products_delete_master" ON booking_products
   );
 
 -- ── referral_bonuses ──────────────────────────────────────────────────────────
+-- Table has master_id (bonus belongs to a master, not a referrer/referee pair).
 ALTER TABLE referral_bonuses ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "referral_bonuses_own" ON referral_bonuses;
 CREATE POLICY "referral_bonuses_own" ON referral_bonuses
-  FOR SELECT USING (
-    referrer_id = auth.uid() OR referee_id = auth.uid()
-  );
+  FOR ALL USING (master_id = auth.uid())
+  WITH CHECK (master_id = auth.uid());
 
 -- ── service_categories ────────────────────────────────────────────────────────
 ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
