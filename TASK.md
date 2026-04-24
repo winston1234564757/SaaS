@@ -1,39 +1,37 @@
 ROLE & CONTEXT:
-You are an expert Senior Backend Engineer for "BookIT". We are executing Phase 2 of the recurrent billing system. You need to rewrite the recurring charge cron job to be hyper-resilient, transactional, and PLG-friendly (implementing a basic dunning/retry process).
+Senior Backend Engineer debugging "BookIT" billing.
+Issues:
 
-CONSTRAINTS & REQUIREMENTS:
+master_subscriptions table is empty (tokens not captured).
 
-Target File: Completely rewrite /api/cron/expire-subscriptions/route.ts.
+Monobank webhook fails to update the plan.
 
-Resilience: Use Promise.allSettled to process a batch of subscriptions concurrently. Wrap the chargeRecurrent call in a timeout promise (e.g., 8000ms max) so a hanging API provider doesn't crash the entire cron.
-
-Idempotency: Generate a unique orderId for each recurring attempt (e.g., recurring_${subscription_id}_${Date.now()}) to pass to the payment provider.
-
-Dunning Process: - Success: Update master_subscriptions (status = 'active', reset failed_attempts = 0, next_charge_at = NOW() + 1 month). Sync master_profiles (plan_expires_at = NOW() + 1 month). Insert a success record into billing_events.
-
-Failure: Increment failed_attempts. If failed_attempts >= 3, set status = 'past_due' (or 'failed') and downgrade the master in master_profiles to plan_id = 'free'. Insert a failure record into billing_events.
-
-Security: Verify CRON_SECRET authorization header before executing.
+WayForPay captures payment but doesn't save tokens.
 
 IMMEDIATE ACTIONS:
 
-Open /api/cron/expire-subscriptions/route.ts.
+WayForPay Token Capture Fix:
 
-Implement the logic:
+In src/lib/billing/WfpProvider.ts, ensure createCheckout includes returnToken: 'Y' in the payload and that this field is NOT included in the signature (WFP rules).
 
-Validate cron secret.
+In src/app/api/billing/webhook/route.ts (WFP), add console.log("[WFP DEBUG] Full payload:", body) to see if recToken is actually there.
 
-Initialize Supabase service_role client.
+Monobank Webhook & State Fix:
 
-Call the RPC get_pending_subscriptions_for_billing(50).
+Review src/app/api/billing/mono-webhook/route.ts. It MUST use await req.text() to get the raw body for signature verification BEFORE any JSON parsing.
 
-Map over the returned locked subscriptions.
+Add explicit logging: console.log("[MONO DEBUG] Signature verification result:", isValid).
 
-For each, instantiate the correct PaymentProvider based on the provider column (Mono or WFP).
+After verification, ensure it updates master_profiles (cached plan) AND master_subscriptions (token vault) in a single flow.
 
-Execute provider.chargeRecurrent(token, amount, generatedOrderId) within a timeout wrapper.
+Database Consistency:
 
-Handle the success or failure cases exactly as defined in the Dunning Process constraint. Do these DB updates directly inside the script using the service_role client.
+In both webhook handlers, ensure you use SUPABASE_SERVICE_ROLE_KEY.
 
-Update BOOKIT.md mapping the new dunning flow and cron resilience mechanics. Ensure imports and env variables referenced are correct.
-[END CLAUDE COMMAND]
+Log any Supabase error using JSON.stringify(error). If master_subscriptions insert fails, WE NEED TO KNOW WHY (check for RLS or missing columns like next_charge_at).
+
+Payment Actions Sync:
+
+In src/app/(master)/dashboard/billing/actions.ts, ensure createMonoInvoice and createWfpInvoice are using the same absolute webHookUrl logic.
+
+CRITICAL: Provide a summary of what was missing in the WFP request that prevented token generation.

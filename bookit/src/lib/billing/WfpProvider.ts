@@ -65,7 +65,7 @@ export class WfpProvider implements PaymentProvider {
       language: 'UA',
       returnUrl: opts.returnUrl,
       serviceUrl: opts.webhookUrl,
-      recToken: 'y', // request recurrent token capture
+      returnToken: 'Y', // Request recurrent token capture — NOT in signature per WFP docs
       transactionType: 'AUTH',
       merchantSignature: signature,
     });
