@@ -102,6 +102,13 @@ export async function createMasterProfileAfterSignup(params: {
   categories: string[];
   referredBy?: string | null;
 }): Promise<{ error: string | null }> {
+  // V-13: Verify the caller owns the userId before creating/updating their profile.
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user || user.id !== params.userId) {
+    return { error: 'Не авторизований' };
+  }
+
   const admin = createAdminClient();
 
   const profileData: Record<string, unknown> = {

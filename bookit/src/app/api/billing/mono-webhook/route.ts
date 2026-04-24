@@ -124,7 +124,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'ok' });
     }
 
-    // reference: bookit_{tier}_{uid32}_{timestamp}
+    // V-05: Replay attack prevention — reject webhooks older than 15 minutes.
+    // reference format: bookit_{tier}_{uid32}_{timestamp}
+    const FRESHNESS_WINDOW_MS = 15 * 60 * 1000;
+    const tsMatch = (reference as string).match(/_(\d+)$/);
+    if (tsMatch) {
+      const webhookTs = parseInt(tsMatch[1], 10);
+      if (Math.abs(Date.now() - webhookTs) > FRESHNESS_WINDOW_MS) {
+        console.warn('[mono-webhook] Stale webhook rejected — reference:', reference, '| age ms:', Date.now() - webhookTs);
+        return NextResponse.json({ error: 'stale_webhook' }, { status: 400 });
+      }
+    }
+
     const parts = reference.split('_');
     const tier  = parts[1] as 'pro' | 'studio';
     const uid32 = parts[2];

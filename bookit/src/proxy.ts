@@ -68,13 +68,14 @@ export async function proxy(request: NextRequest) {
         .single();
       role = profile?.role ?? null;
       if (role) {
+        const isProduction = process.env.NODE_ENV === 'production';
         supabaseResponse.cookies.set('user_role', role, {
-          path: '/', maxAge: 60 * 60 * 24 * 30, // 30 days
-          httpOnly: true, sameSite: 'lax',
+          path: '/', maxAge: 60 * 60 * 24, // 24h (V-07: was 30 days)
+          httpOnly: true, sameSite: 'lax', secure: isProduction, // V-16
         });
         supabaseResponse.cookies.set('user_role_uid', user.id, {
-          path: '/', maxAge: 60 * 60 * 24 * 30, // 30 days
-          httpOnly: true, sameSite: 'lax',
+          path: '/', maxAge: 60 * 60 * 24, // 24h (V-07: was 30 days)
+          httpOnly: true, sameSite: 'lax', secure: isProduction, // V-16
         });
       }
     }

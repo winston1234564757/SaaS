@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { notFound } from 'next/navigation';
 import { marked } from 'marked';
+import DOMPurify from 'isomorphic-dompurify';
 import type { Metadata } from 'next';
 
 const LEGAL_META: Record<string, { title: string; description: string }> = {
@@ -51,7 +52,12 @@ export default async function LegalPage({ params }: Props) {
   try {
     const filePath = join(process.cwd(), 'src', 'content', 'legal', `${slug}.md`);
     const raw = readFileSync(filePath, 'utf-8');
-    html = marked(raw) as string;
+    // V-08: Sanitize HTML to prevent XSS — marked does not strip script tags by default.
+    const rawHtml = await marked(raw);
+    html = DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS: ['h1','h2','h3','h4','p','ul','ol','li','strong','em','a','br','hr','table','thead','tbody','tr','th','td','blockquote'],
+      ALLOWED_ATTR: ['href', 'target', 'rel'],
+    });
   } catch {
     notFound();
   }

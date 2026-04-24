@@ -124,15 +124,30 @@ export async function GET(request: NextRequest) {
         cookieStore.set('bookit_ref', '', { path: '/', maxAge: 0 });
       }
 
+      // V-06: Explicit ownership check before claiming booking.
+      // Fetch first to ensure (1) booking exists, (2) still unclaimed, (3) email matches.
       if (bid && user.email) {
-        await admin.from('bookings')
-          .update({ client_id: user.id })
+        const { data: targetBooking } = await admin
+          .from('bookings')
+          .select('id, client_id, client_email')
           .eq('id', bid)
-          .eq('client_email', user.email)
-          .is('client_id', null);
+          .maybeSingle();
+        if (
+          targetBooking &&
+          targetBooking.client_id === null &&
+          targetBooking.client_email === user.email
+        ) {
+          await admin.from('bookings')
+            .update({ client_id: user.id })
+            .eq('id', bid)
+            .is('client_id', null); // atomic guard against race
+        }
       }
 
-      const intendedPlan = cookieStore.get('intended_plan')?.value || searchParams.get('plan') || null;
+      // V-10: allowlist plan param to prevent parameter pollution
+      const ALLOWED_PLANS = ['pro', 'studio'] as const;
+      const rawPlan = cookieStore.get('intended_plan')?.value || searchParams.get('plan') || null;
+      const intendedPlan = ALLOWED_PLANS.includes(rawPlan as typeof ALLOWED_PLANS[number]) ? rawPlan : null;
       cookieStore.set('intended_plan', '', { path: '/', maxAge: 0 });
 
       if (intendedPlan === 'pro' || intendedPlan === 'studio') {

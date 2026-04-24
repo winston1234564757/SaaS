@@ -92,8 +92,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 5. OTP match check
-  if (record.otp !== cleanOtp) {
+  // 5. OTP match — constant-time comparison to prevent timing attacks (V-09)
+  const { timingSafeEqual } = await import('node:crypto');
+  const otpBuf   = Buffer.from(record.otp, 'utf8');
+  const inputBuf = Buffer.from(cleanOtp,    'utf8');
+  const otpMatch = otpBuf.length === inputBuf.length && timingSafeEqual(otpBuf, inputBuf);
+  if (!otpMatch) {
     return NextResponse.json(
       { success: false, error: 'Невірний код. Спробуйте ще раз.' },
       { status: 400 }
