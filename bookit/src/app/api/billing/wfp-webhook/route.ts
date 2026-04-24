@@ -145,6 +145,9 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Upsert recToken into token vault ────────────────────────────────────
+    if (!recToken) {
+      console.error("[WFP] Webhook received but recToken is missing. Check if returnToken: 'Y' was sent in the initial request");
+    }
     if (recToken) {
       console.log('[wfp-webhook] upserting recToken into master_subscriptions');
       const { error: tokenErr } = await admin.from('master_subscriptions').upsert(

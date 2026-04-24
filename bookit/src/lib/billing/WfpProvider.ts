@@ -47,6 +47,9 @@ export class WfpProvider implements PaymentProvider {
     const signature = hmacMd5(sigParts, this.secret);
 
     // Build a self-submitting form URL via GET params (WFP supports both)
+    // returnToken: 'Y' — requests recurrent token capture after payment.
+    // recToken must NOT be present here — it is only used in CHARGE requests
+    // with a real 36-char UUID. Passing 'y' causes "Format Error.recToken".
     const params = new URLSearchParams({
       merchantAccount: this.merchant,
       merchantDomainName: merchantDomain,
@@ -65,7 +68,7 @@ export class WfpProvider implements PaymentProvider {
       language: 'UA',
       returnUrl: opts.returnUrl,
       serviceUrl: opts.webhookUrl,
-      recToken: 'y', // request recurrent token capture
+      returnToken: 'Y',
       transactionType: 'AUTH',
       merchantSignature: signature,
     });
