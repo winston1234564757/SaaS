@@ -1,49 +1,39 @@
-SYSTEM OVERRIDE: FLASH DEAL BOOKING FLOW & DATE FORMATTING FIX
-[AGENT ASSIGNMENT: CLAUDE CODE (STATE MANAGEMENT & UI LOGIC)]
+ROLE & CONTEXT:
+You are an expert Senior Backend Engineer for "BookIT". We are executing Phase 2 of the recurrent billing system. You need to rewrite the recurring charge cron job to be hyper-resilient, transactional, and PLG-friendly (implementing a basic dunning/retry process).
 
-The Principal Architect has reported critical bugs in the public-facing Flash Deal flow. The date formatting is broken (undefined month), and clicking the Flash Deal button triggers the standard booking flow instead of locking the user into the specific deal parameters. This defeats the entire business purpose of Flash Deals.
+CONSTRAINTS & REQUIREMENTS:
+
+Target File: Completely rewrite /api/cron/expire-subscriptions/route.ts.
+
+Resilience: Use Promise.allSettled to process a batch of subscriptions concurrently. Wrap the chargeRecurrent call in a timeout promise (e.g., 8000ms max) so a hanging API provider doesn't crash the entire cron.
+
+Idempotency: Generate a unique orderId for each recurring attempt (e.g., recurring_${subscription_id}_${Date.now()}) to pass to the payment provider.
+
+Dunning Process: - Success: Update master_subscriptions (status = 'active', reset failed_attempts = 0, next_charge_at = NOW() + 1 month). Sync master_profiles (plan_expires_at = NOW() + 1 month). Insert a success record into billing_events.
+
+Failure: Increment failed_attempts. If failed_attempts >= 3, set status = 'past_due' (or 'failed') and downgrade the master in master_profiles to plan_id = 'free'. Insert a failure record into billing_events.
+
+Security: Verify CRON_SECRET authorization header before executing.
 
 IMMEDIATE ACTIONS:
 
-1. Fix Date Formatting (undefined bug):
+Open /api/cron/expire-subscriptions/route.ts.
 
-Locate the component rendering the Flash Deal card on the public page (likely FlashDealCard.tsx or inside PublicBookingPage.tsx).
+Implement the logic:
 
-The current output is 4 undefined о 09:30.
+Validate cron secret.
 
-Fix: Use date-fns with the Ukrainian locale properly.
+Initialize Supabase service_role client.
 
-TypeScript
-import { format } from 'date-fns';
-import { uk } from 'date-fns/locale';
-// Example implementation:
-const formattedDate = format(new Date(deal.date), "d MMMM 'о' HH:mm", { locale: uk });
-2. Implement Flash Deal Fast-Track Flow (State Hydration):
+Call the RPC get_pending_subscriptions_for_billing(50).
 
-Locate the onClick handler for the "Записатися за акцією" button.
+Map over the returned locked subscriptions.
 
-Currently, it merely opens the booking modal/page without context.
+For each, instantiate the correct PaymentProvider based on the provider column (Mono or WFP).
 
-Fix: You must inject the deal's exact parameters into the booking state (e.g., Zustand store, React Context, or URL params) and fast-forward the wizard.
+Execute provider.chargeRecurrent(token, amount, generatedOrderId) within a timeout wrapper.
 
-The execution flow upon clicking the button MUST be:
+Handle the success or failure cases exactly as defined in the Dunning Process constraint. Do these DB updates directly inside the script using the service_role client.
 
-Set the selected Service to deal.service_id.
-
-Set the selected Date to deal.date.
-
-Set the selected Time to deal.start_time.
-
-Advance the booking wizard's step directly to the Final/Client Details step (skipping Service, Date, and Time selection screens).
-
-Optional but recommended: Set a flash_deal_id flag in the state so the final payload to createBooking includes the deal reference.
-
-3. Lock the State:
-
-Ensure that when the user is in this "Fast-Track" flow, if they click "Back" inside the wizard, it warns them or clears the deal state, so they don't accidentally book a different time with the deal's discount.
-
-4. Agent Sync:
-
-Append "Bugfix: Flash Deal fast-track booking flow & date locale fixes" to the BOOKIT.md Changelog.
-
-Execute this logic repair immediately. A Flash Deal is a strict constraint, not a generic discount coupon. Confirm when the exact state overrides are implemented.
+Update BOOKIT.md mapping the new dunning flow and cron resilience mechanics. Ensure imports and env variables referenced are correct.
+[END CLAUDE COMMAND]

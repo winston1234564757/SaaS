@@ -887,6 +887,10 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 ## 12. Agent Sync Changelog
 
+[2026-04-24] - Claude Code: **Billing Engine V2 — Dunning Cron (Phase 2)**. `expire-subscriptions/route.ts` повністю переписано: `export const runtime = 'nodejs'`, `CRON_SECRET` Bearer-auth guard. Використовує RPC `get_pending_subscriptions_for_billing(50)` (FOR UPDATE SKIP LOCKED) для race-condition-safe вибірки батчу. `Promise.allSettled` — паралельна обробка без блокування; кожен виклик `provider.chargeRecurrent()` загорнуто в `withTimeout(8000ms)` — зависання API не крашить весь cron. Dunning flow: **Success** → `master_subscriptions.status='active'`, `failed_attempts=0`, `next_charge_at=+30d`, sync `master_profiles.subscription_expires_at`, `billing_events` INSERT status='success'. **Failure** → `failed_attempts++`; якщо >= 3 → `status='past_due'`, downgrade `master_profiles.subscription_tier='starter'`, `billing_events` INSERT status='failure'. Idempotency key: `recurring_{subscription_id}_{timestamp}`. `vercel.json`: додано cron `0 2 * * *` для `/api/cron/expire-subscriptions`. TypeScript: 0 помилок.
+
+[2026-04-24] - Claude Code: **Billing Engine V2 — Recurring Billing Infrastructure (Phase 1)**. Migration 086: `master_subscriptions` розширено трьома колонками — `status TEXT CHECK ('active','past_due','canceled') DEFAULT 'active'`, `failed_attempts INT DEFAULT 0`, `next_charge_at TIMESTAMPTZ`; partial index `WHERE status='active'` для швидкого cron-запиту. RPC `get_pending_subscriptions_for_billing(batch_size INT)` — `SECURITY DEFINER`, `FOR UPDATE SKIP LOCKED` для race-condition-safe вибірки батчу; REVOKE PUBLIC / GRANT service_role. `PaymentProvider.ts` інтерфейс: нові типи `RecurrentChargeOptions` / `RecurrentChargeResult` + метод `chargeRecurrent()`. `mono-webhook/route.ts`: **видалено soft-mode bypass** — `MONO_ENFORCE_SIG` env var та `console.warn proceeding` повністю прибрані; Ed25519 верифікація строга — 403 при будь-якому збої підпису; `master_subscriptions` upsert тепер включає `status='active'`, `failed_attempts=0`, `next_charge_at=expiresAt`. `wfp-webhook/route.ts`: аналогічно — `next_charge_at` та `status` записуються при першому recToken. TypeScript: 0 помилок.
+
 [2026-04-23] - Claude Code: **Onboarding Phase 4 — Viral Loop Success Screen & Web Share API**. `StepSuccess` rewritten: ConfettiParticles + Sparkles hero, 3 copy-paste template cards (Stories, Bio, Direct) with per-item check animation, Web Share API button with clipboard fallback, secondary "Dashboard" CTA. Each template's `CopyButton` has independent `useState` — no shared copied state. TypeScript: 0 помилок.
 
 [2026-04-23] - Claude Code: **Premium SMM Hub — Adaptive Story Generator v3 (Variant B)**. Full rewrite of `StoryGenerator.tsx`: `useServices()` hook + mandatory service selector in free_slots mode, `useAvailableSlots(date, masterId, durationMin)` now uses actual service duration. Adaptive grid (1-3/4-8/9+). Vogue aesthetics: Playfair Display serif dates, tracked uppercase labels (0.22em), zero horizontal lines, Instagram link sticker pill. 6 palettes with unified token system. Canvas ref stability preserved. TypeScript: 0 помилок.
@@ -932,6 +936,29 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 [2026-04-23] - Claude Code: **Onboarding: Auto-generated Smart Defaults & Calculator**. `onboardingTemplates.ts`: розширено до 19 категорій у 5 груп (Нігті / Волосся / Обличчя / Тіло / Тату+Пірс) — реалістичні назви для українського ринку з express/standard/premium тірами та коректними `priceMult`. Додано `CATEGORY_GROUPS` для групованого рендерингу. `types.ts`: `SPECIALIZATIONS` розширено до 20 елементів з полем `group`; нові типи `SpecializationItem` / `SpecializationGroup`; новий `SPECIALIZATION_GROUPS` (6 груп). `StepBasic.tsx`: спеціалізація тепер з горизонтальними group-tabs (Нігті/Волосся/Обличчя/Тіло/Тату+Пірс/Інше) — відфільтрована 4-col grid; плавна анімація при перемиканні групи; активна група автоматично визначається з поточного `specialization`. `StepServicesForm.tsx`: категорії перегруповані з section-заголовками, 3-col grid у кожній групі; base price input з підказкою; tier cards показуються лише при `basePriceNum > 0` з пружинною анімацією; badge Базовий/Стандарт/Преміум з color coding; форматування часу `год/хв`. TypeScript: 0 помилок.
 
 [2026-04-22] - Claude Code: **BookingsPage Parity & ClientDetailSheet Status Badges**. `BookingCard.tsx`: додано `completeBooking` + `updateBookingStatus('no_show')` actions; Quick Actions розширено — `pending` тепер показує [Підтвердити, Завершити, Скасувати], `confirmed` — [Завершити, Не прийшов, Скасувати]; `isAnyPending` guard блокує всі кнопки під час запиту. `ClientDetailSheet.tsx`: `STATUS_CONFIG` розширено полем `bg` (rgba кольори); статус-бейдж у "Останні записи" оновлено до pill-стилю (`px-1.5 py-0.5 rounded-full` + background) — відповідає дизайн-системі. TypeScript: 0 помилок.
+
+---
+
+[2026-04-24] - Claude Code: **Billing Engine V2 — PaymentProvider Interface + Token Vault + Test-Charge**.
+
+### Нові таблиці
+- **`master_subscriptions`** (migration 084): token vault для рекурентних платежів. Поля: `id, master_id, provider, token, plan_id, expires_at, created_at, updated_at`. UNIQUE на `(master_id, provider)`. RLS увімкнено без жодної policy → доступ тільки через `service_role` (admin client).
+- **`billing_events` v2** (migration 085): додані колонки `external_id TEXT` (UNIQUE per provider, partial index WHERE NOT NULL), `amount INT`, `status TEXT`, `payload JSONB`. Зворотньо сумісно з migration 075.
+
+### Архітектура `src/lib/billing/`
+| Файл | Відповідальність |
+|---|---|
+| `PaymentProvider.ts` | Abstract interface: `createCheckout()`, `verifyWebhookSignature()` |
+| `MonoProvider.ts` | Monobank: invoice create (з `saveCardData`), Ed25519 sig verify + key rotation |
+| `WfpProvider.ts` | WayForPay: checkout URL build (з `recToken: 'y'`), HMAC-MD5 sig verify |
+
+### Ендпоінти
+- **`POST /api/billing/test-charge`** — Authenticated master → 5 UAH checkout URL. Body: `{ provider, planId? }`. Повертає `{ checkoutUrl, orderId }`.
+- **`POST /api/billing/mono-webhook`** — Ed25519 verify (403 при fail) → idempotency insert → extend subscription → upsert recToken до `master_subscriptions`.
+- **`POST /api/billing/wfp-webhook`** — HMAC-MD5 verify (403 при fail) → idempotency insert → extend subscription → upsert recToken до `master_subscriptions`.
+
+### Unit тести
+`src/lib/billing/billing.test.ts` — 6 тестів: WFP HMAC-MD5 (3 cases) + Monobank Ed25519 (3 cases).
 
 ---
 

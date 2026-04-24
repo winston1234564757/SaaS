@@ -1,16 +1,1 @@
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "model": "claude-haiku-4-5-20251001",
-            "statusMessage": "Перевіряю чи потрібен ui-ux-pro-max...",
-            "prompt": "You are a skill router for a Next.js 16 SaaS project (Bookit — Ukrainian beauty booking platform). Analyze the user's message and determine if the ui-ux-pro-max skill is relevant.\n\nUse ui-ux-pro-max when the task involves: UI design, new components, pages, redesign, Framer Motion animations, Tailwind CSS visual changes, design system tokens, layout, landing pages, color palette, typography, bento cards, glassmorphism.\n\nDo NOT use it for: pure backend logic, DB migrations, API routes, auth, refactoring without UI changes, general questions.\n\nUser message JSON: $ARGUMENTS\n\nIf ui-ux-pro-max is relevant, return:\n{\"hookSpecificOutput\": {\"hookEventName\": \"UserPromptSubmit\", \"additionalContext\": \"[Skill routing] Use skill: ui-ux-pro-max — <one-line reason why>\"}}\n\nOtherwise return:\n{}"
-          }
-        ]
-      }
-    ]
-  }
-}
+{}

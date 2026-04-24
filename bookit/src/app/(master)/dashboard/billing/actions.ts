@@ -6,12 +6,22 @@ import { hmacMd5 } from '@/lib/utils/wayforpay';
 const MERCHANT = process.env.WAYFORPAY_MERCHANT_ACCOUNT!;
 const SECRET   = process.env.WAYFORPAY_MERCHANT_SECRET!;
 const MONO_TOKEN = process.env.MONO_API_KEY!;
-const APP_URL  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua';
-const DOMAIN   = APP_URL.replace(/^https?:\/\//, '');
+
+// Resolve absolute base URL — never localhost on production.
+// Priority: NEXT_PUBLIC_SITE_URL → NEXT_PUBLIC_APP_URL → Vercel auto-var → hardcoded fallback
+const APP_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : null) ??
+  'https://bookit-five-psi.vercel.app'
+);
+const DOMAIN = APP_URL.replace(/^https?:\/\//, '');
 
 const PLAN: Record<string, { price: number; name: string }> = {
-  pro:    { price: 700, name: 'Bookit Pro — підписка на місяць' },
-  studio: { price: 299, name: 'Bookit Studio — підписка за майстра/місяць' },
+  pro:    { price: 5, name: 'Bookit Pro — підписка на місяць' },
+  studio: { price: 5, name: 'Bookit Studio — підписка за майстра/місяць' },
 };
 
 export async function createBillingInvoice(
@@ -51,8 +61,8 @@ export async function createBillingInvoice(
     productName:  [plan.name],
     productCount: [1],
     productPrice: [plan.price],
-    serviceUrl: `${APP_URL}/api/billing/webhook`,
-    returnUrl:  `${APP_URL}/dashboard/billing?paid=1`,
+    serviceUrl: `${APP_URL}/api/billing/wfp-webhook`,
+    returnUrl:  `${APP_URL}/api/billing/paid`,
   };
 
   try {
@@ -98,7 +108,7 @@ export async function createMonoInvoice(
         unit: 'шт',
       }],
     },
-    redirectUrl: `${APP_URL}/dashboard/billing?paid=1`,
+    redirectUrl: `${APP_URL}/api/billing/paid`,
     webHookUrl: `${APP_URL}/api/billing/mono-webhook`,
     validity: 3600, // 1 hour
     paymentType: 'debit',
