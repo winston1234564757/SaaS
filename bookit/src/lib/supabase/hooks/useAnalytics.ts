@@ -111,7 +111,7 @@ export function useAnalytics(
       const prevPeriod   = getPrevPeriodRange(preset, offset);
 
       // ── Parallel queries ─────────────────────────────────────────────────
-      const [mainRes, trendRes, prevRes] = await Promise.all([
+      const [mainRes, trendRes, prevRes, retentionRes] = await Promise.all([
         // Rich main query — everything we need for the selected period
         supabase
           .from('bookings')
@@ -146,11 +146,19 @@ export function useAnalytics(
               .gte('date', prevPeriod.startDate)
               .lte('date', prevPeriod.endDate)
           : Promise.resolve({ data: null, error: null }),
+
+        // Retention stats — runs in parallel, eliminates sequential JS scan
+        supabase.rpc('get_retention_stats', {
+          p_master_id:  masterId!,
+          p_start_date: startDate,
+          p_end_date:   endDate,
+        }),
       ]);
 
-      if (mainRes.error)  throw mainRes.error;
-      if (trendRes.error) throw trendRes.error;
-      if (prevRes.error)  throw prevRes.error;
+      if (mainRes.error)      throw mainRes.error;
+      if (trendRes.error)     throw trendRes.error;
+      if (prevRes.error)      throw prevRes.error;
+      if (retentionRes.error) throw retentionRes.error;
 
       const rows = (mainRes.data ?? []) as AnalyticsBookingRow[];
 
@@ -311,46 +319,13 @@ export function useAnalytics(
         };
       }
 
-      // ── Retention: Lifetime logic (sequential — depends on activePhones) ──
-      // "Постійні" = клієнт має > 1 візит за весь час до endDate
-      // "Нові"     = клієнт має рівно 1 візит (вперше прийшов у цьому періоді)
-      let retention: RetentionData | null = null;
-      let newClients: number | null = null;
-
-      if (activePhones.length > 0) {
-        // No .in(activePhones) filter — avoids PostgREST URL length limit for masters with
-        // hundreds of clients. JS loop below filters by activePhones set, so results are identical.
-        // PERF: bound retention scan to last 2 years — avoids full-history table scan
-        const twoYearsAgo = getNow();
-        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-        const retentionStartDate = twoYearsAgo.toISOString().slice(0, 10);
-
-        const { data: allVisitsData } = await supabase
-          .from('bookings')
-          .select('client_phone')
-          .eq('master_id', masterId!)
-          .gte('date', retentionStartDate)
-          .lte('date', endDate)
-          .neq('status', 'cancelled');
-
-        const visitsMap = new Map<string, number>();
-        for (const b of (allVisitsData ?? []) as VisitRow[]) {
-          const p = b.client_phone as string;
-          if (p) visitsMap.set(p, (visitsMap.get(p) ?? 0) + 1);
-        }
-
-        let returningClients = 0;
-        let newCount         = 0;
-        for (const phone of activePhones) {
-          if ((visitsMap.get(phone) ?? 0) > 1) returningClients++;
-          else newCount++;
-        }
-        newClients = newCount;
-        retention  = { newClients, returningClients };
-      } else {
-        retention  = { newClients: 0, returningClients: 0 };
-        newClients = 0;
-      }
+      // ── Retention: DB-side via get_retention_stats RPC (parallel, no JS scan) ──
+      type RetentionRow = { returning_clients: number; new_clients: number };
+      const retRow = ((retentionRes.data as RetentionRow[] | null) ?? [])[0] ?? null;
+      const retention: RetentionData = retRow
+        ? { returningClients: retRow.returning_clients, newClients: retRow.new_clients }
+        : { returningClients: 0, newClients: 0 };
+      const newClients: number = retention.newClients;
 
       return {
         summary: {
