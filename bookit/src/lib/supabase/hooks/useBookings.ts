@@ -86,6 +86,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
             .lte('date', dateTo)
             .order('date', { ascending: true })
             .order('start_time', { ascending: true })
+            .limit(500)
       );
       if (result.error) {
         const errorWithMeta = Object.assign(new Error(result.message ?? 'Failed to load bookings'), {

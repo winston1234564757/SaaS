@@ -255,21 +255,22 @@ export async function createBooking(
   let loyaltyLabel = '';
 
   if (p.source === 'online') {
-    const { count: pastVisitsCount } = await admin
-      .from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .eq('master_id', p.masterId)
-      .eq('client_phone', p.clientPhone)
-      .eq('status', 'completed');
+    const [{ count: pastVisitsCount }, { data: loyaltyRules }] = await Promise.all([
+      admin
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('master_id', p.masterId)
+        .eq('client_phone', p.clientPhone)
+        .eq('status', 'completed'),
+      admin
+        .from('loyalty_programs')
+        .select('name, target_visits, reward_type, reward_value')
+        .eq('master_id', p.masterId)
+        .eq('is_active', true)
+        .order('target_visits', { ascending: false }),
+    ]);
 
     const totalVisitsWithThisOne = (pastVisitsCount ?? 0) + 1;
-
-    const { data: loyaltyRules } = await admin
-      .from('loyalty_programs')
-      .select('name, target_visits, reward_type, reward_value')
-      .eq('master_id', p.masterId)
-      .eq('is_active', true)
-      .order('target_visits', { ascending: false });
 
     const qualifyingRule = (loyaltyRules ?? []).find(r => 
       r.reward_type === 'percent_discount' && totalVisitsWithThisOne >= r.target_visits

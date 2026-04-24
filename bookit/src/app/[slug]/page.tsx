@@ -8,7 +8,18 @@ import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
 import { ALL_STEPS } from '@/components/shared/wizard/helpers';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from('master_profiles')
+    .select('slug')
+    .eq('is_published', true)
+    .order('rating', { ascending: false })
+    .limit(50);
+  return (data ?? []).map(({ slug }) => ({ slug }));
+}
 
 async function getMaster(slug: string) {
   // Admin client bypasses RLS — needed for profiles!inner join on public pages

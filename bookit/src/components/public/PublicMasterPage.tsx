@@ -6,11 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap } from 'lucide-react';
 import { MasterLocationCard } from './MasterLocationCard';
 import { LoyaltyWidget } from './LoyaltyWidget';
-import { BookingFlow } from './BookingFlow';
+import dynamic from 'next/dynamic';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import Image from 'next/image';
+
+const BookingFlow = dynamic(() => import('./BookingFlow').then(m => ({ default: m.BookingFlow })), {
+  ssr: false,
+  loading: () => null,
+});
 import { getNow } from '@/lib/utils/now';
 
 interface Service {
@@ -381,7 +386,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
               style={{ background: avatarBg, boxShadow: `0 8px 24px ${theme.accent}22` }}
             >
               {master.avatarUrl ? (
-                <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="96px" />
+                <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="96px" priority />
               ) : (
                 master.avatarEmoji ?? master.emoji
               )}
