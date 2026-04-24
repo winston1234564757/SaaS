@@ -92,13 +92,18 @@ export function BillingPage() {
     setError(null);
     setPayingTier(tier);
     startTransition(async () => {
-      const result = provider === 'mono'
-        ? await createMonoInvoice(tier as 'pro' | 'studio')
-        : await createBillingInvoice(tier as 'pro' | 'studio');
-      if ('invoiceUrl' in result) {
-        window.location.href = result.invoiceUrl;
-      } else {
-        setError(result.error);
+      try {
+        const result = provider === 'mono'
+          ? await createMonoInvoice(tier as 'pro' | 'studio')
+          : await createBillingInvoice(tier as 'pro' | 'studio');
+        if ('invoiceUrl' in result) {
+          window.location.href = result.invoiceUrl;
+        } else {
+          setError(result.error);
+          setPayingTier(null);
+        }
+      } catch {
+        setError('Помилка з\'єднання. Спробуйте ще раз.');
         setPayingTier(null);
       }
     });
