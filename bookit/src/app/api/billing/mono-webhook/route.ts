@@ -93,8 +93,9 @@ export async function POST(req: NextRequest) {
       sigValid = fresh ? verifyEd25519(rawBody, xSign, fresh) : false;
     }
 
+    console.log('[MONO] Sig valid:', sigValid);
     if (!sigValid) {
-      console.error('[mono-webhook] signature INVALID — pubKeyPresent:', !!pubKeyB64, '— rejecting 403');
+      console.error('[mono-webhook] signature INVALID — pubKeyPresent:', !!pubKeyB64, '| x-sign:', xSign, '— rejecting 403');
       return NextResponse.json({ status: 'error', message: 'bad signature' }, { status: 403 });
     }
     console.log('[mono-webhook] signature PASSED');
@@ -159,7 +160,7 @@ export async function POST(req: NextRequest) {
         console.info('[mono-webhook] duplicate invoiceId — already processed:', invoiceId);
         return NextResponse.json({ status: 'ok' });
       }
-      console.error('[mono-webhook] billing_events insert ERROR:', JSON.stringify(evtErr));
+      console.error('[mono-webhook] billing_events insert ERROR:', evtErr.message, '| details:', evtErr.details);
       return NextResponse.json({ status: 'error' }, { status: 500 });
     }
     console.log('[mono-webhook] billing_events insert OK');
@@ -191,14 +192,17 @@ export async function POST(req: NextRequest) {
       .eq('id', userId);
 
     if (upErr) {
-      console.error('[mono-webhook] master_profiles update ERROR:', JSON.stringify(upErr));
+      console.error('[mono-webhook] master_profiles update ERROR:', upErr.message, '| details:', upErr.details);
     } else {
       console.log('[mono-webhook] master_profiles update OK');
     }
 
     // ── Upsert recToken + next_charge_at ──────────────────────────────────────
+    if (!recToken) {
+      console.error('[MONO] CRITICAL: Payment successful but provider did not return a recurrent token — master:', userId, '| invoiceId:', invoiceId);
+    }
     if (recToken) {
-      console.log('[mono-webhook] upserting recToken with next_charge_at');
+      console.log('[mono-webhook] upserting recToken with next_charge_at | token prefix:', recToken.slice(0, 8));
       const { error: tokErr } = await admin.from('master_subscriptions').upsert(
         {
           master_id:      userId,
@@ -213,7 +217,7 @@ export async function POST(req: NextRequest) {
         },
         { onConflict: 'master_id,provider' },
       );
-      if (tokErr) console.error('[mono-webhook] master_subscriptions upsert ERROR:', JSON.stringify(tokErr));
+      if (tokErr) console.error('[mono-webhook] master_subscriptions upsert ERROR:', tokErr.message, '| details:', tokErr.details);
       else console.log('[mono-webhook] master_subscriptions upsert OK');
     }
 

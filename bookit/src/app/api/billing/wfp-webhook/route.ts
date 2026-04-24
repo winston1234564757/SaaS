@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         console.info('[wfp-webhook] duplicate — already processed:', orderReference);
         return NextResponse.json(buildAck(orderReference, secret));
       }
-      console.error('[wfp-webhook] billing_events insert ERROR:', JSON.stringify(evtErr));
+      console.error('[wfp-webhook] billing_events insert ERROR:', evtErr.message, '| details:', evtErr.details);
       return NextResponse.json({ status: 'error' }, { status: 500 });
     }
     console.log('[wfp-webhook] billing_events insert OK');
@@ -139,17 +139,17 @@ export async function POST(req: NextRequest) {
       .eq('id', userId);
 
     if (upErr) {
-      console.error('[wfp-webhook] master_profiles update ERROR:', JSON.stringify(upErr));
+      console.error('[wfp-webhook] master_profiles update ERROR:', upErr.message, '| details:', upErr.details);
     } else {
       console.log('[wfp-webhook] master_profiles update OK');
     }
 
     // ── Upsert recToken into token vault ────────────────────────────────────
     if (!recToken) {
-      console.error("[WFP] Webhook received but recToken is missing. Check if returnToken: 'Y' was sent in the initial request");
+      console.error('[WFP] CRITICAL: Payment successful but provider did not return a recurrent token — master:', userId, '| orderReference:', orderReference);
     }
     if (recToken) {
-      console.log('[wfp-webhook] upserting recToken into master_subscriptions');
+      console.log('[wfp-webhook] upserting recToken into master_subscriptions | token prefix:', recToken.slice(0, 8));
       const { error: tokenErr } = await admin.from('master_subscriptions').upsert(
         {
           master_id:       userId,
@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
         { onConflict: 'master_id,provider' },
       );
       if (tokenErr) {
-        console.error('[wfp-webhook] master_subscriptions upsert ERROR:', JSON.stringify(tokenErr));
+        console.error('[wfp-webhook] master_subscriptions upsert ERROR:', tokenErr.message, '| details:', tokenErr.details);
       } else {
         console.log('[wfp-webhook] master_subscriptions upsert OK');
       }
