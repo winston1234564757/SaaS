@@ -51,10 +51,6 @@ export async function POST(req: NextRequest) {
       merchantSignature, recToken,
     } = body;
 
-    console.log('[WFP DEBUG] Full payload:', JSON.stringify(body));
-    console.log('[WFP DEBUG] recToken present:', !!recToken, '| value:', recToken ?? 'MISSING');
-    console.log('[WFP DEBUG] transactionStatus:', transactionStatus);
-
     // ── Signature validation ────────────────────────────────────────────────
     const sigStr = [
       merchantAccount, orderReference, amount, currency,

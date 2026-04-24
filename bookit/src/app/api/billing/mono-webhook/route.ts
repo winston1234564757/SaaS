@@ -93,7 +93,6 @@ export async function POST(req: NextRequest) {
       sigValid = fresh ? verifyEd25519(rawBody, xSign, fresh) : false;
     }
 
-    console.log('[MONO DEBUG] Signature verification result:', sigValid, '| pubKeyPresent:', !!pubKeyB64);
     if (!sigValid) {
       console.error('[mono-webhook] signature INVALID — pubKeyPresent:', !!pubKeyB64, '— rejecting 403');
       return NextResponse.json({ status: 'error', message: 'bad signature' }, { status: 403 });
@@ -109,9 +108,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'error' }, { status: 400 });
     }
     console.log('[mono-webhook] payload:', JSON.stringify(body));
-
-    console.log('[MONO DEBUG] Full payload:', JSON.stringify(body));
-    console.log('[MONO DEBUG] recToken present:', !!(body as Record<string, unknown>).recToken);
 
     const { status, reference, invoiceId, amount, recToken } = body as {
       status?: string;
