@@ -24,9 +24,11 @@ function RefCaptureInner() {
       refCode = searchParams.get('ref') || searchParams.get('code') || '';
     }
 
-    if (refCode && refCode.length >= 3 && refCode.length <= 16) {
+    // V-11: Accept only alphanumeric codes (same format as generateSecureToken output).
+    const REF_CODE_RE = /^[a-zA-Z0-9]{3,16}$/;
+    if (refCode && REF_CODE_RE.test(refCode)) {
       // Зберігаємо на 30 днів
-      Cookies.set('bookit_ref', refCode, { 
+      Cookies.set('bookit_ref', refCode, {
         expires: 30, 
         path: '/',
         sameSite: 'lax',

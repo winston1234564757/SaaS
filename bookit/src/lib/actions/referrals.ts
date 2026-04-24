@@ -95,10 +95,18 @@ export interface ReferralBonus {
  * Awards are fire-and-forget — errors are logged but never throw,
  * so a reward failure never blocks registration.
  */
+// V-11: Referral code must be 3-16 alphanumeric chars. Rejects anything else early.
+const REFERRAL_CODE_RE = /^[a-zA-Z0-9]{3,16}$/;
+
 export async function applyReferralRewards(
   newMasterId: string,
   refCode: string,
 ): Promise<ReferralBonus> {
+  const sanitized = refCode.trim();
+  if (!REFERRAL_CODE_RE.test(sanitized)) {
+    return { subscriptionTier: 'starter', subscriptionExpiresAt: null, finalReferredBy: null };
+  }
+
   const admin = createAdminClient();
 
   const [masterRes, clientRes] = await Promise.all([

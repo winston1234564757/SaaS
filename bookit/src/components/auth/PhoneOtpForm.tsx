@@ -287,10 +287,13 @@ export function PhoneOtpForm() {
     const cbParams = new URLSearchParams({ role: selectedRole, next: nextPath });
     if (isPaidPlan) cbParams.set('plan', planValue);
 
-    // SEC-HIGH-1: set role intent cookie (max 5 min) so callback can verify it wasn't forged via URL
-    document.cookie = selectedRole === 'master'
-      ? 'bookit_reg_role=master; path=/; max-age=300; SameSite=Lax'
-      : 'bookit_reg_role=; path=/; max-age=0';
+    // V-17: Set role intent as httpOnly cookie via server route (not document.cookie).
+    // httpOnly prevents JS from reading/forging it, unlike the old document.cookie approach.
+    await fetch('/api/auth/set-role-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: selectedRole }),
+    });
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
