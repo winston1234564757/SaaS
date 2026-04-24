@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-04-24)
+# Graph Report - .  (2026-04-25)
 
 ## Corpus Check
-- 358 files · ~334,033 words
+- 359 files · ~335,419 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1002 nodes · 813 edges · 332 communities detected
+- 1003 nodes · 815 edges · 332 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -346,8 +346,8 @@
 ## God Nodes (most connected - your core abstractions)
 1. `main()` - 13 edges
 2. `seedTimeTravelMaster()` - 11 edges
-3. `BookingWidgetPage` - 10 edges
-4. `POST()` - 10 edges
+3. `POST()` - 11 edges
+4. `BookingWidgetPage` - 10 edges
 5. `seedCrmMaster()` - 9 edges
 6. `MonobankServer` - 9 edges
 7. `PublicBookingPage` - 7 edges
@@ -374,7 +374,7 @@ Cohesion: 0.18
 Nodes (23): addDays(), addHours(), addMinutes(), ensureService(), fmtDate(), fmtTime(), getOrCreateUser(), insertBooking() (+15 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (5): GET(), getAdmin(), getMonoPubKey(), POST(), verifyECDSA()
 
 ### Community 2 - "Community 2"
@@ -410,8 +410,8 @@ Cohesion: 0.27
 Nodes (4): cancelBooking(), confirmBooking(), notifyClientOnStatusChange(), updateBookingStatus()
 
 ### Community 10 - "Community 10"
-Cohesion: 0.27
-Nodes (4): generateMetadata(), getInviter(), getMaster(), MasterPublicPage()
+Cohesion: 0.29
+Nodes (5): generateMetadata(), generateStaticParams(), getInviter(), getMaster(), MasterPublicPage()
 
 ### Community 11 - "Community 11"
 Cohesion: 0.29
@@ -2133,6 +2133,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `Отримати публічний ключ monobank (з кешуванням).`, `Скинути кеш ключа (якщо ключ оновився).`, `Перевірити ECDSA підпис webhook'а.` to the rest of the system?**
   _7 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.14 - nodes in this community are weakly interconnected._

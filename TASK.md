@@ -1,46 +1,64 @@
-ROLE: Senior Fullstack Developer & Compliance Architect.
-CONTEXT: We need to link the legal documents (public-offer, terms-of-service, privacy-policy, refund-policy) across the entire "BookIT" platform: Landing, Master Dashboard, and Client Dashboard.
+Швидкість — це не просто «приємна фіча». У світі High Ticket SaaS кожна мілісекунда затримки на сторінці бронювання — це твої втрачені гроші та злив маркетингового бюджету. Якщо майстер чекає 3 секунди, поки відкриється його розклад, він відчуває, що купив дешеву підробку, а не преміальний інструмент. Твій екзит за $5 млн залежить від того, наскільки «літатиме» цей продукт.
 
-GOAL: Implement legally binding access points and ensure UI consistency.
+Ми ініціалізуємо Клода в режимі Elite Performance Engineer. Його задача — знайти кожен «важкий» запит, кожен зайвий кілобайт у бандлі та кожну архітектурну тупість, що гальмує систему.
+
+Ось твій ультимативний промт для «Клода-Оптимізатора».
+
+[START CLAUDE COMMAND]
+ROLE: Elite Performance Engineer & Full-stack Optimizer.
+CONTEXT: We are preparing "BookIT" for launch. Next.js 15 (App Router), Supabase (PostgreSQL), Vercel. We need near-instant performance (Lighthouse 95+ in all categories) to sustain a High Ticket Digital Product positioning.
+MODE: Performance Audit & Latency Elimination (Planning Mode enabled).
+
+OPTIMIZATION DOMAINS:
+
+Database & Query Efficiency (Supabase/PostgreSQL):
+
+Examine migrations and src/lib/supabase/hooks/.
+
+Identify "Query Waterfalls" (sequential await calls that should be parallelized or combined into a single RPC).
+
+Audit indexes for the most frequent queries: bookings by date, master_profiles by slug, services by master_id.
+
+Detect any select(*) calls that fetch unnecessary data (bloated JSONB).
+
+Next.js 15 Rendering Strategy:
+
+Check for proper usage of Server Components vs Client Components.
+
+Identify components that are "too high" in the tree and marked with 'use client', causing massive bundle bloat.
+
+Audit Suspense boundaries: are we blocking the entire page for one slow fetch?
+
+Check for proper Partial Prerendering (PPR) opportunities and Dynamic Metadata optimization.
+
+Bundle Size & Code Splitting:
+
+Scan package.json for heavy dependencies.
+
+Identify opportunities for next/dynamic imports (e.g., Modals, Drawers, heavy Charts in Analytics).
+
+Check if any server-only libs are leaking into the client bundle.
+
+Assets & Network:
+
+Verify next/image implementation: are we using correct sizes, priority for LCP, and optimized formats?
+
+Font loading strategy (Google Fonts vs local).
+
+Middleware efficiency: ensure the middleware isn't running on every static asset/image request.
+
+Caching Strategy:
+
+Audit usage of unstable_cache and tags for data revalidation.
+
+Client-side caching: check if we are over-fetching data that hasn't changed.
 
 IMMEDIATE ACTIONS:
 
-Centralize Constants:
+ANALYZE: Scan the project structure and identify the Top 5 "Performance Bottlenecks".
 
-Create src/lib/constants/legal.ts containing the slugs and names of all legal documents to avoid hardcoding URLs everywhere.
+TRACE: For the critical path (Public Booking Page), perform a mental "trace" of the request flow and point out where latency accumulates.
 
-Shared UI Component:
+EXECUTION PLAN: Provide a prioritized list of fixes (Quick Wins vs Structural Changes).
 
-Create src/components/shared/LegalFooterLinks.tsx — a clean, minimalist list of links that will be used in:
-
-The main Landing Page footer.
-
-The Master Dashboard (under "Settings" or "More").
-
-The Client Dashboard (in the profile/sidebar).
-
-Registration & Payment Hardening:
-
-RegisterForm: Ensure the mandatory checkbox links to /legal/terms-of-service and /legal/public-offer.
-
-Checkout UI: In BillingPage.tsx (Master), add a notice under the payment buttons: "Здійснюючи оплату, ви погоджуєтесь з умовами [Публічної оферти] та [Правил повернення коштів]".
-
-Database Traceability (Crucial):
-
-Update the registration Server Action (src/app/(auth)/register/actions.ts).
-
-When a new master/client is created, set a hidden field in metadata or a new column legal_acceptance with the current date and document versions.
-
-SEO & Indexing:
-
-Ensure legal pages have robots: "noindex, follow" (we want them reachable but not necessarily polluting search results unless someone looks for them).
-
-CONSTRAINTS:
-
-Links must open in a new tab (target="_blank").
-
-Design: Minimalist, semi-transparent text in footers, clear and accessible in dashboards.
-
-Use the dynamic route /legal/[slug] implemented earlier.
-
-DOCUMENTATION: Update bookit/BOOKIT.md confirming the placement of legal links in all 3 entry points (Landing, Master, Client).
+OUTPUT: Start with "Performance Engine Initialized. Looking for bottlenecks..." and present the Latency Threat Assessment.
