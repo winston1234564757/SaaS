@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { createPublicKey, verify as cryptoVerify } from 'node:crypto';
+import { createVerify } from 'node:crypto';
 import { flatUidToUuid } from '@/lib/utils/uuid';
 
 export const runtime = 'nodejs';
@@ -36,26 +36,19 @@ async function getMonoPubKey(forceRefresh = false): Promise<string | null> {
   }
 }
 
-// Ed25519 SPKI DER header for raw 32-byte keys.
-const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
-
-function toSpkiBuffer(keyB64: string): Buffer {
-  const raw = Buffer.from(keyB64, 'base64');
-  if (raw.length === 32) {
-    return Buffer.concat([ED25519_SPKI_PREFIX, raw]);
-  }
-  return raw;
-}
-
-function verifyEd25519(rawBody: string, xSignB64: string, pubKeyB64: string): boolean {
+// Monobank uses ECDSA P-256 + SHA-256. The /pubkey response is a
+// base64-encoded PEM file — decode → PEM string → createVerify('SHA256').
+function verifyECDSA(rawBody: string, xSignB64: string, pubKeyB64: string): boolean {
   try {
-    const keyDer  = toSpkiBuffer(pubKeyB64);
-    const sigBuf  = Buffer.from(xSignB64, 'base64');
-    const bodyBuf = Buffer.from(rawBody);
-    const pubKey  = createPublicKey({ key: keyDer, format: 'der', type: 'spki' });
-    return cryptoVerify(null, bodyBuf, pubKey, sigBuf);
+    const pemText = Buffer.from(pubKeyB64, 'base64').toString('utf-8');
+    console.log('[MONO] sig bytes:', Buffer.from(xSignB64, 'base64').length, '| body bytes:', Buffer.byteLength(rawBody));
+    const verify = createVerify('SHA256');
+    verify.update(Buffer.from(rawBody));
+    const result = verify.verify(pemText, Buffer.from(xSignB64, 'base64'));
+    console.log('[MONO] ECDSA verify result:', result);
+    return result;
   } catch (e) {
-    console.error('[mono-webhook] Ed25519 verify threw:', String(e));
+    console.error('[mono-webhook] ECDSA verify threw:', String(e));
     return false;
   }
 }
@@ -82,15 +75,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'error', message: 'missing signature' }, { status: 403 });
     }
 
-    // ── Strict Ed25519 signature verification ─────────────────────────────────
-    // Fetch pubkey; on first failure retry with a fresh key (handles key rotation).
+    // ── Strict ECDSA SHA-256 signature verification ───────────────────────────
+    console.log('[MONO] Received X-Sign:', xSign);
     const pubKeyB64 = await getMonoPubKey();
-    let sigValid = pubKeyB64 ? verifyEd25519(rawBody, xSign, pubKeyB64) : false;
+    console.log('[MONO] Public Key Used:', pubKeyB64 ? pubKeyB64.slice(0, 40) + '...' : 'null — fetch failed');
+    let sigValid = pubKeyB64 ? verifyECDSA(rawBody, xSign, pubKeyB64) : false;
 
     if (!sigValid && pubKeyB64) {
       console.log('[mono-webhook] sig failed — retrying with fresh key');
       const fresh = await getMonoPubKey(true);
-      sigValid = fresh ? verifyEd25519(rawBody, xSign, fresh) : false;
+      sigValid = fresh ? verifyECDSA(rawBody, xSign, fresh) : false;
     }
 
     console.log('[MONO] Sig valid:', sigValid);
@@ -110,13 +104,16 @@ export async function POST(req: NextRequest) {
     }
     console.log('[mono-webhook] payload:', JSON.stringify(body));
 
-    const { status, reference, invoiceId, amount, recToken } = body as {
+    const { status, reference, invoiceId, amount } = body as {
       status?: string;
       reference?: string;
       invoiceId?: string;
       amount?: number;
-      recToken?: string;
     };
+    // Monobank stores card token under walletData.cardToken (not top-level recToken)
+    const walletData = (body as Record<string, unknown>).walletData as
+      { cardToken?: string; walletId?: string; status?: string } | undefined;
+    const cardToken = walletData?.cardToken;
 
     if (status !== 'success') {
       console.log('[mono-webhook] non-success status:', status, '— acking');
@@ -197,17 +194,17 @@ export async function POST(req: NextRequest) {
       console.log('[mono-webhook] master_profiles update OK');
     }
 
-    // ── Upsert recToken + next_charge_at ──────────────────────────────────────
-    if (!recToken) {
-      console.error('[MONO] CRITICAL: Payment successful but provider did not return a recurrent token — master:', userId, '| invoiceId:', invoiceId);
+    // ── Upsert cardToken + next_charge_at ─────────────────────────────────────
+    if (!cardToken) {
+      console.error('[MONO] CRITICAL: Payment successful but walletData.cardToken missing — master:', userId, '| invoiceId:', invoiceId, '| walletData:', JSON.stringify(walletData));
     }
-    if (recToken) {
-      console.log('[mono-webhook] upserting recToken with next_charge_at | token prefix:', recToken.slice(0, 8));
+    if (cardToken) {
+      console.log('[mono-webhook] upserting cardToken with next_charge_at | token prefix:', cardToken.slice(0, 8));
       const { error: tokErr } = await admin.from('master_subscriptions').upsert(
         {
           master_id:      userId,
           provider:       'monobank',
-          token:          recToken,
+          token:          cardToken,
           plan_id:        tier,
           expires_at:     expiresAt,
           status:         'active',

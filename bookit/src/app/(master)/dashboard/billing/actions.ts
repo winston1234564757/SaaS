@@ -1,10 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { hmacMd5 } from '@/lib/utils/wayforpay';
+import { createAdminClient } from '@/lib/supabase/admin';
 
-const MERCHANT   = process.env.WAYFORPAY_MERCHANT_ACCOUNT!;
-const SECRET     = process.env.WAYFORPAY_MERCHANT_SECRET!;
 const MONO_TOKEN = process.env.MONO_API_KEY!;
 
 const APP_URL = (
@@ -15,72 +13,11 @@ const APP_URL = (
     : null) ??
   'https://bookit-five-psi.vercel.app'
 );
-const DOMAIN = APP_URL.replace(/^https?:\/\//, '');
 
-const PLAN: Record<string, { price: number; name: string }> = {
-  pro:    { price: 5, name: 'Bookit Pro — підписка на місяць' },
-  studio: { price: 5, name: 'Bookit Studio — підписка за майстра/місяць' },
+const PLAN: Record<string, { priceKopecks: number; name: string }> = {
+  pro:    { priceKopecks: 500, name: 'Bookit Pro — підписка на місяць' },
+  studio: { priceKopecks: 500, name: 'Bookit Studio — підписка за майстра/місяць' },
 };
-
-export async function createBillingInvoice(
-  tier: 'pro' | 'studio'
-): Promise<{ invoiceUrl: string } | { error: string }> {
-  try {
-    if (!MERCHANT || !SECRET) {
-      console.error('[createBillingInvoice] missing env vars');
-      return { error: 'WayForPay не налаштовано' };
-    }
-
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Unauthorized' };
-
-    const plan = PLAN[tier];
-    if (!plan) return { error: 'Невідомий тариф' };
-
-    const orderDate = Math.floor(Date.now() / 1000);
-    const uid = user.id.replace(/-/g, '');
-    const orderReference = `bookit_${tier}_${uid}_${orderDate}`;
-
-    const sigStr = [
-      MERCHANT, DOMAIN, orderReference, orderDate,
-      plan.price, 'UAH', plan.name, 1, plan.price,
-    ].join(';');
-
-    const signature = hmacMd5(sigStr, SECRET);
-
-    const payload = {
-      transactionType: 'CREATE_INVOICE',
-      merchantAccount: MERCHANT,
-      merchantAuthType: 'SimpleSignature',
-      merchantDomainName: DOMAIN,
-      merchantSignature: signature,
-      apiVersion: 1,
-      language: 'UA',
-      orderReference,
-      orderDate,
-      amount: plan.price,
-      currency: 'UAH',
-      productName:  [plan.name],
-      productCount: [1],
-      productPrice: [plan.price],
-      serviceUrl: `${APP_URL}/api/billing/wfp-webhook`,
-      returnUrl:  `${APP_URL}/api/billing/paid`,
-    };
-
-    const res = await fetch('https://api.wayforpay.com/api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const json = await res.json();
-    if (json.invoiceUrl) return { invoiceUrl: json.invoiceUrl };
-    return { error: json.reason ?? 'Помилка WayForPay' };
-  } catch (e) {
-    console.error('[createBillingInvoice] fatal:', String(e));
-    return { error: 'Помилка створення рахунку' };
-  }
-}
 
 // ── Monobank Acquiring ────────────────────────────────────────────────────────
 export async function createMonoInvoice(
@@ -101,10 +38,9 @@ export async function createMonoInvoice(
 
     const uid = user.id.replace(/-/g, '');
     const reference = `bookit_${tier}_${uid}_${Math.floor(Date.now() / 1000)}`;
-    const amountKopecks = plan.price * 100;
 
     const body = {
-      amount: amountKopecks,
+      amount: plan.priceKopecks,
       ccy: 980,
       merchantPaymInfo: {
         reference,
@@ -113,7 +49,7 @@ export async function createMonoInvoice(
         basketOrder: [{
           name: plan.name,
           qty: 1,
-          sum: amountKopecks,
+          sum: plan.priceKopecks,
           unit: 'шт',
         }],
       },
@@ -127,16 +63,108 @@ export async function createMonoInvoice(
       },
     };
 
+    console.log('[createMonoInvoice] creating invoice — reference:', reference, 'amount kopecks:', plan.priceKopecks);
+
     const res = await fetch('https://api.monobank.ua/api/merchant/invoice/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Token': MONO_TOKEN },
       body: JSON.stringify(body),
     });
-    const json = await res.json();
+    const json = await res.json() as { pageUrl?: string; errText?: string };
+    console.log('[createMonoInvoice] Monobank response status:', res.status, '| pageUrl present:', !!json.pageUrl, '| errText:', json.errText ?? 'none');
     if (json.pageUrl) return { invoiceUrl: json.pageUrl };
     return { error: json.errText ?? 'Помилка Monobank' };
   } catch (e) {
     console.error('[createMonoInvoice] fatal:', String(e));
     return { error: 'Помилка створення рахунку' };
+  }
+}
+
+// ── Recovery: populate master_subscriptions from Mono Wallet API ──────────────
+// Called when a user has a paid plan but master_subscriptions is empty
+// (e.g. old payment before walletData.cardToken fix).
+// Mono keeps the tokenized card in their wallet — we retrieve it once.
+export async function recoverCardToken(): Promise<{ ok: true; found: boolean } | { error: string }> {
+  try {
+    if (!MONO_TOKEN) return { error: 'Monobank не налаштовано' };
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Unauthorized' };
+
+    const admin = createAdminClient();
+
+    // Skip if subscription row already has a token
+    const { data: existing } = await admin
+      .from('master_subscriptions')
+      .select('id, token')
+      .eq('master_id', user.id)
+      .eq('provider', 'monobank')
+      .maybeSingle();
+
+    if (existing?.token) {
+      console.log('[recoverCardToken] token already present — skipping');
+      return { ok: true, found: true };
+    }
+
+    // Get current plan and expiry from master_profiles
+    const { data: mp } = await admin
+      .from('master_profiles')
+      .select('subscription_tier, subscription_expires_at')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!mp || mp.subscription_tier === 'starter') {
+      return { ok: true, found: false };
+    }
+
+    // Fetch tokenized cards from Mono Wallet API
+    const uid = user.id.replace(/-/g, '');
+    const walletId = `bookit_${uid}`;
+    console.log('[recoverCardToken] fetching wallet — walletId:', walletId);
+
+    const res = await fetch(
+      `https://api.monobank.ua/api/merchant/wallet?walletId=${encodeURIComponent(walletId)}`,
+      { headers: { 'X-Token': MONO_TOKEN } },
+    );
+    const json = await res.json() as { wallet?: { cardToken: string; maskedPan: string }[]; errText?: string };
+    console.log('[recoverCardToken] wallet response status:', res.status, '| cards:', json.wallet?.length ?? 0, '| errText:', json.errText ?? 'none');
+
+    const cards = json.wallet ?? [];
+    if (cards.length === 0) {
+      console.warn('[recoverCardToken] no cards in wallet — user must re-pay');
+      return { ok: true, found: false };
+    }
+
+    const cardToken = cards[0].cardToken;
+    // Use existing expiry or default to now+30d
+    const expiresAt = mp.subscription_expires_at
+      ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const { error: upsertErr } = await admin.from('master_subscriptions').upsert(
+      {
+        master_id:       user.id,
+        provider:        'monobank',
+        token:           cardToken,
+        plan_id:         mp.subscription_tier,
+        expires_at:      expiresAt,
+        status:          'active',
+        failed_attempts: 0,
+        next_charge_at:  expiresAt,
+        updated_at:      new Date().toISOString(),
+      },
+      { onConflict: 'master_id,provider' },
+    );
+
+    if (upsertErr) {
+      console.error('[recoverCardToken] upsert error:', upsertErr.message);
+      return { error: 'DB помилка' };
+    }
+
+    console.log('[recoverCardToken] recovered token for master:', user.id, '| maskedPan:', cards[0].maskedPan, '| next_charge_at:', expiresAt);
+    return { ok: true, found: true };
+  } catch (e) {
+    console.error('[recoverCardToken] fatal:', String(e));
+    return { error: 'Помилка відновлення картки' };
   }
 }

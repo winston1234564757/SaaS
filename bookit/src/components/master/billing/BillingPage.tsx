@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Crown, Building2, Zap, Loader2, X, PartyPopper, CreditCard } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
-import { createBillingInvoice, createMonoInvoice } from '@/app/(master)/dashboard/billing/actions';
+import { createMonoInvoice, recoverCardToken } from '@/app/(master)/dashboard/billing/actions';
 
-type PaymentProvider = 'wayforpay' | 'mono';
+type PaymentProvider = 'mono';
 
 type Tier = 'starter' | 'pro' | 'studio';
 
@@ -70,12 +70,12 @@ export function BillingPage() {
   const searchParams = useSearchParams();
 
   const [payingTier, setPayingTier] = useState<Tier | null>(null);
-  const [provider, setProvider] = useState<PaymentProvider>('wayforpay');
+  const [provider, setProvider] = useState<PaymentProvider>('mono');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Detect return from WayForPay or intended plan from landing
+  // Detect return from payment or intended plan from landing
   useEffect(() => {
     if (searchParams.get('paid') === '1') {
       setShowSuccess(true);
@@ -88,14 +88,24 @@ export function BillingPage() {
     }
   }, [searchParams]);
 
+  // Silently recover card token from Mono Wallet API if master_subscriptions is empty
+  // (covers payments made before walletData.cardToken fix)
+  useEffect(() => {
+    if (currentTier !== 'starter') {
+      recoverCardToken().then(result => {
+        if ('error' in result) {
+          console.warn('[BillingPage] recoverCardToken error:', result.error);
+        }
+      });
+    }
+  }, [currentTier]);
+
   function handleUpgrade(tier: Tier) {
     setError(null);
     setPayingTier(tier);
     startTransition(async () => {
       try {
-        const result = provider === 'mono'
-          ? await createMonoInvoice(tier as 'pro' | 'studio')
-          : await createBillingInvoice(tier as 'pro' | 'studio');
+        const result = await createMonoInvoice(tier as 'pro' | 'studio');
         if ('invoiceUrl' in result) {
           window.location.href = result.invoiceUrl;
         } else {
@@ -206,7 +216,6 @@ export function BillingPage() {
         <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-3">Спосіб оплати</p>
         <div className="flex gap-2">
           {([
-            { key: 'wayforpay' as PaymentProvider, label: 'WayForPay', logo: '💳' },
             { key: 'mono' as PaymentProvider, label: 'Monobank', logo: '🍋' },
           ]).map(p => (
             <button
@@ -365,10 +374,7 @@ export function BillingPage() {
 
       {/* Payment info */}
       <p className="text-center text-xs text-[#A8928D] px-4">
-        {provider === 'mono'
-          ? 'Оплата через Monobank Acquiring — захищено SSL. Підписка активується автоматично.'
-          : 'Оплата через WayForPay — захищено SSL. Підписка активується автоматично після оплати.'
-        }
+        Оплата через Monobank Acquiring — захищено SSL. Підписка активується автоматично.
       </p>
     </div>
   );

@@ -18,6 +18,7 @@ export class MonoProvider implements PaymentProvider {
     return key;
   }
 
+
   async createCheckout(opts: CheckoutOptions): Promise<CheckoutResult> {
     const res = await fetch(`${MONO_API}/invoice/create`, {
       method: 'POST',
@@ -66,20 +67,19 @@ export class MonoProvider implements PaymentProvider {
     return this.verifyWithKey(rawBody, xSign, fresh);
   }
 
+  // Monobank uses ECDSA P-256 + SHA-256. The pubkey returned by /pubkey is
+  // a base64-encoded PEM file (not a raw Ed25519 key).
   private verifyWithKey(rawBody: string, xSign: string, pubKeyBase64: string): boolean {
     try {
-      const pubKey = crypto.createPublicKey({
-        key: Buffer.from(pubKeyBase64, 'base64'),
-        format: 'der',
-        type: 'spki',
-      });
+      const pemText = Buffer.from(pubKeyBase64, 'base64').toString('utf-8');
       return crypto.verify(
-        null, // Ed25519 — no digest algo
+        'sha256',
         Buffer.from(rawBody),
-        pubKey,
+        crypto.createPublicKey(pemText),
         Buffer.from(xSign, 'base64'),
       );
-    } catch {
+    } catch (e) {
+      console.error('[MonoProvider] verifyWithKey threw:', String(e));
       return false;
     }
   }
