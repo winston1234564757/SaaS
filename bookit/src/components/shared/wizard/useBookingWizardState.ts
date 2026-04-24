@@ -18,6 +18,10 @@ interface UseBookingWizardStateParams {
   initialServices?: WizardService[];
   products?: WizardProduct[];
   onClose: () => void;
+  initialStep?: WizardStep;
+  initialDate?: string;  // YYYY-MM-DD — flash deal locked date
+  initialTime?: string;  // HH:MM — flash deal locked time
+  isFlashFastTrack?: boolean;
 }
 
 export function useBookingWizardState({
@@ -27,6 +31,10 @@ export function useBookingWizardState({
   initialServices,
   products = [],
   onClose,
+  initialStep,
+  initialDate,
+  initialTime,
+  isFlashFastTrack = false,
 }: UseBookingWizardStateParams) {
   const { showToast } = useToast();
 
@@ -54,6 +62,10 @@ export function useBookingWizardState({
     setDirection(dir); setStep(next);
   }
   function goBack() {
+    // Flash fast-track: 'details' is the locked entry point — back = close
+    if (isFlashFastTrack && step === 'details') {
+      onClose(); setTimeout(() => go('services'), 350); return;
+    }
     const idx = visibleSteps.indexOf(step);
     if (idx > 0) go(visibleSteps[idx - 1], -1);
     else { onClose(); setTimeout(() => go('services'), 350); }
@@ -137,11 +149,12 @@ export function useBookingWizardState({
 
     // Full form reset only on fresh open
     if (!isRetry) {
-      go('services', 1);
+      go(initialStep ?? 'services', 1);
       setSelectedServices(initialServices ?? []);
       setCart([]);
-      setSelectedDate(null);
-      setSelectedTime(null);
+      // Flash deal fast-track: pre-fill locked date & time
+      setSelectedDate(initialDate ? new Date(initialDate + 'T12:00:00') : null);
+      setSelectedTime(initialTime ?? null);
       setClientName('');
       setClientPhone('');
       setClientEmail('');

@@ -804,6 +804,14 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 
 ## 12. Журнал Ітерацій (25–28)
 
+### Bugfix: Flash Deal fast-track booking flow & date locale fixes (2026-04-23)
+
+- **Date fix** — `FlashDealCard` деструктурування `[d, mon]` → `[mon, d]`: `split('-').slice(1)` повертає `[MM, DD]`, попередній порядок давав `months[DD]` = `undefined`
+- **service_id** — додано до `SELECT` запиту `flash_deals` у `[slug]/page.tsx` та до `FlashDeal` інтерфейсу
+- **Fast-track flow** — `BookingFlow` знаходить відповідний сервіс (by `serviceId`, fallback `serviceName`), передає `initialStep='details'` + `initialServices=[flashService]` у `BookingWizard`
+- **Pre-fill date/time** — `useBookingWizardState` приймає `initialDate`, `initialTime`, `isFlashFastTrack`; на відкритті wizard: `selectedDate = new Date(slotDate + 'T12:00:00')`, `selectedTime = slotTime`, `go(initialStep)`
+- **Back lock** — `goBack()` при `isFlashFastTrack && step === 'details'` закриває wizard замість повернення на datetime (захист від випадкового зміни параметрів акції)
+
 ### Ітерація 32 — Bugfixes: Story Generator Export, Time Travel prevention, Fluid Anchor slot logic (2026-04-23)
 
 - **Export fix** — `crossOrigin="anonymous"` на `<img>` аватара всередині canvas; toast.success "Сторі збережено!" / toast.error з реальним повідомленням замість silent fail

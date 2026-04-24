@@ -37,7 +37,15 @@ export interface BookingWizardProps {
   /** @deprecated Pricing rules are now fetched server-side in computeBookingPrice. Ignored. */
   pricingRules?: Record<string, unknown>;
   onSuccess?: () => void;
-  flashDeal?: { id: string; discountPct: number; serviceName: string } | null;
+  flashDeal?: {
+    id: string;
+    discountPct: number;
+    serviceName: string;
+    serviceId?: string;
+    slotDate?: string;
+    slotTime?: string;
+  } | null;
+  initialStep?: WizardStep;
 }
 
 export type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';

@@ -42,6 +42,7 @@ interface Review {
 
 export interface FlashDeal {
   id: string;
+  serviceId?: string;
   serviceName: string;
   slotDate: string;
   slotTime: string;
@@ -124,7 +125,7 @@ function useCountdown(expiresAt: string) {
 function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: string; onBook: () => void }) {
   const countdown = useCountdown(deal.expiresAt);
   const discounted = Math.round(deal.originalPrice * (1 - deal.discountPct / 100));
-  const [d, mon] = deal.slotDate.split('-').slice(1).map(Number);
+  const [mon, d] = deal.slotDate.split('-').slice(1).map(Number);
   const months = ['', 'січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
   const dateLabel = `${d} ${months[mon]}`;
 
@@ -781,7 +782,6 @@ export function PublicMasterPage({ master }: { master: Master }) {
         products={master.products ?? []}
         initialService={selectedService}
         initialServices={repeatServices ?? undefined}
-        initialStep={repeatServices ? 'datetime' : undefined}
         masterName={master.name}
         masterId={master.id}
         bookingsThisMonth={master.bookingsThisMonth ?? 0}

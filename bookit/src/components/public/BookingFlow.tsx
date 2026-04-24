@@ -3,6 +3,7 @@
 import { BookingWizard, type WizardService, type WizardProduct } from '@/components/shared/BookingWizard';
 import type { WorkingHoursConfig } from '@/types/database';
 import type { FlashDeal } from '@/components/public/PublicMasterPage';
+import type { WizardStep } from '@/components/shared/wizard/types';
 
 interface Service {
   id: string; name: string; price: number; duration: number;
@@ -20,7 +21,6 @@ interface BookingFlowProps {
   products?: Product[];
   initialService: Service | null;
   initialServices?: Service[];
-  initialStep?: string;
   masterName: string;
   masterId: string;
   bookingsThisMonth?: number;
@@ -37,10 +37,19 @@ export function BookingFlow({
   bookingsThisMonth, subscriptionTier,
   pricingRules, workingHours, flashDeal,
 }: BookingFlowProps) {
+  // Flash deal fast-track: find the service and skip straight to details
+  const flashService = flashDeal
+    ? (services.find(s => s.id === flashDeal.serviceId) ?? services.find(s => s.name === flashDeal.serviceName))
+    : null;
+
   const initial: WizardService[] | undefined =
-    initialServices?.length ? (initialServices as WizardService[]) :
-    initialService            ? [initialService as WizardService] :
+    flashDeal && flashService ? [flashService as WizardService] :
+    initialServices?.length   ? (initialServices as WizardService[]) :
+    initialService             ? [initialService as WizardService] :
     undefined;
+
+  const initialStep: WizardStep | undefined =
+    flashDeal && flashService ? 'details' : undefined;
 
   return (
     <BookingWizard
@@ -52,6 +61,7 @@ export function BookingFlow({
       services={services as WizardService[]}
       products={products as WizardProduct[]}
       initialServices={initial}
+      initialStep={initialStep}
       mode="client"
       bookingsThisMonth={bookingsThisMonth}
       subscriptionTier={subscriptionTier}

@@ -129,7 +129,7 @@ export default async function MasterPublicPage(
       .neq('status', 'cancelled'),
     supabase
       .from('flash_deals')
-      .select('id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at')
+      .select('id, service_id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at')
       .eq('master_id', data.id)
       .eq('status', 'active')
       .gt('expires_at', getNow().toISOString())
@@ -203,6 +203,7 @@ export default async function MasterPublicPage(
 
   const flashDeals = (flashDealsRes.data ?? []).map((d: any) => ({
     id: d.id as string,
+    serviceId: (d.service_id as string) || undefined,
     serviceName: d.service_name as string,
     slotDate: d.slot_date as string,
     slotTime: (d.slot_time as string).slice(0, 5),

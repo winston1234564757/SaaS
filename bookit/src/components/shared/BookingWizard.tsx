@@ -33,8 +33,10 @@ export function BookingWizard({
   isOpen, onClose, masterId, masterName = '', workingHours,
   services, products = [], initialServices,
   mode, bookingsThisMonth = 0, subscriptionTier = 'starter', pricingRules,
-  onSuccess, flashDeal,
+  onSuccess, flashDeal, initialStep,
 }: BookingWizardProps) {
+
+  const isFlashFastTrack = !!(flashDeal?.slotDate && flashDeal?.slotTime);
 
   const {
     step, direction, go, goBack, closeWizard, hasProducts, availableProducts,
@@ -53,7 +55,13 @@ export function BookingWizard({
     suggestedProductIds,
     register, errors, trigger, watchName, watchPhone, setValue,
     addToCart, removeFromCart, cartQty, toggleService,
-  } = useBookingWizardState({ isOpen, masterId, mode, initialServices, products, onClose });
+  } = useBookingWizardState({
+    isOpen, masterId, mode, initialServices, products, onClose,
+    initialStep,
+    initialDate: flashDeal?.slotDate,
+    initialTime: flashDeal?.slotTime,
+    isFlashFastTrack,
+  });
 
   const isAtLimit = mode === 'client' && subscriptionTier === 'starter' && bookingsThisMonth >= 30;
 
