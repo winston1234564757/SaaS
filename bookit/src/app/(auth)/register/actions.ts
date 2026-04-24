@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { applyReferralRewards } from '@/lib/actions/referrals';
 import { generateSecureToken } from '@/lib/utils/token';
+import { LEGAL_VERSIONS } from '@/lib/constants/legal';
 import { revalidatePath } from 'next/cache';
 
 function generatePlaceholderSlug(): string {
@@ -77,6 +78,17 @@ export async function claimMasterRole(
     return { error: `master_profiles error: ${masterError.message}` };
   }
 
+  try {
+    await admin.auth.admin.updateUserById(user.id, {
+      user_metadata: {
+        legal_accepted_at: new Date().toISOString(),
+        legal_versions: LEGAL_VERSIONS,
+      },
+    });
+  } catch (e) {
+    console.error('[register] legal metadata write failed:', e);
+  }
+
   revalidatePath('/dashboard', 'layout');
   return { error: null };
 }
@@ -134,6 +146,17 @@ export async function createMasterProfileAfterSignup(params: {
     .upsert(masterData, { onConflict: 'id', ignoreDuplicates: false });
 
   if (masterError) return { error: 'Помилка створення профілю. Спробуйте ще раз.' };
+
+  try {
+    await admin.auth.admin.updateUserById(params.userId, {
+      user_metadata: {
+        legal_accepted_at: new Date().toISOString(),
+        legal_versions: LEGAL_VERSIONS,
+      },
+    });
+  } catch (e) {
+    console.error('[register] legal metadata write failed:', e);
+  }
 
   revalidatePath('/dashboard', 'layout');
   return { error: null };

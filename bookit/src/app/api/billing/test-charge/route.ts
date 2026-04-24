@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { MonoProvider } from '@/lib/billing/MonoProvider';
-import { WfpProvider } from '@/lib/billing/WfpProvider';
 import { getBaseUrl } from '@/lib/utils/url';
 import type { ProviderId } from '@/lib/billing/PaymentProvider';
 
@@ -23,8 +22,8 @@ export async function POST(req: NextRequest) {
   }
 
   const { provider, planId = 'pro' } = body;
-  if (provider !== 'monobank' && provider !== 'wayforpay') {
-    return NextResponse.json({ error: 'provider must be monobank or wayforpay' }, { status: 400 });
+  if (provider !== 'monobank') {
+    return NextResponse.json({ error: 'provider must be monobank' }, { status: 400 });
   }
   if (planId !== 'pro' && planId !== 'studio') {
     return NextResponse.json({ error: 'planId must be pro or studio' }, { status: 400 });
@@ -37,12 +36,10 @@ export async function POST(req: NextRequest) {
 
   const base = getBaseUrl();
   const returnUrl = `${base}/dashboard/billing?status=pending`;
-  const webhookUrl = provider === 'monobank'
-    ? `${base}/api/billing/mono-webhook`
-    : `${base}/api/billing/wfp-webhook`;
+  const webhookUrl = `${base}/api/billing/mono-webhook`;
 
   try {
-    const providerImpl = provider === 'monobank' ? new MonoProvider() : new WfpProvider();
+    const providerImpl = new MonoProvider();
     const result = await providerImpl.createCheckout({
       masterId,
       planId,

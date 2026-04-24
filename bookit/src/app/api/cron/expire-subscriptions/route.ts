@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { MonoProvider } from '@/lib/billing/MonoProvider';
-import { WfpProvider } from '@/lib/billing/WfpProvider';
 import type { PaymentProvider } from '@/lib/billing/PaymentProvider';
 
 export const runtime = 'nodejs';
@@ -74,7 +73,6 @@ export async function GET(req: NextRequest) {
 
   const providers: Record<string, PaymentProvider> = {
     monobank:  new MonoProvider(),
-    wayforpay: new WfpProvider(),
   };
 
   const results = await Promise.allSettled(
@@ -86,9 +84,7 @@ export async function GET(req: NextRequest) {
       if (!amountKopecks) throw new Error(`Unknown plan_id: ${sub.plan_id}`);
 
       const orderId = `recurring_${sub.id}_${Date.now()}`;
-      const webhookUrl = sub.provider === 'monobank'
-        ? `${APP_URL}/api/billing/mono-webhook`
-        : `${APP_URL}/api/billing/wfp-webhook`;
+      const webhookUrl = `${APP_URL}/api/billing/mono-webhook`;
 
       let succeeded = false;
       let invoiceId: string | undefined;

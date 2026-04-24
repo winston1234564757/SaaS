@@ -9,6 +9,7 @@ import { LandingEconomy } from '@/components/landing/LandingEconomy';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingFAQ } from '@/components/landing/LandingFAQ';
 import { LandingFooterCTA } from '@/components/landing/LandingFooterCTA';
+import { LegalFooterLinks } from '@/components/shared/LegalFooterLinks';
 
 export const metadata: Metadata = {
   title: 'Bookit — Система, яка сама генерує дохід для б\'юті-майстра',
@@ -62,8 +63,9 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-8 text-sm text-[#A8928D]">
+      <footer className="py-8 px-4 flex flex-col items-center gap-3 text-sm text-[#A8928D]">
         <p>© 2026 Bookit — зроблено в Україні 🇺🇦</p>
+        <LegalFooterLinks />
       </footer>
     </div>
   );

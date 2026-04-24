@@ -42,6 +42,7 @@ export async function createMonoInvoice(
     const body = {
       amount: plan.priceKopecks,
       ccy: 980,
+      type: 'subscription', // Hidden flag to trigger card token in webhook
       merchantPaymInfo: {
         reference,
         destination: plan.name,

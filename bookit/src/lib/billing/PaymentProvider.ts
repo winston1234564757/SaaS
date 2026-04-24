@@ -1,4 +1,4 @@
-export type ProviderId = 'monobank' | 'wayforpay';
+export type ProviderId = 'monobank';
 export type PlanId = 'pro' | 'studio';
 
 export interface CheckoutOptions {

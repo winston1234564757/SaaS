@@ -1,39 +1,46 @@
-ROLE & CONTEXT:
-You are an expert Senior Backend Engineer for "BookIT". We are executing Phase 2 of the recurrent billing system. You need to rewrite the recurring charge cron job to be hyper-resilient, transactional, and PLG-friendly (implementing a basic dunning/retry process).
+ROLE: Senior Fullstack Developer & Compliance Architect.
+CONTEXT: We need to link the legal documents (public-offer, terms-of-service, privacy-policy, refund-policy) across the entire "BookIT" platform: Landing, Master Dashboard, and Client Dashboard.
 
-CONSTRAINTS & REQUIREMENTS:
-
-Target File: Completely rewrite /api/cron/expire-subscriptions/route.ts.
-
-Resilience: Use Promise.allSettled to process a batch of subscriptions concurrently. Wrap the chargeRecurrent call in a timeout promise (e.g., 8000ms max) so a hanging API provider doesn't crash the entire cron.
-
-Idempotency: Generate a unique orderId for each recurring attempt (e.g., recurring_${subscription_id}_${Date.now()}) to pass to the payment provider.
-
-Dunning Process: - Success: Update master_subscriptions (status = 'active', reset failed_attempts = 0, next_charge_at = NOW() + 1 month). Sync master_profiles (plan_expires_at = NOW() + 1 month). Insert a success record into billing_events.
-
-Failure: Increment failed_attempts. If failed_attempts >= 3, set status = 'past_due' (or 'failed') and downgrade the master in master_profiles to plan_id = 'free'. Insert a failure record into billing_events.
-
-Security: Verify CRON_SECRET authorization header before executing.
+GOAL: Implement legally binding access points and ensure UI consistency.
 
 IMMEDIATE ACTIONS:
 
-Open /api/cron/expire-subscriptions/route.ts.
+Centralize Constants:
 
-Implement the logic:
+Create src/lib/constants/legal.ts containing the slugs and names of all legal documents to avoid hardcoding URLs everywhere.
 
-Validate cron secret.
+Shared UI Component:
 
-Initialize Supabase service_role client.
+Create src/components/shared/LegalFooterLinks.tsx — a clean, minimalist list of links that will be used in:
 
-Call the RPC get_pending_subscriptions_for_billing(50).
+The main Landing Page footer.
 
-Map over the returned locked subscriptions.
+The Master Dashboard (under "Settings" or "More").
 
-For each, instantiate the correct PaymentProvider based on the provider column (Mono or WFP).
+The Client Dashboard (in the profile/sidebar).
 
-Execute provider.chargeRecurrent(token, amount, generatedOrderId) within a timeout wrapper.
+Registration & Payment Hardening:
 
-Handle the success or failure cases exactly as defined in the Dunning Process constraint. Do these DB updates directly inside the script using the service_role client.
+RegisterForm: Ensure the mandatory checkbox links to /legal/terms-of-service and /legal/public-offer.
 
-Update BOOKIT.md mapping the new dunning flow and cron resilience mechanics. Ensure imports and env variables referenced are correct.
-[END CLAUDE COMMAND]
+Checkout UI: In BillingPage.tsx (Master), add a notice under the payment buttons: "Здійснюючи оплату, ви погоджуєтесь з умовами [Публічної оферти] та [Правил повернення коштів]".
+
+Database Traceability (Crucial):
+
+Update the registration Server Action (src/app/(auth)/register/actions.ts).
+
+When a new master/client is created, set a hidden field in metadata or a new column legal_acceptance with the current date and document versions.
+
+SEO & Indexing:
+
+Ensure legal pages have robots: "noindex, follow" (we want them reachable but not necessarily polluting search results unless someone looks for them).
+
+CONSTRAINTS:
+
+Links must open in a new tab (target="_blank").
+
+Design: Minimalist, semi-transparent text in footers, clear and accessible in dashboards.
+
+Use the dynamic route /legal/[slug] implemented earlier.
+
+DOCUMENTATION: Update bookit/BOOKIT.md confirming the placement of legal links in all 3 entry points (Landing, Master, Client).

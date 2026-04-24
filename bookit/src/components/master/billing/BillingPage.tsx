@@ -372,10 +372,33 @@ export function BillingPage() {
         </div>
       </div>
 
-      {/* Payment info */}
-      <p className="text-center text-xs text-[#A8928D] px-4">
-        Оплата через Monobank Acquiring — захищено SSL. Підписка активується автоматично.
-      </p>
+      {/* Payment info + legal consent */}
+      <div className="flex flex-col items-center gap-1.5 px-4">
+        <p className="text-center text-xs text-[#A8928D]">
+          Оплата через Monobank Acquiring — захищено SSL. Підписка активується автоматично.
+        </p>
+        <p className="text-center text-xs text-[#A8928D]">
+          Здійснюючи оплату, ви погоджуєтесь з умовами{' '}
+          <a
+            href="/legal/public-offer"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#789A99] hover:underline"
+          >
+            Публічної оферти
+          </a>{' '}
+          та{' '}
+          <a
+            href="/legal/refund-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#789A99] hover:underline"
+          >
+            Правил повернення коштів
+          </a>
+          .
+        </p>
+      </div>
     </div>
   );
 }

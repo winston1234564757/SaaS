@@ -5,7 +5,7 @@ const BILLING_PAGE =
     ? `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing`
     : 'https://bookit-five-psi.vercel.app/dashboard/billing';
 
-// WayForPay and Monobank POST to returnUrl/redirectUrl after payment.
+// Monobank POST to returnUrl/redirectUrl after payment.
 // A cross-origin POST bypasses session cookies in some browsers and always
 // hits middleware as an unauthenticated POST → redirect to /login.
 //

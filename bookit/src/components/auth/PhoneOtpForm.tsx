@@ -57,6 +57,7 @@ export function PhoneOtpForm() {
 
   const [step, setStep] = useState<Step>('role_select');
   const [selectedRole, setSelectedRole] = useState<Role>('client');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [phone, setPhone] = useState('');
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
@@ -382,11 +383,63 @@ export function PhoneOtpForm() {
                 })}
               </div>
 
+              {/* Terms checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer mb-5 group">
+                <div className="relative mt-0.5 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={e => setTermsAccepted(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-5 h-5 rounded-md border-2 border-[#E8D0C8] bg-white peer-checked:bg-[#789A99] peer-checked:border-[#789A99] transition-all flex items-center justify-center">
+                    {termsAccepted && (
+                      <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                        <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs text-[#6B5750] leading-relaxed">
+                  Я ознайомлений(а) та погоджуюсь з{' '}
+                  <a
+                    href="/legal/terms-of-service"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="text-[#789A99] underline underline-offset-2 hover:text-[#5C7E7D] transition-colors"
+                  >
+                    Умовами надання послуг
+                  </a>
+                  ,{' '}
+                  <a
+                    href="/legal/public-offer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="text-[#789A99] underline underline-offset-2 hover:text-[#5C7E7D] transition-colors"
+                  >
+                    Публічною офертою
+                  </a>{' '}
+                  та{' '}
+                  <a
+                    href="/legal/privacy-policy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="text-[#789A99] underline underline-offset-2 hover:text-[#5C7E7D] transition-colors"
+                  >
+                    Політикою конфіденційності
+                  </a>
+                </span>
+              </label>
+
               {/* CTA */}
               <button
                 type="button"
                 onClick={() => setStep('phone')}
-                className="flex items-center justify-center w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25"
+                disabled={!termsAccepted}
+                className="flex items-center justify-center w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100"
               >
                 Продовжити
               </button>

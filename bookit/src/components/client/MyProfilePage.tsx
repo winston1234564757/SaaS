@@ -8,6 +8,7 @@ import { Check, Loader2, CalendarDays, Mail, ArrowLeft, LogOut, Send, Gift, Copy
 import { updateClientProfile, disconnectClientTelegram } from '@/app/my/profile/actions';
 import { createClient } from '@/lib/supabase/client';
 import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
+import { LegalFooterLinks } from '@/components/shared/LegalFooterLinks';
 import { getOrCreateReferralLink } from '@/lib/actions/referrals';
 import { useToast } from '@/lib/toast/context';
 import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
@@ -343,6 +344,17 @@ export function MyProfilePage({ profile }: Props) {
           <span className="text-sm text-[#2C1A14]">Переглянути всі записи</span>
           <span className="text-[#789A99] text-sm">→</span>
         </Link>
+      </motion.div>
+
+      {/* Legal links */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="bento-card p-4"
+      >
+        <p className="text-xs font-semibold text-[#A8928D] mb-2">Юридична інформація</p>
+        <LegalFooterLinks variant="list" />
       </motion.div>
 
       {/* Вийти */}

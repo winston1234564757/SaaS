@@ -252,7 +252,7 @@ Forms:      React Hook Form + Zod (схеми валідації окремо в
 State:      TanStack Query v5 (staleTime per hook) · Zustand (локальний UI-стан)
 Backend:    Supabase (PostgreSQL + RLS + Realtime + Storage + Edge Functions)
 Auth:       SMS OTP → virtual email → Supabase magiclink token (пароль НІКОЛИ не в response)
-Payments:   WayForPay (HMAC-MD5 підпис) · Monobank (Ed25519 підпис)
+Payments:   Monobank (Ed25519 підпис). WayForPay is deprecated and removed. Monobank is the sole payment provider.
 Push:       Web Push API (VAPID) · TurboSMS (SMS fallback)
 Telegram:   Bot API (HTML parse_mode, escHtml() обов'язково)
 Deploy:     Vercel (Edge Runtime) · Vercel Cron Jobs · Supabase Cloud
@@ -276,7 +276,7 @@ src/
 │   │       ├── analytics/             — аналітика Pro (charts, retention, когорти)
 │   │       ├── flash/                 — flash-акції
 │   │       ├── pricing/               — dynamic pricing rules
-│   │       ├── billing/               — підписки (WayForPay + Monobank)
+│   │       ├── billing/               — підписки (Monobank)
 │   │       ├── settings/              — working hours, VacationManager, Telegram
 │   │       ├── reviews/               — відгуки клієнтів
 │   │       ├── portfolio/             — фото портфоліо (drag-reorder)
@@ -300,7 +300,6 @@ src/
 │       ├── auth/send-sms/             — відправка OTP (rate-limit)
 │       ├── auth/verify-sms/           — верифікація OTP → magiclink token
 │       ├── auth/link-booking/         — прив'язка booking після SMS auth
-│       ├── billing/webhook/           — WayForPay (HMAC-MD5)
 │       ├── billing/mono-webhook/      — Monobank (Ed25519)
 │       ├── cron/reminders/            — нагадування за 24г
 │       ├── cron/reset-monthly/        — скидання лічильників
@@ -406,7 +405,7 @@ src/
 
 | Таблиця | Ключові колонки | Мета |
 |---------|----------------|------|
-| `payments` | `master_id`, `amount`, `provider` ('wayforpay'/'monobank'), `status`, `order_ref` | Транзакції |
+| `payments` | `master_id`, `amount`, `provider` ('monobank'), `status`, `order_ref` | Транзакції |
 | `subscriptions` | `master_id`, `tier`, `expires_at`, `provider` | Активні підписки |
 
 ### Notifications
@@ -512,7 +511,7 @@ pluralUk(n, 'запис', 'записи', 'записів')  // "1 запис / 
 
 ```
 SMS OTP:    atomic RPC check_and_log_sms_attempt() з advisory lock → race-condition bypass неможливий
-Webhooks:   WayForPay HMAC-MD5 + Monobank Ed25519 — перевірка підпису ОБОВ'ЯЗКОВА
+Webhooks:   Monobank Ed25519 — перевірка підпису ОБОВ'ЯЗКОВА
 Cron:       Authorization: Bearer {CRON_SECRET} — без виключень, на першому рядку хендлера
 Telegram:   escHtml() на всіх user-supplied strings → захист від HTML injection
 Codes:      crypto.getRandomValues() для referral/invite/OTP — Math.random() ЗАБОРОНЕНО
@@ -578,10 +577,8 @@ virtualEmail = phone.replace('+','') + '@bookit.app'
 
 | Метод | Endpoint | Призначення | Верифікація |
 |-------|----------|-------------|-------------|
-| POST | `/api/billing/webhook` | WayForPay: `transactionStatus === 'Approved'` → продовжити підписку | HMAC-MD5 |
 | POST | `/api/billing/mono-webhook` | Monobank: `status === 'success'` → продовжити підписку | Ed25519 |
 
-**WayForPay:** `orderRef` формат `sub_{masterId}_{timestamp}`. Підписка +31 день.
 **Monobank:** `reference` формат `bookit_{tier}_{uid32}_{timestamp}`. Pubkey кешується. Без double-extend.
 Обидва використовують `createAdminClient()` (не anon client!).
 
@@ -637,6 +634,37 @@ if (!user && (pathname startsWith /dashboard|/my|/onboarding))
 | `/my/**` | Client | Auth (client або master+cookie) |
 | `/studio/join` | Client | Auth |
 | `/offline` | Static | Public (PWA fallback) |
+| `/legal/[slug]` | Server (SSG) | Public — юридичні документи |
+
+### Юридичні документи (`/legal/[slug]`)
+
+Роут-група `(public)` — окремий лейаут з header/footer.
+
+| Slug | Документ |
+|------|---------|
+| `public-offer` | Публічна оферта (укр.) |
+| `terms-of-service` | Умови надання послуг (укр./eng.) |
+| `privacy-policy` | Політика конфіденційності — GDPR + ЗУ (укр./eng.) |
+| `refund-policy` | Політика повернення коштів (укр./eng.) |
+
+**Реалізація:** `src/app/(public)/legal/[slug]/page.tsx` — Server Component (SSG), читає `.md` з `src/content/legal/`, конвертує через `marked`, рендерить з `@tailwindcss/typography`. Robots: `noindex, follow`.
+
+**Блокування реєстрації:** `PhoneOtpForm` — на кроці `role_select` обов'язковий чекбокс згоди. Кнопка «Продовжити» `disabled` до прийняття. Лінки у `_blank`.
+
+**Точки розміщення юридичних лінків:**
+
+| Точка входу | Компонент | Місце |
+|---|---|---|
+| Landing | `src/app/page.tsx` | Footer під копірайтом |
+| Master Dashboard | `src/components/master/more/MorePage.tsx` | Окрема bento-картка внизу «Ще» |
+| Client Dashboard | `src/components/client/MyProfilePage.tsx` | Перед кнопкою «Вийти» |
+| Billing | `src/components/master/billing/BillingPage.tsx` | Текст-дисклеймер під кнопками оплати |
+
+**Shared компонент:** `src/components/shared/LegalFooterLinks.tsx` — `variant="compact"` (рядок з `·`) або `variant="list"` (вертикальний список).
+
+**Константи:** `src/lib/constants/legal.ts` — `LEGAL_DOCS[]` + `LEGAL_VERSIONS` (дати версій документів).
+
+**DB Traceability:** При реєстрації майстра (SMS OTP + OAuth) в `auth.users.raw_user_meta_data` записується `legal_accepted_at` (ISO timestamp) та `legal_versions` (об'єкт з датами версій кожного документа). Реалізовано в `src/app/(auth)/register/actions.ts` (`claimMasterRole` + `createMasterProfileAfterSignup`).
 
 ---
 
@@ -774,10 +802,10 @@ self.addEventListener('notificationclick', (event) => {
 | 1 | **CRITICAL** | OTP brute-force: необмежені спроби верифікації | `sms_verify_attempts` table, 10 спроб/15 хв, atomic advisory lock |
 | 2 | **CRITICAL** | Витік service role key: `/api/auth/verify-sms` повертав пароль у відповіді | Magiclink token flow — пароль НІКОЛИ не в response |
 | 3 | **CRITICAL** | Route protection bypass: `middleware.ts` ігнорувався Next.js 16 | `src/proxy.ts` + `export function proxy` |
-| 4 | **HIGH** | Webhook spoofing WayForPay: без перевірки підпису | HMAC-MD5 верифікація обов'язкова |
+| 4 | **HIGH** | Monobank webhook spoofing: без перевірки підпису | Ed25519 верифікація обов'язкова |
 | 5 | **HIGH** | Webhook spoofing Monobank: без перевірки підпису | Ed25519 верифікація через офіційний pubkey |
 | 6 | **HIGH** | Admin client exposure: `createClient(url, serviceRoleKey)` у 10+ компонентах | Уніфіковано: `createAdminClient()` тільки з `@/lib/supabase/admin` |
-| 7 | **HIGH** | WayForPay webhook тихо падав: anon client не мав RLS bypass | `createAdminClient()` у webhook |
+| 7 | **HIGH** | Monobank webhook: idempotency через `billing_events` | Додано `external_id` UNIQUE |
 | 8 | **HIGH** | Cron endpoints без auth: будь-хто міг тригерити | `Authorization: Bearer CRON_SECRET` — обов'язково, без виключень |
 | 9 | **MEDIUM** | HTML injection в Telegram: user strings в HTML parse_mode | `escHtml()` на всіх user-supplied strings |
 | 10 | **MEDIUM** | Слабкий генератор кодів: `Math.random()` для referral/invite | `crypto.getRandomValues()` |
@@ -950,7 +978,6 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 |---|---|
 | `PaymentProvider.ts` | Abstract interface: `createCheckout()`, `verifyWebhookSignature()` |
 | `MonoProvider.ts` | Monobank: invoice create (з `saveCardData`), Ed25519 sig verify + key rotation |
-| `WfpProvider.ts` | WayForPay: checkout URL build (з `recToken: 'y'`), HMAC-MD5 sig verify |
 
 ### Ендпоінти
 - **`POST /api/billing/test-charge`** — Authenticated master → 5 UAH checkout URL. Body: `{ provider, planId? }`. Повертає `{ checkoutUrl, orderId }`.
@@ -968,7 +995,7 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 - [ ] Всі RLS policies активні в Supabase
 - [ ] Всі міграції до 072 застосовані (`npx supabase db push`)
 - [ ] Ліміти Starter: 30 записів/місяць, 2 flash-акції/місяць, 9 фото, dynamic pricing trial до 1000 UAH
-- [ ] WayForPay + Monobank webhooks верифікують підпис
+- [ ] Monobank webhooks верифікують підпис
 - [ ] `CRON_SECRET` в env, всі cron routes перевіряють `Authorization: Bearer`
 - [ ] `VAPID_PRIVATE_KEY` + `NEXT_PUBLIC_VAPID_KEY` в env
 - [ ] `createAdminClient()` скрізь де потрібен RLS bypass — нема inline admin
@@ -979,3 +1006,7 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 - [ ] Service Worker зареєстрований та стратегії перевірені
 - [ ] Error boundaries на всіх client компонентах з async операціями
 - [ ] Drawers: `?drawer=` URL param ізольований у `*Drawers.tsx` компонентах — не в dashboard grid
+
+---
+
+[2026-04-24] - Antigravity: **Billing Engine — Removed WayForPay**. Completely stripped WayForPay (WFP) support. Monobank is now the sole payment provider. Removed `WfpProvider.ts`, WFP webhooks, and associated logic from actions, cron, and UI. Updated documentation to reflect this change. Project compiles and Monobank-only architecture is verified.

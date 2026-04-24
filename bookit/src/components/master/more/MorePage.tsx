@@ -124,7 +124,7 @@ export function MorePage() {
             >
               <Link href={item.href} className="block h-full">
                 <div
-                  className="bento-card p-4 h-full flex flex-col gap-3 group active:scale-[0.98] hover:scale-[1.01] transition-transform duration-200 min-h-[120px]"
+                  className="bento-card p-4 h-full flex flex-col gap-3 group active:scale-[0.98] hover:scale-[1.01] transition-transform duration-200 min-h-30"
                   style={{ background: item.bg }}
                 >
                   {/* Icon + Soon badge */}
