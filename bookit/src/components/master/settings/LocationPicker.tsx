@@ -34,7 +34,10 @@ function loadGoogleMaps(): Promise<void> {
     script.async = true;
     script.defer = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Google Maps'));
+    script.onerror = () => {
+      scriptPromise = null; // reset so next mount can retry
+      reject(new Error('Failed to load Google Maps'));
+    };
     document.head.appendChild(script);
   });
 
