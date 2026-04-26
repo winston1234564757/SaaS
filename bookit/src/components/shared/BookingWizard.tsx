@@ -35,6 +35,7 @@ export function BookingWizard({
   mode, bookingsThisMonth = 0, subscriptionTier = 'starter', pricingRules,
   onSuccess, flashDeal, initialStep,
   c2cRefCode = null, c2cDiscountPct = null,
+  masterC2cEnabled = false, masterC2cDiscountPct = null,
 }: BookingWizardProps) {
 
   const isFlashFastTrack = !!(flashDeal?.slotDate && flashDeal?.slotTime);
@@ -349,6 +350,9 @@ export function BookingWizard({
                         createdBookingId={createdBookingId}
                         clientPhone={clientPhone}
                         masterName={masterName}
+                        masterId={masterId}
+                        masterC2cEnabled={masterC2cEnabled}
+                        masterC2cDiscountPct={masterC2cDiscountPct}
                         flashDeal={flashDeal}
                         finalTotal={finalTotal}
                         direction={direction}

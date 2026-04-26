@@ -318,7 +318,13 @@ export default async function MasterPublicPage(
       <div id="e2e-debug-now" style={{ display: 'none' }} data-now={now.toISOString()}>
         {now.toISOString()}
       </div>
-      <PublicMasterPage master={master} c2cRefCode={c2cRefCode} c2cDiscountPct={c2cDiscountPct} />
+      <PublicMasterPage
+        master={master}
+        c2cRefCode={c2cRefCode}
+        c2cDiscountPct={c2cDiscountPct}
+        masterC2cEnabled={masterC2cEnabled === true}
+        masterC2cDiscountPct={masterC2cEnabled ? ((data as any).c2c_discount_pct as number ?? 10) : null}
+      />
     </>
   );
 }

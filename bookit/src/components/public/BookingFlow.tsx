@@ -30,6 +30,8 @@ interface BookingFlowProps {
   flashDeal?: FlashDeal | null;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
+  masterC2cEnabled?: boolean;
+  masterC2cDiscountPct?: number | null;
 }
 
 export function BookingFlow({
@@ -39,6 +41,7 @@ export function BookingFlow({
   bookingsThisMonth, subscriptionTier,
   pricingRules, workingHours, flashDeal,
   c2cRefCode, c2cDiscountPct,
+  masterC2cEnabled, masterC2cDiscountPct,
 }: BookingFlowProps) {
   // Flash deal fast-track: find the service and skip straight to details
   const flashService = flashDeal
@@ -72,6 +75,8 @@ export function BookingFlow({
       flashDeal={flashDeal}
       c2cRefCode={c2cRefCode}
       c2cDiscountPct={c2cDiscountPct}
+      masterC2cEnabled={masterC2cEnabled}
+      masterC2cDiscountPct={masterC2cDiscountPct}
     />
   );
 }

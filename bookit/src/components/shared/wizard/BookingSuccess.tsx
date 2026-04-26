@@ -1,13 +1,15 @@
 'use client';
 // src/components/shared/wizard/BookingSuccess.tsx
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, Share2, Copy } from 'lucide-react';
 import { addMinutes, parse as parseFns, format as formatFns } from 'date-fns';
 import { pluralize } from '@/lib/utils/dates';
 import { PostBookingAuth } from '@/components/public/PostBookingAuth';
 import { PushPrompt } from './PushPrompt';
 import { MONTH_S, fmt, slide } from './helpers';
 import type { WizardService, CartItem } from './types';
+import { getOrCreateReferralLink } from '@/lib/actions/referrals';
 
 interface BookingSuccessProps {
   selectedServices: WizardService[];
@@ -19,6 +21,9 @@ interface BookingSuccessProps {
   createdBookingId: string | null;
   clientPhone: string;
   masterName: string;
+  masterId?: string;
+  masterC2cEnabled?: boolean;
+  masterC2cDiscountPct?: number | null;
   flashDeal?: { id: string; discountPct: number; serviceName: string } | null;
   finalTotal: number;
   direction: number;
@@ -35,10 +40,43 @@ export function BookingSuccess({
   createdBookingId,
   clientPhone,
   masterName,
+  masterId,
+  masterC2cEnabled,
+  masterC2cDiscountPct,
   finalTotal,
   direction,
   onClose,
 }: BookingSuccessProps) {
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!clientUserId || !masterId || !masterC2cEnabled) return;
+    getOrCreateReferralLink(clientUserId, 'client', 'C2C', masterId).then(res => {
+      if (res.success) setShareLink(res.link);
+    });
+  }, [clientUserId, masterId, masterC2cEnabled]);
+
+  const handleShare = async () => {
+    if (!shareLink) return;
+    const pct = masterC2cDiscountPct ?? 10;
+    const text = `Я записалась до ${masterName}! Тобі −${pct}% на перший візит за моїм посиланням:`;
+    if (navigator.share) {
+      navigator.share({ title: `Знижка від ${masterName}`, text, url: shareLink }).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(`${text} ${shareLink}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleCopy = async () => {
+    if (!shareLink) return;
+    await navigator.clipboard.writeText(shareLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <motion.div key="success" custom={direction} variants={slide}
       initial="enter" animate="center" exit="exit"
@@ -80,6 +118,31 @@ export function BookingSuccess({
           </p>
         )}
       </div>
+
+      {masterC2cEnabled && shareLink && clientUserId && (
+        <div className="w-full bento-card p-4 flex flex-col gap-3 text-left">
+          <div>
+            <p className="text-sm font-semibold text-[#2C1A14]">Поділись з подругою</p>
+            <p className="text-xs text-[#6B5750] mt-0.5">
+              Вона отримає −{masterC2cDiscountPct ?? 10}% на перший візит · Ти накопиш +{masterC2cDiscountPct ?? 10}% бонус
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleShare}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#789A99] text-white text-xs font-semibold hover:bg-[#6B8C8B] transition-colors"
+            >
+              <Share2 size={13} /> Поділитись
+            </button>
+            <button
+              onClick={handleCopy}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/80 border border-white/80 text-xs font-medium text-[#6B5750] hover:bg-white transition-colors"
+            >
+              <Copy size={13} /> {copied ? 'Скопійовано!' : 'Копіювати'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {!clientUserId && createdBookingId ? (
         <div className="w-full border-t border-[#F5E8E3] pt-5">

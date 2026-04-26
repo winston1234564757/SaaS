@@ -294,10 +294,14 @@ export function PublicMasterPage({
   master,
   c2cRefCode = null,
   c2cDiscountPct = null,
+  masterC2cEnabled = false,
+  masterC2cDiscountPct = null,
 }: {
   master: Master;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
+  masterC2cEnabled?: boolean;
+  masterC2cDiscountPct?: number | null;
 }) {
   const themeKey = (master.themeKey ?? 'default') as MoodThemeKey;
   const theme = moodThemes[themeKey] ?? moodThemes.default;
@@ -834,6 +838,8 @@ export function PublicMasterPage({
         flashDeal={activeFlashDeal}
         c2cRefCode={c2cRefCode}
         c2cDiscountPct={c2cDiscountPct}
+        masterC2cEnabled={masterC2cEnabled}
+        masterC2cDiscountPct={masterC2cDiscountPct}
       />
 
     </>

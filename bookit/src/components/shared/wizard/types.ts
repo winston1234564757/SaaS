@@ -48,6 +48,8 @@ export interface BookingWizardProps {
   initialStep?: WizardStep;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
+  masterC2cEnabled?: boolean;
+  masterC2cDiscountPct?: number | null;
 }
 
 export type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';
