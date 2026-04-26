@@ -4,12 +4,11 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, Loader2, CalendarDays, Mail, ArrowLeft, LogOut, Send, Gift, Copy, Share2 } from 'lucide-react';
+import { Check, Loader2, CalendarDays, Mail, ArrowLeft, LogOut, Send } from 'lucide-react';
 import { updateClientProfile, disconnectClientTelegram } from '@/app/my/profile/actions';
 import { createClient } from '@/lib/supabase/client';
 import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
 import { LegalFooterLinks } from '@/components/shared/LegalFooterLinks';
-import { getOrCreateReferralLink } from '@/lib/actions/referrals';
 import { useToast } from '@/lib/toast/context';
 import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
@@ -33,9 +32,6 @@ export function MyProfilePage({ profile }: Props) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
-  const [c2cLink, setC2cLink] = useState<string | null>(null);
-  const [c2cCopied, setC2cCopied] = useState(false);
-  const [c2cLoading, setC2cLoading] = useState(false);
 
   const [fullName, setFullName] = useState(profile.fullName);
   // Зберігаємо як 9 цифр (без коду країни і ведучого 0) для input з +38 prefix
@@ -72,36 +68,6 @@ export function MyProfilePage({ profile }: Props) {
   }
 
   const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME;
-
-  async function handleGenerateC2C() {
-    if (!profile.lastMasterId) return;
-    setC2cLoading(true);
-    const result = await getOrCreateReferralLink(
-      profile.userId, 'client', 'C2C', profile.lastMasterId,
-    );
-    setC2cLoading(false);
-    if (result.success) setC2cLink(result.link);
-  }
-
-  async function handleCopyC2C() {
-    if (!c2cLink) return;
-    await navigator.clipboard.writeText(c2cLink);
-    setC2cCopied(true);
-    setTimeout(() => setC2cCopied(false), 2000);
-  }
-
-  async function handleShareC2C() {
-    if (!c2cLink) return;
-    if (navigator.share) {
-      await navigator.share({
-        title: 'Запис до майстра — Bookit',
-        text: 'Поділіться своїм майстром з подругою! Вона отримає знижку 10%, а ви — бонус на наступний візит 🎁',
-        url: c2cLink,
-      });
-    } else {
-      handleCopyC2C();
-    }
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -235,68 +201,7 @@ export function MyProfilePage({ profile }: Props) {
         </motion.div>
       )}
 
-      {/* C2C: Подаруй подрузі знижку */}
-      {profile.lastMasterId && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14, type: 'spring', stiffness: 300, damping: 24 }}
-          className="bento-card p-5"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-2xl bg-[#D4935A]/12 flex items-center justify-center flex-shrink-0">
-              <Gift size={18} className="text-[#D4935A]" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#2C1A14]">Подаруй подрузі знижку</p>
-              <p className="text-xs text-[#A8928D]">Вона отримає знижку 10%, а ти — бонус на наступний візит</p>
-            </div>
-          </div>
-
-          {!c2cLink ? (
-            <button
-              onClick={handleGenerateC2C}
-              disabled={c2cLoading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#D4935A] text-white text-sm font-semibold hover:bg-[#c07d45] transition-colors disabled:opacity-60"
-            >
-              {c2cLoading ? <Loader2 size={15} className="animate-spin" /> : <Gift size={15} />}
-              {c2cLoading ? 'Генеруємо...' : 'Отримати посилання'}
-            </button>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center rounded-2xl border border-white/80 bg-white/60 overflow-hidden">
-                <input
-                  readOnly
-                  value={c2cLink}
-                  className="flex-1 px-4 py-3 text-xs text-[#2C1A14] bg-transparent outline-none truncate"
-                />
-                <button
-                  onClick={handleCopyC2C}
-                  className="px-4 py-3 text-[#789A99] hover:bg-[#789A99]/10 transition-colors border-l border-white/80 flex-shrink-0"
-                >
-                  {c2cCopied ? <Check size={15} className="text-[#5C9E7A]" /> : <Copy size={15} />}
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCopyC2C}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#789A99]/10 text-[#789A99] text-sm font-semibold hover:bg-[#789A99]/20 transition-colors"
-                >
-                  {c2cCopied ? <Check size={14} /> : <Copy size={14} />}
-                  {c2cCopied ? 'Скопійовано!' : 'Копіювати'}
-                </button>
-                <button
-                  onClick={handleShareC2C}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#D4935A] text-white text-sm font-semibold hover:bg-[#c07d45] transition-colors"
-                >
-                  <Share2 size={14} />
-                  Поділитись
-                </button>
-              </div>
-            </div>
-          )}
-        </motion.div>
-      )}
+      {/* C2C referral now lives in /my/loyalty — see "Для подруг" tab */}
 
       {/* Push notifications */}
       <motion.div

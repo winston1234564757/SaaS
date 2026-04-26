@@ -56,13 +56,11 @@ export default async function LoyaltyRoute() {
   });
 
   // 4. Get/Generate client's referral data
-  const { code: referralCode } = await getOrGenerateProfileReferralCode(user!.id, 'client');
-  
-  const { data: clientProfile } = await supabase
-    .from('client_profiles')
-    .select('total_masters_invited')
-    .eq('id', user!.id)
-    .single();
+  const [codeRes, clientProfileRes] = await Promise.all([
+    getOrGenerateProfileReferralCode(user!.id, 'client'),
+    supabase.from('client_profiles').select('total_masters_invited').eq('id', user!.id).single(),
+  ]);
+  const referralCode = codeRes.code || '';
 
   // 5. Get client's barter promocodes
   const { data: promocodes } = await supabase
@@ -92,12 +90,52 @@ export default async function LoyaltyRoute() {
     };
   });
 
+  // 6. C2C referrals (as referrer) — group by master
+  const { data: c2cRows } = await supabase
+    .from('c2c_referrals')
+    .select(`
+      id, status, discount_pct,
+      master_profiles (
+        id, slug, avatar_emoji, c2c_discount_pct,
+        profiles ( full_name )
+      )
+    `)
+    .eq('referrer_id', user!.id)
+    .order('created_at', { ascending: false });
+
+  // Build per-master C2C stats
+  const c2cByMaster = new Map<string, {
+    masterId: string; masterSlug: string; masterName: string; masterEmoji: string;
+    c2cDiscountPct: number; invited: number; completed: number;
+  }>();
+
+  for (const row of (c2cRows ?? []) as any[]) {
+    const mp = Array.isArray(row.master_profiles) ? row.master_profiles[0] : row.master_profiles;
+    if (!mp) continue;
+    const profile = Array.isArray(mp.profiles) ? mp.profiles[0] : mp.profiles;
+    const existing = c2cByMaster.get(mp.id) ?? {
+      masterId: mp.id, masterSlug: mp.slug, masterName: profile?.full_name || 'Майстер',
+      masterEmoji: mp.avatar_emoji || '💅', c2cDiscountPct: mp.c2c_discount_pct ?? 10,
+      invited: 0, completed: 0,
+    };
+    existing.invited += 1;
+    if (row.status === 'completed') existing.completed += 1;
+    c2cByMaster.set(mp.id, existing);
+  }
+
+  const c2cMasters = Array.from(c2cByMaster.values()).map(m => ({
+    ...m,
+    balance: m.completed * m.c2cDiscountPct,
+    shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${referralCode}`,
+  }));
+
   return (
-    <MyLoyaltyPage 
-      programs={items} 
-      referralCode={referralCode || ''}
-      totalMastersInvited={clientProfile?.total_masters_invited || 0}
+    <MyLoyaltyPage
+      programs={items}
+      referralCode={referralCode}
+      totalMastersInvited={clientProfileRes.data?.total_masters_invited || 0}
       promocodes={promoItems}
+      c2cMasters={c2cMasters}
     />
   );
 }
