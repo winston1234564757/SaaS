@@ -161,13 +161,59 @@ interface PricingRules {
 - Майстер зв'язує бізнес-Telegram у налаштуваннях (`master_profiles.telegram_chat_id`)
 - При кожному новому бронюванні → `buildBookingMessage()` → `sendTelegramMessage()`
 
-### Реферальна Система
+### Professional Alliance & Bounty Referral System
 
 **ReferralPage** (`src/components/master/referral/ReferralPage.tsx`):
-- Майстер генерує `invite_code` через `crypto.getRandomValues()`
-- Шерить: `bookit.com.ua/invite/[code]`
-- За кожного зареєстрованого через код: 30 днів Pro
-- Ambassador levels: 3 запрошених → рівень 1, 5 → рівень 2
+- Майстер шерить: `bookit.com.ua/invite/[referral_code]`
+- Запрошений отримує **14 днів Pro trial** (стандарт — 7 днів)
+- При реєстрації через реф-код створюється:
+  - `master_alliances` — незмінний запис "хто кого запросив" (соціальний граф)
+  - `master_referrals(status='trial', is_first_payment_made=false)` — білінговий трекер
+
+#### Дві незалежні знижки
+
+**1. Bounty — "Знижка за нових партнерів" (одноразова)**
+- Кожен перший оплачений місяць реферала → `referral_bounties_pending += 1` (рефереру)
+- `bounty_discount = referral_bounties_pending * 10%` на наступний billing cycle
+- Після списання: `referral_bounties_pending` → 0 (reset)
+- Ідемпотентно: `master_referrals.is_first_payment_made` запобігає подвійному нарахуванню
+- Atomic increment через RPC `increment_referral_bounty(master_id)`
+
+**2. Lifetime Status — "Постійний статус Альянсу" (накопичувальний)**
+- Залежить від ПОТОЧНОЇ кількості активних рефералів (хто зараз платить)
+- Якщо партнер перестав платити — він більше не рахується
+
+| Активних рефералів | Постійна знижка |
+|--------------------|-----------------|
+| 5+                 | 5%              |
+| 10+                | 10%             |
+| 25+                | 25%             |
+| 50+ (hard cap)     | 50%             |
+
+- Зберігається в `master_profiles.lifetime_discount NUMERIC(5,4)`
+- Оновлюється DB тригером `trg_sync_referral_status` та billing cron
+
+#### Фінальна ціна
+
+```
+bounty_discount  = referral_bounties_pending * 10%      (capped at 100%)
+lifetime_discount = tier(active_refs)                    (5/10/25/50%)
+total_discount   = min(1.0, bounty + lifetime)
+final_price      = max(1 UAH, 700 UAH * (1 - total))
+```
+
+- Studio: фіксована 299 UAH/майстер, без реферальних знижок
+- Мінімум 100 kopecks (1 UAH) — банківська валідація
+
+#### UI (ReferralPage tabs)
+- **Огляд**: блок Bounty (одноразові pending coupons) + блок Lifetime Status (tier progress bar) + preview наступного платежу зі стекінгом
+- **Історія**: список рефералів — хто в trial, хто вже активний, коли нараховано bounty
+
+#### Ключові файли
+- `src/lib/billing/pricing.ts` — pure функції (unit-tested, 27 тестів без floating-point помилок)
+- `src/lib/billing/pricing.test.ts` — vitest suite
+- `supabase/migrations/095_professional_alliance.sql` — schema (master_alliances, master_referrals, lifetime_discount) + trigger + RPC
+- `supabase/migrations/096_bounty_referral_model.sql` — referral_bounties_pending, is_first_payment_made, increment_referral_bounty RPC
 
 ### Налаштування
 
@@ -914,6 +960,10 @@ Admin:      Єдина точка входу admin.ts — service_role_key не 
 ---
 
 ## 12. Agent Sync Changelog
+
+[2026-04-25] - Claude Code: **Booking Completion Accountability System**. (1) `TodaySchedule.tsx`: функція `isPastDue()` — confirmed + end_time у минулому → amber dot + теплий фон `#D4935A/4` + рядок "⚠ Очікує завершення" зі standalone кнопкою "Завершити" (useTransition, completingId state). (2) `completeBooking` в `actions.ts`: SELECT тепер включає `client_id`; після успішного апдейту — fire-and-forget `notifyClientReviewNudge()` — INSERT in-app notification (`type=new_review`) + Web Push до клієнта. (3) Новий cron `/api/cron/check-uncompleted/route.ts`: щогодини знаходить confirmed-записи з `end_datetime` в діапазоні [now-24h, now-15min]; групує по master_id; ідемпотентність через `notifications WHERE type=unhandled_booking AND created_at >= now-55min`; Telegram-повідомлення зі списком записів + посиланням `NEXT_PUBLIC_SITE_URL/dashboard/bookings`; batch INSERT in-app notifications. `vercel.json`: новий cron `0 * * * *`. Analytics guard: `AnalyticsPage` вже фільтрує `status=completed` ✅. TypeScript: 0 помилок.
+
+[2026-04-25] - Claude Code: **Dashboard Quick Actions — BookingActionsDropdown**. Новий спільний компонент `BookingActionsDropdown.tsx` у `src/components/master/bookings/` — DRY-обгортка над `confirmBooking`, `completeBooking`, `cancelBooking` з `useTransition`, `useToast` (success/error), TanStack Query invalidation. Умовна логіка: Confirm (status=pending), Complete (status=confirmed + end_time у минулому через `isEndTimePast()`), Cancel (pending або confirmed). Новий `DropdownMenu.tsx` у `src/components/ui/` — portal-based (createPortal → document.body), fixed-position за `getBoundingClientRect`, закривається по Escape / click-outside (pointerdown), мін. 44×44px touch target для кожного item. `TodaySchedule.tsx`: видалено `loadingAction` state, `handleConfirm`, `handleComplete`, `useTransition`, `confirmBooking`/`completeBooking` imports — замінено на `<BookingActionsDropdown booking={b} onSuccess={invalidateAll} />` у list-view та week-view рядках. TypeScript: 0 помилок.
 
 [2026-04-24] - Claude Code: **Billing Engine V2 — Dunning Cron (Phase 2)**. `expire-subscriptions/route.ts` повністю переписано: `export const runtime = 'nodejs'`, `CRON_SECRET` Bearer-auth guard. Використовує RPC `get_pending_subscriptions_for_billing(50)` (FOR UPDATE SKIP LOCKED) для race-condition-safe вибірки батчу. `Promise.allSettled` — паралельна обробка без блокування; кожен виклик `provider.chargeRecurrent()` загорнуто в `withTimeout(8000ms)` — зависання API не крашить весь cron. Dunning flow: **Success** → `master_subscriptions.status='active'`, `failed_attempts=0`, `next_charge_at=+30d`, sync `master_profiles.subscription_expires_at`, `billing_events` INSERT status='success'. **Failure** → `failed_attempts++`; якщо >= 3 → `status='past_due'`, downgrade `master_profiles.subscription_tier='starter'`, `billing_events` INSERT status='failure'. Idempotency key: `recurring_{subscription_id}_{timestamp}`. `vercel.json`: додано cron `0 2 * * *` для `/api/cron/expire-subscriptions`. TypeScript: 0 помилок.
 

@@ -28,6 +28,8 @@ interface BookingFlowProps {
   pricingRules?: Record<string, unknown>;
   workingHours?: WorkingHoursConfig | null;
   flashDeal?: FlashDeal | null;
+  c2cRefCode?: string | null;
+  c2cDiscountPct?: number | null;
 }
 
 export function BookingFlow({
@@ -36,6 +38,7 @@ export function BookingFlow({
   masterName, masterId,
   bookingsThisMonth, subscriptionTier,
   pricingRules, workingHours, flashDeal,
+  c2cRefCode, c2cDiscountPct,
 }: BookingFlowProps) {
   // Flash deal fast-track: find the service and skip straight to details
   const flashService = flashDeal
@@ -67,6 +70,8 @@ export function BookingFlow({
       subscriptionTier={subscriptionTier}
       pricingRules={pricingRules}
       flashDeal={flashDeal}
+      c2cRefCode={c2cRefCode}
+      c2cDiscountPct={c2cDiscountPct}
     />
   );
 }

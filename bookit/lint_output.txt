@@ -1,0 +1,923 @@
+﻿
+> bookit@0.1.0 lint
+> eslint
+
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\02-time-travel-logic.spec.ts
+  27:29  warning  'ConsoleMessage' is defined but never used  @typescript-eslint/no-unused-vars
+  34:35  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  36:28  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\03-referral-engine.spec.ts
+  151:25  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\04-crm-logic.spec.ts
+  24:7  warning  'MASTER_SLUG' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\04-master-crm-smoke.spec.ts
+  25:10  warning  'rt' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\05-loyalty-reviews.spec.ts
+  169:13  warning  'stars' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\07-notifications.spec.ts
+  36:10  warning  'getBellBtn' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\11-master-clients.spec.ts
+  142:15  warning  'closeBtn' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\12-flash-deals.spec.ts
+  13:17  warning  'scrollAndFocus' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\14-client-journey.spec.ts
+  156:15  warning  'logoutInMenu' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\e2e\tests\16-mobile-smoke.spec.ts
+  65:13  warning  'navVisible' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  89:13  warning  'fabVisible' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\scratch\check_billing.js
+  2:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  3:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scratch\check_billing_final.js
+  2:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  3:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scratch\check_wallet.js
+  2:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scratch\find_viktor.js
+  2:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  3:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scratch\get_logs.js
+   1:22  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  16:11  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\scratch\run_map_test.js
+  1:22  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scratch\test_sub_create.js
+  2:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scratch\test_sub_create_final.js
+  2:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scratch\test_sub_create_fixed.js
+  2:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\Vitossik\SaaS\bookit\scripts\parse-report.mjs
+  1:39  warning  'mkdirSync' is defined but never used    @typescript-eslint/no-unused-vars
+  2:10  warning  'createUnzip' is defined but never used  @typescript-eslint/no-unused-vars
+  3:10  warning  'Writable' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\set_key.js
+  1:22  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  4:10  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\bookings\actions.ts
+  166:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  368:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\clients\actions.ts
+  28:3   warning  'clientPhone' is defined but never used       @typescript-eslint/no-unused-vars
+  29:3   warning  'clientName' is defined but never used        @typescript-eslint/no-unused-vars
+  57:53  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  99:17  warning  'updated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\flash\actions.ts
+   70:17  warning  'deal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  137:21  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\growth\page.tsx
+   68:49  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   81:9   warning  'inviteLink' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  101:53  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\partners\join\JoinPartnerClient.tsx
+  5:44  warning  'ArrowRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\partners\page.tsx
+  31:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\referral\page.tsx
+  47:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\(master)\dashboard\settings\actions.ts
+  82:17  warning  'deleted' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\app\[slug]\page.tsx
+   10:10  warning  'ALL_STEPS' is defined but never used     @typescript-eslint/no-unused-vars
+   82:24  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   83:24  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:53  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:51  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:53  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  222:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:49  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  249:57  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:24  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:57  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\api\cron\check-uncompleted\route.ts
+   41:47  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   72:62  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   87:30  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   95:7   error  'skipped' is never reassigned. Use 'const' instead  prefer-const
+  113:37  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  114:47  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  114:69  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\api\cron\expire-subscriptions\route.ts
+  195:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\api\cron\rebooking\route.ts
+  36:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\api\cron\reminders\route.ts
+  42:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\api\push\subscribe\route.ts
+  23:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\explore\page.tsx
+  39:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\invite\[code]\page.tsx
+   46:96  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   61:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   62:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   63:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  133:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\my\bookings\actions.ts
+  39:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\my\bookings\page.tsx
+  27:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\my\loyalty\page.tsx
+  17:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\my\masters\page.tsx
+  35:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\my\setup\phone\actions.ts
+  88:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\app\offline\page.tsx
+  7:69  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\app\studio\[slug]\page.tsx
+  20:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\auth\PhoneOtpForm.tsx
+   14:10  warning  'processRegistrationReferral' is defined but never used  @typescript-eslint/no-unused-vars
+  163:7   warning  'userId' is assigned a value but never used              @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\client\B2CRouteGuard.tsx
+  21:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\client\B2CRouteGuard.tsx:21:7
+  19 |       router.replace('/my/setup/phone');
+  20 |     } else {
+> 21 |       setIsReady(true);
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  22 |     }
+  23 |   }, [phone, pathname, router]);
+  24 |  react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\client\ClientRealtimeSync.tsx
+  39:6  warning  React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Vitossik\SaaS\bookit\src\components\landing\LandingBentoFeatures.tsx
+   52:28  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   52:35  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  115:74  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  115:81  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  196:45  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  196:53  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\landing\LandingFooterCTA.tsx
+  13:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\landing\LandingFooterCTA.tsx:13:5
+  11 |
+  12 |   useEffect(() => {
+> 13 |     setTodayCount(Math.floor(Math.random() * 5) + 3);
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  14 |   }, []);
+  15 |   const isInView = useInView(ref, { once: true, margin: '-80px' });
+  16 |  react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\landing\LandingPricing.tsx
+  76:7  error  Error: This value cannot be modified
+
+Modifying a variable defined outside a component or hook is not allowed. Consider using an effect.
+
+C:\Users\Vitossik\SaaS\bookit\src\components\landing\LandingPricing.tsx:76:7
+  74 |   function handleSelectPlan(planId: string) {
+  75 |     if (planId !== 'starter') {
+> 76 |       document.cookie = `intended_plan=${planId}; path=/; max-age=3600; SameSite=Lax`;
+     |       ^^^^^^^^ value cannot be modified
+  77 |     } else {
+  78 |       document.cookie = 'intended_plan=; path=/; max-age=0';
+  79 |     }  react-hooks/immutability
+  78:7  error  Error: This value cannot be modified
+
+Modifying a variable defined outside a component or hook is not allowed. Consider using an effect.
+
+C:\Users\Vitossik\SaaS\bookit\src\components\landing\LandingPricing.tsx:78:7
+  76 |       document.cookie = `intended_plan=${planId}; path=/; max-age=3600; SameSite=Lax`;
+  77 |     } else {
+> 78 |       document.cookie = 'intended_plan=; path=/; max-age=0';
+     |       ^^^^^^^^ value cannot be modified
+  79 |     }
+  80 |     router.push('/register');
+  81 |   }                                              react-hooks/immutability
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\analytics\AnalyticsPage.tsx
+  235:39  error    Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  236:32  error    Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  239:53  error    Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  254:6   warning  React Hook useEffect has a missing dependency: 'clientName'. Either include it or remove the dependency array. If 'setRow' needs the current value of 'clientName', you can also switch to useReducer instead of useState and read 'clientName' in the reducer  react-hooks/exhaustive-deps
+  543:26  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                 react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\billing\BillingPage.tsx
+  81:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\billing\BillingPage.tsx:81:7
+  79 |   useEffect(() => {
+  80 |     if (searchParams.get('paid') === '1') {
+> 81 |       setShowSuccess(true);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  82 |       refresh();
+  83 |       window.history.replaceState({}, '', '/dashboard/billing');
+  84 |       return;  react-hooks/set-state-in-effect
+  89:6  warning  React Hook useEffect has a missing dependency: 'refresh'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\bookings\BookingDetailsModal.tsx
+   23:3   warning  'updateMasterNotes' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  111:46  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  123:46  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  132:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  200:18  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\bookings\BookingDetailsModal.tsx:200:18
+  198 |     if (hasAutoSelected.current || !store) return;
+  199 |     const first = days.find(d => !isDayOff(d) && !fullyBookedDates.has(toISOLocal(d)));
+> 200 |     if (first) { setSelectedDate(first); hasAutoSelected.current = true; }
+      |                  ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  201 |   }, [store, days, isDayOff, fullyBookedDates]);
+  202 |
+  203 |   const dateStr    = selectedDate ? toISOLocal(selectedDate) : null;  react-hooks/set-state-in-effect
+  344:5   warning  'updateStatus' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  344:19  warning  'isUpdatingStatus' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  355:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\bookings\BookingDetailsModal.tsx:355:7
+  353 |   useEffect(() => {
+  354 |     if (booking) {
+> 355 |       setNotes(booking.master_notes ?? '');
+      |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  356 |       setNotesDirty(false);
+  357 |       setShowReschedule(false);
+  358 |     }                                                                                                                                                                                                            react-hooks/set-state-in-effect
+  359:6   warning  React Hook useEffect has a missing dependency: 'booking'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\bookings\BookingsPage.tsx
+  112:9  warning  The 'bookings' logical expression could make the dependencies of useMemo Hook (at line 124) change on every render. To fix this, wrap the initialization of 'bookings' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+  128:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\bookings\BookingsPage.tsx:128:5
+  126 |   // ╨б╨║╨╕╨┤╨░╤Ф╨╝╨╛ ╨┐╨░╨│╤Ц╨╜╨░╤Ж╤Ц╤О ╨┐╤А╨╕ ╨╖╨╝╤Ц╨╜╤Ц ╤Д╤Ц╨╗╤М╤В╤А╤Ц╨▓
+  127 |   useEffect(() => {
+> 128 |     setVisibleCount(PAGE_SIZE);
+      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  129 |   }, [dateFrom, dateTo, statusFilter, search]);
+  130 |
+  131 |   const visibleItems = filtered.slice(0, visibleCount);  react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\clients\ClientDetailSheet.tsx
+   52:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\clients\ClientDetailSheet.tsx:52:5
+  50 |   // Sync note from server when client changes or note loads
+  51 |   useEffect(() => {
+> 52 |     setNoteText(savedNote);
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  53 |   }, [savedNote, client?.id]);
+  54 |
+  55 |   useEffect(() => {    react-hooks/set-state-in-effect
+   56:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\clients\ClientDetailSheet.tsx:56:5
+  54 |
+  55 |   useEffect(() => {
+> 56 |     setReminderResult(null);
+     |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  57 |     setNoteSaved(false);
+  58 |   }, [client?.id]);
+  59 |                                                                react-hooks/set-state-in-effect
+   62:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\clients\ClientDetailSheet.tsx:62:5
+  60 |   useEffect(() => {
+  61 |     if (!client || !masterProfile?.id) return;
+> 62 |     setLoading(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  63 |     const supabase = createClient();
+  64 |     supabase
+  65 |       .from('bookings')  react-hooks/set-state-in-effect
+   71:29  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   74:34  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   85:6   warning  React Hook useEffect has a missing dependency: 'client'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  319:31  warning  'd' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\dashboard\DashboardDrawers.tsx
+  11:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\dashboard\NotificationsBell.tsx
+  97:69  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\dashboard\ProfileStrengthWidget.tsx
+   61:29  warning  'setAlreadyCelebrated' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  107:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\dashboard\ProfileStrengthWidget.tsx:107:7
+  105 |   useEffect(() => {
+  106 |     if (progress === 100 && !celebrating && !alreadyCelebrated && !isLoading) {
+> 107 |       setCelebrating(true);
+      |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  108 |     }
+  109 |   }, [progress, celebrating, alreadyCelebrated, isLoading]);
+  110 |  react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\dashboard\TodaySchedule.tsx
+  109:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\dashboard\TodaySchedule.tsx:109:5
+  107 |     const masterId = masterProfile?.id;
+  108 |     if (!masterId) return;
+> 109 |     setLoading(true);
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  110 |     const today = getNow();
+  111 |     let from: string, to: string;
+  112 |     if (period === 'yesterday') {  react-hooks/set-state-in-effect
+  132:29  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  138:37  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  138:63  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  347:9   warning  The 'allBookings' logical expression could make the dependencies of useMemo Hook (at line 359) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'allBookings' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\flash\FlashDealPage.tsx
+   16:37   warning  'Users' is defined but never used                                                                                                                                                          @typescript-eslint/no-unused-vars
+   17:3    warning  'CheckCircle2' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+   17:17   warning  'AlertCircle' is defined but never used                                                                                                                                                    @typescript-eslint/no-unused-vars
+   19:30   warning  'pluralize' is defined but never used                                                                                                                                                      @typescript-eslint/no-unused-vars
+   41:10   warning  'timeUntil' is defined but never used                                                                                                                                                      @typescript-eslint/no-unused-vars
+   87:26   error    React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                 react-hooks/rules-of-hooks
+   89:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   90:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   91:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   92:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   93:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   94:47   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   95:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   96:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+   97:45   error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+  100:63   error    React Hook "useWizardSchedule" is called conditionally. React Hooks must be called in the exact same order in every component render                                                       react-hooks/rules-of-hooks
+  104:27   error    React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                 react-hooks/rules-of-hooks
+  110:26   error    React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  249:25   error    Component definition is missing display name                                                                                                                                               react/display-name
+  249:109  error    Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  296:34   error    Component definition is missing display name                                                                                                                                               react/display-name
+  296:106  error    Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  333:26   error    Component definition is missing display name                                                                                                                                               react/display-name
+  358:23   error    Component definition is missing display name                                                                                                                                               react/display-name
+  366:4    error    Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  403:35   error    Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  440:40   error    Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  521:25   error    Component definition is missing display name                                                                                                                                               react/display-name
+  521:82   error    Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  530:35   error    Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\growth\GrowthHubClient.tsx
+  28:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:26  warning  'loyaltyData' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\loyalty\LoyaltyPage.tsx
+   22:10  warning  'formatPrice' is defined but never used   @typescript-eslint/no-unused-vars
+  129:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\marketing\StoryGenerator.tsx
+  143:51  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\marketing\StoryGenerator.tsx:143:51
+  141 |
+  142 |   useEffect(() => {
+> 143 |     if (!date || !masterId || durationMin <= 0) { setSlots([]); return; }
+      |                                                   ^^^^^^^^ Avoid calling setState() directly within an effect
+  144 |     setLoading(true);
+  145 |     const supabase = createClient();
+  146 |     const dow = DOW[new Date(date + 'T12:00:00').getDay()];  react-hooks/set-state-in-effect
+  379:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @next/next/no-img-element
+  682:69  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\onboarding\steps\StepProfilePreview.tsx
+  125:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  203:65  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  312:82  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\onboarding\steps\StepScheduleForm.tsx
+  5:47  warning  'TEMPLATE_SCHEDULE' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\partners\PartnersPage.tsx
+    5:10  warning  'Share2' is defined but never used                               @typescript-eslint/no-unused-vars
+   76:21  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  187:77  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\pricing\DynamicPricingPage.tsx
+   12:29   warning  'Clock' is defined but never used             @typescript-eslint/no-unused-vars
+   40:20   error    Component definition is missing display name  react/display-name
+  112:50   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  182:106  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  185:91   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  186:92   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  187:96   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  205:114  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  208:91   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  209:93   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  210:97   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  226:102  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  227:99   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  242:105  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  243:101  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  255:23   error    Component definition is missing display name  react/display-name
+  255:87   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  296:25   error    Component definition is missing display name  react/display-name
+  296:112  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  323:48   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  335:55   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\referral\ReferralPage.tsx
+   57:3   warning  'referralBountiesPending' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  112:74  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\referral\ReferralPage.tsx:112:74
+  110 |   const isPro       = subscriptionTier === 'pro' || subscriptionTier === 'studio';
+  111 |   const trialLeft   = subscriptionExpiresAt
+> 112 |     ? Math.max(0, Math.ceil((new Date(subscriptionExpiresAt).getTime() - Date.now()) / 86_400_000))
+      |                                                                          ^^^^^^^^^^ Cannot call impure function
+  113 |     : null;
+  114 |
+  115 |   // Billing decision: total = status + reserve (bounties already baked into reserve)  react-hooks/purity
+  515:57  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\revenue\RevenueHubClient.tsx
+  11:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\services\ProductForm.tsx
+   50:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\services\ProductForm.tsx:50:9
+  48 |     if (isOpen) {
+  49 |       if (initial) {
+> 50 |         setForm({
+     |         ^^^^^^^ Avoid calling setState() directly within an effect
+  51 |           name: initial.name,
+  52 |           emoji: initial.emoji,
+  53 |           price: initial.price,  react-hooks/set-state-in-effect
+  163:70  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react/no-unescaped-entities
+  177:70  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\services\ServiceForm.tsx
+   50:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\services\ServiceForm.tsx:50:7
+  48 |           }
+  49 |         : EMPTY;
+> 50 |       setForm(svc);
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  51 |       // Pre-fill custom input only when editing a non-standard duration
+  52 |       const dur = svc.duration;
+  53 |       setCustomDurationStr(DURATIONS.includes(dur as typeof DURATIONS[number]) ? '' : String(dur));  react-hooks/set-state-in-effect
+  126:70  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react/no-unescaped-entities
+  140:70  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\settings\LocationPicker.tsx
+   28:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\settings\SettingsPage.tsx
+   60:9   warning  'router' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  196:27  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  200:30  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  310:21  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  400:88  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\master\settings\VacationManager.tsx
+  5:10  warning  'CalendarOff' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\public\ClientAuthSheet.tsx
+  102:47  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\public\PublicMasterPage.tsx
+  102:33  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  135:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\public\PublicMasterPage.tsx:135:5
+  133 |   useEffect(() => {
+  134 |     const calc = () => Math.max(0, Math.floor((new Date(expiresAt).getTime() - getNow().getTime()) / 1000));
+> 135 |     setSecs(calc());
+      |     ^^^^^^^ Avoid calling setState() directly within an effect
+  136 |     const id = setInterval(() => setSecs(calc), 1000);
+  137 |     return () => clearInterval(id);
+  138 |   }, [expiresAt]);  react-hooks/set-state-in-effect
+  284:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\public\PublicMasterPage.tsx:284:5
+  282 |     };
+  283 |
+> 284 |     setStatus(compute());
+      |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  285 |     const id = setInterval(() => setStatus(compute()), 60_000);
+  286 |     return () => clearInterval(id);
+  287 |   }, [schedule]);                                                                                                             react-hooks/set-state-in-effect
+  310:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\public\PublicMasterPage.tsx:310:5
+  308 |
+  309 |   useEffect(() => {
+> 310 |     setHydrated(true);
+      |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  311 |   }, []);
+  312 |
+  313 |   useEffect(() => {                                                                                                                                                                                         react-hooks/set-state-in-effect
+  319:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\public\PublicMasterPage.tsx:319:5
+  317 |
+  318 |   useEffect(() => {
+> 319 |     setTodayDow(['sun','mon','tue','wed','thu','fri','sat'][getNow().getDay()]);
+      |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  320 |   }, []);
+  321 |
+  322 |   // Auto-open BookingFlow with pre-selected services from ?services= or ?serviceId= query param                                                  react-hooks/set-state-in-effect
+  332:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\public\PublicMasterPage.tsx:332:9
+  330 |       if (service) {
+  331 |         didAutoOpen.current = true;
+> 332 |         setRepeatServices(null);
+      |         ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  333 |         setSelectedService(service);
+  334 |         setBookingOpen(true);
+  335 |         return;                                                                           react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\BookingWizard.tsx
+  23:15  warning  'WizardService' is defined but never used  @typescript-eslint/no-unused-vars
+  23:30  warning  'WizardProduct' is defined but never used  @typescript-eslint/no-unused-vars
+  35:62  warning  'pricingRules' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\BottomNav.tsx
+   8:13  warning  'Zap' is defined but never used           @typescript-eslint/no-unused-vars
+   8:18  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+   8:30  warning  'Gift' is defined but never used          @typescript-eslint/no-unused-vars
+   9:18  warning  'Share2' is defined but never used        @typescript-eslint/no-unused-vars
+  10:19  warning  'BadgePercent' is defined but never used  @typescript-eslint/no-unused-vars
+  10:33  warning  'Network' is defined but never used       @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\FloatingSidebar.tsx
+  8:18  warning  'Zap' is defined but never used           @typescript-eslint/no-unused-vars
+  8:23  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+  8:35  warning  'Gift' is defined but never used          @typescript-eslint/no-unused-vars
+  8:41  warning  'Share2' is defined but never used        @typescript-eslint/no-unused-vars
+  9:19  warning  'BadgePercent' is defined but never used  @typescript-eslint/no-unused-vars
+  9:33  warning  'Network' is defined but never used       @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\HubDrawer.tsx
+  3:10  warning  'BottomSheet' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\InstallBanner.tsx
+  23:78  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  24:16  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\InstallBanner.tsx:24:16
+  22 |     // iOS detection (no beforeinstallprompt, but can still guide)
+  23 |     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as any).MSStream;
+> 24 |     if (ios) { setIsIOS(true); setShow(true); return; }
+     |                ^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |
+  26 |     const handler = (e: Event) => {
+  27 |       e.preventDefault();  react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\PushSubscribeCard.tsx
+  66:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\ClientCombobox.tsx
+  24:21  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\ClientCombobox.tsx:24:21
+  22 |   // Sync query when form resets
+  23 |   useEffect(() => {
+> 24 |     if (!watchName) setQuery('');
+     |                     ^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |   }, [watchName]);
+  26 |
+  27 |   const filtered = query.trim().length >= 1  react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\ClientDetails.tsx
+  162:73  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\DateTimePicker.tsx
+   6:28  warning  'parseFns' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   6:48  warning  'formatFns' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   6:59  warning  'addMinutes' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  47:18  warning  '_scheduleStore' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  70:19  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\DateTimePicker.tsx:70:19
+  68 | }: DateTimePickerProps) {
+  69 |   const [mounted, setMounted] = useState(false);
+> 70 |   useEffect(() => setMounted(true), []);
+     |                   ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  71 |
+  72 |   const canProceedDatetime = !!selectedDate && !!selectedTime;
+  73 |     react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\ServiceSelector.tsx
+  180:69  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\useBookingScheduleData.ts
+  31:44  warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+  45:84  error    Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  46:57  warning  '_' is defined but never used                                                                                                           @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\shared\wizard\useBookingWizardState.ts
+  235:3  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  241:6  warning  React Hook useEffect has missing dependencies: 'go', 'initialDate', 'initialServices', 'initialStep', 'initialTime', 'mode', 'resetForm', and 'setValue'. Either include them or remove the dependency array. If 'setSelectedServices' needs the current value of 'initialServices', you can also switch to useReducer instead of useState and read 'initialServices' in the reducer  react-hooks/exhaustive-deps
+  258:6  warning  React Hook useEffect has a missing dependency: 'showToast'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+
+C:\Users\Vitossik\SaaS\bookit\src\components\ui\BentoCard.tsx
+  36:3  warning  'children' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\components\ui\PopUpModal.tsx
+  23:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Vitossik\SaaS\bookit\src\components\ui\PopUpModal.tsx:23:7
+  21 |   useEffect(() => {
+  22 |     if (isOpen) {
+> 23 |       setHasOpenedOnce(true);
+     |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |     } else {
+  25 |       setIsFullyOpen(false);
+  26 |     }  react-hooks/set-state-in-effect
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\actions\createBooking.ts
+  152:33  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  251:9   warning  'subTotal' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  281:7   warning  'loyaltyLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  431:33  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\actions\partners.ts
+   29:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\actions\referrals.ts
+   45:15  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   63:3   warning  'targetMasterId' is defined but never used  @typescript-eslint/no-unused-vars
+  284:15  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\context.tsx
+   73:6   warning  React Hook useCallback has a missing dependency: 'fetchProfile'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+   76:31  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\context.tsx:76:31
+  74 |
+  75 |   // ╨Т╤Ц╨┤╤Б╤В╨╡╨╢╤Г╤Ф╨╝╨╛ ╤З╨░╤Б ╨┐╨╡╤А╨╡╤Е╨╛╨┤╤Г ╨▓ ╤Д╨╛╨╜ ╨┤╨╗╤П visibility recovery
+> 76 |   const lastHiddenAt = useRef(Date.now());
+     |                               ^^^^^^^^^^ Cannot call impure function
+  77 |   // Safety timeout: ╤П╨║╤Й╨╛ isLoading ╨╖╨░╨╗╨╕╤И╨╕╨▓╤Б╤П true > 8╤Б тАФ ╨╖╨╜╤Ц╨╝╨░╤Ф╨╝╨╛ ╨┐╤А╨╕╨╝╤Г╤Б╨╛╨▓╨╛
+  78 |   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  79 |  react-hooks/purity
+  147:6   warning  React Hook useEffect has missing dependencies: 'fetchProfile', 'isLoading', 'supabase.auth', and 'user'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\hooks\useAnalytics.ts
+   28:11  warning  'VisitRow' is defined but never used                  @typescript-eslint/no-unused-vars
+  172:13  warning  'activeClientIds' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\hooks\useBookings.ts
+  78:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\hooks\useTimeOff.ts
+  50:22  warning  '_input' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\hooks\useVacation.ts
+  48:22  warning  '_input' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\hooks\useWizardSchedule.ts
+  66:13  error  'cur' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\supabase\safeQuery.ts
+  38:7  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  61:7  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\utils\dynamicPricing.ts
+  1:23  warning  'formatInTimeZone' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\utils\now.ts
+  23:29  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  32:12  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  51:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:53  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Vitossik\SaaS\bookit\src\lib\utils\smartSlots.test.ts
+  339:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  340:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  350:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  361:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+тЬЦ 320 problems (229 errors, 91 warnings)
+  2 errors and 3 warnings potentially fixable with the `--fix` option.
+

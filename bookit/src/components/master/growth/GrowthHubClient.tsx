@@ -17,12 +17,24 @@ interface GrowthHubClientProps {
     masterId: string;
     code: string;
     count: number;
+    activeCount: number;
+    lifetimeDiscount: number;
+    bountiesPending:  number;
+    discountReserve:  number;
     tier: string;
     expiresAt: string | null;
   };
   partnersData: {
     partners: any[];
     inviteLink: string;
+    alliances?: Array<{
+      id: string;
+      isVisible: boolean;
+      otherId: string;
+      slug: string;
+      name: string;
+      emoji: string;
+    }>;
   };
 }
 
@@ -45,6 +57,10 @@ function GrowthDrawers({ loyaltyData, referralData, partnersData }: GrowthHubCli
             masterId={referralData.masterId}
             referralCode={referralData.code}
             referralCount={referralData.count}
+            activeReferralCount={referralData.activeCount}
+            lifetimeDiscount={referralData.lifetimeDiscount}
+            referralBountiesPending={referralData.bountiesPending}
+            discountReserve={referralData.discountReserve}
             subscriptionTier={referralData.tier}
             subscriptionExpiresAt={referralData.expiresAt}
             isDrawer={true}
@@ -57,6 +73,7 @@ function GrowthDrawers({ loyaltyData, referralData, partnersData }: GrowthHubCli
           <PartnersPage
             partners={partnersData.partners}
             inviteLink={partnersData.inviteLink}
+            alliances={partnersData.alliances ?? []}
             isDrawer={true}
           />
         </Suspense>

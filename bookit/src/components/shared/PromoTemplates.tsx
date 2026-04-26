@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, Check, ChevronDown } from 'lucide-react';
+import { Copy, Check, ChevronDown, Lock } from 'lucide-react';
 
 function CopyButton({ text }: { text: string }) {
   const [done, setDone] = useState(false);
@@ -39,37 +39,74 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-interface PromoTemplatesProps {
-  slug: string;
-  /** Якщо true — секція розгорнута одразу */
-  defaultOpen?: boolean;
+interface LockedButton {
+  onUpgrade?: () => void;
 }
 
-export function PromoTemplates({ slug, defaultOpen = false }: PromoTemplatesProps) {
+function LockedCopyButton({ onUpgrade }: LockedButton) {
+  return (
+    <button
+      type="button"
+      onClick={onUpgrade}
+      className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-xl bg-[#D4935A]/10 text-[#D4935A] hover:bg-[#D4935A]/20 transition-all cursor-pointer shrink-0"
+    >
+      <Lock size={10} strokeWidth={2.5} />
+      PRO
+    </button>
+  );
+}
+
+interface PromoTemplatesProps {
+  slug: string;
+  defaultOpen?: boolean;
+  plan?: string;
+  onUpgrade?: () => void;
+}
+
+export function PromoTemplates({ slug, defaultOpen = false, plan, onUpgrade }: PromoTemplatesProps) {
   const [open, setOpen] = useState(defaultOpen);
   const shortUrl = `bookit.com.ua/${slug}`;
+  const isStarter = plan === 'starter';
 
-  const templates = [
+  const freeTemplates = [
     {
       label: 'Stories / Reels',
       badge: 'Instagram',
       text: `Мій розклад тепер у вашому телефоні 24/7! 🤍 Більше ніяких довгих переписок — обирайте зручний час самостійно за посиланням:\n${shortUrl}`,
+      isPro: false,
     },
     {
       label: 'Bio',
       badge: 'Профіль',
       text: `Онлайн-запис 24/7 👇\n${shortUrl}`,
+      isPro: false,
     },
     {
       label: 'Швидка відповідь',
       badge: 'Direct / Viber',
       text: `Привіт! Щоб не чекати мою відповідь, ти можеш переглянути всі вільні віконечка та записатися самостійно ось тут: ${shortUrl}. Це дуже зручно!`,
+      isPro: false,
+    },
+    {
+      label: 'Review Spotlight',
+      badge: 'Instagram',
+      text: `⭐⭐⭐⭐⭐ Ось що пишуть мої клієнти!\n\nЗаписатись онлайн: ${shortUrl}`,
+      isPro: true,
+      proLabel: 'Відгук клієнта',
+      proDesc: 'Генерується автоматично з ваших 5★ відгуків у конструкторі сторіс.',
+    },
+    {
+      label: 'Flash Window',
+      badge: 'Stories',
+      text: `🔥 ГАРЯЧЕ ВІКНО! Сьогодні — знижка на запис.\nДеталі та запис: ${shortUrl}`,
+      isPro: true,
+      proLabel: 'Гаряче вікно',
+      proDesc: 'Генерується автоматично з вашого розкладу та вибраної знижки.',
     },
   ];
 
   return (
     <div className="mt-3">
-      {/* Toggle */}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -83,7 +120,6 @@ export function PromoTemplates({ slug, defaultOpen = false }: PromoTemplatesProp
         </motion.span>
       </button>
 
-      {/* Expandable cards */}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
@@ -94,34 +130,54 @@ export function PromoTemplates({ slug, defaultOpen = false }: PromoTemplatesProp
             className="overflow-hidden"
           >
             <div className="pt-2 space-y-2">
-              {templates.map((t, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl overflow-hidden"
-                  style={{
-                    background: 'rgba(255,255,255,0.70)',
-                    border: '1px solid rgba(255,255,255,0.85)',
-                  }}
-                >
-                  {/* Header */}
-                  <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-[#2C1A14]">{t.label}</span>
-                      <span
-                        className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-                        style={{ background: 'rgba(120,154,153,0.12)', color: '#789A99' }}
-                      >
-                        {t.badge}
-                      </span>
+              {freeTemplates.map((t, i) => {
+                const locked = t.isPro && isStarter;
+                return (
+                  <div
+                    key={i}
+                    className="rounded-xl overflow-hidden"
+                    style={{
+                      background: locked ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.70)',
+                      border: locked ? '1px solid rgba(212,147,90,0.25)' : '1px solid rgba(255,255,255,0.85)',
+                    }}
+                  >
+                    <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-[11px] font-bold ${locked ? 'text-[#A8928D]' : 'text-[#2C1A14]'}`}>
+                          {t.label}
+                        </span>
+                        <span
+                          className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                          style={{ background: 'rgba(120,154,153,0.12)', color: '#789A99' }}
+                        >
+                          {t.badge}
+                        </span>
+                        {t.isPro && (
+                          <span
+                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: 'rgba(212,147,90,0.15)', color: '#D4935A' }}
+                          >
+                            PRO
+                          </span>
+                        )}
+                      </div>
+                      {locked
+                        ? <LockedCopyButton onUpgrade={onUpgrade} />
+                        : <CopyButton text={t.text} />
+                      }
                     </div>
-                    <CopyButton text={t.text} />
+                    {locked && t.proDesc ? (
+                      <p className="px-3 pb-2.5 text-[11px] text-[#A8928D] leading-relaxed italic">
+                        {t.proDesc}
+                      </p>
+                    ) : (
+                      <p className="px-3 pb-2.5 text-[11px] text-[#6B5750] leading-relaxed whitespace-pre-line">
+                        {t.text}
+                      </p>
+                    )}
                   </div>
-                  {/* Body */}
-                  <p className="px-3 pb-2.5 text-[11px] text-[#6B5750] leading-relaxed whitespace-pre-line">
-                    {t.text}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
         )}

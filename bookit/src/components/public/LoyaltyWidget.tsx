@@ -12,6 +12,7 @@ interface Props {
   isAuth: boolean;
   currentVisits: number;
   tiers: LoyaltyTier[];
+  onBook?: () => void;
 }
 
 function formatReward(tier: LoyaltyTier): string {
@@ -20,25 +21,36 @@ function formatReward(tier: LoyaltyTier): string {
   return 'Подарунок';
 }
 
-export function LoyaltyWidget({ isAuth, currentVisits, tiers }: Props) {
+export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
   if (tiers.length === 0) return null;
 
   const firstTier = tiers[0];
   const maxTier = tiers[tiers.length - 1];
 
-  // Unauth — marketing teaser showing first (lowest) tier
+  // Unauth — marketing teaser showing first (lowest) tier + CTA
   if (!isAuth) {
     return (
-      <div className="bento-card p-4 flex items-start gap-3 bg-white/40 border border-white/60">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212, 147, 90, 0.15)', color: '#D4935A' }}>
-          <Gift size={18} />
+      <div className="bento-card p-4 bg-white/40 border border-white/60">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212, 147, 90, 0.15)', color: '#D4935A' }}>
+            <Gift size={18} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-[#2C1A14] leading-snug">Програма лояльності</p>
+            <p className="text-xs text-[#6B5750] mt-0.5">
+              Знижка {formatReward(firstTier)} після {firstTier.targetVisits}-го візиту
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-[#2C1A14] leading-snug">Програма лояльності</p>
-          <p className="text-xs text-[#6B5750] mt-0.5">
-            Знижка {formatReward(firstTier)} на всі візити, починаючи з {firstTier.targetVisits}-го.
-          </p>
-        </div>
+        {onBook && (
+          <button
+            onClick={onBook}
+            className="mt-3 w-full py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: '#D4935A' }}
+          >
+            Записатись і отримати
+          </button>
+        )}
       </div>
     );
   }

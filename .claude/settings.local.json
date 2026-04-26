@@ -12,7 +12,11 @@
       "Bash(rm -rf C:/Users/Vitossik/SaaS/bookit/.claude/skills/code-reviewer)",
       "Bash(rm -rf C:/Users/Vitossik/SaaS/bookit/.claude/skills/nextjs-best-practices)",
       "Bash(rm -rf C:/Users/Vitossik/SaaS/bookit/.claude/skills/senior-backend)",
-      "Bash(rm -rf C:/Users/Vitossik/SaaS/bookit/.claude/skills/senior-frontend)"
+      "Bash(rm -rf C:/Users/Vitossik/SaaS/bookit/.claude/skills/senior-frontend)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(cd C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit; npx tsc --noEmit --skipLibCheck 2>&1 | Where-Object { $_ -match \"StoryGenerator|marketing\" })",
+      "PowerShell(cd C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit; npx tsc --noEmit --skipLibCheck 2>&1 | ForEach-Object { $_ } | Where-Object { $_ -match \"error TS\" -and $_ -notmatch \"test\\\\.\" -and $_ -notmatch \"spec\\\\.\" })",
+      "PowerShell(cd C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit; $out = npx tsc --noEmit --skipLibCheck 2>&1; $prod = $out | Where-Object { \\($_ -match \"error TS\"\\) -and \\($_ -notmatch \"\\\\.test\\\\.\" -and $_ -notmatch \"\\\\.spec\\\\.\" -and $_ -notmatch \"e2e/\"\\) }; if \\($prod\\) { $prod | Select-Object -First 15 } else { \"No prod errors\" })"
     ]
   }
 }

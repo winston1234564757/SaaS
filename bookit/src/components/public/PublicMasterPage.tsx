@@ -12,11 +12,27 @@ import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import { formatDurationFull, pluralize } from '@/lib/utils/dates';
 import Image from 'next/image';
 
+function BookingFlowSkeleton() {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" aria-hidden="true">
+      <div className="w-full max-w-sm mx-auto bg-white/90 rounded-t-3xl p-6 animate-pulse">
+        <div className="w-12 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
+        <div className="h-5 w-2/3 rounded-xl bg-gray-200 mb-4" />
+        <div className="h-12 w-full rounded-2xl bg-gray-200 mb-3" />
+        <div className="h-12 w-full rounded-2xl bg-gray-200 mb-3" />
+        <div className="h-12 w-full rounded-2xl bg-gray-200 mb-5" />
+        <div className="h-14 w-full rounded-2xl bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
 const BookingFlow = dynamic(() => import('./BookingFlow').then(m => ({ default: m.BookingFlow })), {
   ssr: false,
-  loading: () => null,
+  loading: () => <BookingFlowSkeleton />,
 });
 import { getNow } from '@/lib/utils/now';
+import { TrustedPartnersBlock, type TrustedPartner } from './TrustedPartnersBlock';
 
 interface Service {
   id: string;
@@ -91,6 +107,7 @@ interface Master {
     currentVisits: number;
     isAuth: boolean;
   } | null;
+  trustedPartners?: TrustedPartner[];
 }
 
 function formatPrice(price: number) {
@@ -273,7 +290,15 @@ function useAvailability(schedule: ScheduleEntry[] | null | undefined) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export function PublicMasterPage({ master }: { master: Master }) {
+export function PublicMasterPage({
+  master,
+  c2cRefCode = null,
+  c2cDiscountPct = null,
+}: {
+  master: Master;
+  c2cRefCode?: string | null;
+  c2cDiscountPct?: number | null;
+}) {
   const themeKey = (master.themeKey ?? 'default') as MoodThemeKey;
   const theme = moodThemes[themeKey] ?? moodThemes.default;
   const isDark = themeKey === 'darkLuxe';
@@ -420,7 +445,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
             )}
 
             {/* Rating row */}
-            {master.rating > 0 && (
+            {master.rating > 0 && master.reviewsCount > 0 && (
               <div className="flex items-center justify-center gap-2 mb-3">
                 <div className="flex items-center gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -431,8 +456,8 @@ export function PublicMasterPage({ master }: { master: Master }) {
                     />
                   ))}
                 </div>
-                <span className="text-sm font-bold text-[#2C1A14]">{master.rating}</span>
-                <span className="text-xs" style={{ color: textTertiary }}>({pluralize(master.reviewsCount, ['відгук', 'відгуки', 'відгуків'])})</span>
+                <span className="text-sm font-bold text-[#2C1A14]">{master.rating.toFixed(1)}</span>
+                <span className="text-xs" style={{ color: textTertiary }}>· {pluralize(master.reviewsCount, ['відгук', 'відгуки', 'відгуків'])}</span>
               </div>
             )}
 
@@ -527,6 +552,7 @@ export function PublicMasterPage({ master }: { master: Master }) {
               isAuth={master.loyalty.isAuth}
               currentVisits={master.loyalty.currentVisits}
               tiers={master.loyalty.tiers}
+              onBook={() => openBooking()}
             />
           )}
         </motion.div>
@@ -708,11 +734,11 @@ export function PublicMasterPage({ master }: { master: Master }) {
           >
             <div className="flex items-baseline gap-2 mb-3 px-1">
               <h2 className="heading-serif text-lg" style={{ color: theme.textPrimary }}>Відгуки</h2>
-              {master.rating > 0 && (
+              {master.rating > 0 && master.reviewsCount > 0 && (
                 <div className="flex items-center gap-1">
                   <Star size={13} className="fill-[#D4935A] text-[#D4935A]" />
-                  <span className="text-sm font-bold text-[#2C1A14]">{master.rating}</span>
-                  <span className="text-xs" style={{ color: textTertiary }}>({master.reviewsCount})</span>
+                  <span className="text-sm font-bold text-[#2C1A14]">{master.rating.toFixed(1)}</span>
+                  <span className="text-xs" style={{ color: textTertiary }}>· {master.reviewsCount} відгуків</span>
                 </div>
               )}
             </div>
@@ -748,6 +774,18 @@ export function PublicMasterPage({ master }: { master: Master }) {
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Trusted Partners */}
+        {(master.trustedPartners?.length ?? 0) > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22, type: 'spring', stiffness: 280, damping: 24 }}
+            className="mb-4"
+          >
+            <TrustedPartnersBlock partners={master.trustedPartners!} />
           </motion.div>
         )}
 
@@ -794,6 +832,8 @@ export function PublicMasterPage({ master }: { master: Master }) {
         pricingRules={master.pricingRules}
         workingHours={master.workingHours as import('@/types/database').WorkingHoursConfig | null}
         flashDeal={activeFlashDeal}
+        c2cRefCode={c2cRefCode}
+        c2cDiscountPct={c2cDiscountPct}
       />
 
     </>

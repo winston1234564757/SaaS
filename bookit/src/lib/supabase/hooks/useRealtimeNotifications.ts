@@ -1,27 +1,30 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import { useToast } from '@/lib/toast/context';
+import type { ToastType } from '@/lib/toast/context';
 
 /**
- * Single consolidated Realtime channel for ALL booking-related invalidation.
+ * Single consolidated Realtime channel for ALL booking-related invalidation
+ * + notification-table INSERT toasts.
  *
- * Previously we had 4 separate channels:
- *   - bookings-realtime (INSERT+UPDATE) — toast + bookings/dashboard-stats
- *   - dashboard-stats   (*) — dashboard-stats
- *   - weekly-overview   (*) — weekly-overview
- *   - notifications-bell (INSERT) — notifications
+ * Booking channel (bookings-realtime-{masterId}):
+ *   INSERT  → "Новий запис" toast + invalidate all
+ *   UPDATE  → cancellation toast + invalidate all
  *
- * Now everything is handled here. Other hooks (useDashboardStats, useWeeklyOverview,
- * useNotifications) rely on TanStack Query invalidation — no own Realtime channels.
+ * Notifications channel (notifications-realtime-{masterId}):
+ *   INSERT  → toast for new_review / unhandled_booking / etc.
+ *   Skips new_booking / booking_cancelled — already covered by booking channel above.
  */
 export function useRealtimeNotifications() {
   const { masterProfile } = useMasterContext();
   const { showToast } = useToast();
   const qc = useQueryClient();
+  const router = useRouter();
   const masterId = masterProfile?.id;
 
   useEffect(() => {
@@ -29,7 +32,8 @@ export function useRealtimeNotifications() {
 
     const supabase = createClient();
 
-    const channel = supabase
+    // ── Channel 1: bookings table ────────────────────────────────────────────
+    const bookingChannel = supabase
       .channel(`bookings-realtime-${masterId}`)
       .on(
         'postgres_changes',
@@ -47,8 +51,7 @@ export function useRealtimeNotifications() {
             source?: string;
           };
 
-          const isManual = b.source === 'manual';
-          if (!isManual) {
+          if (b.source !== 'manual') {
             showToast({
               type: 'success',
               title: 'Новий запис! 🎉',
@@ -57,7 +60,6 @@ export function useRealtimeNotifications() {
             });
           }
 
-          // Invalidate ALL booking-related caches in one place
           invalidateAll(qc, masterId);
         }
       )
@@ -86,17 +88,76 @@ export function useRealtimeNotifications() {
       )
       .subscribe();
 
+    // ── Channel 2: notifications table ───────────────────────────────────────
+    // Fires toasts for new_review, unhandled_booking, etc.
+    // Skips new_booking + booking_cancelled — those are already shown by channel 1.
+    const SKIP_TYPES = new Set(['new_booking', 'booking_cancelled']);
+
+    const notifChannel = supabase
+      .channel(`notifications-realtime-${masterId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `recipient_id=eq.${masterId}`,
+        },
+        (payload: { new: Record<string, unknown> }) => {
+          const n = payload.new as {
+            id: string;
+            type: string;
+            title: string;
+            body: string;
+            related_booking_id: string | null;
+          };
+
+          // Avoid duplicate toasts for events already handled by the booking channel
+          if (SKIP_TYPES.has(n.type)) {
+            qc.invalidateQueries({ queryKey: ['notifications', masterId] });
+            return;
+          }
+
+          const toastType = notifTypeToToastType(n.type);
+          const bookingId = n.related_booking_id;
+
+          showToast({
+            type: toastType,
+            title: n.title,
+            message: n.body || undefined,
+            duration: 6000,
+            ...(bookingId
+              ? {
+                  action: {
+                    label: 'Переглянути',
+                    onClick: () =>
+                      router.push(`/dashboard/bookings?bookingId=${bookingId}`),
+                  },
+                }
+              : {}),
+          });
+
+          qc.invalidateQueries({ queryKey: ['notifications', masterId] });
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(bookingChannel);
+      supabase.removeChannel(notifChannel);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [masterId, showToast]);
+  }, [masterId, showToast, router]);
 }
 
-/**
- * Invalidates ALL booking-related query keys.
- * Called from the single Realtime channel above.
- */
+function notifTypeToToastType(type: string): ToastType {
+  switch (type) {
+    case 'new_review':        return 'success';
+    case 'unhandled_booking': return 'warning';
+    default:                  return 'info';
+  }
+}
+
 function invalidateAll(qc: ReturnType<typeof useQueryClient>, masterId: string) {
   qc.invalidateQueries({ queryKey: ['bookings', masterId] });
   qc.invalidateQueries({ queryKey: ['wizard-schedule', masterId] });
@@ -112,4 +173,3 @@ function formatDate(iso: string): string {
   const months = ['січ','лют','бер','квіт','трав','черв','лип','серп','вер','жовт','лист','груд'];
   return `${d.getDate()} ${months[d.getMonth()]}`;
 }
-

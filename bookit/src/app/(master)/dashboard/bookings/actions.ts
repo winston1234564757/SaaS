@@ -195,10 +195,10 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
 
     const admin = createAdminClient();
 
-    // 1. Ownership Verify
+    // 1. Ownership Verify — also fetch client_id for review nudge
     const { data: booking } = await admin
       .from('bookings')
-      .select('master_id')
+      .select('master_id, client_id')
       .eq('id', bookingId)
       .single();
 
@@ -208,23 +208,61 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
     // 2. Atomic Update
     const { error } = await admin
       .from('bookings')
-      .update({ 
-        status: 'completed', 
-        status_changed_at: new Date().toISOString() 
+      .update({
+        status: 'completed',
+        status_changed_at: new Date().toISOString()
       })
       .eq('id', bookingId);
 
     if (error) return { error: error.message };
 
     // 3. Revalidate
-    // PERF-HIGH-1: granular — completing a booking does not change layout-level data
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
+
+    // 4. Fire-and-forget: nudge client to leave a review
+    if (booking.client_id) {
+      notifyClientReviewNudge(bookingId, booking.client_id).catch(console.error);
+    }
 
     return { error: null };
   } catch (err) {
     console.error('[completeBooking]', err);
     return { error: 'Помилка сервера' };
+  }
+}
+
+async function notifyClientReviewNudge(bookingId: string, clientId: string): Promise<void> {
+  try {
+    const admin = createAdminClient();
+
+    // In-app notification for client
+    await admin.from('notifications').insert({
+      recipient_id: clientId,
+      title: 'Як пройшов ваш візит? ⭐',
+      body: 'Залишіть відгук — це займе лише хвилину і дуже допоможе майстру.',
+      type: 'new_review',
+      related_booking_id: bookingId,
+    });
+
+    // Web Push to client (best-effort)
+    const { data: subs } = await admin
+      .from('push_subscriptions')
+      .select('subscription')
+      .eq('user_id', clientId);
+
+    if (subs && subs.length > 0) {
+      const { sendPush } = await import('@/lib/push');
+      await Promise.allSettled(
+        subs.map(s => sendPush(s.subscription, {
+          title: 'Як пройшов ваш візит? ⭐',
+          body: 'Залишіть відгук — це допоможе майстру.',
+          url: '/my/bookings',
+        }))
+      );
+    }
+  } catch (err) {
+    console.error('[notifyClientReviewNudge]', err);
   }
 }
 
@@ -263,6 +301,51 @@ export async function updateMasterNotes(
     return { error: null };
   } catch (err) {
     console.error('[updateMasterNotes]', err);
+    return { error: 'Помилка сервера' };
+  }
+}
+
+export async function approveReview(
+  reviewId: string,
+  approved: boolean,
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизовано' };
+
+    const admin = createAdminClient();
+
+    // 1. Ownership verify — review must belong to this master
+    const { data: review } = await admin
+      .from('reviews')
+      .select('master_id')
+      .eq('id', reviewId)
+      .single();
+
+    if (!review) return { error: 'Відгук не знайдено' };
+    if (review.master_id !== user.id) return { error: 'Немає доступу' };
+
+    // 2. Approve → publish | Decline → delete
+    if (approved) {
+      const { error } = await admin
+        .from('reviews')
+        .update({ is_published: true })
+        .eq('id', reviewId);
+      if (error) return { error: error.message };
+    } else {
+      const { error } = await admin
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId);
+      if (error) return { error: error.message };
+    }
+
+    revalidatePath('/dashboard/reviews');
+
+    return { error: null };
+  } catch (err) {
+    console.error('[approveReview]', err);
     return { error: 'Помилка сервера' };
   }
 }

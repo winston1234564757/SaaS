@@ -34,6 +34,7 @@ export function BookingWizard({
   services, products = [], initialServices,
   mode, bookingsThisMonth = 0, subscriptionTier = 'starter', pricingRules,
   onSuccess, flashDeal, initialStep,
+  c2cRefCode = null, c2cDiscountPct = null,
 }: BookingWizardProps) {
 
   const isFlashFastTrack = !!(flashDeal?.slotDate && flashDeal?.slotTime);
@@ -91,6 +92,7 @@ export function BookingWizard({
 
   // ── Submit ────────────────────────────────────────────────────────────────────
   async function handleSubmit() {
+    if (saving) return; // double-submit guard
     if (!selectedDate || !selectedTime) return;
     const isValid = await trigger();
     if (!isValid) return;
@@ -114,8 +116,9 @@ export function BookingWizard({
       flashDealId:             mode === 'client' ? (flashDeal?.id ?? undefined) : undefined,
       applyDynamicPricing:     mode === 'master' ? useDynamicPrice : true,
       referral_code_used:      mode === 'client'
-        ? (typeof window !== 'undefined' ? localStorage.getItem('bookit_ref') ?? null : null)
+        ? (c2cRefCode ?? (typeof window !== 'undefined' ? localStorage.getItem('bookit_ref') ?? null : null))
         : null,
+      c2c_discount_pct:        mode === 'client' ? (c2cRefCode ? c2cDiscountPct : null) : null,
     });
     setSaving(false);
     if (result.error) {
@@ -125,6 +128,12 @@ export function BookingWizard({
         setSaveError('На жаль, запис до цього майстра тимчасово недоступний. Зверніться до майстра напряму.');
       } else {
         setSaveError(result.error);
+        // Slot was taken by another user — refresh schedule and go back to time picker
+        if (result.error.includes('вже заброньований')) {
+          setSelectedTime(null);
+          refetchSchedule();
+          go('datetime', -1);
+        }
       }
       return;
     }

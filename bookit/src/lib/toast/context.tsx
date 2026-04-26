@@ -12,6 +12,7 @@ export interface Toast {
   title: string;
   message?: string;
   duration?: number;
+  action?: { label: string; onClick: () => void };
 }
 
 interface ToastContextValue {
@@ -65,6 +66,14 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
           <p className="text-sm font-semibold text-[#2C1A14] leading-snug">{toast.title}</p>
           {toast.message && (
             <p className="text-xs text-[#6B5750] mt-0.5 leading-relaxed">{toast.message}</p>
+          )}
+          {toast.action && (
+            <button
+              onClick={toast.action.onClick}
+              className="mt-1.5 text-xs font-semibold text-[#789A99] hover:underline"
+            >
+              {toast.action.label} →
+            </button>
           )}
         </div>
         <button

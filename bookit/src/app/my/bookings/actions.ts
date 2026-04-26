@@ -104,7 +104,7 @@ export async function submitReview(params: {
       client_name: clientName,
       rating: params.rating,
       comment: params.comment || null,
-      is_published: true,
+      is_published: false, // потребує модерації майстром перед публікацією
     });
 
   if (error) throw error;

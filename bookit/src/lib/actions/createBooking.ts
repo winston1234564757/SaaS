@@ -53,6 +53,8 @@ const schema = z.object({
   applyDynamicPricing: z.boolean().default(true),
   // Реферальний код (C2C: при завершенні бронювання DB тригер активує знижку власнику лінка)
   referral_code_used: z.string().max(20).optional().nullable().default(null),
+  // Знижка для подруги (C2C) — передається клієнтом, але сервер сам перевіряє і застосовує
+  c2c_discount_pct: z.number().int().min(1).max(50).optional().nullable().default(null),
 });
 
 export type CreateBookingPayload = z.input<typeof schema>;
@@ -285,11 +287,7 @@ export async function createBooking(
     loyaltyDiscountPercent = Math.min(p.discountPercent, 50);
   }
 
-  // Raw loyalty discount calculated from service + product subtotal 
-  // (after potential dynamic pricing adjustments)
-  const loyaltyDiscountAmount = Math.round(subTotal * loyaltyDiscountPercent / 100);
-
-  // Flash deal
+  // Flash deal fetch (discount percent — amount обчислюється в секції 7.6)
   let flashDealDiscountPct = 0;
   if (p.flashDealId) {
     const { data: deal } = await admin
@@ -301,25 +299,30 @@ export async function createBooking(
       flashDealDiscountPct = deal.discount_pct as number;
     }
   }
-  const flashDealAmount = flashDealDiscountPct > 0
-    ? Math.round(subTotal * flashDealDiscountPct / 100)
-    : 0;
 
   // ── 7.6. Comprehensive Discount Resolution & Safety Cap (40%) ──────────────
-  // We sum ALL discounts (Dynamic + Loyalty + Flash) and compare to 40% of Original Total.
+  // Markup (peak hours) і Discount (loyal, flash, quiet) обробляються ОКРЕМО.
+  // Markup НЕ компенсується знижками — він додається зверху після cap.
+  // Знижки обчислюються від originalTotal (до надбавки), щоб markup не збільшував їх базу.
   const originalTotal = totalServicesPrice + totalProductsPrice;
   const maxAllowedDiscount = Math.floor(originalTotal * 0.40);
-  
-  // Total discount requested relative to the Original Total price
-  const requestedDynamicDiscount = totalServicesPrice - adjustedServicesPrice; // positive if discount, negative if markup
-  const totalRequestedDiscountSum = requestedDynamicDiscount + loyaltyDiscountAmount + flashDealAmount;
 
-  // If we are giving a net discount (not a net markup), we must cap it.
-  const effectiveTotalDiscount = totalRequestedDiscountSum > 0 
-    ? Math.min(maxAllowedDiscount, totalRequestedDiscountSum) 
-    : totalRequestedDiscountSum; // don't cap markups (peak hours)
+  // Dynamic pricing: розділяємо надбавку і знижку
+  const dynamicMarkup   = Math.max(0, adjustedServicesPrice - totalServicesPrice); // peak: +X₴
+  const dynamicDiscount = Math.max(0, totalServicesPrice - adjustedServicesPrice); // quiet: -X₴
 
-  const finalTotal = Math.max(0, originalTotal - effectiveTotalDiscount);
+  // Loyalty і flash знижки рахуються від originalTotal — незалежно від markup
+  const loyaltyDiscountAmount = Math.round(originalTotal * loyaltyDiscountPercent / 100);
+  const flashDealAmount       = flashDealDiscountPct > 0
+    ? Math.round(originalTotal * flashDealDiscountPct / 100)
+    : 0;
+
+  // Сума лише знижок (завжди >= 0), обмежена 40% від originalTotal
+  const totalDiscounts    = dynamicDiscount + loyaltyDiscountAmount + flashDealAmount;
+  const effectiveDiscount = Math.min(maxAllowedDiscount, totalDiscounts);
+
+  // Markup додається після знижок — peak-надбавка не «змивається» loyalty/flash
+  const finalTotal = Math.max(0, originalTotal + dynamicMarkup - effectiveDiscount);
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
@@ -353,7 +356,10 @@ export async function createBooking(
 
   if (bErr) {
     console.error('[createBooking] bookings insert [ERROR CODE]:', bErr.code, ' [MESSAGE]:', bErr.message);
-    return { bookingId: null, error: `Помилка БД: ${bErr.message} (Код: ${bErr.code})` };
+    if (bErr.code === '23505' && bErr.message.includes('booking_slot_collision')) {
+      return { bookingId: null, error: 'Цей час вже заброньований. Оберіть інший час.' };
+    }
+    return { bookingId: null, error: 'Не вдалося створити запис. Спробуйте ще раз.' };
   }
 
   // 9. Insert booking_services

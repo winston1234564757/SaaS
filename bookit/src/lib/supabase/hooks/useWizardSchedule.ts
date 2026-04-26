@@ -27,7 +27,7 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
         supabase.from('schedule_exceptions')
           .select('date, is_day_off, start_time, end_time')
           .eq('master_id', masterId).gte('date', from).lte('date', to),
-        supabase.from('bookings')
+        supabase.from('booking_slots')
           .select('date, start_time, end_time')
           .eq('master_id', masterId).neq('status', 'cancelled')
           .gte('date', from).lte('date', to),
@@ -95,8 +95,8 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
       return { templates, exceptions, bookingsByDate } as ScheduleStore;
     },
     enabled: !!masterId,
-    staleTime: 30_000,           // 30s — schedule must be fresh to avoid double-bookings
-    gcTime:    1000 * 60 * 5,    // 5 min — released when wizard is closed for a while
+    staleTime: 0,                // always stale — background refetch on every wizard open
+    gcTime:    1000 * 60 * 2,    // 2 min cache lifetime
     retry: 3,                    // Silent retries on flaky mobile networks
   });
 }

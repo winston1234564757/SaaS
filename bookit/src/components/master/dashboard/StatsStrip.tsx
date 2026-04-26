@@ -1,13 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CalendarDays, TrendingUp, Users, Zap } from 'lucide-react';
+import { CalendarDays, TrendingUp, Users, Zap, Sparkles } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useMonthlyBookingCount } from '@/lib/supabase/hooks/useBookings';
 import { useMasterContext } from '@/lib/supabase/context';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+
+const TRIAL_LIMIT_KOP = 100_000;
 
 function fmt(n: number) { return n.toLocaleString('uk-UA') + ' ₴'; }
 
@@ -17,6 +19,11 @@ export function StatsStrip() {
   const { count: monthCount } = useMonthlyBookingCount();
   const isStarter = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
   const showProNudge = isStarter && monthCount >= 15;
+  const extraEarned = masterProfile?.dynamic_pricing_extra_earned ?? 0;
+  const showDpTrial = isStarter && extraEarned > 0 && extraEarned < TRIAL_LIMIT_KOP;
+  const dpPct = Math.min(100, Math.round((extraEarned / TRIAL_LIMIT_KOP) * 100));
+  const dpEarnedUah = Math.round(extraEarned / 100);
+  const dpLimitUah = TRIAL_LIMIT_KOP / 100;
 
   if (s.isLoading) {
     return (
@@ -121,6 +128,32 @@ export function StatsStrip() {
         );
       })}
     </div>
+    {showDpTrial && (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25, type: 'spring', stiffness: 300, damping: 24 }}
+      >
+        <Link href="/dashboard/pricing" className="block px-4 py-3 rounded-2xl bg-[#D4935A]/8 border border-[#D4935A]/20 hover:bg-[#D4935A]/12 transition-colors">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-7 h-7 rounded-xl bg-[#D4935A]/15 flex items-center justify-center flex-shrink-0">
+              <Sparkles size={13} style={{ color: '#D4935A' }} />
+            </div>
+            <p className="text-xs font-semibold text-[#2C1A14] flex-1">Динамічне ціноутворення — тріал</p>
+            <span className="text-[11px] font-bold text-[#D4935A]">{dpEarnedUah} / {dpLimitUah} ₴</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(212, 147, 90, 0.15)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${dpPct}%`, background: '#D4935A' }}
+            />
+          </div>
+          <p className="text-[11px] text-[#6B5750] mt-1.5">
+            Залишилось {dpLimitUah - dpEarnedUah} ₴ до кінця тріалу → перейдіть на Pro
+          </p>
+        </Link>
+      </motion.div>
+    )}
     {showProNudge && (
       <motion.div
         initial={{ opacity: 0, y: 8 }}

@@ -113,6 +113,14 @@ export function useBookingScheduleData({
     return result;
   }, [scheduleStore, offDayDates, effectiveDuration, days, workingHours]);
 
+  // ── Force refetch when user reaches datetime step ────────────────────────
+  useEffect(() => {
+    if (step === 'datetime' && masterId) {
+      refetchSchedule();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, masterId]);
+
   // ── Auto-focus: select first available day once pre-calc is done ─────────
   // Depends on fullyBookedDates (fires after month pre-calc finishes).
   // Only auto-selects when selectedDate is still null (never overrides user).

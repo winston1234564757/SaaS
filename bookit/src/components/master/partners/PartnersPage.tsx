@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Copy, Check, Users, Trash2, ExternalLink, Handshake } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Share2, Copy, Check, Users, Trash2, ExternalLink, Handshake, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { removePartner } from '@/lib/actions/partners';
+import { removePartner, toggleAllianceVisibility } from '@/lib/actions/partners';
 import Link from 'next/link';
 
 interface Partner {
@@ -17,15 +17,29 @@ interface Partner {
   emoji: string;
 }
 
+interface Alliance {
+  id: string;
+  isVisible: boolean;
+  otherId: string;
+  slug: string;
+  name: string;
+  emoji: string;
+}
+
 interface Props {
   partners: Partner[];
   inviteLink: string;
+  alliances?: Alliance[];
   isDrawer?: boolean;
 }
 
-export function PartnersPage({ partners, inviteLink, isDrawer }: Props) {
+export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }: Props) {
   const [copied, setCopied] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [allianceVisibility, setAllianceVisibility] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(alliances.map(a => [a.id, a.isVisible]))
+  );
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const copyLink = () => {
     navigator.clipboard.writeText(inviteLink);
@@ -38,6 +52,14 @@ export function PartnersPage({ partners, inviteLink, isDrawer }: Props) {
     setIsDeleting(partnerId);
     await removePartner(partnerId);
     setIsDeleting(null);
+  };
+
+  const handleToggleVisibility = async (allianceId: string) => {
+    const next = !allianceVisibility[allianceId];
+    setAllianceVisibility(prev => ({ ...prev, [allianceId]: next }));
+    setTogglingId(allianceId);
+    await toggleAllianceVisibility(allianceId, next);
+    setTogglingId(null);
   };
 
   const activePartners = partners.filter(p => p.status === 'accepted');
@@ -154,6 +176,61 @@ export function PartnersPage({ partners, inviteLink, isDrawer }: Props) {
           </div>
         )}
       </div>
+
+      {/* Alliance Visibility — Referral Network */}
+      {alliances.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <h2 className="text-sm font-bold text-[#2C1A14] uppercase tracking-widest pl-1">
+            Реферальний альянс
+          </h2>
+          <p className="text-xs text-[#A8928D] pl-1 -mt-1">
+            Майстри з вашої реферальної мережі. Увімкніть видимість — вони з'являться на вашій публічній сторінці.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            {alliances.map((al) => {
+              const visible = allianceVisibility[al.id] ?? al.isVisible;
+              return (
+                <motion.div
+                  key={al.id}
+                  layout
+                  className="bento-card p-4 flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#F5E8E3] flex items-center justify-center text-xl flex-shrink-0">
+                      {al.emoji}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#2C1A14] truncate">{al.name}</p>
+                      <Link
+                        href={`/${al.slug}`}
+                        target="_blank"
+                        className="text-[10px] text-[#789A99] font-medium flex items-center gap-1 hover:underline"
+                      >
+                        {al.slug} <ExternalLink size={9} />
+                      </Link>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleToggleVisibility(al.id)}
+                    disabled={togglingId === al.id}
+                    className={cn(
+                      'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95',
+                      visible
+                        ? 'bg-[#789A99]/12 text-[#789A99]'
+                        : 'bg-[#F5E8E3] text-[#A8928D]',
+                      togglingId === al.id && 'opacity-50 pointer-events-none',
+                    )}
+                    title={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
+                  >
+                    {visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                    {visible ? 'Видно' : 'Приховано'}
+                  </button>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Instructions */}
       <div className="bento-card p-6 bg-[#FDF8F6]">

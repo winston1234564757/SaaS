@@ -3,14 +3,15 @@
 import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, ChevronRight, Loader2, CheckCircle2, Star, Package, LayoutList, CalendarDays, BarChart2 } from 'lucide-react';
+import { Clock, ChevronRight, Loader2, Star, Package, LayoutList, CalendarDays, BarChart2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
-import { confirmBooking, completeBooking } from '@/app/(master)/dashboard/bookings/actions';
+import { BookingActionsDropdown } from '@/components/master/bookings/BookingActionsDropdown';
+import { completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { getNow } from '@/lib/utils/now';
@@ -62,6 +63,15 @@ function getDateRange(view: ViewMode): { from: string; to: string } {
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   return { from: toISO(monday), to: toISO(sunday) };
+}
+
+function isPastDue(b: BookingWithServices): boolean {
+  if (b.status !== 'confirmed') return false;
+  const now = getNow();
+  const [h, m] = b.end_time.split(':').map(Number);
+  const endDt = new Date(b.date);
+  endDt.setHours(h, m, 0, 0);
+  return now > endDt;
 }
 
 function isNextBooking(b: BookingWithServices, list: BookingWithServices[]): boolean {
@@ -307,11 +317,23 @@ export function TodaySchedule() {
   const [displayMode, setDisplayMode] = useState<DisplayMode>('list');
   const range = getDateRange(view);
   const { bookings, isLoading } = useBookings(range.from, range.to);
-  const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
-  const [loadingAction, setLoadingAction] = useState<{ id: string; type: 'confirm' | 'complete' } | null>(null);
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
+  const [completingId, setCompletingId] = useState<string | null>(null);
+  const [, startComplete] = useTransition();
+
+  const handleQuickComplete = (id: string) => {
+    setCompletingId(id);
+    startComplete(async () => {
+      try {
+        await completeBooking(id);
+        await invalidateAll();
+      } finally {
+        setCompletingId(null);
+      }
+    });
+  };
 
   const invalidateAll = async () => {
     await Promise.all([
@@ -320,38 +342,6 @@ export function TodaySchedule() {
       queryClient.invalidateQueries({ queryKey: ['weekly-overview', masterId] }),
       queryClient.invalidateQueries({ queryKey: ['monthly-booking-count', masterId] }),
     ]);
-  };
-
-  const handleConfirm = (id: string) => {
-    setLoadingAction({ id, type: 'confirm' });
-    startTransition(async () => {
-      try {
-        const { error } = await confirmBooking(id);
-        if (!error) {
-          await invalidateAll();
-        } else {
-          console.error('[handleConfirm]', error);
-        }
-      } finally {
-        setLoadingAction(null);
-      }
-    });
-  };
-
-  const handleComplete = (id: string) => {
-    setLoadingAction({ id, type: 'complete' });
-    startTransition(async () => {
-      try {
-        const { error } = await completeBooking(id);
-        if (!error) {
-          await invalidateAll();
-        } else {
-          console.error('[handleComplete]', error);
-        }
-      } finally {
-        setLoadingAction(null);
-      }
-    });
   };
 
   const allBookings: BookingWithServices[] = bookings ?? [];
@@ -501,6 +491,7 @@ export function TodaySchedule() {
                             <p className="text-sm font-semibold text-[#2C1A14] truncate">{svcName}</p>
                             <p className="text-xs text-[#6B5750] truncate">{b.client_name}</p>
                           </div>
+                          <BookingActionsDropdown booking={b} onSuccess={invalidateAll} />
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(b.total_price)}</p>
                             <Badge variant={cfg.variant}>{cfg.label}</Badge>
@@ -519,87 +510,99 @@ export function TodaySchedule() {
                 const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
                 const svcName = b.services[0]?.name ?? 'Послуга';
                 const isCurrent = view === 'today' && isNextBooking(b, filtered);
-                const isConfirming = loadingAction?.id === b.id && loadingAction?.type === 'confirm';
-                const isCompleting = loadingAction?.id === b.id && loadingAction?.type === 'complete';
+                const pastDue = isPastDue(b);
+                const isCompleting = completingId === b.id;
 
                 return (
-                  <div
-                    key={b.id}
-                    onClick={() => openBooking(b.id)}
-                    className={`flex items-center gap-4 px-5 py-4 transition-colors cursor-pointer ${
-                      isCurrent
-                        ? 'bg-[#789A99]/6'
-                        : b.status === 'completed'
-                        ? 'opacity-50'
-                        : 'hover:bg-white/40'
-                    }`}
-                  >
-                    {/* Час */}
-                    <div className="w-12 shrink-0 text-right">
-                      <p className={`text-sm font-semibold tabular-nums ${isCurrent ? 'text-[#789A99]' : 'text-[#6B5750]'}`}>
-                        {b.start_time}
-                      </p>
-                      <p className="text-[10px] text-[#A8928D]">{b.end_time}</p>
+                  <div key={b.id} className={pastDue ? 'bg-[#D4935A]/4' : ''}>
+                    {/* Main row */}
+                    <div
+                      onClick={() => openBooking(b.id)}
+                      className={`flex items-center gap-4 px-5 py-4 transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#789A99]/6'
+                          : b.status === 'completed'
+                          ? 'opacity-50'
+                          : 'hover:bg-white/40'
+                      }`}
+                    >
+                      {/* Час */}
+                      <div className="w-12 shrink-0 text-right">
+                        <p className={`text-sm font-semibold tabular-nums ${
+                          pastDue ? 'text-[#D4935A]' : isCurrent ? 'text-[#789A99]' : 'text-[#6B5750]'
+                        }`}>
+                          {b.start_time}
+                        </p>
+                        <p className="text-[10px] text-[#A8928D]">{b.end_time}</p>
+                      </div>
+
+                      {/* Dot + line */}
+                      <div className="flex flex-col items-center self-stretch gap-0.5 shrink-0">
+                        <Tooltip
+                          position="right"
+                          delay={150}
+                          content={
+                            <div className="flex flex-col gap-0.5 min-w-[140px]">
+                              <p className="text-[11px] font-bold text-[#2C1A14]">{svcName}</p>
+                              <p className="text-[11px] text-[#6B5750]">{b.client_name}</p>
+                              <div className="h-px bg-[#F5E8E3] my-0.5" />
+                              <p className="text-[11px] text-[#A8928D]">{b.start_time}–{b.end_time}</p>
+                            </div>
+                          }
+                        >
+                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 cursor-default ${
+                            pastDue
+                              ? 'bg-[#D4935A] ring-2 ring-[#D4935A]/25 ring-offset-1'
+                              : isCurrent
+                              ? 'bg-[#789A99] ring-2 ring-[#789A99]/25 ring-offset-1'
+                              : b.status === 'completed'
+                              ? 'bg-[#A8928D]'
+                              : 'bg-[#E8D5CF]'
+                          }`} />
+                        </Tooltip>
+                        {i < filtered.length - 1 && (
+                          <div className="w-px flex-1 bg-[#E8D5CF]/70" />
+                        )}
+                      </div>
+
+                      {/* Інфо */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#2C1A14] truncate">{svcName}</p>
+                        <p className="text-xs text-[#6B5750] truncate">{b.client_name}</p>
+                      </div>
+
+                      {/* Дії */}
+                      <BookingActionsDropdown booking={b} onSuccess={invalidateAll} />
+
+                      {/* Ціна + статус */}
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(b.total_price)}</p>
+                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                      </div>
                     </div>
 
-                    {/* Dot + line */}
-                    <div className="flex flex-col items-center self-stretch gap-0.5 shrink-0">
-                      <Tooltip
-                        position="right"
-                        delay={150}
-                        content={
-                          <div className="flex flex-col gap-0.5 min-w-[140px]">
-                            <p className="text-[11px] font-bold text-[#2C1A14]">{svcName}</p>
-                            <p className="text-[11px] text-[#6B5750]">{b.client_name}</p>
-                            <div className="h-px bg-[#F5E8E3] my-0.5" />
-                            <p className="text-[11px] text-[#A8928D]">{b.start_time}–{b.end_time}</p>
-                          </div>
-                        }
+                    {/* Past-due nudge row */}
+                    {pastDue && (
+                      <div
+                        className="flex items-center gap-2.5 px-5 pb-3 -mt-1"
+                        onClick={e => e.stopPropagation()}
                       >
-                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 cursor-default ${
-                          isCurrent
-                            ? 'bg-[#789A99] ring-2 ring-[#789A99]/25 ring-offset-1'
-                            : b.status === 'completed'
-                            ? 'bg-[#A8928D]'
-                            : 'bg-[#E8D5CF]'
-                        }`} />
-                      </Tooltip>
-                      {i < filtered.length - 1 && (
-                        <div className="w-px flex-1 bg-[#E8D5CF]/70" />
-                      )}
-                    </div>
-
-                    {/* Інфо */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#2C1A14] truncate">{svcName}</p>
-                      <p className="text-xs text-[#6B5750] truncate">{b.client_name}</p>
-                      {(b.status === 'pending' || b.status === 'confirmed') && (
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          {b.status === 'pending' && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleConfirm(b.id); }}
-                              disabled={isPending}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#789A99]/10 text-[#789A99] text-[10px] font-semibold hover:bg-[#789A99]/20 transition-colors disabled:opacity-50"
-                            >
-                              {isConfirming ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />} Підтвердити
-                            </button>
-                          )}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleComplete(b.id); }}
-                            disabled={isPending}
-                            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#5C9E7A]/10 text-[#5C9E7A] text-[10px] font-semibold hover:bg-[#5C9E7A]/20 transition-colors disabled:opacity-50"
-                          >
-                            {isCompleting ? <Loader2 size={10} className="animate-spin" /> : <Star size={10} />} Завершити
-                          </button>
+                        <div className="flex items-center gap-1 text-[#D4935A]">
+                          <AlertCircle size={11} />
+                          <span className="text-[11px] font-semibold">Очікує завершення</span>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Ціна + статус */}
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(b.total_price)}</p>
-                      <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                    </div>
+                        <button
+                          onClick={() => handleQuickComplete(b.id)}
+                          disabled={isCompleting}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#5C9E7A]/12 text-[#5C9E7A] text-[11px] font-semibold hover:bg-[#5C9E7A]/20 transition-colors disabled:opacity-50"
+                        >
+                          {isCompleting
+                            ? <Loader2 size={10} className="animate-spin" />
+                            : <CheckCircle2 size={10} />}
+                          Завершити
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}

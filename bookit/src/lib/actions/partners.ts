@@ -85,6 +85,45 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
 }
 
 /**
+ * Toggles is_visible on a master_alliance record (for public "Trusted Partners" display).
+ * Only the inviter or invitee may toggle their own alliance row.
+ */
+export async function toggleAllianceVisibility(
+  allianceId: string,
+  isVisible: boolean,
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const admin = createAdminClient();
+
+    // Verify ownership before updating
+    const { data: row } = await admin
+      .from('master_alliances')
+      .select('id, inviter_id, invitee_id')
+      .eq('id', allianceId)
+      .maybeSingle();
+
+    if (!row) return { success: false, error: 'Alliance not found' };
+    if (row.inviter_id !== user.id && row.invitee_id !== user.id) {
+      return { success: false, error: 'Not authorized' };
+    }
+
+    await admin
+      .from('master_alliances')
+      .update({ is_visible: isVisible })
+      .eq('id', allianceId);
+
+    revalidatePath('/dashboard/growth');
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
  * Removes a partner from the network.
  */
 export async function removePartner(partnerId: string): Promise<{ success: boolean; error: string | null }> {

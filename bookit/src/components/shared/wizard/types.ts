@@ -46,6 +46,8 @@ export interface BookingWizardProps {
     slotTime?: string;
   } | null;
   initialStep?: WizardStep;
+  c2cRefCode?: string | null;
+  c2cDiscountPct?: number | null;
 }
 
 export type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';

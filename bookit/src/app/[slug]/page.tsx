@@ -6,6 +6,7 @@ import { cookies, headers } from 'next/headers';
 import { toZonedTime } from 'date-fns-tz';
 import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
+import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
 import { ALL_STEPS } from '@/components/shared/wizard/helpers';
 
 export const revalidate = 300;
@@ -30,7 +31,7 @@ async function getMaster(slug: string) {
     .select(`
       id, slug, bio, city, address, latitude, longitude, floor, cabinet, rating, rating_count,
       subscription_tier, instagram_url, telegram_url, categories,
-      mood_theme, avatar_emoji, pricing_rules, working_hours,
+      mood_theme, avatar_emoji, pricing_rules, working_hours, c2c_enabled, c2c_discount_pct,
       profiles!inner ( full_name, avatar_url ),
       services ( id, name, emoji, category, price, duration_minutes, is_popular, is_active, sort_order, description )
     `)
@@ -63,9 +64,10 @@ export async function generateMetadata(
 }
 
 export default async function MasterPublicPage(
-  { params }: { params: Promise<{ slug: string }> }
+  { params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | undefined>> }
 ) {
-  const { slug } = await params;
+  const [{ slug }, sp] = await Promise.all([params, searchParams]);
+  const refCode = sp?.ref ?? null;
   const data = await getMaster(slug);
   if (!data) notFound();
 
@@ -105,6 +107,27 @@ export default async function MasterPublicPage(
   // Поточний юзер (null якщо не залогінений)
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Validate C2C ref param — resolve referrer client id and discount %
+  let c2cRefCode: string | null = null;
+  let c2cDiscountPct: number | null = null;
+  const masterC2cEnabled = (data as any).c2c_enabled as boolean | null;
+  if (refCode && masterC2cEnabled) {
+    const adminC = createAdminClient();
+    const { data: referrerProfile } = await adminC
+      .from('client_profiles')
+      .select('id')
+      .eq('referral_code', refCode)
+      .maybeSingle();
+    if (referrerProfile) {
+      // Don't apply if the visitor is the referrer themselves
+      const isSelf = user && user.id === referrerProfile.id;
+      if (!isSelf) {
+        c2cRefCode = refCode;
+        c2cDiscountPct = (data as any).c2c_discount_pct as number ?? 10;
+      }
+    }
+  }
+
   // Межа місячного ліміту — рахуємо динамічно з bookings (не з лічильника bookings_this_month)
   const masterTimezone = (data as any).timezone || 'Europe/Kyiv';
   const nowInMasterTZ = toZonedTime(getNow(), masterTimezone);
@@ -112,8 +135,8 @@ export default async function MasterPublicPage(
     nowInMasterTZ.getFullYear(), nowInMasterTZ.getMonth(), 1
   ).toISOString();
 
-  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty
-  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes] = await Promise.all([
+  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty, alliance partners
+  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, allianceRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price, description, emoji, stock_quantity, stock_unlimited')
@@ -160,6 +183,22 @@ export default async function MasterPublicPage(
           .eq('client_id', user.id)
           .eq('status', 'completed')
       : Promise.resolve({ count: null, error: null }),
+    // Visible alliance partners (both directions)
+    supabase
+      .from('master_alliances')
+      .select(`
+        inviter_id, invitee_id,
+        inviter:master_profiles!master_alliances_inviter_id_fkey (
+          id, slug, avatar_emoji, categories,
+          profiles ( full_name )
+        ),
+        invitee:master_profiles!master_alliances_invitee_id_fkey (
+          id, slug, avatar_emoji, categories,
+          profiles ( full_name )
+        )
+      `)
+      .or(`inviter_id.eq.${data.id},invitee_id.eq.${data.id}`)
+      .eq('is_visible', true),
   ]);
 
   const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
@@ -212,6 +251,23 @@ export default async function MasterPublicPage(
     ? { tiers: loyaltyTiers, currentVisits, isAuth: !!user }
     : null;
 
+  // Build trusted partners list — pick the "other" side of each alliance row
+  const trustedPartners: TrustedPartner[] = [];
+  const seenIds = new Set<string>();
+  for (const row of (allianceRes.data ?? []) as any[]) {
+    const other = row.inviter_id === data.id ? row.invitee : row.inviter;
+    if (!other || seenIds.has(other.id)) continue;
+    seenIds.add(other.id);
+    const name = (Array.isArray(other.profiles) ? other.profiles[0] : other.profiles)?.full_name ?? 'Майстер';
+    trustedPartners.push({
+      id:          other.id,
+      slug:        other.slug,
+      name,
+      avatarEmoji: other.avatar_emoji ?? '💅',
+      specialty:   ((other.categories as string[]) ?? []).join(', ') || 'Майстер краси',
+    });
+  }
+
   const flashDeals = (flashDealsRes.data ?? []).map((d: any) => ({
     id: d.id as string,
     serviceId: (d.service_id as string) || undefined,
@@ -254,6 +310,7 @@ export default async function MasterPublicPage(
     workingHours: (data.working_hours as Record<string, unknown>) ?? null,
     flashDeals,
     loyalty,
+    trustedPartners,
   };
 
   return (
@@ -261,7 +318,7 @@ export default async function MasterPublicPage(
       <div id="e2e-debug-now" style={{ display: 'none' }} data-now={now.toISOString()}>
         {now.toISOString()}
       </div>
-      <PublicMasterPage master={master} />
+      <PublicMasterPage master={master} c2cRefCode={c2cRefCode} c2cDiscountPct={c2cDiscountPct} />
     </>
   );
 }
