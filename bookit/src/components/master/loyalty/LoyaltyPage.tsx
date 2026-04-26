@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Pencil, Trash2, Gift, Users, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Gift, Users, Loader2, Share2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { saveMasterC2CSettings } from '@/app/(master)/dashboard/loyalty/actions';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
@@ -114,6 +115,20 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  // C2C referral settings
+  const [c2cEnabled, setC2cEnabled] = useState(masterProfile?.c2c_enabled ?? false);
+  const [c2cDiscount, setC2cDiscount] = useState(masterProfile?.c2c_discount_pct ?? 10);
+  const [c2cSaving, setC2cSaving] = useState(false);
+  const [c2cError, setC2cError] = useState<string | null>(null);
+
+  const handleSaveC2C = async () => {
+    setC2cSaving(true);
+    setC2cError(null);
+    const res = await saveMasterC2CSettings(c2cEnabled, c2cDiscount);
+    setC2cSaving(false);
+    if (res.error) setC2cError(res.error);
+  };
 
   const { data: programs = [], isLoading } = useQuery<LoyaltyProgram[]>({
     queryKey: ['loyaltyPrograms', masterId],
@@ -375,6 +390,80 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
           </AnimatePresence>
         </div>
       )}
+      {/* C2C Referral Settings */}
+      <div className="bento-card p-5 flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#789A99]/10 flex items-center justify-center shrink-0">
+            <Share2 size={18} className="text-[#789A99]" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-[#2C1A14]">Реферальна програма клієнтів</p>
+            <p className="text-xs text-[#A8928D]">Клієнти діляться посиланням — подруга отримує знижку</p>
+          </div>
+          <button
+            onClick={() => setC2cEnabled(v => !v)}
+            className="shrink-0"
+            aria-label={c2cEnabled ? 'Вимкнути' : 'Увімкнути'}
+          >
+            {c2cEnabled
+              ? <ToggleRight size={32} className="text-[#789A99]" />
+              : <ToggleLeft size={32} className="text-[#A8928D]" />
+            }
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {c2cEnabled && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden flex flex-col gap-3"
+            >
+              <div>
+                <label className="text-xs font-medium text-[#6B5750] mb-1 block">
+                  Знижка % (1–50)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={c2cDiscount}
+                  onChange={e => setC2cDiscount(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 rounded-xl bg-white/80 border border-white/80 text-sm text-[#2C1A14] outline-none focus:border-[#789A99] transition-colors"
+                />
+                <p className="text-xs text-[#A8928D] mt-1">
+                  Подруга отримає −{c2cDiscount}% на перший візит · Клієнт накопить +{c2cDiscount}% бонус за кожну подругу
+                </p>
+              </div>
+
+              {c2cError && (
+                <p className="text-xs text-[#C05B5B]">{c2cError}</p>
+              )}
+
+              <button
+                onClick={handleSaveC2C}
+                disabled={c2cSaving}
+                className="w-full py-2.5 rounded-xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {c2cSaving && <Loader2 size={14} className="animate-spin" />}
+                Зберегти
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!c2cEnabled && (
+          <button
+            onClick={handleSaveC2C}
+            disabled={c2cSaving}
+            className="w-full py-2 rounded-xl bg-white/70 border border-white/80 text-xs font-medium text-[#6B5750] hover:bg-white transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+          >
+            {c2cSaving && <Loader2 size={12} className="animate-spin" />}
+            Зберегти (вимкнено)
+          </button>
+        )}
+      </div>
     </div>
   );
 }

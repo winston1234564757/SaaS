@@ -76,8 +76,31 @@ export async function getOrCreateReferralLink(
     return { success: false, error: res.error || 'Помилка' };
   }
 
-  // Для решти типів поки лишаємо як було або ігноруємо (згідно з MVP цілями)
-  return { success: false, error: 'Метод застарів для цього типу. Використовуйте Classic Referral.' };
+  if (targetType === 'C2C') {
+    if (!targetMasterId) return { success: false, error: 'masterId не передано для C2C посилання' };
+
+    const admin = createAdminClient();
+
+    // Get client referral code (generate if missing)
+    const codeRes = await getOrGenerateProfileReferralCode(ownerId, 'client');
+    if (!codeRes.success || !codeRes.code) {
+      return { success: false, error: codeRes.error || 'Не вдалося отримати код клієнта' };
+    }
+
+    // Get master slug
+    const { data: master } = await admin
+      .from('master_profiles')
+      .select('slug')
+      .eq('id', targetMasterId)
+      .maybeSingle();
+
+    if (!master?.slug) return { success: false, error: 'Майстра не знайдено' };
+
+    const link = `${appUrl}/${master.slug}?ref=${codeRes.code}`;
+    return { success: true, code: codeRes.code, link };
+  }
+
+  return { success: false, error: 'Невідомий тип реферального посилання' };
 }
 
 // ── applyReferralRewards ──────────────────────────────────────────
@@ -109,6 +132,22 @@ export async function applyReferralRewards(
 
   const admin = createAdminClient();
 
+  // ── Idempotency check: якщо бонус вже нараховувався для цього майстра → пропускаємо ──
+  const { data: existingGrant, error: grantCheckError } = await admin
+    .from('referral_grants')
+    .select('id')
+    .eq('referee_id', newMasterId)
+    .maybeSingle();
+
+  if (grantCheckError) {
+    // Fallback: якщо перевірка не вдалась — логуємо, але не блокуємо реєстрацію
+    console.error('[referrals] grant check failed, continuing without idempotency:', grantCheckError.message);
+  } else if (existingGrant) {
+    // Бонус вже було нараховано раніше — повертаємо заглушку
+    console.warn('[referrals] duplicate applyReferralRewards call for masterId:', newMasterId, '— skipping');
+    return { subscriptionTier: 'starter', subscriptionExpiresAt: null, finalReferredBy: null };
+  }
+
   const [masterRes, clientRes] = await Promise.all([
     admin.from('master_profiles').select('id, subscription_expires_at').eq('referral_code', refCode).maybeSingle(),
     admin.from('client_profiles').select('id').eq('referral_code', refCode).maybeSingle(),
@@ -126,8 +165,9 @@ export async function applyReferralRewards(
   if (mReferrer && mReferrer.id !== newMasterId) {
     bonus.finalReferredBy = refCode;
     bonus.subscriptionTier = 'pro';
+    // 14-day Pro trial (vs 7-day standard) for referral invitees
     const expires = new Date();
-    expires.setDate(expires.getDate() + 30);
+    expires.setDate(expires.getDate() + 14);
     bonus.subscriptionExpiresAt = expires.toISOString();
 
     const baseDate = mReferrer.subscription_expires_at
@@ -135,11 +175,37 @@ export async function applyReferralRewards(
       : new Date();
     const refStart = baseDate > new Date() ? baseDate : new Date();
     refStart.setDate(refStart.getDate() + 30);
-    admin.from('master_profiles').update({
-      subscription_tier: 'pro',
-      subscription_expires_at: refStart.toISOString(),
-    }).eq('id', mReferrer.id).then(({ error }) => {
-      if (error) console.error('[referrals] master referrer reward failed:', error.message);
+
+    Promise.all([
+      admin.from('master_profiles').update({
+        subscription_tier: 'pro',
+        subscription_expires_at: refStart.toISOString(),
+      }).eq('id', mReferrer.id),
+
+      // Professional Alliance network record (immutable social graph)
+      admin.from('master_alliances').insert({
+        inviter_id: mReferrer.id,
+        invitee_id: newMasterId,
+      }),
+
+      // Billing-tracked referral pair — starts as 'trial' until first payment
+      admin.from('master_referrals').insert({
+        referrer_id: mReferrer.id,
+        referee_id:  newMasterId,
+        status:      'trial',
+      }),
+
+      admin.from('referral_grants').insert({
+        referrer_id: mReferrer.id,
+        referee_id:  newMasterId,
+        ref_code:    refCode,
+      }),
+    ]).then((results) => {
+      const [profileRes, allianceRes, referralRes, grantRes] = results;
+      if (profileRes.error) console.error('[referrals] master referrer reward failed:', profileRes.error.message);
+      if (allianceRes.error && allianceRes.error.code !== '23505') console.error('[referrals] alliance insert failed:', allianceRes.error.message);
+      if (referralRes.error && referralRes.error.code !== '23505') console.error('[referrals] master_referrals insert failed:', referralRes.error.message);
+      if (grantRes.error && grantRes.error.code !== '23505') console.error('[referrals] grant insert failed (M2M):', grantRes.error.message);
     });
   } else if (cReferrer) {
     bonus.finalReferredBy = refCode;
@@ -160,6 +226,17 @@ export async function applyReferralRewards(
         if ('error' in r && r.error) {
           console.error('[referrals] client referrer reward failed:', r.error.message);
         }
+      }
+    });
+
+    // Фіксуємо факт нарахування бонусу (fire-and-forget, 23505 = duplicate key → ігнорується)
+    admin.from('referral_grants').insert({
+      referrer_id: cReferrer.id,
+      referee_id: newMasterId,
+      ref_code: refCode,
+    }).then(({ error }) => {
+      if (error && error.code !== '23505') {
+        console.error('[referrals] grant insert failed (C2B):', error.message);
       }
     });
   }

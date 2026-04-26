@@ -69,6 +69,8 @@ export interface MasterProfile {
   referred_by?: string | null;
   dynamic_pricing_extra_earned?: number | null;
   retention_cycle_days?: number | null;
+  c2c_enabled?: boolean;
+  c2c_discount_pct?: number;
   created_at: string;
   updated_at: string;
 }
@@ -202,5 +204,27 @@ export interface LoyaltyProgram {
   reward_type: 'percent_discount' | 'fixed_discount' | 'free_service';
   reward_value: number;
   is_active: boolean;
+  created_at: string;
+}
+
+export type C2cReferralStatus = 'pending' | 'completed' | 'expired';
+
+export interface C2cReferral {
+  id: string;
+  referrer_id: string;
+  referred_id: string | null;
+  master_id: string;
+  booking_id: string | null;
+  discount_pct: number;
+  status: C2cReferralStatus;
+  created_at: string;
+}
+
+export interface C2cBonusUse {
+  id: string;
+  referrer_id: string;
+  master_id: string;
+  booking_id: string;
+  discount_used: number;
   created_at: string;
 }
