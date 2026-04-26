@@ -55,6 +55,8 @@ const schema = z.object({
   referral_code_used: z.string().max(20).optional().nullable().default(null),
   // Знижка для подруги (C2C) — передається клієнтом, але сервер сам перевіряє і застосовує
   c2c_discount_pct: z.number().int().min(1).max(50).optional().nullable().default(null),
+  // Реферальний бонус що реферер хоче використати (% від накопиченого балансу)
+  c2c_bonus_to_use: z.number().int().min(1).max(80).optional().nullable().default(null),
 });
 
 export type CreateBookingPayload = z.input<typeof schema>;
@@ -136,7 +138,7 @@ export async function createBooking(
   console.log('[createBooking] Fetching master profile for ID:', p.masterId);
   const { data: mp, error: masterError } = await admin
     .from('master_profiles')
-    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id, is_published, timezone')
+    .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, telegram_chat_id, is_published, timezone, c2c_enabled, c2c_discount_pct')
     .eq('id', p.masterId)
     .single();
 
@@ -300,6 +302,61 @@ export async function createBooking(
     }
   }
 
+  // ── 7.5. C2C Friend Discount Validation ────────────────────────────────────
+  // Server re-validates all 5 conditions regardless of client hint.
+  let c2cFriendDiscountPct = 0;
+  let c2cReferrerId: string | null = null;
+  const masterC2cEnabled = (mp as any).c2c_enabled as boolean | null;
+  const masterC2cDiscountPct = (mp as any).c2c_discount_pct as number ?? 10;
+
+  if (p.source === 'online' && p.referral_code_used && masterC2cEnabled && resolvedClientId) {
+    // Condition 1+2: master enabled + referrer exists
+    const { data: referrerProfile } = await admin
+      .from('client_profiles')
+      .select('id')
+      .eq('referral_code', p.referral_code_used)
+      .maybeSingle();
+
+    if (referrerProfile) {
+      // Condition 3: no self-referral
+      const isSelf = referrerProfile.id === resolvedClientId;
+      // Condition 4: friend is new to this master (0 prior bookings)
+      const { count: priorBookings } = await admin
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('client_id', resolvedClientId)
+        .eq('master_id', p.masterId)
+        .neq('status', 'cancelled');
+      // Condition 5: no existing c2c_referral for this pair
+      const { data: existingReferral } = await admin
+        .from('c2c_referrals')
+        .select('id')
+        .eq('referrer_id', referrerProfile.id)
+        .eq('master_id', p.masterId)
+        .eq('referred_id', resolvedClientId)
+        .maybeSingle();
+
+      if (!isSelf && (priorBookings ?? 0) === 0 && !existingReferral) {
+        c2cFriendDiscountPct = masterC2cDiscountPct;
+        c2cReferrerId = referrerProfile.id;
+      }
+    }
+  }
+
+  // ── 7.5b. C2C Referrer Bonus Validation ────────────────────────────────────
+  // Server re-computes balance — client-supplied c2cBonusToUse is a hint only.
+  let c2cBonusActual = 0;
+  if (p.source === 'online' && p.c2c_bonus_to_use && resolvedClientId && masterC2cEnabled) {
+    const { data: balance } = await admin.rpc('get_c2c_balance', {
+      p_referrer_id: resolvedClientId,
+      p_master_id: p.masterId,
+    });
+    const serverBalance = typeof balance === 'number' ? balance : 0;
+    // Cap: client request ≤ server balance AND ≤ 80
+    c2cBonusActual = Math.min(p.c2c_bonus_to_use, serverBalance, 80);
+    if (c2cBonusActual < 1) c2cBonusActual = 0;
+  }
+
   // ── 7.6. Comprehensive Discount Resolution & Safety Cap (40%) ──────────────
   // Markup (peak hours) і Discount (loyal, flash, quiet) обробляються ОКРЕМО.
   // Markup НЕ компенсується знижками — він додається зверху після cap.
@@ -316,13 +373,21 @@ export async function createBooking(
   const flashDealAmount       = flashDealDiscountPct > 0
     ? Math.round(originalTotal * flashDealDiscountPct / 100)
     : 0;
+  const c2cFriendAmount = c2cFriendDiscountPct > 0
+    ? Math.round(originalTotal * c2cFriendDiscountPct / 100)
+    : 0;
 
-  // Сума лише знижок (завжди >= 0), обмежена 40% від originalTotal
+  // Сума лише знижок (завжди >= 0), обмежена 40% від originalTotal (+ C2C не входить в цей cap)
   const totalDiscounts    = dynamicDiscount + loyaltyDiscountAmount + flashDealAmount;
   const effectiveDiscount = Math.min(maxAllowedDiscount, totalDiscounts);
 
-  // Markup додається після знижок — peak-надбавка не «змивається» loyalty/flash
-  const finalTotal = Math.max(0, originalTotal + dynamicMarkup - effectiveDiscount);
+  // C2C friend discount: поверх effectiveDiscount, не входить в 40% cap
+  const preFinalTotal = Math.max(0, originalTotal + dynamicMarkup - effectiveDiscount);
+  // C2C referrer bonus: % від preFinalTotal (після friend discount)
+  const c2cBonusAmount = c2cBonusActual > 0
+    ? Math.round(preFinalTotal * c2cBonusActual / 100)
+    : 0;
+  const finalTotal = Math.max(0, preFinalTotal - c2cFriendAmount - c2cBonusAmount);
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = computeEndTime(p.startTime, effectiveDuration);
 
@@ -349,7 +414,13 @@ export async function createBooking(
     total_price: finalTotal,
     notes: p.notes?.trim() ?? null,
     source: p.source === 'manual' ? 'manual' : 'public_page',
-    dynamic_pricing_label: dynamicResult?.label ?? null,
+    dynamic_pricing_label: (() => {
+      const parts: string[] = [];
+      if (dynamicResult?.label) parts.push(dynamicResult.label);
+      if (c2cFriendDiscountPct > 0) parts.push(`Реферальна програма −${c2cFriendDiscountPct}%`);
+      if (c2cBonusActual > 0) parts.push(`Реф. бонус −${c2cBonusActual}%`);
+      return parts.join(' · ') || null;
+    })(),
     dynamic_extra_kopecks: dynamicExtraKopecks,
     referral_code_used: p.referral_code_used ?? null,
   });
@@ -426,7 +497,38 @@ export async function createBooking(
       .eq('status', 'active');
   }
 
-  // 12. Trial accounting — облік ведеться DB trigger'ом (fn_dp_trial_earned_on_complete)
+  // 12. C2C records (fire-and-forget — never block the booking response)
+  if (c2cReferrerId && resolvedClientId && c2cFriendDiscountPct > 0) {
+    admin.from('c2c_referrals').insert({
+      referrer_id: c2cReferrerId,
+      referred_id: resolvedClientId,
+      master_id: p.masterId,
+      booking_id: bookingId,
+      discount_pct: c2cFriendDiscountPct,
+      status: 'pending',
+    }).then(({ error: c2cErr }) => {
+      if (c2cErr && c2cErr.code !== '23505') {
+        console.error('[createBooking] c2c_referrals insert failed:', c2cErr.message);
+      }
+    });
+  }
+
+  if (c2cBonusActual > 0 && resolvedClientId) {
+    // Deduct bonus from referrer balance: mark oldest completed referrals as used
+    // We do this by inserting a bonus_use record
+    admin.from('c2c_bonus_uses').insert({
+      referrer_id: resolvedClientId,
+      master_id: p.masterId,
+      booking_id: bookingId,
+      discount_used: c2cBonusActual,
+    }).then(({ error: buErr }) => {
+      if (buErr && buErr.code !== '23505') {
+        console.error('[createBooking] c2c_bonus_uses insert failed:', buErr.message);
+      }
+    });
+  }
+
+  // 13. Trial accounting — облік ведеться DB trigger'ом (fn_dp_trial_earned_on_complete)
   //     при зміні статусу на 'completed'. Тут нічого додатково робити не потрібно.
 
   // Clear Next.js server-side data cache

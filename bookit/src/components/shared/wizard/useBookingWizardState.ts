@@ -22,6 +22,8 @@ interface UseBookingWizardStateParams {
   initialDate?: string;  // YYYY-MM-DD — flash deal locked date
   initialTime?: string;  // HH:MM — flash deal locked time
   isFlashFastTrack?: boolean;
+  c2cRefCode?: string | null;
+  c2cDiscountPct?: number | null;
 }
 
 export function useBookingWizardState({
@@ -35,6 +37,8 @@ export function useBookingWizardState({
   initialDate,
   initialTime,
   isFlashFastTrack = false,
+  c2cRefCode = null,
+  c2cDiscountPct = null,
 }: UseBookingWizardStateParams) {
   const { showToast } = useToast();
 
@@ -96,6 +100,10 @@ export function useBookingWizardState({
   const [clientHistoryTimes, setClientHistoryTimes] = useState<string[]>([]);
   const [loyaltyDiscount, setLoyaltyDiscount]       = useState<{ name: string; percent: number } | null>(null);
   const [partners, setPartners]                     = useState<{ id: string; name: string; slug: string; emoji: string; category?: string }[]>([]);
+
+  // ── C2C referrer balance (how much % the client has accumulated as referrer) ──
+  const [c2cReferrerBalance, setC2cReferrerBalance] = useState<number>(0);
+  const [c2cBonusToUse, setC2cBonusToUse]           = useState<number>(0);
 
   // ── Product auto-suggest ──────────────────────────────────────────────────────
   const [suggestedProductIds, setSuggestedProductIds] = useState<Set<string>>(new Set());
@@ -167,6 +175,8 @@ export function useBookingWizardState({
       setCreatedBookingId(null);
       setClientHistoryTimes([]);
       setLoyaltyDiscount(null);
+      setC2cReferrerBalance(0);
+      setC2cBonusToUse(0);
       setSuggestedProductIds(new Set());
       setSaveError('');
       resetForm({
@@ -194,7 +204,8 @@ export function useBookingWizardState({
           sb.from('loyalty_programs').select('name, target_visits, reward_type, reward_value').eq('master_id', masterId).eq('is_active', true),
           sb.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
           sb.from('master_partners').select('partner_id, status, master_profiles!master_partners_partner_id_fkey(id, slug, avatar_emoji, categories, profiles(full_name))').eq('master_id', masterId).eq('status', 'accepted').limit(5),
-        ]).then(([relRes, progRes, histRes, partRes]) => {
+          sb.rpc('get_c2c_balance', { p_referrer_id: userId, p_master_id: masterId }),
+        ]).then(([relRes, progRes, histRes, partRes, c2cBalRes]) => {
           if (cancelled) return;
           const history = (histRes.data ?? []).map((b: { start_time: string | null }) => b.start_time?.slice(0, 5)).filter((t: string | undefined): t is string => !!t);
           if (history.length) setClientHistoryTimes(history);
@@ -204,6 +215,10 @@ export function useBookingWizardState({
             .filter((p: { reward_type: string; target_visits: number }) => p.reward_type === 'percent_discount' && totalVisitsWithThisOne >= p.target_visits)
             .sort((a: { reward_value: unknown }, b: { reward_value: unknown }) => Number(b.reward_value) - Number(a.reward_value))[0];
           if (best) setLoyaltyDiscount({ name: best.name as string, percent: Number(best.reward_value) });
+
+          const balance = typeof c2cBalRes.data === 'number' ? c2cBalRes.data : 0;
+          setC2cReferrerBalance(balance);
+          setC2cBonusToUse(0);
 
           if (partRes.data) {
             type PartnerRow = {
@@ -297,6 +312,8 @@ export function useBookingWizardState({
     clientUserId, selectedClientId, setSelectedClientId,
     createdBookingId, setCreatedBookingId,
     clientHistoryTimes, loyaltyDiscount, partners,
+    c2cReferrerBalance, c2cBonusToUse, setC2cBonusToUse,
+    c2cRefCode, c2cDiscountPct,
     // Submit state
     saving, setSaving, saveError, setSaveError, upgradePromptOpen, setUpgradePromptOpen,
     // Products

@@ -41,6 +41,13 @@ interface ClientDetailsProps {
   saveError?: string;
   onSubmit: () => void;
   direction: number;
+  // C2C: friend booking discount (friend side)
+  c2cDiscountPct?: number | null;
+  c2cFriendDiscountAmount?: number;
+  // C2C: referrer bonus selector (referrer side)
+  c2cReferrerBalance?: number;
+  c2cBonusToUse?: number;
+  setC2cBonusToUse?: (v: number) => void;
 }
 
 export function ClientDetails({
@@ -74,6 +81,11 @@ export function ClientDetails({
   saveError,
   onSubmit,
   direction,
+  c2cDiscountPct,
+  c2cFriendDiscountAmount = 0,
+  c2cReferrerBalance = 0,
+  c2cBonusToUse = 0,
+  setC2cBonusToUse,
 }: ClientDetailsProps) {
   return (
     <motion.div key="details" custom={direction} variants={slide}
@@ -223,6 +235,18 @@ export function ClientDetails({
             <span className="font-semibold text-amber-600">−{fmt(flashDealAmount)}</span>
           </div>
         )}
+        {mode === 'client' && c2cDiscountPct && c2cFriendDiscountAmount > 0 && (
+          <div className="flex justify-between text-xs">
+            <span className="text-[#789A99]">Реферальна знижка <span className="text-[10px] font-bold">-{c2cDiscountPct}%</span></span>
+            <span className="font-semibold text-[#789A99]">−{fmt(c2cFriendDiscountAmount)}</span>
+          </div>
+        )}
+        {mode === 'client' && c2cBonusToUse > 0 && (
+          <div className="flex justify-between text-xs">
+            <span className="text-[#789A99]">Ваш реф. бонус <span className="text-[10px] font-bold">-{c2cBonusToUse}%</span></span>
+            <span className="font-semibold text-[#789A99]">−{fmt(Math.round(finalTotal * c2cBonusToUse / 100))}</span>
+          </div>
+        )}
         {mode === 'master' && discountPercent > 0 && (
           <div className="flex justify-between text-xs">
             <span className="text-[#5C9E7A]">Знижка {discountPercent}%</span>
@@ -236,6 +260,28 @@ export function ClientDetails({
           <span className="text-lg font-bold text-[#789A99]">{fmt(finalTotal)}</span>
         </div>
       </div>
+
+      {mode === 'client' && c2cReferrerBalance > 0 && setC2cBonusToUse && !c2cDiscountPct && (
+        <div className="bento-card p-4 mb-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-[#2C1A14]">Реферальний бонус</p>
+            <span className="text-xs font-bold text-[#789A99]">{c2cReferrerBalance}% доступно</span>
+          </div>
+          <p className="text-xs text-[#A8928D]">Використайте бонус від приведених подруг</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={0}
+              max={Math.min(c2cReferrerBalance, 80)}
+              step={1}
+              value={c2cBonusToUse}
+              onChange={e => setC2cBonusToUse(Number(e.target.value))}
+              className="flex-1 accent-[#789A99]"
+            />
+            <span className="text-sm font-bold text-[#789A99] w-10 text-right">{c2cBonusToUse}%</span>
+          </div>
+        </div>
+      )}
 
       {mode === 'client' && (
         <p className="text-xs text-[#A8928D] text-center mb-3">

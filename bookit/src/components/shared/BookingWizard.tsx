@@ -52,6 +52,7 @@ export function BookingWizard({
     clientUserId, selectedClientId, setSelectedClientId,
     createdBookingId, setCreatedBookingId,
     clientHistoryTimes, loyaltyDiscount, partners,
+    c2cReferrerBalance, c2cBonusToUse, setC2cBonusToUse,
     saving, setSaving, saveError, setSaveError, upgradePromptOpen, setUpgradePromptOpen,
     suggestedProductIds,
     register, errors, trigger, watchName, watchPhone, setValue,
@@ -62,6 +63,8 @@ export function BookingWizard({
     initialDate: flashDeal?.slotDate,
     initialTime: flashDeal?.slotTime,
     isFlashFastTrack,
+    c2cRefCode,
+    c2cDiscountPct,
   });
 
   const isAtLimit = mode === 'client' && subscriptionTier === 'starter' && bookingsThisMonth >= 30;
@@ -119,6 +122,7 @@ export function BookingWizard({
         ? (c2cRefCode ?? (typeof window !== 'undefined' ? localStorage.getItem('bookit_ref') ?? null : null))
         : null,
       c2c_discount_pct:        mode === 'client' ? (c2cRefCode ? c2cDiscountPct : null) : null,
+      c2c_bonus_to_use:        mode === 'client' && c2cBonusToUse > 0 ? c2cBonusToUse : null,
     });
     setSaving(false);
     if (result.error) {
@@ -326,6 +330,11 @@ export function BookingWizard({
                         saveError={saveError}
                         onSubmit={handleSubmit}
                         direction={direction}
+                        c2cDiscountPct={mode === 'client' ? c2cDiscountPct : null}
+                        c2cFriendDiscountAmount={mode === 'client' && c2cDiscountPct ? Math.round(totalServicesPrice * c2cDiscountPct / 100) : 0}
+                        c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
+                        c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}
+                        setC2cBonusToUse={mode === 'client' ? setC2cBonusToUse : undefined}
                       />
                     )}
 
