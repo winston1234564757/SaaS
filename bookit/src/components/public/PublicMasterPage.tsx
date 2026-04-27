@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap, Gift } from 'lucide-react';
 import { MasterLocationCard } from './MasterLocationCard';
 import { LoyaltyWidget } from './LoyaltyWidget';
 import dynamic from 'next/dynamic';
+import { createClient } from '@/lib/supabase/client';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import { formatDurationFull, pluralize } from '@/lib/utils/dates';
@@ -315,12 +316,38 @@ export function PublicMasterPage({
   const [activeFlashDeal, setActiveFlashDeal] = useState<FlashDeal | null>(null);
   // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
   const [todayDow, setTodayDow] = useState('');
+  const [c2cReferrerBalance, setC2cReferrerBalance] = useState<number>(0);
   const didAutoOpen = useRef(false);
   const availability = useAvailability(master.schedule ?? null);
 
   useEffect(() => {
     setHydrated(true);
   }, []);
+
+  // Persist C2C ref to localStorage so it survives navigation (e.g. user registers then returns)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !c2cRefCode) return;
+    try {
+      localStorage.setItem('bookit_ref', c2cRefCode);
+      if (c2cDiscountPct != null) localStorage.setItem('bookit_ref_pct', String(c2cDiscountPct));
+    } catch { /* localStorage blocked in private mode — safe to ignore */ }
+  }, [c2cRefCode, c2cDiscountPct]);
+
+  // Fetch C2C referrer balance for logged-in clients (shows accumulated bonus from referred friends)
+  useEffect(() => {
+    if (!hydrated || !masterC2cEnabled || !master.id || c2cRefCode) return;
+    const sb = createClient();
+    sb.auth.getUser().then((authRes: Awaited<ReturnType<typeof sb.auth.getUser>>) => {
+      const user = authRes.data?.user;
+      if (!user) return;
+      sb.rpc('get_c2c_balance', { p_referrer_id: user.id, p_master_id: master.id })
+        .then((rpcRes: { data: unknown; error: unknown }) => {
+          if (typeof rpcRes.data === 'number') setC2cReferrerBalance(rpcRes.data);
+        })
+        .catch(() => {});
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, master.id, masterC2cEnabled]);
 
   useEffect(() => {
     document.body.style.backgroundColor = theme.background;
@@ -389,6 +416,78 @@ export function PublicMasterPage({
       <ThemedBlobBackground theme={theme} />
 
       <div className="max-w-lg mx-auto px-4 pb-32 pt-6" data-hydrated={hydrated}>
+        {/* ── Referral Banner (friend discount — incoming ref link) ── */}
+        <AnimatePresence>
+          {c2cRefCode && c2cDiscountPct && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative overflow-hidden rounded-[28px] border p-4 mb-4 shadow-sm"
+              style={{
+                background: isDark ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${theme.accent}12, ${theme.gradient[0]}08)`,
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : `${theme.accent}30`
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
+                  style={{ background: isDark ? 'rgba(212, 175, 55, 0.2)' : `${theme.accent}25` }}
+                >
+                  🎁
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-[#2C1A14]">Привіт від подруги!</h3>
+                  <p className="text-xs" style={{ color: textSecondary }}>
+                    Твій візит до {master.name} буде зі знижкою <span className="font-bold" style={{ color: theme.accent }}>-{c2cDiscountPct}%</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => openBooking()}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white transition-opacity hover:opacity-90"
+                  style={{ background: theme.accent }}
+                >
+                  Забрати
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Referrer Balance Banner (accumulated bonus from referred friends) ── */}
+        <AnimatePresence>
+          {hydrated && c2cReferrerBalance > 0 && !c2cRefCode && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="rounded-[24px] border p-4 mb-4"
+              style={{
+                background: 'rgba(92, 158, 122, 0.08)',
+                borderColor: 'rgba(92, 158, 122, 0.25)',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+                  style={{ background: 'rgba(92, 158, 122, 0.15)' }}>
+                  <Gift size={18} style={{ color: '#5C9E7A' }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-[#2C1A14]">У тебе є реферальний бонус</p>
+                  <p className="text-xs text-[#6B5750]">
+                    -{c2cReferrerBalance}% на наступний запис — за приведених подруг
+                  </p>
+                </div>
+                <button
+                  onClick={() => openBooking()}
+                  className="shrink-0 px-3 py-2 rounded-xl text-xs font-bold text-white transition-opacity hover:opacity-90"
+                  style={{ background: '#5C9E7A' }}
+                >
+                  Записатись
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── Header card — "High-end Cozy Minimalism" ── */}
         <motion.div

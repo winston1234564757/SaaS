@@ -35,10 +35,11 @@ export function ServiceSelector({
   totalDuration,
   effectiveDuration,
   totalServicesPrice,
+  c2cDiscountPct,
   onDurationOverrideChange,
   onClearTime,
   onContinue,
-}: ServiceSelectorProps) {
+}: ServiceSelectorProps & { c2cDiscountPct?: number | null }) {
   const categories = useMemo(() => [...new Set(services.map(s => s.category))], [services]);
   const canGoToDatetime = selectedServices.length > 0;
 
@@ -105,7 +106,14 @@ export function ServiceSelector({
 
                   <div className="flex items-start gap-2 flex-shrink-0 mt-0.5">
                     <div className="text-right">
-                      <p className="text-sm font-bold text-[#2C1A14]">{fmt(svc.price)}</p>
+                      {c2cDiscountPct ? (
+                        <div className="flex flex-col">
+                          <p className="text-sm font-bold text-[#789A99]">{fmt(Math.round(svc.price * (1 - c2cDiscountPct / 100)))}</p>
+                          <p className="text-[10px] text-[#A8928D] line-through decoration-1">{fmt(svc.price)}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-bold text-[#2C1A14]">{fmt(svc.price)}</p>
+                      )}
                       {svc.popular && (
                         <span className="text-[9px] font-semibold text-[#789A99]">популярне</span>
                       )}
@@ -248,7 +256,7 @@ export function ServiceSelector({
           }`}
         >
           {canGoToDatetime
-            ? `Далі · ${pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])} · ${fmt(totalServicesPrice)}`
+            ? `Далі · ${pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])} · ${fmt(c2cDiscountPct ? Math.round(totalServicesPrice * (1 - c2cDiscountPct / 100)) : totalServicesPrice)}`
             : 'Обери послугу'}
         </button>
       </div>

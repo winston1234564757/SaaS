@@ -122,7 +122,11 @@ export function BookingWizard({
       referral_code_used:      mode === 'client'
         ? (c2cRefCode ?? (typeof window !== 'undefined' ? localStorage.getItem('bookit_ref') ?? null : null))
         : null,
-      c2c_discount_pct:        mode === 'client' ? (c2cRefCode ? c2cDiscountPct : null) : null,
+      c2c_discount_pct:        mode === 'client'
+        ? (c2cRefCode
+            ? c2cDiscountPct
+            : (typeof window !== 'undefined' ? Number(localStorage.getItem('bookit_ref_pct')) || null : null))
+        : null,
       c2c_bonus_to_use:        mode === 'client' && c2cBonusToUse > 0 ? c2cBonusToUse : null,
     });
     setSaving(false);
@@ -143,7 +147,10 @@ export function BookingWizard({
       return;
     }
     if (mode === 'client' && result.bookingId) {
-      if (typeof window !== 'undefined') localStorage.removeItem('bookit_ref');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('bookit_ref');
+        localStorage.removeItem('bookit_ref_pct');
+      }
       setCreatedBookingId(result.bookingId);
       notifyMasterOnBooking({
         masterId, clientName: watchName.trim(),
@@ -248,6 +255,7 @@ export function BookingWizard({
                         totalDuration={totalDuration}
                         effectiveDuration={effectiveDuration}
                         totalServicesPrice={totalServicesPrice}
+                        c2cDiscountPct={mode === 'client' ? c2cDiscountPct : null}
                         onDurationOverrideChange={(v) => { setDurationOverride(v); setSelectedTime(null); }}
                         onClearTime={() => setSelectedTime(null)}
                         onContinue={() => go('datetime', 1)}

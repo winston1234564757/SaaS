@@ -497,35 +497,31 @@ export async function createBooking(
       .eq('status', 'active');
   }
 
-  // 12. C2C records (fire-and-forget — never block the booking response)
+  // 12. C2C records — awaited for data integrity (lost insert = lost referral credit forever)
   if (c2cReferrerId && resolvedClientId && c2cFriendDiscountPct > 0) {
-    admin.from('c2c_referrals').insert({
+    const { error: c2cErr } = await admin.from('c2c_referrals').insert({
       referrer_id: c2cReferrerId,
       referred_id: resolvedClientId,
       master_id: p.masterId,
       booking_id: bookingId,
       discount_pct: c2cFriendDiscountPct,
       status: 'pending',
-    }).then(({ error: c2cErr }) => {
-      if (c2cErr && c2cErr.code !== '23505') {
-        console.error('[createBooking] c2c_referrals insert failed:', c2cErr.message);
-      }
     });
+    if (c2cErr && c2cErr.code !== '23505') {
+      console.error('[createBooking] c2c_referrals insert failed:', c2cErr.message, 'booking_id:', bookingId);
+    }
   }
 
   if (c2cBonusActual > 0 && resolvedClientId) {
-    // Deduct bonus from referrer balance: mark oldest completed referrals as used
-    // We do this by inserting a bonus_use record
-    admin.from('c2c_bonus_uses').insert({
+    const { error: buErr } = await admin.from('c2c_bonus_uses').insert({
       referrer_id: resolvedClientId,
       master_id: p.masterId,
       booking_id: bookingId,
       discount_used: c2cBonusActual,
-    }).then(({ error: buErr }) => {
-      if (buErr && buErr.code !== '23505') {
-        console.error('[createBooking] c2c_bonus_uses insert failed:', buErr.message);
-      }
     });
+    if (buErr && buErr.code !== '23505') {
+      console.error('[createBooking] c2c_bonus_uses insert failed:', buErr.message, 'booking_id:', bookingId);
+    }
   }
 
   // 13. Trial accounting — облік ведеться DB trigger'ом (fn_dp_trial_earned_on_complete)

@@ -257,7 +257,12 @@ export function ClientDetails({
           <span className="text-sm font-bold text-[#2C1A14]">
             {mode === 'client' ? 'До сплати' : 'Разом'}
           </span>
-          <span className="text-lg font-bold text-[#789A99]">{fmt(finalTotal)}</span>
+          <span className="text-lg font-bold text-[#789A99]">
+            {fmt(Math.max(0, finalTotal
+              - (mode === 'client' ? (c2cFriendDiscountAmount ?? 0) : 0)
+              - (mode === 'client' && c2cBonusToUse > 0 ? Math.round(finalTotal * c2cBonusToUse / 100) : 0)
+            ))}
+          </span>
         </div>
       </div>
 

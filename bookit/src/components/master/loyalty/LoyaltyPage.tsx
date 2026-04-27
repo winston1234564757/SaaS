@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Pencil, Trash2, Gift, Users, Loader2, Share2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { saveMasterC2CSettings } from '@/app/(master)/dashboard/loyalty/actions';
@@ -104,7 +104,7 @@ function ProgramForm({
 }
 
 export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
-  const { masterProfile } = useMasterContext();
+  const { masterProfile, refresh } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
@@ -121,11 +121,24 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
   const [c2cDiscount, setC2cDiscount] = useState(masterProfile?.c2c_discount_pct ?? 10);
   const [c2cSaving, setC2cSaving] = useState(false);
   const [c2cError, setC2cError] = useState<string | null>(null);
+  const [showSaved, setShowSaved] = useState(false);
+
+  // Sync local state when masterProfile context re-hydrates (e.g. after page navigation)
+  useEffect(() => {
+    setC2cEnabled(masterProfile?.c2c_enabled ?? false);
+    setC2cDiscount(masterProfile?.c2c_discount_pct ?? 10);
+  }, [masterProfile?.c2c_enabled, masterProfile?.c2c_discount_pct]);
 
   const handleSaveC2C = async () => {
     setC2cSaving(true);
     setC2cError(null);
+    setShowSaved(false);
     const res = await saveMasterC2CSettings(c2cEnabled, c2cDiscount);
+    if (!res.error) {
+      await refresh();
+      setShowSaved(true);
+      setTimeout(() => setShowSaved(false), 3000);
+    }
     setC2cSaving(false);
     if (res.error) setC2cError(res.error);
   };
@@ -402,13 +415,14 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
           </div>
           <button
             onClick={() => setC2cEnabled(v => !v)}
-            className="shrink-0"
-            aria-label={c2cEnabled ? 'Вимкнути' : 'Увімкнути'}
+            disabled={c2cSaving}
+            className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 disabled:opacity-60 ${c2cEnabled ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'}`}
           >
-            {c2cEnabled
-              ? <ToggleRight size={32} className="text-[#789A99]" />
-              : <ToggleLeft size={32} className="text-[#A8928D]" />
-            }
+            <motion.div
+              animate={{ x: c2cEnabled ? 20 : 2 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+            />
           </button>
         </div>
 
@@ -443,11 +457,20 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
 
               <button
                 onClick={handleSaveC2C}
-                disabled={c2cSaving}
-                className="w-full py-2.5 rounded-xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={c2cSaving || showSaved}
+                className={cn(
+                  "w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                  showSaved ? "bg-[#5C9E7A]" : "bg-[#789A99] hover:bg-[#5C7E7D]",
+                  c2cSaving && "opacity-50"
+                )}
               >
-                {c2cSaving && <Loader2 size={14} className="animate-spin" />}
-                Зберегти
+                {c2cSaving ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : showSaved ? (
+                  <>✓ Збережено</>
+                ) : (
+                  "Зберегти"
+                )}
               </button>
             </motion.div>
           )}
@@ -456,11 +479,22 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
         {!c2cEnabled && (
           <button
             onClick={handleSaveC2C}
-            disabled={c2cSaving}
-            className="w-full py-2 rounded-xl bg-white/70 border border-white/80 text-xs font-medium text-[#6B5750] hover:bg-white transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+            disabled={c2cSaving || showSaved}
+            className={cn(
+              "w-full py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1",
+              showSaved 
+                ? "bg-[#5C9E7A]/10 text-[#5C9E7A] border border-[#5C9E7A]/20" 
+                : "bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white",
+              c2cSaving && "opacity-50"
+            )}
           >
-            {c2cSaving && <Loader2 size={12} className="animate-spin" />}
-            Зберегти (вимкнено)
+            {c2cSaving ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : showSaved ? (
+              <>✓ Збережено</>
+            ) : (
+              "Зберегти (вимкнено)"
+            )}
           </button>
         )}
       </div>
