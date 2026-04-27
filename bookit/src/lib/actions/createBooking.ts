@@ -309,7 +309,8 @@ export async function createBooking(
   const masterC2cEnabled = (mp as any).c2c_enabled as boolean | null;
   const masterC2cDiscountPct = (mp as any).c2c_discount_pct as number ?? 10;
 
-  if (p.source === 'online' && p.referral_code_used && masterC2cEnabled && resolvedClientId) {
+  // Works for both authenticated (resolvedClientId set) and anonymous bookings (phone fallback).
+  if (p.source === 'online' && p.referral_code_used && masterC2cEnabled) {
     // Condition 1+2: master enabled + referrer exists
     const { data: referrerProfile } = await admin
       .from('client_profiles')
@@ -318,23 +319,42 @@ export async function createBooking(
       .maybeSingle();
 
     if (referrerProfile) {
-      // Condition 3: no self-referral
-      const isSelf = referrerProfile.id === resolvedClientId;
-      // Condition 4: friend is new to this master (0 prior bookings)
-      const { count: priorBookings } = await admin
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('client_id', resolvedClientId)
-        .eq('master_id', p.masterId)
-        .neq('status', 'cancelled');
-      // Condition 5: no existing c2c_referral for this pair
-      const { data: existingReferral } = await admin
-        .from('c2c_referrals')
-        .select('id')
-        .eq('referrer_id', referrerProfile.id)
-        .eq('master_id', p.masterId)
-        .eq('referred_id', resolvedClientId)
-        .maybeSingle();
+      // Condition 3: no self-referral — by client_id (logged in) or phone (anonymous)
+      let isSelf = resolvedClientId ? referrerProfile.id === resolvedClientId : false;
+      if (!isSelf && !resolvedClientId) {
+        const { data: referrerAuthProfile } = await admin
+          .from('profiles').select('phone').eq('id', referrerProfile.id).maybeSingle();
+        const normalize = (ph: string) => String(ph ?? '').replace(/^\+/, '');
+        isSelf = !!referrerAuthProfile?.phone &&
+          normalize(p.clientPhone) === normalize(String(referrerAuthProfile.phone));
+      }
+
+      // Condition 4: friend is new to this master — by client_id (logged in) or phone (anonymous)
+      const { count: priorBookings } = await (resolvedClientId
+        ? admin.from('bookings').select('id', { count: 'exact', head: true })
+            .eq('client_id', resolvedClientId).eq('master_id', p.masterId).neq('status', 'cancelled')
+        : admin.from('bookings').select('id', { count: 'exact', head: true })
+            .eq('client_phone', p.clientPhone).eq('master_id', p.masterId).neq('status', 'cancelled'));
+
+      // Condition 5: no existing c2c_referral for this pair — by referred_id or phone
+      let existingReferral: { id: string } | null = null;
+      if (resolvedClientId) {
+        const { data: er } = await admin.from('c2c_referrals')
+          .select('id').eq('referrer_id', referrerProfile.id)
+          .eq('master_id', p.masterId).eq('referred_id', resolvedClientId).maybeSingle();
+        existingReferral = er;
+      } else {
+        // Anonymous: scan referrer's c2c_referrals for any booking with the same phone
+        const { data: existingRefs } = await admin.from('c2c_referrals')
+          .select('booking_id').eq('referrer_id', referrerProfile.id).eq('master_id', p.masterId)
+          .not('booking_id', 'is', null);
+        const refBookingIds = (existingRefs ?? []).map((r: { booking_id: string | null }) => r.booking_id).filter(Boolean) as string[];
+        if (refBookingIds.length) {
+          const { data: refBookings } = await admin.from('bookings')
+            .select('id').in('id', refBookingIds).eq('client_phone', p.clientPhone);
+          if (refBookings?.length) existingReferral = { id: refBookingIds[0] };
+        }
+      }
 
       if (!isSelf && (priorBookings ?? 0) === 0 && !existingReferral) {
         c2cFriendDiscountPct = masterC2cDiscountPct;
@@ -498,7 +518,7 @@ export async function createBooking(
   }
 
   // 12. C2C records — awaited for data integrity (lost insert = lost referral credit forever)
-  if (c2cReferrerId && resolvedClientId && c2cFriendDiscountPct > 0) {
+  if (c2cReferrerId && c2cFriendDiscountPct > 0) {
     const { error: c2cErr } = await admin.from('c2c_referrals').insert({
       referrer_id: c2cReferrerId,
       referred_id: resolvedClientId,
