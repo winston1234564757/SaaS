@@ -48,6 +48,7 @@ interface ClientDetailsProps {
   c2cReferrerBalance?: number;
   c2cBonusToUse?: number;
   setC2cBonusToUse?: (v: number) => void;
+  c2cAlreadyUsed?: boolean;
 }
 
 export function ClientDetails({
@@ -86,6 +87,7 @@ export function ClientDetails({
   c2cReferrerBalance = 0,
   c2cBonusToUse = 0,
   setC2cBonusToUse,
+  c2cAlreadyUsed = false,
 }: ClientDetailsProps) {
   return (
     <motion.div key="details" custom={direction} variants={slide}
@@ -166,6 +168,11 @@ export function ClientDetails({
             />
           </div>
           {errors.clientPhone && <p className="text-[#C05B5B] text-[10px] mt-1 ml-1">{errors.clientPhone.message}</p>}
+          {mode === 'client' && c2cAlreadyUsed && (
+            <p className="text-[10px] text-[#D4935A] mt-1 ml-1">
+              Ви вже скористались реферальною знижкою для цього майстра
+            </p>
+          )}
         </div>
         <div>
           <label className="text-sm font-medium text-[#2C1A14] flex items-center gap-1.5 mb-1.5">
@@ -233,6 +240,12 @@ export function ClientDetails({
           <div className="flex justify-between text-xs">
             <span className="text-amber-600">⚡ Флеш-акція <span className="text-[10px] font-bold">-{flashDeal.discountPct}%</span></span>
             <span className="font-semibold text-amber-600">−{fmt(flashDealAmount)}</span>
+          </div>
+        )}
+        {mode === 'client' && c2cAlreadyUsed && (
+          <div className="flex justify-between text-xs">
+            <span className="text-[#D4935A]">Реферальна знижка вже використана</span>
+            <span className="text-[#A8928D] text-[10px]">—</span>
           </div>
         )}
         {mode === 'client' && c2cDiscountPct && c2cFriendDiscountAmount > 0 && (

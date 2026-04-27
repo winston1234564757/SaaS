@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createClient } from '@/lib/supabase/client';
 import { getAutoSuggestProductIds } from '@/lib/supabase/hooks/useProductLinks';
 import { ensureClientProfile } from '@/app/[slug]/actions';
+import { checkC2cEligibility } from '@/lib/actions/referrals';
 import { useToast } from '@/lib/toast/context';
 import { bookingClientSchema, type BookingClientData } from '@/lib/validations/booking';
 import { ALL_STEPS } from './helpers';
@@ -104,6 +105,9 @@ export function useBookingWizardState({
   // ── C2C referrer balance (how much % the client has accumulated as referrer) ──
   const [c2cReferrerBalance, setC2cReferrerBalance] = useState<number>(0);
   const [c2cBonusToUse, setC2cBonusToUse]           = useState<number>(0);
+  const [activeC2cDiscountPct, setActiveC2cDiscountPct] = useState<number | null>(c2cDiscountPct ?? null);
+  const [c2cAlreadyUsed, setC2cAlreadyUsed]             = useState(false);
+  const c2cCheckRef = useRef<string>('');
 
   // ── Product auto-suggest ──────────────────────────────────────────────────────
   const [suggestedProductIds, setSuggestedProductIds] = useState<Set<string>>(new Set());
@@ -177,6 +181,9 @@ export function useBookingWizardState({
       setLoyaltyDiscount(null);
       setC2cReferrerBalance(0);
       setC2cBonusToUse(0);
+      setActiveC2cDiscountPct(c2cDiscountPct ?? null);
+      setC2cAlreadyUsed(false);
+      c2cCheckRef.current = '';
       setSuggestedProductIds(new Set());
       setSaveError('');
       resetForm({
@@ -255,6 +262,19 @@ export function useBookingWizardState({
   //   ensureClientProfile — imported stable function from actions module
   }, [isOpen, masterId]);
 
+  // ── C2C eligibility re-check when phone changes ───────────────────────────────
+  useEffect(() => {
+    if (!c2cRefCode || !masterId || mode !== 'client') return;
+    const phone = watchPhone;
+    if (phone.length < 13 || c2cCheckRef.current === phone) return;
+    c2cCheckRef.current = phone;
+
+    checkC2cEligibility(phone, masterId, c2cRefCode).then((res) => {
+      setActiveC2cDiscountPct(res.eligible ? (c2cDiscountPct ?? null) : null);
+      setC2cAlreadyUsed(!res.eligible);
+    });
+  }, [watchPhone, c2cRefCode, masterId, mode, c2cDiscountPct]);
+
   // ── Auto-suggest products ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!selectedServices.length || !availableProducts.length) {
@@ -314,6 +334,7 @@ export function useBookingWizardState({
     clientHistoryTimes, loyaltyDiscount, partners,
     c2cReferrerBalance, c2cBonusToUse, setC2cBonusToUse,
     c2cRefCode, c2cDiscountPct,
+    activeC2cDiscountPct, c2cAlreadyUsed,
     // Submit state
     saving, setSaving, saveError, setSaveError, upgradePromptOpen, setUpgradePromptOpen,
     // Products

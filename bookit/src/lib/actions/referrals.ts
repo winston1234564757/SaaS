@@ -244,6 +244,69 @@ export async function applyReferralRewards(
   return bonus;
 }
 
+// ── checkC2cEligibility ───────────────────────────────────────────
+
+export async function checkC2cEligibility(
+  phone: string,
+  masterId: string,
+  referralCode: string,
+): Promise<{ eligible: boolean; reason?: 'self_referral' | 'already_used' }> {
+  const admin = createAdminClient();
+
+  const { data: referrerProfile } = await admin
+    .from('client_profiles')
+    .select('id')
+    .eq('referral_code', referralCode)
+    .maybeSingle();
+
+  if (!referrerProfile) return { eligible: false, reason: 'already_used' };
+
+  // Self-referral check
+  const { data: authProfile } = await admin
+    .from('profiles')
+    .select('phone')
+    .eq('id', referrerProfile.id)
+    .maybeSingle();
+
+  const normalize = (ph: string) => String(ph ?? '').replace(/^\+/, '');
+  if (authProfile?.phone && normalize(phone) === normalize(String(authProfile.phone))) {
+    return { eligible: false, reason: 'self_referral' };
+  }
+
+  // Prior bookings check (phone-based)
+  const { count: priorBookings } = await admin
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_phone', phone)
+    .eq('master_id', masterId)
+    .neq('status', 'cancelled');
+
+  if ((priorBookings ?? 0) > 0) return { eligible: false, reason: 'already_used' };
+
+  // Existing referral check
+  const { data: existingRefs } = await admin
+    .from('c2c_referrals')
+    .select('booking_id')
+    .eq('referrer_id', referrerProfile.id)
+    .eq('master_id', masterId)
+    .not('booking_id', 'is', null);
+
+  const refBookingIds = (existingRefs ?? [])
+    .map((r: { booking_id: string | null }) => r.booking_id)
+    .filter(Boolean) as string[];
+
+  if (refBookingIds.length) {
+    const { data: refBookings } = await admin
+      .from('bookings')
+      .select('id')
+      .in('id', refBookingIds)
+      .eq('client_phone', phone);
+    if (refBookings?.length) return { eligible: false, reason: 'already_used' };
+  }
+
+  return { eligible: true };
+}
+
 // ── processRegistrationReferral ───────────────────────────────────
 
 /**

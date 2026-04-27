@@ -54,6 +54,7 @@ export function BookingWizard({
     createdBookingId, setCreatedBookingId,
     clientHistoryTimes, loyaltyDiscount, partners,
     c2cReferrerBalance, c2cBonusToUse, setC2cBonusToUse,
+    activeC2cDiscountPct, c2cAlreadyUsed,
     saving, setSaving, saveError, setSaveError, upgradePromptOpen, setUpgradePromptOpen,
     suggestedProductIds,
     register, errors, trigger, watchName, watchPhone, setValue,
@@ -255,7 +256,7 @@ export function BookingWizard({
                         totalDuration={totalDuration}
                         effectiveDuration={effectiveDuration}
                         totalServicesPrice={totalServicesPrice}
-                        c2cDiscountPct={mode === 'client' ? c2cDiscountPct : null}
+                        c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
                         onDurationOverrideChange={(v) => { setDurationOverride(v); setSelectedTime(null); }}
                         onClearTime={() => setSelectedTime(null)}
                         onContinue={() => go('datetime', 1)}
@@ -339,8 +340,9 @@ export function BookingWizard({
                         saveError={saveError}
                         onSubmit={handleSubmit}
                         direction={direction}
-                        c2cDiscountPct={mode === 'client' ? c2cDiscountPct : null}
-                        c2cFriendDiscountAmount={mode === 'client' && c2cDiscountPct ? Math.round(totalServicesPrice * c2cDiscountPct / 100) : 0}
+                        c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
+                        c2cFriendDiscountAmount={mode === 'client' && activeC2cDiscountPct ? Math.round(totalServicesPrice * activeC2cDiscountPct / 100) : 0}
+                        c2cAlreadyUsed={c2cAlreadyUsed}
                         c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
                         c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}
                         setC2cBonusToUse={mode === 'client' ? setC2cBonusToUse : undefined}
