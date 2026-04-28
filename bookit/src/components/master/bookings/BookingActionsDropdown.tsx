@@ -43,6 +43,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] }),
       qc.invalidateQueries({ queryKey: ['weekly-overview'] }),
       qc.invalidateQueries({ queryKey: ['monthly-booking-count'] }),
+      qc.invalidateQueries({ queryKey: ['unified-sales'] }),
     ]);
   };
 

@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-04-27)
 
 ## Corpus Check
-- 366 files · ~365,311 words
+- 366 files · ~365,655 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1029 nodes · 839 edges · 339 communities detected
+- 1030 nodes · 840 edges · 339 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -485,32 +485,32 @@ Cohesion: 0.33
 Nodes (2): handleConfirm(), toISOLocal()
 
 ### Community 27 - "Community 27"
+Cohesion: 0.43
+Nodes (3): getOrCreateReferralLink(), getOrGenerateProfileReferralCode(), getOrGenerateReferralCode()
+
+### Community 28 - "Community 28"
 Cohesion: 0.29
 Nodes (0): 
 
-### Community 28 - "Community 28"
+### Community 29 - "Community 29"
 Cohesion: 0.43
 Nodes (4): buildSlotRenderItems(), fromMins(), generateAvailableSlots(), toMins()
 
-### Community 29 - "Community 29"
+### Community 30 - "Community 30"
 Cohesion: 0.33
 Nodes (1): AuthPage
 
-### Community 30 - "Community 30"
+### Community 31 - "Community 31"
 Cohesion: 0.33
 Nodes (1): Page()
 
-### Community 31 - "Community 31"
+### Community 32 - "Community 32"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 32 - "Community 32"
-Cohesion: 0.53
-Nodes (4): buildBookingMessage(), buildCancellationMessage(), buildReviewMessage(), escHtml()
-
 ### Community 33 - "Community 33"
 Cohesion: 0.53
-Nodes (3): getOrCreateReferralLink(), getOrGenerateProfileReferralCode(), getOrGenerateReferralCode()
+Nodes (4): buildBookingMessage(), buildCancellationMessage(), buildReviewMessage(), escHtml()
 
 ### Community 34 - "Community 34"
 Cohesion: 0.6

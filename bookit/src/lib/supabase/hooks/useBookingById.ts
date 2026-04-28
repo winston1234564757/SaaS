@@ -8,6 +8,7 @@ import type { BookingStatus } from '@/types/database';
 import { 
     rescheduleBooking, 
     updateBookingStatus, 
+    completeBooking,
     updateMasterNotes 
 } from '@/app/(master)/dashboard/bookings/actions';
 
@@ -133,7 +134,9 @@ export function useBookingById(id: string | null) {
 
   const updateStatus = useMutation({
     mutationFn: async (status: BookingStatus) => {
-      const result = await updateBookingStatus(id!, status);
+      const result = status === 'completed' 
+        ? await completeBooking(id!)
+        : await updateBookingStatus(id!, status);
       if (result.error) throw new Error(result.error);
     },
     onMutate: async (status: BookingStatus) => {
@@ -154,6 +157,7 @@ export function useBookingById(id: string | null) {
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       qc.invalidateQueries({ queryKey: ['weekly-overview'] });
       qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
+      qc.invalidateQueries({ queryKey: ['unified-sales'] });
     },
   });
 

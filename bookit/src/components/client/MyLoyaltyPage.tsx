@@ -317,9 +317,9 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
 }
 
 function rewardLabel(type: string, value: number): string {
-  if (type === 'discount_percent') return `Знижка ${value}%`;
-  if (type === 'discount_fixed') return `Знижка ${value} ₴`;
-  return 'Безкоштовна послуга';
+  if (type === 'percent_discount' || type === 'discount_percent') return `Знижка ${value}%`;
+  if (type === 'fixed_discount' || type === 'discount_fixed') return `Знижка ${value} ₴`;
+  return `Знижка ${value}%`;
 }
 
 function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: number }) {

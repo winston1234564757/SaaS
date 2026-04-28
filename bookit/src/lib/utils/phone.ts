@@ -5,9 +5,10 @@
  */
 export function normalizeToE164(raw: string): string | null {
   const digits = raw.replace(/\D/g, '');
-  if (/^380\d{9}$/.test(digits)) return digits;          // вже E.164
-  if (/^0\d{9}$/.test(digits))   return '38' + digits;  // 0XX → 380XX
-  if (/^\d{9}$/.test(digits))    return '380' + digits; // 9 цифр без префікса
+  if (/^380\d{9}$/.test(digits))  return digits;           // вже E.164
+  if (/^0\d{9}$/.test(digits))    return '38' + digits;   // 0XX → 380XX
+  if (/^80\d{9}$/.test(digits))   return '3' + digits;    // 80XX → 380XX
+  if (/^\d{9}$/.test(digits))     return '380' + digits;  // 9 цифр без префікса
   return null;
 }
 

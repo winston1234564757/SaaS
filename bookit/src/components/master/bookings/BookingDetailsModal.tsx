@@ -19,7 +19,6 @@ import { formatPrice } from '@/components/master/services/types';
 import { formatDurationFull, getDayOfWeek } from '@/lib/utils/dates';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
 import {
-  updateBookingStatus,
   updateMasterNotes
 } from '@/app/(master)/dashboard/bookings/actions';
 import { PricingBadge } from '@/components/shared/PricingBadge';
@@ -371,24 +370,7 @@ export function BookingDetailsModal() {
     return () => document.removeEventListener('keydown', handler);
   }, [close]);
 
-  const [isPendingStatus, startStatusTransition] = useTransition();
 
-  const handleStatus = (status: BookingStatus) => {
-    startStatusTransition(async () => {
-      const { error } = await updateBookingStatus(booking!.id, status);
-      if (!error) {
-        const masterId = masterProfile?.id;
-        await Promise.all([
-          qc.invalidateQueries({ queryKey: ['booking', booking!.id] }),
-          qc.invalidateQueries({ queryKey: ['bookings', masterId] }),
-          qc.invalidateQueries({ queryKey: ['dashboard-stats', masterId] }),
-          qc.invalidateQueries({ queryKey: ['weekly-overview', masterId] }),
-        ]);
-      } else {
-        console.error(error);
-      }
-    });
-  };
 
   const handleSaveNotes = () => {
     saveMasterNotes(notes);
@@ -517,8 +499,7 @@ export function BookingDetailsModal() {
 
                 {/* Order details — services + products unified */}
                 {(booking.services.length > 0 || (booking.products && booking.products.length > 0)) && (() => {
-                  const productsTotal = (booking.products ?? []).reduce((s, p) => s + p.price * p.quantity, 0);
-                  const grandTotal = booking.total_price + productsTotal;
+                  const grandTotal = booking.total_price;
                   return (
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
                       <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-3">Деталі замовлення</p>
@@ -631,20 +612,20 @@ export function BookingDetailsModal() {
                       <div className="flex flex-wrap gap-2">
                         {booking.status === 'pending' && (
                           <button
-                            onClick={() => handleStatus('confirmed')}
-                            disabled={isPendingStatus}
+                            onClick={() => updateStatus('confirmed')}
+                            disabled={isUpdatingStatus}
                             className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                           >
-                            {isPendingStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                            {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                             Підтвердити
                           </button>
                         )}
                         <button
-                          onClick={() => handleStatus('completed')}
-                          disabled={isPendingStatus}
+                          onClick={() => updateStatus('completed')}
+                          disabled={isUpdatingStatus}
                           className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#5C9E7A]/10 text-[#5C9E7A] hover:bg-[#5C9E7A]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
-                          {isPendingStatus ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
+                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
                           Завершити
                         </button>
                         <button
@@ -655,17 +636,17 @@ export function BookingDetailsModal() {
                           Перенести
                         </button>
                         <button
-                          onClick={() => handleStatus('cancelled')}
-                          disabled={isPendingStatus}
+                          onClick={() => updateStatus('cancelled')}
+                          disabled={isUpdatingStatus}
                           className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#C05B5B]/10 text-[#C05B5B] hover:bg-[#C05B5B]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
-                          {isPendingStatus ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
                           Скасувати
                         </button>
                         {booking.status === 'confirmed' && (
                           <button
-                            onClick={() => handleStatus('no_show')}
-                            disabled={isPendingStatus}
+                            onClick={() => updateStatus('no_show')}
+                            disabled={isUpdatingStatus}
                             className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#A8928D]/10 text-[#A8928D] hover:bg-[#A8928D]/20 text-sm font-semibold transition-colors disabled:opacity-50"
                           >
                             Не прийшов

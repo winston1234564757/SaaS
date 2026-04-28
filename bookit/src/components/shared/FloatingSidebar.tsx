@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings,
   MessageSquare, Zap, TrendingUp, Gift, Share2, Building2, CreditCard,
-  Wallet, Rocket, BadgePercent, Network, HelpCircle, ImagePlay, Scale,
+  Wallet, Rocket, BadgePercent, Network, HelpCircle, ImagePlay, Scale, ShoppingBag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -16,7 +16,8 @@ import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 const PRIMARY_ITEMS = [
   { href: '/dashboard',           icon: LayoutDashboard, label: 'Головна',      hint: 'Огляд дня та статистика' },
   { href: '/dashboard/bookings',  icon: CalendarDays,    label: 'Записи',       hint: 'Всі записи та календар' },
-  { href: '/dashboard/services',  icon: Scissors,        label: 'Послуги',      hint: 'Послуги та товари' },
+  { href: '/dashboard/services',  icon: Scissors,        label: 'Послуги',      hint: 'Каталог послуг' },
+  { href: '/dashboard/products',  icon: ShoppingBag,     label: 'Магазин',      hint: 'Товари та замовлення' },
   { href: '/dashboard/clients',   icon: Users,           label: 'Клієнти',      hint: 'База клієнтів та CRM' },
   { href: '/dashboard/analytics', icon: BarChart2,       label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
 ];

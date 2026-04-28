@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 import { FloatingSidebar } from '@/components/shared/FloatingSidebar';
@@ -13,6 +14,18 @@ import type { Profile, MasterProfile } from '@/types/database';
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
   useRealtimeNotifications();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!navigator.serviceWorker) return;
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'SW_NAVIGATE' && typeof e.data.url === 'string') {
+        router.push(e.data.url);
+      }
+    };
+    navigator.serviceWorker.addEventListener('message', handler);
+    return () => navigator.serviceWorker.removeEventListener('message', handler);
+  }, [router]);
   return (
     <div className="min-h-dvh">
       <BlobBackground />

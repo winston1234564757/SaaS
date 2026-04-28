@@ -6,6 +6,7 @@ import { MyBottomNav } from '@/components/client/MyBottomNav';
 import { ServiceWorkerRegistration } from '@/components/shared/ServiceWorkerRegistration';
 import { RefCapture } from '@/components/shared/RefCapture';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { createClient } from '@/lib/supabase/server';
 import './globals.css';
 
 const inter = Inter({
@@ -49,7 +50,11 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const initialIsAuth = !!session?.user;
+
   return (
     <html lang="uk" className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
@@ -63,7 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </ToastProvider>
           </QueryProvider>
         </NuqsAdapter>
-        <MyBottomNav />
+        <MyBottomNav initialIsAuth={initialIsAuth} />
       </body>
     </html>
   );

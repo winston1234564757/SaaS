@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap, Gift } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap, Gift, ShoppingBag, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import { MasterLocationCard } from './MasterLocationCard';
 import { LoyaltyWidget } from './LoyaltyWidget';
 import dynamic from 'next/dynamic';
@@ -595,9 +596,9 @@ export function PublicMasterPage({
             </p>
           )}
 
-          {/* Social links */}
+          {/* Social links (Instagram / Telegram only — Shop moved to its own banner) */}
           {(master.instagram || master.telegram) && (
-            <div className="flex items-center justify-center gap-2 px-6 pb-5 -mt-1">
+            <div className="flex items-center justify-center gap-2 px-6 pb-5 -mt-1 flex-wrap">
               {master.instagram && (
                 <a
                   href={master.instagram}
@@ -622,6 +623,7 @@ export function PublicMasterPage({
               )}
             </div>
           )}
+
         </motion.div>
 
         {/* Location Card — only when precise coords available */}
@@ -719,6 +721,60 @@ export function PublicMasterPage({
           />
         )}
 
+        {/* ── Shop Banner — prominent CTA before services (Pro/Studio only, with products) ── */}
+        {(master.tier === 'pro' || master.tier === 'studio') && (master.products ?? []).length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.13, type: 'spring', stiffness: 280, damping: 24 }}
+            className="mb-5"
+          >
+            <Link
+              href={`/${master.slug}/shop`}
+              className="block relative overflow-hidden rounded-[24px] border transition-all hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: isDark
+                  ? `linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 100%)`
+                  : `linear-gradient(135deg, ${theme.accent}18 0%, ${theme.gradient[0]}30 100%)`,
+                borderColor: isDark ? 'rgba(212,175,55,0.25)' : `${theme.accent}35`,
+              }}
+            >
+              {/* Decorative blob */}
+              <div
+                className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-30"
+                style={{ background: `radial-gradient(circle, ${theme.accent}55, transparent 70%)` }}
+                aria-hidden="true"
+              />
+              <div className="relative flex items-center gap-4 p-5">
+                {/* Icon */}
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm"
+                  style={{
+                    background: isDark ? 'rgba(212,175,55,0.2)' : `${theme.accent}25`,
+                    boxShadow: `0 4px 16px ${theme.accent}30`,
+                  }}
+                >
+                  <ShoppingBag size={26} style={{ color: theme.accent }} />
+                </div>
+                {/* Text */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-base font-bold" style={{ color: theme.textPrimary }}>Магазин</p>
+                  <p className="text-xs mt-0.5" style={{ color: textSecondary }}>
+                    {(master.products ?? []).length} {(master.products ?? []).length === 1 ? 'товар' : (master.products ?? []).length < 5 ? 'товари' : 'товарів'} · самовивіз або доставка
+                  </p>
+                </div>
+                {/* Arrow */}
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.08)' : `${theme.accent}20` }}
+                >
+                  <ArrowRight size={16} style={{ color: theme.accent }} />
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        )}
+
         {/* Services */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -781,35 +837,47 @@ export function PublicMasterPage({
           })}
         </motion.div>
 
-        {/* Products */}
-        {(master.products ?? []).length > 0 && (
+        {/* Products preview — teaser cards linking to /shop (product-only orders via ShopPage) */}
+        {(master.products ?? []).length > 0 && (master.tier === 'pro' || master.tier === 'studio') && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.24, type: 'spring', stiffness: 280, damping: 24 }}
             className="mt-2"
           >
-            <h2 className="heading-serif text-lg mb-3 px-1" style={{ color: theme.textPrimary }}>Товари</h2>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h2 className="heading-serif text-lg" style={{ color: theme.textPrimary }}>Товари</h2>
+              <Link
+                href={`/${master.slug}/shop`}
+                className="flex items-center gap-1 text-xs font-semibold transition-opacity hover:opacity-70"
+                style={{ color: theme.accent }}
+              >
+                Всі товари <ArrowRight size={13} />
+              </Link>
+            </div>
             <div className="flex flex-col gap-2">
-              {(master.products ?? []).map((product, i) => (
+              {(master.products ?? []).slice(0, 3).map((product, i) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.26 + i * 0.04, type: 'spring', stiffness: 300, damping: 24 }}
-                  className="bento-card p-4"
                 >
-                  <div className="flex items-center gap-3">
+                  <Link
+                    href={`/${master.slug}/shop`}
+                    className="bento-card p-4 flex items-center gap-3 group hover:shadow-md transition-all block"
+                    style={{ textDecoration: 'none' }}
+                  >
                     <div
                       className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
                       style={{ background: serviceEmojiCircleBg }}
                     >
-                      {product.emoji}
+                      📦
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#2C1A14]">{product.name}</p>
                       {product.description && (
-                        <p className="text-xs mt-0.5 line-clamp-2" style={{ color: textTertiary }}>
+                        <p className="text-xs mt-0.5 line-clamp-1" style={{ color: textTertiary }}>
                           {product.description}
                         </p>
                       )}
@@ -817,13 +885,29 @@ export function PublicMasterPage({
                         <span className="text-[10px] font-medium text-[#C05B5B]">Немає в наявності</span>
                       )}
                     </div>
-                    <div className="flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <p className="text-base font-bold text-[#2C1A14]">{formatPrice(product.price)}</p>
+                      <div
+                        className="w-7 h-7 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ background: `${theme.accent}20` }}
+                      >
+                        <ArrowRight size={12} style={{ color: theme.accent }} />
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </motion.div>
               ))}
             </div>
+            {(master.products ?? []).length > 3 && (
+              <Link
+                href={`/${master.slug}/shop`}
+                className="mt-2 flex items-center justify-center gap-1.5 w-full py-3 rounded-2xl text-sm font-semibold transition-all hover:opacity-80"
+                style={{ background: `${theme.accent}15`, color: theme.accent }}
+              >
+                <ShoppingBag size={15} />
+                Переглянути всі {(master.products ?? []).length} товарів
+              </Link>
+            )}
           </motion.div>
         )}
 
@@ -886,7 +970,7 @@ export function PublicMasterPage({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.22, type: 'spring', stiffness: 280, damping: 24 }}
-            className="mb-4"
+            className="mt-8 mb-4"
           >
             <TrustedPartnersBlock partners={master.trustedPartners!} />
           </motion.div>
@@ -900,21 +984,21 @@ export function PublicMasterPage({
         )}
       </div>
 
-      {/* Sticky CTA */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-30 px-4 pb-5 pt-2"
-        style={{ background: `linear-gradient(to top, ${theme.background}f0 60%, transparent)` }}
-      >
-        <div className="max-w-lg mx-auto">
+      {/* Floating Pill CTA */}
+      <div className="fixed bottom-[88px] left-0 right-0 z-30 px-6 pointer-events-none md:bottom-8">
+        <div className="max-w-lg mx-auto flex justify-center">
           <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: 0.4, type: 'spring', stiffness: 280, damping: 24 }}
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => openBooking()}
             data-testid="book-button"
-            className="w-full h-14 rounded-2xl text-white font-bold text-base transition-opacity hover:opacity-90"
-            style={{ background: theme.accent, boxShadow: `0 8px 28px ${theme.accent}55` }}
+            className="pointer-events-auto w-full max-w-[280px] h-14 rounded-full text-white font-bold text-base transition-all backdrop-blur-2xl border border-white/30 shadow-[0_12px_40px_rgba(0,0,0,0.18)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+            style={{ 
+              background: `${theme.accent}73`, // ~45% opacity
+              boxShadow: `0 12px 32px ${theme.accent}33, inset 0 1px 0 rgba(255,255,255,0.4)` 
+            }}
           >
             Записатися
           </motion.button>

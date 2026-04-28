@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 import { MasterModeBanner } from '@/components/client/MasterModeBanner';
 import { B2CRouteGuard } from '@/components/client/B2CRouteGuard';
+import { PublicNavbar } from '@/components/public/PublicNavbar';
+import { SmartBackButton } from '@/components/shared/SmartBackButton';
 
 export default async function MyLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -25,10 +27,12 @@ export default async function MyLayout({ children }: { children: React.ReactNode
   const isMasterInClientMode = viewMode === 'client' && profile?.role === 'master';
 
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh md:pt-20">
+      <PublicNavbar />
+      <SmartBackButton floating />
       <BlobBackground />
       {isMasterInClientMode && <MasterModeBanner />}
-      <div className="max-w-lg mx-auto px-4 py-6 pb-24">
+      <div className="max-w-lg mx-auto px-4 py-6 pb-32">
         <B2CRouteGuard phone={profile?.phone || null}>
           {children}
         </B2CRouteGuard>

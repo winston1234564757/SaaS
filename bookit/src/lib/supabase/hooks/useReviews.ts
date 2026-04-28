@@ -44,7 +44,7 @@ export function useReviews() {
   const qc = useQueryClient();
   const { showToast } = useToast();
 
-  // Published reviews
+  // All reviews (published + hidden) — filtered in component
   const query = useQuery({
     queryKey: ['reviews', masterId],
     queryFn: async (): Promise<Review[]> => {
@@ -53,7 +53,6 @@ export function useReviews() {
         .from('reviews')
         .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
         .eq('master_id', masterId!)
-        .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -105,6 +104,7 @@ export function useReviews() {
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['reviews', masterId] });
+      qc.invalidateQueries({ queryKey: ['reviews-pending', masterId] });
     },
   });
 

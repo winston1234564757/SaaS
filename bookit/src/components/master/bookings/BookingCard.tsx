@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, X, Loader2, CheckCircle2, UserX } from 'lucide-react';
+import { useToast } from '@/lib/toast/context';
 import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
@@ -25,6 +26,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const qc = useQueryClient();
+  const { showToast } = useToast();
   const cfg = BOOKING_STATUS_CONFIG[booking.status];
   const serviceNames = booking.services.map(s => s.name).join(', ') || 'Без послуги';
   const hasActions = booking.status === 'pending' || booking.status === 'confirmed';
@@ -43,6 +45,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] }),
       qc.invalidateQueries({ queryKey: ['weekly-overview'] }),
       qc.invalidateQueries({ queryKey: ['monthly-booking-count'] }),
+      qc.invalidateQueries({ queryKey: ['unified-sales'] }),
     ]);
   };
 
@@ -55,25 +58,45 @@ export function BookingCard({ booking, index }: BookingCardProps) {
   const handleConfirm = () =>
     startConfirm(async () => {
       const { error } = await confirmBooking(booking.id);
-      if (!error) await invalidateAll();
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка', message: error });
+      } else {
+        showToast({ type: 'success', title: 'Запис підтверджено' });
+        await invalidateAll();
+      }
     });
 
   const handleCancel = () =>
     startCancel(async () => {
       const { error } = await cancelBooking(booking.id);
-      if (!error) await invalidateAll();
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка', message: error });
+      } else {
+        showToast({ type: 'success', title: 'Запис скасовано' });
+        await invalidateAll();
+      }
     });
 
   const handleComplete = () =>
     startComplete(async () => {
       const { error } = await completeBooking(booking.id);
-      if (!error) await invalidateAll();
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка', message: error });
+      } else {
+        showToast({ type: 'success', title: 'Запис завершено' });
+        await invalidateAll();
+      }
     });
 
   const handleNoShow = () =>
     startNoShow(async () => {
       const { error } = await updateBookingStatus(booking.id, 'no_show');
-      if (!error) await invalidateAll();
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка', message: error });
+      } else {
+        showToast({ type: 'success', title: 'Статус оновлено' });
+        await invalidateAll();
+      }
     });
 
   return (

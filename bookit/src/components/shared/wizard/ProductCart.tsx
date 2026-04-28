@@ -52,10 +52,15 @@ export function ProductCart({
         {sortedProducts.map(p => {
           const qty      = cartQty(p.id);
           const isLinked = suggestedProductIds.has(p.id);
+          const atMax    = p.stock !== null && p.stock !== undefined && qty >= (p.stock ?? Infinity);
           return (
-            <div key={p.id} className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${
-              qty > 0 ? 'bg-[#789A99]/10 border-[#789A99]/40' : 'bg-white/60 border-white/80'
-            }`}>
+            <div
+              key={p.id}
+              onClick={() => { if (qty === 0) onAdd(p); }}
+              className={`flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer ${
+                qty > 0 ? 'bg-[#789A99]/10 border-[#789A99]/40' : 'bg-white/60 border-white/80 hover:bg-white/80 active:scale-[0.98]'
+              }`}
+            >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                 style={{ background: 'rgba(255,210,194,0.4)' }}>
                 {p.emoji}
@@ -68,19 +73,18 @@ export function ProductCart({
                 </p>
               </div>
               {qty === 0 ? (
-                <button onClick={() => onAdd(p)}
-                  className="w-11 h-11 rounded-full bg-[#789A99] text-white flex items-center justify-center hover:bg-[#5C7E7D] transition-colors">
+                <div className="w-11 h-11 rounded-full bg-[#789A99] text-white flex items-center justify-center shrink-0 pointer-events-none">
                   <Plus size={15} />
-                </button>
+                </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                   <button onClick={() => onRemove(p.id)}
                     className="w-11 h-11 rounded-full bg-[#F5E8E3] text-[#6B5750] flex items-center justify-center hover:bg-[#EDD9D1] transition-colors">
                     <Minus size={14} />
                   </button>
                   <span className="text-sm font-bold text-[#2C1A14] w-4 text-center">{qty}</span>
                   <button onClick={() => onAdd(p)}
-                    disabled={p.stock !== null && p.stock !== undefined && qty >= (p.stock ?? Infinity)}
+                    disabled={atMax}
                     className="w-11 h-11 rounded-full bg-[#789A99] text-white flex items-center justify-center hover:bg-[#5C7E7D] transition-colors disabled:opacity-40">
                     <Plus size={14} />
                   </button>

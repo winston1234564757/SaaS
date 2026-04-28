@@ -20,9 +20,19 @@ export function ManualBookingForm({ isOpen, onClose, onSuccess }: ManualBookingF
   const qc = useQueryClient();
 
   const activeServices = services.filter(s => s.active) as WizardService[];
-  const availableProducts = allProducts.filter(
-    p => p.active && (p.stock === null || p.stock > 0)
-  ) as WizardProduct[];
+  const availableProducts: WizardProduct[] = allProducts
+    .filter(p => p.is_active && p.stock_qty > 0)
+    .map(p => ({
+      id:                p.id,
+      name:              p.name,
+      price:             p.price_kopecks / 100,
+      description:       p.description,
+      emoji:             '📦',
+      inStock:           p.stock_qty > 0,
+      stock:             p.stock_qty,
+      recommendAlways:   p.recommend_always,
+      linkedServiceIds:  (p.product_service_links ?? []).map(l => l.service_id),
+    }));
 
   function handleSuccess() {
     qc.invalidateQueries({ queryKey: ['bookings'] });

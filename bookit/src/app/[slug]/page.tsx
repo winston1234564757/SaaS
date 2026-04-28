@@ -139,9 +139,10 @@ export default async function MasterPublicPage(
   const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, allianceRes] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name, price, description, emoji, stock_quantity, stock_unlimited')
+      .select('id, name, price_kopecks, description, photos, stock_qty, category, recommend_always, product_service_links(service_id)')
       .eq('master_id', data.id)
       .eq('is_active', true)
+      .gt('stock_qty', 0)
       .order('sort_order')
       .limit(20),
     supabase
@@ -218,12 +219,15 @@ export default async function MasterPublicPage(
     }));
 
   const products = (productsRes.data ?? []).map((p: any) => ({
-    id: p.id as string,
-    name: p.name as string,
-    price: Number(p.price),
-    description: (p.description as string) || null,
-    emoji: (p.emoji as string) ?? '✨',
-    inStock: p.stock_unlimited ? true : (p.stock_quantity as number) > 0,
+    id:               p.id as string,
+    name:             p.name as string,
+    price:            Math.round(Number(p.price_kopecks) / 100),
+    description:      (p.description as string) || null,
+    emoji:            '📦',
+    inStock:          (p.stock_qty as number) > 0,
+    stock:            p.stock_qty as number,
+    recommendAlways:  p.recommend_always as boolean,
+    linkedServiceIds: ((p.product_service_links ?? []) as { service_id: string }[]).map(l => l.service_id),
   }));
 
   const reviews = (reviewsRes.data ?? []).map((r: any) => ({

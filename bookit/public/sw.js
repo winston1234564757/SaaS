@@ -119,15 +119,22 @@ self.addEventListener('push', (event) => {
     payload = { title: 'Bookit', body: event.data.text() };
   }
 
-  const { title = 'Bookit', body = '', bookingId, url: notifUrl } = payload;
+  const { title = 'Bookit', body = '', url: notifUrl } = payload;
 
   event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      icon: '/icons/192',
-      badge: '/icons/192',
-      data: { bookingId, url: notifUrl || '/dashboard' },
-      vibrate: [100, 50, 100],
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Якщо є активна вкладка — foreground: sonner toast вже показує in-app нотифікацію.
+      // Системний push тут зайвий — пропускаємо.
+      const hasFocused = clientList.some((c) => c.focused);
+      if (hasFocused) return;
+
+      return self.registration.showNotification(title, {
+        body,
+        icon: '/icons/192',
+        badge: '/icons/192',
+        data: { url: notifUrl || '/dashboard' },
+        vibrate: [100, 50, 100],
+      });
     })
   );
 });
@@ -136,18 +143,23 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const { bookingId, url } = event.notification.data ?? {};
 
-  const target = bookingId
-    ? `/dashboard?bookingId=${bookingId}`
-    : (url || '/dashboard');
+  // url — повний deep-link (пріоритет); bookingId — легасі-фолбек
+  const target = url
+    || (bookingId ? `/dashboard/bookings?bookingId=${bookingId}` : '/dashboard');
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes('/dashboard') && 'focus' in client) {
-          client.navigate(target);
-          return client.focus();
-        }
+      const origin = self.location.origin;
+      const appClient = clientList.find(c => c.url.startsWith(origin));
+
+      if (appClient) {
+        // postMessage — єдиний надійний спосіб навігації на iOS Safari PWA.
+        // client.navigate() там не підтримується і мовчки ігнорується.
+        appClient.postMessage({ type: 'SW_NAVIGATE', url: target });
+        return 'focus' in appClient ? appClient.focus() : Promise.resolve();
       }
+
+      // Додаток закрито — відкриваємо напряму з URL (query param одразу в URL)
       return clients.openWindow(target);
     })
   );

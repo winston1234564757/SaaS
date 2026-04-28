@@ -2,6 +2,12 @@ export type UserRole = 'master' | 'client' | 'admin';
 export type Json = Record<string, unknown>;
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 
+// ── Products & Orders ─────────────────────────────────────────────────────────
+export type ProductCategory = 'hair' | 'nails' | 'skin' | 'brows' | 'body' | 'tools' | 'other';
+export type OrderStatus = 'new' | 'confirmed' | 'shipped' | 'completed' | 'cancelled';
+export type OrderDeliveryType = 'pickup' | 'nova_poshta';
+export type ProductTransactionType = 'sale' | 'restock' | 'adjustment' | 'return';
+
 // ── Working-hours scheduling config (master_profiles.working_hours JSONB) ─────
 
 export interface BreakWindow {
@@ -71,6 +77,7 @@ export interface MasterProfile {
   retention_cycle_days?: number | null;
   c2c_enabled?: boolean;
   c2c_discount_pct?: number;
+  ships_nova_poshta?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -131,13 +138,48 @@ export interface Product {
   master_id: string;
   name: string;
   description: string | null;
-  price: number;
-  image_url: string | null;
-  stock_quantity: number;
-  is_active: boolean;
-  sort_order: number;
+  category: ProductCategory;
+  price_kopecks: number;
+  photos: string[];
+  stock_qty:        number;
+  is_active:        boolean;
+  recommend_always: boolean;
+  sort_order:       number;
+  created_at:       string;
+  updated_at:       string;
+  // Joined relation — present when query includes product_service_links(service_id)
+  product_service_links?: { service_id: string }[];
+}
+
+export interface Order {
+  id: string;
+  master_id: string;
+  client_id: string | null;
+  booking_id: string | null;
+  delivery_type: OrderDeliveryType;
+  delivery_address: string | null;
+  total_kopecks: number;
+  status: OrderStatus;
+  note: string | null;
   created_at: string;
-  updated_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  qty: number;
+  price_kopecks: number;
+}
+
+export interface ProductTransaction {
+  id: string;
+  product_id: string;
+  type: ProductTransactionType;
+  qty_delta: number;
+  order_id: string | null;
+  note: string | null;
+  created_at: string;
 }
 
 export interface Booking {

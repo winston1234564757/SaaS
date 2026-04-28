@@ -18,7 +18,7 @@ import { ClientDetails } from './wizard/ClientDetails';
 import { BookingSuccess } from './wizard/BookingSuccess';
 import { X, ChevronLeft } from 'lucide-react';
 import { createBooking } from '@/lib/actions/createBooking';
-import { notifyMasterOnBooking } from '@/app/[slug]/actions';
+import { notifyMasterOnBooking, createPublicOrder } from '@/app/[slug]/actions';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
 import { toISO, STEP_TITLE } from './wizard/helpers';
@@ -98,9 +98,29 @@ export function BookingWizard({
   // ── Submit ────────────────────────────────────────────────────────────────────
   async function handleSubmit() {
     if (saving) return; // double-submit guard
-    if (!selectedDate || !selectedTime) return;
+
     const isValid = await trigger();
     if (!isValid) return;
+
+    // ── Product-only path (no services selected) ──────────────────────────────
+    if (selectedServices.length === 0 && cart.length > 0 && mode === 'client') {
+      setSaving(true);
+      setSaveError('');
+      const res = await createPublicOrder({
+        masterId,
+        clientName: watchName.trim(),
+        clientPhone: watchPhone.trim(),
+        notes: clientNotes.trim() || null,
+        items: cart.map(ci => ({ productId: ci.product.id, qty: ci.quantity })),
+      });
+      setSaving(false);
+      if (res.error) { setSaveError(res.error); return; }
+      setCreatedBookingId(res.id);
+      go('success', 1);
+      return;
+    }
+
+    if (!selectedDate || !selectedTime) return;
 
     setSaving(true);
     setSaveError('');
@@ -154,7 +174,9 @@ export function BookingWizard({
       }
       setCreatedBookingId(result.bookingId);
       notifyMasterOnBooking({
-        masterId, clientName: watchName.trim(),
+        masterId,
+        bookingId: result.bookingId,
+        clientName: watchName.trim(),
         date: toISO(selectedDate), startTime: selectedTime,
         services: selectedServices.map(s => s.name).join(', '),
         totalPrice: result.finalTotal ?? finalTotal,
@@ -166,7 +188,9 @@ export function BookingWizard({
     go('success', 1);
   }
 
-  const canSubmit = (watchName?.trim()?.length ?? 0) >= 2 && (watchPhone?.length ?? 0) >= 13;
+  // Product-only orders don't need date/time but still need name+phone
+  const canSubmit = (watchName?.trim()?.length ?? 0) >= 2 && (watchPhone?.length ?? 0) >= 13
+    && (selectedServices.length > 0 || cart.length > 0);
 
   if (!isOpen) return null;
 
@@ -256,10 +280,12 @@ export function BookingWizard({
                         totalDuration={totalDuration}
                         effectiveDuration={effectiveDuration}
                         totalServicesPrice={totalServicesPrice}
+                        hasProducts={hasProducts}
                         c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
                         onDurationOverrideChange={(v) => { setDurationOverride(v); setSelectedTime(null); }}
                         onClearTime={() => setSelectedTime(null)}
                         onContinue={() => go('datetime', 1)}
+                        onSkipToProducts={() => go('products', 1)}
                       />
                     )}
 
@@ -341,7 +367,7 @@ export function BookingWizard({
                         onSubmit={handleSubmit}
                         direction={direction}
                         c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
-                        c2cFriendDiscountAmount={mode === 'client' && activeC2cDiscountPct ? Math.round(totalServicesPrice * activeC2cDiscountPct / 100) : 0}
+                        c2cFriendDiscountAmount={mode === 'client' && activeC2cDiscountPct ? Math.round((totalServicesPrice + totalProductsPrice) * activeC2cDiscountPct / 100) : 0}
                         c2cAlreadyUsed={c2cAlreadyUsed}
                         c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
                         c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}

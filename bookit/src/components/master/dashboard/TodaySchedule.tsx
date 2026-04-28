@@ -10,6 +10,7 @@ import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useB
 import { formatPrice } from '@/components/master/services/types';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
+import { useToast } from '@/lib/toast/context';
 import { BookingActionsDropdown } from '@/components/master/bookings/BookingActionsDropdown';
 import { completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import Link from 'next/link';
@@ -320,6 +321,7 @@ export function TodaySchedule() {
   const queryClient = useQueryClient();
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
+  const { showToast } = useToast();
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [, startComplete] = useTransition();
 
@@ -327,8 +329,15 @@ export function TodaySchedule() {
     setCompletingId(id);
     startComplete(async () => {
       try {
-        await completeBooking(id);
-        await invalidateAll();
+        const { error } = await completeBooking(id);
+        if (error) {
+          showToast({ type: 'error', title: 'Помилка', message: error });
+        } else {
+          showToast({ type: 'success', title: 'Запис завершено' });
+          await invalidateAll();
+        }
+      } catch (err) {
+        showToast({ type: 'error', title: 'Помилка', message: 'Не вдалося завершити запис' });
       } finally {
         setCompletingId(null);
       }

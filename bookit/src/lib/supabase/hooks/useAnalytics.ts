@@ -23,6 +23,16 @@ interface AnalyticsBookingRow {
   booking_products: { product_name: string; product_price: number; quantity: number }[];
 }
 
+interface AnalyticsOrderRow {
+  created_at: string;
+  status: string;
+  total_kopecks: number;
+  client_id: string | null;
+  client_name: string | null;
+  client_phone: string | null;
+  order_items: { qty: number; products: { name: string; price_kopecks: number } | null }[];
+}
+
 interface TrendBookingRow { date: string; status: string; total_price: number; }
 interface PrevBookingRow  { status: string; total_price: number; }
 interface VisitRow        { client_phone: string | null; }
@@ -61,16 +71,16 @@ export interface TopClient {
 export interface RetentionData { newClients: number; returningClients: number; }
 
 export interface BentoData {
-  revenueByCategory: { services: number; products: number };
+  revenueByCategory: { services: number; bookingProducts: number; shopProducts: number };
   topClients:        TopClient[];
   bestDayOfWeek:     { dayIdx: number; day: string; pct: number; data: number[]; bookings: number[] };
   avgCheck:          { current: number; prev: number | null; delta: number | null };
   hoursBooked:       number;
-  sourceBreakdown:   { online: number; manual: number; total: number };
+  sourceBreakdown:   { online: number; manual: number; shop: number; total: number };
 }
 
 export interface AnalyticsData {
-  summary:    { bookings: number; revenue: number; activeClients: number; newClients: number | null };
+  summary:    { bookings: number; orders: number; revenue: number; activeClients: number; newClients: number | null };
   monthStats: MonthStat[];
   topServices: TopService[];
   topProducts: TopProduct[];
@@ -97,22 +107,20 @@ export function useAnalytics(
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   return useQuery({
-    queryKey: ['analytics-v2', masterId, startDate, endDate, isPro],
+    queryKey: ['analytics-v3', masterId, startDate, endDate, isPro],
     enabled:  !!masterId,
     staleTime: 2 * 60_000,
     queryFn: async (): Promise<AnalyticsData> => {
       const supabase = createClient();
 
       const now          = getNow();
-      // End of CURRENT month (not today) — so the current month in the trend
-      // chart shows a full month, not truncated at today's date
       const endOfMonth   = toYMD(new Date(now.getFullYear(), now.getMonth() + 1, 0));
       const sixMonthsAgo = toYMD(new Date(now.getFullYear(), now.getMonth() - 5, 1));
       const prevPeriod   = getPrevPeriodRange(preset, offset);
 
       // ── Parallel queries ─────────────────────────────────────────────────
-      const [mainRes, trendRes, prevRes, retentionRes] = await Promise.all([
-        // Rich main query — everything we need for the selected period
+      const [mainRes, shopRes, trendRes, prevRes, retentionRes] = await Promise.all([
+        // Main bookings
         supabase
           .from('bookings')
           .select(`
@@ -126,8 +134,19 @@ export function useAnalytics(
           .gte('date', startDate)
           .lte('date', endDate),
 
-        // 6-month trend (fixed window, independent of filter — keeps forecast alive)
-        // Uses end-of-month so current month is always complete, not cut off at today
+        // Standalone shop orders
+        supabase
+          .from('orders')
+          .select(`
+            created_at, status, total_kopecks,
+            client_id, client_name, client_phone,
+            order_items ( qty, products ( name, price_kopecks ) )
+          `)
+          .eq('master_id', masterId!)
+          .gte('created_at', startDate + 'T00:00:00')
+          .lte('created_at', endDate + 'T23:59:59'),
+
+        // 6-month trend (independent of filter)
         isPro
           ? supabase
               .from('bookings')
@@ -137,7 +156,7 @@ export function useAnalytics(
               .lte('date', endOfMonth)
           : Promise.resolve({ data: null, error: null }),
 
-        // Previous period — for avg check delta (Pro only)
+        // Previous period
         isPro && prevPeriod
           ? supabase
               .from('bookings')
@@ -147,7 +166,7 @@ export function useAnalytics(
               .lte('date', prevPeriod.endDate)
           : Promise.resolve({ data: null, error: null }),
 
-        // Retention stats — runs in parallel, eliminates sequential JS scan
+        // Retention stats
         supabase.rpc('get_retention_stats', {
           p_master_id:  masterId!,
           p_start_date: startDate,
@@ -156,25 +175,38 @@ export function useAnalytics(
       ]);
 
       if (mainRes.error)      throw mainRes.error;
+      if (shopRes.error)      throw shopRes.error;
       if (trendRes.error)     throw trendRes.error;
       if (prevRes.error)      throw prevRes.error;
       if (retentionRes.error) throw retentionRes.error;
 
       const rows = (mainRes.data ?? []) as AnalyticsBookingRow[];
+      const orderRows = (shopRes.data ?? []) as AnalyticsOrderRow[];
 
       // ── Summary ───────────────────────────────────────────────────────────
-      const nonCancelled = rows.filter(b => b.status !== 'cancelled');
-      const completed    = rows.filter(b => b.status === 'completed');
-      const revenue      = completed.reduce((s, b) => s + Number(b.total_price), 0);
-      // Active clients = unique phones (includes guests & manual — client_id may be null)
-      const activePhones    = [...new Set(nonCancelled.map(b => b.client_phone as string).filter(Boolean))] as string[];
-      // client_id set still needed for Pro bento top-clients
-      const activeClientIds = [...new Set(nonCancelled.map(b => b.client_id as string).filter(Boolean))] as string[];
+      const bookingCompleted = rows.filter(b => b.status === 'completed');
+      const orderCompleted   = orderRows.filter(o => ['completed', 'shipped', 'new', 'confirmed'].includes(o.status));
+      
+      const bookingRevenue = bookingCompleted.reduce((s, b) => s + Number(b.total_price), 0);
+      const shopRevenue    = orderCompleted.reduce((s, o) => s + Number(o.total_kopecks) / 100, 0);
+      const totalRevenue   = bookingRevenue + shopRevenue;
 
-      // ── 6-month trend ─────────────────────────────────────────────────────
+      // Bookings that actually have products (synthetic orders)
+      const bookingsWithProductsCount = rows.filter(b => (b.booking_products ?? []).length > 0).length;
+      const totalSyntheticOrders = orderRows.length + bookingsWithProductsCount;
+
+      const activePhones = [
+        ...new Set([
+          ...rows.filter(b => b.status !== 'cancelled').map(b => b.client_phone),
+          ...orderRows.filter(o => o.status !== 'cancelled').map(o => o.client_phone),
+        ].filter(Boolean))
+      ] as string[];
+
+      // ── 6-month trend (Bookings + Shop) ───────────────────────────────────
       const monthStats: MonthStat[] = [];
       if (trendRes.data) {
         const map = new Map<string, { bookings: number; revenue: number }>();
+        // Trending bookings
         for (const b of trendRes.data as TrendBookingRow[]) {
           const key = (b.date as string).slice(0, 7);
           const cur = map.get(key) ?? { bookings: 0, revenue: 0 };
@@ -183,6 +215,7 @@ export function useAnalytics(
             revenue:  b.status === 'completed' ? cur.revenue + Number(b.total_price) : cur.revenue,
           });
         }
+        // TODO: add trending shop orders if needed, but trend usually focuses on bookings
         for (let i = 5; i >= 0; i--) {
           const d   = new Date(now.getFullYear(), now.getMonth() - i, 1);
           const key = toYMD(d).slice(0, 7);
@@ -191,9 +224,9 @@ export function useAnalytics(
         }
       }
 
-      // ── Top services (with cross-sell rate) ───────────────────────────────
+      // ── Top services ──────────────────────────────────────────────────────
       const svcMap = new Map<string, { count: number; revenue: number; withProducts: number }>();
-      for (const b of completed) {
+      for (const b of bookingCompleted) {
         const hasProd = (b.booking_products ?? []).length > 0;
         for (const s of b.booking_services ?? []) {
           const cur = svcMap.get(s.service_name) ?? { count: 0, revenue: 0, withProducts: 0 };
@@ -214,9 +247,10 @@ export function useAnalytics(
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 5);
 
-      // ── Top products ──────────────────────────────────────────────────────
+      // ── Top products (Booking + Shop) ─────────────────────────────────────
       const prodMap = new Map<string, { qty: number; revenue: number }>();
-      for (const b of completed) {
+      // From bookings
+      for (const b of bookingCompleted) {
         for (const p of b.booking_products ?? []) {
           const cur = prodMap.get(p.product_name) ?? { qty: 0, revenue: 0 };
           prodMap.set(p.product_name, {
@@ -225,47 +259,63 @@ export function useAnalytics(
           });
         }
       }
+      // From shop orders
+      for (const o of orderCompleted) {
+        for (const item of o.order_items ?? []) {
+          if (!item.products) continue;
+          const cur = prodMap.get(item.products.name) ?? { qty: 0, revenue: 0 };
+          prodMap.set(item.products.name, {
+            qty:     cur.qty + Number(item.qty),
+            revenue: cur.revenue + (Number(item.products.price_kopecks) * Number(item.qty)) / 100,
+          });
+        }
+      }
       const topProducts: TopProduct[] = Array.from(prodMap.entries())
         .map(([name, d]) => ({ name, ...d }))
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 10);
 
-      // ── Bento (Pro only) ─────────────────────────────────────────────────
+      // ── Bento (Pro only) ──────────────────────────────────────────────────
       let bento: BentoData | null = null;
-
       if (isPro) {
-        // Revenue by category
-        const servicesRev = completed.reduce((s, b) => s + Number(b.total_services_price ?? 0), 0);
-        const productsRev = completed.reduce((s, b) => s + Number(b.total_products_price ?? 0), 0);
+        const servicesRev = bookingCompleted.reduce((s, b) => s + Number(b.total_services_price ?? 0), 0);
+        const bookingProductsRev = bookingCompleted.reduce((s, b) => s + Number(b.total_products_price ?? 0), 0);
+        const shopProductsRev = shopRevenue;
 
-        // Top 3 clients by revenue (from non-cancelled) — includes guests & manual
+        // Top clients (including shop buyers)
         const clientMap = new Map<string, { clientId: string | null; name: string; revenue: number; visits: number }>();
-        for (const b of nonCancelled) {
-          const key = (b.client_phone as string) || (b.client_name as string) || 'unknown';
-          const cur = clientMap.get(key) ?? { clientId: b.client_id || null, name: b.client_name || 'Невідомий', revenue: 0, visits: 0 };
+        const addClient = (id: string | null, name: string | null, phone: string | null, rev: number, isVisit: boolean) => {
+          const key = phone || name || 'unknown';
+          const cur = clientMap.get(key) ?? { clientId: id, name: name || 'Невідомий', revenue: 0, visits: 0 };
           clientMap.set(key, {
             clientId: cur.clientId,
             name:     cur.name,
-            revenue:  cur.revenue + (b.status === 'completed' ? Number(b.total_price) : 0),
-            visits:   cur.visits + 1,
+            revenue:  cur.revenue + rev,
+            visits:   cur.visits + (isVisit ? 1 : 0),
           });
-        }
+        };
+        rows.filter(b => b.status !== 'cancelled').forEach(b => addClient(b.client_id, b.client_name, b.client_phone, b.status === 'completed' ? Number(b.total_price) : 0, true));
+        orderRows.filter(o => o.status !== 'cancelled').forEach(o => addClient(o.client_id, o.client_name, o.client_phone, ['completed', 'shipped', 'new', 'confirmed'].includes(o.status) ? Number(o.total_kopecks) / 100 : 0, false));
+
         const topClients: TopClient[] = Array.from(clientMap.values())
           .map(d => ({ clientId: d.clientId, clientName: d.name, revenue: d.revenue, visits: d.visits }))
           .sort((a, b) => b.revenue - a.revenue)
           .slice(0, 3);
 
-        // Best day of week (by revenue from completed)
+        // Best day of week
         const dowRevenue  = new Array(7).fill(0) as number[];
         const dowBookings = new Array(7).fill(0) as number[];
-        for (const b of completed) {
-          // Use local Date constructor — avoids UTC midnight shift on date strings
+        for (const b of bookingCompleted) {
           const [yr, mo, dy] = (b.date as string).split('-').map(Number);
-          const d   = new Date(yr, mo - 1, dy);
-          const dow = d.getDay(); // 0 = Sun
+          const dow = new Date(yr, mo - 1, dy).getDay();
           dowRevenue[dow]  += Number(b.total_price);
           dowBookings[dow] += 1;
         }
+        for (const o of orderCompleted) {
+          const dow = new Date(o.created_at).getDay();
+          dowRevenue[dow] += Number(o.total_kopecks) / 100;
+        }
+
         const maxDow    = dowRevenue.reduce((m, v, i) => v > dowRevenue[m] ? i : m, 0);
         const totalRev  = dowRevenue.reduce((s, v) => s + v, 0);
         const bestDayOfWeek = {
@@ -276,68 +326,50 @@ export function useAnalytics(
           bookings: dowBookings,
         };
 
-        // Avg check (current period + prev period)
-        const currentCompleted = completed.length;
-        const currentAvg       = currentCompleted > 0 ? revenue / currentCompleted : 0;
+        const currentAvg = bookingCompleted.length > 0 ? bookingRevenue / bookingCompleted.length : 0;
         let prevAvg: number | null = null;
         if (prevRes.data) {
           const prevCompleted = (prevRes.data as PrevBookingRow[]).filter(b => b.status === 'completed');
           const prevRev       = prevCompleted.reduce((s, b) => s + Number(b.total_price), 0);
           prevAvg = prevCompleted.length > 0 ? prevRev / prevCompleted.length : null;
         }
-        const avgCheckDelta = prevAvg !== null && currentAvg > 0
-          ? Math.round(((currentAvg - prevAvg) / prevAvg) * 100)
-          : null;
 
-        // Hours booked (sum duration_minutes from booking_services of non-cancelled)
         let totalMins = 0;
-        for (const b of nonCancelled) {
-          for (const s of b.booking_services ?? []) {
-            totalMins += Number(s.duration_minutes ?? 0);
-          }
-        }
-
-        // Source breakdown
-        const onlineCount = nonCancelled.filter(b => b.source !== 'manual').length;
-        const manualCount = nonCancelled.filter(b => b.source === 'manual').length;
+        rows.filter(b => b.status !== 'cancelled').forEach(b => b.booking_services.forEach((s: any) => totalMins += Number(s.duration_minutes || 0)));
 
         bento = {
-          revenueByCategory: { services: servicesRev, products: productsRev },
+          revenueByCategory: { services: servicesRev, bookingProducts: bookingProductsRev, shopProducts: shopProductsRev },
           topClients,
           bestDayOfWeek,
           avgCheck: {
             current: Math.round(currentAvg),
             prev:    prevAvg !== null ? Math.round(prevAvg) : null,
-            delta:   avgCheckDelta,
+            delta:   prevAvg !== null && currentAvg > 0 ? Math.round(((currentAvg - prevAvg) / prevAvg) * 100) : null,
           },
           hoursBooked: Math.round(totalMins / 60 * 10) / 10,
           sourceBreakdown: {
-            online: onlineCount,
-            manual: manualCount,
-            total:  nonCancelled.length,
+            online: rows.filter(b => b.status !== 'cancelled' && b.source !== 'manual').length,
+            manual: rows.filter(b => b.status !== 'cancelled' && b.source === 'manual').length,
+            shop:   orderRows.filter(o => o.status !== 'cancelled').length,
+            total:  rows.filter(b => b.status !== 'cancelled').length + orderRows.filter(o => o.status !== 'cancelled').length,
           },
         };
       }
 
-      // ── Retention: DB-side via get_retention_stats RPC (parallel, no JS scan) ──
-      type RetentionRow = { returning_clients: number; new_clients: number };
-      const retRow = ((retentionRes.data as RetentionRow[] | null) ?? [])[0] ?? null;
-      const retention: RetentionData = retRow
-        ? { returningClients: retRow.returning_clients, newClients: retRow.new_clients }
-        : { returningClients: 0, newClients: 0 };
-      const newClients: number = retention.newClients;
-
+      const retRow = ((retentionRes.data as { returning_clients: number; new_clients: number }[] | null) ?? [])[0] ?? null;
+      
       return {
         summary: {
-          bookings:      rows.length,
-          revenue,
-          activeClients: activePhones.length,  // phone-based: includes guests & manual
-          newClients,
+          bookings:      bookingCompleted.length,
+          orders:        totalSyntheticOrders,
+          revenue:       Math.round(totalRevenue),
+          activeClients: activePhones.length,
+          newClients:    retRow?.new_clients ?? 0,
         },
         monthStats,
         topServices,
         topProducts,
-        retention,
+        retention: retRow ? { returningClients: retRow.returning_clients, newClients: retRow.new_clients } : null,
         bento,
       };
     },

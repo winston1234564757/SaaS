@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { getAutoSuggestProductIds } from '@/lib/supabase/hooks/useProductLinks';
 import { ensureClientProfile } from '@/app/[slug]/actions';
 import { checkC2cEligibility } from '@/lib/actions/referrals';
+import { normalizeToE164 } from '@/lib/utils/phone';
 import { useToast } from '@/lib/toast/context';
 import { bookingClientSchema, type BookingClientData } from '@/lib/validations/booking';
 import { ALL_STEPS } from './helpers';
@@ -52,30 +53,6 @@ export function useBookingWizardState({
       console.log(`[Wizard] Step initialized/changed to: ${step}`);
     }
   }, [step]);
-
-  const availableProducts = useMemo(() => products.filter(p => p.inStock !== false), [products]);
-  const hasProducts = availableProducts.length > 0;
-  const visibleSteps = useMemo(
-    () => hasProducts ? ALL_STEPS : ALL_STEPS.filter(s => s !== 'products'),
-    [hasProducts]
-  );
-
-  function go(next: WizardStep, dir: 1 | -1 = 1) {
-    if (typeof window !== 'undefined') {
-      console.log(`[Wizard] Transitioning from ${step} to ${next} (dir: ${dir})`);
-    }
-    setDirection(dir); setStep(next);
-  }
-  function goBack() {
-    // Flash fast-track: 'details' is the locked entry point — back = close
-    if (isFlashFastTrack && step === 'details') {
-      onClose(); setTimeout(() => go('services'), 350); return;
-    }
-    const idx = visibleSteps.indexOf(step);
-    if (idx > 0) go(visibleSteps[idx - 1], -1);
-    else { onClose(); setTimeout(() => go('services'), 350); }
-  }
-  function closeWizard() { onClose(); setTimeout(() => go('services'), 350); }
 
   // ── Booking state ────────────────────────────────────────────────────────────
   const [selectedServices, setSelectedServices] = useState<WizardService[]>([]);
@@ -148,6 +125,46 @@ export function useBookingWizardState({
   // ── Refs ──────────────────────────────────────────────────────────────────────
   const wasOpenRef = useRef(false); // true if modal was already open (retry vs fresh open)
 
+  // ── Available products (after all state is declared) ─────────────────────────
+  const availableProducts = useMemo(() => {
+    const selectedServiceIds = new Set(selectedServices.map(s => s.id));
+    return products.filter(p => {
+      if (p.inStock === false) return false;
+      if (p.recommendAlways !== false) return true;
+      return (p.linkedServiceIds ?? []).some(sid => selectedServiceIds.has(sid));
+    });
+  }, [products, selectedServices]);
+  const hasProducts = availableProducts.length > 0;
+  const visibleSteps = useMemo(
+    () => hasProducts ? ALL_STEPS : ALL_STEPS.filter(s => s !== 'products'),
+    [hasProducts]
+  );
+
+  function go(next: WizardStep, dir: 1 | -1 = 1) {
+    if (typeof window !== 'undefined') {
+      console.log(`[Wizard] Transitioning from ${step} to ${next} (dir: ${dir})`);
+    }
+    setDirection(dir); setStep(next);
+  }
+  function goBack() {
+    // Flash fast-track: 'details' is the locked entry point — back = close
+    if (isFlashFastTrack && step === 'details') {
+      onClose(); setTimeout(() => go('services'), 350); return;
+    }
+    // Product-only path: from products with no services selected → back to services (skip datetime)
+    if (step === 'products' && selectedServices.length === 0) {
+      go('services', -1); return;
+    }
+    // Product-only path: from details with no services → back to products
+    if (step === 'details' && selectedServices.length === 0 && hasProducts) {
+      go('products', -1); return;
+    }
+    const idx = visibleSteps.indexOf(step);
+    if (idx > 0) go(visibleSteps[idx - 1], -1);
+    else { onClose(); setTimeout(() => go('services'), 350); }
+  }
+  function closeWizard() { onClose(); setTimeout(() => go('services'), 350); }
+
   // ── Reset + fetch client history on open ──────────────────────────────────
   useEffect(() => {
     // Race condition guard: prevents stale async callbacks from updating state
@@ -201,8 +218,10 @@ export function useBookingWizardState({
           setValue('clientName', name);
         }
         if (phone) {
-          setClientPhone(phone);
-          setValue('clientPhone', phone);
+          const e164 = normalizeToE164(phone);
+          const normalizedPhone = e164 ? '+' + e164 : phone;
+          setClientPhone(normalizedPhone);
+          setValue('clientPhone', normalizedPhone, { shouldValidate: true });
         }
         if (email) setClientEmail(email);
         const sb = createClient();

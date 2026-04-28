@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Users, BarChart2, MoreHorizontal,
-  Scissors, Zap, TrendingUp, Gift,
+  Scissors, Zap, TrendingUp, Gift, ShoppingBag,
   MessageSquare, Share2, Building2, CreditCard, Settings, X,
   Wallet, Rocket, BadgePercent, Network, HelpCircle, ImagePlay, Scale,
 } from 'lucide-react';
@@ -22,7 +22,8 @@ const PRIMARY = [
 
 // Icon-only shortcuts promoted from the drawer
 const QUICK = [
-  { href: '/dashboard/services', icon: Scissors, label: 'Послуги' },
+  { href: '/dashboard/services', icon: Scissors,    label: 'Послуги' },
+  { href: '/dashboard/products', icon: ShoppingBag, label: 'Магазин' },
 ];
 
 const MORE_ITEMS = [

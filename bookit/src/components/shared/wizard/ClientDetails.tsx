@@ -96,16 +96,23 @@ export function ClientDetails({
 
       {/* Recap badge */}
       <div className="flex items-center gap-2 p-3 rounded-2xl bg-[#789A99]/10 border border-[#789A99]/20 mb-4">
-        <span className="text-base">📅</span>
-        <p className="text-xs text-[#6B5750]">
-          <span className="font-semibold text-[#2C1A14]">
-            {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
-          </span>
-          {' — '}
-          {selectedDate && `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}`}
-          {' о '}
-          <span className="font-semibold text-[#789A99]">{selectedTime}</span>
-        </p>
+        <span className="text-base">{selectedServices.length === 0 ? '🛍️' : '📅'}</span>
+        {selectedServices.length === 0 ? (
+          <p className="text-xs text-[#6B5750]">
+            <span className="font-semibold text-[#2C1A14]">Замовлення товарів</span>
+            <span className="ml-1">· самовивіз</span>
+          </p>
+        ) : (
+          <p className="text-xs text-[#6B5750]">
+            <span className="font-semibold text-[#2C1A14]">
+              {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
+            </span>
+            {' — '}
+            {selectedDate && `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}`}
+            {' о '}
+            <span className="font-semibold text-[#789A99]">{selectedTime}</span>
+          </p>
+        )}
       </div>
 
       {mode === 'client' && clientUserId && (
@@ -303,7 +310,9 @@ export function ClientDetails({
 
       {mode === 'client' && (
         <p className="text-xs text-[#A8928D] text-center mb-3">
-          Майстер отримає сповіщення та підтвердить запис
+          {selectedServices.length === 0
+            ? 'Майстер отримає замовлення та підготує товари'
+            : 'Майстер отримає сповіщення та підтвердить запис'}
         </p>
       )}
 
@@ -332,7 +341,9 @@ export function ClientDetails({
       >
         {saving
           ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Зберігаємо...</>
-          : mode === 'client' ? 'Підтвердити запис' : 'Зберегти запис'
+          : mode === 'client'
+            ? (selectedServices.length === 0 ? 'Підтвердити замовлення' : 'Підтвердити запис')
+            : 'Зберегти запис'
         }
       </button>
     </motion.div>

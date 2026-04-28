@@ -9,7 +9,7 @@ import {
   BarChart2, TrendingUp, TrendingDown, Users,
   Minus, Download, Loader2, RefreshCw,
   ChevronLeft, ChevronRight, Clock, Zap,
-  Star, ChevronDown, Crown,
+  Star, ChevronDown, Crown, ShoppingBag
 } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -403,7 +403,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     range.offset,
   );
 
-  const summary = data?.summary ?? { bookings: 0, revenue: 0, activeClients: 0, newClients: null };
+  const summary = data?.summary ?? { bookings: 0, orders: 0, revenue: 0, activeClients: 0, newClients: null };
   const monthStats = data?.monthStats ?? [];
   const topServices = data?.topServices ?? [];
   const topProducts = data?.topProducts ?? [];
@@ -506,9 +506,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           <div className="grid grid-cols-2 gap-3">
             {[
               { icon: BarChart2, label: 'Записів', value: isLoading ? null : summary.bookings, color: '#789A99' },
+              { icon: ShoppingBag, label: 'Замовлень', value: isLoading ? null : summary.orders, color: '#D4935A' },
               { icon: TrendingUp, label: 'Виручка', value: isLoading ? null : formatPrice(summary.revenue), color: '#5C9E7A' },
-              { icon: Users, label: 'Клієнтів', value: isLoading ? null : summary.activeClients, color: '#D4935A' },
-              { icon: Star, label: 'Нових', value: isLoading ? null : (summary.newClients !== null ? summary.newClients : '—'), color: '#789A99' },
+              { icon: Users, label: 'Клієнтів', value: isLoading ? null : summary.activeClients, color: '#789A99' },
             ].map(s => (
               <div key={s.label} className="flex flex-col gap-2.5 p-3.5 rounded-3xl bg-white/50 border border-white/60">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
@@ -665,29 +665,36 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               <SectionHeader title="Розподіл" />
               {isLoading ? <Skeleton h="h-20" rounded="rounded-xl" /> : bento ? (() => {
                 const svcRev = bento.revenueByCategory.services;
-                const prodRev = bento.revenueByCategory.products;
-                const total = svcRev + prodRev;
+                const bookingProdRev = bento.revenueByCategory.bookingProducts;
+                const shopProdRev = bento.revenueByCategory.shopProducts;
+                const total = svcRev + bookingProdRev + shopProdRev;
+                
                 const svcPct = total > 0 ? Math.round((svcRev / total) * 100) : 0;
+                const bProdPct = total > 0 ? Math.round((bookingProdRev / total) * 100) : 0;
+                const sProdPct = total > 0 ? Math.max(0, 100 - svcPct - bProdPct) : 0;
+
                 return (
                   <div className="flex flex-col gap-3">
-                    <div className="h-2 rounded-full bg-[#F5E8E3] overflow-hidden flex">
-                      <div className="h-full bg-[#789A99]/70 transition-all duration-700" style={{ width: `${svcPct}%` }} />
-                      <div className="h-full bg-[#D4935A]/60 transition-all duration-700 flex-1" />
+                    <div className="h-2 rounded-full bg-[#F5E8E3] overflow-hidden flex shadow-inner">
+                      <div className="h-full bg-[#789A99] transition-all duration-700" style={{ width: `${svcPct}%` }} />
+                      <div className="h-full bg-[#D4935A]/60 transition-all duration-700" style={{ width: `${bProdPct}%` }} />
+                      <div className="h-full bg-[#5C9E7A]/60 transition-all duration-700 flex-1" />
                     </div>
                     <div className="flex flex-col gap-1.5">
                       {[
                         { dot: '#789A99', label: 'Послуги', pct: svcPct, rev: svcRev },
-                        { dot: '#D4935A', label: 'Товари', pct: 100 - svcPct, rev: prodRev },
+                        { dot: '#D4935A99', label: 'Товари (Запис)', pct: bProdPct, rev: bookingProdRev },
+                        { dot: '#5C9E7A99', label: 'Товари (Магаз)', pct: sProdPct, rev: shopProdRev },
                       ].map(item => (
                         <Tooltip key={item.label}
-                          content={<div><p className="text-sm text-[#6B5750] mb-1">{item.label}</p><p className="text-lg font-bold text-[#2C1A14]">{formatPrice(item.rev)}</p></div>}
+                          content={<div><p className="text-xs text-[#6B5750] mb-0.5">{item.label}</p><p className="text-base font-bold text-[#2C1A14]">{formatPrice(item.rev)}</p></div>}
                         >
                           <div className="flex items-center justify-between cursor-default">
                             <div className="flex items-center gap-1.5">
                               <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: item.dot }} />
-                              <span className="text-[11px] text-[#A8928D]">{item.label}</span>
+                              <span className="text-[10px] text-[#A8928D] truncate max-w-[70px]">{item.label}</span>
                             </div>
-                            <span className="text-[11px] font-bold text-[#2C1A14]">{item.pct}%</span>
+                            <span className="text-[10px] font-bold text-[#2C1A14]">{item.pct}%</span>
                           </div>
                         </Tooltip>
                       ))}
@@ -756,6 +763,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                   <div className="flex justify-between">
                     <span className="text-[10px] text-[#A8928D]">Вручну</span>
                     <span className="text-[10px] font-bold text-[#2C1A14]">{bento?.sourceBreakdown.manual ?? '—'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[10px] text-[#A8928D]">Магазин</span>
+                    <span className="text-[10px] font-bold text-[#D4935A]">{bento?.sourceBreakdown.shop ?? '—'}</span>
                   </div>
                 </div>
               )}

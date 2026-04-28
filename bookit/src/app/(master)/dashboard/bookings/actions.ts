@@ -142,6 +142,7 @@ export async function updateBookingStatus(
   bookingId: string,
   status: string,
 ): Promise<{ error: string | null }> {
+  console.log(`[updateBookingStatus] Starting for ID: ${bookingId}, target status: ${status}`);
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -168,8 +169,12 @@ export async function updateBookingStatus(
       })
       .eq('id', bookingId);
 
-    if (error) return { error: error.message };
+    if (error) {
+      console.error(`[updateBookingStatus] DB Update Error:`, error);
+      return { error: error.message };
+    }
 
+    console.log(`[updateBookingStatus] Success for ID: ${bookingId}`);
     // 3. Revalidate & Notify
     // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
     revalidatePath('/dashboard/bookings');
@@ -182,12 +187,13 @@ export async function updateBookingStatus(
 
     return { error: null };
   } catch (err) {
-    console.error('[updateBookingStatus]', err);
+    console.error('[updateBookingStatus] Catch-all error:', err);
     return { error: 'Помилка сервера' };
   }
 }
 
 export async function completeBooking(bookingId: string): Promise<{ error: string | null }> {
+  console.log(`[completeBooking] Starting for ID: ${bookingId}`);
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -214,8 +220,12 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
       })
       .eq('id', bookingId);
 
-    if (error) return { error: error.message };
+    if (error) {
+      console.error(`[completeBooking] DB Update Error:`, error);
+      return { error: error.message };
+    }
 
+    console.log(`[completeBooking] Success for ID: ${bookingId}`);
     // 3. Revalidate
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
@@ -227,7 +237,7 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
 
     return { error: null };
   } catch (err) {
-    console.error('[completeBooking]', err);
+    console.error('[completeBooking] Catch-all error:', err);
     return { error: 'Помилка сервера' };
   }
 }
@@ -257,7 +267,7 @@ async function notifyClientReviewNudge(bookingId: string, clientId: string): Pro
         subs.map(s => sendPush(s.subscription, {
           title: 'Як пройшов ваш візит? ⭐',
           body: 'Залишіть відгук — це допоможе майстру.',
-          url: '/my/bookings',
+          url: `/my/bookings?bookingId=${bookingId}`,
         }))
       );
     }
@@ -393,7 +403,7 @@ export async function notifyClientOnStatusChange(
         const results = await Promise.allSettled(
           subs.map(sub => sendPush(sub.subscription, { title, body, url: '/my/bookings' }))
         );
-        pushSent = results.some(r => r.status === 'fulfilled' && r.value === true);
+        pushSent = results.some(r => r.status === 'fulfilled' && r.value.ok);
       }
     }
 

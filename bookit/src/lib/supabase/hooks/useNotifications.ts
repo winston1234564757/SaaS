@@ -71,5 +71,14 @@ export function useNotifications() {
     qc.invalidateQueries({ queryKey: ['notifications', masterId] });
   }
 
-  return { notifications, unreadCount, markAllRead };
+  async function markNotificationRead(notifId: string) {
+    const supabase = createClient();
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notifId);
+    qc.invalidateQueries({ queryKey: ['notifications', masterId] });
+  }
+
+  return { notifications, unreadCount, markAllRead, markNotificationRead };
 }

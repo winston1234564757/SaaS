@@ -19,9 +19,11 @@ interface ServiceSelectorProps {
   totalDuration: number;
   effectiveDuration: number;
   totalServicesPrice: number;
+  hasProducts?: boolean;
   onDurationOverrideChange: (v: number | null) => void;
   onClearTime: () => void;
   onContinue: () => void;
+  onSkipToProducts?: () => void;
 }
 
 export function ServiceSelector({
@@ -39,6 +41,8 @@ export function ServiceSelector({
   onDurationOverrideChange,
   onClearTime,
   onContinue,
+  hasProducts = false,
+  onSkipToProducts,
 }: ServiceSelectorProps & { c2cDiscountPct?: number | null }) {
   const categories = useMemo(() => [...new Set(services.map(s => s.category))], [services]);
   const canGoToDatetime = selectedServices.length > 0;
@@ -244,7 +248,7 @@ export function ServiceSelector({
         </div>
       </div>
 
-      <div className="sticky bottom-0 pt-3 pb-1 bg-gradient-to-t from-[rgba(255,248,244,1)] to-transparent">
+      <div className="sticky bottom-0 pt-3 pb-1 bg-gradient-to-t from-[rgba(255,248,244,1)] to-transparent flex flex-col gap-2">
         <button
           disabled={!canGoToDatetime}
           onClick={onContinue}
@@ -259,6 +263,14 @@ export function ServiceSelector({
             ? `Далі · ${pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])} · ${fmt(c2cDiscountPct ? Math.round(totalServicesPrice * (1 - c2cDiscountPct / 100)) : totalServicesPrice)}`
             : 'Обери послугу'}
         </button>
+        {mode === 'client' && hasProducts && !canGoToDatetime && onSkipToProducts && (
+          <button
+            onClick={onSkipToProducts}
+            className="w-full py-2.5 rounded-2xl text-sm font-medium text-[#789A99] border border-[#789A99]/30 hover:bg-[#789A99]/8 active:scale-[0.98] transition-all"
+          >
+            Тільки товари →
+          </button>
+        )}
       </div>
     </motion.div>
   );

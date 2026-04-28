@@ -135,6 +135,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
       qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       qc.invalidateQueries({ queryKey: ['weekly-overview'] });
       qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
+      qc.invalidateQueries({ queryKey: ['unified-sales'] });
     },
   });
 

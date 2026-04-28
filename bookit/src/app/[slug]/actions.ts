@@ -2,8 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { sendTelegramMessage, buildBookingMessage, UA_MONTHS } from '@/lib/telegram';
-import { sendPush } from '@/lib/push';
+import { notifyMasterNewBooking } from '@/lib/notifications';
+import { normalizeToE164 } from '@/lib/utils/phone';
 
 /**
  * Links a booking to the currently authenticated client.
@@ -59,8 +59,113 @@ export async function ensureClientProfile(): Promise<{ userId: string | null; na
   };
 }
 
+/**
+ * Creates a product-only order from the booking wizard (no auth required).
+ * Validates stock, decrements atomically, creates order record with client name/phone.
+ */
+export async function createPublicOrder(payload: {
+  masterId: string;
+  clientName: string;
+  clientPhone: string;
+  notes?: string | null;
+  items: Array<{ productId: string; qty: number }>;
+}): Promise<{ id: string | null; error: string | null }> {
+  if (!payload.items.length) return { id: null, error: 'Кошик порожній' };
+  if (!payload.clientName.trim()) return { id: null, error: 'Вкажіть ім\'я' };
+
+  const raw = normalizeToE164(payload.clientPhone);
+  if (!raw) return { id: null, error: 'Невірний номер телефону' };
+  const clientPhone = '+' + raw;
+
+  const admin = createAdminClient();
+
+  // Fetch products + stock check
+  const { data: products, error: fetchErr } = await admin
+    .from('products')
+    .select('id, name, price_kopecks, stock_qty')
+    .in('id', payload.items.map(i => i.productId))
+    .eq('master_id', payload.masterId)
+    .eq('is_active', true);
+
+  if (fetchErr || !products) return { id: null, error: 'Помилка завантаження товарів' };
+
+  const productMap = new Map(products.map(p => [p.id, p]));
+  let total_kopecks = 0;
+
+  for (const item of payload.items) {
+    const p = productMap.get(item.productId);
+    if (!p) return { id: null, error: 'Товар не знайдено' };
+    if (p.stock_qty < item.qty) {
+      return { id: null, error: `"${p.name}" — залишок ${p.stock_qty} шт.` };
+    }
+    total_kopecks += Number(p.price_kopecks) * item.qty;
+  }
+
+  // Resolve optional client_id (if logged in as client)
+  let clientId: string | null = null;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (profile?.role === 'client') clientId = user.id;
+  }
+
+  // Create order
+  const { data: order, error: orderErr } = await admin
+    .from('orders')
+    .insert({
+      master_id:    payload.masterId,
+      client_id:    clientId,
+      client_name:  payload.clientName.trim(),
+      client_phone: clientPhone,
+      delivery_type: 'pickup' as const,
+      total_kopecks,
+      status:       'new',
+      note:         payload.notes?.trim() ?? null,
+    })
+    .select('id')
+    .single();
+
+  if (orderErr || !order) return { id: null, error: orderErr?.message ?? 'Помилка створення замовлення' };
+
+  // Insert order items
+  const { error: itemsErr } = await admin.from('order_items').insert(
+    payload.items.map(item => ({
+      order_id:      order.id,
+      product_id:    item.productId,
+      qty:           item.qty,
+      price_kopecks: productMap.get(item.productId)!.price_kopecks,
+    }))
+  );
+
+  if (itemsErr) {
+    await admin.from('orders').delete().eq('id', order.id);
+    return { id: null, error: itemsErr.message };
+  }
+
+  // Atomic stock decrement
+  for (const item of payload.items) {
+    const p = productMap.get(item.productId)!;
+    await admin
+      .from('products')
+      .update({ stock_qty: p.stock_qty - item.qty })
+      .eq('id', item.productId)
+      .gte('stock_qty', item.qty);
+
+    await admin.from('product_transactions').insert({
+      product_id: item.productId,
+      type:       'sale',
+      qty_delta:  -item.qty,
+      order_id:   order.id,
+    });
+  }
+
+  return { id: order.id, error: null };
+}
+
 export async function notifyMasterOnBooking(params: {
   masterId: string;
+  bookingId?: string | null;
   clientName: string;
   date: string;
   startTime: string;
@@ -69,42 +174,7 @@ export async function notifyMasterOnBooking(params: {
   notes?: string | null;
   products?: { name: string; quantity: number }[];
 }): Promise<void> {
-  const supabase = await createClient();
-  const admin = createAdminClient();
-
-  // ── Telegram ──────────────────────────────────────────────────────────
-  try {
-    const { data: mp } = await supabase
-      .from('master_profiles')
-      .select('telegram_chat_id')
-      .eq('id', params.masterId)
-      .single();
-    if (mp?.telegram_chat_id) {
-      await sendTelegramMessage(mp.telegram_chat_id, buildBookingMessage(params));
-    }
-  } catch (e) {
-    console.error('[notifyMasterOnBooking] Telegram error:', e);
-  }
-
-  // ── Web Push ───────────────────────────────────────────────────────────
-  try {
-    const { data: subs } = await admin
-      .from('push_subscriptions')
-      .select('subscription')
-      .eq('user_id', params.masterId);
-    if (subs && subs.length > 0) {
-      const d = new Date(params.date + 'T00:00:00');
-      const day = d.getDate();
-      const month = UA_MONTHS[d.getMonth()];
-      const timeStr = params.startTime.slice(0, 5);
-      const pushBody = `👤 ${params.clientName}\n📅 ${day}-го ${month} о ${timeStr} на «${params.services}»`;
-      await Promise.allSettled(
-        subs.map(sub =>
-          sendPush(sub.subscription, { title: '🔥 Новий запис!', body: pushBody, url: '/dashboard/bookings' })
-        )
-      );
-    }
-  } catch (e) {
-    console.error('[notifyMasterOnBooking] Push error:', e);
-  }
+  await notifyMasterNewBooking(params).catch(e =>
+    console.error('[notifyMasterOnBooking]', e)
+  );
 }

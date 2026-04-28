@@ -7,7 +7,7 @@ import { applyDynamicPricing, type PricingRules } from '@/lib/utils/dynamicPrici
 import { toZonedTime } from 'date-fns-tz';
 import { getNow } from '@/lib/utils/now';
 import { computeEndTime } from '@/lib/utils/bookingEngine';
-import { sendTelegramMessage, buildBookingMessage } from '@/lib/telegram';
+import { notifyMasterNewBooking } from '@/lib/notifications';
 import { revalidatePath } from 'next/cache';
 import { bookingClientSchema } from '@/lib/validations/booking';
 
@@ -34,9 +34,9 @@ const schema = z.object({
   ...bookingClientSchema.shape,
   clientEmail:   z.string().email().optional().nullable(),
   clientId:      z.string().uuid().optional().nullable(),
-  date:          z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Невірний формат дати'),
-  startTime:     z.string().regex(/^\d{2}:\d{2}$/, 'Невірний формат часу'),
-  services:      z.array(serviceLineSchema).min(1, 'Оберіть хоча б одну послугу'),
+  date:          z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Невірний формат дати').optional().nullable(),
+  startTime:     z.string().regex(/^\d{2}:\d{2}$/, 'Невірний формат часу').optional().nullable(),
+  services:      z.array(serviceLineSchema).default([]),
   products:      z.array(productLineSchema).default([]),
   notes:         z.string().max(1000).optional().nullable(),
   source:        z.enum(['online', 'manual']),
@@ -175,24 +175,31 @@ export async function createBooking(
   }
 
   // 5. Verify services — fetch canonical prices/durations from DB
-  const { data: dbServices } = await admin
-    .from('services')
-    .select('id, name, price, duration_minutes, is_active')
-    .in('id', p.services.map(s => s.id))
-    .eq('master_id', p.masterId);
+  let canonicalServices: { id: string; name: string; price: number; duration: number }[] = [];
+  if (p.services.length > 0) {
+    const { data: dbServices } = await admin
+      .from('services')
+      .select('id, name, price, duration_minutes, is_active')
+      .in('id', p.services.map(s => s.id))
+      .eq('master_id', p.masterId);
 
-  if (!dbServices || dbServices.length !== p.services.length) {
-    return { bookingId: null, error: 'Одну або більше послуг не знайдено' };
+    if (!dbServices || dbServices.length !== p.services.length) {
+      return { bookingId: null, error: 'Одну або більше послуг не знайдено' };
+    }
+    const inactiveSvc = dbServices.find(s => !s.is_active);
+    if (inactiveSvc) {
+      return { bookingId: null, error: `Послуга «${inactiveSvc.name}» більше не активна` };
+    }
+    canonicalServices = p.services.map(s => {
+      const db = dbServices.find(d => d.id === s.id)!;
+      return { id: db.id, name: db.name, price: Number(db.price), duration: db.duration_minutes };
+    });
   }
-  const inactiveSvc = dbServices.find(s => !s.is_active);
-  if (inactiveSvc) {
-    return { bookingId: null, error: `Послуга «${inactiveSvc.name}» більше не активна` };
+
+  // Products-only orders require at least one product and no time slot is needed
+  if (p.services.length === 0 && p.products.length === 0) {
+    return { bookingId: null, error: 'Оберіть хоча б одну послугу або товар' };
   }
-  // Preserve client ordering, use DB prices
-  const canonicalServices = p.services.map(s => {
-    const db = dbServices.find(d => d.id === s.id)!;
-    return { id: db.id, name: db.name, price: Number(db.price), duration: db.duration_minutes };
-  });
 
   // 6. Verify products — canonical prices + stock availability
   type CanonicalProduct = {
@@ -204,7 +211,7 @@ export async function createBooking(
   if (p.products.length > 0) {
     const { data: dbProducts } = await admin
       .from('products')
-      .select('id, name, price, stock_quantity, stock_unlimited, is_active')
+      .select('id, name, price_kopecks, stock_qty, is_active')
       .in('id', p.products.map(prod => prod.id))
       .eq('master_id', p.masterId);
 
@@ -217,19 +224,19 @@ export async function createBooking(
     }
     for (const item of p.products) {
       const db = dbProducts.find(d => d.id === item.id)!;
-      if (!db.stock_unlimited && db.stock_quantity < item.quantity) {
+      if (db.stock_qty < item.quantity) {
         return {
           bookingId: null,
-          error: `Недостатньо товару «${db.name}»: в наявності ${db.stock_quantity} шт.`,
+          error: `Недостатньо товару «${db.name}»: в наявності ${db.stock_qty} шт.`,
         };
       }
       canonicalProducts.push({
         id: db.id,
         name: db.name,
-        price: Number(db.price),
+        price: Math.round(Number(db.price_kopecks) / 100),
         quantity: item.quantity,
-        stockQty: db.stock_quantity,
-        stockUnlimited: db.stock_unlimited,
+        stockQty: db.stock_qty,
+        stockUnlimited: false,
       });
     }
   }
@@ -239,14 +246,16 @@ export async function createBooking(
   const totalProductsPrice = canonicalProducts.reduce((sum, cp) => sum + cp.price * cp.quantity, 0);
   const totalDuration = canonicalServices.reduce((sum, s) => sum + s.duration, 0);
 
-  const bookingDate = new Date(p.date + 'T00:00:00');
+  const bookingDate = p.date ? new Date(p.date + 'T00:00:00') : new Date();
   // Value-Capped Trial: Starter отримує фічу безкоштовно до ліміту 100 000 коп. (1 000 ₴)
   const TRIAL_LIMIT_KOP = 100_000;
   const extraEarned = (mp.dynamic_pricing_extra_earned as number) ?? 0;
   const trialExhausted = mp.subscription_tier === 'starter' && extraEarned >= TRIAL_LIMIT_KOP;
   const pricingRules = (!trialExhausted ? mp.pricing_rules : null) as PricingRules | null;
-  
+
+  // Dynamic pricing only applies when there are services and a time slot
   const dynamicResult =
+    p.services.length > 0 && p.startTime &&
     p.applyDynamicPricing && pricingRules && Object.keys(pricingRules).length > 0
       ? applyDynamicPricing(totalServicesPrice, pricingRules, bookingDate, p.startTime, masterTimezone)
       : null;
@@ -409,7 +418,7 @@ export async function createBooking(
     : 0;
   const finalTotal = Math.max(0, preFinalTotal - c2cFriendAmount - c2cBonusAmount);
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
-  const endTime = computeEndTime(p.startTime, effectiveDuration);
+  const endTime = p.startTime ? computeEndTime(p.startTime, effectiveDuration) : null;
 
   // 8. Insert booking
   // Зберігаємо результат динамічного ціноутворення для аналітики + trigger-обліку
@@ -425,8 +434,8 @@ export async function createBooking(
     client_name: p.clientName.trim(),
     client_phone: p.clientPhone, // Already normalized by Zod preprocessor to +380XXXXXXXXX
     client_email: p.clientEmail ?? null,
-    date: p.date,
-    start_time: p.startTime,
+    date: p.date ?? null,
+    start_time: p.startTime ?? null,
     end_time: endTime,
     status: p.source === 'manual' ? 'confirmed' : 'pending',
     total_services_price: totalServicesPrice,
@@ -453,20 +462,22 @@ export async function createBooking(
     return { bookingId: null, error: 'Не вдалося створити запис. Спробуйте ще раз.' };
   }
 
-  // 9. Insert booking_services
-  const { error: sErr } = await admin.from('booking_services').insert(
-    canonicalServices.map(s => ({
-      booking_id: bookingId,
-      service_id: s.id,
-      service_name: s.name,
-      service_price: s.price,
-      duration_minutes: s.duration,
-    }))
-  );
-  if (sErr) {
-    console.error('[createBooking] booking_services insert:', sErr.message);
-    await admin.from('bookings').delete().eq('id', bookingId);
-    return { bookingId: null, error: 'Помилка збереження послуг.' };
+  // 9. Insert booking_services (skip for product-only bookings)
+  if (canonicalServices.length > 0) {
+    const { error: sErr } = await admin.from('booking_services').insert(
+      canonicalServices.map(s => ({
+        booking_id: bookingId,
+        service_id: s.id,
+        service_name: s.name,
+        service_price: s.price,
+        duration_minutes: s.duration,
+      }))
+    );
+    if (sErr) {
+      console.error('[createBooking] booking_services insert:', sErr.message);
+      await admin.from('bookings').delete().eq('id', bookingId);
+      return { bookingId: null, error: 'Помилка збереження послуг.' };
+    }
   }
 
   // 10. Insert booking_products + deduct stock
@@ -490,16 +501,14 @@ export async function createBooking(
     // If a concurrent booking depleted stock between our check (step 6) and now,
     // the UPDATE matches 0 rows (stock_quantity < cp.quantity) → we detect & roll back.
     const stockResults = await Promise.all(
-      canonicalProducts
-        .filter(cp => !cp.stockUnlimited)
-        .map(cp =>
-          admin
-            .from('products')
-            .update({ stock_quantity: cp.stockQty - cp.quantity })
-            .eq('id', cp.id)
-            .gte('stock_quantity', cp.quantity)
-            .select('id')
-        )
+      canonicalProducts.map(cp =>
+        admin
+          .from('products')
+          .update({ stock_qty: cp.stockQty - cp.quantity })
+          .eq('id', cp.id)
+          .gte('stock_qty', cp.quantity)
+          .select('id')
+      )
     );
     const oversold = stockResults.find(r => !r.error && (!r.data || r.data.length === 0));
     if (oversold) {
@@ -550,22 +559,21 @@ export async function createBooking(
   // Clear Next.js server-side data cache
   revalidatePath('/', 'layout');
 
-  // 13. Telegram-сповіщення майстру (fire-and-forget, не блокуємо відповідь)
-  const masterTgChatId = (mp as any).telegram_chat_id as string | null;
-  if (masterTgChatId) {
-    const serviceNames = canonicalServices.map(s => s.name).join(', ');
-    void sendTelegramMessage(
-      masterTgChatId,
-      buildBookingMessage({
-        clientName: p.clientName,
-        date: p.date,
-        startTime: p.startTime,
-        services: serviceNames,
-        totalPrice: finalTotal,
-        notes: p.notes,
-        products: canonicalProducts.map(cp => ({ name: cp.name, quantity: cp.quantity })),
-      }),
-    );
+  // 13. Сповіщення майстру — тільки для manual-записів (Push → Telegram → SMS).
+  // Online-бронювання: каскад запускається у BookingWizard після успішного createBooking
+  // через notifyMasterOnBooking() → notifyMasterNewBooking(), щоб уникнути дублювання.
+  if (p.source === 'manual') {
+    void notifyMasterNewBooking({
+      masterId: p.masterId,
+      bookingId,
+      clientName: p.clientName,
+      date: p.date ?? new Date().toISOString().slice(0, 10),
+      startTime: p.startTime ?? '00:00',
+      services: canonicalServices.map(s => s.name).join(', '),
+      totalPrice: finalTotal,
+      notes: p.notes,
+      products: canonicalProducts.map(cp => ({ name: cp.name, quantity: cp.quantity })),
+    });
   }
 
   return { bookingId, error: null, finalTotal };

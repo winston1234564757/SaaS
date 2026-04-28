@@ -50,10 +50,10 @@ export async function computeBookingPrice(
     input.productLines.length > 0
       ? admin
           .from('products')
-          .select('id, price')
+          .select('id, price_kopecks')
           .in('id', input.productLines.map(p => p.id))
           .eq('master_id', input.masterId)
-      : Promise.resolve({ data: [] as Array<{ id: string; price: number }> }),
+      : Promise.resolve({ data: [] as Array<{ id: string; price_kopecks: number }> }),
   ]);
 
   const masterTimezone = (mp as { timezone?: string } | null)?.timezone ?? 'Europe/Kyiv';
@@ -64,7 +64,7 @@ export async function computeBookingPrice(
 
   const totalProductsPrice = input.productLines.reduce((sum, line) => {
     const p = (dbProducts ?? []).find(d => d.id === line.id);
-    return sum + (p ? Number(p.price) * line.quantity : 0);
+    return sum + (p ? Math.round(Number(p.price_kopecks) / 100) * line.quantity : 0);
   }, 0);
 
   const originalTotal = totalServicesPrice + totalProductsPrice;

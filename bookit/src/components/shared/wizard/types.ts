@@ -20,6 +20,8 @@ export interface WizardProduct {
   emoji: string;
   inStock?: boolean;
   stock?: number | null;
+  recommendAlways?: boolean;       // false = only show when linked service selected
+  linkedServiceIds?: string[];     // service IDs this product is linked to
 }
 
 export interface BookingWizardProps {

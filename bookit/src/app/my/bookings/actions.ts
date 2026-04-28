@@ -62,7 +62,8 @@ export async function cancelBooking(bookingId: string): Promise<void> {
 }
 
 export async function submitReview(params: {
-  bookingId: string;
+  bookingId?: string;
+  orderId?: string;
   masterId: string;
   rating: number;
   comment: string;
@@ -71,18 +72,32 @@ export async function submitReview(params: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
-  // Verify booking belongs to this user and is completed
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('id, master_id')
-    .eq('id', params.bookingId)
-    .eq('client_id', user.id)
-    .eq('status', 'completed')
-    .single();
+  let finalMasterId = params.masterId;
+  
+  if (params.bookingId) {
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('master_id')
+      .eq('id', params.bookingId)
+      .eq('client_id', user.id)
+      .eq('status', 'completed')
+      .single();
+    if (!booking) throw new Error('Booking not found or not eligible for review');
+    finalMasterId = booking.master_id;
+  } else if (params.orderId) {
+    const { data: order } = await supabase
+      .from('orders')
+      .select('master_id')
+      .eq('id', params.orderId)
+      .eq('client_id', user.id)
+      .in('status', ['completed', 'shipped'])
+      .single();
+    if (!order) throw new Error('Order not found or not eligible for review');
+    finalMasterId = order.master_id;
+  } else {
+    throw new Error('Target for review missing');
+  }
 
-  if (!booking) throw new Error('Booking not found or not eligible for review');
-
-  // Get client name from profile
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name')
@@ -90,7 +105,6 @@ export async function submitReview(params: {
     .single();
   const clientName = profile?.full_name ?? 'Клієнт';
 
-  // Ensure client_profiles entry exists
   await supabase
     .from('client_profiles')
     .upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true });
@@ -98,36 +112,29 @@ export async function submitReview(params: {
   const { error } = await supabase
     .from('reviews')
     .insert({
-      booking_id: params.bookingId,
-      master_id: booking.master_id, // use DB value, not client-supplied
-      client_id: user.id,
+      booking_id: params.bookingId || null,
+      order_id:   params.orderId || null,
+      master_id:  finalMasterId,
+      client_id:  user.id,
       client_name: clientName,
-      rating: params.rating,
-      comment: params.comment || null,
-      is_published: false, // потребує модерації майстром перед публікацією
+      rating:     params.rating,
+      comment:    params.comment || null,
+      is_published: false,
     });
 
   if (error) throw error;
-  // MEDIUM-PERF: targeted invalidation — don't bust entire app layout cache on client actions
   revalidatePath('/my/bookings');
 
-  // Notify master via all channels (fire-and-forget)
-  const masterId = booking.master_id;
-  const notifBody = `${clientName} · ${params.rating}/5`;
-
+  const notifBody = `${clientName} · ${params.rating}/5 ${params.orderId ? '(Товар)' : '(Запис)'}`;
   const admin = createAdminClient();
   const [masterResult] = await Promise.allSettled([
-    supabase
-      .from('master_profiles')
-      .select('telegram_chat_id')
-      .eq('id', masterId)
-      .single(),
+    supabase.from('master_profiles').select('telegram_chat_id').eq('id', finalMasterId).single(),
     admin.from('notifications').insert({
-      recipient_id: masterId,
+      recipient_id: finalMasterId,
       title: 'Новий відгук',
       body: notifBody,
       type: 'new_review',
-      related_master_id: masterId,
+      related_master_id: finalMasterId,
     }),
   ]);
 
@@ -137,7 +144,11 @@ export async function submitReview(params: {
   if (chatId) {
     await sendTelegramMessage(
       chatId,
-      buildReviewMessage({ clientName, rating: params.rating, comment: params.comment || null }),
+      buildReviewMessage({ 
+        clientName, 
+        rating: params.rating, 
+        comment: `${params.orderId ? '[Замовлення] ' : ''}${params.comment || ''}`.trim() 
+      }),
     ).catch(() => {});
   }
 }

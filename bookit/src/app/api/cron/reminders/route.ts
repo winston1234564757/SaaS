@@ -77,9 +77,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       const subs = b.client_id ? (pushSubsMap.get(b.client_id) ?? []) : [];
       if (subs.length > 0) {
         const results = await Promise.allSettled(
-          subs.map(sub => sendPush(sub, { title: 'BookIt 🗓️', body: messageText, url: '/my/bookings' }))
+          subs.map(sub => sendPush(sub, { title: 'BookIt 🗓️', body: messageText, url: `/my/bookings?bookingId=${b.id}` }))
         );
-        const anyOk = results.some(r => r.status === 'fulfilled' && r.value === true);
+        const anyOk = results.some(r => r.status === 'fulfilled' && r.value.ok);
         if (anyOk) {
           pushSent++;
           return;
