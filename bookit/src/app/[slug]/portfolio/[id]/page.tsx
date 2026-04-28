@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { ArrowLeft, Scissors, Star, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Scissors, Star } from 'lucide-react';
 import { formatDateFull } from '@/lib/utils/dates';
+import { PortfolioBookingButton } from '@/components/public/portfolio/PortfolioBookingButton';
 
 export const revalidate = 300;
 
@@ -13,29 +14,43 @@ async function getPortfolioItem(slug: string, id: string) {
 
   const { data: mp } = await admin
     .from('master_profiles')
-    .select('id, slug, profiles!inner(full_name, avatar_url)')
+    .select('id, slug, subscription_tier, working_hours, pricing_rules, profiles!inner(full_name, avatar_url)')
     .eq('slug', slug)
     .eq('is_published', true)
     .single();
 
   if (!mp) return null;
 
-  const { data: item } = await admin
-    .from('portfolio_items')
-    .select(`
-      id, title, description, service_id, created_at,
-      portfolio_item_photos ( id, url, display_order ),
-      portfolio_item_reviews ( review_id ),
-      services ( id, name )
-    `)
-    .eq('id', id)
-    .eq('master_id', mp.id)
-    .eq('is_published', true)
-    .single();
+  const [itemRes, servicesRes, bookingsRes] = await Promise.all([
+    admin
+      .from('portfolio_items')
+      .select(`
+        id, title, description, service_id, created_at,
+        portfolio_item_photos ( id, url, display_order ),
+        portfolio_item_reviews ( review_id )
+      `)
+      .eq('id', id)
+      .eq('master_id', mp.id)
+      .eq('is_published', true)
+      .single(),
 
-  if (!item) return null;
+    admin
+      .from('services')
+      .select('id, name, price, duration, popular, emoji, category')
+      .eq('master_id', mp.id)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true }),
 
-  // Fetch linked reviews
+    admin
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('master_id', mp.id)
+      .gte('start_time', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+  ]);
+
+  if (!itemRes.data) return null;
+  const item = itemRes.data;
+
   const reviewIds = (item.portfolio_item_reviews ?? []).map(r => r.review_id);
   const { data: reviews } = reviewIds.length > 0
     ? await admin
@@ -46,19 +61,28 @@ async function getPortfolioItem(slug: string, id: string) {
     : { data: [] };
 
   const profile = mp.profiles as unknown as { full_name: string; avatar_url: string | null };
-  const service = item.services as unknown as { id: string; name: string } | null;
 
   return {
     masterSlug: slug,
     masterName: profile.full_name,
     masterAvatar: profile.avatar_url,
+    masterId: mp.id,
+    masterTier: (mp.subscription_tier ?? 'starter') as 'starter' | 'pro' | 'studio',
+    masterWorkingHours: mp.working_hours as Record<string, unknown> | null,
+    masterPricingRules: mp.pricing_rules as Record<string, unknown> | null,
+    masterServices: (servicesRes.data ?? []) as Array<{
+      id: string; name: string; price: number; duration: number;
+      popular: boolean; emoji: string; category: string;
+    }>,
+    bookingsThisMonth: bookingsRes.count ?? 0,
     item: {
       id: item.id,
       title: item.title,
       description: item.description,
       created_at: item.created_at,
+      service_id: item.service_id ?? null,
       photos: [...(item.portfolio_item_photos ?? [])].sort((a, b) => a.display_order - b.display_order),
-      serviceName: service?.name ?? null,
+      serviceName: (servicesRes.data ?? []).find(s => s.id === item.service_id)?.name ?? null,
       reviews: reviews ?? [],
     },
   };
@@ -86,7 +110,7 @@ export default async function PortfolioItemPage(
   const data = await getPortfolioItem(slug, id);
   if (!data) notFound();
 
-  const { masterSlug, masterName, masterAvatar, item } = data;
+  const { masterSlug, masterName, masterAvatar, masterId, masterTier, masterWorkingHours, masterPricingRules, masterServices, bookingsThisMonth, item } = data;
 
   return (
     <div className="min-h-dvh pb-24" style={{ background: '#FFE8DC' }}>
@@ -114,7 +138,6 @@ export default async function PortfolioItemPage(
         {/* Photo gallery */}
         {item.photos.length > 0 && (
           <div className="space-y-2">
-            {/* Main photo */}
             <div className="relative w-full aspect-square rounded-3xl overflow-hidden"
               style={{ boxShadow: '0 4px 24px rgba(44,26,20,0.10)' }}>
               <Image
@@ -126,7 +149,6 @@ export default async function PortfolioItemPage(
                 priority
               />
             </div>
-            {/* Additional photos */}
             {item.photos.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                 {item.photos.slice(1).map(photo => (
@@ -209,13 +231,16 @@ export default async function PortfolioItemPage(
               <p className="text-sm font-bold text-white">{masterName}</p>
             </div>
           </div>
-          <Link
-            href={`/${masterSlug}`}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-semibold text-[#2C1A14]"
-            style={{ background: '#FFE8DC' }}
-          >
-            Записатись <ChevronRight size={14} />
-          </Link>
+          <PortfolioBookingButton
+            masterId={masterId}
+            masterName={masterName}
+            services={masterServices}
+            initialServiceId={item.service_id}
+            subscriptionTier={masterTier}
+            bookingsThisMonth={bookingsThisMonth}
+            pricingRules={masterPricingRules}
+            workingHours={masterWorkingHours}
+          />
         </div>
       </div>
     </div>

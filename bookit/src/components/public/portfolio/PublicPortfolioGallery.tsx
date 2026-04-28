@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Scissors, Star } from 'lucide-react';
@@ -37,9 +36,9 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
         </Link>
       </div>
 
-      {/* Horizontal scroll strip */}
+      {/* Horizontal scroll strip — 2 items + "All works" */}
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
-        {items.map((item, i) => (
+        {items.slice(0, 2).map((item, i) => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, x: 16 }}

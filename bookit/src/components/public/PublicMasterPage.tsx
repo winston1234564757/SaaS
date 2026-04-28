@@ -785,6 +785,21 @@ export function PublicMasterPage({
           </motion.div>
         )}
 
+        {/* Portfolio Gallery — right after Shop */}
+        {(master.portfolio?.length ?? 0) > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.14, type: 'spring', stiffness: 280, damping: 24 }}
+            className="mb-5 -mx-4"
+          >
+            <PublicPortfolioGallery
+              items={master.portfolio!}
+              masterSlug={master.slug}
+            />
+          </motion.div>
+        )}
+
         {/* Services */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -971,21 +986,6 @@ export function PublicMasterPage({
                 </motion.div>
               ))}
             </div>
-          </motion.div>
-        )}
-
-        {/* Portfolio Gallery */}
-        {(master.portfolio?.length ?? 0) > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.20, type: 'spring', stiffness: 280, damping: 24 }}
-            className="mt-6 -mx-4"
-          >
-            <PublicPortfolioGallery
-              items={master.portfolio!}
-              masterSlug={master.slug}
-            />
           </motion.div>
         )}
 
