@@ -103,3 +103,52 @@ export async function notifyMasterNewBooking(params: BookingNotifParams): Promis
     await sendTurboSMS(masterPhone, text).catch(() => {});
   }
 }
+
+export interface PortfolioConsentParams {
+  clientId: string;
+  masterName: string;
+  masterSlug: string;
+  portfolioItemId: string;
+  portfolioItemTitle: string;
+}
+
+/**
+ * Надсилає клієнту сповіщення про тег у портфоліо майстра.
+ * Cascade: in-app → Telegram → SMS
+ */
+export async function notifyClientPortfolioConsent(params: PortfolioConsentParams): Promise<void> {
+  const admin = createAdminClient();
+
+  const { data: clientProfile } = await admin
+    .from('profiles')
+    .select('phone, telegram_chat_id, full_name')
+    .eq('id', params.clientId)
+    .single();
+
+  // 1. In-app notification (always)
+  await admin.from('notifications').insert({
+    recipient_id: params.clientId,
+    type: 'portfolio_consent_request',
+    title: `${params.masterName} відмітив вас у портфоліо`,
+    body: `«${params.portfolioItemTitle}» — підтвердіть або відхиліть участь`,
+    related_master_id: null,
+    related_booking_id: null,
+    is_read: false,
+  });
+
+  // 2. Telegram
+  if (clientProfile?.telegram_chat_id) {
+    const text =
+      `📸 <b>${params.masterName}</b> відмітив вас у роботі портфоліо:\n` +
+      `«<b>${params.portfolioItemTitle}</b>»\n\n` +
+      `Натисніть щоб підтвердити або відхилити участь.`;
+    await sendTelegramMessage(clientProfile.telegram_chat_id, text).catch(() => {});
+    return;
+  }
+
+  // 3. SMS fallback
+  if (clientProfile?.phone) {
+    const text = `BookIT: ${params.masterName} відмітив вас у портфоліо «${params.portfolioItemTitle}». Підтвердьте на bookit.com.ua`;
+    await sendTurboSMS(clientProfile.phone, text).catch(() => {});
+  }
+}

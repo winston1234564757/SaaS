@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, Users, Gift, User, Search, LogIn } from 'lucide-react';
+import { CalendarDays, Users, Gift, User, Search, LogIn, Bell } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils/cn';
@@ -11,10 +11,11 @@ import { NavLoginSheet } from '@/components/public/NavLoginSheet';
 
 // ── Client portal nav (/my/* — always authenticated) ─────────────────────────
 const MY_NAV = [
-  { href: '/my/bookings', icon: CalendarDays, label: 'Записи'  },
-  { href: '/my/masters',  icon: Users,        label: 'Майстри' },
-  { href: '/my/loyalty',  icon: Gift,         label: 'Бонуси'  },
-  { href: '/my/profile',  icon: User,         label: 'Профіль' },
+  { href: '/my/bookings',       icon: CalendarDays, label: 'Записи'      },
+  { href: '/my/masters',        icon: Users,        label: 'Майстри'     },
+  { href: '/my/loyalty',        icon: Gift,         label: 'Бонуси'      },
+  { href: '/my/notifications',  icon: Bell,         label: 'Сповіщення'  },
+  { href: '/my/profile',        icon: User,         label: 'Профіль'     },
 ];
 
 // ── Public nav – authenticated ────────────────────────────────────────────────

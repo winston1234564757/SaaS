@@ -135,8 +135,8 @@ export default async function MasterPublicPage(
     nowInMasterTZ.getFullYear(), nowInMasterTZ.getMonth(), 1
   ).toISOString();
 
-  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty, alliance partners
-  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, allianceRes] = await Promise.all([
+  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty, alliance partners, portfolio
+  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, allianceRes, portfolioRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price_kopecks, description, photos, stock_qty, category, recommend_always, product_service_links(service_id)')
@@ -200,6 +200,19 @@ export default async function MasterPublicPage(
       `)
       .or(`inviter_id.eq.${data.id},invitee_id.eq.${data.id}`)
       .eq('is_visible', true),
+    // Portfolio items (published, with first photo)
+    supabase
+      .from('portfolio_items')
+      .select(`
+        id, title, description, service_id, display_order,
+        portfolio_item_photos ( url, display_order ),
+        portfolio_item_reviews ( review_id ),
+        services ( name )
+      `)
+      .eq('master_id', data.id)
+      .eq('is_published', true)
+      .order('display_order', { ascending: true })
+      .limit(8),
   ]);
 
   const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
@@ -315,6 +328,18 @@ export default async function MasterPublicPage(
     flashDeals,
     loyalty,
     trustedPartners,
+    portfolio: (portfolioRes.data ?? []).map((item: any) => {
+      const photos = [...(item.portfolio_item_photos ?? [])].sort((a: any, b: any) => a.display_order - b.display_order);
+      return {
+        id: item.id as string,
+        title: item.title as string,
+        description: (item.description as string) || null,
+        cover_url: (photos[0]?.url as string) || null,
+        photo_count: photos.length,
+        service_name: (item.services as any)?.name ?? null,
+        review_count: (item.portfolio_item_reviews ?? []).length,
+      };
+    }),
   };
 
   return (

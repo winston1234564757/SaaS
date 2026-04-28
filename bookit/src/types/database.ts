@@ -27,6 +27,42 @@ export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 export type NotificationChannel = 'push' | 'telegram' | 'sms';
 export type ReferralStatus = 'pending' | 'registered' | 'activated';
 export type FlashDealStatus = 'active' | 'claimed' | 'expired';
+export type PortfolioConsentStatus = 'pending' | 'approved' | 'declined';
+
+export interface PortfolioItem {
+  id: string;
+  master_id: string;
+  title: string;
+  description: string | null;
+  service_id: string | null;
+  tagged_client_id: string | null;
+  consent_status: PortfolioConsentStatus | null;
+  is_published: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PortfolioItemPhoto {
+  id: string;
+  portfolio_item_id: string;
+  storage_path: string;
+  url: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface PortfolioItemReview {
+  portfolio_item_id: string;
+  review_id: string;
+}
+
+export interface PortfolioItemFull extends PortfolioItem {
+  photos: PortfolioItemPhoto[];
+  review_ids: string[];
+  service_name: string | null;
+  tagged_client_name: string | null;
+}
 
 export interface Profile {
   id: string;

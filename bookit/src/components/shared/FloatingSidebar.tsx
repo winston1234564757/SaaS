@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Scissors, Users, BarChart2, Settings,
   MessageSquare, Zap, TrendingUp, Gift, Share2, Building2, CreditCard,
-  Wallet, Rocket, BadgePercent, Network, HelpCircle, ImagePlay, Scale, ShoppingBag,
+  Wallet, Rocket, BadgePercent, Network, HelpCircle, ImagePlay, Scale, ShoppingBag, GalleryVerticalEnd,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -19,7 +19,8 @@ const PRIMARY_ITEMS = [
   { href: '/dashboard/services',  icon: Scissors,        label: 'Послуги',      hint: 'Каталог послуг' },
   { href: '/dashboard/products',  icon: ShoppingBag,     label: 'Магазин',      hint: 'Товари та замовлення' },
   { href: '/dashboard/clients',   icon: Users,           label: 'Клієнти',      hint: 'База клієнтів та CRM' },
-  { href: '/dashboard/analytics', icon: BarChart2,       label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
+  { href: '/dashboard/analytics', icon: BarChart2,            label: 'Аналітика',    hint: 'Звіти, виручка, тренди' },
+  { href: '/dashboard/portfolio', icon: GalleryVerticalEnd,  label: 'Портфоліо',    hint: 'Ваші роботи та кейси' },
 ];
 
 const SECONDARY_ITEMS = [

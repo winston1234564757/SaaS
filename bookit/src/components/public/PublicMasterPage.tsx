@@ -35,6 +35,7 @@ const BookingFlow = dynamic(() => import('./BookingFlow').then(m => ({ default: 
 });
 import { getNow } from '@/lib/utils/now';
 import { TrustedPartnersBlock, type TrustedPartner } from './TrustedPartnersBlock';
+import { PublicPortfolioGallery } from './portfolio/PublicPortfolioGallery';
 
 interface Service {
   id: string;
@@ -110,6 +111,15 @@ interface Master {
     isAuth: boolean;
   } | null;
   trustedPartners?: TrustedPartner[];
+  portfolio?: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    cover_url: string | null;
+    photo_count: number;
+    service_name: string | null;
+    review_count: number;
+  }>;
 }
 
 function formatPrice(price: number) {
@@ -961,6 +971,21 @@ export function PublicMasterPage({
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Portfolio Gallery */}
+        {(master.portfolio?.length ?? 0) > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.20, type: 'spring', stiffness: 280, damping: 24 }}
+            className="mt-6 -mx-4"
+          >
+            <PublicPortfolioGallery
+              items={master.portfolio!}
+              masterSlug={master.slug}
+            />
           </motion.div>
         )}
 
