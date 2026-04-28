@@ -2,7 +2,7 @@
 
 > Ukrainian SaaS для онлайн-запису у сервісному бізнесі  
 > "Твій розумний link in bio, який заробляє гроші"  
-> Оновлено: 2026-04-27
+> Оновлено: 2026-04-28
 
 ---
 
@@ -24,7 +24,7 @@
 
 | Тариф | Ціна | Ключові обмеження |
 |---|---|---|
-| **Starter** | 0₴ | 50 записів/місяць, 5 flash-акцій/місяць, 10 фото портфоліо, вотермарка, dynamic pricing trial до 1000 UAH |
+| **Starter** | 0₴ | 50 записів/місяць, 5 flash-акцій/місяць, 5 елементів портфоліо (до 5 фото кожен), вотермарка, dynamic pricing trial до 1000 UAH |
 | **Pro** | 700₴/місяць | Необмежено записів, повна аналітика, CRM, CSV-експорт, Telegram-нотифікації, без вотермарки, повний dynamic pricing |
 | **Studio** | 299₴/майстер/місяць | Мультимайстер під одним брендом, all-Pro per master, invite-flow |
 
@@ -96,6 +96,16 @@
 - Всі майстри студії під одним slug власника
 - Studio join flow: `src/app/studio/join/`
 
+**Портфоліо**
+- Структуровані кейси/роботи: назва, опис, прив'язка до послуги, відгуків
+- До 5 фото на кейс (drag-to-reorder, Supabase Storage bucket `portfolios`)
+- Тегування клієнта: сповіщення клієнту (in-app + Telegram + SMS) → підтвердити/відхилити участь
+- consent_status: pending / approved (відображається на публ. сторінці) / declined (кейс без тегу)
+- Starter: 5 кейсів (тільки published), Pro/Studio: необмежено
+- Публічний блок на сторінці майстра (після магазину): 2 кейси + "Всі роботи"
+- `/[slug]/portfolio` — SSR grid, `/[slug]/portfolio/[id]` — детальна з inline BookingFlow
+- `/my/notifications` — клієнт бачить pending consent запити, approves/declines
+
 **SMM Hub (Story Generator)**
 - Адаптивна сітка вільних слотів (1–3/4–8/9+)
 - 6 преміальних палітр (Nude, Sage, Mono, Blush, Sky, Dark)
@@ -166,7 +176,7 @@ Flash Deal fast-track: wizard відкривається на кроці "detail
 ```
 Перехід по посиланню (/[slug] або Studio page)
   → Публічна сторінка майстра
-    → Послуги з live-цінами, відгуки, портфоліо, локація
+    → Послуги з live-цінами, відгуки, портфоліо (2 preview + "Всі роботи"), магазин, локація
     → Flash Deal (якщо активна) → fast-track booking
   → BookingWizard
     → Вибір → Дата → Слот → Підтвердження → SMS OTP (якщо гість)

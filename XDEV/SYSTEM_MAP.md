@@ -31,6 +31,7 @@
 | `/dashboard/revenue` | Revenue Hub | `revenue/page.tsx` | — | `master/revenue/RevenuePage.tsx` |
 | `/dashboard/marketing` | SMM Hub: Story Generator | `marketing/page.tsx` | — | `master/marketing/StoryGenerator.tsx` |
 | `/dashboard/growth` | Growth tools | `growth/page.tsx` | — | `master/growth/GrowthPage.tsx` |
+| `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (drag-reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemEditor.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` |
 | `/dashboard/products` | Товари: CRUD, стоки, замовлення | `products/page.tsx` | `products/actions.ts` | `master/products/ProductsPage.tsx` |
 | `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |
 | `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
@@ -73,6 +74,14 @@
 - `src/app/my/profile/` → профіль клієнта
 - `src/app/my/masters/` → мої майстри
 - `src/app/my/loyalty/` → прогрес лояльності
+- `src/app/my/notifications/` → `ClientNotificationsPage.tsx` — in-app нотифікації + pending portfolio consent requests
+- `src/app/my/portfolio-consent/actions.ts` → `approvePortfolioConsent`, `declinePortfolioConsent`
+
+### Публічне Портфоліо
+- `src/app/[slug]/portfolio/page.tsx` — SSR grid усіх опублікованих робіт майстра, revalidate 300s
+- `src/app/[slug]/portfolio/[id]/page.tsx` — SSR детальна сторінка: фото, відгуки, клієнт, inline BookingFlow (PortfolioBookingButton)
+- `src/components/public/portfolio/PublicPortfolioGallery.tsx` — горизонтальний strip: 2 items + "Всі роботи" (на сторінці майстра, після Shop Banner)
+- `src/components/public/portfolio/PortfolioBookingButton.tsx` — client component: кнопка + inline BookingFlow з pre-selected послугою
 
 ### Auth Flow
 - `src/app/(auth)/` — login/register
@@ -117,6 +126,7 @@
 | `useRealtimeNotifications.ts` | — | Supabase Realtime підписка на `notifications` |
 | `useFlashDeals.ts` | — | Flash-акції |
 | `useReviews.ts` | — | Відгуки |
+| `usePortfolioItems.ts` | 2 хв | Portfolio items майстра (з photos + review_ids) |
 | `useTimeOff.ts` | — | Відпустки / вихідні |
 | `useVacation.ts` | — | Schedule exceptions |
 | `useWizardSchedule.ts` | — | 30-денний розклад для BookingWizard |
@@ -138,7 +148,7 @@
 - `src/lib/actions/createBooking.ts` — повна логіка створення запису (26KB)
 
 ### Notifications
-- `src/lib/notifications.ts` — orchestrator: `notifyNewBooking`, `notifyClientReviewNudge` etc.
+- `src/lib/notifications.ts` — orchestrator: `notifyNewBooking`, `notifyClientReviewNudge`, `notifyClientPortfolioConsent` (in-app + Telegram + SMS cascade)
 - `src/lib/push.ts` — `broadcastPush(subscriptions[], payload)` — VAPID Web Push
 - `src/lib/telegram.ts` — `sendTelegramMessage`, `buildBookingMessage`, `escHtml`
 - `src/lib/turbosms.ts` — SMS fallback (TurboSMS API)
@@ -250,7 +260,9 @@
 ### Portfolio & Reviews
 | Таблиця | Призначення |
 |---|---|
-| `portfolio_items` | Фото з `position` (drag-reorder) |
+| `portfolio_items` | Кейси/роботи: `title`, `description`, `service_id` FK, `tagged_client_id` FK, `consent_status` (pending/approved/declined), `is_published`, `display_order` |
+| `portfolio_item_photos` | Фото кейсу (до 5): `storage_path`, `url`, `display_order`; bucket `portfolios`, path `{master_id}/items/{item_id}/{file}` |
+| `portfolio_item_reviews` | Many-to-many: `portfolio_item_id` + `review_id` (composite PK) |
 | `reviews` | Відгуки 1–5 (UNIQUE per booking) |
 
 ### Notifications
@@ -283,5 +295,9 @@
 | `get_retention_status` | Retention dashboard — міграція 076 |
 
 ### Міграції
-102 міграції (001–103). Актуальна схема: міграція **103** (`products_and_orders`).
+115 міграцій (001–115). Актуальна схема: міграція **115** (`recreate_portfolios_bucket`).
 Місце: `supabase/migrations/*.sql`
+
+Останні ключові:
+- `114_portfolio_items.sql` — `portfolio_items`, `portfolio_item_photos`, `portfolio_item_reviews` + RLS
+- `115_recreate_portfolios_bucket.sql` — bucket `portfolios` (10MB, public) + storage policies
