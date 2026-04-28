@@ -9,7 +9,7 @@
       "source_file": "bookit\\next-env.d.ts",
       "source_location": "L1",
       "id": "bookit_next_env_d_ts",
-      "community": 281,
+      "community": 282,
       "norm_label": "next-env.d.ts"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "bookit\\next.config.ts",
       "source_location": "L1",
       "id": "bookit_next_config_ts",
-      "community": 282,
+      "community": 283,
       "norm_label": "next.config.ts"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "bookit\\playwright.config.ts",
       "source_location": "L1",
       "id": "bookit_playwright_config_ts",
-      "community": 283,
+      "community": 284,
       "norm_label": "playwright.config.ts"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "bookit\\set_key.js",
       "source_location": "L1",
       "id": "bookit_set_key_js",
-      "community": 284,
+      "community": 285,
       "norm_label": "set_key.js"
     },
     {
@@ -990,7 +990,7 @@
       "source_file": "bookit\\e2e\\tests\\00-auth-contract.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_00_auth_contract_spec_ts",
-      "community": 285,
+      "community": 286,
       "norm_label": "00-auth-contract.spec.ts"
     },
     {
@@ -999,7 +999,7 @@
       "source_file": "bookit\\e2e\\tests\\01-auth-guards.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_01_auth_guards_spec_ts",
-      "community": 286,
+      "community": 287,
       "norm_label": "01-auth-guards.spec.ts"
     },
     {
@@ -1026,7 +1026,7 @@
       "source_file": "bookit\\e2e\\tests\\03-referral-engine.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_03_referral_engine_spec_ts",
-      "community": 287,
+      "community": 288,
       "norm_label": "03-referral-engine.spec.ts"
     },
     {
@@ -1053,7 +1053,7 @@
       "source_file": "bookit\\e2e\\tests\\04-master-crm-smoke.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_04_master_crm_smoke_spec_ts",
-      "community": 288,
+      "community": 289,
       "norm_label": "04-master-crm-smoke.spec.ts"
     },
     {
@@ -1062,7 +1062,7 @@
       "source_file": "bookit\\e2e\\tests\\05-loyalty-reviews.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_05_loyalty_reviews_spec_ts",
-      "community": 289,
+      "community": 290,
       "norm_label": "05-loyalty-reviews.spec.ts"
     },
     {
@@ -1071,7 +1071,7 @@
       "source_file": "bookit\\e2e\\tests\\06-referrals.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_06_referrals_spec_ts",
-      "community": 290,
+      "community": 291,
       "norm_label": "06-referrals.spec.ts"
     },
     {
@@ -1098,7 +1098,7 @@
       "source_file": "bookit\\e2e\\tests\\08-booking-complete.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_08_booking_complete_spec_ts",
-      "community": 291,
+      "community": 292,
       "norm_label": "08-booking-complete.spec.ts"
     },
     {
@@ -1107,7 +1107,7 @@
       "source_file": "bookit\\e2e\\tests\\09-master-settings.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_09_master_settings_spec_ts",
-      "community": 292,
+      "community": 293,
       "norm_label": "09-master-settings.spec.ts"
     },
     {
@@ -1116,7 +1116,7 @@
       "source_file": "bookit\\e2e\\tests\\10-master-bookings.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_10_master_bookings_spec_ts",
-      "community": 293,
+      "community": 294,
       "norm_label": "10-master-bookings.spec.ts"
     },
     {
@@ -1125,7 +1125,7 @@
       "source_file": "bookit\\e2e\\tests\\11-master-clients.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_11_master_clients_spec_ts",
-      "community": 294,
+      "community": 295,
       "norm_label": "11-master-clients.spec.ts"
     },
     {
@@ -1134,7 +1134,7 @@
       "source_file": "bookit\\e2e\\tests\\12-flash-deals.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_12_flash_deals_spec_ts",
-      "community": 295,
+      "community": 296,
       "norm_label": "12-flash-deals.spec.ts"
     },
     {
@@ -1143,7 +1143,7 @@
       "source_file": "bookit\\e2e\\tests\\13-dynamic-pricing.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_13_dynamic_pricing_spec_ts",
-      "community": 296,
+      "community": 297,
       "norm_label": "13-dynamic-pricing.spec.ts"
     },
     {
@@ -1152,7 +1152,7 @@
       "source_file": "bookit\\e2e\\tests\\14-client-journey.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_14_client_journey_spec_ts",
-      "community": 297,
+      "community": 298,
       "norm_label": "14-client-journey.spec.ts"
     },
     {
@@ -1161,7 +1161,7 @@
       "source_file": "bookit\\e2e\\tests\\15-analytics.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_15_analytics_spec_ts",
-      "community": 298,
+      "community": 299,
       "norm_label": "15-analytics.spec.ts"
     },
     {
@@ -1170,7 +1170,7 @@
       "source_file": "bookit\\e2e\\tests\\16-mobile-smoke.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_16_mobile_smoke_spec_ts",
-      "community": 299,
+      "community": 300,
       "norm_label": "16-mobile-smoke.spec.ts"
     },
     {
@@ -1242,7 +1242,7 @@
       "source_file": "bookit\\e2e\\tests\\auth.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_auth_spec_ts",
-      "community": 300,
+      "community": 301,
       "norm_label": "auth.spec.ts"
     },
     {
@@ -1251,7 +1251,7 @@
       "source_file": "bookit\\e2e\\tests\\booking-flow.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_booking_flow_spec_ts",
-      "community": 301,
+      "community": 302,
       "norm_label": "booking-flow.spec.ts"
     },
     {
@@ -1260,7 +1260,7 @@
       "source_file": "bookit\\e2e\\tests\\master-crud.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_master_crud_spec_ts",
-      "community": 302,
+      "community": 303,
       "norm_label": "master-crud.spec.ts"
     },
     {
@@ -1269,7 +1269,7 @@
       "source_file": "bookit\\e2e\\tests\\smoke.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_smoke_spec_ts",
-      "community": 303,
+      "community": 304,
       "norm_label": "smoke.spec.ts"
     },
     {
@@ -1278,7 +1278,7 @@
       "source_file": "bookit\\e2e\\tests\\studio.spec.ts",
       "source_location": "L1",
       "id": "bookit_e2e_tests_studio_spec_ts",
-      "community": 304,
+      "community": 305,
       "norm_label": "studio.spec.ts"
     },
     {
@@ -1611,7 +1611,7 @@
       "source_file": "bookit\\scratch\\get_logs.js",
       "source_location": "L1",
       "id": "bookit_scratch_get_logs_js",
-      "community": 305,
+      "community": 306,
       "norm_label": "get_logs.js"
     },
     {
@@ -1620,7 +1620,7 @@
       "source_file": "bookit\\scratch\\maps_response.js",
       "source_location": "L1",
       "id": "bookit_scratch_maps_response_js",
-      "community": 306,
+      "community": 307,
       "norm_label": "maps_response.js"
     },
     {
@@ -1629,7 +1629,7 @@
       "source_file": "bookit\\scratch\\run_map_test.js",
       "source_location": "L1",
       "id": "bookit_scratch_run_map_test_js",
-      "community": 307,
+      "community": 308,
       "norm_label": "run_map_test.js"
     },
     {
@@ -1998,7 +1998,7 @@
       "source_file": "bookit\\src\\app\\apple-icon.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_apple_icon_tsx",
-      "community": 308,
+      "community": 309,
       "norm_label": "apple-icon.tsx"
     },
     {
@@ -2025,7 +2025,7 @@
       "source_file": "bookit\\src\\app\\global-error.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_global_error_tsx",
-      "community": 309,
+      "community": 310,
       "norm_label": "global-error.tsx"
     },
     {
@@ -2034,7 +2034,7 @@
       "source_file": "bookit\\src\\app\\layout.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_layout_tsx",
-      "community": 310,
+      "community": 311,
       "norm_label": "layout.tsx"
     },
     {
@@ -2160,7 +2160,7 @@
       "source_file": "bookit\\src\\app\\(master)\\layout.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_layout_tsx",
-      "community": 311,
+      "community": 312,
       "norm_label": "layout.tsx"
     },
     {
@@ -2205,7 +2205,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_loading_tsx",
-      "community": 312,
+      "community": 313,
       "norm_label": "loading.tsx"
     },
     {
@@ -2232,7 +2232,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\analytics\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_analytics_loading_tsx",
-      "community": 313,
+      "community": 314,
       "norm_label": "loading.tsx"
     },
     {
@@ -2412,7 +2412,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\bookings\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_bookings_loading_tsx",
-      "community": 314,
+      "community": 315,
       "norm_label": "loading.tsx"
     },
     {
@@ -2466,7 +2466,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\clients\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_clients_loading_tsx",
-      "community": 315,
+      "community": 316,
       "norm_label": "loading.tsx"
     },
     {
@@ -2529,7 +2529,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\flash\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_flash_loading_tsx",
-      "community": 316,
+      "community": 317,
       "norm_label": "loading.tsx"
     },
     {
@@ -2538,7 +2538,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\flash\\page.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_flash_page_tsx",
-      "community": 317,
+      "community": 318,
       "norm_label": "page.tsx"
     },
     {
@@ -2601,7 +2601,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\loyalty\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_loyalty_loading_tsx",
-      "community": 318,
+      "community": 319,
       "norm_label": "loading.tsx"
     },
     {
@@ -2628,7 +2628,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\marketing\\page.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_marketing_page_tsx",
-      "community": 319,
+      "community": 320,
       "norm_label": "page.tsx"
     },
     {
@@ -2637,7 +2637,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\more\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_more_loading_tsx",
-      "community": 320,
+      "community": 321,
       "norm_label": "loading.tsx"
     },
     {
@@ -2833,7 +2833,7 @@
       "label": "createPortfolioItem()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L114",
+      "source_location": "L112",
       "id": "actions_createportfolioitem",
       "community": 4,
       "norm_label": "createportfolioitem()"
@@ -2842,7 +2842,7 @@
       "label": "updatePortfolioItem()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L169",
+      "source_location": "L168",
       "id": "actions_updateportfolioitem",
       "community": 4,
       "norm_label": "updateportfolioitem()"
@@ -2851,7 +2851,7 @@
       "label": "deletePortfolioItem()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L204",
+      "source_location": "L203",
       "id": "actions_deleteportfolioitem",
       "community": 4,
       "norm_label": "deleteportfolioitem()"
@@ -2860,7 +2860,7 @@
       "label": "reorderPortfolioItems()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L235",
+      "source_location": "L234",
       "id": "actions_reorderportfolioitems",
       "community": 4,
       "norm_label": "reorderportfolioitems()"
@@ -2869,7 +2869,7 @@
       "label": "addPortfolioPhoto()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L258",
+      "source_location": "L257",
       "id": "actions_addportfoliophoto",
       "community": 4,
       "norm_label": "addportfoliophoto()"
@@ -2878,7 +2878,7 @@
       "label": "deletePortfolioPhoto()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L291",
+      "source_location": "L290",
       "id": "actions_deleteportfoliophoto",
       "community": 4,
       "norm_label": "deleteportfoliophoto()"
@@ -2887,7 +2887,7 @@
       "label": "reorderPortfolioPhotos()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L324",
+      "source_location": "L323",
       "id": "actions_reorderportfoliophotos",
       "community": 4,
       "norm_label": "reorderportfoliophotos()"
@@ -2896,7 +2896,7 @@
       "label": "setPortfolioItemReviews()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L350",
+      "source_location": "L349",
       "id": "actions_setportfolioitemreviews",
       "community": 4,
       "norm_label": "setportfolioitemreviews()"
@@ -2905,7 +2905,7 @@
       "label": "tagClientOnPortfolioItem()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L381",
+      "source_location": "L380",
       "id": "actions_tagclientonportfolioitem",
       "community": 4,
       "norm_label": "tagclientonportfolioitem()"
@@ -2914,7 +2914,7 @@
       "label": "removeClientTag()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L423",
+      "source_location": "L422",
       "id": "actions_removeclienttag",
       "community": 4,
       "norm_label": "removeclienttag()"
@@ -2923,7 +2923,7 @@
       "label": "togglePublishPortfolioItem()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L440",
+      "source_location": "L439",
       "id": "actions_togglepublishportfolioitem",
       "community": 4,
       "norm_label": "togglepublishportfolioitem()"
@@ -2934,7 +2934,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\page.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_portfolio_page_tsx",
-      "community": 321,
+      "community": 322,
       "norm_label": "page.tsx"
     },
     {
@@ -2961,7 +2961,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\pricing\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_pricing_loading_tsx",
-      "community": 322,
+      "community": 323,
       "norm_label": "loading.tsx"
     },
     {
@@ -3132,7 +3132,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\reviews\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_reviews_loading_tsx",
-      "community": 323,
+      "community": 324,
       "norm_label": "loading.tsx"
     },
     {
@@ -3159,7 +3159,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\services\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_services_loading_tsx",
-      "community": 324,
+      "community": 325,
       "norm_label": "loading.tsx"
     },
     {
@@ -3249,7 +3249,7 @@
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\studio\\loading.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_master_dashboard_studio_loading_tsx",
-      "community": 325,
+      "community": 326,
       "norm_label": "loading.tsx"
     },
     {
@@ -3600,7 +3600,7 @@
       "source_file": "bookit\\src\\app\\icons\\[size]\\route.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_icons_size_route_tsx",
-      "community": 326,
+      "community": 327,
       "norm_label": "route.tsx"
     },
     {
@@ -3708,7 +3708,7 @@
       "source_file": "bookit\\src\\app\\my\\notifications\\page.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_my_notifications_page_tsx",
-      "community": 327,
+      "community": 328,
       "norm_label": "page.tsx"
     },
     {
@@ -3870,7 +3870,7 @@
       "source_file": "bookit\\src\\app\\studio\\join\\page.tsx",
       "source_location": "L1",
       "id": "bookit_src_app_studio_join_page_tsx",
-      "community": 328,
+      "community": 329,
       "norm_label": "page.tsx"
     },
     {
@@ -4012,7 +4012,7 @@
       "label": "getPortfolioItem()",
       "file_type": "code",
       "source_file": "bookit\\src\\app\\[slug]\\portfolio\\[id]\\page.tsx",
-      "source_location": "L11",
+      "source_location": "L12",
       "id": "page_getportfolioitem",
       "community": 3,
       "norm_label": "getportfolioitem()"
@@ -4563,7 +4563,7 @@
       "source_file": "bookit\\src\\components\\landing\\LandingHero.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_landing_landinghero_tsx",
-      "community": 329,
+      "community": 330,
       "norm_label": "landinghero.tsx"
     },
     {
@@ -5328,7 +5328,7 @@
       "source_file": "bookit\\src\\components\\master\\dashboard\\WelcomeBanner.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_dashboard_welcomebanner_tsx",
-      "community": 330,
+      "community": 331,
       "norm_label": "welcomebanner.tsx"
     },
     {
@@ -5355,7 +5355,7 @@
       "source_file": "bookit\\src\\components\\master\\documents\\LegalHubPage.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_documents_legalhubpage_tsx",
-      "community": 331,
+      "community": 332,
       "norm_label": "legalhubpage.tsx"
     },
     {
@@ -5580,7 +5580,7 @@
       "source_file": "bookit\\src\\components\\master\\more\\MorePage.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_more_morepage_tsx",
-      "community": 332,
+      "community": 333,
       "norm_label": "morepage.tsx"
     },
     {
@@ -5715,7 +5715,7 @@
       "source_file": "bookit\\src\\components\\master\\onboarding\\steps\\StepBasic.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_onboarding_steps_stepbasic_tsx",
-      "community": 333,
+      "community": 334,
       "norm_label": "stepbasic.tsx"
     },
     {
@@ -5760,7 +5760,7 @@
       "source_file": "bookit\\src\\components\\master\\onboarding\\steps\\StepScheduleForm.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_onboarding_steps_stepscheduleform_tsx",
-      "community": 334,
+      "community": 335,
       "norm_label": "stepscheduleform.tsx"
     },
     {
@@ -5769,7 +5769,7 @@
       "source_file": "bookit\\src\\components\\master\\onboarding\\steps\\StepSchedulePrompt.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_onboarding_steps_stepscheduleprompt_tsx",
-      "community": 335,
+      "community": 336,
       "norm_label": "stepscheduleprompt.tsx"
     },
     {
@@ -5823,7 +5823,7 @@
       "source_file": "bookit\\src\\components\\master\\onboarding\\steps\\StepServicesPrompt.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_onboarding_steps_stepservicesprompt_tsx",
-      "community": 336,
+      "community": 337,
       "norm_label": "stepservicesprompt.tsx"
     },
     {
@@ -5832,7 +5832,7 @@
       "source_file": "bookit\\src\\components\\master\\onboarding\\steps\\StepSuccess.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_onboarding_steps_stepsuccess_tsx",
-      "community": 337,
+      "community": 338,
       "norm_label": "stepsuccess.tsx"
     },
     {
@@ -5841,7 +5841,7 @@
       "source_file": "bookit\\src\\components\\master\\onboarding\\steps\\types.ts",
       "source_location": "L1",
       "id": "bookit_src_components_master_onboarding_steps_types_ts",
-      "community": 338,
+      "community": 339,
       "norm_label": "types.ts"
     },
     {
@@ -5886,7 +5886,7 @@
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemCard.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_portfolio_portfolioitemcard_tsx",
-      "community": 339,
+      "community": 340,
       "norm_label": "portfolioitemcard.tsx"
     },
     {
@@ -5899,19 +5899,28 @@
       "norm_label": "portfolioitemeditor.tsx"
     },
     {
-      "label": "handleSaveMeta()",
+      "label": "saveMeta()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L59",
-      "id": "portfolioitemeditor_handlesavemeta",
+      "source_location": "L77",
+      "id": "portfolioitemeditor_savemeta",
       "community": 17,
-      "norm_label": "handlesavemeta()"
+      "norm_label": "savemeta()"
+    },
+    {
+      "label": "handleClose()",
+      "file_type": "code",
+      "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
+      "source_location": "L87",
+      "id": "portfolioitemeditor_handleclose",
+      "community": 17,
+      "norm_label": "handleclose()"
     },
     {
       "label": "handleTagClient()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L81",
+      "source_location": "L101",
       "id": "portfolioitemeditor_handletagclient",
       "community": 17,
       "norm_label": "handletagclient()"
@@ -5920,7 +5929,7 @@
       "label": "handleRemoveTag()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L88",
+      "source_location": "L111",
       "id": "portfolioitemeditor_handleremovetag",
       "community": 17,
       "norm_label": "handleremovetag()"
@@ -5929,7 +5938,7 @@
       "label": "handleSaveReviews()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L96",
+      "source_location": "L121",
       "id": "portfolioitemeditor_handlesavereviews",
       "community": 17,
       "norm_label": "handlesavereviews()"
@@ -5938,7 +5947,7 @@
       "label": "handleTogglePublish()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L103",
+      "source_location": "L128",
       "id": "portfolioitemeditor_handletogglepublish",
       "community": 17,
       "norm_label": "handletogglepublish()"
@@ -5947,25 +5956,16 @@
       "label": "handleDelete()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L112",
+      "source_location": "L137",
       "id": "portfolioitemeditor_handledelete",
       "community": 17,
       "norm_label": "handledelete()"
     },
     {
-      "label": "handleFinish()",
-      "file_type": "code",
-      "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L121",
-      "id": "portfolioitemeditor_handlefinish",
-      "community": 17,
-      "norm_label": "handlefinish()"
-    },
-    {
       "label": "repeat()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L322",
+      "source_location": "L365",
       "id": "portfolioitemeditor_repeat",
       "community": 17,
       "norm_label": "repeat()"
@@ -5983,7 +5983,7 @@
       "label": "handleCreate()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioPage.tsx",
-      "source_location": "L52",
+      "source_location": "L53",
       "id": "portfoliopage_handlecreate",
       "community": 227,
       "norm_label": "handlecreate()"
@@ -6012,7 +6012,7 @@
       "source_file": "bookit\\src\\components\\master\\pricing\\DynamicPricingPage.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_pricing_dynamicpricingpage_tsx",
-      "community": 340,
+      "community": 341,
       "norm_label": "dynamicpricingpage.tsx"
     },
     {
@@ -6768,7 +6768,7 @@
       "source_file": "bookit\\src\\components\\master\\support\\SupportPage.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_master_support_supportpage_tsx",
-      "community": 341,
+      "community": 342,
       "norm_label": "supportpage.tsx"
     },
     {
@@ -6831,7 +6831,7 @@
       "source_file": "bookit\\src\\components\\public\\ExplorePage.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_public_explorepage_tsx",
-      "community": 342,
+      "community": 343,
       "norm_label": "explorepage.tsx"
     },
     {
@@ -7083,7 +7083,7 @@
       "source_file": "bookit\\src\\components\\public\\PublicMobileHeader.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_public_publicmobileheader_tsx",
-      "community": 343,
+      "community": 344,
       "norm_label": "publicmobileheader.tsx"
     },
     {
@@ -7092,7 +7092,7 @@
       "source_file": "bookit\\src\\components\\public\\PublicNavbar.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_public_publicnavbar_tsx",
-      "community": 344,
+      "community": 345,
       "norm_label": "publicnavbar.tsx"
     },
     {
@@ -7213,12 +7213,30 @@
       "norm_label": "trustedpartnersblock()"
     },
     {
+      "label": "PortfolioBookingButton.tsx",
+      "file_type": "code",
+      "source_file": "bookit\\src\\components\\public\\portfolio\\PortfolioBookingButton.tsx",
+      "source_location": "L1",
+      "id": "bookit_src_components_public_portfolio_portfoliobookingbutton_tsx",
+      "community": 239,
+      "norm_label": "portfoliobookingbutton.tsx"
+    },
+    {
+      "label": "BookingFlowSkeleton()",
+      "file_type": "code",
+      "source_file": "bookit\\src\\components\\public\\portfolio\\PortfolioBookingButton.tsx",
+      "source_location": "L7",
+      "id": "portfoliobookingbutton_bookingflowskeleton",
+      "community": 239,
+      "norm_label": "bookingflowskeleton()"
+    },
+    {
       "label": "PublicPortfolioGallery.tsx",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\public\\portfolio\\PublicPortfolioGallery.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_public_portfolio_publicportfoliogallery_tsx",
-      "community": 345,
+      "community": 346,
       "norm_label": "publicportfoliogallery.tsx"
     },
     {
@@ -7227,7 +7245,7 @@
       "source_file": "bookit\\src\\components\\shared\\BlobBackground.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_blobbackground_tsx",
-      "community": 346,
+      "community": 347,
       "norm_label": "blobbackground.tsx"
     },
     {
@@ -7236,7 +7254,7 @@
       "source_file": "bookit\\src\\components\\shared\\BookingWizard.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_bookingwizard_tsx",
-      "community": 239,
+      "community": 240,
       "norm_label": "bookingwizard.tsx"
     },
     {
@@ -7245,7 +7263,7 @@
       "source_file": "bookit\\src\\components\\shared\\BookingWizard.tsx",
       "source_location": "L99",
       "id": "bookingwizard_handlesubmit",
-      "community": 239,
+      "community": 240,
       "norm_label": "handlesubmit()"
     },
     {
@@ -7254,7 +7272,7 @@
       "source_file": "bookit\\src\\components\\shared\\BottomNav.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_bottomnav_tsx",
-      "community": 347,
+      "community": 348,
       "norm_label": "bottomnav.tsx"
     },
     {
@@ -7263,7 +7281,7 @@
       "source_file": "bookit\\src\\components\\shared\\FloatingSidebar.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_floatingsidebar_tsx",
-      "community": 348,
+      "community": 349,
       "norm_label": "floatingsidebar.tsx"
     },
     {
@@ -7272,7 +7290,7 @@
       "source_file": "bookit\\src\\components\\shared\\HubDrawer.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_hubdrawer_tsx",
-      "community": 240,
+      "community": 241,
       "norm_label": "hubdrawer.tsx"
     },
     {
@@ -7281,7 +7299,7 @@
       "source_file": "bookit\\src\\components\\shared\\HubDrawer.tsx",
       "source_location": "L12",
       "id": "hubdrawer_hubdrawer",
-      "community": 240,
+      "community": 241,
       "norm_label": "hubdrawer()"
     },
     {
@@ -7326,7 +7344,7 @@
       "source_file": "bookit\\src\\components\\shared\\LegalFooterLinks.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_legalfooterlinks_tsx",
-      "community": 241,
+      "community": 242,
       "norm_label": "legalfooterlinks.tsx"
     },
     {
@@ -7335,7 +7353,7 @@
       "source_file": "bookit\\src\\components\\shared\\LegalFooterLinks.tsx",
       "source_location": "L10",
       "id": "legalfooterlinks_legalfooterlinks",
-      "community": 241,
+      "community": 242,
       "norm_label": "legalfooterlinks()"
     },
     {
@@ -7344,7 +7362,7 @@
       "source_file": "bookit\\src\\components\\shared\\PricingBadge.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_pricingbadge_tsx",
-      "community": 242,
+      "community": 243,
       "norm_label": "pricingbadge.tsx"
     },
     {
@@ -7353,7 +7371,7 @@
       "source_file": "bookit\\src\\components\\shared\\PricingBadge.tsx",
       "source_location": "L14",
       "id": "pricingbadge_pricingbadge",
-      "community": 242,
+      "community": 243,
       "norm_label": "pricingbadge()"
     },
     {
@@ -7443,7 +7461,7 @@
       "source_file": "bookit\\src\\components\\shared\\ServiceWorkerRegistration.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_serviceworkerregistration_tsx",
-      "community": 243,
+      "community": 244,
       "norm_label": "serviceworkerregistration.tsx"
     },
     {
@@ -7452,7 +7470,7 @@
       "source_file": "bookit\\src\\components\\shared\\ServiceWorkerRegistration.tsx",
       "source_location": "L5",
       "id": "serviceworkerregistration_serviceworkerregistration",
-      "community": 243,
+      "community": 244,
       "norm_label": "serviceworkerregistration()"
     },
     {
@@ -7461,7 +7479,7 @@
       "source_file": "bookit\\src\\components\\shared\\SmartBackButton.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_smartbackbutton_tsx",
-      "community": 244,
+      "community": 245,
       "norm_label": "smartbackbutton.tsx"
     },
     {
@@ -7470,7 +7488,7 @@
       "source_file": "bookit\\src\\components\\shared\\SmartBackButton.tsx",
       "source_location": "L13",
       "id": "smartbackbutton_smartbackbutton",
-      "community": 244,
+      "community": 245,
       "norm_label": "smartbackbutton()"
     },
     {
@@ -7479,7 +7497,7 @@
       "source_file": "bookit\\src\\components\\shared\\UpgradePromptModal.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_upgradepromptmodal_tsx",
-      "community": 245,
+      "community": 246,
       "norm_label": "upgradepromptmodal.tsx"
     },
     {
@@ -7488,7 +7506,7 @@
       "source_file": "bookit\\src\\components\\shared\\UpgradePromptModal.tsx",
       "source_location": "L36",
       "id": "upgradepromptmodal_handleupgrade",
-      "community": 245,
+      "community": 246,
       "norm_label": "handleupgrade()"
     },
     {
@@ -7569,7 +7587,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\ClientDetails.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_clientdetails_tsx",
-      "community": 349,
+      "community": 350,
       "norm_label": "clientdetails.tsx"
     },
     {
@@ -7578,7 +7596,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\DateTimePicker.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_datetimepicker_tsx",
-      "community": 246,
+      "community": 247,
       "norm_label": "datetimepicker.tsx"
     },
     {
@@ -7587,7 +7605,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\DateTimePicker.tsx",
       "source_location": "L109",
       "id": "datetimepicker_formatdurationfull",
-      "community": 246,
+      "community": 247,
       "norm_label": "formatdurationfull()"
     },
     {
@@ -7632,7 +7650,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\ProductCart.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_productcart_tsx",
-      "community": 247,
+      "community": 248,
       "norm_label": "productcart.tsx"
     },
     {
@@ -7641,7 +7659,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\ProductCart.tsx",
       "source_location": "L72",
       "id": "productcart_fmt",
-      "community": 247,
+      "community": 248,
       "norm_label": "fmt()"
     },
     {
@@ -7650,7 +7668,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\PushPrompt.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_pushprompt_tsx",
-      "community": 248,
+      "community": 249,
       "norm_label": "pushprompt.tsx"
     },
     {
@@ -7659,7 +7677,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\PushPrompt.tsx",
       "source_location": "L8",
       "id": "pushprompt_pushprompt",
-      "community": 248,
+      "community": 249,
       "norm_label": "pushprompt()"
     },
     {
@@ -7668,7 +7686,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\ServiceSelector.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_serviceselector_tsx",
-      "community": 249,
+      "community": 250,
       "norm_label": "serviceselector.tsx"
     },
     {
@@ -7677,7 +7695,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\ServiceSelector.tsx",
       "source_location": "L244",
       "id": "serviceselector_formatdurationfull",
-      "community": 249,
+      "community": 250,
       "norm_label": "formatdurationfull()"
     },
     {
@@ -7686,7 +7704,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\StepProgress.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_stepprogress_tsx",
-      "community": 350,
+      "community": 351,
       "norm_label": "stepprogress.tsx"
     },
     {
@@ -7695,7 +7713,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\types.ts",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_types_ts",
-      "community": 351,
+      "community": 352,
       "norm_label": "types.ts"
     },
     {
@@ -7731,7 +7749,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\useBookingScheduleData.ts",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_usebookingscheduledata_ts",
-      "community": 250,
+      "community": 251,
       "norm_label": "usebookingscheduledata.ts"
     },
     {
@@ -7740,7 +7758,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\useBookingScheduleData.ts",
       "source_location": "L26",
       "id": "usebookingscheduledata_usebookingscheduledata",
-      "community": 250,
+      "community": 251,
       "norm_label": "usebookingscheduledata()"
     },
     {
@@ -7749,7 +7767,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\useBookingWizardState.ts",
       "source_location": "L1",
       "id": "bookit_src_components_shared_wizard_usebookingwizardstate_ts",
-      "community": 251,
+      "community": 252,
       "norm_label": "usebookingwizardstate.ts"
     },
     {
@@ -7758,7 +7776,7 @@
       "source_file": "bookit\\src\\components\\shared\\wizard\\useBookingWizardState.ts",
       "source_location": "L31",
       "id": "usebookingwizardstate_usebookingwizardstate",
-      "community": 251,
+      "community": 252,
       "norm_label": "usebookingwizardstate()"
     },
     {
@@ -7767,7 +7785,7 @@
       "source_file": "bookit\\src\\components\\ui\\AnchoredTooltip.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_anchoredtooltip_tsx",
-      "community": 252,
+      "community": 253,
       "norm_label": "anchoredtooltip.tsx"
     },
     {
@@ -7776,7 +7794,7 @@
       "source_file": "bookit\\src\\components\\ui\\AnchoredTooltip.tsx",
       "source_location": "L52",
       "id": "anchoredtooltip_handleprimary",
-      "community": 252,
+      "community": 253,
       "norm_label": "handleprimary()"
     },
     {
@@ -7785,7 +7803,7 @@
       "source_file": "bookit\\src\\components\\ui\\Badge.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_badge_tsx",
-      "community": 352,
+      "community": 353,
       "norm_label": "badge.tsx"
     },
     {
@@ -7821,7 +7839,7 @@
       "source_file": "bookit\\src\\components\\ui\\BottomSheet.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_bottomsheet_tsx",
-      "community": 353,
+      "community": 354,
       "norm_label": "bottomsheet.tsx"
     },
     {
@@ -7830,7 +7848,7 @@
       "source_file": "bookit\\src\\components\\ui\\Button.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_button_tsx",
-      "community": 354,
+      "community": 355,
       "norm_label": "button.tsx"
     },
     {
@@ -7839,7 +7857,7 @@
       "source_file": "bookit\\src\\components\\ui\\Card.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_card_tsx",
-      "community": 355,
+      "community": 356,
       "norm_label": "card.tsx"
     },
     {
@@ -7848,7 +7866,7 @@
       "source_file": "bookit\\src\\components\\ui\\DashboardDrawer.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_dashboarddrawer_tsx",
-      "community": 253,
+      "community": 254,
       "norm_label": "dashboarddrawer.tsx"
     },
     {
@@ -7857,7 +7875,7 @@
       "source_file": "bookit\\src\\components\\ui\\DashboardDrawer.tsx",
       "source_location": "L19",
       "id": "dashboarddrawer_checkmobile",
-      "community": 253,
+      "community": 254,
       "norm_label": "checkmobile()"
     },
     {
@@ -7893,7 +7911,7 @@
       "source_file": "bookit\\src\\components\\ui\\Input.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_input_tsx",
-      "community": 356,
+      "community": 357,
       "norm_label": "input.tsx"
     },
     {
@@ -7902,7 +7920,7 @@
       "source_file": "bookit\\src\\components\\ui\\PopUpModal.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_popupmodal_tsx",
-      "community": 254,
+      "community": 255,
       "norm_label": "popupmodal.tsx"
     },
     {
@@ -7911,7 +7929,7 @@
       "source_file": "bookit\\src\\components\\ui\\PopUpModal.tsx",
       "source_location": "L30",
       "id": "popupmodal_checkmobile",
-      "community": 254,
+      "community": 255,
       "norm_label": "checkmobile()"
     },
     {
@@ -7956,7 +7974,7 @@
       "source_file": "bookit\\src\\components\\ui\\skeleton.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_skeleton_tsx",
-      "community": 255,
+      "community": 256,
       "norm_label": "skeleton.tsx"
     },
     {
@@ -7965,7 +7983,7 @@
       "source_file": "bookit\\src\\components\\ui\\skeleton.tsx",
       "source_location": "L3",
       "id": "skeleton_skeleton",
-      "community": 255,
+      "community": 256,
       "norm_label": "skeleton()"
     },
     {
@@ -7974,7 +7992,7 @@
       "source_file": "bookit\\src\\components\\ui\\Tooltip.tsx",
       "source_location": "L1",
       "id": "bookit_src_components_ui_tooltip_tsx",
-      "community": 256,
+      "community": 257,
       "norm_label": "tooltip.tsx"
     },
     {
@@ -7983,7 +8001,7 @@
       "source_file": "bookit\\src\\components\\ui\\Tooltip.tsx",
       "source_location": "L34",
       "id": "tooltip_cn",
-      "community": 256,
+      "community": 257,
       "norm_label": "cn()"
     },
     {
@@ -7992,7 +8010,7 @@
       "source_file": "bookit\\src\\lib\\email.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_email_ts",
-      "community": 357,
+      "community": 358,
       "norm_label": "email.ts"
     },
     {
@@ -8118,7 +8136,7 @@
       "source_file": "bookit\\src\\lib\\turbosms.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_turbosms_ts",
-      "community": 257,
+      "community": 258,
       "norm_label": "turbosms.ts"
     },
     {
@@ -8127,7 +8145,7 @@
       "source_file": "bookit\\src\\lib\\turbosms.ts",
       "source_location": "L1",
       "id": "turbosms_sendturbosms",
-      "community": 257,
+      "community": 258,
       "norm_label": "sendturbosms()"
     },
     {
@@ -8136,7 +8154,7 @@
       "source_file": "bookit\\src\\lib\\actions\\computeBookingPrice.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_actions_computebookingprice_ts",
-      "community": 258,
+      "community": 259,
       "norm_label": "computebookingprice.ts"
     },
     {
@@ -8145,7 +8163,7 @@
       "source_file": "bookit\\src\\lib\\actions\\computeBookingPrice.ts",
       "source_location": "L34",
       "id": "computebookingprice_computebookingprice",
-      "community": 258,
+      "community": 259,
       "norm_label": "computebookingprice()"
     },
     {
@@ -8154,7 +8172,7 @@
       "source_file": "bookit\\src\\lib\\actions\\createBooking.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_actions_createbooking_ts",
-      "community": 259,
+      "community": 260,
       "norm_label": "createbooking.ts"
     },
     {
@@ -8163,7 +8181,7 @@
       "source_file": "bookit\\src\\lib\\actions\\createBooking.ts",
       "source_location": "L86",
       "id": "createbooking_createbooking",
-      "community": 259,
+      "community": 260,
       "norm_label": "createbooking()"
     },
     {
@@ -8280,7 +8298,7 @@
       "source_file": "bookit\\src\\lib\\actions\\waitlist.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_actions_waitlist_ts",
-      "community": 260,
+      "community": 261,
       "norm_label": "waitlist.ts"
     },
     {
@@ -8289,7 +8307,7 @@
       "source_file": "bookit\\src\\lib\\actions\\waitlist.ts",
       "source_location": "L5",
       "id": "waitlist_joinwaitlist",
-      "community": 260,
+      "community": 261,
       "norm_label": "joinwaitlist()"
     },
     {
@@ -8397,7 +8415,7 @@
       "source_file": "bookit\\src\\lib\\billing\\PaymentProvider.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_billing_paymentprovider_ts",
-      "community": 358,
+      "community": 359,
       "norm_label": "paymentprovider.ts"
     },
     {
@@ -8406,7 +8424,7 @@
       "source_file": "bookit\\src\\lib\\billing\\pricing.test.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_billing_pricing_test_ts",
-      "community": 359,
+      "community": 360,
       "norm_label": "pricing.test.ts"
     },
     {
@@ -8469,7 +8487,7 @@
       "source_file": "bookit\\src\\lib\\constants\\bookingStatus.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_constants_bookingstatus_ts",
-      "community": 360,
+      "community": 361,
       "norm_label": "bookingstatus.ts"
     },
     {
@@ -8478,7 +8496,7 @@
       "source_file": "bookit\\src\\lib\\constants\\categories.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_constants_categories_ts",
-      "community": 361,
+      "community": 362,
       "norm_label": "categories.ts"
     },
     {
@@ -8487,7 +8505,7 @@
       "source_file": "bookit\\src\\lib\\constants\\legal.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_constants_legal_ts",
-      "community": 362,
+      "community": 363,
       "norm_label": "legal.ts"
     },
     {
@@ -8496,7 +8514,7 @@
       "source_file": "bookit\\src\\lib\\constants\\onboardingTemplates.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_constants_onboardingtemplates_ts",
-      "community": 363,
+      "community": 364,
       "norm_label": "onboardingtemplates.ts"
     },
     {
@@ -8505,7 +8523,7 @@
       "source_file": "bookit\\src\\lib\\constants\\themes.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_constants_themes_ts",
-      "community": 364,
+      "community": 365,
       "norm_label": "themes.ts"
     },
     {
@@ -8514,7 +8532,7 @@
       "source_file": "bookit\\src\\lib\\hooks\\useDeepSleepWakeup.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_hooks_usedeepsleepwakeup_ts",
-      "community": 261,
+      "community": 262,
       "norm_label": "usedeepsleepwakeup.ts"
     },
     {
@@ -8523,7 +8541,7 @@
       "source_file": "bookit\\src\\lib\\hooks\\useDeepSleepWakeup.ts",
       "source_location": "L10",
       "id": "usedeepsleepwakeup_usedeepsleepwakeup",
-      "community": 261,
+      "community": 262,
       "norm_label": "usedeepsleepwakeup()"
     },
     {
@@ -8532,7 +8550,7 @@
       "source_file": "bookit\\src\\lib\\hooks\\useSessionWakeup.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_hooks_usesessionwakeup_ts",
-      "community": 262,
+      "community": 263,
       "norm_label": "usesessionwakeup.ts"
     },
     {
@@ -8541,7 +8559,7 @@
       "source_file": "bookit\\src\\lib\\hooks\\useSessionWakeup.ts",
       "source_location": "L8",
       "id": "usesessionwakeup_usesessionwakeup",
-      "community": 262,
+      "community": 263,
       "norm_label": "usesessionwakeup()"
     },
     {
@@ -8550,7 +8568,7 @@
       "source_file": "bookit\\src\\lib\\hooks\\useTour.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_hooks_usetour_ts",
-      "community": 263,
+      "community": 264,
       "norm_label": "usetour.ts"
     },
     {
@@ -8559,7 +8577,7 @@
       "source_file": "bookit\\src\\lib\\hooks\\useTour.ts",
       "source_location": "L19",
       "id": "usetour_usetour",
-      "community": 263,
+      "community": 264,
       "norm_label": "usetour()"
     },
     {
@@ -8595,7 +8613,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\admin.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_admin_ts",
-      "community": 264,
+      "community": 265,
       "norm_label": "admin.ts"
     },
     {
@@ -8604,7 +8622,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\admin.ts",
       "source_location": "L8",
       "id": "admin_createadminclient",
-      "community": 264,
+      "community": 265,
       "norm_label": "createadminclient()"
     },
     {
@@ -8721,7 +8739,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\server.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_server_ts",
-      "community": 265,
+      "community": 266,
       "norm_label": "server.ts"
     },
     {
@@ -8730,7 +8748,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\server.ts",
       "source_location": "L4",
       "id": "server_createclient",
-      "community": 265,
+      "community": 266,
       "norm_label": "createclient()"
     },
     {
@@ -8883,7 +8901,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useClients.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_hooks_useclients_ts",
-      "community": 266,
+      "community": 267,
       "norm_label": "useclients.ts"
     },
     {
@@ -8892,7 +8910,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useClients.ts",
       "source_location": "L23",
       "id": "useclients_useclients",
-      "community": 266,
+      "community": 267,
       "norm_label": "useclients()"
     },
     {
@@ -8901,7 +8919,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useDashboardStats.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_hooks_usedashboardstats_ts",
-      "community": 267,
+      "community": 268,
       "norm_label": "usedashboardstats.ts"
     },
     {
@@ -8910,7 +8928,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useDashboardStats.ts",
       "source_location": "L22",
       "id": "usedashboardstats_usedashboardstats",
-      "community": 267,
+      "community": 268,
       "norm_label": "usedashboardstats()"
     },
     {
@@ -9000,7 +9018,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useNotifications.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_hooks_usenotifications_ts",
-      "community": 268,
+      "community": 269,
       "norm_label": "usenotifications.ts"
     },
     {
@@ -9009,7 +9027,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useNotifications.ts",
       "source_location": "L19",
       "id": "usenotifications_usenotifications",
-      "community": 268,
+      "community": 269,
       "norm_label": "usenotifications()"
     },
     {
@@ -9261,7 +9279,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useTimeOff.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_hooks_usetimeoff_ts",
-      "community": 269,
+      "community": 270,
       "norm_label": "usetimeoff.ts"
     },
     {
@@ -9270,7 +9288,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useTimeOff.ts",
       "source_location": "L17",
       "id": "usetimeoff_usetimeoff",
-      "community": 269,
+      "community": 270,
       "norm_label": "usetimeoff()"
     },
     {
@@ -9279,7 +9297,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useVacation.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_hooks_usevacation_ts",
-      "community": 270,
+      "community": 271,
       "norm_label": "usevacation.ts"
     },
     {
@@ -9288,7 +9306,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useVacation.ts",
       "source_location": "L14",
       "id": "usevacation_usevacation",
-      "community": 270,
+      "community": 271,
       "norm_label": "usevacation()"
     },
     {
@@ -9333,7 +9351,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useWizardSchedule.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_supabase_hooks_usewizardschedule_ts",
-      "community": 271,
+      "community": 272,
       "norm_label": "usewizardschedule.ts"
     },
     {
@@ -9342,7 +9360,7 @@
       "source_file": "bookit\\src\\lib\\supabase\\hooks\\useWizardSchedule.ts",
       "source_location": "L17",
       "id": "usewizardschedule_usewizardschedule",
-      "community": 271,
+      "community": 272,
       "norm_label": "usewizardschedule()"
     },
     {
@@ -9351,7 +9369,7 @@
       "source_file": "bookit\\src\\lib\\toast\\context.tsx",
       "source_location": "L1",
       "id": "bookit_src_lib_toast_context_tsx",
-      "community": 272,
+      "community": 273,
       "norm_label": "context.tsx"
     },
     {
@@ -9360,7 +9378,7 @@
       "source_file": "bookit\\src\\lib\\toast\\context.tsx",
       "source_location": "L25",
       "id": "context_usetoast",
-      "community": 272,
+      "community": 273,
       "norm_label": "usetoast()"
     },
     {
@@ -9414,7 +9432,7 @@
       "source_file": "bookit\\src\\lib\\utils\\cn.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_utils_cn_ts",
-      "community": 273,
+      "community": 274,
       "norm_label": "cn.ts"
     },
     {
@@ -9423,7 +9441,7 @@
       "source_file": "bookit\\src\\lib\\utils\\cn.ts",
       "source_location": "L4",
       "id": "cn_cn",
-      "community": 273,
+      "community": 274,
       "norm_label": "cn()"
     },
     {
@@ -9549,7 +9567,7 @@
       "source_file": "bookit\\src\\lib\\utils\\dynamicPricing.test.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_utils_dynamicpricing_test_ts",
-      "community": 274,
+      "community": 275,
       "norm_label": "dynamicpricing.test.ts"
     },
     {
@@ -9558,7 +9576,7 @@
       "source_file": "bookit\\src\\lib\\utils\\dynamicPricing.test.ts",
       "source_location": "L9",
       "id": "dynamicpricing_test_makedate",
-      "community": 274,
+      "community": 275,
       "norm_label": "makedate()"
     },
     {
@@ -9567,7 +9585,7 @@
       "source_file": "bookit\\src\\lib\\utils\\dynamicPricing.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_utils_dynamicpricing_ts",
-      "community": 275,
+      "community": 276,
       "norm_label": "dynamicpricing.ts"
     },
     {
@@ -9576,7 +9594,7 @@
       "source_file": "bookit\\src\\lib\\utils\\dynamicPricing.ts",
       "source_location": "L28",
       "id": "dynamicpricing_applydynamicpricing",
-      "community": 275,
+      "community": 276,
       "norm_label": "applydynamicpricing()"
     },
     {
@@ -9585,7 +9603,7 @@
       "source_file": "bookit\\src\\lib\\utils\\now.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_utils_now_ts",
-      "community": 276,
+      "community": 277,
       "norm_label": "now.ts"
     },
     {
@@ -9594,7 +9612,7 @@
       "source_file": "bookit\\src\\lib\\utils\\now.ts",
       "source_location": "L5",
       "id": "now_getnow",
-      "community": 276,
+      "community": 277,
       "norm_label": "getnow()"
     },
     {
@@ -9666,7 +9684,7 @@
       "source_file": "bookit\\src\\lib\\utils\\pluralUk.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_utils_pluraluk_ts",
-      "community": 277,
+      "community": 278,
       "norm_label": "pluraluk.ts"
     },
     {
@@ -9675,7 +9693,7 @@
       "source_file": "bookit\\src\\lib\\utils\\pluralUk.ts",
       "source_location": "L10",
       "id": "pluraluk_pluraluk",
-      "community": 277,
+      "community": 278,
       "norm_label": "pluraluk()"
     },
     {
@@ -9801,7 +9819,7 @@
       "source_file": "bookit\\src\\lib\\utils\\url.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_utils_url_ts",
-      "community": 278,
+      "community": 279,
       "norm_label": "url.ts"
     },
     {
@@ -9810,7 +9828,7 @@
       "source_file": "bookit\\src\\lib\\utils\\url.ts",
       "source_location": "L1",
       "id": "url_getbaseurl",
-      "community": 278,
+      "community": 279,
       "norm_label": "getbaseurl()"
     },
     {
@@ -9819,7 +9837,7 @@
       "source_file": "bookit\\src\\lib\\utils\\uuid.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_utils_uuid_ts",
-      "community": 279,
+      "community": 280,
       "norm_label": "uuid.ts"
     },
     {
@@ -9828,7 +9846,7 @@
       "source_file": "bookit\\src\\lib\\utils\\uuid.ts",
       "source_location": "L6",
       "id": "uuid_flatuidtouuid",
-      "community": 279,
+      "community": 280,
       "norm_label": "flatuidtouuid()"
     },
     {
@@ -9837,7 +9855,7 @@
       "source_file": "bookit\\src\\lib\\validations\\booking.ts",
       "source_location": "L1",
       "id": "bookit_src_lib_validations_booking_ts",
-      "community": 365,
+      "community": 366,
       "norm_label": "booking.ts"
     },
     {
@@ -9846,7 +9864,7 @@
       "source_file": "bookit\\src\\types\\database.ts",
       "source_location": "L1",
       "id": "bookit_src_types_database_ts",
-      "community": 366,
+      "community": 367,
       "norm_label": "database.ts"
     },
     {
@@ -9855,7 +9873,7 @@
       "source_file": "bookit\\src\\types\\onboarding.ts",
       "source_location": "L1",
       "id": "bookit_src_types_onboarding_ts",
-      "community": 367,
+      "community": 368,
       "norm_label": "onboarding.ts"
     },
     {
@@ -9864,7 +9882,7 @@
       "source_file": "bookit\\tests\\test_c2c.ts",
       "source_location": "L1",
       "id": "bookit_tests_test_c2c_ts",
-      "community": 280,
+      "community": 281,
       "norm_label": "test_c2c.ts"
     },
     {
@@ -9873,7 +9891,7 @@
       "source_file": "bookit\\tests\\test_c2c.ts",
       "source_location": "L3",
       "id": "test_c2c_testc2cfullcycle",
-      "community": 280,
+      "community": 281,
       "norm_label": "testc2cfullcycle()"
     },
     {
@@ -9882,7 +9900,7 @@
       "source_file": "monobank-acquiring\\monobank-acquiring\\examples\\csharp\\Program.cs",
       "source_location": "L1",
       "id": "monobank_acquiring_monobank_acquiring_examples_csharp_program_cs",
-      "community": 368,
+      "community": 369,
       "norm_label": "program.cs"
     },
     {
@@ -13425,7 +13443,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L114",
+      "source_location": "L112",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_createportfolioitem",
@@ -13437,7 +13455,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L169",
+      "source_location": "L168",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_updateportfolioitem",
@@ -13449,7 +13467,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L204",
+      "source_location": "L203",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_deleteportfolioitem",
@@ -13461,7 +13479,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L235",
+      "source_location": "L234",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_reorderportfolioitems",
@@ -13473,7 +13491,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L258",
+      "source_location": "L257",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_addportfoliophoto",
@@ -13485,7 +13503,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L291",
+      "source_location": "L290",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_deleteportfoliophoto",
@@ -13497,7 +13515,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L324",
+      "source_location": "L323",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_reorderportfoliophotos",
@@ -13509,7 +13527,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L350",
+      "source_location": "L349",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_setportfolioitemreviews",
@@ -13521,7 +13539,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L381",
+      "source_location": "L380",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_tagclientonportfolioitem",
@@ -13533,7 +13551,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L423",
+      "source_location": "L422",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_removeclienttag",
@@ -13545,7 +13563,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\(master)\\dashboard\\portfolio\\actions.ts",
-      "source_location": "L440",
+      "source_location": "L439",
       "weight": 1.0,
       "_src": "bookit_src_app_master_dashboard_portfolio_actions_ts",
       "_tgt": "actions_togglepublishportfolioitem",
@@ -14025,7 +14043,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\[slug]\\portfolio\\[id]\\page.tsx",
-      "source_location": "L67",
+      "source_location": "L110",
       "weight": 1.0,
       "_src": "bookit_src_app_slug_portfolio_id_page_tsx",
       "_tgt": "page_generatemetadata",
@@ -14037,7 +14055,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\[slug]\\portfolio\\[id]\\page.tsx",
-      "source_location": "L71",
+      "source_location": "L114",
       "weight": 1.0,
       "_src": "page_generatemetadata",
       "_tgt": "page_getportfolioitem",
@@ -14721,7 +14739,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\app\\[slug]\\portfolio\\[id]\\page.tsx",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0,
       "_src": "bookit_src_app_slug_portfolio_id_page_tsx",
       "_tgt": "page_getportfolioitem",
@@ -16677,19 +16695,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L59",
+      "source_location": "L77",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
-      "_tgt": "portfolioitemeditor_handlesavemeta",
+      "_tgt": "portfolioitemeditor_savemeta",
       "source": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
-      "target": "portfolioitemeditor_handlesavemeta",
+      "target": "portfolioitemeditor_savemeta",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L81",
+      "source_location": "L87",
+      "weight": 1.0,
+      "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
+      "_tgt": "portfolioitemeditor_handleclose",
+      "source": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
+      "target": "portfolioitemeditor_handleclose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
+      "source_location": "L101",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
       "_tgt": "portfolioitemeditor_handletagclient",
@@ -16701,7 +16731,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L88",
+      "source_location": "L111",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
       "_tgt": "portfolioitemeditor_handleremovetag",
@@ -16713,7 +16743,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L96",
+      "source_location": "L121",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
       "_tgt": "portfolioitemeditor_handlesavereviews",
@@ -16725,7 +16755,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L103",
+      "source_location": "L128",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
       "_tgt": "portfolioitemeditor_handletogglepublish",
@@ -16737,7 +16767,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L112",
+      "source_location": "L137",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
       "_tgt": "portfolioitemeditor_handledelete",
@@ -16749,19 +16779,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L121",
-      "weight": 1.0,
-      "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
-      "_tgt": "portfolioitemeditor_handlefinish",
-      "source": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
-      "target": "portfolioitemeditor_handlefinish",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
-      "source_location": "L322",
+      "source_location": "L365",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfolioitemeditor_tsx",
       "_tgt": "portfolioitemeditor_repeat",
@@ -16770,10 +16788,22 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioItemEditor.tsx",
+      "source_location": "L94",
+      "weight": 1.0,
+      "_src": "portfolioitemeditor_handleclose",
+      "_tgt": "portfolioitemeditor_savemeta",
+      "source": "portfolioitemeditor_savemeta",
+      "target": "portfolioitemeditor_handleclose",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\master\\portfolio\\PortfolioPage.tsx",
-      "source_location": "L52",
+      "source_location": "L53",
       "weight": 1.0,
       "_src": "bookit_src_components_master_portfolio_portfoliopage_tsx",
       "_tgt": "portfoliopage_handlecreate",
@@ -18111,6 +18141,18 @@
       "_tgt": "trustedpartnersblock_trustedpartnersblock",
       "source": "bookit_src_components_public_trustedpartnersblock_tsx",
       "target": "trustedpartnersblock_trustedpartnersblock",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bookit\\src\\components\\public\\portfolio\\PortfolioBookingButton.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "bookit_src_components_public_portfolio_portfoliobookingbutton_tsx",
+      "_tgt": "portfoliobookingbutton_bookingflowskeleton",
+      "source": "bookit_src_components_public_portfolio_portfoliobookingbutton_tsx",
+      "target": "portfoliobookingbutton_bookingflowskeleton",
       "confidence_score": 1.0
     },
     {

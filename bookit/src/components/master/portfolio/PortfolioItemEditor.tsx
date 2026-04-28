@@ -315,6 +315,12 @@ export function PortfolioItemEditor({
                 <p className="text-[11px] text-[#A8928D]">
                   Клієнт отримає сповіщення і має підтвердити участь
                 </p>
+                {!(consentStatus !== null || taggedClientName) && (
+                  <p className="text-[11px] text-[#A8928D] bg-[#F5E8E3] rounded-xl px-3 py-2 leading-relaxed">
+                    Не знаходите потрібного клієнта? Попросіть їх зареєструватися на{' '}
+                    <span className="font-semibold text-[#6B5750]">BOOKIT</span> — після цього вони з&apos;являться у списку.
+                  </p>
+                )}
               </div>
 
               {/* Reviews */}
