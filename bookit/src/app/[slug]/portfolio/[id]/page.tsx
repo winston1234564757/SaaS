@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { ArrowLeft, Scissors, Star } from 'lucide-react';
+import { ArrowLeft, Scissors, Star, User, CheckCircle, Clock } from 'lucide-react';
 import { formatDateFull } from '@/lib/utils/dates';
 import { PortfolioBookingButton } from '@/components/public/portfolio/PortfolioBookingButton';
 
@@ -25,7 +25,7 @@ async function getPortfolioItem(slug: string, id: string) {
     admin
       .from('portfolio_items')
       .select(`
-        id, title, description, service_id, created_at,
+        id, title, description, service_id, tagged_client_id, consent_status, created_at,
         portfolio_item_photos ( id, url, display_order ),
         portfolio_item_reviews ( review_id )
       `)
@@ -36,7 +36,7 @@ async function getPortfolioItem(slug: string, id: string) {
 
     admin
       .from('services')
-      .select('id, name, price, duration, popular, emoji, category')
+      .select('id, name, price, duration_minutes, is_popular, emoji, category, sort_order')
       .eq('master_id', mp.id)
       .eq('is_active', true)
       .order('sort_order', { ascending: true }),
@@ -52,15 +52,34 @@ async function getPortfolioItem(slug: string, id: string) {
   const item = itemRes.data;
 
   const reviewIds = (item.portfolio_item_reviews ?? []).map(r => r.review_id);
-  const { data: reviews } = reviewIds.length > 0
-    ? await admin
-        .from('reviews')
-        .select('id, rating, comment, client_name, created_at')
-        .in('id', reviewIds)
-        .eq('is_published', true)
-    : { data: [] };
+
+  const [reviewsRes, clientRes] = await Promise.all([
+    reviewIds.length > 0
+      ? admin
+          .from('reviews')
+          .select('id, rating, comment, client_name, created_at')
+          .in('id', reviewIds)
+          .eq('is_published', true)
+      : Promise.resolve({ data: [] }),
+    item.tagged_client_id
+      ? admin.from('profiles').select('full_name, avatar_url').eq('id', item.tagged_client_id).single()
+      : Promise.resolve({ data: null }),
+  ]);
 
   const profile = mp.profiles as unknown as { full_name: string; avatar_url: string | null };
+
+  const rawServices = servicesRes.data ?? [];
+  const masterServices = rawServices.map(s => ({
+    id: s.id as string,
+    name: s.name as string,
+    price: Number(s.price),
+    duration: s.duration_minutes as number,
+    popular: s.is_popular as boolean,
+    emoji: (s.emoji as string) ?? '✨',
+    category: (s.category as string) ?? 'Інше',
+  }));
+
+  const taggedClient = clientRes.data as { full_name: string; avatar_url: string | null } | null;
 
   return {
     masterSlug: slug,
@@ -70,10 +89,7 @@ async function getPortfolioItem(slug: string, id: string) {
     masterTier: (mp.subscription_tier ?? 'starter') as 'starter' | 'pro' | 'studio',
     masterWorkingHours: mp.working_hours as Record<string, unknown> | null,
     masterPricingRules: mp.pricing_rules as Record<string, unknown> | null,
-    masterServices: (servicesRes.data ?? []) as Array<{
-      id: string; name: string; price: number; duration: number;
-      popular: boolean; emoji: string; category: string;
-    }>,
+    masterServices,
     bookingsThisMonth: bookingsRes.count ?? 0,
     item: {
       id: item.id,
@@ -81,9 +97,12 @@ async function getPortfolioItem(slug: string, id: string) {
       description: item.description,
       created_at: item.created_at,
       service_id: item.service_id ?? null,
+      consent_status: (item.consent_status ?? null) as 'pending' | 'approved' | 'declined' | null,
       photos: [...(item.portfolio_item_photos ?? [])].sort((a, b) => a.display_order - b.display_order),
-      serviceName: (servicesRes.data ?? []).find(s => s.id === item.service_id)?.name ?? null,
-      reviews: reviews ?? [],
+      serviceName: masterServices.find(s => s.id === item.service_id)?.name ?? null,
+      taggedClientName: taggedClient?.full_name ?? null,
+      taggedClientAvatar: taggedClient?.avatar_url ?? null,
+      reviews: reviewsRes.data ?? [],
     },
   };
 }
@@ -183,6 +202,49 @@ export default async function PortfolioItemPage(
             <p className="text-sm text-[#6B5750] leading-relaxed">{item.description}</p>
           )}
         </div>
+
+        {/* Tagged client */}
+        {item.taggedClientName && item.consent_status === 'approved' && (
+          <div
+            className="rounded-3xl p-4 flex items-center gap-3"
+            style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)' }}
+          >
+            {item.taggedClientAvatar ? (
+              <div className="relative w-10 h-10 rounded-2xl overflow-hidden shrink-0">
+                <Image src={item.taggedClientAvatar} alt={item.taggedClientName} fill className="object-cover" sizes="40px" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-2xl bg-[#F5E8E3] flex items-center justify-center shrink-0">
+                <User size={16} className="text-[#A8928D]" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#A8928D]">Клієнт</p>
+              <p className="text-sm font-semibold text-[#2C1A14]">{item.taggedClientName}</p>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#5C9E7A]">
+              <CheckCircle size={12} /> Підтверджено
+            </div>
+          </div>
+        )}
+
+        {item.taggedClientName && item.consent_status === 'pending' && (
+          <div
+            className="rounded-3xl p-4 flex items-center gap-3"
+            style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.4)' }}
+          >
+            <div className="w-10 h-10 rounded-2xl bg-[#F5E8E3] flex items-center justify-center shrink-0">
+              <User size={16} className="text-[#A8928D]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#A8928D]">Клієнт</p>
+              <p className="text-sm font-semibold text-[#2C1A14]">{item.taggedClientName}</p>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#D4935A]">
+              <Clock size={12} /> Очікує
+            </div>
+          </div>
+        )}
 
         {/* Reviews */}
         {item.reviews.length > 0 && (
