@@ -77,6 +77,13 @@
 - `src/app/my/notifications/` → `ClientNotificationsPage.tsx` — in-app нотифікації + pending portfolio consent requests
 - `src/app/my/portfolio-consent/actions.ts` → `approvePortfolioConsent`, `declinePortfolioConsent`
 
+### Публічний Магазин
+- `src/app/[slug]/shop/page.tsx` — SSR, revalidate 60s; fetches products + active orders for auth client; Pro/Studio only
+- `src/components/public/ShopPage.tsx` — клієнтський компонент: каталог товарів, кошик, checkout форма (pickup / Nova Poshta), `createOrder` server action
+- Order flow: `createOrder` → INSERT `orders` + `order_items` → decrement stock (`increment_stock_rpc`) → master отримує сповіщення
+- На сторінці майстра: Shop Banner (до послуг) + Products preview strip (до 3 товарів + "Всі товари")
+- `master_profiles.ships_nova_poshta BOOLEAN` — контролює чи пропонується доставка Нова Пошта
+
 ### Публічне Портфоліо
 - `src/app/[slug]/portfolio/page.tsx` — SSR grid усіх опублікованих робіт майстра, revalidate 300s
 - `src/app/[slug]/portfolio/[id]/page.tsx` — SSR детальна сторінка: фото, відгуки, клієнт, inline BookingFlow (PortfolioBookingButton)
@@ -133,6 +140,7 @@
 | `useWeeklyOverview.ts` | — | Тижневий огляд |
 | `useClientNote.ts` | — | Нотатки клієнтів |
 | `useProductLinks.ts` | — | product_service_links |
+| `useOrders.ts` | — | Замовлення товарів майстра (orders + order_items) |
 | `useDateRange.ts` | — | Аналітика за діапазоном дат |
 
 ### Session / PWA Hooks (`src/lib/hooks/`)
@@ -233,6 +241,8 @@
 | `bookings` | Записи: `slot_date`, `slot_time`, `total_duration`, `total_price`, `status`, `source`, `dynamic_pricing_label` |
 | `booking_services` | Деталі послуг у multi-service |
 | `booking_products` | Товари в записі (ціна на момент запису) |
+| `orders` | Замовлення товарів з магазину: `master_id`, `client_name`, `phone`, `delivery_type` (pickup/nova_poshta), `delivery_address`, `status`, `total_kopecks` |
+| `order_items` | Рядки замовлення: `product_id`, `quantity`, `price_kopecks` |
 
 ### Marketing
 | Таблиця | Призначення |

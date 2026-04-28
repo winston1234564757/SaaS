@@ -96,6 +96,13 @@
 - Всі майстри студії під одним slug власника
 - Studio join flow: `src/app/studio/join/`
 
+**Магазин Товарів (Pro/Studio)**
+- CRUD товарів зі стоком, активацією, прив'язкою до послуг (`product_service_links`)
+- Публічна сторінка `/[slug]/shop`: каталог → кошик → checkout (pickup або Нова Пошта)
+- Shop Banner на публічній сторінці (до послуг), Products Preview strip (до 3 + "Всі товари")
+- `orders` + `order_items`: замовлення зі стоковим декрементом (`increment_stock_rpc`)
+- `master_profiles.ships_nova_poshta` — керує опцією доставки в магазині
+
 **Портфоліо**
 - Структуровані кейси/роботи: назва, опис, прив'язка до послуги, відгуків
 - До 5 фото на кейс (drag-to-reorder, Supabase Storage bucket `portfolios`)
