@@ -97,16 +97,23 @@ export async function getMasterClients() {
   if (!user) redirect('/login');
 
   const admin = createAdminClient();
-  const { data } = await admin
+
+  const { data: relations } = await admin
     .from('client_master_relations')
-    .select('client_id, profiles!client_id ( id, full_name )')
+    .select('client_id')
     .eq('master_id', user.id)
     .limit(200);
 
-  return (data ?? []).map(r => {
-    const p = r.profiles as unknown as { id: string; full_name: string } | null;
-    return p ? { id: p.id, full_name: p.full_name } : null;
-  }).filter(Boolean) as { id: string; full_name: string }[];
+  if (!relations || relations.length === 0) return [];
+
+  const clientIds = relations.map(r => r.client_id as string);
+
+  const { data: profiles } = await admin
+    .from('profiles')
+    .select('id, full_name')
+    .in('id', clientIds);
+
+  return (profiles ?? []).map(p => ({ id: p.id as string, full_name: p.full_name as string }));
 }
 
 // ─── Create ───────────────────────────────────────────────────────────────────
@@ -130,7 +137,8 @@ export async function createPortfolioItem(formData: FormData) {
     const { count } = await admin
       .from('portfolio_items')
       .select('id', { count: 'exact', head: true })
-      .eq('master_id', user.id);
+      .eq('master_id', user.id)
+      .eq('is_published', true);
     if ((count ?? 0) >= STARTER_ITEM_LIMIT) {
       return { error: 'limit_reached' };
     }

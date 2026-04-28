@@ -47,7 +47,8 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
   const isEditorOpen = editingItem !== undefined;
 
   const isStarter = tier === 'starter';
-  const atLimit = isStarter && items.length >= STARTER_LIMIT;
+  const publishedCount = items.filter(i => i.is_published).length;
+  const atLimit = isStarter && publishedCount >= STARTER_LIMIT;
 
   const handleCreate = () => {
     if (atLimit) return;
@@ -61,7 +62,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
         <div>
           <h1 className="text-xl font-bold text-[#2C1A14]">Портфоліо</h1>
           <p className="text-sm text-[#6B5750] mt-0.5">
-            {items.length} {pluralUk(items.length, 'робота', 'роботи', 'робіт')}
+            {publishedCount} {pluralUk(publishedCount, 'робота', 'роботи', 'робіт')}
             {isStarter && ` · ${STARTER_LIMIT} макс.`}
           </p>
         </div>
