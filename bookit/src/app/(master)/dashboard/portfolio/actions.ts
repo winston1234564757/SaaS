@@ -98,22 +98,13 @@ export async function getMasterClients() {
 
   const admin = createAdminClient();
 
-  const { data: relations } = await admin
-    .from('client_master_relations')
-    .select('client_id')
-    .eq('master_id', user.id)
-    .limit(200);
+  // RPC aggregates all clients from bookings (not just client_master_relations)
+  const { data } = await admin.rpc('get_master_clients', { p_master_id: user.id });
 
-  if (!relations || relations.length === 0) return [];
-
-  const clientIds = relations.map(r => r.client_id as string);
-
-  const { data: profiles } = await admin
-    .from('profiles')
-    .select('id, full_name')
-    .in('id', clientIds);
-
-  return (profiles ?? []).map(p => ({ id: p.id as string, full_name: p.full_name as string }));
+  // Only registered (have auth account) clients can receive consent notifications
+  return ((data ?? []) as Array<{ client_id: string | null; client_name: string | null }>)
+    .filter(r => !!r.client_id)
+    .map(r => ({ id: r.client_id as string, full_name: r.client_name || 'Клієнт' }));
 }
 
 // ─── Create ───────────────────────────────────────────────────────────────────

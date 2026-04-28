@@ -19,15 +19,8 @@ interface Review {
   created_at: string;
 }
 
-interface Client {
-  id: string;
-  full_name: string;
-}
-
-interface Service {
-  id: string;
-  name: string;
-}
+interface Client { id: string; full_name: string }
+interface Service { id: string; name: string }
 
 interface Props {
   item?: PortfolioItemFull | null;
@@ -41,32 +34,31 @@ interface Props {
 }
 
 export function PortfolioItemEditor({
-  item, masterId, masterSlug, services, reviews, clients, onClose, onSaved,
+  item, masterId, services, reviews, clients, onClose, onSaved,
 }: Props) {
   const isNew = !item;
 
-  const [itemId, setItemId] = useState<string | null>(item?.id ?? null);
-  const [title, setTitle] = useState(item?.title ?? '');
-  const [description, setDescription] = useState(item?.description ?? '');
-  const [serviceId, setServiceId] = useState(item?.service_id ?? '');
+  const [itemId, setItemId]               = useState<string | null>(item?.id ?? null);
+  const [title, setTitle]                 = useState(item?.title ?? '');
+  const [description, setDescription]     = useState(item?.description ?? '');
+  const [serviceId, setServiceId]         = useState(item?.service_id ?? '');
   const [selectedReviewIds, setSelectedReviewIds] = useState<string[]>(item?.review_ids ?? []);
-  const [selectedClientId, setSelectedClientId] = useState(item?.tagged_client_id ?? '');
-  const [photos, setPhotos] = useState<PortfolioItemPhoto[]>(item?.photos ?? []);
-  const [isPublished, setIsPublished] = useState(item?.is_published ?? true);
+  const [selectedClientId, setSelectedClientId]   = useState('');
+  const [photos, setPhotos]               = useState<PortfolioItemPhoto[]>(item?.photos ?? []);
+  const [isPublished, setIsPublished]     = useState(item?.is_published ?? true);
   const [consentStatus, setConsentStatus] = useState(item?.consent_status ?? null);
-  const [taggedClientName, setTaggedClientName] = useState(item?.tagged_client_name ?? null);
+  const [taggedClientName, setTaggedClientName]   = useState(item?.tagged_client_name ?? null);
 
-  const [autoCreating, setAutoCreating] = useState(false);
-  const [metaSaving, setMetaSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [autoCreating, setAutoCreating]   = useState(false);
+  const [closingAndSaving, setClosingAndSaving] = useState(false);
   const [reviewsPending, startReviewsTransition] = useTransition();
-  const [clientPending, startClientTransition] = useTransition();
+  const [clientPending,  startClientTransition]  = useTransition();
   const [publishPending, startPublishTransition] = useTransition();
-  const [deletePending, startDeleteTransition] = useTransition();
+  const [deletePending,  startDeleteTransition]  = useTransition();
 
   const initDone = useRef(false);
 
-  // Auto-create item immediately when editor opens for a new item
+  // Auto-create item on open for new entries → all sections available immediately
   useEffect(() => {
     if (!isNew || itemId || initDone.current) return;
     initDone.current = true;
@@ -82,18 +74,28 @@ export function PortfolioItemEditor({
     });
   }, [isNew, itemId]);
 
-  const handleSaveMeta = async () => {
-    if (!title.trim()) { setError("Назва обов'язкова"); return; }
-    if (!itemId) return;
-    setError('');
-    setMetaSaving(true);
+  const saveMeta = async (id: string) => {
+    if (!title.trim()) return;
     const fd = new FormData();
     fd.set('title', title.trim());
     fd.set('description', description.trim());
     fd.set('service_id', serviceId);
     fd.set('is_published', String(isPublished));
-    await updatePortfolioItem(itemId, fd);
-    setMetaSaving(false);
+    await updatePortfolioItem(id, fd);
+  };
+
+  const handleClose = async () => {
+    if (itemId) {
+      if (!title.trim()) {
+        // Empty title = abandoned draft → delete
+        await deletePortfolioItem(itemId).catch(() => {});
+      } else {
+        setClosingAndSaving(true);
+        await saveMeta(itemId).catch(() => {});
+      }
+    }
+    onSaved();
+    onClose();
   };
 
   const handleTagClient = () => {
@@ -140,23 +142,12 @@ export function PortfolioItemEditor({
     });
   };
 
-  const handleClose = () => {
-    // If it was auto-created but never given a real title — delete the draft
-    if (isNew && itemId && !title.trim()) {
-      deletePortfolioItem(itemId).catch(() => {});
-    }
-    onSaved();
-    onClose();
-  };
-
   const consentBadge =
     consentStatus === 'pending'
       ? <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#D4935A]/15 text-[#D4935A]">Очікує</span>
       : consentStatus === 'approved'
         ? <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#5C9E7A]/15 text-[#5C9E7A]">Підтверджено</span>
         : null;
-
-  const isLoading = autoCreating;
 
   return (
     <AnimatePresence>
@@ -175,7 +166,7 @@ export function PortfolioItemEditor({
           className="w-full md:max-w-xl max-h-[92dvh] overflow-y-auto rounded-t-[28px] md:rounded-[28px]"
           style={{ background: 'rgba(255,248,244,0.98)', backdropFilter: 'blur(24px)' }}
         >
-          {/* Header */}
+          {/* ── Header ── */}
           <div
             className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-[#E8D5CF]/60"
             style={{ background: 'rgba(255,248,244,0.97)' }}
@@ -188,11 +179,10 @@ export function PortfolioItemEditor({
                 <button
                   onClick={handleTogglePublish}
                   disabled={publishPending}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors disabled:opacity-60"
                   style={isPublished
                     ? { borderColor: '#5C9E7A', color: '#5C9E7A', background: 'rgba(92,158,122,0.08)' }
-                    : { borderColor: '#C8B8B2', color: '#A8928D', background: 'transparent' }
-                  }
+                    : { borderColor: '#C8B8B2', color: '#A8928D', background: 'transparent' }}
                 >
                   {isPublished ? <Eye size={13} /> : <EyeOff size={13} />}
                   {isPublished ? 'Опублікована' : 'Прихована'}
@@ -200,20 +190,23 @@ export function PortfolioItemEditor({
               )}
               <button
                 onClick={handleClose}
+                disabled={closingAndSaving}
                 className="w-8 h-8 rounded-xl bg-[#F5E8E3] flex items-center justify-center text-[#A8928D]"
               >
-                <X size={16} />
+                {closingAndSaving ? <Loader2 size={14} className="animate-spin" /> : <X size={16} />}
               </button>
             </div>
           </div>
 
-          {isLoading ? (
+          {/* ── Body ── */}
+          {autoCreating ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 size={28} className="text-[#789A99] animate-spin" />
             </div>
           ) : (
             <div className="p-5 space-y-5">
-              {/* ── Title ── */}
+
+              {/* Title */}
               <div>
                 <label className="block text-xs font-semibold text-[#6B5750] mb-1.5">Назва роботи*</label>
                 <input
@@ -225,7 +218,7 @@ export function PortfolioItemEditor({
                 />
               </div>
 
-              {/* ── Description ── */}
+              {/* Description */}
               <div>
                 <label className="block text-xs font-semibold text-[#6B5750] mb-1.5">Опис</label>
                 <textarea
@@ -238,7 +231,7 @@ export function PortfolioItemEditor({
                 />
               </div>
 
-              {/* ── Service ── */}
+              {/* Service */}
               <div>
                 <label className="flex items-center gap-1.5 text-xs font-semibold text-[#6B5750] mb-1.5">
                   <Scissors size={13} /> Послуга
@@ -256,41 +249,23 @@ export function PortfolioItemEditor({
                 </div>
               </div>
 
-              {error && <p className="text-xs text-[#C05B5B] font-medium">{error}</p>}
-
-              {/* ── Save meta ── */}
-              <button
-                onClick={handleSaveMeta}
-                disabled={metaSaving || !title.trim() || !itemId}
-                className="w-full rounded-2xl py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
-                style={{ background: '#789A99' }}
-              >
-                {metaSaving
-                  ? <Loader2 size={16} className="animate-spin mx-auto" />
-                  : 'Зберегти'}
-              </button>
-
               <div className="h-px bg-[#E8D5CF]/60" />
 
-              {/* ── Photos ── */}
+              {/* Photos */}
               <div className="space-y-3">
                 <label className="block text-xs font-semibold text-[#6B5750]">Фотографії</label>
-                {itemId
-                  ? (
-                    <PortfolioPhotoUploader
-                      itemId={itemId}
-                      masterId={masterId}
-                      photos={photos}
-                      onPhotosChange={setPhotos}
-                    />
-                  )
-                  : <p className="text-xs text-[#A8928D]">Завантажується…</p>
-                }
+                <PortfolioPhotoUploader
+                  itemId={itemId ?? ''}
+                  masterId={masterId}
+                  photos={photos}
+                  onPhotosChange={setPhotos}
+                  disabled={!itemId}
+                />
               </div>
 
               <div className="h-px bg-[#E8D5CF]/60" />
 
-              {/* ── Client tagging ── */}
+              {/* Client tagging */}
               <div className="space-y-3">
                 <label className="flex items-center gap-1.5 text-xs font-semibold text-[#6B5750]">
                   <User size={13} /> Клієнт
@@ -321,7 +296,7 @@ export function PortfolioItemEditor({
                         className="w-full rounded-xl border border-[#E8D5CF] bg-white/70 px-4 py-2.5 text-sm text-[#2C1A14] focus:outline-none focus:border-[#789A99] appearance-none"
                       >
                         <option value="">
-                          {clients.length === 0 ? 'Немає клієнтів' : 'Оберіть клієнта'}
+                          {clients.length === 0 ? 'Немає зареєстрованих клієнтів' : 'Оберіть клієнта'}
                         </option>
                         {clients.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
                       </select>
@@ -342,65 +317,69 @@ export function PortfolioItemEditor({
                 </p>
               </div>
 
-              {/* ── Reviews ── */}
+              {/* Reviews */}
               {reviews.length > 0 && (
-                <div className="space-y-3">
+                <>
                   <div className="h-px bg-[#E8D5CF]/60" />
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-[#6B5750]">
-                    <Star size={13} /> Відгуки
-                  </label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {reviews.map(r => {
-                      const isSelected = selectedReviewIds.includes(r.id);
-                      return (
-                        <button
-                          key={r.id}
-                          type="button"
-                          onClick={() =>
-                            setSelectedReviewIds(
-                              isSelected
-                                ? selectedReviewIds.filter(id => id !== r.id)
-                                : [...selectedReviewIds, r.id]
-                            )
-                          }
-                          className="w-full flex items-start gap-3 rounded-2xl p-3 text-left transition-colors"
-                          style={{
-                            background: isSelected ? 'rgba(120,154,153,0.10)' : 'rgba(255,255,255,0.50)',
-                            border: `1px solid ${isSelected ? '#789A99' : 'transparent'}`,
-                          }}
-                        >
-                          <div
-                            className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5"
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-[#6B5750]">
+                      <Star size={13} /> Відгуки
+                    </label>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {reviews.map(r => {
+                        const isSelected = selectedReviewIds.includes(r.id);
+                        return (
+                          <button
+                            key={r.id}
+                            type="button"
+                            onClick={() =>
+                              setSelectedReviewIds(
+                                isSelected
+                                  ? selectedReviewIds.filter(id => id !== r.id)
+                                  : [...selectedReviewIds, r.id]
+                              )
+                            }
+                            className="w-full flex items-start gap-3 rounded-2xl p-3 text-left transition-colors"
                             style={{
-                              borderColor: isSelected ? '#789A99' : '#C8B8B2',
-                              background: isSelected ? '#789A99' : 'transparent',
+                              background: isSelected ? 'rgba(120,154,153,0.10)' : 'rgba(255,255,255,0.50)',
+                              border: `1px solid ${isSelected ? '#789A99' : 'transparent'}`,
                             }}
                           >
-                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-[#2C1A14]">
-                              {'★'.repeat(r.rating)} {r.client_name ?? 'Клієнт'}
-                            </p>
-                            {r.comment && (
-                              <p className="text-xs text-[#6B5750] truncate mt-0.5">{r.comment}</p>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
+                            <div
+                              className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5"
+                              style={{
+                                borderColor: isSelected ? '#789A99' : '#C8B8B2',
+                                background: isSelected ? '#789A99' : 'transparent',
+                              }}
+                            >
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-[#2C1A14]">
+                                {'★'.repeat(r.rating)} {r.client_name ?? 'Клієнт'}
+                              </p>
+                              {r.comment && (
+                                <p className="text-xs text-[#6B5750] truncate mt-0.5">{r.comment}</p>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      onClick={handleSaveReviews}
+                      disabled={reviewsPending || !itemId}
+                      className="w-full rounded-xl py-2.5 text-xs font-semibold border border-[#789A99] text-[#789A99] hover:bg-[#789A99]/8 transition-colors disabled:opacity-50"
+                    >
+                      {reviewsPending
+                        ? <Loader2 size={13} className="animate-spin mx-auto" />
+                        : 'Зберегти відгуки'}
+                    </button>
                   </div>
-                  <button
-                    onClick={handleSaveReviews}
-                    disabled={reviewsPending || !itemId}
-                    className="w-full rounded-xl py-2.5 text-xs font-semibold border border-[#789A99] text-[#789A99] hover:bg-[#789A99]/8 transition-colors disabled:opacity-50"
-                  >
-                    {reviewsPending ? <Loader2 size={13} className="animate-spin mx-auto" /> : 'Зберегти відгуки'}
-                  </button>
-                </div>
+                </>
               )}
 
-              {/* ── Footer ── */}
+              {/* Footer */}
               <div className="flex gap-2 pt-1">
                 {itemId && (
                   <button
@@ -408,14 +387,20 @@ export function PortfolioItemEditor({
                     disabled={deletePending}
                     className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-[#C05B5B] border border-[#C05B5B]/30 hover:bg-[#C05B5B]/8 transition-colors"
                   >
-                    {deletePending ? <Loader2 size={13} className="animate-spin" /> : <><Trash2 size={13} /> Видалити</>}
+                    {deletePending
+                      ? <Loader2 size={13} className="animate-spin" />
+                      : <><Trash2 size={13} /> Видалити</>}
                   </button>
                 )}
                 <button
                   onClick={handleClose}
-                  className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-[#2C1A14] bg-[#F5E8E3] hover:bg-[#EBD5CC] transition-colors"
+                  disabled={closingAndSaving}
+                  className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-60"
+                  style={{ background: '#789A99' }}
                 >
-                  Готово
+                  {closingAndSaving
+                    ? <Loader2 size={16} className="animate-spin mx-auto" />
+                    : 'Готово'}
                 </button>
               </div>
             </div>

@@ -59,11 +59,13 @@ interface Props {
   masterId: string;
   photos: PortfolioItemPhoto[];
   onPhotosChange: (photos: PortfolioItemPhoto[]) => void;
+  disabled?: boolean;
 }
 
-export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChange }: Props) {
+export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChange, disabled = false }: Props) {
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -77,24 +79,38 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
     const toUpload = files.slice(0, slots);
 
     setUploading(true);
+    setUploadError(null);
+    const currentPhotos = [...photos];
     try {
       for (const file of toUpload) {
-        const ext = file.name.split('.').pop() ?? 'jpg';
-        const path = `${masterId}/items/${itemId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
+        const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
+        const path = `${masterId}/items/${itemId}/${Date.now()}-${crypto.randomUUID()}.${safeExt}`;
 
         const { error: upErr } = await supabase.storage
           .from('portfolios')
-          .upload(path, file, { cacheControl: '3600', upsert: false });
+          .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type || 'image/jpeg' });
 
-        if (upErr) continue;
+        if (upErr) {
+          setUploadError(upErr.message);
+          continue;
+        }
 
         const { data: urlData } = supabase.storage.from('portfolios').getPublicUrl(path);
-        const result = await addPortfolioPhoto(itemId, path, urlData.publicUrl, photos.length);
-        if (!result.error) {
-          onPhotosChange([
-            ...photos,
-            { id: crypto.randomUUID(), portfolio_item_id: itemId, storage_path: path, url: urlData.publicUrl, display_order: photos.length, created_at: new Date().toISOString() },
-          ]);
+        const result = await addPortfolioPhoto(itemId, path, urlData.publicUrl, currentPhotos.length);
+        if (result.error) {
+          setUploadError(`DB error: ${result.error}`);
+        } else {
+          const newPhoto: PortfolioItemPhoto = {
+            id: crypto.randomUUID(),
+            portfolio_item_id: itemId,
+            storage_path: path,
+            url: urlData.publicUrl,
+            display_order: currentPhotos.length,
+            created_at: new Date().toISOString(),
+          };
+          currentPhotos.push(newPhoto);
+          onPhotosChange([...currentPhotos]);
         }
       }
     } finally {
@@ -141,7 +157,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            disabled={uploading}
+            disabled={uploading || disabled}
             className="w-24 h-24 rounded-2xl border-2 border-dashed border-[#C8B8B2] flex flex-col items-center justify-center gap-1 text-[#A8928D] hover:border-[#789A99] hover:text-[#789A99] transition-colors shrink-0"
           >
             {uploading
@@ -155,6 +171,12 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
       <p className="text-xs text-[#A8928D]">
         {photos.length} / {MAX_PHOTOS} фото · Перетягуйте для зміни порядку
       </p>
+
+      {uploadError && (
+        <p className="text-xs text-[#C05B5B] bg-[#C05B5B]/8 rounded-xl px-3 py-2">
+          Помилка завантаження: {uploadError}
+        </p>
+      )}
 
       <input
         ref={fileRef}
