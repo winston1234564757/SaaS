@@ -17,27 +17,24 @@ const PRIMARY = [
   { href: '/dashboard',          icon: LayoutDashboard, label: 'Головна' },
   { href: '/dashboard/bookings', icon: CalendarDays,    label: 'Записи'  },
   { href: '/dashboard/clients',  icon: Users,           label: 'Клієнти' },
-  { href: '/dashboard/analytics',icon: BarChart2,       label: 'Аналітика' },
-];
-
-// Icon-only shortcuts promoted from the drawer
-const QUICK = [
-  { href: '/dashboard/services', icon: Scissors,    label: 'Послуги' },
-  { href: '/dashboard/products', icon: ShoppingBag, label: 'Магазин' },
+  { href: '/dashboard/settings', icon: Settings,        label: 'Налаштування' },
 ];
 
 const MORE_ITEMS = [
+  { href: '/dashboard/analytics',  icon: BarChart2,            label: 'Аналітика'  },
+  { href: '/dashboard/services',   icon: Scissors,             label: 'Послуги'    },
+  { href: '/dashboard/products',   icon: ShoppingBag,          label: 'Магазин'    },
   { href: '/dashboard/revenue',    icon: Wallet,               label: 'Дохід'      },
   { href: '/dashboard/portfolio',  icon: GalleryVerticalEnd,   label: 'Портфоліо'  },
   { href: '/dashboard/growth',     icon: Rocket,               label: 'Ріст'       },
   { href: '/dashboard/marketing',  icon: ImagePlay,            label: 'Маркетинг'  },
   { href: '/dashboard/reviews',    icon: MessageSquare,        label: 'Відгуки'    },
-  { href: '/dashboard/studio',     icon: Building2,     label: 'Студія',        soon: true },
-  { href: '/dashboard/billing',    icon: CreditCard,    label: 'Тариф'          },
-  { href: '/dashboard/settings',   icon: Settings,      label: 'Налаштування'   },
-  { href: '/dashboard/support',    icon: HelpCircle,    label: 'Підтримка'      },
-  { href: '/dashboard/documents',  icon: Scale,         label: 'Документи'      },
+  { href: '/dashboard/studio',     icon: Building2,            label: 'Студія',        soon: true },
+  { href: '/dashboard/billing',    icon: CreditCard,           label: 'Тариф'          },
+  { href: '/dashboard/support',    icon: HelpCircle,           label: 'Підтримка'      },
+  { href: '/dashboard/documents',  icon: Scale,                label: 'Документи'      },
 ];
+
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -76,23 +73,6 @@ export function BottomNav() {
             );
           })}
 
-          {/* Quick-access icon-only shortcuts */}
-          {QUICK.map(({ href, icon: Icon, label }) => {
-            const isActive = pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl flex-1 transition-all duration-150',
-                  isActive ? 'text-primary' : 'text-muted-foreground/60'
-                )}
-              >
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium">{label}</span>
-              </Link>
-            );
-          })}
 
           {/* More button */}
           <button
