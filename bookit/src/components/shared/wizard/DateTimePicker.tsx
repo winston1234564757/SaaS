@@ -11,6 +11,7 @@ import {
   type TimeRange,
 } from '@/lib/utils/smartSlots';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { formatDurationFull } from '@/lib/utils/dates';
 import type { ScheduleStore } from '@/lib/supabase/hooks/useWizardSchedule';
 import { DAY_S, MONTH_S, toISO, fmt, slide } from './helpers';
 import type { WizardService } from './types';

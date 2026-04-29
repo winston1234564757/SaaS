@@ -13,6 +13,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import Image from 'next/image';
+import { formatDurationFull } from '@/lib/utils/dates';
 
 function BookingFlowSkeleton() {
   return (

@@ -56,9 +56,7 @@ export function StudioPublicPage({ studio, members }: Props) {
   );
 
   const memberCount = members.length;
-  const countLabel =
-    `${memberCount} ${pluralUk(memberCount, 'майстер', 'майстри', 'майстрів')}`< 5  ? `${memberCount} майстри` :
-                       `${memberCount} майстрів`;
+  const countLabel = `${memberCount} ${pluralUk(memberCount, 'майстер', 'майстри', 'майстрів')}`;
 
   return (
     <div className="min-h-screen" style={{ background: '#FFE8DC' }}>

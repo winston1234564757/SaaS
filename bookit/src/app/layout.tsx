@@ -58,7 +58,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="uk" className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
-        <div className="grain-overlay" aria-hidden="true" />
         <ServiceWorkerRegistration />
         <RefCapture />
         <NuqsAdapter>

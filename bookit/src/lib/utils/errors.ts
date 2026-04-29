@@ -7,7 +7,7 @@ import { ZodError } from 'zod';
 export function parseError(err: unknown): string {
   if (err instanceof ZodError) {
     const zodErr = err as ZodError<any>;
-    const firstError = zodErr.errors[0];
+    const firstError = zodErr.issues[0];
     return firstError ? firstError.message : 'Перевірте правильність введених даних';
   }
   

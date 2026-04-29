@@ -231,24 +231,6 @@ body {
   transition: transform 0.1s ease;
 }
 
-/* ─── Film Grain ─── */
-/* Only on desktop — on mobile this fixed overlay at z-index:9999
-   was blocking GPU compositing for every frame, costing ~2-4ms per paint */
-.grain-overlay {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  background-size: 200px;
-  z-index: 1;  /* Was 9999 — only needs to be above body bg, not above modals/sheets */
-  display: none; /* Hidden on mobile by default */
-}
-
-@media (hover: hover) and (min-width: 768px) {
-  .grain-overlay { display: block; } /* Desktop only */
-}
-
 /* ─── Status pulse ─── */
 @keyframes pulse-accent {
   0%, 100% { box-shadow: 0 0 0 0 rgba(120, 154, 153, 0.45); }
@@ -275,48 +257,10 @@ body {
   background: linear-gradient(135deg, #FFD2C2 0%, #F5C4B2 100%);
 }
 
-/* ─── Global Form Controls Standardization ─── */
-@layer base {
-  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), textarea, select) {
-    background-color: rgba(255, 255, 255, 0.45) !important;
-    border: 1px solid rgba(255, 255, 255, 0.6) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    color: var(--text-primary) !important;
-    transition: all 0.2s ease !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
-  }
-
-  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus, textarea:focus, select:focus) {
-    outline: none !important;
-    border-color: var(--accent) !important;
-    box-shadow: 0 0 0 2px rgba(120, 154, 153, 0.2), inset 0 2px 4px rgba(0,0,0,0.02) !important;
-    background-color: rgba(255, 255, 255, 0.65) !important;
-  }
-  
-  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):disabled, textarea:disabled, select:disabled) {
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-  }
-
-  /* Помилки валідації (aria-invalid) */
-  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"])[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]) {
-    border-color: var(--error) !important;
-    box-shadow: 0 0 0 2px rgba(192, 91, 91, 0.2), inset 0 2px 4px rgba(0,0,0,0.02) !important;
-    background-color: rgba(255, 235, 235, 0.45) !important;
-  }
-
-  :where(select) {
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B5750' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
-    background-position: right 0.75rem center !important;
-    background-repeat: no-repeat !important;
-    background-size: 1.5em 1.5em !important;
-    padding-right: 2.5rem !important;
-  }
-
-  :where(textarea) {
-    resize: vertical !important;
-    min-height: 100px !important;
-  }
+/* ─── Global Form Validation Styles ─── */
+[aria-invalid="true"] {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 2px rgba(192, 91, 91, 0.2), inset 0 2px 4px rgba(0,0,0,0.02) !important;
+  background-color: rgba(255, 235, 235, 0.45) !important;
 }
+

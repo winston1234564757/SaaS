@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Clock, Check } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { formatDurationFull } from '@/lib/utils/dates';
 import { fmt, slide } from './helpers';
 import type { WizardService } from './types';
 

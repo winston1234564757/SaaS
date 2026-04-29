@@ -7,7 +7,6 @@ import {
   Crown, Zap, Lock, AlertCircle, Clock,
 } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
-import { pluralUk } from '@/lib/utils/pluralUk';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
