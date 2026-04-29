@@ -68,7 +68,9 @@ export function DateTimePicker({
   onContinue,
 }: DateTimePickerProps) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const canProceedDatetime = !!selectedDate && !!selectedTime;
   
@@ -97,8 +99,7 @@ export function DateTimePicker({
             </div>
           ))}
           {selectedServices.length > 3 && (
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-muted-foreground"
-              style={{ background: 'rgba(255,210,194,0.5)' }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-muted-foreground bg-warning/20">
               +{selectedServices.length - 3}
             </div>
           )}
@@ -159,7 +160,7 @@ export function DateTimePicker({
                     : 'bg-white/70 border border-stone-200 text-stone-700 hover:bg-white hover:border-primary/40'
                 } ${scheduleLoading ? 'animate-pulse' : ''}`}
               >
-                <span className={`text-[10px] font-medium whitespace-normal text-balance break-words text-center leading-tight ${
+                <span className={`text-[10px] font-bold uppercase tracking-wider whitespace-normal text-balance break-words text-center leading-tight ${
                   isOff ? 'text-stone-300' :
                   isFull ? 'text-red-300' :
                   isSelected ? 'text-white/80' : 'text-stone-400'
@@ -172,11 +173,11 @@ export function DateTimePicker({
                   {d.getDate()}
                 </span>
                 {isOff ? (
-                  <span className="text-[9px] text-stone-300 leading-none">вих.</span>
+                  <span className="text-[10px] font-bold text-stone-300 leading-none">вих.</span>
                 ) : isFull ? (
-                  <span className="text-[9px] font-semibold text-red-400 bg-red-50 rounded-full px-1 py-0.5 leading-none">зайнято</span>
+                  <span className="text-[10px] font-bold text-red-400 bg-red-50 rounded-full px-1.5 py-0.5 leading-none">зайнято</span>
                 ) : (
-                  <span className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-stone-400'}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-tight ${isSelected ? 'text-white/70' : 'text-stone-400'}`}>
                     {MONTH_S[d.getMonth()]}
                   </span>
                 )}
@@ -267,7 +268,7 @@ export function DateTimePicker({
                       }`}
                     >
                       {item.slot.isSuggested && selectedTime !== item.slot.time && (
-                        <span className="absolute -top-1.5 -right-1 text-[8px] bg-primary text-white rounded-full px-1 py-0.5 font-bold leading-none">★</span>
+                        <span className="absolute -top-1.5 -right-1 text-[10px] bg-primary text-white rounded-full px-1 py-0.5 font-bold leading-none shadow-sm">★</span>
                       )}
                       <span className="block font-semibold">{item.slot.time}</span>
                       <span className={`block text-[11px] font-normal mt-0.5 ${

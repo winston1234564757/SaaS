@@ -14,6 +14,7 @@ import { useToast } from '@/lib/toast/context';
 import { BookingActionsDropdown } from '@/components/master/bookings/BookingActionsDropdown';
 import { completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import Link from 'next/link';
+import { cn } from '@/lib/utils/cn';
 import { useQueryClient } from '@tanstack/react-query';
 import { getNow } from '@/lib/utils/now';
 import { parseError } from '@/lib/utils/errors';
@@ -131,13 +132,13 @@ function EmptyScheduleWidget() {
         .eq('status', 'completed')
         .gte('date', from)
         .lte('date', to)
-        .then((res: { data: any[] | null }) => {
+        .then((res: { data: unknown[] | null }) => {
           const rows = res.data ?? [];
-          const revenue = rows.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
+          const revenue = rows.reduce((s: number, b) => s + Number((b as any).total_price ?? 0), 0);
           const count = rows.length;
           const prodMap = new Map<string, number>();
           rows.forEach(b => {
-            ((b.booking_products as any[]) ?? []).forEach((p: any) => {
+            (((b as any).booking_products as unknown[]) ?? []).forEach((p: any) => {
               prodMap.set(p.product_name, (prodMap.get(p.product_name) ?? 0) + (Number(p.quantity) || 1));
             });
           });
@@ -186,9 +187,9 @@ function EmptyScheduleWidget() {
           {stats.topProducts.length > 0 && (
             <>
               <div className="h-px bg-secondary/60 my-1" />
-              <div className="flex items-center gap-1.5 mb-1">
+              <div className="flex items-center gap-2 mb-1">
                 <Package size={11} className="text-muted-foreground/60" />
-                <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide">Топ продажі</span>
+                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Топ продажі</span>
               </div>
               {stats.topProducts.map(p => (
                 <div key={p.name} className="flex items-center justify-between">
@@ -237,7 +238,7 @@ function CalendarView({ bookings }: { bookings: BookingWithServices[] }) {
             </span>
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-semibold transition-all ${
               isToday
-                ? 'bg-primary text-white shadow-[0_2px_8px_rgba(120,154,153,0.35)]'
+                ? 'bg-primary text-white shadow-md'
                 : 'text-muted-foreground bg-white/40'
             }`}>
               {d.getDate()}
@@ -248,10 +249,11 @@ function CalendarView({ bookings }: { bookings: BookingWithServices[] }) {
                 <>
                   <motion.div
                     initial={{ height: 0 }}
-                    animate={{ height: Math.max(3, Math.round((count / maxCount) * 24)) }}
-                    transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 24 }}
-                    className="w-1 rounded-full"
-                    style={{ background: isToday ? '#789A99' : 'rgba(120,154,153,0.4)' }}
+                    className="w-1 rounded-full bg-primary/40"
+                    style={{ 
+                      height: Math.max(3, Math.round((count / maxCount) * 24)),
+                      backgroundColor: isToday ? 'var(--accent)' : undefined 
+                    }}
                   />
                   <span className="text-[10px] font-bold text-primary">{count}</span>
                 </>
@@ -291,14 +293,14 @@ function StatsView({ bookings }: { bookings: BookingWithServices[] }) {
   return (
     <div className="px-5 py-4 grid grid-cols-2 gap-2.5">
       {[
-        { label: 'Всього',     value: String(bookings.length),  color: '#789A99' },
-        { label: 'Завершено',  value: String(completed.length), color: '#5C9E7A' },
-        { label: 'Виручка',    value: formatPrice(revenue),     color: '#2C1A14' },
-        { label: 'Сер. чек',   value: avgCheck > 0 ? formatPrice(avgCheck) : '—', color: '#2C1A14' },
+        { label: 'Всього',     value: String(bookings.length),  className: 'text-primary' },
+        { label: 'Завершено',  value: String(completed.length), className: 'text-success' },
+        { label: 'Виручка',    value: formatPrice(revenue),     className: 'text-foreground' },
+        { label: 'Сер. чек',   value: avgCheck > 0 ? formatPrice(avgCheck) : '—', className: 'text-foreground' },
       ].map(item => (
         <div key={item.label} className="p-3 rounded-2xl bg-white/50 border border-white/80">
           <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide mb-1">{item.label}</p>
-          <p className="text-base font-bold" style={{ color: item.color }}>{item.value}</p>
+          <p className={cn("text-base font-bold", item.className)}>{item.value}</p>
         </div>
       ))}
       {topService && (
@@ -408,14 +410,14 @@ export function TodaySchedule() {
       </div>
 
       {/* Date tabs */}
-      <div className="flex gap-1 px-5 pb-3">
+      <div className="flex gap-2 px-5 pb-4">
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setView(tab.id)}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
               view === tab.id
-                ? 'bg-primary text-white shadow-[0_2px_8px_rgba(120,154,153,0.35)]'
+                ? 'bg-primary text-white shadow-sm'
                 : 'text-muted-foreground hover:bg-white/60'
             }`}
           >
@@ -425,22 +427,24 @@ export function TodaySchedule() {
       </div>
 
       {/* Display mode toggle (3-segment sliding pill) */}
-      <div className="relative flex bg-secondary/60 rounded-2xl p-0.5 gap-0 mx-5 mb-3">
+      <div className="relative flex bg-secondary/60 rounded-2xl p-1 mx-5 mb-4">
         {DISPLAY_MODES.map(mode => (
           <button
             key={mode.id}
             onClick={() => setDisplayMode(mode.id)}
-            className="relative flex-1 flex items-center justify-center gap-1 py-2 z-10 text-[10px] font-semibold transition-colors"
-            style={{ color: displayMode === mode.id ? '#2C1A14' : '#A8928D' }}
+            className={cn(
+              "relative flex-1 flex items-center justify-center gap-1.5 py-2 z-10 text-[10px] font-bold uppercase tracking-wider transition-colors",
+              displayMode === mode.id ? "text-foreground" : "text-muted-foreground/60"
+            )}
           >
             {displayMode === mode.id && (
               <motion.div
                 layoutId="schedule-display-pill"
-                className="absolute inset-0 bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                className="absolute inset-0 bg-white rounded-xl shadow-sm"
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               />
             )}
-            <mode.Icon size={11} className="relative z-10" />
+            <mode.Icon size={12} className="relative z-10" />
             <span className="relative z-10">{mode.label}</span>
           </button>
         ))}
@@ -477,15 +481,15 @@ export function TodaySchedule() {
             )
           ) : view === 'week' ? (
             /* ── Week view: grouped by date ── */
-            <div className="flex flex-col divide-y divide-[#F5E8E3]/60">
+            <div className="flex flex-col divide-y divide-secondary/30">
               {[...grouped!.entries()].map(([date, items]) => {
                 const d = new Date(date);
                 const dayName = UA_DAYS_SHORT[d.getDay()];
                 const dateLabel = `${dayName} ${d.getDate()}`;
                 return (
                   <div key={date}>
-                    <div className="px-5 py-2 bg-white/20">
-                      <span className="text-[11px] font-bold text-primary uppercase tracking-wide">{dateLabel}</span>
+                    <div className="px-5 py-2.5 bg-white/20">
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{dateLabel}</span>
                     </div>
                     {items.map(b => {
                       const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
@@ -515,7 +519,7 @@ export function TodaySchedule() {
             </div>
           ) : (
             /* ── Today / Tomorrow view: timeline ── */
-            <div className="flex flex-col divide-y divide-[#F5E8E3]/60">
+            <div className="flex flex-col divide-y divide-secondary/30">
               {filtered.map((b, i) => {
                 const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
                 const svcName = b.services[0]?.name ?? 'Послуга';
@@ -562,9 +566,9 @@ export function TodaySchedule() {
                         >
                           <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 cursor-default ${
                             pastDue
-                              ? 'bg-warning ring-2 ring-[#D4935A]/25 ring-offset-1'
+                              ? 'bg-warning ring-2 ring-warning/20 ring-offset-1'
                               : isCurrent
-                              ? 'bg-primary ring-2 ring-[#789A99]/25 ring-offset-1'
+                              ? 'bg-primary ring-2 ring-primary/20 ring-offset-1'
                               : b.status === 'completed'
                               ? 'bg-muted-foreground/60'
                               : 'bg-secondary/80'

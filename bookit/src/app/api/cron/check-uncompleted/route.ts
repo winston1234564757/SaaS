@@ -93,7 +93,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const dashboardUrl = `${siteUrl}/dashboard/bookings`;
 
   let processed = 0;
-  let skipped = 0;
+  const skipped = 0;
   const notificationsToInsert: {
     recipient_id: string;
     title: string;

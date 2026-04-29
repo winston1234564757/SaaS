@@ -16,7 +16,6 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
 
     const admin = createAdminClient();
 
-    // 1. Ownership Verify (Security Gate)
     const { data: booking } = await admin
       .from('bookings')
       .select('master_id')
@@ -26,7 +25,6 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
 
-    // 2. Atomic Update
     const { error } = await admin
       .from('bookings')
       .update({ 
@@ -35,20 +33,19 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
       })
       .eq('id', bookingId);
 
-    if (error) return { error: error.message };
+    if (error) throw error;
 
-    // 3. Revalidate & Notify
-    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
-    // Fire-and-forget notification
-    notifyClientOnStatusChange(bookingId, 'confirmed').catch(console.error);
+    notifyClientOnStatusChange(bookingId, 'confirmed').catch(err => 
+      console.error('[confirmBooking] Notification failed:', err)
+    );
 
     return { error: null };
-  } catch (err) {
-    console.error('[confirmBooking]', err);
-    return { error: 'Помилка сервера' };
+  } catch (err: any) {
+    console.error('[confirmBooking] error:', err);
+    return { error: 'Не вдалося підтвердити запис. Спробуйте пізніше.' };
   }
 }
 
@@ -60,7 +57,6 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
 
     const admin = createAdminClient();
 
-    // 1. Ownership Verify
     const { data: booking } = await admin
       .from('bookings')
       .select('master_id')
@@ -70,7 +66,6 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
 
-    // 2. Atomic Update
     const { error } = await admin
       .from('bookings')
       .update({ 
@@ -79,19 +74,19 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
       })
       .eq('id', bookingId);
 
-    if (error) return { error: error.message };
+    if (error) throw error;
 
-    // 3. Revalidate & Notify
-    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
-    notifyClientOnStatusChange(bookingId, 'cancelled').catch(console.error);
+    notifyClientOnStatusChange(bookingId, 'cancelled').catch(err => 
+      console.error('[cancelBooking] Notification failed:', err)
+    );
 
     return { error: null };
-  } catch (err) {
-    console.error('[cancelBooking]', err);
-    return { error: 'Помилка сервера' };
+  } catch (err: any) {
+    console.error('[cancelBooking] error:', err);
+    return { error: 'Не вдалося скасувати запис.' };
   }
 }
 
@@ -127,16 +122,15 @@ export async function rescheduleBooking(
       })
       .eq('id', bookingId);
 
-    if (error) return { error: error.message };
+    if (error) throw error;
 
-    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
     return { error: null };
-  } catch (err) {
-    console.error('[rescheduleBooking]', err);
-    return { error: 'Помилка сервера' };
+  } catch (err: any) {
+    console.error('[rescheduleBooking] error:', err);
+    return { error: 'Не вдалося перенести запис.' };
   }
 }
 
@@ -144,7 +138,6 @@ export async function updateBookingStatus(
   bookingId: string,
   status: string,
 ): Promise<{ error: string | null }> {
-  console.log(`[updateBookingStatus] Starting for ID: ${bookingId}, target status: ${status}`);
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -152,7 +145,6 @@ export async function updateBookingStatus(
 
     const admin = createAdminClient();
 
-    // 1. Ownership Verify
     const { data: booking } = await admin
       .from('bookings')
       .select('master_id')
@@ -162,7 +154,6 @@ export async function updateBookingStatus(
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
 
-    // 2. Atomic Update
     const { error } = await admin
       .from('bookings')
       .update({ 
@@ -171,31 +162,25 @@ export async function updateBookingStatus(
       })
       .eq('id', bookingId);
 
-    if (error) {
-      console.error(`[updateBookingStatus] DB Update Error:`, error);
-      return { error: error.message };
-    }
+    if (error) throw error;
 
-    console.log(`[updateBookingStatus] Success for ID: ${bookingId}`);
-    // 3. Revalidate & Notify
-    // PERF-HIGH-1: granular invalidation — don't blow away full layout cache on every booking op
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
-    // Notify client for specific statuses
     if (status === 'confirmed' || status === 'cancelled') {
-        notifyClientOnStatusChange(bookingId, status).catch(console.error);
+        notifyClientOnStatusChange(bookingId, status).catch(err => 
+          console.error('[updateBookingStatus] Notification failed:', err)
+        );
     }
 
     return { error: null };
-  } catch (err) {
-    console.error('[updateBookingStatus] Catch-all error:', err);
-    return { error: 'Помилка сервера' };
+  } catch (err: any) {
+    console.error('[updateBookingStatus] error:', err);
+    return { error: 'Не вдалося оновити статус запису.' };
   }
 }
 
 export async function completeBooking(bookingId: string): Promise<{ error: string | null }> {
-  console.log(`[completeBooking] Starting for ID: ${bookingId}`);
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -203,7 +188,6 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
 
     const admin = createAdminClient();
 
-    // 1. Ownership Verify — also fetch client_id for review nudge
     const { data: booking } = await admin
       .from('bookings')
       .select('master_id, client_id')
@@ -213,7 +197,6 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
 
-    // 2. Atomic Update
     const { error } = await admin
       .from('bookings')
       .update({
@@ -222,25 +205,21 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
       })
       .eq('id', bookingId);
 
-    if (error) {
-      console.error(`[completeBooking] DB Update Error:`, error);
-      return { error: error.message };
-    }
+    if (error) throw error;
 
-    console.log(`[completeBooking] Success for ID: ${bookingId}`);
-    // 3. Revalidate
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
-    // 4. Fire-and-forget: nudge client to leave a review
     if (booking.client_id) {
-      notifyClientReviewNudge(bookingId, booking.client_id).catch(console.error);
+      notifyClientReviewNudge(bookingId, booking.client_id).catch(err => 
+        console.error('[completeBooking] Review nudge failed:', err)
+      );
     }
 
     return { error: null };
-  } catch (err) {
-    console.error('[completeBooking] Catch-all error:', err);
-    return { error: 'Помилка сервера' };
+  } catch (err: any) {
+    console.error('[completeBooking] error:', err);
+    return { error: 'Не вдалося завершити запис.' };
   }
 }
 
@@ -307,7 +286,6 @@ export async function updateMasterNotes(
 
     const admin = createAdminClient();
 
-    // 1. Ownership Verify
     const { data: booking } = await admin
       .from('bookings')
       .select('master_id')
@@ -317,21 +295,18 @@ export async function updateMasterNotes(
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
 
-    // 2. Update Notes
     const { error } = await admin
       .from('bookings')
       .update({ master_notes: notes })
       .eq('id', bookingId);
 
-    if (error) return { error: error.message };
+    if (error) throw error;
 
-    // PERF-HIGH-1: notes-only change — no layout bust needed
     revalidatePath('/dashboard/bookings');
-
     return { error: null };
-  } catch (err) {
-    console.error('[updateMasterNotes]', err);
-    return { error: 'Помилка сервера' };
+  } catch (err: any) {
+    console.error('[updateMasterNotes] error:', err);
+    return { error: 'Не вдалося зберегти нотатки.' };
   }
 }
 
@@ -346,7 +321,6 @@ export async function approveReview(
 
     const admin = createAdminClient();
 
-    // 1. Ownership verify — review must belong to this master
     const { data: review } = await admin
       .from('reviews')
       .select('master_id')
@@ -356,27 +330,25 @@ export async function approveReview(
     if (!review) return { error: 'Відгук не знайдено' };
     if (review.master_id !== user.id) return { error: 'Немає доступу' };
 
-    // 2. Approve → publish | Decline → delete
     if (approved) {
       const { error } = await admin
         .from('reviews')
         .update({ is_published: true })
         .eq('id', reviewId);
-      if (error) return { error: error.message };
+      if (error) throw error;
     } else {
       const { error } = await admin
         .from('reviews')
         .delete()
         .eq('id', reviewId);
-      if (error) return { error: error.message };
+      if (error) throw error;
     }
 
     revalidatePath('/dashboard/reviews');
-
     return { error: null };
-  } catch (err) {
-    console.error('[approveReview]', err);
-    return { error: 'Помилка сервера' };
+  } catch (err: any) {
+    console.error('[approveReview] error:', err);
+    return { error: 'Не вдалося обробити відгук.' };
   }
 }
 

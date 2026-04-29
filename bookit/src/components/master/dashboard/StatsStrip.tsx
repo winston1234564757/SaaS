@@ -110,7 +110,7 @@ export function StatsStrip() {
             transition={{ delay: i * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
             className="h-full"
           >
-            <Tooltip content={stat.tooltip} position="bottom" className="w-full h-full">
+            <Tooltip content={stat.tooltip} position="bottom">
               <div className="bento-card p-4 flex flex-col justify-between w-full h-full cursor-default">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: stat.bg }}>
                   <Icon size={18} style={{ color: stat.color }} />

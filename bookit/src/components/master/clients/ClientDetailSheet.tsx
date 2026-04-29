@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2 } from 'lucide-react';
-import { sendChurnReminder, saveClientNote, toggleClientVip } from '@/app/(master)/dashboard/clients/actions';
+import { sendChurnReminder, saveClientNote, toggleClientVip, archiveClient } from '@/app/(master)/dashboard/clients/actions';
 import type { ClientRow } from './ClientsPage';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -30,14 +30,17 @@ interface RecentBooking {
   service_name: string;
 }
 
+import { useToast } from '@/lib/toast/context';
+import { parseError } from '@/lib/utils/errors';
+
 export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [bookings, setBookings] = useState<RecentBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [reminding, setReminding] = useState(false);
-  const [reminderResult, setReminderResult] = useState<string | null>(null);
 
   // Notes
   const { data: savedNote = '' } = useClientNote(client?.client_phone);
@@ -53,7 +56,6 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   }, [savedNote, client?.id]);
 
   useEffect(() => {
-    setReminderResult(null);
     setNoteSaved(false);
   }, [client?.id]);
 
@@ -95,7 +97,9 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
     if (!client?.client_phone) return;
     setNoteSaving(true);
     const { error } = await saveClientNote(client.client_phone, text);
-    if (!error) {
+    if (error) {
+      showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+    } else {
       setNoteSaved(true);
       invalidateNote(client.client_phone);
       setTimeout(() => setNoteSaved(false), 2000);
@@ -110,9 +114,11 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
       const newVip = !client.is_vip;
       const { error } = await toggleClientVip(client.client_id!, newVip);
       
-      if (!error) {
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+      } else {
         onVipChange(client.id, newVip);
-        // Invalidate both the list and potential detail queries
+        showToast({ type: 'success', title: newVip ? 'VIP статус надано' : 'VIP статус знято' });
         await queryClient.invalidateQueries({ queryKey: ['clients'] });
         await queryClient.invalidateQueries({ queryKey: ['client', client.client_id] });
       }
@@ -234,9 +240,12 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                     <button
                       onClick={async () => {
                         setReminding(true);
-                        setReminderResult(null);
                         const res = await sendChurnReminder(client.client_id, client.client_phone, client.client_name);
-                        setReminderResult(res.error ?? '✅ Нагадування надіслано!');
+                        if (res.error) {
+                          showToast({ type: 'error', title: 'Помилка', message: parseError(res.error) });
+                        } else {
+                          showToast({ type: 'success', title: 'Нагадування надіслано' });
+                        }
                         setReminding(false);
                       }}
                       disabled={reminding}
@@ -245,11 +254,6 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                       <Bell size={15} />
                       {reminding ? 'Надсилаємо...' : 'Нагадати про запис'}
                     </button>
-                    {reminderResult && (
-                      <p className={`text-xs text-center px-2 ${reminderResult.startsWith('✅') ? 'text-green-600' : 'text-muted-foreground/60'}`}>
-                        {reminderResult}
-                      </p>
-                    )}
                   </div>
                 )}
 
@@ -272,6 +276,28 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                     VIP доступний для клієнтів з акаунтом Bookit
                   </p>
                 )}
+
+                {/* Archive client */}
+                <button
+                  onClick={async () => {
+                    if (!client?.client_id || !confirm('Архівувати клієнта? Він зникне зі списку активних, але історія записів залишиться.')) return;
+                    setLoading(true);
+                    const { error } = await archiveClient(client.client_id);
+                    if (error) {
+                      showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+                    } else {
+                      showToast({ type: 'success', title: 'Клієнта архівовано' });
+                      onClose();
+                      await queryClient.invalidateQueries({ queryKey: ['clients'] });
+                    }
+                    setLoading(false);
+                  }}
+                  disabled={loading || !client?.client_id}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 transition-all disabled:opacity-40"
+                >
+                  Архівувати клієнта
+                </button>
+
 
                 {/* Private notes */}
                 <div>

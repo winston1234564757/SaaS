@@ -63,16 +63,17 @@ export function BentoCard({
 
       {/* Body */}
       <div className="mt-auto">
-        <h3 className="text-[13px] font-medium text-muted-foreground mb-0.5">{title}</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{title}</h3>
         <div className="flex flex-col gap-1">
           <span className="text-3xl font-bold text-foreground tracking-tight">
             {metric}
           </span>
           {description && (
-            <p className="text-[11px] leading-relaxed text-muted-foreground/80 font-medium">
+            <p className="text-xs leading-relaxed text-muted-foreground/60 font-medium">
               {description}
             </p>
           )}
+          {children && <div className="mt-3">{children}</div>}
         </div>
       </div>
 

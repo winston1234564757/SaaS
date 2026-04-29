@@ -89,6 +89,10 @@ QA-сесія з користувачем — це коротка відпові
 ❌ Soft-mode для Monobank webhook (Ed25519 перевірка строга, без bypass)
 ❌ Cron routes без Authorization: Bearer CRON_SECRET
 ❌ console.log з OTP, user ID або токенами
+❌ State-змінні у deps масиві useEffect що підписується на onAuthStateChange
+   → INFINITE LOOP: setUser/setIsLoading всередині ефекту + user/isLoading в deps = нескінченний re-subscribe
+   → Симптом: весь DOM заморожений, нічого не натискається (інцидент 2026-04-29)
+   → Правило: deps auth-ефекту = ЛИШЕ [supabase, fetchProfile] (стабільні, незмінні)
 ```
 
 ---

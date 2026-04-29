@@ -74,16 +74,6 @@ export function FlashDealPage({ activeDeals: initialDeals, tier: initialTier, us
     masterId: masterProfile?.id,
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-5 p-6 animate-pulse">
-        <div className="h-40 bg-white/40 border border-white/60 rounded-3xl" />
-        <div className="h-64 bg-white/40 border border-white/60 rounded-3xl" />
-      </div>
-    );
-  }
-
-
   const activeServices = useMemo(() => services.filter(s => s.active), [services]);
 
   const [serviceId, setServiceId]         = useState('');
@@ -105,6 +95,15 @@ export function FlashDealPage({ activeDeals: initialDeals, tier: initialTier, us
     () => activeServices.find(s => s.id === serviceId),
     [activeServices, serviceId]
   );
+  
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-5 p-6 animate-pulse">
+        <div className="h-40 bg-white/40 border border-white/60 rounded-3xl" />
+        <div className="h-64 bg-white/40 border border-white/60 rounded-3xl" />
+      </div>
+    );
+  }
   const serviceDuration = selectedService?.duration ?? 60;
 
   const availableSlots = useMemo(() => {
@@ -246,7 +245,14 @@ export function FlashDealPage({ activeDeals: initialDeals, tier: initialTier, us
 
 // ── Sub-components ──────────────────────────────────────────────────────────
 
-const FlashDealHeader = React.memo(({ activeCount, usedThisMonth, tier, currentStep, closeTour, nextStep }: any) => (
+const FlashDealHeader = React.memo(({ activeCount, usedThisMonth, tier, currentStep, closeTour, nextStep }: {
+  activeCount: number;
+  usedThisMonth: number;
+  tier: string;
+  currentStep: number | null;
+  closeTour: () => void;
+  nextStep: () => void;
+}) => (
   <motion.div
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
@@ -293,7 +299,12 @@ const FlashDealHeader = React.memo(({ activeCount, usedThisMonth, tier, currentS
   </motion.div>
 ));
 
-const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barColor, isStarterBlocked }: any) => (
+const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barColor, isStarterBlocked }: {
+  usedThisMonth: number;
+  progressPct: number;
+  barColor: string;
+  isStarterBlocked: boolean;
+}) => (
   <motion.div
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
@@ -363,7 +374,30 @@ const FlashDealForm = React.memo(({
   discountPct, setDiscountPct, discountedPrice, originalPrice,
   expiresInHours, setExpiresInHours,
   loading, result, closeTour, nextStep
-}: any) => (
+}: {
+  handleSubmit: (e: React.FormEvent) => void;
+  currentStep: number | null;
+  isStarterBlocked: boolean;
+  serviceId: string;
+  activeServices: any[];
+  handleServiceChange: (sid: string) => void;
+  slotDate: string;
+  handleDateChange: (date: string) => void;
+  slotTime: string;
+  setSlotTime: (time: string) => void;
+  scheduleLoading: boolean;
+  availableSlots: any[] | null;
+  discountPct: number;
+  setDiscountPct: (pct: number) => void;
+  discountedPrice: number | null;
+  originalPrice: string;
+  expiresInHours: number;
+  setExpiresInHours: (hrs: number) => void;
+  loading: boolean;
+  result: { error: string | null; sentTo: number } | null;
+  closeTour: () => void;
+  nextStep: () => void;
+}) => (
   <motion.form
     onSubmit={handleSubmit}
     initial={{ opacity: 0, y: 12 }}
@@ -518,7 +552,11 @@ const FlashDealForm = React.memo(({
   </motion.form>
 ));
 
-const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel }: any) => (
+const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel }: {
+  activeDeals: FlashDealRow[];
+  cancellingId: string | null;
+  handleCancel: (id: string) => void;
+}) => (
   <AnimatePresence>
     {activeDeals.length > 0 ? (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-5 flex flex-col gap-3">

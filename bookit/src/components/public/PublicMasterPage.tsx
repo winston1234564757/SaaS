@@ -130,10 +130,10 @@ function formatPrice(price: number) {
 function ThemedBlobBackground({ theme }: { theme: typeof moodThemes[MoodThemeKey] }) {
   return (
     <div className="blob-container" aria-hidden="true">
-      <div className="blob" style={{ width: 700, height: 700, top: -250, right: -200, background: `${theme.accent}28`, animationDuration: '24s' }} />
-      <div className="blob" style={{ width: 550, height: 550, bottom: -150, left: -180, background: `${theme.gradient[0]}55`, animationDuration: '20s', animationDelay: '-8s' }} />
-      <div className="blob" style={{ width: 450, height: 450, top: '40%', left: '35%', background: `${theme.gradient[1]}60`, animationDuration: '26s', animationDelay: '-16s' }} />
-      <div className="blob" style={{ width: 300, height: 300, top: '10%', left: '5%', background: `${theme.accent}18`, animationDuration: '18s', animationDelay: '-12s' }} />
+      <div className="blob blob-1" style={{ background: `${theme.accent}28` }} />
+      <div className="blob blob-2" style={{ background: `${theme.gradient[0]}55` }} />
+      <div className="blob blob-3" style={{ background: `${theme.gradient[1]}60` }} />
+      <div className="blob blob-4" style={{ background: `${theme.accent}18` }} />
     </div>
   );
 }
@@ -181,7 +181,7 @@ function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: stri
           </div>
           <p className="text-sm font-semibold text-foreground leading-tight">{deal.serviceName}</p>
         </div>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: `${accent}20`, color: accent }}>
+        <span className="text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap bg-primary/20 text-primary">
           -{deal.discountPct}%
         </span>
       </div>
@@ -223,7 +223,7 @@ function FlashDealsStrip({ deals, accent, onBook }: { deals: FlashDeal[]; accent
       <div className="flex items-center gap-2 mb-3 px-1">
         <Zap size={16} style={{ color: accent }} />
         <h2 className="heading-serif text-lg" style={{ color: '#2C1A14' }}>Флеш-акції</h2>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: `${accent}20`, color: accent }}>
+        <span className="text-[10px] font-bold px-2 py-1 rounded-full animate-pulse bg-primary/20 text-primary">
           LIVE
         </span>
       </div>
@@ -424,10 +424,10 @@ export function PublicMasterPage({
   const socialBtnBg = isDark ? 'rgba(255,255,255,0.08)' : '#F5E8E3';
 
   return (
-    <>
+    <div>
       <ThemedBlobBackground theme={theme} />
 
-      <div className="max-w-lg mx-auto px-4 pb-32 pt-6" data-hydrated={hydrated}>
+      <div className="relative z-0 max-w-lg mx-auto px-4 pb-32 pt-6" data-hydrated={hydrated}>
         {/* ── Referral Banner (friend discount — incoming ref link) ── */}
         <AnimatePresence>
           {c2cRefCode && c2cDiscountPct && (
@@ -537,7 +537,7 @@ export function PublicMasterPage({
               <h1 className="heading-serif text-2xl leading-tight text-foreground">{master.name}</h1>
               {master.isVerified && (
                 <Tooltip content={<p className="text-[11px] text-foreground">Верифікований майстер Bookit</p>} position="top">
-                  <BadgeCheck size={18} style={{ color: theme.accent }} className="flex-shrink-0 cursor-default" />
+                <BadgeCheck size={18} className="flex-shrink-0 cursor-default text-primary" />
                 </Tooltip>
               )}
             </div>
@@ -548,7 +548,7 @@ export function PublicMasterPage({
             {/* Working hours / availability badge — client-only, no SSR flash */}
             {availability && (
               <div className="mb-3">
-                <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full ${
+                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
                   availability.open
                     ? 'bg-success/12 text-success'
                     : 'bg-muted-foreground/10 text-muted-foreground'
@@ -567,7 +567,7 @@ export function PublicMasterPage({
                     <Star
                       key={i}
                       size={13}
-                      className={i < Math.floor(master.rating) ? 'fill-[#D4935A] text-warning' : 'text-secondary/80'}
+                      className={i < Math.floor(master.rating) ? 'fill-warning text-warning' : 'text-secondary/80'}
                     />
                   ))}
                 </div>
@@ -709,7 +709,7 @@ export function PublicMasterPage({
                       {dayLabel[day]}
                     </span>
                     {isWorking && entry ? (
-                      <span className="text-[10px] leading-tight font-medium" style={{ color: textSecondary }}>
+                      <span className="text-xs leading-tight font-bold text-foreground">
                         {entry.startTime.slice(0,5)}<br />{entry.endTime.slice(0,5)}
                       </span>
                     ) : (
@@ -1051,6 +1051,6 @@ export function PublicMasterPage({
         masterC2cDiscountPct={masterC2cDiscountPct}
       />
 
-    </>
+    </div>
   );
 }

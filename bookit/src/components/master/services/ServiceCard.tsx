@@ -22,14 +22,14 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
       className={`bento-card p-4 transition-opacity ${!service.active ? 'opacity-55' : ''}`}
     >
       <div className="flex items-center gap-3">
         {/* Thumbnail or Emoji */}
-        <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0" style={{ background: 'rgba(255, 210, 194, 0.4)' }}>
+        <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0 bg-warning/20">
           {service.imageUrl ? (
             <Image src={service.imageUrl} alt={service.name} width={48} height={48} className="w-full h-full object-cover" unoptimized />
           ) : (
@@ -39,16 +39,16 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-foreground">{service.name}</p>
             {service.popular && (
-              <Tooltip content={<p className="text-[11px] text-foreground">Відображається як «Популярне» на публічній сторінці</p>} position="top">
-                <Star size={12} className="fill-[#D4935A] text-warning cursor-default" />
+              <Tooltip content={<p className="text-xs text-foreground">Відображається як «Популярне» на публічній сторінці</p>} position="top">
+                <Star size={12} className="fill-warning text-warning cursor-default" />
               </Tooltip>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <span className="text-[11px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
               {service.category}
             </span>
             <span className="text-xs text-muted-foreground/60">{formatDuration(service.duration)}</span>
@@ -80,7 +80,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
             </button>
           </div>
 
-          <Tooltip content={<p className="text-[11px] text-foreground">Редагувати послугу</p>} position="top">
+          <Tooltip content={<p className="text-xs text-foreground">Редагувати послугу</p>} position="top">
             <button
               onClick={() => onEdit(service)}
               className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-white hover:text-primary transition-colors"
@@ -101,7 +101,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
                 <span className="text-xs text-destructive font-medium whitespace-nowrap ml-1">Видалити?</span>
                 <button
                   onClick={() => onDelete(service.id)}
-                  className="px-2.5 h-7 rounded-lg bg-destructive text-white text-xs font-semibold hover:bg-[#a84a4a] transition-colors"
+                  className="px-2.5 h-7 rounded-lg bg-destructive text-white text-xs font-semibold hover:bg-destructive/90 transition-colors"
                 >
                   Так
                 </button>
@@ -113,7 +113,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
                 </button>
               </motion.div>
             ) : (
-              <Tooltip key="btn" content={<p className="text-[11px] text-foreground">Видалити послугу</p>} position="top">
+              <Tooltip key="btn" content={<p className="text-xs text-foreground">Видалити послугу</p>} position="top">
                 <button
                   onClick={() => setConfirmDelete(true)}
                   className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
@@ -126,7 +126,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
         </div>
 
         {/* Toggle */}
-        <Tooltip content={<p className="text-[11px] text-foreground">{service.active ? 'Деактивувати послугу' : 'Активувати послугу'}</p>} position="top">
+        <Tooltip content={<p className="text-xs text-foreground">{service.active ? 'Деактивувати послугу' : 'Активувати послугу'}</p>} position="top">
           <button
             onClick={() => onToggle(service.id)}
             className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${

@@ -276,6 +276,35 @@ onAuthStateChange((event, session) => {
 })
 ```
 
+### 🔴 CRITICAL: useEffect Dependency Safety — onAuthStateChange
+
+**НІКОЛИ не додавай `user`, `isLoading` або будь-який state що змінюється ВСЕРЕДИНІ ефекту до deps масиву auth-підписки.**
+
+```typescript
+// ❌ ЗАБОРОНЕНО — INFINITE RENDER LOOP (вбиває весь DOM):
+useEffect(() => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    setUser(session?.user ?? null);   // ← змінює `user`
+    setIsLoading(false);              // ← змінює `isLoading`
+  });
+  return () => subscription.unsubscribe();
+}, [supabase, fetchProfile, isLoading, user]); // ❌ user та isLoading в deps = loop!
+// Механізм: setUser → user зміна → ефект cleanup+rerun → нова підписка → INITIAL_SESSION → setUser → ...
+
+// ✅ ПРАВИЛЬНО — тільки стабільні значення в deps:
+useEffect(() => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    setUser(session?.user ?? null);   // OK — не в deps
+    setIsLoading(false);              // OK — не в deps
+  });
+  return () => subscription.unsubscribe();
+}, [supabase, fetchProfile]); // ✅ обидва стабільні: useMemo([], []) та useCallback([supabase])
+```
+
+**Правило:** deps auth-ефекту = ЛИШЕ те що потрібно для ПІДПИСКИ (client instance, stable callbacks). Ніколи — state що ефект сам же і змінює.
+
+**Інцидент (2026-04-29):** Цей баг заморозив весь UI додатку. Мільйони ре-рендерів за секунду заблокували event loop. Симптом: DOM не реагує на жодну взаємодію.
+
 ---
 
 ## Monetization Tiers

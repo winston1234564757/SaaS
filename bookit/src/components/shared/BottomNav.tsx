@@ -46,8 +46,8 @@ export function BottomNav() {
   return (
     <>
       {/* Bottom bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 px-2 pb-safe-bottom pb-2">
-        <div className="bento-card flex items-center justify-around py-1.5">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 px-2 pb-safe-bottom pb-2 pointer-events-none">
+        <div className="bento-card flex items-center justify-around py-1.5 pointer-events-auto">
           {PRIMARY.map(({ href, icon: Icon, label }) => {
             const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
             const showBadge = href === '/dashboard/bookings' && todayPending > 0;
@@ -68,7 +68,7 @@ export function BottomNav() {
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] font-medium">{label}</span>
+                <span className="text-xs font-semibold">{label}</span>
               </Link>
             );
           })}
@@ -83,7 +83,7 @@ export function BottomNav() {
             )}
           >
             <MoreHorizontal size={22} strokeWidth={isMoreActive || moreOpen ? 2.5 : 2} />
-            <span className="text-[10px] font-medium">Ще</span>
+            <span className="text-xs font-semibold">Ще</span>
           </button>
         </div>
       </nav>
@@ -106,9 +106,10 @@ export function BottomNav() {
               transition={{ type: 'spring', stiffness: 340, damping: 34 }}
               className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[28px] overflow-hidden"
               style={{
-                background: 'rgba(255,248,244,0.97)',
-                backdropFilter: 'blur(24px)',
+                background: 'var(--surface)',
+                backdropFilter: 'blur(32px)',
                 boxShadow: '0 -8px 40px rgba(44,26,20,0.14)',
+                borderTop: '0.5px solid var(--border)',
               }}
             >
               {/* Handle */}
@@ -152,7 +153,7 @@ export function BottomNav() {
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] font-medium text-center leading-tight">{label}</span>
+                      <span className="text-xs font-bold text-center leading-tight">{label}</span>
                     </Link>
                   );
                 })}

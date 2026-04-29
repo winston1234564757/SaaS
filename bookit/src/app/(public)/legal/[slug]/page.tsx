@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { notFound } from 'next/navigation';
 import { marked } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
@@ -44,22 +44,32 @@ export function generateStaticParams() {
 }
 
 export default async function LegalPage({ params }: Props) {
-  const { slug } = await params; // params is async in Next.js 15+
+  const { slug } = await params;
 
   if (!LEGAL_META[slug]) notFound();
 
   let html: string;
   try {
-    const filePath = join(process.cwd(), 'src', 'content', 'legal', `${slug}.md`);
+    const filePath = resolve(process.cwd(), 'src/content/legal', `${slug}.md`);
     const raw = readFileSync(filePath, 'utf-8');
-    // V-08: Sanitize HTML to prevent XSS — marked does not strip script tags by default.
+    
     const rawHtml = await marked(raw);
     html = DOMPurify.sanitize(rawHtml, {
       ALLOWED_TAGS: ['h1','h2','h3','h4','p','ul','ol','li','strong','em','a','br','hr','table','thead','tbody','tr','th','td','blockquote'],
       ALLOWED_ATTR: ['href', 'target', 'rel'],
     });
-  } catch {
-    notFound();
+  } catch (err: any) {
+    console.error(`[LegalPage] Error loading document "${slug}":`, err);
+    return (
+      <div className="bento-card rounded-3xl p-10 text-center">
+        <h1 className="text-xl font-bold text-destructive mb-2">Помилка завантаження</h1>
+        <p className="text-muted-foreground mb-6">Не вдалося завантажити документ "{slug}".</p>
+        <code className="block p-4 bg-muted rounded-xl text-xs text-left mb-6 overflow-auto">
+          {err?.message || 'Невідома помилка'}
+        </code>
+        <a href="/legal" className="text-primary hover:underline">Повернутися до списку</a>
+      </div>
+    );
   }
 
   return (

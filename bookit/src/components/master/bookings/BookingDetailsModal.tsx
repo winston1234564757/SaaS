@@ -396,7 +396,7 @@ export function BookingDetailsModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={close}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
           />
 
           {/* Sheet */}
@@ -406,7 +406,7 @@ export function BookingDetailsModal() {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 340, damping: 32 }}
-            className="fixed bottom-0 left-0 right-0 z-50 max-h-[90dvh] overflow-y-auto rounded-t-3xl bg-[#FDFAF8] shadow-2xl"
+            className="fixed bottom-0 left-0 right-0 z-[55] max-h-[90dvh] overflow-y-auto rounded-t-3xl bg-[#FDFAF8] shadow-2xl"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">

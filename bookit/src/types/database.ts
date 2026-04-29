@@ -239,6 +239,7 @@ export interface Service {
   image_url: string | null;
   is_active: boolean;
   is_popular: boolean;
+  is_archived: boolean;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -255,6 +256,7 @@ export interface Product {
   stock_qty:        number;
   is_active:        boolean;
   recommend_always: boolean;
+  is_archived:      boolean;
   sort_order:       number;
   created_at:       string;
   updated_at:       string;
@@ -342,6 +344,7 @@ export interface ClientMasterRelation {
   last_visit_at: string | null;
   favorite_service_id: string | null;
   is_vip: boolean;
+  is_archived: boolean;
   client_tag: string | null;
   loyalty_points: number;
   created_at: string;

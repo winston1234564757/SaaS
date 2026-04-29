@@ -27,6 +27,7 @@ export function useProducts() {
         .from('products')
         .select('id, master_id, name, description, category, price_kopecks, photos, stock_qty, is_active, recommend_always, sort_order, created_at, updated_at, product_service_links(service_id)')
         .eq('master_id', masterId!)
+        .eq('is_archived', false)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
 
@@ -83,6 +84,7 @@ export function usePublicProducts(masterId: string | undefined, category?: Produ
         .select('id, master_id, name, description, category, price_kopecks, photos, stock_qty, is_active, recommend_always, sort_order, created_at, updated_at, product_service_links(service_id)')
         .eq('master_id', masterId!)
         .eq('is_active', true)
+        .eq('is_archived', false)
         .order('sort_order', { ascending: true });
 
       if (category) q = q.eq('category', category);

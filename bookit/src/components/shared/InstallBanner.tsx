@@ -48,21 +48,16 @@ export function InstallBanner() {
   if (!show || dismissed) return null;
 
   return (
-    <div className="fixed bottom-[88px] left-2 right-2 z-30 lg:hidden">
+    <div className="fixed bottom-[88px] left-2 right-2 z-30 lg:hidden pointer-events-none">
       <div
-        className="rounded-2xl px-4 py-3 flex items-center gap-3"
-        style={{
-          background: 'rgba(120,154,153,0.95)',
-          backdropFilter: 'blur(16px)',
-          boxShadow: '0 4px 24px rgba(44,26,20,0.18)',
-        }}
+        className="rounded-[24px] px-5 py-4 flex items-center gap-4 bg-primary/95 backdrop-blur-xl border border-white/20 shadow-lg pointer-events-auto"
       >
         <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 text-lg">
           💅
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-white">Встанови Bookit</p>
-          <p className="text-[10px] text-white/80 leading-tight">
+          <p className="text-xs text-white/80 leading-tight">
             {isIOS
               ? 'Натисни Share → «На екран Домівки»'
               : 'Швидкий доступ прямо з екрану'

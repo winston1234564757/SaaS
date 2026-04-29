@@ -18,18 +18,8 @@ export function getNow(): Date {
           debugNow = null;
         }
       }
-    } else {
-      try {
-        const { cookies } = require('next/headers');
-        const cookieStore = cookies();
-        const cookieValue = cookieStore.get('next-public-debug-now')?.value;
-        if (cookieValue) {
-          debugNow = decodeURIComponent(cookieValue);
-          source = 'cookie';
-        }
-      } catch { /* SSR context fallback */ }
     }
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
 
   // 2. Fallback to environment variable (CI default)
   if (!debugNow && process.env.NEXT_PUBLIC_DEBUG_NOW) {
@@ -41,16 +31,19 @@ export function getNow(): Date {
   
   // Resilience: Fallback to real 'now' if the override produced an Invalid Date
   if (isNaN(result.getTime())) {
-    console.error(`[getNow] Invalid date encountered: "${debugNow}". Falling back to real time.`);
+    if (debugNow) {
+      console.error(`[getNow] Invalid date encountered: "${debugNow}". Falling back to real time.`);
+    }
     result = new Date();
     source = 'clock';
   }
 
   // Client-side diagnostic logging
   if (typeof window !== 'undefined') {
-     if (!(window as any)._now_logged || (window as any).E2E_DEBUG) {
+     const w = window as typeof window & { _now_logged?: boolean; E2E_DEBUG?: boolean };
+     if (!w._now_logged || w.E2E_DEBUG) {
        console.log(`[getNow] Source: ${source}, Time: ${result.toISOString()} (raw: ${debugNow})`);
-       (window as any)._now_logged = true;
+       w._now_logged = true;
      }
   }
 

@@ -69,7 +69,7 @@ export function NotificationsBell() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-foreground/20 backdrop-blur-[2px] z-40"
+              className="fixed inset-0 bg-foreground/20 backdrop-blur-[2px] z-50"
               onClick={() => setOpen(false)}
             />
             <motion.div
@@ -77,7 +77,7 @@ export function NotificationsBell() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-              className="fixed bottom-0 left-0 right-0 z-50 max-h-[78dvh] flex flex-col rounded-t-[28px] overflow-hidden"
+              className="fixed bottom-0 left-0 right-0 z-[55] max-h-[78dvh] flex flex-col rounded-t-[28px] overflow-hidden"
               style={{ background: 'rgba(255, 248, 244, 0.97)', backdropFilter: 'blur(32px)' }}
             >
               {/* Handle */}

@@ -32,7 +32,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <div className="hidden lg:block">
         <FloatingSidebar />
       </div>
-      <main className="lg:ml-[292px] min-h-dvh pb-[88px] lg:pb-8">
+      <main className="relative z-0 lg:ml-[292px] min-h-dvh pb-[88px] lg:pb-8">
         <div className="max-w-3xl mx-auto px-4 py-6">
           {children}
         </div>

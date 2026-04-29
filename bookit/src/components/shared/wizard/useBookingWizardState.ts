@@ -273,7 +273,7 @@ export function useBookingWizardState({
     }
 
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   // Intentionally limited to [isOpen, masterId]:
   //   initialServices — stable per wizard lifecycle (parent closes+reopens to change it)
   //   mode            — constant per component instance

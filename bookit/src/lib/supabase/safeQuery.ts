@@ -35,7 +35,7 @@ export async function safeQuery<T>(label: string, builder: QueryBuilder<T>): Pro
     const { isRlsError, message } = classifyError(error);
 
     if (error && process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
+       
       console.error('[Bookit][Supabase]', label, { error });
     }
 
@@ -58,7 +58,7 @@ export async function safeQuery<T>(label: string, builder: QueryBuilder<T>): Pro
     const { isRlsError, message } = classifyError(fallback);
 
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
+       
       console.error('[Bookit][Supabase] Unexpected error', label, err);
     }
 

@@ -11,7 +11,7 @@ export async function getPartnerInviteLink(): Promise<{ link: string | null; err
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { link: null, error: 'Unauthorized' };
+    if (!user) return { link: null, error: 'Не авторизований' };
 
     const { data: mp } = await supabase
       .from('master_profiles')
@@ -19,15 +19,15 @@ export async function getPartnerInviteLink(): Promise<{ link: string | null; err
       .eq('id', user.id)
       .single();
 
-    if (!mp) return { link: null, error: 'Master profile not found' };
+    if (!mp) return { link: null, error: 'Профіль майстра не знайдено' };
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    // Using referral_code as the invite token for simplicity as requested
     const link = `${baseUrl}/dashboard/partners/join?token=${mp.referral_code}`;
     
     return { link, error: null };
   } catch (err: any) {
-    return { link: null, error: err.message };
+    console.error('[getPartnerInviteLink] error:', err);
+    return { link: null, error: 'Не вдалося згенерувати посилання.' };
   }
 }
 
@@ -38,7 +38,7 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!user) return { success: false, error: 'Не авторизований' };
 
     const admin = createAdminClient();
 
@@ -49,14 +49,9 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
       .eq('referral_code', token)
       .single();
 
-    if (!invitingMaster) return { success: false, error: 'Invalid or expired invitation' };
-    if (invitingMaster.id === user.id) return { success: false, error: 'You cannot partner with yourself' };
+    if (!invitingMaster) return { success: false, error: 'Недійсне або прострочене запрошення' };
+    if (invitingMaster.id === user.id) return { success: false, error: 'Ви не можете стати партнером самого себе' };
 
-    // 2. Clear status: Upsert partnership as accepted on BOTH ways for the "Cartel" visibility
-    // In our model, master_partners stores the relationship. 
-    // We treat it as a mutual link.
-    
-    // Check if already exists
     const { data: existing } = await admin
       .from('master_partners')
       .select('id')
@@ -80,7 +75,8 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
     revalidatePath('/dashboard/partners');
     return { success: true, error: null };
   } catch (err: any) {
-    return { success: false, error: err.message };
+    console.error('[acceptPartnerInvitation] error:', err);
+    return { success: false, error: 'Не вдалося прийняти запрошення.' };
   }
 }
 
@@ -95,20 +91,19 @@ export async function toggleAllianceVisibility(
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!user) return { success: false, error: 'Не авторизований' };
 
     const admin = createAdminClient();
 
-    // Verify ownership before updating
     const { data: row } = await admin
       .from('master_alliances')
       .select('id, inviter_id, invitee_id')
       .eq('id', allianceId)
       .maybeSingle();
 
-    if (!row) return { success: false, error: 'Alliance not found' };
+    if (!row) return { success: false, error: 'Альянс не знайдено' };
     if (row.inviter_id !== user.id && row.invitee_id !== user.id) {
-      return { success: false, error: 'Not authorized' };
+      return { success: false, error: 'Доступ заборонено' };
     }
 
     await admin
@@ -119,7 +114,8 @@ export async function toggleAllianceVisibility(
     revalidatePath('/dashboard/growth');
     return { success: true, error: null };
   } catch (err: any) {
-    return { success: false, error: err.message };
+    console.error('[toggleAllianceVisibility] error:', err);
+    return { success: false, error: 'Не вдалося змінити видимість.' };
   }
 }
 
@@ -130,11 +126,10 @@ export async function removePartner(partnerId: string): Promise<{ success: boole
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!user) return { success: false, error: 'Не авторизований' };
 
     const admin = createAdminClient();
 
-    // Delete both entries to ensure mutual removal
     await admin
       .from('master_partners')
       .delete()
@@ -143,6 +138,8 @@ export async function removePartner(partnerId: string): Promise<{ success: boole
     revalidatePath('/dashboard/partners');
     return { success: true, error: null };
   } catch (err: any) {
-    return { success: false, error: err.message };
+    console.error('[removePartner] error:', err);
+    return { success: false, error: 'Не вдалося видалити партнера.' };
   }
 }
+

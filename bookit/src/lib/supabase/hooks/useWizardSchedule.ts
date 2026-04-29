@@ -63,7 +63,7 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
       // 2. master_time_off — перезаписує / доповнює (вищий пріоритет)
       for (const toff of (timeOffRes.data ?? [])) {
         // Розгортаємо діапазон vacation у окремі дати
-        let cur = new Date(toff.start_date + 'T00:00:00');
+        const cur = new Date(toff.start_date + 'T00:00:00');
         const last = new Date(toff.end_date + 'T00:00:00');
         while (cur <= last) {
           const dateStr = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;

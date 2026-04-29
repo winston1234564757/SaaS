@@ -47,7 +47,7 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   // Якщо сервер надав initial data — пропускаємо зайвий fetchProfile на INITIAL_SESSION
   const hasInitialData = useRef(!!initialUser);
 
-  async function fetchProfile(userId: string) {
+  const fetchProfile = useCallback(async (userId: string) => {
     const [{ data: p, error: pErr }, { data: mp, error: mpErr }] = await Promise.all([
       supabase.from('profiles').select('id, role, full_name, phone, email, avatar_url, telegram_chat_id, created_at, updated_at').eq('id', userId).single(),
       supabase.from('master_profiles').select('id, slug, business_name, bio, categories, mood_theme, accent_color, subscription_tier, subscription_expires_at, commission_rate, rating, rating_count, is_published, address, city, latitude, longitude, floor, cabinet, instagram_url, telegram_url, telegram_chat_id, avatar_emoji, has_seen_tour, seen_tours, pricing_rules, working_hours, timezone, referral_code, referred_by, retention_cycle_days, dynamic_pricing_extra_earned, c2c_enabled, c2c_discount_pct, created_at, updated_at').eq('id', userId).single(),
@@ -55,9 +55,6 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
 
     if (!mountedRef.current) return;
 
-    // При будь-якій мережевій помилці (AbortError, timeout, offline) — НЕ обнуляємо стан.
-    // Юзер залишається залогіненим, профіль не змінився. Без цього: abort → data:null →
-    // setMasterProfile(null) → masterId=undefined → enabled:false на всіх TQ-запитах.
     if (pErr || mpErr) {
       console.warn('[MasterContext] fetchProfile error (keeping existing state):',
         pErr?.message ?? mpErr?.message);
@@ -66,14 +63,14 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
 
     setProfile(p ?? null);
     setMasterProfile(mp ?? null);
-  }
+  }, [supabase]);
 
   const refresh = useCallback(async () => {
     if (user) await fetchProfile(user.id);
-  }, [user]);
+  }, [user, fetchProfile]);
 
   // Відстежуємо час переходу в фон для visibility recovery
-  const lastHiddenAt = useRef(Date.now());
+  const lastHiddenAt = useRef(0);
   // Safety timeout: якщо isLoading залишився true > 8с — знімаємо примусово
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -124,6 +121,8 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
       if (mountedRef.current) setIsLoading(false);
     });
 
+    lastHiddenAt.current = Date.now();
+
     // --- Visibility recovery: оновлюємо профіль після тривалого фону ---
     function handleVisibilityChange() {
       if (document.hidden) {
@@ -144,7 +143,7 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
       subscription.unsubscribe();
       if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
     };
-  }, []);
+  }, [supabase, fetchProfile]);
 
   const contextValue = useMemo(
     () => ({ user, profile, masterProfile, isLoading, refresh }),
