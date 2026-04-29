@@ -42,6 +42,12 @@ export async function updateClientProfile(
     return { error: error.message };
   }
 
+  // СИНХРОНІЗАЦІЯ: Оновлюємо ім'я також у метаданих Auth, щоб сесія була актуальною
+  await supabase.auth.updateUser({
+    data: { full_name: name.trim() }
+  });
+
+  revalidatePath('/', 'layout');
   revalidatePath('/my/profile');
   return { error: null };
 }

@@ -205,8 +205,15 @@ export async function POST(req: NextRequest) {
     }));
   }
 
-  // STEP 1: Ensure Profile Identity exists (without phone yet)
-  const fallbackName = currentUser?.user_metadata?.full_name
+  // STEP 1: Ensure Profile Identity exists
+  const { data: existingProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('full_name, role')
+    .eq('id', userId)
+    .maybeSingle();
+
+  const fallbackName = existingProfile?.full_name 
+    || currentUser?.user_metadata?.full_name
     || currentUser?.user_metadata?.name
     || `User ${cleanPhone.slice(-4)}`;
 

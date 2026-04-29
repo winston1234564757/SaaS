@@ -77,8 +77,19 @@ export async function GET(request: NextRequest) {
     const assignedRole = (!isSmsUser && role === 'master') ? 'master' : 'client';
 
     // 1. Sync base profile
+    const { data: existingProfile } = await admin
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle();
+
     await admin.from('profiles').upsert(
-      { id: user.id, role: assignedRole, full_name: displayName, email: user.email },
+      { 
+        id: user.id, 
+        role: assignedRole, 
+        full_name: existingProfile?.full_name || displayName, 
+        email: user.email 
+      },
       { onConflict: 'id' }
     );
 

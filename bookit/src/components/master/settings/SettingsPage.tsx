@@ -62,6 +62,7 @@ export function SettingsPage() {
 
   // Форма профілю
   const [fullName, setFullName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
   const [slug, setSlug] = useState('');
@@ -98,7 +99,7 @@ export function SettingsPage() {
 
   // Snapshots captured on first load — used for dirty detection and cancel reset
   const initialFormSnap = useRef<{
-    fullName: string; phone: string; bio: string; slug: string;
+    fullName: string; businessName: string; phone: string; bio: string; slug: string;
     city: string; address: string; lat: number | null; lng: number | null;
     floor: string; cabinet: string; instagram: string; telegram: string; telegramChatId: string;
     isPublished: boolean; avatar: string; themeKey: MoodThemeKey;
@@ -119,6 +120,7 @@ export function SettingsPage() {
     if (formInitialized.current || !profile || !masterProfile) return;
     formInitialized.current = true;
     setFullName(profile.full_name ?? '');
+    setBusinessName(masterProfile.business_name ?? '');
     setPhone(e164ToInputPhone(profile.phone));
     setAvatarUrl(profile.avatar_url ?? null);
     setBio(masterProfile.bio ?? '');
@@ -141,6 +143,7 @@ export function SettingsPage() {
     setBreaks(wh?.breaks ?? []);
     initialFormSnap.current = {
       fullName: profile.full_name ?? '',
+      businessName: masterProfile.business_name ?? '',
       phone: e164ToInputPhone(profile.phone),
       bio: masterProfile.bio ?? '',
       slug: masterProfile.slug ?? '',
@@ -218,7 +221,7 @@ export function SettingsPage() {
     if (!initialFormSnap.current || !initialScheduleSnap.current) return;
     const f = initialFormSnap.current;
     const formChanged =
-      fullName !== f.fullName || phone !== f.phone || bio !== f.bio ||
+      fullName !== f.fullName || businessName !== f.businessName || phone !== f.phone || bio !== f.bio ||
       slug !== f.slug || city !== f.city || address !== f.address ||
       lat !== f.lat || lng !== f.lng || floor !== f.floor || cabinet !== f.cabinet ||
       instagram !== f.instagram ||
@@ -238,6 +241,7 @@ export function SettingsPage() {
     const f = initialFormSnap.current;
     if (!f) return;
     setFullName(f.fullName);
+    setBusinessName(f.businessName);
     setPhone(f.phone);
     setBio(f.bio);
     setSlug(f.slug);
@@ -272,8 +276,10 @@ export function SettingsPage() {
     try {
       const cleanPhone = phone.trim() ? (normalizeToE164(toFullPhone(phone)) ?? null) : null;
       await Promise.all([
+        supabase.auth.updateUser({ data: { full_name: fullName } }),
         supabase.from('profiles').update({ full_name: fullName, phone: cleanPhone, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
         supabase.from('master_profiles').update({
+          business_name: businessName.trim() || null,
           bio, city, address: address || null, slug,
           latitude: lat, longitude: lng,
           floor: floor || null, cabinet: cabinet || null,
@@ -303,7 +309,7 @@ export function SettingsPage() {
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);
       // Update snapshots so cancel would reset to the freshly saved state
-      initialFormSnap.current = { fullName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays };
+      initialFormSnap.current = { fullName, businessName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays };
       initialScheduleSnap.current = { ...schedule };
       setIsDirty(false);
       // Оновлюємо контекст у фоні — не блокуємо UI
@@ -398,7 +404,13 @@ export function SettingsPage() {
           )}
 
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Повне ім'я</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Публічне ім'я (бізнес)</label>
+            <input value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="Наприклад: Студія краси 'Марія' або просто ваше ім'я" className={inputCls} />
+            <p className="text-[10px] text-muted-foreground/50 mt-1">Це ім'я бачать клієнти на вашій сторінці запису</p>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Особисте ім'я</label>
             <input data-testid="settings-name-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ваше ім'я та прізвище" className={inputCls} />
           </div>
 
