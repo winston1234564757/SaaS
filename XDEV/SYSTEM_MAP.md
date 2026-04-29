@@ -233,8 +233,9 @@
 | Таблиця | Призначення |
 |---|---|
 | `profiles` | Всі юзери: `full_name`, `phone` (E.164), `role`, `telegram_chat_id` (клієнт), `onboarding_step`, `onboarding_data` |
-| `master_profiles` | Бізнес-профіль: `slug`, `subscription_tier`, `working_hours` (jsonb), `pricing_rules` (jsonb), `telegram_chat_id` (бізнес), `theme`, `retention_cycle_days`, `lifetime_discount` |
+| `master_profiles` | Бізнес-профіль: `slug`, `subscription_tier`, `working_hours` (jsonb), `pricing_rules` (jsonb), `categories` (text[]), `business_name`, `telegram_chat_id` (бізнес), `theme`, `retention_cycle_days`, `lifetime_discount` |
 | `client_master_relations` | CRM: `total_visits`, `total_spent`, `average_check`, `last_visit_at`, `is_vip`, `tags[]` |
+| **Identity Note** | Пріоритет відображення імені: `business_name` (якщо є) → `full_name`. Застосовується в `Explore`, `PublicMasterPage`, `Sidebar`. |
 
 ### Catalog
 | Таблиця | Призначення |

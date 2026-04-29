@@ -38,6 +38,7 @@
 
 **Онбординг (повністю стабільний)**
 - 6-кроковий Wizard з persistence (стан зберігається в DB між сесіями)
+- Мультиселект спеціалізацій (categories) на першому кроці: Nails, Hair, Brows, Makeup, Massage, Barber, Other
 - Auto-generated шаблони послуг для 19 категорій (Нігті, Волосся, Обличчя, Тіло, Тату+Пірс)
 - Live Preview телефонної сторінки до публікації
 - Viral Loop Success Screen з Copy-Paste шаблонами для соцмереж
@@ -137,6 +138,8 @@
 - Telegram інтеграція (business chat_id)
 - LocationPicker: Google Places Autocomplete + Google Maps (floor + cabinet)
 - Теми: classic / dark / rose-gold / mint
+- Ідентичність: Пріоритет `business_name` над `full_name` для публічних сторінок, каталогу та SEO.
+- Спеціалізації: Мультиселект категорій для пошуку та відображення плашок у Каталозі.
 
 **Billing (Monobank)**
 - Checkout через Monobank (Ed25519 підпис верифікується строго)
