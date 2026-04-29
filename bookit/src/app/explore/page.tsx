@@ -16,7 +16,7 @@ export default async function Explore() {
   const { data: masters, error: mastersError } = await supabase
     .from('master_profiles')
     .select(`
-      id, slug, bio, city, rating, rating_count,
+      id, slug, business_name, bio, city, rating, rating_count,
       avatar_emoji, categories, subscription_tier, created_at,
       profiles ( full_name ),
       services ( id, is_active )
@@ -44,7 +44,7 @@ export default async function Explore() {
   const items = (masters ?? []).map((m: any) => ({
     id: m.id as string,
     slug: m.slug as string,
-    name: (m.profiles?.full_name as string) ?? 'Майстер',
+    name: m.business_name || (m.profiles?.full_name as string) || 'Майстер',
     bio: (m.bio as string) || null,
     city: (m.city as string) || null,
     rating: Number(m.rating ?? 0),

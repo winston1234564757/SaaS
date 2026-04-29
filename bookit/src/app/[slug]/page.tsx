@@ -29,7 +29,7 @@ async function getMaster(slug: string) {
   let query = supabase
     .from('master_profiles')
     .select(`
-      id, slug, bio, city, address, latitude, longitude, floor, cabinet, rating, rating_count,
+      id, slug, business_name, bio, city, address, latitude, longitude, floor, cabinet, rating, rating_count,
       subscription_tier, instagram_url, telegram_url, categories,
       mood_theme, avatar_emoji, pricing_rules, working_hours, c2c_enabled, c2c_discount_pct,
       profiles!inner ( full_name, avatar_url ),
@@ -53,11 +53,12 @@ export async function generateMetadata(
   if (!master) return { title: 'Майстер не знайдений' };
 
   const profile = master.profiles as unknown as { full_name: string; avatar_url: string | null };
+  const displayName = master.business_name || profile.full_name;
   return {
-    title: `${profile.full_name} — Bookit`,
-    description: master.bio ?? `Онлайн-запис до ${profile.full_name}`,
+    title: `${displayName} — Bookit`,
+    description: master.bio ?? `Онлайн-запис до ${displayName}`,
     openGraph: {
-      title: profile.full_name,
+      title: displayName,
       description: master.bio ?? '',
     },
   };
@@ -299,7 +300,7 @@ export default async function MasterPublicPage(
   const master = {
     id: data.id,
     slug: data.slug,
-    name: profile.full_name,
+    name: data.business_name || profile.full_name,
     specialty: ((data.categories as string[]) ?? []).join(', ') || 'Майстер краси',
     location: locationQuery || 'Україна',
     mapUrl,

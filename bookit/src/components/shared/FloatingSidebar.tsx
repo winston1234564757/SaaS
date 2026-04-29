@@ -39,7 +39,7 @@ export function FloatingSidebar() {
   const pathname = usePathname();
   const { profile, masterProfile } = useMasterContext();
   const { todayPending } = useDashboardStats();
-  const displayName = profile?.full_name ?? 'Завантаження...';
+  const displayName = masterProfile?.business_name || profile?.full_name || 'Завантаження...';
   const tier = masterProfile?.subscription_tier ?? 'starter';
   const tierLabel = tier === 'pro' ? 'Pro' : tier === 'studio' ? 'Studio' : 'Starter';
   const avatarEmoji = masterProfile?.avatar_emoji ?? '💅';
