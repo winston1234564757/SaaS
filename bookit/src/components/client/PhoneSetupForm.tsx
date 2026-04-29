@@ -30,6 +30,7 @@ export function PhoneSetupForm() {
 
   // ── Step 1: Send SMS ─────────────────────────────────────────────────────
   async function handleSendSms() {
+    if (isSubmitting) return;
     if (phone.length < 9) { setError('Введіть повний номер телефону'); return; }
     setLoading(true);
     setError('');
@@ -47,6 +48,7 @@ export function PhoneSetupForm() {
 
   // ── Step 2: Verify OTP via server action ─────────────────────────────────
   async function handleVerify(otpOverride?: string) {
+    if (isSubmitting) return;
     const otp = otpOverride ?? digits.join('');
     if (otp.length < 6) { setError('Введіть 6-значний код'); return; }
     setError('');
@@ -58,9 +60,11 @@ export function PhoneSetupForm() {
         digitRefs.current[0]?.focus();
         return;
       }
-      // Success — DB trigger already fired, bookings linked
-      router.push('/my/bookings');
+      // Success — DB updated, revalidation triggered on server
       router.refresh();
+      setTimeout(() => {
+        router.push('/my/bookings');
+      }, 100);
     });
   }
 

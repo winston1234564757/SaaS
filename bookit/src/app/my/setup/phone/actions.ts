@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 const phoneSchema = z
   .string()
@@ -72,7 +73,21 @@ export async function confirmPhone(
     admin.from('sms_verify_attempts').delete().eq('phone', cleanPhone),
   ]);
 
-  // 8. Check phone not taken by another account
+  // 8. Idempotency: check if already linked to THIS user
+  const { data: currentProfile } = await admin
+    .from('profiles')
+    .select('phone')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (currentProfile?.phone === cleanPhone) {
+    console.log('[confirmPhone] Phone already linked to this user, returning success');
+    revalidatePath('/my', 'layout');
+    revalidatePath('/my/setup/phone');
+    return { success: true };
+  }
+
+  // 9. Check phone not taken by another account
   const { data: conflict } = await admin
     .from('profiles')
     .select('id')
@@ -140,6 +155,8 @@ export async function confirmPhone(
 
   console.log('[confirmPhone] LINKAGE COMPLETE:', { userId: user.id, linked: linkedBookings?.length ?? 0 });
 
-
+  revalidatePath('/my', 'layout');
+  revalidatePath('/my/setup/phone');
+  
   return { success: true };
 }

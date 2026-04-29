@@ -129,9 +129,10 @@ export async function POST(req: NextRequest) {
     const FRESHNESS_WINDOW_MS = 15 * 60 * 1000;
     const tsMatch = (reference as string).match(/_(\d+)$/);
     if (tsMatch) {
-      const webhookTs = parseInt(tsMatch[1], 10);
-      if (Math.abs(Date.now() - webhookTs) > FRESHNESS_WINDOW_MS) {
-        console.warn('[mono-webhook] Stale webhook rejected — reference:', reference, '| age ms:', Date.now() - webhookTs);
+      const webhookTs = parseInt(tsMatch[1], 10) * 1000;
+      const ageMs = Math.abs(Date.now() - webhookTs);
+      if (ageMs > FRESHNESS_WINDOW_MS) {
+        console.warn('[mono-webhook] Stale webhook rejected — reference:', reference, '| age ms:', ageMs);
         return NextResponse.json({ error: 'stale_webhook' }, { status: 400 });
       }
     }

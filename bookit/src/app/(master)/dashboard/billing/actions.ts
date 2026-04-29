@@ -15,8 +15,8 @@ const APP_URL = (
 );
 
 const PLAN: Record<string, { priceKopecks: number; name: string }> = {
-  pro:    { priceKopecks: 500, name: 'Bookit Pro — підписка на місяць' },
-  studio: { priceKopecks: 500, name: 'Bookit Studio — підписка за майстра/місяць' },
+  pro:    { priceKopecks: 70000, name: 'Bookit Pro — підписка на місяць' },
+  studio: { priceKopecks: 29900, name: 'Bookit Studio — підписка за майстра/місяць' },
 };
 
 // ── Monobank Acquiring ────────────────────────────────────────────────────────
