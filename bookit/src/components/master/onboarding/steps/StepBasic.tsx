@@ -5,6 +5,7 @@ import { motion, type Variants } from 'framer-motion';
 import { ArrowRight, Camera, Loader2, User } from 'lucide-react';
 import { formatPhoneDisplay, normalizePhoneInput } from '@/lib/utils/phone';
 import { serviceCategories } from '@/lib/constants/categories';
+import { cn } from '@/lib/utils/cn';
 import { inputCls } from './types';
 
 interface StepBasicProps {
