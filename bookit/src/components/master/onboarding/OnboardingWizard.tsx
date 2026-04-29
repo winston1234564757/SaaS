@@ -17,6 +17,7 @@ import {
 import { e164ToInputPhone, toFullPhone } from '@/lib/utils/phone';
 import { generateSecureToken } from '@/lib/utils/token';
 import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
+import { serviceCategories } from '@/lib/constants/categories';
 import type { OnboardingData } from '@/types/onboarding';
 import type { BreakWindow } from '@/types/database';
 import {
@@ -65,6 +66,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
   const [fullName, setFullName] = useState(initialData.fullName ?? profile?.full_name ?? '');
   const [phone, setPhone] = useState(initialData.phone ?? e164ToInputPhone(profile?.phone));
   const hasPhone = !!profile?.phone;
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialData.categories ?? masterProfile?.categories ?? []);
   const [specialization] = useState(initialData.specialization ?? '💅');
 
   // SCHEDULE_FORM
@@ -111,6 +113,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       emptySlots,
       flashDealsEnabled,
       businessName,
+      categories: selectedCategories,
     };
   }
 
@@ -173,6 +176,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
         avatarEmoji: specialization,
         slug: finalSlug,
         referralCode,
+        categories: selectedCategories,
       });
 
       if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
@@ -326,6 +330,8 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
               onAvatarChange={e => { const f = e.target.files?.[0]; if (f) { setAvatarFile(f); setAvatarPreview(URL.createObjectURL(f)); } }}
               onFullNameChange={setFullName}
               onPhoneChange={setPhone}
+              selectedCategories={selectedCategories}
+              onCategoriesChange={setSelectedCategories}
               onSave={handleSaveProfile}
             />
           )}

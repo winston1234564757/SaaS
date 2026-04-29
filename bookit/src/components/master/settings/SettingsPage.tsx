@@ -21,6 +21,7 @@ import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/
 import dynamic from 'next/dynamic';
 import type { LatLng } from './LocationPicker';
 import { PromoTemplates } from '@/components/shared/PromoTemplates';
+import { serviceCategories } from '@/lib/constants/categories';
 import { parseError } from '@/lib/utils/errors';
 
 const LocationPicker = dynamic(
@@ -79,6 +80,7 @@ export function SettingsPage() {
   const [isPublished, setIsPublished] = useState(false);
   const [themeKey, setThemeKey] = useState<MoodThemeKey>('default');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
 
   // Working-hours config (buffer + global breaks)
@@ -104,6 +106,7 @@ export function SettingsPage() {
     floor: string; cabinet: string; instagram: string; telegram: string; telegramChatId: string;
     isPublished: boolean; avatar: string; themeKey: MoodThemeKey;
     avatarUrl: string | null; bufferTime: number; breaks: BreakWindow[];
+    categories: string[];
     retentionCycleDays: number;
   } | null>(null);
   const initialScheduleSnap = useRef<Schedule | null>(null);
@@ -137,6 +140,7 @@ export function SettingsPage() {
     setIsPublished(masterProfile.is_published ?? false);
     setAvatar(masterProfile.avatar_emoji ?? '💅');
     setThemeKey((masterProfile.mood_theme as MoodThemeKey) ?? 'default');
+    setSelectedCategories(masterProfile.categories ?? []);
     setRetentionCycleDays(masterProfile.retention_cycle_days ?? 30);
     const wh = masterProfile.working_hours;
     setBufferTime(wh?.buffer_time_minutes ?? 0);
@@ -162,6 +166,7 @@ export function SettingsPage() {
       avatarUrl: profile.avatar_url ?? null,
       bufferTime: wh?.buffer_time_minutes ?? 0,
       breaks: wh?.breaks ?? [],
+      categories: masterProfile.categories ?? [],
       retentionCycleDays: masterProfile.retention_cycle_days ?? 30,
     };
   }, [profile, masterProfile]);
@@ -222,6 +227,7 @@ export function SettingsPage() {
     const f = initialFormSnap.current;
     const formChanged =
       fullName !== f.fullName || businessName !== f.businessName || phone !== f.phone || bio !== f.bio ||
+      JSON.stringify(selectedCategories) !== JSON.stringify(f.categories) ||
       slug !== f.slug || city !== f.city || address !== f.address ||
       lat !== f.lat || lng !== f.lng || floor !== f.floor || cabinet !== f.cabinet ||
       instagram !== f.instagram ||
@@ -242,6 +248,7 @@ export function SettingsPage() {
     if (!f) return;
     setFullName(f.fullName);
     setBusinessName(f.businessName);
+    setSelectedCategories(f.categories);
     setPhone(f.phone);
     setBio(f.bio);
     setSlug(f.slug);
@@ -280,6 +287,7 @@ export function SettingsPage() {
         supabase.from('profiles').update({ full_name: fullName, phone: cleanPhone, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
         supabase.from('master_profiles').update({
           business_name: businessName.trim() || null,
+          categories: selectedCategories,
           bio, city, address: address || null, slug,
           latitude: lat, longitude: lng,
           floor: floor || null, cabinet: cabinet || null,
@@ -309,7 +317,7 @@ export function SettingsPage() {
       showToast({ type: 'success', title: 'Налаштування збережено' });
       setTimeout(() => setSaved(false), 2500);
       // Update snapshots so cancel would reset to the freshly saved state
-      initialFormSnap.current = { fullName, businessName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays };
+      initialFormSnap.current = { fullName, businessName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, categories: selectedCategories, retentionCycleDays };
       initialScheduleSnap.current = { ...schedule };
       setIsDirty(false);
       // Оновлюємо контекст у фоні — не блокуємо UI

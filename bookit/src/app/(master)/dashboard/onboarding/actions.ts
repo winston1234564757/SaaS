@@ -18,6 +18,7 @@ export async function saveOnboardingProfile(params: {
   avatarEmoji: string;
   slug: string;
   referralCode: string;
+  categories?: string[] | null;
 }): Promise<{ error: string | null }> {
   const supabase = await createClient();
 
@@ -57,6 +58,7 @@ export async function saveOnboardingProfile(params: {
     avatar_emoji: params.avatarEmoji,
     is_published: true,
     referral_code: existing?.referral_code ?? params.referralCode,
+    categories: params.categories,
   };
 
   const { error: masterError } = await supabase

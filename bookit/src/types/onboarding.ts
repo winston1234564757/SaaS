@@ -10,6 +10,7 @@ export interface OnboardingData {
   phone?: string;
   avatarUrl?: string;
   slug?: string;
+  categories?: string[];
 
   // SCHEDULE_FORM step
   schedule?: Record<DayKey, DaySchedule>;

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { ArrowRight, Camera, Loader2, User } from 'lucide-react';
 import { formatPhoneDisplay, normalizePhoneInput } from '@/lib/utils/phone';
+import { serviceCategories } from '@/lib/constants/categories';
 import { inputCls } from './types';
 
 interface StepBasicProps {
@@ -18,6 +19,8 @@ interface StepBasicProps {
   onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFullNameChange: (v: string) => void;
   onPhoneChange: (v: string) => void;
+  selectedCategories: string[];
+  onCategoriesChange: (v: string[]) => void;
   onSave: () => void;
 }
 
@@ -33,6 +36,8 @@ export function StepBasic({
   onAvatarChange,
   onFullNameChange,
   onPhoneChange,
+  selectedCategories,
+  onCategoriesChange,
   onSave,
 }: StepBasicProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,6 +127,38 @@ export function StepBasic({
             )}
           </div>
         )}
+
+        {/* Categories Multi-select */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-3 block">Твоя спеціалізація (можна кілька)</label>
+          <div className="flex flex-wrap gap-2">
+            {serviceCategories.map(cat => {
+              const isSelected = selectedCategories.includes(cat.label);
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    if (isSelected) {
+                      onCategoriesChange(selectedCategories.filter(c => c !== cat.label));
+                    } else {
+                      onCategoriesChange([...selectedCategories, cat.label]);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border",
+                    isSelected 
+                      ? "bg-primary/15 border-primary text-primary" 
+                      : "bg-white/50 border-white/80 text-muted-foreground hover:border-primary/30"
+                  )}
+                >
+                  <span>{cat.emoji}</span>
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <button
