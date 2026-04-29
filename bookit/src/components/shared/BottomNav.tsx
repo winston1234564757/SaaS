@@ -83,13 +83,13 @@ export function BottomNav() {
               <Link
                 key={href}
                 href={href}
-                aria-label={label}
                 className={cn(
-                  'flex flex-col items-center justify-center px-2 py-1.5 rounded-xl flex-1 transition-all duration-150',
+                  'flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl flex-1 transition-all duration-150',
                   isActive ? 'text-primary' : 'text-muted-foreground/60'
                 )}
               >
                 <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="text-[10px] font-medium">{label}</span>
               </Link>
             );
           })}

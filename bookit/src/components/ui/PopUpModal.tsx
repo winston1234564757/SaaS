@@ -49,9 +49,9 @@ export function PopUpModal({ isOpen, onClose, title, children, keepMounted = fal
   return (
     <Dialog.Root open={isOpen} onOpenChange={(v) => !v && onClose()}>
       <AnimatePresence>
-        {isRendered && (
-          <Dialog.Portal forceMount>
-            <Dialog.Overlay asChild forceMount>
+        {isOpen && (
+          <Dialog.Portal>
+            <Dialog.Overlay asChild>
               <motion.div
                 key="backdrop"
                 initial={{ opacity: 0 }}
@@ -62,7 +62,7 @@ export function PopUpModal({ isOpen, onClose, title, children, keepMounted = fal
               />
             </Dialog.Overlay>
 
-            <Dialog.Content asChild forceMount>
+            <Dialog.Content asChild>
               <div 
                 className={cn(
                   "fixed inset-0 z-50 flex p-0 outline-none", 

@@ -33,7 +33,7 @@ export function DashboardDrawer({ isOpen, onClose, title, children }: Props) {
     <Dialog.Root open={isOpen} onOpenChange={(v) => !v && onClose()}>
       <AnimatePresence>
         {isOpen && (
-          <Dialog.Portal forceMount>
+          <Dialog.Portal>
             <Dialog.Overlay asChild>
               <motion.div
                 key="backdrop"
