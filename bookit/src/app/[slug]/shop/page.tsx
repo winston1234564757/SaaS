@@ -47,10 +47,10 @@ export default async function Page(
     return (
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
         <p className="text-4xl mb-4">🔒</p>
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-2">
+        <h1 className="heading-serif text-xl text-foreground mb-2">
           Магазин недоступний
         </h1>
-        <p className="text-sm text-[#A8928D]">
+        <p className="text-sm text-muted-foreground/60">
           Майстер ще не підключив магазин
         </p>
       </div>

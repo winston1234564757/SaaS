@@ -68,7 +68,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
     <div className="flex flex-col gap-6">
       {!isDrawer && (
         <div className="bento-card overflow-hidden">
-          <div className="bg-[#789A99] p-6 text-white">
+          <div className="bg-primary p-6 text-white">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h1 className="heading-serif text-2xl mb-2">Мережа партнерів (Cartel)</h1>
@@ -91,7 +91,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 </div>
                 <button 
                   onClick={copyLink}
-                  className="bg-white text-[#789A99] px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-white/90 active:scale-95 transition-all"
+                  className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-white/90 active:scale-95 transition-all"
                 >
                   {copied ? (
                     <><Check size={14} /> Скопійовано</>
@@ -105,16 +105,16 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
           <div className="bg-white/50 p-4 border-t border-[#E8D0C8] flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#789A99]/10 flex items-center justify-center text-[#789A99]">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <Users size={16} />
               </div>
               <div>
-                <p className="text-[10px] text-[#A8928D] uppercase tracking-wider">Активні партнери</p>
-                <p className="text-sm font-bold text-[#2C1A14]">{activePartners.length}</p>
+                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Активні партнери</p>
+                <p className="text-sm font-bold text-foreground">{activePartners.length}</p>
               </div>
             </div>
             <div className="w-px h-8 bg-[#E8D0C8]" />
-            <p className="text-[11px] text-[#6B5750]">
+            <p className="text-[11px] text-muted-foreground">
               *Ваші партнери будуть відображатися на вашій публічній сторінці бронювання.
             </p>
           </div>
@@ -123,18 +123,18 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
       {/* Partners List */}
       <div className="flex flex-col gap-4">
-        <h2 className="text-sm font-bold text-[#2C1A14] uppercase tracking-widest pl-1">
+        <h2 className="text-sm font-bold text-foreground uppercase tracking-widest pl-1">
           Зараз у твоїй мережі
         </h2>
 
         {activePartners.length === 0 ? (
           <div className="bento-card p-12 border-dashed border-2 border-[#E8D0C8] bg-transparent text-center flex flex-col items-center gap-4">
-             <div className="w-16 h-16 rounded-full bg-[#F5E8E3] flex items-center justify-center text-3xl">
+             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-3xl">
                🌵
              </div>
              <div>
-               <p className="text-sm font-bold text-[#2C1A14]">Поки що партнерів не додано</p>
-               <p className="text-xs text-[#A8928D] mt-1 italic">Поділися лінком вище з майстрами-знайомими</p>
+               <p className="text-sm font-bold text-foreground">Поки що партнерів не додано</p>
+               <p className="text-xs text-muted-foreground/60 mt-1 italic">Поділися лінком вище з майстрами-знайомими</p>
              </div>
           </div>
         ) : (
@@ -148,15 +148,15 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 className="bento-card p-4 flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                   <div className="w-12 h-12 rounded-2xl bg-[#F5E8E3] flex items-center justify-center text-2xl shrink-0">
+                   <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-2xl shrink-0">
                      {partner.emoji}
                    </div>
                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-[#2C1A14] truncate">{partner.name}</p>
+                      <p className="text-sm font-bold text-foreground truncate">{partner.name}</p>
                       <Link 
                         href={`/${partner.slug}`} 
                         target="_blank"
-                        className="text-[10px] text-[#789A99] font-medium flex items-center gap-1 hover:underline"
+                        className="text-[10px] text-primary font-medium flex items-center gap-1 hover:underline"
                       >
                         {partner.slug} <ExternalLink size={10} />
                       </Link>
@@ -166,7 +166,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 <button
                   onClick={() => handleDelete(partner.partnerId)}
                   disabled={isDeleting === partner.partnerId}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-[#C05B5B] hover:bg-[#C05B5B]/10 active:scale-90 transition-all disabled:opacity-50"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-destructive hover:bg-destructive/10 active:scale-90 transition-all disabled:opacity-50"
                   title="Видалити партнера"
                 >
                   <Trash2 size={18} />
@@ -180,10 +180,10 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
       {/* Alliance Visibility — Referral Network */}
       {alliances.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-bold text-[#2C1A14] uppercase tracking-widest pl-1">
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-widest pl-1">
             Реферальний альянс
           </h2>
-          <p className="text-xs text-[#A8928D] pl-1 -mt-1">
+          <p className="text-xs text-muted-foreground/60 pl-1 -mt-1">
             Майстри з вашої реферальної мережі. Увімкніть видимість — вони з'являться на вашій публічній сторінці.
           </p>
           <div className="flex flex-col gap-2.5">
@@ -196,15 +196,15 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                   className="bento-card p-4 flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-[#F5E8E3] flex items-center justify-center text-xl flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-xl flex-shrink-0">
                       {al.emoji}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#2C1A14] truncate">{al.name}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{al.name}</p>
                       <Link
                         href={`/${al.slug}`}
                         target="_blank"
-                        className="text-[10px] text-[#789A99] font-medium flex items-center gap-1 hover:underline"
+                        className="text-[10px] text-primary font-medium flex items-center gap-1 hover:underline"
                       >
                         {al.slug} <ExternalLink size={9} />
                       </Link>
@@ -216,8 +216,8 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                     className={cn(
                       'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95',
                       visible
-                        ? 'bg-[#789A99]/12 text-[#789A99]'
-                        : 'bg-[#F5E8E3] text-[#A8928D]',
+                        ? 'bg-primary/12 text-primary'
+                        : 'bg-secondary text-muted-foreground/60',
                       togglingId === al.id && 'opacity-50 pointer-events-none',
                     )}
                     title={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
@@ -234,8 +234,8 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
       {/* Instructions */}
       <div className="bento-card p-6 bg-[#FDF8F6]">
-        <h3 className="text-sm font-bold text-[#2C1A14] mb-3 flex items-center gap-2">
-          <Handshake size={18} className="text-[#789A99]" /> Як це працює?
+        <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+          <Handshake size={18} className="text-primary" /> Як це працює?
         </h3>
         <ul className="space-y-3">
           {[
@@ -244,12 +244,12 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
             { t: 'Крос-трафік', d: 'Твої партнери так само рекомендують тебе своїм клієнтам.' },
           ].map((item, i) => (
             <li key={i} className="flex gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#789A99] text-white text-[10px] font-bold flex items-center justify-center">
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
                 {i + 1}
               </span>
               <div>
-                <p className="text-xs font-bold text-[#2C1A14]">{item.t}</p>
-                <p className="text-[11px] text-[#A8928D] leading-relaxed">{item.d}</p>
+                <p className="text-xs font-bold text-foreground">{item.t}</p>
+                <p className="text-[11px] text-muted-foreground/60 leading-relaxed">{item.d}</p>
               </div>
             </li>
           ))}

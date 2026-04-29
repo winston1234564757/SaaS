@@ -6,7 +6,10 @@ function ensureVapid() {
   if (vapidInitialized) return;
   const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
-  if (!pub || !priv) return; // skip if not configured
+  if (!pub || !priv) {
+    console.error('[Push] VAPID keys missing — NEXT_PUBLIC_VAPID_PUBLIC_KEY:', !!pub, 'VAPID_PRIVATE_KEY:', !!priv);
+    return;
+  }
   webpush.setVapidDetails('mailto:hello@bookit.com.ua', pub, priv);
   vapidInitialized = true;
 }
@@ -29,7 +32,9 @@ export async function sendPush(
     return { ok: true, gone: false };
   } catch (err: unknown) {
     const status = (err as { statusCode?: number })?.statusCode;
-    return { ok: false, gone: status === 410 || status === 404 };
+    const gone = status === 410 || status === 404;
+    console.error(`[Push] sendNotification failed (status: ${status}, gone: ${gone}) for endpoint: ${subscription.endpoint?.slice(0, 60)}`, err);
+    return { ok: false, gone };
   }
 }
 

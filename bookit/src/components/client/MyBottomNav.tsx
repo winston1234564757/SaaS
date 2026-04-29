@@ -82,7 +82,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
                 href={href}
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 transition-all duration-150',
-                  active ? 'text-[#789A99]' : 'text-[#A8928D]',
+                  active ? 'text-primary' : 'text-muted-foreground/60',
                 )}
               >
                 <Icon size={22} strokeWidth={active ? 2.5 : 2} />
@@ -102,7 +102,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
                 href={href}
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 transition-all duration-150',
-                  active ? 'text-[#789A99]' : 'text-[#A8928D]',
+                  active ? 'text-primary' : 'text-muted-foreground/60',
                 )}
               >
                 <Icon size={22} strokeWidth={active ? 2.5 : 2} />
@@ -118,7 +118,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
                 href="/explore"
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 transition-all duration-150',
-                  pathname.startsWith('/explore') ? 'text-[#789A99]' : 'text-[#A8928D]',
+                  pathname.startsWith('/explore') ? 'text-primary' : 'text-muted-foreground/60',
                 )}
               >
                 <Search size={22} strokeWidth={pathname.startsWith('/explore') ? 2.5 : 2} />
@@ -126,7 +126,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
               </Link>
               <button
                 onClick={() => setLoginOpen(true)}
-                className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 text-[#A8928D] transition-all duration-150"
+                className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 text-muted-foreground/60 transition-all duration-150"
               >
                 <LogIn size={22} strokeWidth={2} />
                 <span className="text-[10px] font-medium">Увійти</span>

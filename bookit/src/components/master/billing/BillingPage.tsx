@@ -125,8 +125,8 @@ export function BillingPage() {
     <div className="flex flex-col gap-4 pb-8">
       {/* Header */}
       <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Тариф та оплата</h1>
-        <p className="text-sm text-[#A8928D]">Керуйте підпискою та доступом до функцій</p>
+        <h1 className="heading-serif text-xl text-foreground mb-0.5">Тариф та оплата</h1>
+        <p className="text-sm text-muted-foreground/60">Керуйте підпискою та доступом до функцій</p>
       </div>
 
       {/* Success banner */}
@@ -139,14 +139,14 @@ export function BillingPage() {
             className="bento-card p-4 flex items-center gap-3"
             style={{ borderColor: '#5C9E7A40', background: 'rgba(92,158,122,0.08)' }}
           >
-            <div className="w-10 h-10 rounded-2xl bg-[#5C9E7A]/15 flex items-center justify-center flex-shrink-0">
-              <PartyPopper size={18} className="text-[#5C9E7A]" />
+            <div className="w-10 h-10 rounded-2xl bg-success/15 flex items-center justify-center flex-shrink-0">
+              <PartyPopper size={18} className="text-success" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-[#2C1A14]">Оплата успішна! 🎉</p>
-              <p className="text-xs text-[#6B5750]">Ваш тариф оновлено. Всі функції вже активні.</p>
+              <p className="text-sm font-semibold text-foreground">Оплата успішна! 🎉</p>
+              <p className="text-xs text-muted-foreground">Ваш тариф оновлено. Всі функції вже активні.</p>
             </div>
-            <button onClick={() => setShowSuccess(false)} className="text-[#A8928D] hover:text-[#6B5750]">
+            <button onClick={() => setShowSuccess(false)} className="text-muted-foreground/60 hover:text-muted-foreground">
               <X size={14} />
             </button>
           </motion.div>
@@ -163,8 +163,8 @@ export function BillingPage() {
             className="bento-card p-4 flex items-center gap-3"
             style={{ borderColor: '#C05B5B40', background: 'rgba(192,91,91,0.08)' }}
           >
-            <p className="text-sm text-[#C05B5B] flex-1">{error}</p>
-            <button onClick={() => setError(null)} className="text-[#A8928D]">
+            <p className="text-sm text-destructive flex-1">{error}</p>
+            <button onClick={() => setError(null)} className="text-muted-foreground/60">
               <X size={14} />
             </button>
           </motion.div>
@@ -173,7 +173,7 @@ export function BillingPage() {
 
       {/* Current plan */}
       <div className="bento-card p-4">
-        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-2">Поточний тариф</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Поточний тариф</p>
         <div className="flex items-center gap-3">
           {(() => {
             const plan = PLANS.find(p => p.key === currentTier);
@@ -187,10 +187,10 @@ export function BillingPage() {
                   <PlanIcon size={18} style={{ color: plan?.color ?? '#789A99' }} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#2C1A14]">
+                  <p className="text-sm font-bold text-foreground">
                     {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
                   </p>
-                  <p className="text-xs text-[#A8928D]">
+                  <p className="text-xs text-muted-foreground/60">
                     {currentTier === 'starter'
                       ? 'Безкоштовний план'
                       : masterProfile?.subscription_expires_at
@@ -213,7 +213,7 @@ export function BillingPage() {
 
       {/* Payment provider toggle */}
       <div className="bento-card p-4">
-        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-3">Спосіб оплати</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Спосіб оплати</p>
         <div className="flex gap-2">
           {([
             { key: 'mono' as PaymentProvider, label: 'Monobank', logo: '🍋' },
@@ -223,20 +223,20 @@ export function BillingPage() {
               onClick={() => setProvider(p.key)}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-sm font-medium transition-all ${
                 provider === p.key
-                  ? 'bg-[#789A99]/12 border-[#789A99]/40 text-[#5C7E7D]'
-                  : 'bg-white/60 border-white/80 text-[#6B5750] hover:bg-white/80'
+                  ? 'bg-primary/12 border-primary/40 text-primary/90'
+                  : 'bg-white/60 border-white/80 text-muted-foreground hover:bg-white/80'
               }`}
             >
               <span>{p.logo}</span>
               {p.label}
-              {provider === p.key && <CreditCard size={13} className="text-[#789A99]" />}
+              {provider === p.key && <CreditCard size={13} className="text-primary" />}
             </button>
           ))}
         </div>
       </div>
 
       {/* Plans */}
-      <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide px-1">Доступні плани</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">Доступні плани</p>
 
       {PLANS.map((plan, i) => {
         const PlanIcon = plan.icon;
@@ -277,13 +277,13 @@ export function BillingPage() {
                 <PlanIcon size={18} style={{ color: plan.color }} />
               </div>
               <div>
-                <p className="text-base font-bold text-[#2C1A14]">{plan.name}</p>
+                <p className="text-base font-bold text-foreground">{plan.name}</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-lg font-bold" style={{ color: plan.color }}>
                     {plan.price === '0' ? 'Безкоштовно' : `${plan.price} ₴`}
                   </span>
                   {plan.price !== '0' && (
-                    <span className="text-xs text-[#A8928D]">{plan.period}</span>
+                    <span className="text-xs text-muted-foreground/60">{plan.period}</span>
                   )}
                 </div>
               </div>
@@ -294,27 +294,27 @@ export function BillingPage() {
               {plan.features.map(f => (
                 <div key={f} className="flex items-start gap-2">
                   <Check size={13} className="flex-shrink-0 mt-0.5" style={{ color: plan.color }} />
-                  <span className="text-xs text-[#6B5750]">{f}</span>
+                  <span className="text-xs text-muted-foreground">{f}</span>
                 </div>
               ))}
             </div>
 
             {/* Studio breakeven hint */}
             {plan.key === 'studio' && (
-              <div className="mb-4 px-3 py-2.5 rounded-2xl bg-[#5C9E7A]/8 border border-[#5C9E7A]/20">
-                <p className="text-[11px] font-semibold text-[#2C1A14] mb-1.5">Коли Studio вигідніше Pro?</p>
+              <div className="mb-4 px-3 py-2.5 rounded-2xl bg-success/8 border border-success/20">
+                <p className="text-[11px] font-semibold text-foreground mb-1.5">Коли Studio вигідніше Pro?</p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 text-center">
-                    <p className="text-[10px] text-[#A8928D]">2 майстри</p>
-                    <p className="text-xs font-bold text-[#5C9E7A]">598 ₴/міс</p>
+                    <p className="text-[10px] text-muted-foreground/60">2 майстри</p>
+                    <p className="text-xs font-bold text-success">598 ₴/міс</p>
                   </div>
-                  <div className="text-[10px] text-[#A8928D]">vs</div>
+                  <div className="text-[10px] text-muted-foreground/60">vs</div>
                   <div className="flex-1 text-center">
-                    <p className="text-[10px] text-[#A8928D]">2 × Pro</p>
-                    <p className="text-xs font-bold text-[#D4935A]">1400 ₴/міс</p>
+                    <p className="text-[10px] text-muted-foreground/60">2 × Pro</p>
+                    <p className="text-xs font-bold text-warning">1400 ₴/міс</p>
                   </div>
                 </div>
-                <p className="text-[10px] text-[#6B5750] mt-1.5 leading-relaxed">
+                <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
                   Якщо ти один — <span className="font-semibold">Pro за 700 ₴</span> вигідніше
                 </p>
               </div>
@@ -330,10 +330,10 @@ export function BillingPage() {
               </div>
             ) : currentTier !== 'starter' && plan.key === 'starter' ? (
               <button
-                className="w-full py-3 rounded-2xl text-sm font-semibold bg-white/70 border border-white/80 text-[#A8928D]"
+                className="w-full py-3 rounded-2xl text-sm font-semibold bg-white/70 border border-white/80 text-muted-foreground/60 active:scale-95 transition-all"
                 disabled
               >
-                Дауноград недоступний
+                Перехід недоступний
               </button>
             ) : (
               <button
@@ -356,14 +356,14 @@ export function BillingPage() {
       {/* Referral promo */}
       <div className="bento-card p-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#789A99]/12 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
             <span className="text-lg">🎁</span>
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#2C1A14]">Запроси колегу — отримай місяць безкоштовно</p>
-            <p className="text-xs text-[#A8928D] mt-0.5">За кожного зареєстрованого майстра за твоїм посиланням — 1 місяць Pro в подарунок</p>
+            <p className="text-sm font-semibold text-foreground">Запроси колегу — отримай місяць безкоштовно</p>
+            <p className="text-xs text-muted-foreground/60 mt-0.5">За кожного зареєстрованого майстра за твоїм посиланням — 1 місяць Pro в подарунок</p>
             <button
-              className="mt-2 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors"
+              className="mt-2 text-xs font-semibold text-primary hover:text-primary/90 transition-colors active:scale-95 transition-all"
               onClick={() => router.push('/dashboard/referral')}
             >
               Перейти до реферальної програми →
@@ -374,16 +374,16 @@ export function BillingPage() {
 
       {/* Payment info + legal consent */}
       <div className="flex flex-col items-center gap-1.5 px-4">
-        <p className="text-center text-xs text-[#A8928D]">
+        <p className="text-center text-xs text-muted-foreground/60">
           Оплата через Monobank Acquiring — захищено SSL. Підписка активується автоматично.
         </p>
-        <p className="text-center text-xs text-[#A8928D]">
+        <p className="text-center text-xs text-muted-foreground/60">
           Здійснюючи оплату, ви погоджуєтесь з умовами{' '}
           <a
             href="/legal/public-offer"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#789A99] hover:underline"
+            className="text-primary hover:underline"
           >
             Публічної оферти
           </a>{' '}
@@ -392,7 +392,7 @@ export function BillingPage() {
             href="/legal/refund-policy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#789A99] hover:underline"
+            className="text-primary hover:underline"
           >
             Правил повернення коштів
           </a>

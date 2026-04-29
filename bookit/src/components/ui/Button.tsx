@@ -16,13 +16,13 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'size'> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-[#789A99] text-white hover:bg-[#5C7E7D] shadow-[0_4px_18px_rgba(120,154,153,0.38)]',
+    'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md',
   secondary:
-    'bg-white/75 text-[#2C1A14] border border-white/70 hover:bg-white/90 backdrop-blur-sm',
+    'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 backdrop-blur-sm',
   ghost:
-    'bg-transparent text-[#6B5750] hover:bg-white/55 hover:text-[#2C1A14]',
+    'bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground',
   danger:
-    'bg-[#C05B5B]/12 text-[#C05B5B] hover:bg-[#C05B5B]/22',
+    'bg-destructive/10 text-destructive hover:bg-destructive/20',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -51,6 +51,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         whileTap={{ scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         disabled={disabled || isLoading}
+        aria-disabled={disabled || isLoading}
+        data-state={isLoading ? 'loading' : undefined}
         className={cn(
           'inline-flex items-center justify-center font-semibold transition-colors duration-200 cursor-pointer select-none',
           'disabled:opacity-50 disabled:cursor-not-allowed',

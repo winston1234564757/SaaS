@@ -27,26 +27,34 @@ export function NotificationsBell() {
     markAllRead();
   }
 
-  function openBooking(n: MasterNotification) {
-    if (!n.bookingId) return;
+  function handleClick(n: MasterNotification) {
     setOpen(false);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('bookingId', n.bookingId);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    if (n.type === 'new_review') {
+      router.push('/dashboard/reviews');
+      return;
+    }
+    
+    if (n.bookingId) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('bookingId', n.bookingId);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    } else {
+      router.push('/dashboard/bookings');
+    }
   }
 
   return (
     <>
       <button
         onClick={handleOpen}
-        className="relative w-9 h-9 flex items-center justify-center rounded-2xl bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white transition-colors"
+        className="relative w-9 h-9 flex items-center justify-center rounded-2xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-white transition-colors active:scale-95 transition-all"
       >
         <Bell size={16} />
         {unreadCount > 0 && (
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#D4935A] text-white text-[9px] font-bold flex items-center justify-center leading-none"
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center leading-none"
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.span>
@@ -61,7 +69,7 @@ export function NotificationsBell() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-[#2C1A14]/20 backdrop-blur-[2px] z-40"
+              className="fixed inset-0 bg-foreground/20 backdrop-blur-[2px] z-40"
               onClick={() => setOpen(false)}
             />
             <motion.div
@@ -74,15 +82,15 @@ export function NotificationsBell() {
             >
               {/* Handle */}
               <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-                <div className="w-10 h-1 bg-[#E8D5CF] rounded-full" />
+                <div className="w-10 h-1 bg-secondary/80 rounded-full" />
               </div>
 
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 flex-shrink-0">
-                <p className="text-base font-semibold text-[#2C1A14]">Сповіщення</p>
+                <p className="text-base font-semibold text-foreground">Сповіщення</p>
                 <button
                   onClick={() => setOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-[#EDD9D1] transition-colors"
                 >
                   <X size={15} />
                 </button>
@@ -92,9 +100,9 @@ export function NotificationsBell() {
               <div className="flex-1 overflow-y-auto px-5 pb-8">
                 {notifications.length === 0 ? (
                   <div className="text-center py-12">
-                    <Bell size={32} className="mx-auto text-[#E8D5CF] mb-3" />
-                    <p className="text-sm font-semibold text-[#2C1A14]">Сповіщень поки немає</p>
-                    <p className="text-xs text-[#A8928D] mt-1">Тут з'являться нові записи та відгуки</p>
+                    <Bell size={32} className="mx-auto text-secondary/80 mb-3" />
+                    <p className="text-sm font-semibold text-foreground">Сповіщень поки немає</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">Тут з'являться нові записи та відгуки</p>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
@@ -109,8 +117,7 @@ export function NotificationsBell() {
                           transition={{ delay: i * 0.03 }}
                         >
                           <button
-                            onClick={() => openBooking(n)}
-                            disabled={!n.bookingId}
+                            onClick={() => handleClick(n)}
                             className={`flex items-start gap-3 p-3.5 rounded-2xl transition-colors w-full text-left ${
                               n.isRead
                                 ? 'bg-white/40 hover:bg-white/70'
@@ -125,17 +132,17 @@ export function NotificationsBell() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-1">
-                                <p className={`text-sm font-semibold truncate ${n.isRead ? 'text-[#6B5750]' : 'text-[#2C1A14]'}`}>
+                                <p className={`text-sm font-semibold truncate ${n.isRead ? 'text-muted-foreground' : 'text-foreground'}`}>
                                   {n.title}
                                 </p>
-                                <p className="text-[10px] text-[#A8928D] flex-shrink-0 mt-0.5">
+                                <p className="text-[10px] text-muted-foreground/60 flex-shrink-0 mt-0.5">
                                   {timeAgo(n.createdAt)}
                                 </p>
                               </div>
-                              <p className="text-xs text-[#6B5750] leading-tight mt-0.5">{n.body}</p>
+                              <p className="text-xs text-muted-foreground leading-tight mt-0.5">{n.body}</p>
                             </div>
                             {!n.isRead && (
-                              <div className="w-2 h-2 rounded-full bg-[#D4935A] flex-shrink-0 mt-1.5" />
+                              <div className="w-2 h-2 rounded-full bg-warning flex-shrink-0 mt-1.5" />
                             )}
                           </button>
                         </motion.div>

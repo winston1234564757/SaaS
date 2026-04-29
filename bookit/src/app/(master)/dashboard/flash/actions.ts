@@ -7,7 +7,7 @@ import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
-import { pluralize } from '@/lib/utils/dates';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 export interface CreateFlashDealParams {
   serviceId: string;     // UUID послуги
@@ -98,7 +98,7 @@ export async function createFlashDeal(
   const dateStr        = format(new Date(params.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
 
   const notifTitle = `⚡ Флеш-акція від ${masterName}!`;
-  const notifBody  = `${serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}!`;
+  const notifBody  = `${serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralUk(params.expiresInHours, 'годину', 'години', 'годин')}!`;
 
   // ── Смарт-таргетинг: виключно через SQL RPC (±48 год) ──
   // Слот у київський час (+03:00), PostgreSQL конвертує в UTC при порівнянні
@@ -147,7 +147,7 @@ export async function createFlashDeal(
       .not('telegram_chat_id', 'is', null);
 
     if (clientsWithTg && clientsWithTg.length > 0) {
-      const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(params.slotTime)}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralize(params.expiresInHours, ['годину', 'години', 'годин'])}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
+      const tgMsg = `⚡ <b>Флеш-акція від ${escHtml(masterName)}!</b>\n\n💅 ${escHtml(serviceName)}\n🗓 ${escHtml(dateStr)} о ${escHtml(params.slotTime)}\n💰 <s>${params.originalPrice} ₴</s> → <b>${discountedPrice} ₴</b> (-${params.discountPct}%)\n⏰ Акція діє ${pluralUk(params.expiresInHours, 'годину', 'години', 'годин')}\n\n<a href="${escHtml(bookingUrl)}">Записатися зараз →</a>`;
       const tgResults = await Promise.allSettled(
         clientsWithTg.map(c => sendTelegramMessage(c.telegram_chat_id!, tgMsg))
       );

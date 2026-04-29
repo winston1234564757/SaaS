@@ -10,7 +10,7 @@ import {
   type SlotWithScore,
   type TimeRange,
 } from '@/lib/utils/smartSlots';
-import { formatDurationFull, pluralize } from '@/lib/utils/dates';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import type { ScheduleStore } from '@/lib/supabase/hooks/useWizardSchedule';
 import { DAY_S, MONTH_S, toISO, fmt, slide } from './helpers';
 import type { WizardService } from './types';
@@ -74,7 +74,7 @@ export function DateTimePicker({
   if (!mounted) {
     return (
       <div className="flex justify-center py-10" id="hydration-waiting">
-        <div className="w-6 h-6 border-2 border-[#789A99] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -87,7 +87,7 @@ export function DateTimePicker({
 
       {/* Services recap chip */}
       <button onClick={onContinue}
-        className="flex items-center gap-3 p-3 rounded-2xl bg-[#789A99]/10 border border-[#789A99]/25 mb-5 w-full text-left">
+        className="flex items-center gap-3 p-3 rounded-2xl bg-primary/10 border border-primary/25 mb-5 w-full text-left active:scale-95 transition-all">
         <div className="flex -space-x-1.5 flex-shrink-0">
           {selectedServices.slice(0, 3).map(s => (
             <div key={s.id} className="w-7 h-7 rounded-lg flex items-center justify-center text-base"
@@ -96,23 +96,23 @@ export function DateTimePicker({
             </div>
           ))}
           {selectedServices.length > 3 && (
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-[#6B5750]"
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-muted-foreground"
               style={{ background: 'rgba(255,210,194,0.5)' }}>
               +{selectedServices.length - 3}
             </div>
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[#2C1A14] truncate">
-            {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
+          <p className="text-sm font-semibold text-foreground truncate">
+            {selectedServices.length === 1 ? selectedServices[0].name : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
           </p>
-          <p className="text-xs text-[#A8928D]">{formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
+          <p className="text-xs text-muted-foreground/60">{formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
         </div>
-        <ChevronRight size={14} className="text-[#A8928D] rotate-180 flex-shrink-0" />
+        <ChevronRight size={14} className="text-muted-foreground/60 rotate-180 flex-shrink-0" />
       </button>
 
       {/* ── Date strip ── */}
-      <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-2">Дата</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Дата</p>
 
       <div className="flex items-center gap-2 mb-5">
         {/* Prev day */}
@@ -154,8 +154,8 @@ export function DateTimePicker({
                     : isFull
                     ? 'bg-red-50 border border-dashed border-red-200 cursor-not-allowed'
                     : isSelected
-                    ? 'bg-[#789A99] text-white shadow-md'
-                    : 'bg-white/70 border border-stone-200 text-stone-700 hover:bg-white hover:border-[#789A99]/40'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-white/70 border border-stone-200 text-stone-700 hover:bg-white hover:border-primary/40'
                 } ${scheduleLoading ? 'animate-pulse' : ''}`}
               >
                 <span className={`text-[10px] font-medium whitespace-normal text-balance break-words text-center leading-tight ${
@@ -200,17 +200,17 @@ export function DateTimePicker({
 
       {scheduleError ? (
         <div className="flex flex-col items-center gap-3 py-6 mb-4">
-          <p className="text-sm text-[#C05B5B]">Не вдалося завантажити розклад</p>
+          <p className="text-sm text-destructive">Не вдалося завантажити розклад</p>
           <button
             onClick={onRetry}
-            className="px-4 py-2 rounded-xl bg-[#789A99] text-white text-xs font-semibold"
+            className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold active:scale-95 transition-all"
           >
             Спробувати знову
           </button>
         </div>
       ) : scheduleLoading ? (
         <div className="flex justify-center py-6 mb-4" data-testid="schedule-loader">
-          <div className="w-5 h-5 border-2 border-[#789A99] border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <>
@@ -219,7 +219,7 @@ export function DateTimePicker({
       {/* ── Time grid ── */}
       {selectedDate && (
         <>
-          <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-3">Час</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Час</p>
 
           {offDayDates.has(toISO(selectedDate)) ? (
             <div className="flex flex-col items-center gap-2 py-8 rounded-2xl bg-stone-50 border border-dashed border-stone-200">
@@ -259,14 +259,14 @@ export function DateTimePicker({
                       data-testid="time-slot"
                       className={`relative rounded-xl py-3 text-center text-sm font-medium transition-all ${
                         selectedTime === item.slot.time
-                          ? 'bg-[#789A99] text-white shadow-md ring-2 ring-[#789A99]/30 border-transparent'
+                          ? 'bg-primary text-white shadow-md ring-2 ring-[#789A99]/30 border-transparent'
                           : item.slot.isSuggested
-                          ? 'bg-[#789A99]/8 border border-[#789A99]/30 text-[#2C1A14]'
-                          : 'bg-white/60 text-stone-600 border border-stone-200 hover:bg-white hover:border-[#789A99]/30'
+                          ? 'bg-primary/8 border border-primary/30 text-foreground'
+                          : 'bg-white/60 text-stone-600 border border-stone-200 hover:bg-white hover:border-primary/30'
                       }`}
                     >
                       {item.slot.isSuggested && selectedTime !== item.slot.time && (
-                        <span className="absolute -top-1.5 -right-1 text-[8px] bg-[#789A99] text-white rounded-full px-1 py-0.5 font-bold leading-none">★</span>
+                        <span className="absolute -top-1.5 -right-1 text-[8px] bg-primary text-white rounded-full px-1 py-0.5 font-bold leading-none">★</span>
                       )}
                       <span className="block font-semibold">{item.slot.time}</span>
                       <span className={`block text-[11px] font-normal mt-0.5 ${
@@ -300,18 +300,18 @@ export function DateTimePicker({
               onClick={onToggleDynamicPrice}
               className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl border transition-all mb-3 ${
                 useDynamicPrice
-                  ? 'bg-[#789A99]/10 border-[#789A99]/30'
+                  ? 'bg-primary/10 border-primary/30'
                   : 'bg-white/70 border-white/80 hover:bg-white'
-              }`}
+              } active:scale-95 transition-all`}
             >
               <div className="text-left">
-                <p className="text-sm font-medium text-[#2C1A14]">Застосувати динамічну ціну</p>
-                <p className="text-xs text-[#A8928D] mt-0.5">
+                <p className="text-sm font-medium text-foreground">Застосувати динамічну ціну</p>
+                <p className="text-xs text-muted-foreground/60 mt-0.5">
                   {dynamicPricing.label} → {fmt(dynamicPricing.adjustedPrice)}
                 </p>
               </div>
               <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ml-3 ${
-                useDynamicPrice ? 'bg-[#789A99]' : 'bg-[#E8D5CF]'
+                useDynamicPrice ? 'bg-primary' : 'bg-secondary/80'
               }`}>
                 <motion.div
                   animate={{ x: useDynamicPrice ? 20 : 2 }}
@@ -334,8 +334,8 @@ export function DateTimePicker({
           data-testid="wizard-next-btn"
           className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
             canProceedDatetime
-              ? 'bg-[#789A99] text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
-              : 'bg-[#E8D5CF] text-[#A8928D] cursor-not-allowed'
+              ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
+              : 'bg-secondary/80 text-muted-foreground/60 cursor-not-allowed'
           }`}
         >
           {canProceedDatetime

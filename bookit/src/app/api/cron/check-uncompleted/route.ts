@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegramMessage, escHtml } from '@/lib/telegram';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 /**
  * Vercel Cron: щогодини.
@@ -106,7 +107,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       const count = items.length;
       const chatId = profileMap.get(masterId);
 
-      const bodyText = `У вас ${count} незавершен${count === 1 ? 'ий' : count < 5 ? 'их' : 'их'} ${count === 1 ? 'запис' : 'записи'}. Відмітьте їх як завершені, щоб клієнти могли залишити відгук.`;
+      const bodyText = `У вас ${count} незавершен${pluralUk(count, 'ий', 'их', 'их')} ${pluralUk(count, 'запис', 'записи', 'записів')}. Відмітьте їх як завершені, щоб клієнти могли залишити відгук.`;
 
       // Telegram
       if (chatId) {
@@ -118,10 +119,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         const msg =
           `⚠️ <b>Незавершені записи (${count})</b>\n\n` +
           `${lines}\n\n` +
-          `Будь ласка, відмітьте їх як завершені, щоб клієнти могли залишити відгук та вони потрапили у вашу статистику.\n\n` +
-          `👉 <a href="${escHtml(dashboardUrl)}">Відкрити записи</a>`;
+          `Будь ласка, відмітьте їх як завершені, щоб клієнти могли залишити відгук та вони потрапили у вашу статистику.`;
 
-        await sendTelegramMessage(chatId, msg);
+        const replyMarkup = { inline_keyboard: [[{ text: 'Відкрити записи', url: dashboardUrl }]] };
+        await sendTelegramMessage(chatId, msg, replyMarkup);
       }
 
       // In-app notification (also serves as idempotency record)

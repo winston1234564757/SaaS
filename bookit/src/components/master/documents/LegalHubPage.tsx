@@ -51,8 +51,8 @@ export function LegalHubPage() {
         transition={{ ...SPRING, delay: 0.05 }}
         className="bento-card p-5"
       >
-        <h1 className="heading-serif text-xl text-[#2C1A14]">Юридичні документи</h1>
-        <p className="text-sm text-[#A8928D] mt-0.5">
+        <h1 className="heading-serif text-xl text-foreground">Юридичні документи</h1>
+        <p className="text-sm text-muted-foreground/60 mt-0.5">
           ФОП Кошель Віктор Миколайович · РНОКПП 3705708939
         </p>
       </motion.div>
@@ -86,12 +86,12 @@ export function LegalHubPage() {
                     >
                       <Icon size={18} style={{ color: doc.accent }} />
                     </div>
-                    <ExternalLink size={13} className="text-[#C4A89E] mt-1 group-hover:text-[#A8928D] transition-colors" />
+                    <ExternalLink size={13} className="text-[#C4A89E] mt-1 group-hover:text-muted-foreground/60 transition-colors" />
                   </div>
 
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-[#2C1A14] mb-1">{doc.label}</p>
-                    <p className="text-xs text-[#6B5750] leading-relaxed line-clamp-3">{doc.desc}</p>
+                    <p className="text-sm font-bold text-foreground mb-1">{doc.label}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{doc.desc}</p>
                   </div>
 
                   <p className="text-xs font-semibold" style={{ color: doc.accent }}>
@@ -112,12 +112,12 @@ export function LegalHubPage() {
         className="bento-card p-4 flex items-center justify-between"
       >
         <div>
-          <p className="text-sm font-semibold text-[#2C1A14]">Питання щодо документів?</p>
-          <p className="text-xs text-[#A8928D] mt-0.5">Напишіть нам — відповімо протягом 2 робочих днів</p>
+          <p className="text-sm font-semibold text-foreground">Питання щодо документів?</p>
+          <p className="text-xs text-muted-foreground/60 mt-0.5">Напишіть нам — відповімо протягом 2 робочих днів</p>
         </div>
         <a
           href="mailto:viktor.koshel24@gmail.com"
-          className="shrink-0 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors ml-4"
+          className="shrink-0 text-xs font-semibold text-primary hover:text-primary/90 transition-colors ml-4"
         >
           Написати →
         </a>

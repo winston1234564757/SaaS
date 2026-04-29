@@ -113,11 +113,11 @@ function ToastItem({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[15px] font-bold text-[#2C1A14] leading-tight tracking-tight">{toast.title}</p>
-            <span className="text-[10px] font-bold text-[#2C1A14]/40 uppercase tracking-widest">{timeLabel}</span>
+            <p className="text-[15px] font-bold text-foreground leading-tight tracking-tight">{toast.title}</p>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{timeLabel}</span>
           </div>
           {toast.message && (
-            <p className="text-[13px] text-[#2C1A14]/80 mt-1.5 leading-snug font-medium line-clamp-3">{toast.message}</p>
+            <p className="text-[13px] text-foreground/80 mt-1.5 leading-snug font-medium line-clamp-3">{toast.message}</p>
           )}
           {toast.action && (
             <button
@@ -125,7 +125,7 @@ function ToastItem({
                 e.stopPropagation();
                 toast.action?.onClick();
               }}
-              className="mt-4 w-full py-3 px-3 rounded-2xl bg-white/30 border border-white/40 text-[12px] font-bold text-[#2C1A14] hover:bg-white/50 transition-all flex items-center justify-center"
+              className="mt-4 w-full py-3 px-3 rounded-2xl bg-secondary/50 border border-border/40 text-[12px] font-bold text-foreground hover:bg-secondary/80 transition-all flex items-center justify-center"
             >
               {toast.action.label}
             </button>
@@ -136,7 +136,7 @@ function ToastItem({
             e.stopPropagation();
             onDismiss(toast.id);
           }}
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-black/5 text-[#2C1A14]/40 hover:bg-black/10 transition-colors"
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary transition-colors"
         >
           <X size={15} />
         </button>
@@ -179,7 +179,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div 
-        className={`fixed bottom-8 right-6 z-[500] w-[calc(100vw-3rem)] max-w-[340px] pointer-events-none transition-all duration-500 ${isExpanded ? 'h-full' : 'h-[100px]'}`}
+        className={`fixed bottom-8 right-6 z-[100] w-[calc(100vw-3rem)] max-w-[340px] pointer-events-none transition-all duration-500 ${isExpanded ? 'h-full' : 'h-[100px]'}`}
       >
         <AnimatePresence mode="popLayout">
           {toasts.map((t, index) => (
@@ -198,7 +198,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {isExpanded && (
           <button 
             onClick={() => setIsExpanded(false)}
-            className="pointer-events-auto absolute -bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black/10 backdrop-blur-md text-[10px] font-bold text-black/40 uppercase tracking-tighter"
+            className="pointer-events-auto absolute -bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-secondary/80 backdrop-blur-md text-[10px] font-bold text-muted-foreground uppercase tracking-tighter"
           >
             Згорнути
           </button>

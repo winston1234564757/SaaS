@@ -16,6 +16,7 @@ import { completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { getNow } from '@/lib/utils/now';
+import { parseError } from '@/lib/utils/errors';
 
 type ViewMode = 'today' | 'tomorrow' | 'week';
 type DisplayMode = 'list' | 'calendar' | 'stats';
@@ -158,8 +159,8 @@ function EmptyScheduleWidget() {
             onClick={() => setPeriod(p)}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
               period === p
-                ? 'bg-[#789A99] text-white shadow-[0_2px_8px_rgba(120,154,153,0.3)]'
-                : 'text-[#6B5750] hover:bg-white/60'
+                ? 'bg-primary text-white shadow-[0_2px_8px_rgba(120,154,153,0.3)]'
+                : 'text-muted-foreground hover:bg-white/60'
             }`}
           >
             {p === 'yesterday' ? 'Вчора' : 'За тиждень'}
@@ -169,36 +170,36 @@ function EmptyScheduleWidget() {
 
       {loading ? (
         <div className="flex items-center gap-2 py-2">
-          <Loader2 size={14} className="text-[#789A99] animate-spin" />
-          <span className="text-xs text-[#A8928D]">Завантаження...</span>
+          <Loader2 size={14} className="text-primary animate-spin" />
+          <span className="text-xs text-muted-foreground/60">Завантаження...</span>
         </div>
       ) : stats ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#A8928D]">Виручка</span>
-            <span className="text-sm font-bold text-[#2C1A14]">{formatPrice(stats.revenue)}</span>
+            <span className="text-xs text-muted-foreground/60">Виручка</span>
+            <span className="text-sm font-bold text-foreground">{formatPrice(stats.revenue)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#A8928D]">Завершених записів</span>
-            <span className="text-sm font-semibold text-[#6B5750]">{stats.count}</span>
+            <span className="text-xs text-muted-foreground/60">Завершених записів</span>
+            <span className="text-sm font-semibold text-muted-foreground">{stats.count}</span>
           </div>
           {stats.topProducts.length > 0 && (
             <>
-              <div className="h-px bg-[#F5E8E3]/60 my-1" />
+              <div className="h-px bg-secondary/60 my-1" />
               <div className="flex items-center gap-1.5 mb-1">
-                <Package size={11} className="text-[#A8928D]" />
-                <span className="text-[11px] font-semibold text-[#A8928D] uppercase tracking-wide">Топ продажі</span>
+                <Package size={11} className="text-muted-foreground/60" />
+                <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide">Топ продажі</span>
               </div>
               {stats.topProducts.map(p => (
                 <div key={p.name} className="flex items-center justify-between">
-                  <span className="text-xs text-[#6B5750] truncate">{p.name}</span>
-                  <span className="text-xs font-semibold text-[#789A99]">{p.qty} шт.</span>
+                  <span className="text-xs text-muted-foreground truncate">{p.name}</span>
+                  <span className="text-xs font-semibold text-primary">{p.qty} шт.</span>
                 </div>
               ))}
             </>
           )}
           {stats.count === 0 && stats.topProducts.length === 0 && (
-            <p className="text-xs text-[#A8928D] text-center pt-1">Даних немає</p>
+            <p className="text-xs text-muted-foreground/60 text-center pt-1">Даних немає</p>
           )}
         </div>
       ) : null}
@@ -231,13 +232,13 @@ function CalendarView({ bookings }: { bookings: BookingWithServices[] }) {
       <div className="grid grid-cols-7 gap-1.5">
         {days.map(({ d, iso, count, isToday, dayName }) => (
           <div key={iso} className="flex flex-col items-center gap-1.5">
-            <span className={`text-[10px] font-medium ${isToday ? 'text-[#789A99]' : 'text-[#A8928D]'}`}>
+            <span className={`text-[10px] font-medium ${isToday ? 'text-primary' : 'text-muted-foreground/60'}`}>
               {dayName}
             </span>
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-semibold transition-all ${
               isToday
-                ? 'bg-[#789A99] text-white shadow-[0_2px_8px_rgba(120,154,153,0.35)]'
-                : 'text-[#6B5750] bg-white/40'
+                ? 'bg-primary text-white shadow-[0_2px_8px_rgba(120,154,153,0.35)]'
+                : 'text-muted-foreground bg-white/40'
             }`}>
               {d.getDate()}
             </div>
@@ -252,7 +253,7 @@ function CalendarView({ bookings }: { bookings: BookingWithServices[] }) {
                     className="w-1 rounded-full"
                     style={{ background: isToday ? '#789A99' : 'rgba(120,154,153,0.4)' }}
                   />
-                  <span className="text-[10px] font-bold text-[#789A99]">{count}</span>
+                  <span className="text-[10px] font-bold text-primary">{count}</span>
                 </>
               ) : (
                 <div className="h-5" />
@@ -282,7 +283,7 @@ function StatsView({ bookings }: { bookings: BookingWithServices[] }) {
   if (bookings.length === 0) {
     return (
       <div className="px-5 py-6 text-center">
-        <p className="text-sm text-[#A8928D]">Записів немає за цей період</p>
+        <p className="text-sm text-muted-foreground/60">Записів немає за цей період</p>
       </div>
     );
   }
@@ -296,16 +297,16 @@ function StatsView({ bookings }: { bookings: BookingWithServices[] }) {
         { label: 'Сер. чек',   value: avgCheck > 0 ? formatPrice(avgCheck) : '—', color: '#2C1A14' },
       ].map(item => (
         <div key={item.label} className="p-3 rounded-2xl bg-white/50 border border-white/80">
-          <p className="text-[10px] text-[#A8928D] uppercase tracking-wide mb-1">{item.label}</p>
+          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide mb-1">{item.label}</p>
           <p className="text-base font-bold" style={{ color: item.color }}>{item.value}</p>
         </div>
       ))}
       {topService && (
         <div className="col-span-2 p-3 rounded-2xl bg-white/50 border border-white/80 flex items-center gap-2">
-          <Star size={13} className="text-[#D4935A] shrink-0" />
+          <Star size={13} className="text-warning shrink-0" />
           <div className="min-w-0">
-            <p className="text-[10px] text-[#A8928D] uppercase tracking-wide">Топ послуга</p>
-            <p className="text-sm font-semibold text-[#2C1A14] truncate">{topService}</p>
+            <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide">Топ послуга</p>
+            <p className="text-sm font-semibold text-foreground truncate">{topService}</p>
           </div>
         </div>
       )}
@@ -331,7 +332,7 @@ export function TodaySchedule() {
       try {
         const { error } = await completeBooking(id);
         if (error) {
-          showToast({ type: 'error', title: 'Помилка', message: error });
+          showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
         } else {
           showToast({ type: 'success', title: 'Запис завершено' });
           await invalidateAll();
@@ -393,15 +394,15 @@ export function TodaySchedule() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <Clock size={16} className="text-[#789A99]" />
-          <h2 className="heading-serif text-base text-[#2C1A14]">Записи</h2>
+          <Clock size={16} className="text-primary" />
+          <h2 className="heading-serif text-base text-foreground">Записи</h2>
           {!isLoading && (
-            <span className="text-xs font-semibold text-[#789A99] bg-[#789A99]/10 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
               {filtered.length}
             </span>
           )}
         </div>
-        <Link href="/dashboard/bookings" className="text-xs text-[#789A99] font-medium flex items-center gap-0.5 hover:underline">
+        <Link href="/dashboard/bookings" className="text-xs text-primary font-medium flex items-center gap-0.5 hover:underline">
           Усі <ChevronRight size={13} />
         </Link>
       </div>
@@ -414,8 +415,8 @@ export function TodaySchedule() {
             onClick={() => setView(tab.id)}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
               view === tab.id
-                ? 'bg-[#789A99] text-white shadow-[0_2px_8px_rgba(120,154,153,0.35)]'
-                : 'text-[#6B5750] hover:bg-white/60'
+                ? 'bg-primary text-white shadow-[0_2px_8px_rgba(120,154,153,0.35)]'
+                : 'text-muted-foreground hover:bg-white/60'
             }`}
           >
             {tab.label}
@@ -424,7 +425,7 @@ export function TodaySchedule() {
       </div>
 
       {/* Display mode toggle (3-segment sliding pill) */}
-      <div className="relative flex bg-[#F5E8E3]/60 rounded-2xl p-0.5 gap-0 mx-5 mb-3">
+      <div className="relative flex bg-secondary/60 rounded-2xl p-0.5 gap-0 mx-5 mb-3">
         {DISPLAY_MODES.map(mode => (
           <button
             key={mode.id}
@@ -456,8 +457,8 @@ export function TodaySchedule() {
         >
           {isLoading ? (
             <div className="flex items-center justify-center py-8 gap-2">
-              <Loader2 size={18} className="text-[#789A99] animate-spin" />
-              <span className="text-sm text-[#A8928D]">Завантаження...</span>
+              <Loader2 size={18} className="text-primary animate-spin" />
+              <span className="text-sm text-muted-foreground/60">Завантаження...</span>
             </div>
           ) : displayMode === 'calendar' ? (
             <CalendarView bookings={filtered} />
@@ -468,10 +469,10 @@ export function TodaySchedule() {
               <EmptyScheduleWidget />
             ) : (
               <div className="flex flex-col items-center py-8 gap-2 text-center px-5">
-                <p className="text-sm font-semibold text-[#2C1A14]">
+                <p className="text-sm font-semibold text-foreground">
                   {view === 'tomorrow' ? 'Завтра записів немає' : 'На тиждень записів немає'}
                 </p>
-                <p className="text-xs text-[#A8928D]">Поділіться сторінкою з клієнтами</p>
+                <p className="text-xs text-muted-foreground/60">Поділіться сторінкою з клієнтами</p>
               </div>
             )
           ) : view === 'week' ? (
@@ -484,7 +485,7 @@ export function TodaySchedule() {
                 return (
                   <div key={date}>
                     <div className="px-5 py-2 bg-white/20">
-                      <span className="text-[11px] font-bold text-[#789A99] uppercase tracking-wide">{dateLabel}</span>
+                      <span className="text-[11px] font-bold text-primary uppercase tracking-wide">{dateLabel}</span>
                     </div>
                     {items.map(b => {
                       const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
@@ -492,17 +493,17 @@ export function TodaySchedule() {
                       return (
                         <div key={b.id} onClick={() => openBooking(b.id)} className="flex items-center gap-4 px-5 py-3 hover:bg-white/40 transition-colors cursor-pointer">
                           <div className="w-12 shrink-0 text-right">
-                            <p className="text-sm font-semibold tabular-nums text-[#6B5750]">{b.start_time}</p>
-                            <p className="text-[10px] text-[#A8928D]">{b.end_time}</p>
+                            <p className="text-sm font-semibold tabular-nums text-muted-foreground">{b.start_time}</p>
+                            <p className="text-[10px] text-muted-foreground/60">{b.end_time}</p>
                           </div>
-                          <div className="w-2 h-2 rounded-full shrink-0 bg-[#E8D5CF]" />
+                          <div className="w-2 h-2 rounded-full shrink-0 bg-secondary/80" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-[#2C1A14] truncate">{svcName}</p>
-                            <p className="text-xs text-[#6B5750] truncate">{b.client_name}</p>
+                            <p className="text-sm font-semibold text-foreground truncate">{svcName}</p>
+                            <p className="text-xs text-muted-foreground truncate">{b.client_name}</p>
                           </div>
                           <BookingActionsDropdown booking={b} onSuccess={invalidateAll} />
                           <div className="flex flex-col items-end gap-1 shrink-0">
-                            <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(b.total_price)}</p>
+                            <p className="text-sm font-bold text-foreground">{formatPrice(b.total_price)}</p>
                             <Badge variant={cfg.variant}>{cfg.label}</Badge>
                           </div>
                         </div>
@@ -523,13 +524,13 @@ export function TodaySchedule() {
                 const isCompleting = completingId === b.id;
 
                 return (
-                  <div key={b.id} className={pastDue ? 'bg-[#D4935A]/4' : ''}>
+                  <div key={b.id} className={pastDue ? 'bg-warning/4' : ''}>
                     {/* Main row */}
                     <div
                       onClick={() => openBooking(b.id)}
                       className={`flex items-center gap-4 px-5 py-4 transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#789A99]/6'
+                          ? 'bg-primary/6'
                           : b.status === 'completed'
                           ? 'opacity-50'
                           : 'hover:bg-white/40'
@@ -538,11 +539,11 @@ export function TodaySchedule() {
                       {/* Час */}
                       <div className="w-12 shrink-0 text-right">
                         <p className={`text-sm font-semibold tabular-nums ${
-                          pastDue ? 'text-[#D4935A]' : isCurrent ? 'text-[#789A99]' : 'text-[#6B5750]'
+                          pastDue ? 'text-warning' : isCurrent ? 'text-primary' : 'text-muted-foreground'
                         }`}>
                           {b.start_time}
                         </p>
-                        <p className="text-[10px] text-[#A8928D]">{b.end_time}</p>
+                        <p className="text-[10px] text-muted-foreground/60">{b.end_time}</p>
                       </div>
 
                       {/* Dot + line */}
@@ -552,32 +553,32 @@ export function TodaySchedule() {
                           delay={150}
                           content={
                             <div className="flex flex-col gap-0.5 min-w-[140px]">
-                              <p className="text-[11px] font-bold text-[#2C1A14]">{svcName}</p>
-                              <p className="text-[11px] text-[#6B5750]">{b.client_name}</p>
-                              <div className="h-px bg-[#F5E8E3] my-0.5" />
-                              <p className="text-[11px] text-[#A8928D]">{b.start_time}–{b.end_time}</p>
+                              <p className="text-[11px] font-bold text-foreground">{svcName}</p>
+                              <p className="text-[11px] text-muted-foreground">{b.client_name}</p>
+                              <div className="h-px bg-secondary my-0.5" />
+                              <p className="text-[11px] text-muted-foreground/60">{b.start_time}–{b.end_time}</p>
                             </div>
                           }
                         >
                           <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 cursor-default ${
                             pastDue
-                              ? 'bg-[#D4935A] ring-2 ring-[#D4935A]/25 ring-offset-1'
+                              ? 'bg-warning ring-2 ring-[#D4935A]/25 ring-offset-1'
                               : isCurrent
-                              ? 'bg-[#789A99] ring-2 ring-[#789A99]/25 ring-offset-1'
+                              ? 'bg-primary ring-2 ring-[#789A99]/25 ring-offset-1'
                               : b.status === 'completed'
-                              ? 'bg-[#A8928D]'
-                              : 'bg-[#E8D5CF]'
+                              ? 'bg-muted-foreground/60'
+                              : 'bg-secondary/80'
                           }`} />
                         </Tooltip>
                         {i < filtered.length - 1 && (
-                          <div className="w-px flex-1 bg-[#E8D5CF]/70" />
+                          <div className="w-px flex-1 bg-secondary/80/70" />
                         )}
                       </div>
 
                       {/* Інфо */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C1A14] truncate">{svcName}</p>
-                        <p className="text-xs text-[#6B5750] truncate">{b.client_name}</p>
+                        <p className="text-sm font-semibold text-foreground truncate">{svcName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{b.client_name}</p>
                       </div>
 
                       {/* Дії */}
@@ -585,7 +586,7 @@ export function TodaySchedule() {
 
                       {/* Ціна + статус */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(b.total_price)}</p>
+                        <p className="text-sm font-bold text-foreground">{formatPrice(b.total_price)}</p>
                         <Badge variant={cfg.variant}>{cfg.label}</Badge>
                       </div>
                     </div>
@@ -596,14 +597,14 @@ export function TodaySchedule() {
                         className="flex items-center gap-2.5 px-5 pb-3 -mt-1"
                         onClick={e => e.stopPropagation()}
                       >
-                        <div className="flex items-center gap-1 text-[#D4935A]">
+                        <div className="flex items-center gap-1 text-warning">
                           <AlertCircle size={11} />
                           <span className="text-[11px] font-semibold">Очікує завершення</span>
                         </div>
                         <button
                           onClick={() => handleQuickComplete(b.id)}
                           disabled={isCompleting}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#5C9E7A]/12 text-[#5C9E7A] text-[11px] font-semibold hover:bg-[#5C9E7A]/20 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-success/12 text-success text-[11px] font-semibold hover:bg-success/20 transition-colors disabled:opacity-50"
                         >
                           {isCompleting
                             ? <Loader2 size={10} className="animate-spin" />
@@ -621,9 +622,9 @@ export function TodaySchedule() {
       </AnimatePresence>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#F5E8E3]/60 bg-white/20">
-        <span className="text-xs text-[#A8928D]">Виручка (завершені)</span>
-        <span className="text-sm font-bold text-[#2C1A14]">{formatPrice(totalRevenue)}</span>
+      <div className="flex items-center justify-between px-5 py-3.5 border-t border-secondary/60 bg-white/20">
+        <span className="text-xs text-muted-foreground/60">Виручка (завершені)</span>
+        <span className="text-sm font-bold text-foreground">{formatPrice(totalRevenue)}</span>
       </div>
     </motion.div>
   );

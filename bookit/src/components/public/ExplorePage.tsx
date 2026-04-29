@@ -95,11 +95,11 @@ export function ExplorePage({ masters, cities }: Props) {
           className="mb-6 text-center"
         >
           <div className="inline-flex items-center gap-2 bg-white/50 border border-white/70 px-4 py-1.5 rounded-full mb-3">
-            <Sparkles size={13} className="text-[#789A99]" />
-            <span className="text-xs font-semibold text-[#6B5750]">Знайди свого майстра</span>
+            <Sparkles size={13} className="text-primary" />
+            <span className="text-xs font-semibold text-muted-foreground">Знайди свого майстра</span>
           </div>
-          <h1 className="heading-serif text-3xl text-[#2C1A14] leading-tight">Красота поруч</h1>
-          <p className="text-sm text-[#6B5750] mt-1">{masters.length} майстрів у Bookit</p>
+          <h1 className="heading-serif text-3xl text-foreground leading-tight">Красота поруч</h1>
+          <p className="text-sm text-muted-foreground mt-1">{masters.length} майстрів у Bookit</p>
         </motion.div>
 
         {/* Search */}
@@ -109,16 +109,16 @@ export function ExplorePage({ masters, cities }: Props) {
           transition={{ delay: 0.06, type: 'spring', stiffness: 280, damping: 24 }}
           className="relative mb-3"
         >
-          <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8928D]" />
+          <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Ім'я, місто або спеціалізація..."
-            className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+            className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8928D] hover:text-[#6B5750]">
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground">
               <X size={14} />
             </button>
           )}
@@ -136,14 +136,14 @@ export function ExplorePage({ masters, cities }: Props) {
             onClick={() => setShowFilters(v => !v)}
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex-shrink-0 ${
               activeFiltersCount > 0 || showFilters
-                ? 'bg-[#789A99] text-white shadow-[0_3px_12px_rgba(120,154,153,0.3)]'
-                : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                ? 'bg-primary text-white shadow-[0_3px_12px_rgba(120,154,153,0.3)]'
+                : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
             }`}
           >
             <SlidersHorizontal size={12} />
             Фільтри
             {activeFiltersCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-white text-[#789A99] text-[9px] font-bold flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-white text-primary text-[9px] font-bold flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}
@@ -155,8 +155,8 @@ export function ExplorePage({ masters, cities }: Props) {
               onClick={() => setActiveCategory(null)}
               className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all ${
                 !activeCategory
-                  ? 'bg-[#789A99] text-white shadow-[0_3px_12px_rgba(120,154,153,0.3)]'
-                  : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                  ? 'bg-primary text-white shadow-[0_3px_12px_rgba(120,154,153,0.3)]'
+                  : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
               }`}
             >
               ✨ Всі
@@ -167,8 +167,8 @@ export function ExplorePage({ masters, cities }: Props) {
                 onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
                 className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all ${
                   activeCategory === cat.id
-                    ? 'bg-[#789A99] text-white shadow-[0_3px_12px_rgba(120,154,153,0.3)]'
-                    : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                    ? 'bg-primary text-white shadow-[0_3px_12px_rgba(120,154,153,0.3)]'
+                    : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
                 }`}
               >
                 {cat.emoji} {cat.label}
@@ -190,16 +190,16 @@ export function ExplorePage({ masters, cities }: Props) {
               <div className="bento-card p-4 flex flex-col gap-3">
                 {/* City filter */}
                 <div>
-                  <p className="text-[11px] font-semibold text-[#A8928D] uppercase tracking-wide mb-2">Місто</p>
+                  <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">Місто</p>
                   <div className="relative">
                     <button
                       onClick={() => setShowCityDropdown(v => !v)}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-white/80 bg-white/70 text-sm text-[#2C1A14] hover:bg-white transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-white/80 bg-white/70 text-sm text-foreground hover:bg-white transition-colors"
                     >
-                      <span className={activeCity ? 'text-[#2C1A14]' : 'text-[#A8928D]'}>
+                      <span className={activeCity ? 'text-foreground' : 'text-muted-foreground/60'}>
                         {activeCity ?? 'Будь-яке місто'}
                       </span>
-                      <ChevronDown size={14} className={`text-[#A8928D] transition-transform ${showCityDropdown ? 'rotate-180' : ''}`} />
+                      <ChevronDown size={14} className={`text-muted-foreground/60 transition-transform ${showCityDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     <AnimatePresence>
                       {showCityDropdown && (
@@ -212,7 +212,7 @@ export function ExplorePage({ masters, cities }: Props) {
                         >
                           <button
                             onClick={() => { setActiveCity(null); setShowCityDropdown(false); }}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!activeCity ? 'bg-[#789A99]/12 text-[#5C7E7D] font-semibold' : 'text-[#6B5750] hover:bg-white/60'}`}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!activeCity ? 'bg-primary/12 text-primary/90 font-semibold' : 'text-muted-foreground hover:bg-white/60'}`}
                           >
                             Будь-яке місто
                           </button>
@@ -220,7 +220,7 @@ export function ExplorePage({ masters, cities }: Props) {
                             <button
                               key={city}
                               onClick={() => { setActiveCity(city); setShowCityDropdown(false); }}
-                              className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${activeCity === city ? 'bg-[#789A99]/12 text-[#5C7E7D] font-semibold' : 'text-[#6B5750] hover:bg-white/60'}`}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${activeCity === city ? 'bg-primary/12 text-primary/90 font-semibold' : 'text-muted-foreground hover:bg-white/60'}`}
                             >
                               {city}
                             </button>
@@ -233,7 +233,7 @@ export function ExplorePage({ masters, cities }: Props) {
 
                 {/* Sort */}
                 <div>
-                  <p className="text-[11px] font-semibold text-[#A8928D] uppercase tracking-wide mb-2">Сортування</p>
+                  <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">Сортування</p>
                   <div className="flex gap-2">
                     {SORT_OPTIONS.map(opt => (
                       <button
@@ -241,8 +241,8 @@ export function ExplorePage({ masters, cities }: Props) {
                         onClick={() => setSort(opt.value)}
                         className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
                           sort === opt.value
-                            ? 'bg-[#789A99] text-white'
-                            : 'bg-white/60 border border-white/80 text-[#6B5750] hover:bg-white'
+                            ? 'bg-primary text-white'
+                            : 'bg-white/60 border border-white/80 text-muted-foreground hover:bg-white'
                         }`}
                       >
                         {opt.label}
@@ -255,7 +255,7 @@ export function ExplorePage({ masters, cities }: Props) {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={() => { setActiveCity(null); setActiveCategory(null); }}
-                    className="text-xs text-[#C05B5B] font-medium hover:underline text-center"
+                    className="text-xs text-destructive font-medium hover:underline text-center"
                   >
                     Скинути фільтри
                   </button>
@@ -267,7 +267,7 @@ export function ExplorePage({ masters, cities }: Props) {
 
         {/* Results count */}
         {(search || activeCategory || activeCity) && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-[#A8928D] mb-3">
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-muted-foreground/60 mb-3">
             Знайдено: {filtered.length}
           </motion.p>
         )}
@@ -276,8 +276,8 @@ export function ExplorePage({ masters, cities }: Props) {
         {filtered.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
             <p className="text-4xl mb-3">🔍</p>
-            <p className="text-sm font-semibold text-[#2C1A14]">Нікого не знайдено</p>
-            <p className="text-xs text-[#A8928D] mt-1">Спробуй інший запит або змінити фільтри</p>
+            <p className="text-sm font-semibold text-foreground">Нікого не знайдено</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Спробуй інший запит або змінити фільтри</p>
           </motion.div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -289,9 +289,9 @@ export function ExplorePage({ masters, cities }: Props) {
 
         {/* Footer */}
         <div className="mt-10 text-center">
-          <p className="text-xs text-[#A8928D]">
+          <p className="text-xs text-muted-foreground/60">
             Ти майстер?{' '}
-            <Link href="/register" className="text-[#789A99] font-semibold hover:underline">
+            <Link href="/register" className="text-primary font-semibold hover:underline">
               Приєднуйся безкоштовно →
             </Link>
           </p>
@@ -320,7 +320,7 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
             >
               {master.avatarEmoji}
               {master.isPro && (
-                <span className="absolute -top-1 -right-1 text-[8px] font-bold text-white bg-[#D4935A] px-1 py-0.5 rounded-full leading-none">
+                <span className="absolute -top-1 -right-1 text-[8px] font-bold text-white bg-warning px-1 py-0.5 rounded-full leading-none">
                   PRO
                 </span>
               )}
@@ -329,12 +329,12 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-[#2C1A14] truncate">{master.name}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{master.name}</p>
                 {master.ratingCount > 0 && (
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <Star size={11} className="text-[#D4935A] fill-[#D4935A]" />
-                    <span className="text-xs font-semibold text-[#2C1A14]">{master.rating.toFixed(1)}</span>
-                    <span className="text-[10px] text-[#A8928D]">({master.ratingCount})</span>
+                    <Star size={11} className="text-warning fill-[#D4935A]" />
+                    <span className="text-xs font-semibold text-foreground">{master.rating.toFixed(1)}</span>
+                    <span className="text-[10px] text-muted-foreground/60">({master.ratingCount})</span>
                   </div>
                 )}
               </div>
@@ -342,20 +342,20 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 {master.city && (
                   <div className="flex items-center gap-1">
-                    <MapPin size={10} className="text-[#A8928D]" />
-                    <span className="text-[11px] text-[#A8928D]">{master.city}</span>
+                    <MapPin size={10} className="text-muted-foreground/60" />
+                    <span className="text-[11px] text-muted-foreground/60">{master.city}</span>
                   </div>
                 )}
                 {master.serviceCount > 0 && (
                   <div className="flex items-center gap-1">
-                    <Scissors size={10} className="text-[#A8928D]" />
-                    <span className="text-[11px] text-[#A8928D]">{master.serviceCount} послуг</span>
+                    <Scissors size={10} className="text-muted-foreground/60" />
+                    <span className="text-[11px] text-muted-foreground/60">{master.serviceCount} послуг</span>
                   </div>
                 )}
               </div>
 
               {master.bio && (
-                <p className="text-xs text-[#6B5750] mt-1.5 line-clamp-2 leading-relaxed">{master.bio}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{master.bio}</p>
               )}
 
               <div className="flex items-center justify-between mt-2">
@@ -363,16 +363,16 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
                   {masterCategories.slice(0, 3).map(cat => (
                     <span
                       key={cat.id}
-                      className="text-[10px] font-medium text-[#6B5750] bg-[#F5E8E3] px-2 py-0.5 rounded-full"
+                      className="text-[10px] font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded-full"
                     >
                       {cat.emoji} {cat.label}
                     </span>
                   ))}
                   {masterCategories.length > 3 && (
-                    <span className="text-[10px] text-[#A8928D]">+{masterCategories.length - 3}</span>
+                    <span className="text-[10px] text-muted-foreground/60">+{masterCategories.length - 3}</span>
                   )}
                 </div>
-                <span className="text-xs font-semibold text-[#789A99] flex-shrink-0 ml-2">
+                <span className="text-xs font-semibold text-primary flex-shrink-0 ml-2">
                   Записатись →
                 </span>
               </div>

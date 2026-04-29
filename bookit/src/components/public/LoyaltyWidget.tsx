@@ -1,6 +1,7 @@
 'use client';
 
 import { Gift, Crown } from 'lucide-react';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface LoyaltyTier {
   targetVisits: number;
@@ -36,8 +37,8 @@ export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
             <Gift size={18} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#2C1A14] leading-snug">Програма лояльності</p>
-            <p className="text-xs text-[#6B5750] mt-0.5">
+            <p className="text-sm font-semibold text-foreground leading-snug">Програма лояльності</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Знижка {formatReward(firstTier)} після {firstTier.targetVisits}-го візиту
             </p>
           </div>
@@ -45,7 +46,7 @@ export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
         {onBook && (
           <button
             onClick={onBook}
-            className="mt-3 w-full py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            className="mt-3 w-full py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 active:scale-95 transition-all"
             style={{ background: '#D4935A' }}
           >
             Записатись і отримати
@@ -67,14 +68,14 @@ export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Crown size={14} style={{ color: '#D4935A' }} />
-            <span className="text-xs font-semibold text-[#2C1A14] uppercase tracking-wider">Програма лояльності</span>
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Програма лояльності</span>
           </div>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(212, 147, 90, 0.15)', color: '#D4935A' }}>
             Максимум
           </span>
         </div>
         <div className="h-2 rounded-full mb-3" style={{ background: '#D4935A' }} />
-        <p className="text-xs font-semibold text-[#2C1A14]">
+        <p className="text-xs font-semibold text-foreground">
           Ви досягли максимального рівня! Ваша постійна знижка: {formatReward(maxTier)}.
         </p>
       </div>
@@ -92,9 +93,9 @@ export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Gift size={14} style={{ color: '#D4935A' }} />
-          <span className="text-xs font-semibold text-[#2C1A14] uppercase tracking-wider">Програма лояльності</span>
+          <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Програма лояльності</span>
         </div>
-        <span className="text-xs font-bold text-[#D4935A]">{currentVisits} / {nextTier?.targetVisits ?? maxTier.targetVisits}</span>
+        <span className="text-xs font-bold text-warning">{currentVisits} / {nextTier?.targetVisits ?? maxTier.targetVisits}</span>
       </div>
 
       <div className="h-2 rounded-full mb-3 overflow-hidden" style={{ background: 'rgba(212, 147, 90, 0.15)' }}>
@@ -110,9 +111,9 @@ export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
         </p>
       )}
 
-      <p className="text-xs text-[#6B5750]">
+      <p className="text-xs text-muted-foreground">
         {nextTier
-          ? `Ще ${visitsLeft} ${visitsLeft === 1 ? 'візит' : visitsLeft < 5 ? 'візити' : 'візитів'} до постійної знижки ${formatReward(nextTier)}.`
+          ? `Ще ${visitsLeft} ${pluralUk(visitsLeft, 'візит', 'візити', 'візитів')} до постійної знижки ${formatReward(nextTier)}.`
           : ''}
       </p>
     </div>

@@ -81,16 +81,16 @@ export function AnchoredTooltip({
 
             <div className="flex items-start gap-3">
               <div className="mt-1 flex-shrink-0">
-                <span className="block w-2.5 h-2.5 rounded-full bg-[#789A99]" />
+                <span className="block w-2.5 h-2.5 rounded-full bg-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-[#2C1A14] leading-snug">{title}</p>
-                <p className="text-xs text-[#6B5750] mt-1 leading-relaxed">{text}</p>
+                <p className="text-sm font-semibold text-foreground leading-snug">{title}</p>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{text}</p>
 
                 <button
                   onClick={handlePrimary}
-                  className="mt-3 px-4 py-1.5 rounded-xl bg-[#789A99] text-white text-xs font-semibold hover:bg-[#6B8C8B] active:scale-95 transition-all"
+                  className="mt-3 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-[#6B8C8B] active:scale-95 transition-all"
                 >
                   {primaryButtonText}
                 </button>
@@ -98,7 +98,7 @@ export function AnchoredTooltip({
 
               <button
                 onClick={onClose}
-                className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-lg text-[#A8928D] hover:text-[#6B5750] hover:bg-[#F5E8E3] transition-colors"
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
               >
                 <X size={12} />
               </button>

@@ -72,24 +72,24 @@ export default async function PortfolioGridPage({ params }: { params: Promise<{ 
       >
         <Link
           href={`/${slug}`}
-          className="w-9 h-9 rounded-2xl bg-white/60 flex items-center justify-center text-[#6B5750]"
+          className="w-9 h-9 rounded-2xl bg-white/60 flex items-center justify-center text-muted-foreground"
         >
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <p className="text-sm font-bold text-[#2C1A14] leading-tight">Портфоліо</p>
-          <p className="text-xs text-[#6B5750]">{masterName}</p>
+          <p className="text-sm font-bold text-foreground leading-tight">Портфоліо</p>
+          <p className="text-xs text-muted-foreground">{masterName}</p>
         </div>
       </div>
 
       <div className="px-4 py-6">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-            <div className="w-16 h-16 rounded-3xl bg-[#F5E8E3] flex items-center justify-center">
+            <div className="w-16 h-16 rounded-3xl bg-secondary flex items-center justify-center">
               <Images size={28} className="text-[#C8B8B2]" />
             </div>
-            <p className="text-base font-bold text-[#2C1A14]">Портфоліо порожнє</p>
-            <p className="text-sm text-[#6B5750]">Майстер ще не додав роботи</p>
+            <p className="text-base font-bold text-foreground">Портфоліо порожнє</p>
+            <p className="text-sm text-muted-foreground">Майстер ще не додав роботи</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -106,7 +106,7 @@ export default async function PortfolioGridPage({ params }: { params: Promise<{ 
                     style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
                   >
                     {/* Cover */}
-                    <div className="relative w-full aspect-square bg-[#F5E8E3]">
+                    <div className="relative w-full aspect-square bg-secondary">
                       {cover ? (
                         <Image src={cover.url} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, 33vw" />
                       ) : (
@@ -122,15 +122,15 @@ export default async function PortfolioGridPage({ params }: { params: Promise<{ 
                     </div>
 
                     <div className="p-3 space-y-1">
-                      <p className="text-xs font-semibold text-[#2C1A14] leading-snug line-clamp-2">{item.title}</p>
+                      <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{item.title}</p>
                       <div className="flex items-center gap-2 flex-wrap">
                         {serviceName && (
-                          <span className="flex items-center gap-1 text-[10px] text-[#A8928D]">
+                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
                             <Scissors size={9} /> {serviceName}
                           </span>
                         )}
                         {reviewCount > 0 && (
-                          <span className="flex items-center gap-1 text-[10px] text-[#A8928D]">
+                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
                             <Star size={9} /> {reviewCount}
                           </span>
                         )}

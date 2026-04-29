@@ -79,7 +79,7 @@ export function ImageUploader({ folder, masterId, value, onChange }: ImageUpload
           <button
             type="button"
             onClick={handleClear}
-            className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+            className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80 active:scale-95 transition-all"
           >
             ✕
           </button>

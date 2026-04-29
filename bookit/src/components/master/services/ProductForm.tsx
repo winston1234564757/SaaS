@@ -116,7 +116,7 @@ export function ProductForm({
       <div className="flex flex-col gap-5">
         {/* Emoji picker */}
         <div>
-          <p className="text-xs font-medium text-[#6B5750] mb-2">Іконка</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Іконка</p>
           <div className="flex items-center gap-3">
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
@@ -131,7 +131,7 @@ export function ProductForm({
                   onClick={() => setForm(f => ({ ...f, emoji: e }))}
                   className={`w-9 h-9 rounded-xl text-xl transition-all ${
                     form.emoji === e
-                      ? 'bg-[#789A99]/20 ring-1.5 ring-[#789A99] scale-110'
+                      ? 'bg-primary/20 ring-1.5 ring-[#789A99] scale-110'
                       : 'bg-white/70 hover:bg-white border border-white/80'
                   }`}
                 >
@@ -144,37 +144,37 @@ export function ProductForm({
 
         {/* Name */}
         <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Назва</label>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Назва</label>
           <input
             type="text"
             value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             placeholder="Наприклад: Гель-лак OPI"
-            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 ${
-              errors.name ? 'border-[#C05B5B]' : 'border-white/80'
+            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-foreground placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 ${
+              errors.name ? 'border-destructive' : 'border-white/80'
             }`}
           />
-          {errors.name && <p className="text-xs text-[#C05B5B] mt-1">{errors.name}</p>}
+          {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
         </div>
 
         {/* Description */}
         <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">
-            Опис <span className="text-[#A8928D] font-normal">(необов'язково)</span>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            Опис <span className="text-muted-foreground/60 font-normal">(необов'язково)</span>
           </label>
           <textarea
             rows={3}
             value={form.description ?? ''}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder="Коротко про товар: бренд, склад, ефект"
-            className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 resize-none"
+            className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 resize-none"
           />
         </div>
 
         {/* Image */}
         <div>
-          <p className="text-xs font-medium text-[#6B5750] mb-2">
-            Фото <span className="text-[#A8928D] font-normal">(необов'язково)</span>
+          <p className="text-xs font-medium text-muted-foreground mb-2">
+            Фото <span className="text-muted-foreground/60 font-normal">(необов'язково)</span>
           </p>
           <ImageUploader
             folder="products"
@@ -186,30 +186,30 @@ export function ProductForm({
 
         {/* Price */}
         <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Ціна (₴)</label>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ціна (₴)</label>
           <input
             type="number"
             min={0}
             value={form.price || ''}
             onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
             placeholder="0"
-            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 ${
-              errors.price ? 'border-[#C05B5B]' : 'border-white/80'
+            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-foreground placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 ${
+              errors.price ? 'border-destructive' : 'border-white/80'
             }`}
           />
-          {errors.price && <p className="text-xs text-[#C05B5B] mt-1">{errors.price}</p>}
+          {errors.price && <p className="text-xs text-destructive mt-1">{errors.price}</p>}
         </div>
 
         {/* Stock */}
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium text-[#6B5750]">Залишок на складі</p>
+          <p className="text-xs font-medium text-muted-foreground">Залишок на складі</p>
           <div className="flex gap-2">
             <button
               onClick={() => !limitStock || handleStockToggle()}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border text-sm font-medium transition-all ${
                 !limitStock
-                  ? 'bg-[#789A99] text-white border-transparent'
-                  : 'bg-white/70 border-white/80 text-[#6B5750] hover:bg-white'
+                  ? 'bg-primary text-white border-transparent'
+                  : 'bg-white/70 border-white/80 text-muted-foreground hover:bg-white'
               }`}
             >
               <InfinityIcon size={15} />
@@ -219,8 +219,8 @@ export function ProductForm({
               onClick={() => limitStock || handleStockToggle()}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border text-sm font-medium transition-all ${
                 limitStock
-                  ? 'bg-[#789A99] text-white border-transparent'
-                  : 'bg-white/70 border-white/80 text-[#6B5750] hover:bg-white'
+                  ? 'bg-primary text-white border-transparent'
+                  : 'bg-white/70 border-white/80 text-muted-foreground hover:bg-white'
               }`}
             >
               <Hash size={15} />
@@ -235,7 +235,7 @@ export function ProductForm({
               value={form.stock ?? 0}
               onChange={e => setForm(f => ({ ...f, stock: Math.max(0, Number(e.target.value)) }))}
               placeholder="0"
-              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20"
+              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20"
             />
           )}
         </div>
@@ -244,16 +244,16 @@ export function ProductForm({
         {services.length > 0 && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Link2 size={14} className="text-[#789A99]" />
-              <p className="text-xs font-medium text-[#6B5750]">Рекомендувати разом з</p>
+              <Link2 size={14} className="text-primary" />
+              <p className="text-xs font-medium text-muted-foreground">Рекомендувати разом з</p>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => { setLinkMode('all'); setLinkedServiceIds([]); }}
                 className={`flex-1 py-2.5 rounded-2xl border text-xs font-medium transition-all ${
                   linkMode === 'all'
-                    ? 'bg-[#789A99] text-white border-transparent'
-                    : 'bg-white/70 border-white/80 text-[#6B5750] hover:bg-white'
+                    ? 'bg-primary text-white border-transparent'
+                    : 'bg-white/70 border-white/80 text-muted-foreground hover:bg-white'
                 }`}
               >
                 Всі послуги
@@ -262,8 +262,8 @@ export function ProductForm({
                 onClick={() => setLinkMode('specific')}
                 className={`flex-1 py-2.5 rounded-2xl border text-xs font-medium transition-all ${
                   linkMode === 'specific'
-                    ? 'bg-[#789A99] text-white border-transparent'
-                    : 'bg-white/70 border-white/80 text-[#6B5750] hover:bg-white'
+                    ? 'bg-primary text-white border-transparent'
+                    : 'bg-white/70 border-white/80 text-muted-foreground hover:bg-white'
                 }`}
               >
                 Обрані послуги
@@ -280,14 +280,14 @@ export function ProductForm({
                       onClick={() => toggleService(s.id)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
                         checked
-                          ? 'bg-[#789A99]/10 border-[#789A99]/30'
+                          ? 'bg-primary/10 border-primary/30'
                           : 'bg-white/70 border-white/80 hover:bg-white'
                       }`}
                     >
                       <span className="text-base">{s.emoji}</span>
-                      <span className="flex-1 text-sm text-[#2C1A14]">{s.name}</span>
+                      <span className="flex-1 text-sm text-foreground">{s.name}</span>
                       <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
-                        checked ? 'bg-[#789A99] border-[#789A99]' : 'border-[#D5C0BA]'
+                        checked ? 'bg-primary border-primary' : 'border-[#D5C0BA]'
                       }`}>
                         {checked && <div className="w-2 h-2 rounded-sm bg-white" />}
                       </div>
@@ -302,7 +302,7 @@ export function ProductForm({
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm transition-all hover:bg-[#6B8C8B] active:scale-[0.98]"
+          className="w-full py-3.5 rounded-2xl bg-primary text-white font-semibold text-sm transition-all hover:bg-[#6B8C8B] active:scale-[0.98]"
         >
           {initial ? 'Зберегти зміни' : 'Додати товар'}
         </button>

@@ -131,20 +131,20 @@ export function PhoneSetupForm() {
           className="flex flex-col gap-4"
         >
           <div className="text-center mb-2">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">
-              <Phone size={24} className="text-[#789A99]" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/15 mb-4">
+              <Phone size={24} className="text-primary" />
             </div>
-            <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1.5">
+            <h1 className="heading-serif text-2xl text-foreground mb-1.5">
               Підтвердіть номер
             </h1>
-            <p className="text-sm text-[#A8928D] leading-relaxed">
+            <p className="text-sm text-muted-foreground/60 leading-relaxed">
               Номер телефону — обов&apos;язкова умова.<br />
               Він потрібен для доступу до ваших записів.
             </p>
           </div>
 
-          <div className="flex items-center rounded-xl border border-[#E8D0C8] bg-white overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-            <span className="pl-4 pr-2 text-[#6B5750] font-medium text-base select-none shrink-0">+38</span>
+          <div className="flex items-center rounded-xl border border-[#E8D0C8] bg-white overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
+            <span className="pl-4 pr-2 text-muted-foreground font-medium text-base select-none shrink-0">+38</span>
             <input
               type="tel"
               inputMode="numeric"
@@ -154,17 +154,17 @@ export function PhoneSetupForm() {
               onKeyDown={e => e.key === 'Enter' && handleSendSms()}
               autoFocus
               autoComplete="tel-national"
-              className="flex-1 py-4 pr-4 text-[#2C1A14] text-base bg-transparent outline-none placeholder:text-[#C4A89E]"
+              className="flex-1 py-4 pr-4 text-foreground text-base bg-transparent outline-none placeholder:text-[#C4A89E]"
             />
           </div>
 
-          {error && <p className="text-sm text-[#C05B5B] pl-1">{error}</p>}
+          {error && <p className="text-sm text-destructive pl-1">{error}</p>}
 
           <button
             type="button"
             onClick={handleSendSms}
             disabled={isSubmitting || phone.length < 9}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-primary text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50"
           >
             {isSubmitting && <Loader2 size={18} className="animate-spin" />}
             {isSubmitting ? 'Відправляємо...' : 'Отримати код'}
@@ -182,13 +182,13 @@ export function PhoneSetupForm() {
           className="flex flex-col gap-4"
         >
           <div className="text-center mb-2">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">
-              <MessageSquare size={24} className="text-[#789A99]" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/15 mb-4">
+              <MessageSquare size={24} className="text-primary" />
             </div>
-            <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1.5">
+            <h1 className="heading-serif text-2xl text-foreground mb-1.5">
               Введіть код
             </h1>
-            <p className="text-sm text-[#A8928D]">
+            <p className="text-sm text-muted-foreground/60">
               Код надіслано на +38 {formatPhoneDisplay(phone)}
             </p>
           </div>
@@ -206,18 +206,18 @@ export function PhoneSetupForm() {
                 onKeyDown={e => handleDigitKeyDown(i, e)}
                 onPaste={handlePaste}
                 autoFocus={i === 0}
-                className="w-11 h-14 text-center text-xl font-bold text-[#2C1A14] rounded-2xl border-2 border-[#E8D0C8] bg-white outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+                className="w-11 h-14 text-center text-xl font-bold text-foreground rounded-2xl border-2 border-[#E8D0C8] bg-white outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all"
               />
             ))}
           </div>
 
-          {error && <p className="text-sm text-[#C05B5B] text-center">{error}</p>}
+          {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
           <button
             type="button"
             onClick={() => handleVerify()}
             disabled={isSubmitting || digits.some(d => !d)}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-primary text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50"
           >
             {isPending && <Loader2 size={18} className="animate-spin" />}
             {isPending ? 'Перевіряємо...' : 'Підтвердити'}
@@ -227,7 +227,7 @@ export function PhoneSetupForm() {
             <button
               type="button"
               onClick={() => { setStep('phone'); setDigits(['', '', '', '', '', '']); setError(''); }}
-              className="flex items-center gap-1.5 text-sm text-[#6B5750] hover:text-[#2C1A14] transition-colors"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={15} /> Змінити номер
             </button>
@@ -235,7 +235,7 @@ export function PhoneSetupForm() {
               type="button"
               onClick={handleResend}
               disabled={resendCooldown > 0}
-              className="text-sm text-[#789A99] font-medium disabled:text-[#A8928D] disabled:cursor-default hover:underline"
+              className="text-sm text-primary font-medium disabled:text-muted-foreground/60 disabled:cursor-default hover:underline"
             >
               {resendCooldown > 0 ? `Через ${resendCooldown}с` : 'Надіслати знову'}
             </button>

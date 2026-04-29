@@ -69,8 +69,8 @@ export default async function InvitePage({ params }: Props) {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <p className="text-center mb-8">
-          <span className="font-serif text-2xl font-semibold text-[#2C1A14]">
-            Bookit<span className="text-[#789A99]">.</span>
+          <span className="font-serif text-2xl font-semibold text-foreground">
+            Bookit<span className="text-primary">.</span>
           </span>
         </p>
 
@@ -86,22 +86,22 @@ export default async function InvitePage({ params }: Props) {
 
           {name ? (
             <>
-              <h1 className="heading-serif text-xl text-[#2C1A14] mb-1">
+              <h1 className="heading-serif text-xl text-foreground mb-1">
                 {name} запрошує тебе!
               </h1>
               {bio && (
-                <p className="text-sm text-[#6B5750] mt-2 leading-relaxed line-clamp-3">{bio}</p>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed line-clamp-3">{bio}</p>
               )}
               {city && (
-                <p className="text-xs text-[#A8928D] mt-1">{city}</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">{city}</p>
               )}
             </>
           ) : (
             <>
-              <h1 className="heading-serif text-xl text-[#2C1A14] mb-1">
+              <h1 className="heading-serif text-xl text-foreground mb-1">
                 Тебе запрошують до Bookit!
               </h1>
-              <p className="text-sm text-[#6B5750] mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Зручний онлайн-запис до майстрів краси
               </p>
             </>
@@ -116,7 +116,7 @@ export default async function InvitePage({ params }: Props) {
             ].map(([icon, text]) => (
               <div key={text} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/60">
                 <span className="text-base">{icon}</span>
-                <span className="text-sm text-[#2C1A14]">{text}</span>
+                <span className="text-sm text-foreground">{text}</span>
               </div>
             ))}
           </div>
@@ -124,7 +124,7 @@ export default async function InvitePage({ params }: Props) {
           {/* CTA */}
           <Link
             href={`/register?ref=${code}`}
-            className="mt-5 flex items-center justify-center w-full h-13 rounded-2xl bg-[#789A99] text-white font-bold text-sm hover:bg-[#5C7E7D] transition-colors"
+            className="mt-5 flex items-center justify-center w-full h-13 rounded-2xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors"
             style={{ height: '3.25rem' }}
           >
             Зареєструватися безкоштовно
@@ -133,16 +133,16 @@ export default async function InvitePage({ params }: Props) {
           {isMaster && (result!.data as any).slug && (
             <Link
               href={`/${(result!.data as any).slug}`}
-              className="mt-3 block text-sm text-[#789A99] hover:text-[#5C7E7D] transition-colors"
+              className="mt-3 block text-sm text-primary hover:text-primary/90 transition-colors"
             >
               Переглянути сторінку {name} →
             </Link>
           )}
         </div>
 
-        <p className="text-center text-xs text-[#A8928D] mt-6">
+        <p className="text-center text-xs text-muted-foreground/60 mt-6">
           Вже є акаунт?{' '}
-          <Link href="/login" className="text-[#789A99] hover:underline">
+          <Link href="/login" className="text-primary hover:underline">
             Увійти
           </Link>
         </p>

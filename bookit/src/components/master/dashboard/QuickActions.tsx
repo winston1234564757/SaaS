@@ -27,16 +27,16 @@ export function QuickActions() {
         transition={{ delay: 0.42, type: 'spring', stiffness: 280, damping: 24 }}
         className="bento-card p-4"
       >
-        <h2 className="heading-serif text-base text-[#2C1A14] mb-3">Швидкі дії</h2>
+        <h2 className="heading-serif text-base text-foreground mb-3">Швидкі дії</h2>
 
         {/* ── Маркетинг ── */}
         <div className="mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#A8928D] mb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">
             Маркетинг
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Tooltip
-              content={<p className="text-[11px] text-[#2C1A14]">Запустити знижку на вільний слот</p>}
+              content={<p className="text-[11px] text-foreground">Запустити знижку на вільний слот</p>}
               position="top"
               delay={400}
             >
@@ -46,17 +46,17 @@ export function QuickActions() {
                 onClick={() => openDrawer('flash_deals')}
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer"
               >
-                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#D4935A] shadow-[0_4px_14px_rgba(212,147,90,0.38)]">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-warning shadow-[0_4px_14px_rgba(212,147,90,0.38)]">
                   <Zap size={18} className="text-white" />
                 </div>
-                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
                   Флеш-акція
                 </span>
               </motion.button>
             </Tooltip>
 
             <Tooltip
-              content={<p className="text-[11px] text-[#2C1A14]">Пікові години, тихий час, рання бронь</p>}
+              content={<p className="text-[11px] text-foreground">Пікові години, тихий час, рання бронь</p>}
               position="top"
               delay={400}
             >
@@ -66,10 +66,10 @@ export function QuickActions() {
                 onClick={() => openDrawer('dynamic_pricing')}
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer"
               >
-                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#789A99] shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-primary shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
                   <TrendingUp size={18} className="text-white" />
                 </div>
-                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
                   Ціноутворення
                 </span>
               </motion.button>
@@ -83,80 +83,80 @@ export function QuickActions() {
         <div className="grid grid-cols-3 gap-2">
 
           {/* Новий запис */}
-          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Створити запис вручну для клієнта</p>} position="top" delay={400}>
+          <Tooltip content={<p className="text-[11px] text-foreground">Створити запис вручну для клієнта</p>} position="top" delay={400}>
             <motion.button
               whileTap={{ scale: 0.94 }}
               onClick={() => setBookingOpen(true)}
               className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer"
             >
-              <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#789A99] shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-primary shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
                 <Plus size={18} className="text-white" />
               </div>
-              <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Новий запис</span>
+              <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Новий запис</span>
             </motion.button>
           </Tooltip>
 
           {/* Аналітика */}
-          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Звіти, виручка та статистика</p>} position="top" delay={400}>
+          <Tooltip content={<p className="text-[11px] text-foreground">Звіти, виручка та статистика</p>} position="top" delay={400}>
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/analytics"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer">
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
-                  <BarChart2 size={18} className="text-[#6B5750]" />
+                  <BarChart2 size={18} className="text-muted-foreground" />
                 </div>
-                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Аналітика</span>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Аналітика</span>
               </Link>
             </motion.div>
           </Tooltip>
 
           {/* Налаштування */}
-          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Профіль, послуги та тема оформлення</p>} position="top" delay={400}>
+          <Tooltip content={<p className="text-[11px] text-foreground">Профіль, послуги та тема оформлення</p>} position="top" delay={400}>
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/settings"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer">
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
-                  <Settings size={18} className="text-[#6B5750]" />
+                  <Settings size={18} className="text-muted-foreground" />
                 </div>
-                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Налаштування</span>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Налаштування</span>
               </Link>
             </motion.div>
           </Tooltip>
 
           {/* Послуги */}
-          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Керувати списком послуг та цінами</p>} position="top" delay={400}>
+          <Tooltip content={<p className="text-[11px] text-foreground">Керувати списком послуг та цінами</p>} position="top" delay={400}>
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/services"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer">
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
-                  <Scissors size={18} className="text-[#6B5750]" />
+                  <Scissors size={18} className="text-muted-foreground" />
                 </div>
-                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Послуги</span>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Послуги</span>
               </Link>
             </motion.div>
           </Tooltip>
 
           {/* Клієнти */}
-          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">CRM: база клієнтів та VIP</p>} position="top" delay={400}>
+          <Tooltip content={<p className="text-[11px] text-foreground">CRM: база клієнтів та VIP</p>} position="top" delay={400}>
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/clients"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer">
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
-                  <Users size={18} className="text-[#6B5750]" />
+                  <Users size={18} className="text-muted-foreground" />
                 </div>
-                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Клієнти</span>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Клієнти</span>
               </Link>
             </motion.div>
           </Tooltip>
 
           {/* Записи */}
-          <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Усі записи: пошук, статуси, CSV</p>} position="top" delay={400}>
+          <Tooltip content={<p className="text-[11px] text-foreground">Усі записи: пошук, статуси, CSV</p>} position="top" delay={400}>
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/bookings"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer">
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white/70 border border-white/80">
-                  <CalendarDays size={18} className="text-[#6B5750]" />
+                  <CalendarDays size={18} className="text-muted-foreground" />
                 </div>
-                <span className="text-[10px] font-medium text-[#6B5750] text-center leading-tight">Записи</span>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Записи</span>
               </Link>
             </motion.div>
           </Tooltip>

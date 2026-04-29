@@ -114,8 +114,83 @@ export interface MasterProfile {
   c2c_enabled?: boolean;
   c2c_discount_pct?: number;
   ships_nova_poshta?: boolean;
+  broadcasts_used?: number;
   created_at: string;
   updated_at: string;
+}
+
+// ── Broadcasts ────────────────────────────────────────────────────────────────
+
+export type BroadcastStatus = 'draft' | 'sending' | 'sent' | 'failed';
+export type BroadcastChannel = 'push' | 'telegram' | 'sms';
+export type BroadcastTagFilter =
+  | 'vip' | 'new' | 'regular' | 'big_check'
+  | 'active' | 'sleeping' | 'at_risk' | 'lost';
+
+export interface Broadcast {
+  id: string;
+  master_id: string;
+  title: string;
+  message_template: string;
+  channels: BroadcastChannel[];
+  tag_filters: BroadcastTagFilter[];
+  discount_percent: number | null;
+  discount_service_id: string | null;
+  discount_expires_days: number | null;
+  service_link_id: string | null;
+  product_link_id: string | null;
+  status: BroadcastStatus;
+  recipients_count: number;
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BroadcastRecipient {
+  id: string;
+  broadcast_id: string;
+  client_id: string;
+  phone: string;
+  push_sent: boolean;
+  telegram_sent: boolean;
+  sms_sent: boolean;
+  clicked_at: string | null;
+  booked_at: string | null;
+  discount_used_at: string | null;
+  created_at: string;
+}
+
+export interface BroadcastLink {
+  id: string;
+  code: string;
+  broadcast_id: string;
+  recipient_id: string | null;
+  target_url: string;
+  clicks: number;
+  created_at: string;
+}
+
+export interface PhoneDiscount {
+  id: string;
+  broadcast_id: string;
+  master_id: string;
+  phone: string;
+  service_id: string | null;
+  discount_percent: number;
+  expires_at: string;
+  used_at: string | null;
+  created_at: string;
+}
+
+export interface BroadcastAnalytics {
+  sent: number;
+  push_sent: number;
+  telegram_sent: number;
+  sms_sent: number;
+  clicked: number;
+  booked: number;
+  discount_used: number;
+  conversion_pct: number;
 }
 
 // ── Rate-limiting & auth tables ──────────────────────────────────────────────

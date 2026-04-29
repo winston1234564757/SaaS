@@ -18,10 +18,10 @@ interface BentoCardProps {
 }
 
 const statusColors = {
-  success: 'bg-[#5C9E7A]',
-  warning: 'bg-[#D4935A]',
-  info: 'bg-[#789A99]',
-  error: 'bg-[#C05B5B]',
+  success: 'bg-success',
+  warning: 'bg-warning',
+  info: 'bg-info',
+  error: 'bg-destructive',
 };
 
 export function BentoCard({
@@ -48,12 +48,12 @@ export function BentoCard({
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="w-10 h-10 rounded-2xl bg-white/40 flex items-center justify-center text-[#6B5750] group-hover:bg-white/60 transition-colors">
+        <div className="w-10 h-10 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:bg-secondary/80 transition-colors">
           <Icon size={20} strokeWidth={2} />
         </div>
         <div className="flex items-center gap-2">
           {hint && (
-            <span className="text-[11px] font-semibold text-[#6B5750]/60 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
               {hint}
             </span>
           )}
@@ -63,13 +63,13 @@ export function BentoCard({
 
       {/* Body */}
       <div className="mt-auto">
-        <h3 className="text-[13px] font-medium text-[#6B5750] mb-0.5">{title}</h3>
+        <h3 className="text-[13px] font-medium text-muted-foreground mb-0.5">{title}</h3>
         <div className="flex flex-col gap-1">
-          <span className="text-3xl font-bold text-[#2C1A14] tracking-tight">
+          <span className="text-3xl font-bold text-foreground tracking-tight">
             {metric}
           </span>
           {description && (
-            <p className="text-[11px] leading-relaxed text-[#6B5750]/80 font-medium">
+            <p className="text-[11px] leading-relaxed text-muted-foreground/80 font-medium">
               {description}
             </p>
           )}

@@ -27,10 +27,10 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
     <section className="px-4 py-6 space-y-4">
       {/* Section header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-[#2C1A14] font-display">Портфоліо</h2>
+        <h2 className="text-lg font-bold text-foreground font-display">Портфоліо</h2>
         <Link
           href={`/${masterSlug}/portfolio`}
-          className="flex items-center gap-1 text-xs font-semibold text-[#789A99]"
+          className="flex items-center gap-1 text-xs font-semibold text-primary"
         >
           Всі роботи <ArrowRight size={13} />
         </Link>
@@ -52,7 +52,7 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
                 style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 16px rgba(44,26,20,0.08)' }}
               >
                 {/* Cover */}
-                <div className="relative w-44 h-44 bg-[#F5E8E3]">
+                <div className="relative w-44 h-44 bg-secondary">
                   {item.cover_url ? (
                     <Image src={item.cover_url} alt={item.title} fill className="object-cover" sizes="176px" />
                   ) : (
@@ -69,13 +69,13 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
 
                 {/* Meta */}
                 <div className="p-3 space-y-1">
-                  <p className="text-xs font-semibold text-[#2C1A14] leading-snug line-clamp-2">{item.title}</p>
+                  <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{item.title}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     {item.service_name && (
-                      <span className="text-[10px] font-medium text-[#A8928D]">{item.service_name}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground/60">{item.service_name}</span>
                     )}
                     {item.review_count > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-[#A8928D]">
+                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/60">
                         <Star size={9} /> {item.review_count}
                       </span>
                     )}
@@ -93,8 +93,8 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
               className="w-44 h-full min-h-[220px] rounded-3xl flex flex-col items-center justify-center gap-2 transition-colors active:scale-[0.97]"
               style={{ border: '2px dashed rgba(120,154,153,0.4)' }}
             >
-              <ArrowRight size={20} className="text-[#789A99]" />
-              <span className="text-xs font-semibold text-[#789A99]">Всі роботи</span>
+              <ArrowRight size={20} className="text-primary" />
+              <span className="text-xs font-semibold text-primary">Всі роботи</span>
             </div>
           </Link>
         </div>

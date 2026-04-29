@@ -79,7 +79,21 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         const results = await Promise.allSettled(
           subs.map(sub => sendPush(sub, { title: 'BookIt 🗓️', body: messageText, url: `/my/bookings?bookingId=${b.id}` }))
         );
-        const anyOk = results.some(r => r.status === 'fulfilled' && r.value.ok);
+        
+        const expiredEndpoints: string[] = [];
+        let anyOk = false;
+        results.forEach((r, i) => {
+          if (r.status === 'fulfilled') {
+            if (r.value.ok) anyOk = true;
+            if (r.value.gone) expiredEndpoints.push(subs[i].endpoint);
+          }
+        });
+        
+        if (expiredEndpoints.length > 0) {
+          // Fire and forget deletion
+          admin.from('push_subscriptions').delete().in('endpoint', expiredEndpoints).then();
+        }
+
         if (anyOk) {
           pushSent++;
           return;

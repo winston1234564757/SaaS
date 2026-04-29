@@ -49,8 +49,8 @@ export function FloatingSidebar() {
     <div className="floating-sidebar flex flex-col p-3">
       {/* Logo */}
       <Link href="/" className="px-4 py-4 mb-2">
-        <span className="heading-serif text-xl text-[#2C1A14]">
-          Bookit<span className="text-[#789A99]">.</span>
+        <span className="heading-serif text-xl text-foreground">
+          Bookit<span className="text-primary">.</span>
         </span>
       </Link>
 
@@ -62,28 +62,28 @@ export function FloatingSidebar() {
           return (
             <Tooltip key={href} content={
               <div>
-                <p className="text-[11px] font-semibold text-[#2C1A14]">{label}</p>
-                <p className="text-[11px] text-[#6B5750]">{hint}</p>
+                <p className="text-[11px] font-semibold text-foreground">{label}</p>
+                <p className="text-[11px] text-muted-foreground">{hint}</p>
               </div>
             } position="right" delay={500}>
               <Link
                 href={href}
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-150 w-full',
-                  isActive ? 'bg-[#789A99]/12 text-[#5C7E7D]' : 'text-[#6B5750] hover:bg-white/55 hover:text-[#2C1A14]'
+                  isActive ? 'bg-primary/12 text-primary/90' : 'text-muted-foreground hover:bg-white/55 hover:text-foreground'
                 )}
               >
                 <div className="relative shrink-0">
                   <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
                   {showBadge && (
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#D4935A] text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center leading-none">
                       {todayPending > 9 ? '9+' : todayPending}
                     </span>
                   )}
                 </div>
                 {label}
                 {showBadge && (
-                  <span className="ml-auto text-[10px] font-semibold text-[#D4935A] bg-[#D4935A]/10 px-1.5 py-0.5 rounded-full">
+                  <span className="ml-auto text-[10px] font-semibold text-warning bg-warning/10 px-1.5 py-0.5 rounded-full">
                     {todayPending} нові
                   </span>
                 )}
@@ -93,22 +93,22 @@ export function FloatingSidebar() {
         })}
 
         {/* Divider */}
-        <div className="my-1 mx-4 h-px bg-[#E8D5CF]/60" />
+        <div className="my-1 mx-4 h-px bg-secondary/80/60" />
 
         {SECONDARY_ITEMS.map(({ href, icon: Icon, label, hint }) => {
           const isActive = pathname.startsWith(href);
           return (
             <Tooltip key={href} content={
               <div>
-                <p className="text-[11px] font-semibold text-[#2C1A14]">{label}</p>
-                <p className="text-[11px] text-[#6B5750]">{hint}</p>
+                <p className="text-[11px] font-semibold text-foreground">{label}</p>
+                <p className="text-[11px] text-muted-foreground">{hint}</p>
               </div>
             } position="right" delay={500}>
               <Link
                 href={href}
                 className={cn(
                   'flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150 w-full',
-                  isActive ? 'bg-[#789A99]/12 text-[#5C7E7D]' : 'text-[#6B5750] hover:bg-white/55 hover:text-[#2C1A14]'
+                  isActive ? 'bg-primary/12 text-primary/90' : 'text-muted-foreground hover:bg-white/55 hover:text-foreground'
                 )}
               >
                 <Icon size={16} strokeWidth={isActive ? 2.5 : 2} className="shrink-0" />
@@ -120,12 +120,12 @@ export function FloatingSidebar() {
       </nav>
 
       {/* Profile */}
-      <div className="pt-3 border-t border-[#E8D5CF]/70">
+      <div className="pt-3 border-t border-secondary/80/70">
         <Tooltip content={
           <div className="flex flex-col gap-0.5">
-            <p className="text-[11px] font-semibold text-[#2C1A14]">{displayName}</p>
-            <p className="text-[11px] text-[#6B5750]">Тариф: {tierLabel}</p>
-            <p className="text-[10px] text-[#789A99]">Перейти до налаштувань профілю →</p>
+            <p className="text-[11px] font-semibold text-foreground">{displayName}</p>
+            <p className="text-[11px] text-muted-foreground">Тариф: {tierLabel}</p>
+            <p className="text-[10px] text-primary">Перейти до налаштувань профілю →</p>
           </div>
         } position="right" delay={400}>
           <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-2xl hover:bg-white/55 transition-colors w-full">
@@ -140,8 +140,8 @@ export function FloatingSidebar() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#2C1A14] truncate">{displayName}</p>
-              <p className="text-xs text-[#A8928D]">{tierLabel}</p>
+              <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
+              <p className="text-xs text-muted-foreground/60">{tierLabel}</p>
             </div>
           </Link>
         </Tooltip>

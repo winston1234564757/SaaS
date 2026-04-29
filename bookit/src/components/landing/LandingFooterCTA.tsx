@@ -29,10 +29,10 @@ export function LandingFooterCTA() {
         <span className="text-6xl">🚀</span>
 
         <div>
-          <h2 className="display-md text-[#2C1A14] mb-3 text-balance">
+          <h2 className="display-md text-foreground mb-3 text-balance">
             Ваш наступний клієнт вже шукає майстра
           </h2>
-          <p className="text-[#6B5750] max-w-md mx-auto leading-relaxed text-lg text-balance">
+          <p className="text-muted-foreground max-w-md mx-auto leading-relaxed text-lg text-balance">
             500+ майстрів вже використовують Bookit для автоматичного заповнення
             розкладу та утримання клієнтів. Приєднуйтесь — налаштування займе менше 2 хвилин.
           </p>
@@ -40,19 +40,19 @@ export function LandingFooterCTA() {
 
         <Link
           href="/register"
-          className="inline-flex items-center gap-2.5 h-14 px-10 rounded-2xl bg-[#789A99] text-white font-bold text-lg hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_24px_rgba(120,154,153,0.4)] active:scale-[0.97]"
+          className="inline-flex items-center gap-2.5 h-14 px-10 rounded-2xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-colors shadow-[0_8px_24px_rgba(120,154,153,0.4)] active:scale-[0.97]"
         >
           Почати заробляти більше — безкоштовно
           <ArrowRight size={20} />
         </Link>
 
         <div className="flex flex-col items-center gap-1">
-          <p className="text-sm text-[#A8928D]">
+          <p className="text-sm text-muted-foreground/60">
             Стартовий план — назавжди безкоштовно · Без кредитної картки
           </p>
-          <p className="text-xs text-[#A8928D]">
+          <p className="text-xs text-muted-foreground/60">
             Сьогодні вже зареєструвалось{' '}
-            <span className="font-semibold text-[#789A99]">{todayCount ?? '…'} майстрів</span>
+            <span className="font-semibold text-primary">{todayCount ?? '…'} майстрів</span>
           </p>
         </div>
       </motion.div>

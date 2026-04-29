@@ -21,6 +21,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           'bento-card',
           hover && 'transition-all duration-200',
+          props.onClick && 'cursor-pointer button-tactile',
           paddingClasses[padding],
           className
         )}

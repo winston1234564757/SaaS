@@ -35,18 +35,18 @@ export function SharePageCard() {
   return (
     <div className="bento-card p-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide">Моя публічна сторінка</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Моя публічна сторінка</p>
         <Link
           href={`/${slug}`}
           target="_blank"
-          className="text-[#A8928D] hover:text-[#789A99] transition-colors"
+          className="text-muted-foreground/60 hover:text-primary transition-colors"
         >
           <ExternalLink size={14} />
         </Link>
       </div>
 
       <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/60 border border-white/80 mb-3">
-        <span className="text-xs text-[#2C1A14] truncate flex-1 font-mono">{displayUrl}</span>
+        <span className="text-xs text-foreground truncate flex-1 font-mono">{displayUrl}</span>
       </div>
 
       <div className="flex gap-2">
@@ -54,22 +54,22 @@ export function SharePageCard() {
           onClick={handleCopy}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             copied
-              ? 'bg-[#5C9E7A]/15 text-[#5C9E7A]'
-              : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20'
-          }`}
+              ? 'bg-success/15 text-success'
+              : 'bg-primary/10 text-primary hover:bg-primary/20'
+          } active:scale-95 transition-all`}
         >
           {copied ? <><Check size={13} /> Скопійовано</> : <><Copy size={13} /> Копіювати</>}
         </button>
         <button
           onClick={handleShare}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-white/60 text-[#6B5750] hover:bg-white/80 transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-white/60 text-muted-foreground hover:bg-white/80 transition-all active:scale-95 transition-all"
         >
           <Share2 size={13} />
           Поділитись
         </button>
         <button
           onClick={() => setQrOpen(true)}
-          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/60 text-[#6B5750] hover:bg-white/80 transition-all"
+          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/60 text-muted-foreground hover:bg-white/80 transition-all"
         >
           <QrCode size={13} />
         </button>
@@ -105,10 +105,10 @@ export function SharePageCard() {
                 }}
               >
                 <div className="flex items-center justify-between w-full">
-                  <p className="text-sm font-semibold text-[#2C1A14]">QR-код сторінки</p>
+                  <p className="text-sm font-semibold text-foreground">QR-код сторінки</p>
                   <button
                     onClick={() => setQrOpen(false)}
-                    className="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-[#A8928D] hover:text-[#6B5750] transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                   >
                     <X size={13} />
                   </button>
@@ -125,14 +125,14 @@ export function SharePageCard() {
                   />
                 </div>
 
-                <p className="text-xs text-[#A8928D] text-center font-mono">{displayUrl}</p>
+                <p className="text-xs text-muted-foreground/60 text-center font-mono">{displayUrl}</p>
 
                 <a
                   href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=2c1a14&margin=10`}
                   download={`qr-${slug}.png`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#789A99]/10 text-[#789A99] text-xs font-semibold hover:bg-[#789A99]/20 transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all"
                 >
                   <Download size={13} />
                   Завантажити PNG

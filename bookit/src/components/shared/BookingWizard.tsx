@@ -8,6 +8,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
 import { useBookingScheduleData } from './wizard/useBookingScheduleData';
 import { useBookingPricing } from './wizard/useBookingPricing';
 import { useBookingWizardState } from './wizard/useBookingWizardState';
@@ -18,8 +19,9 @@ import { ClientDetails } from './wizard/ClientDetails';
 import { BookingSuccess } from './wizard/BookingSuccess';
 import { X, ChevronLeft } from 'lucide-react';
 import { createBooking } from '@/lib/actions/createBooking';
-import { notifyMasterOnBooking, createPublicOrder } from '@/app/[slug]/actions';
+import { createPublicOrder } from '@/app/[slug]/actions';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
+import { getActivePhoneDiscount } from '@/app/(master)/dashboard/marketing/actions';
 import type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
 import { toISO, STEP_TITLE } from './wizard/helpers';
 import { StepProgress } from './wizard/StepProgress';
@@ -83,6 +85,32 @@ export function BookingWizard({
     selectedDate, selectedTime,
     useDynamicPrice, loyaltyDiscount, flashDeal, discountPercent,
   });
+
+  // ── Phone-bound broadcast discount ───────────────────────────────────────────
+  const [phoneDiscountPct, setPhoneDiscountPct] = useState(0);
+  const phoneDiscountTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    if (mode !== 'client' || watchPhone.length < 13) {
+      setPhoneDiscountPct(0);
+      return;
+    }
+    clearTimeout(phoneDiscountTimer.current);
+    phoneDiscountTimer.current = setTimeout(async () => {
+      const result = await getActivePhoneDiscount(watchPhone, masterId);
+      if (!result) { setPhoneDiscountPct(0); return; }
+      if (result.service_id) {
+        const ids = selectedServices.map(s => s.id);
+        if (!ids.includes(result.service_id)) { setPhoneDiscountPct(0); return; }
+      }
+      setPhoneDiscountPct(result.discount_percent);
+    }, 400);
+    return () => clearTimeout(phoneDiscountTimer.current);
+  }, [watchPhone, masterId, mode, selectedServices]);
+
+  const phoneDiscountAmount = phoneDiscountPct > 0
+    ? Math.round(finalTotal * phoneDiscountPct / 100)
+    : 0;
 
   // ── Schedule data ─────────────────────────────────────────────────────────────
   const {
@@ -173,16 +201,6 @@ export function BookingWizard({
         localStorage.removeItem('bookit_ref_pct');
       }
       setCreatedBookingId(result.bookingId);
-      notifyMasterOnBooking({
-        masterId,
-        bookingId: result.bookingId,
-        clientName: watchName.trim(),
-        date: toISO(selectedDate), startTime: selectedTime,
-        services: selectedServices.map(s => s.name).join(', '),
-        totalPrice: result.finalTotal ?? finalTotal,
-        notes: clientNotes.trim() || null,
-        products: cart.length > 0 ? cart.map(ci => ({ name: ci.product.name, quantity: ci.quantity })) : undefined,
-      }).catch(() => {});
     }
     if (mode === 'master') { onSuccess?.(); onClose(); return; }
     go('success', 1);
@@ -203,7 +221,7 @@ export function BookingWizard({
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 bg-[#2C1A14]/25 backdrop-blur-sm pointer-events-auto"
+            className="fixed inset-0 bg-foreground/25 backdrop-blur-sm pointer-events-auto"
             onClick={closeWizard}
           />
           <motion.div
@@ -224,25 +242,25 @@ export function BookingWizard({
             style={{ background: 'rgba(255,248,244,0.97)', backdropFilter: 'blur(32px)' }}
           >
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0 md:hidden">
-              <div className="w-10 h-1 bg-[#E8D5CF] rounded-full" />
+              <div className="w-10 h-1 bg-secondary/80 rounded-full" />
             </div>
             <div className="flex items-center justify-between px-5 py-2 flex-shrink-0">
               <button onClick={goBack}
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-[#EDD9D1] transition-colors active:scale-95 transition-all">
                 <ChevronLeft size={16} />
               </button>
               <div className="text-center">
                 {step !== 'success' && (
                   <>
-                    {masterName && <p className="text-[10px] text-[#A8928D]">{masterName}</p>}
-                    <p className="text-sm font-semibold text-[#2C1A14]">
+                    {masterName && <p className="text-[10px] text-muted-foreground/60">{masterName}</p>}
+                    <p className="text-sm font-semibold text-foreground">
                       {(() => { const t = STEP_TITLE[step]; return typeof t === 'function' ? t(mode) : t; })()}
                     </p>
                   </>
                 )}
               </div>
               <button onClick={closeWizard}
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors">
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-[#EDD9D1] transition-colors active:scale-95 transition-all">
                 <X size={14} />
               </button>
             </div>
@@ -250,14 +268,14 @@ export function BookingWizard({
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-8">
               {isAtLimit && step !== 'success' && (
                 <div className="flex flex-col items-center text-center py-10 gap-4">
-                  <div className="w-16 h-16 rounded-full bg-[#D4935A]/12 flex items-center justify-center text-3xl">🔒</div>
-                  <p className="text-base font-semibold text-[#2C1A14]">Ліміт записів вичерпано</p>
-                  <p className="text-sm text-[#6B5750] leading-relaxed">
+                  <div className="w-16 h-16 rounded-full bg-warning/12 flex items-center justify-center text-3xl">🔒</div>
+                  <p className="text-base font-semibold text-foreground">Ліміт записів вичерпано</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     Майстер досяг ліміту 30 записів на місяць.<br />
                     Нові записи будуть доступні з наступного місяця.
                   </p>
                   <button onClick={closeWizard}
-                    className="px-6 py-3 rounded-2xl bg-[#789A99] text-white text-sm font-semibold">
+                    className="px-6 py-3 rounded-2xl bg-primary text-white text-sm font-semibold active:scale-95 transition-all">
                     Зрозуміло
                   </button>
                 </div>
@@ -372,6 +390,8 @@ export function BookingWizard({
                         c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
                         c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}
                         setC2cBonusToUse={mode === 'client' ? setC2cBonusToUse : undefined}
+                        phoneDiscountPct={mode === 'client' ? phoneDiscountPct : 0}
+                        phoneDiscountAmount={mode === 'client' ? phoneDiscountAmount : 0}
                       />
                     )}
 

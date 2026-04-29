@@ -163,19 +163,19 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-base font-bold text-[#2C1A14] truncate">{client.client_name}</p>
+                    <p className="text-base font-bold text-foreground truncate">{client.client_name}</p>
                     {client.is_vip && (
-                      <span className="text-[10px] font-bold text-[#D4935A] bg-[#D4935A]/12 px-1.5 py-0.5 rounded-full flex-shrink-0">VIP</span>
+                      <span className="text-[10px] font-bold text-warning bg-warning/12 px-1.5 py-0.5 rounded-full flex-shrink-0">VIP</span>
                     )}
                   </div>
-                  <a href={`tel:${client.client_phone}`} className="flex items-center gap-1 text-xs text-[#789A99] hover:text-[#5C7E7D] transition-colors mt-0.5">
+                  <a href={`tel:${client.client_phone}`} className="flex items-center gap-1 text-xs text-primary hover:text-primary/90 transition-colors mt-0.5">
                     <Phone size={11} />
                     {client.client_phone}
                   </a>
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-9 h-9 flex items-center justify-center rounded-2xl bg-white/70 border border-white/80 text-[#A8928D] hover:text-[#6B5750] transition-colors flex-shrink-0"
+                  className="w-9 h-9 flex items-center justify-center rounded-2xl bg-white/70 border border-white/80 text-muted-foreground/60 hover:text-muted-foreground transition-colors flex-shrink-0 active:scale-95 transition-all"
                 >
                   <X size={16} />
                 </button>
@@ -191,17 +191,17 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                   ].map(s => (
                     <div key={s.label} className="bento-card p-3 text-center">
                       <s.icon size={14} className="mx-auto mb-1" style={{ color: s.color }} />
-                      <p className="text-sm font-bold text-[#2C1A14] leading-tight">{s.value}</p>
-                      <p className="text-[10px] text-[#A8928D]">{s.label}</p>
+                      <p className="text-sm font-bold text-foreground leading-tight">{s.value}</p>
+                      <p className="text-[10px] text-muted-foreground/60">{s.label}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Last visit */}
                 {client.last_visit_at && (
-                  <p className="text-xs text-[#A8928D] text-center">
+                  <p className="text-xs text-muted-foreground/60 text-center">
                     Остання візита:{' '}
-                    <span className="text-[#6B5750] font-medium">
+                    <span className="text-muted-foreground font-medium">
                       {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </p>
@@ -212,7 +212,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                   const tags = getAutoTags(client);
                   return tags.length > 0 ? (
                     <div>
-                      <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-2">Теги</p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Теги</p>
                       <div className="flex flex-wrap gap-2">
                         {tags.map(tag => (
                           <span
@@ -240,13 +240,13 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                         setReminding(false);
                       }}
                       disabled={reminding}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold bg-[#C05B5B]/10 text-[#C05B5B] hover:bg-[#C05B5B]/20 transition-all disabled:opacity-60"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all disabled:opacity-60"
                     >
                       <Bell size={15} />
                       {reminding ? 'Надсилаємо...' : 'Нагадати про запис'}
                     </button>
                     {reminderResult && (
-                      <p className={`text-xs text-center px-2 ${reminderResult.startsWith('✅') ? 'text-green-600' : 'text-[#A8928D]'}`}>
+                      <p className={`text-xs text-center px-2 ${reminderResult.startsWith('✅') ? 'text-green-600' : 'text-muted-foreground/60'}`}>
                         {reminderResult}
                       </p>
                     )}
@@ -260,15 +260,15 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                     disabled={isPending}
                     className={`flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold transition-all ${
                       client.is_vip
-                        ? 'bg-[#D4935A]/12 text-[#D4935A] hover:bg-[#D4935A]/20'
-                        : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
-                    } disabled:opacity-60`}
+                        ? 'bg-warning/12 text-warning hover:bg-warning/20'
+                        : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
+                    } disabled:opacity-60 active:scale-95 transition-all`}
                   >
                     <Crown size={15} />
                     {client.is_vip ? 'Прибрати VIP статус' : 'Позначити як VIP'}
                   </button>
                 ) : (
-                  <p className="text-[11px] text-[#A8928D] text-center">
+                  <p className="text-[11px] text-muted-foreground/60 text-center">
                     VIP доступний для клієнтів з акаунтом Bookit
                   </p>
                 )}
@@ -277,16 +277,16 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5">
-                      <PenLine size={13} className="text-[#789A99]" />
-                      <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide">Приватні нотатки</p>
+                      <PenLine size={13} className="text-primary" />
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Приватні нотатки</p>
                     </div>
                     <button
                       onClick={() => handleSaveNote()}
                       disabled={noteSaving || noteText === savedNote}
                       className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
                         noteSaved
-                          ? 'bg-[#5C9E7A]/12 text-[#5C9E7A]'
-                          : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 disabled:opacity-40 disabled:cursor-not-allowed'
+                          ? 'bg-success/12 text-success'
+                          : 'bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-40 disabled:cursor-not-allowed'
                       }`}
                     >
                       {noteSaving ? <Loader2 size={11} className="animate-spin" /> : noteSaved ? <Check size={11} /> : null}
@@ -298,20 +298,20 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                     onChange={e => handleNoteChange(e.target.value)}
                     placeholder="Формула фарбування, алергії, особливі побажання, звички клієнта..."
                     rows={3}
-                    className="w-full text-sm text-[#2C1A14] placeholder-[#C8B0AA] bg-white/60 border border-[#F0DDD8] rounded-2xl px-3.5 py-3 outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 resize-none transition-all leading-relaxed"
+                    className="w-full text-sm text-foreground placeholder-[#C8B0AA] bg-white/60 border border-[#F0DDD8] rounded-2xl px-3.5 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 resize-none transition-all leading-relaxed"
                   />
-                  <p className="text-[10px] text-[#A8928D] mt-1.5">Видимо тільки вам. Автозбереження через 1.5 сек.</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-1.5">Видимо тільки вам. Автозбереження через 1.5 сек.</p>
                 </div>
 
                 {/* Recent bookings */}
                 <div>
-                  <p className="text-xs font-semibold text-[#6B5750] uppercase tracking-wide mb-3">Останні записи</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Останні записи</p>
                   {loading ? (
                     <div className="flex justify-center py-4">
-                      <div className="w-5 h-5 rounded-full border-2 border-[#789A99] border-t-transparent animate-spin" />
+                      <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                     </div>
                   ) : bookings.length === 0 ? (
-                    <p className="text-xs text-[#A8928D] text-center py-4">Записів не знайдено</p>
+                    <p className="text-xs text-muted-foreground/60 text-center py-4">Записів не знайдено</p>
                   ) : (
                     <div className="flex flex-col gap-2">
                       {bookings.map(b => {
@@ -320,11 +320,11 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                         return (
                           <div key={b.id} className="flex items-center gap-3 py-2 px-3 rounded-2xl bg-white/50">
                             <div className="flex-shrink-0 w-10 text-center">
-                              <p className="text-xs font-bold text-[#2C1A14]">{b.start_time}</p>
-                              <p className="text-[10px] text-[#A8928D] break-words leading-tight">{formatDate(b.date)}</p>
+                              <p className="text-xs font-bold text-foreground">{b.start_time}</p>
+                              <p className="text-[10px] text-muted-foreground/60 break-words leading-tight">{formatDate(b.date)}</p>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-[#2C1A14] break-words leading-tight">{b.service_name}</p>
+                              <p className="text-xs font-medium text-foreground break-words leading-tight">{b.service_name}</p>
                               <span
                                 className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
                                 style={{ color: cfg.color, background: cfg.bg }}
@@ -332,7 +332,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                                 {cfg.label}
                               </span>
                             </div>
-                            <p className="text-xs font-bold text-[#2C1A14] flex-shrink-0">{formatPrice(b.total_price)}</p>
+                            <p className="text-xs font-bold text-foreground flex-shrink-0">{formatPrice(b.total_price)}</p>
                           </div>
                         );
                       })}

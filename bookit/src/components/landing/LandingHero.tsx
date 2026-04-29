@@ -26,12 +26,12 @@ export function LandingHero() {
             </div>
           ))}
         </div>
-        <span className="text-sm text-[#2C1A14]">
+        <span className="text-sm text-foreground">
           <strong>500+</strong> майстрів вже заробляють більше
         </span>
         <div className="flex gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} size={11} className="fill-[#D4935A] text-[#D4935A]" />
+            <Star key={i} size={11} className="fill-[#D4935A] text-warning" />
           ))}
         </div>
       </motion.div>
@@ -41,10 +41,10 @@ export function LandingHero() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.18, type: 'spring', stiffness: 260, damping: 22 }}
-        className="display-xl text-[#2C1A14] max-w-3xl text-balance leading-tight"
+        className="display-xl text-foreground max-w-3xl text-balance leading-tight"
       >
         Ваш бізнес не повинен{' '}
-        <em className="not-italic text-[#789A99]">забирати весь ваш час.</em>
+        <em className="not-italic text-primary">забирати весь ваш час.</em>
       </motion.h1>
 
       {/* Sub */}
@@ -52,11 +52,11 @@ export function LandingHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.28 }}
-        className="mt-6 text-xl text-[#6B5750] max-w-xl leading-relaxed text-balance"
+        className="mt-6 text-xl text-muted-foreground max-w-xl leading-relaxed text-balance"
       >
         Перша CRM, яка не просто записує клієнтів, а сама заповнює порожні вікна,
         продає палаючі слоти і повертає втрачених клієнтів.{' '}
-        <span className="text-[#2C1A14] font-medium">Поки ви відпочиваєте.</span>
+        <span className="text-foreground font-medium">Поки ви відпочиваєте.</span>
       </motion.p>
 
       {/* CTA */}
@@ -68,12 +68,12 @@ export function LandingHero() {
       >
         <Link
           href="/register"
-          className="inline-flex items-center gap-2.5 h-14 px-9 rounded-2xl bg-[#789A99] text-white font-semibold text-lg hover:bg-[#5C7E7D] transition-colors shadow-[0_8px_28px_rgba(120,154,153,0.4)] active:scale-[0.97]"
+          className="inline-flex items-center gap-2.5 h-14 px-9 rounded-2xl bg-primary text-white font-semibold text-lg hover:bg-primary/90 transition-colors shadow-[0_8px_28px_rgba(120,154,153,0.4)] active:scale-[0.97]"
         >
           Спробувати безкоштовно
           <ArrowRight size={19} />
         </Link>
-        <span className="text-sm text-[#A8928D]">Без кредитної картки · Старт за 2 хвилини</span>
+        <span className="text-sm text-muted-foreground/60">Без кредитної картки · Старт за 2 хвилини</span>
       </motion.div>
 
       {/* Demo mockup */}
@@ -110,21 +110,21 @@ function DemoMockup() {
           💅
         </div>
         <div>
-          <h3 className="heading-serif text-lg text-[#2C1A14] leading-tight">
+          <h3 className="heading-serif text-lg text-foreground leading-tight">
             Анна Коваленко
           </h3>
-          <p className="text-sm text-[#6B5750] mt-0.5">Манікюр · Київ</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Манікюр · Київ</p>
           <div className="flex items-center gap-1 mt-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={10} className="fill-[#D4935A] text-[#D4935A]" />
+              <Star key={i} size={10} className="fill-[#D4935A] text-warning" />
             ))}
-            <span className="text-xs text-[#A8928D] ml-1">4.9 (128)</span>
+            <span className="text-xs text-muted-foreground/60 ml-1">4.9 (128)</span>
           </div>
         </div>
       </div>
 
       {/* Services */}
-      <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-widest mb-2.5">
+      <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest mb-2.5">
         Послуги
       </p>
       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -138,7 +138,7 @@ function DemoMockup() {
             key={i}
             className={`rounded-2xl p-3 border transition-all ${
               s.popular
-                ? 'col-span-2 border-[#D4935A]/30'
+                ? 'col-span-2 border-warning/30'
                 : 'border-white/60'
             }`}
             style={{
@@ -147,15 +147,15 @@ function DemoMockup() {
                 : 'rgba(255,255,255,0.5)',
             }}
           >
-            <p className="text-sm font-semibold text-[#2C1A14] leading-snug">{s.name}</p>
+            <p className="text-sm font-semibold text-foreground leading-snug">{s.name}</p>
             <div className="flex items-center justify-between mt-1">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-[#D4935A]">{s.price}</span>
+                <span className="text-sm font-bold text-warning">{s.price}</span>
                 {s.oldPrice && (
-                  <span className="text-xs text-[#A8928D] line-through">{s.oldPrice}</span>
+                  <span className="text-xs text-muted-foreground/60 line-through">{s.oldPrice}</span>
                 )}
               </div>
-              <span className="text-xs text-[#A8928D]">{s.time}</span>
+              <span className="text-xs text-muted-foreground/60">{s.time}</span>
             </div>
           </div>
         ))}
@@ -166,17 +166,17 @@ function DemoMockup() {
         className="flex items-center justify-between px-3 py-2 rounded-2xl mb-3 text-xs"
         style={{ background: 'rgba(92,158,122,0.1)' }}
       >
-        <span className="text-[#5C9E7A] font-medium">🎁 Ваші бонуси: 240 балів</span>
-        <span className="text-[#5C9E7A] font-semibold">= 48 ₴</span>
+        <span className="text-success font-medium">🎁 Ваші бонуси: 240 балів</span>
+        <span className="text-success font-semibold">= 48 ₴</span>
       </div>
 
       {/* CTA */}
-      <button className="w-full h-12 rounded-2xl bg-[#789A99] text-white font-semibold text-sm shadow-[0_4px_14px_rgba(120,154,153,0.35)] transition-colors hover:bg-[#5C7E7D]">
+      <button className="w-full h-12 rounded-2xl bg-primary text-white font-semibold text-sm shadow-[0_4px_14px_rgba(120,154,153,0.35)] transition-colors hover:bg-primary/90 active:scale-95 transition-all">
         Записатися
       </button>
 
-      <p className="text-center text-[10px] text-[#A8928D] mt-3">
-        Powered by <span className="font-semibold text-[#789A99]">Bookit</span>
+      <p className="text-center text-[10px] text-muted-foreground/60 mt-3">
+        Powered by <span className="font-semibold text-primary">Bookit</span>
       </p>
     </div>
   );

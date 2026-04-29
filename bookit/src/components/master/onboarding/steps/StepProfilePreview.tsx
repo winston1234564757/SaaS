@@ -92,17 +92,17 @@ function PhoneMockup({
         }}
       >
         {/* Side button decorations */}
-        <div className="absolute left-[-8px] top-[70px] w-1 h-8 rounded-l-full bg-[#2C1A14]" />
-        <div className="absolute left-[-8px] top-[110px] w-1 h-12 rounded-l-full bg-[#2C1A14]" />
-        <div className="absolute right-[-8px] top-[90px] w-1 h-14 rounded-r-full bg-[#2C1A14]" />
+        <div className="absolute left-[-8px] top-[70px] w-1 h-8 rounded-l-full bg-foreground" />
+        <div className="absolute left-[-8px] top-[110px] w-1 h-12 rounded-l-full bg-foreground" />
+        <div className="absolute right-[-8px] top-[90px] w-1 h-14 rounded-r-full bg-foreground" />
 
         {/* Status bar */}
         <div className="flex justify-between items-center px-4 pt-3 pb-1">
-          <span className="text-[9px] font-semibold text-[#2C1A14]">9:41</span>
-          <div className="w-14 h-3 rounded-full bg-[#2C1A14]" />
+          <span className="text-[9px] font-semibold text-foreground">9:41</span>
+          <div className="w-14 h-3 rounded-full bg-foreground" />
           <div className="flex items-center gap-0.5">
-            <div className="w-2.5 h-1.5 rounded-sm border border-[#2C1A14]/60" style={{ fontSize: 0 }}>
-              <div className="h-full w-3/4 bg-[#2C1A14]/60 rounded-sm" />
+            <div className="w-2.5 h-1.5 rounded-sm border border-foreground/60" style={{ fontSize: 0 }}>
+              <div className="h-full w-3/4 bg-foreground/60 rounded-sm" />
             </div>
           </div>
         </div>
@@ -123,14 +123,14 @@ function PhoneMockup({
               >
                 {avatarPreview
                   ? <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
-                  : <User size={16} className="text-[#A8928D]" />}
+                  : <User size={16} className="text-muted-foreground/60" />}
               </div>
 
               <div className="min-w-0">
-                <p className="text-[10px] font-bold text-[#2C1A14] font-display leading-tight truncate">
+                <p className="text-[10px] font-bold text-foreground font-display leading-tight truncate">
                   {displayName}
                 </p>
-                <p className="text-[8px] text-[#A8928D] truncate">
+                <p className="text-[8px] text-muted-foreground/60 truncate">
                   bookit.com.ua/{displaySlug}
                 </p>
               </div>
@@ -176,12 +176,12 @@ function PhoneMockup({
                       style={{ background: TIER_COLOR[svc.tier] }}
                     />
                     <div className="min-w-0">
-                      <p className="text-[8px] font-semibold text-[#2C1A14] leading-tight line-clamp-1">
+                      <p className="text-[8px] font-semibold text-foreground leading-tight line-clamp-1">
                         {svc.name}
                       </p>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <Clock size={6} className="text-[#A8928D]" />
-                        <span className="text-[7px] text-[#A8928D]">{svc.time} хв</span>
+                        <Clock size={6} className="text-muted-foreground/60" />
+                        <span className="text-[7px] text-muted-foreground/60">{svc.time} хв</span>
                       </div>
                     </div>
                   </div>
@@ -199,8 +199,8 @@ function PhoneMockup({
               className="rounded-xl px-3 py-3 text-center"
               style={{ background: 'rgba(255,255,255,0.5)', border: '1px dashed #E8D5CF' }}
             >
-              <Sparkles size={12} className="mx-auto text-[#A8928D] mb-1" />
-              <p className="text-[8px] text-[#A8928D]">Послуги з'являться тут</p>
+              <Sparkles size={12} className="mx-auto text-muted-foreground/60 mb-1" />
+              <p className="text-[8px] text-muted-foreground/60">Послуги з'являться тут</p>
             </div>
           )}
 
@@ -212,7 +212,7 @@ function PhoneMockup({
             {[1,2,3,4,5].map(n => (
               <Star key={n} size={8} fill="#D4935A" color="#D4935A" />
             ))}
-            <span className="text-[8px] text-[#A8928D] ml-0.5">Нові відгуки чекають!</span>
+            <span className="text-[8px] text-muted-foreground/60 ml-0.5">Нові відгуки чекають!</span>
           </div>
 
           {/* Book CTA */}
@@ -238,7 +238,7 @@ function PhoneMockup({
           <motion.span
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ duration: 1.8, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full bg-[#5C9E7A] shrink-0"
+            className="w-1.5 h-1.5 rounded-full bg-success shrink-0"
           />
           Live preview
         </span>
@@ -282,22 +282,22 @@ export function StepProfilePreview({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors mb-5 cursor-pointer"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-5 cursor-pointer active:scale-95 transition-all"
         >
           <ArrowLeft size={13} /> Назад
         </button>
 
-        <h2 className="font-display text-2xl font-semibold text-[#2C1A14] leading-tight mb-1">
+        <h2 className="font-display text-2xl font-semibold text-foreground leading-tight mb-1">
           Твоя сторінка готова 🎉
         </h2>
-        <p className="text-sm text-[#A8928D]">
+        <p className="text-sm text-muted-foreground/60">
           Так клієнти бачитимуть тебе у Bookit
         </p>
       </div>
 
       {/* ── Business name input ── */}
       <div className="px-6 pb-4">
-        <label className="block text-xs font-semibold text-[#6B5750] mb-1.5">
+        <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
           Назва кабінету / студії
         </label>
         <input
@@ -308,7 +308,7 @@ export function StepProfilePreview({
           maxLength={60}
           className={inputCls}
         />
-        <p className="text-[11px] text-[#A8928D] mt-1.5">
+        <p className="text-[11px] text-muted-foreground/60 mt-1.5">
           Показується клієнтам як назва майстра. Залиш порожнім — використаємо ім'я.
         </p>
       </div>
@@ -331,7 +331,7 @@ export function StepProfilePreview({
           type="button"
           onClick={onSave}
           disabled={saving}
-          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 cursor-pointer"
+          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 cursor-pointer active:scale-95 transition-all"
           style={{
             background: 'linear-gradient(135deg, #789A99 0%, #5C7E7D 100%)',
             color: '#fff',
@@ -346,7 +346,7 @@ export function StepProfilePreview({
           type="button"
           onClick={onBack}
           disabled={saving}
-          className="w-full py-2 text-sm text-[#A8928D] hover:text-[#789A99] transition-colors cursor-pointer"
+          className="w-full py-2 text-sm text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer active:scale-95 transition-all"
         >
           Назад
         </button>

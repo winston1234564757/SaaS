@@ -1,33 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendPush } from '@/lib/push';
 
-/**
- * Saves a Web Push subscription for the current user.
- * The subscription is stored in push_subscriptions table.
- * DELETE removes the subscription.
- */
+const WELCOME: Record<string, { title: string; body: string; url: string }> = {
+  master: {
+    title: '🔔 Сповіщення увімкнено',
+    body: 'Нові записи, підтвердження та флеш-акції — все миттєво у тебе в руках',
+    url: '/dashboard',
+  },
+  client: {
+    title: '🔔 Сповіщення підключені',
+    body: 'Ти завжди будеш в курсі: нагадування про записи та спецпропозиції від улюблених майстрів',
+    url: '/my/bookings',
+  },
+};
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let subscription: PushSubscription;
+  let body: Record<string, unknown>;
   try {
-    subscription = await req.json();
+    body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
-  const admin = createAdminClient();
-  const endpoint = (subscription as any).endpoint as string;
+  const { role, ...subscriptionData } = body as { role?: string; endpoint: string; keys: { p256dh: string; auth: string }; [k: string]: unknown };
+  const endpoint = subscriptionData.endpoint as string;
 
+  const admin = createAdminClient();
   await admin.from('push_subscriptions').upsert(
-    { user_id: user.id, endpoint, subscription },
+    { user_id: user.id, endpoint, subscription: subscriptionData },
     { onConflict: 'endpoint' }
   );
 
-  return NextResponse.json({ ok: true });
+  const resolvedRole = role === 'client' ? 'client' : 'master';
+  const welcome = WELCOME[resolvedRole];
+  const subForPush = subscriptionData as { endpoint: string; keys: { p256dh: string; auth: string } };
+
+  console.log('[Push] Sending welcome push — role:', resolvedRole, 'user:', user.id, 'endpoint:', endpoint?.slice(0, 60));
+  const pushResult = await sendPush(subForPush, welcome);
+  console.log('[Push] Welcome push result:', pushResult);
+
+  return NextResponse.json({ ok: true, push_sent: pushResult.ok });
 }
 
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
@@ -35,8 +53,8 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: any;
-  try { body = await req.json(); } catch { body = {}; }
+  let body: { endpoint?: string } = {};
+  try { body = await req.json(); } catch { /* empty body ok */ }
 
   const admin = createAdminClient();
   if (body.endpoint) {

@@ -76,16 +76,16 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
   return (
     <div className="flex flex-col gap-4 pb-12">
       <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Мої замовлення</h1>
-        <p className="text-sm text-[#A8928D]">Історія ваших візитів та покупок</p>
+        <h1 className="heading-serif text-xl text-foreground mb-0.5">Мої замовлення</h1>
+        <p className="text-sm text-muted-foreground/60">Історія ваших візитів та покупок</p>
 
         {/* Tab switcher */}
-        <div className="flex gap-2 mt-4 p-1 rounded-2xl bg-[#F5E8E3]/50">
+        <div className="flex gap-2 mt-4 p-1 rounded-2xl bg-secondary/50">
           <button
             onClick={() => setTab('bookings')}
             className={cn(
               "flex-1 py-2 text-xs font-bold rounded-xl transition-all",
-              tab === 'bookings' ? "bg-white text-[#2C1A14] shadow-sm" : "text-[#A8928D]"
+              tab === 'bookings' ? "bg-white text-foreground shadow-sm" : "text-muted-foreground/60"
             )}
           >
             🗓 Записи
@@ -94,7 +94,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
             onClick={() => setTab('shop')}
             className={cn(
               "flex-1 py-2 text-xs font-bold rounded-xl transition-all",
-              tab === 'shop' ? "bg-white text-[#2C1A14] shadow-sm" : "text-[#A8928D]"
+              tab === 'shop' ? "bg-white text-foreground shadow-sm" : "text-muted-foreground/60"
             )}
           >
             🛍 Магазин
@@ -105,16 +105,16 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
       {filtered.length === 0 && (
         <div className="bento-card p-10 text-center">
           <p className="text-4xl mb-4">{tab === 'bookings' ? '📅' : '📦'}</p>
-          <p className="text-sm font-bold text-[#2C1A14]">
+          <p className="text-sm font-bold text-foreground">
             {tab === 'bookings' ? 'Записів поки немає' : 'Замовлень поки немає'}
           </p>
-          <p className="text-xs text-[#A8928D] mt-1">Знайдіть майстра та оберіть {tab === 'bookings' ? 'послугу' : 'товар'}</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Знайдіть майстра та оберіть {tab === 'bookings' ? 'послугу' : 'товар'}</p>
         </div>
       )}
 
       {upcoming.length > 0 && (
         <section>
-          <p className="text-[10px] font-black text-[#A8928D] uppercase tracking-widest mb-3 px-1">
+          <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest mb-3 px-1">
             {tab === 'bookings' ? 'Найближчі записи' : 'Нові замовлення'}
           </p>
           <div className="flex flex-col gap-3">
@@ -125,7 +125,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
 
       {past.length > 0 && (
         <section className="mt-2">
-          <p className="text-[10px] font-black text-[#A8928D] uppercase tracking-widest mb-3 px-1">
+          <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest mb-3 px-1">
             Минулі
           </p>
           <div className="flex flex-col gap-3">
@@ -187,7 +187,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
       className="bento-card p-4 relative overflow-hidden"
     >
       {/* Type badge */}
-      <div className="absolute top-0 right-0 px-3 py-1 rounded-bl-xl bg-[#F5E8E3] text-[9px] font-black uppercase text-[#A8928D] tracking-tighter">
+      <div className="absolute top-0 right-0 px-3 py-1 rounded-bl-xl bg-secondary text-[9px] font-black uppercase text-muted-foreground/60 tracking-tighter">
         {b.type === 'booking' ? 'Запис' : 'Магазин'}
       </div>
 
@@ -201,31 +201,31 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 pr-12">
-            <p className="text-sm font-bold text-[#2C1A14] truncate">{b.masterName}</p>
+            <p className="text-sm font-bold text-foreground truncate">{b.masterName}</p>
           </div>
 
           <div className="flex flex-col gap-1 mt-1.5">
             <div className="flex items-center gap-1.5">
-              <CalendarDays size={12} className="text-[#A8928D]" />
-              <span className="text-xs text-[#6B5750] font-medium">{formatDate(b.date)}</span>
+              <CalendarDays size={12} className="text-muted-foreground/60" />
+              <span className="text-xs text-muted-foreground font-medium">{formatDate(b.date)}</span>
               {b.type === 'booking' && (
-                <span className="text-xs text-[#6B5750]">· {b.startTime} – {b.endTime}</span>
+                <span className="text-xs text-muted-foreground">· {b.startTime} – {b.endTime}</span>
               )}
             </div>
 
             {b.deliveryType === 'pickup' && b.pickupAt && (
               <div className="flex items-center gap-1.5">
-                <Clock size={12} className="text-[#789A99]" />
-                <span className="text-xs text-[#789A99] font-bold">Самовивіз: {formatDate(b.pickupAt.split('T')[0])}</span>
+                <Clock size={12} className="text-primary" />
+                <span className="text-xs text-primary font-bold">Самовивіз: {formatDate(b.pickupAt.split('T')[0])}</span>
               </div>
             )}
 
             {(b.deliveryType === 'pickup' || b.type === 'booking') && b.masterAddress && (
-              <div className="flex items-start gap-1.5 mt-1 p-3 rounded-xl bg-[#F5E8E3]/40 border border-[#F5E8E3]">
-                <MapPin size={14} className="text-[#A8928D] mt-0.5 shrink-0" />
+              <div className="flex items-start gap-1.5 mt-1 p-3 rounded-xl bg-secondary/40 border border-secondary">
+                <MapPin size={14} className="text-muted-foreground/60 mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-[11px] font-bold text-[#2C1A14] leading-tight">Місце зустрічі</p>
-                  <p className="text-[11px] text-[#6B5750] mt-0.5 line-clamp-1">{b.masterAddress}</p>
+                  <p className="text-[11px] font-bold text-foreground leading-tight">Місце зустрічі</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{b.masterAddress}</p>
                   <a
                     href={b.masterLat && b.masterLng 
                       ? `https://www.google.com/maps/dir/?api=1&destination=${b.masterLat},${b.masterLng}`
@@ -233,7 +233,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#789A99] hover:underline"
+                    className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-primary hover:underline"
                   >
                     <Navigation size={10} /> Маршрут
                   </a>
@@ -252,32 +252,32 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
           </div>
 
           {/* Services/Products list */}
-          <div className="mt-3 flex flex-col gap-1.5 border-t border-[#F5E8E3] pt-3">
+          <div className="mt-3 flex flex-col gap-1.5 border-t border-secondary pt-3">
             {b.services?.map((s, i) => (
               <div key={i} className="flex justify-between items-center text-[11px]">
-                <span className="text-[#6B5750] font-medium">{s.name}</span>
-                <span className="text-[#A8928D]">{formatPrice(s.price)}</span>
+                <span className="text-muted-foreground font-medium">{s.name}</span>
+                <span className="text-muted-foreground/60">{formatPrice(s.price)}</span>
               </div>
             ))}
             {b.products?.map((p, i) => (
               <div key={i} className="flex justify-between items-center text-[11px]">
-                <span className="text-[#6B5750] font-medium">
+                <span className="text-muted-foreground font-medium">
                   {p.name} <span className="text-[10px] opacity-60">×{p.qty}</span>
                 </span>
-                <span className="text-[#A8928D]">{formatPrice(p.price * p.qty)}</span>
+                <span className="text-muted-foreground/60">{formatPrice(p.price * p.qty)}</span>
               </div>
             ))}
           </div>
 
           <div className="flex items-center justify-between mt-3 gap-2">
-            <span className="text-base font-black text-[#2C1A14]">{formatPrice(b.totalPrice)}</span>
+            <span className="text-base font-black text-foreground">{formatPrice(b.totalPrice)}</span>
             {b.masterSlug && b.status === 'completed' && b.type === 'booking' && (() => {
               const ids = b.services?.map(s => s.id).filter(Boolean).join(',');
               const href = ids ? `/${b.masterSlug}?services=${ids}` : `/${b.masterSlug}`;
               return (
                 <Link
                   href={href}
-                  className="flex items-center gap-1 text-[11px] font-bold text-[#789A99] hover:text-[#5C7E7D] transition-colors"
+                  className="flex items-center gap-1 text-[11px] font-bold text-primary hover:text-primary/90 transition-colors"
                 >
                   Записатися знову <ChevronRight size={12} />
                 </Link>
@@ -292,21 +292,21 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                 {!confirmCancel ? (
                   <button
                     onClick={() => setConfirmCancel(true)}
-                    className="text-[11px] text-[#C05B5B] hover:underline"
+                    className="text-[11px] text-destructive hover:underline"
                   >
                     Скасувати запис
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2 bg-[#C05B5B]/8 rounded-xl px-3 py-2">
-                    <p className="text-[11px] text-[#C05B5B] flex-1 font-medium">Скасувати цей запис?</p>
+                  <div className="flex items-center gap-2 bg-destructive/8 rounded-xl px-3 py-2">
+                    <p className="text-[11px] text-destructive flex-1 font-medium">Скасувати цей запис?</p>
                     <button
                       onClick={handleCancel}
                       disabled={cancelPending}
-                      className="px-3 py-1 bg-[#C05B5B] text-white rounded-lg text-[10px] font-bold disabled:opacity-40"
+                      className="px-3 py-1 bg-destructive text-white rounded-lg text-[10px] font-bold disabled:opacity-40 active:scale-95 transition-all"
                     >
                       {cancelPending ? '...' : 'Так'}
                     </button>
-                    <button onClick={() => setConfirmCancel(false)} className="text-[#A8928D] p-1">
+                    <button onClick={() => setConfirmCancel(false)} className="text-muted-foreground/60 p-1">
                       <X size={14} />
                     </button>
                   </div>
@@ -317,16 +317,16 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
             {(canReview || reviewSubmitted) && (
               <div>
                 {reviewSubmitted ? (
-                  <div className="flex items-center gap-1.5 text-[#5C9E7A] bg-[#5C9E7A]/8 px-3 py-1.5 rounded-xl">
+                  <div className="flex items-center gap-1.5 text-success bg-success/8 px-3 py-1.5 rounded-xl">
                     <Check size={12} />
                     <span className="text-[11px] font-bold">Дякуємо за відгук!</span>
                   </div>
                 ) : !showReview ? (
                   <button
                     onClick={() => setShowReview(true)}
-                    className="w-full py-2.5 rounded-xl bg-[#F5E8E3] text-[#2C1A14] text-xs font-bold hover:bg-[#F0DED6] transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rounded-xl bg-secondary text-foreground text-xs font-bold hover:bg-[#F0DED6] transition-all flex items-center justify-center gap-2"
                   >
-                    <Star size={14} className="text-[#D4935A]" />
+                    <Star size={14} className="text-warning" />
                     Залишити відгук
                   </button>
                 ) : (
@@ -335,7 +335,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="bg-[#F5E8E3]/50 rounded-2xl p-4 overflow-hidden"
+                      className="bg-secondary/50 rounded-2xl p-4 overflow-hidden"
                     >
                       <div className="flex items-center gap-1.5 mb-3 justify-center">
                         {[1, 2, 3, 4, 5].map(n => (
@@ -350,7 +350,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                               size={28}
                               className={
                                 n <= (hoverRating || reviewRating)
-                                  ? 'fill-[#D4935A] text-[#D4935A]'
+                                  ? 'fill-[#D4935A] text-warning'
                                   : 'text-[#D4B9B0]'
                               }
                             />
@@ -363,20 +363,20 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                         onChange={e => setReviewComment(e.target.value)}
                         placeholder="Як вам сервіс? (необов'язково)..."
                         rows={2}
-                        className="w-full px-4 py-3 rounded-xl bg-white border border-white/80 text-xs text-[#2C1A14] placeholder-[#A8928D] outline-none resize-none focus:border-[#789A99] transition-colors shadow-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-white border border-white/80 text-xs text-foreground placeholder-[#A8928D] outline-none resize-none focus:border-primary transition-colors shadow-sm"
                       />
 
                       <div className="flex items-center gap-3 mt-3">
                         <button
                           onClick={() => setShowReview(false)}
-                          className="text-[11px] text-[#A8928D] font-bold"
+                          className="text-[11px] text-muted-foreground/60 font-bold"
                         >
                           Скасувати
                         </button>
                         <button
                           onClick={handleSubmitReview}
                           disabled={reviewRating === 0 || reviewPending}
-                          className="ml-auto px-5 py-2 rounded-xl bg-[#2C1A14] text-white text-[11px] font-bold disabled:opacity-50 shadow-md shadow-[#2C1A14]/10"
+                          className="ml-auto px-5 py-2 rounded-xl bg-foreground text-white text-[11px] font-bold disabled:opacity-50 shadow-md shadow-[#2C1A14]/10 active:scale-95 transition-all"
                         >
                           {reviewPending ? '...' : 'Надіслати'}
                         </button>
@@ -388,7 +388,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
             )}
 
             {b.hasReview && !reviewSubmitted && (
-              <p className="text-[10px] text-[#A8928D] font-medium italic">Ви вже залишили відгук про це замовлення</p>
+              <p className="text-[10px] text-muted-foreground/60 font-medium italic">Ви вже залишили відгук про це замовлення</p>
             )}
           </div>
         </div>

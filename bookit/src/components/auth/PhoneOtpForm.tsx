@@ -339,10 +339,10 @@ export function PhoneOtpForm() {
             >
               {/* Header */}
               <div className="text-center mb-7">
-                <h1 className="heading-serif text-2xl text-[#2C1A14] mb-2">
+                <h1 className="heading-serif text-2xl text-foreground mb-2">
                   Ласкаво просимо
                 </h1>
-                <p className="text-sm text-[#A8928D]">
+                <p className="text-sm text-muted-foreground/60">
                   Як ви хочете використовувати Bookit?
                 </p>
               </div>
@@ -360,24 +360,24 @@ export function PhoneOtpForm() {
                         relative flex flex-col items-center text-center gap-3
                         p-5 rounded-2xl border-2 transition-all duration-150
                         ${isSelected
-                          ? 'border-[#789A99] bg-[#789A99]/8 text-[#2C1A14] scale-[1.02]'
-                          : 'border-[#E8D0C8] bg-white text-[#6B5750] hover:border-[#C4A89E]'
+                          ? 'border-primary bg-primary/8 text-foreground scale-[1.02]'
+                          : 'border-[#E8D0C8] bg-white text-muted-foreground hover:border-[#C4A89E]'
                         }
                       `}
                     >
                       {isSelected && (
-                        <span className="absolute top-2.5 right-2.5 text-[#789A99]">
+                        <span className="absolute top-2.5 right-2.5 text-primary">
                           <CheckCircle2 size={16} strokeWidth={2} />
                         </span>
                       )}
-                      <span className={isSelected ? 'text-[#789A99]' : 'text-[#A8928D]'}>
+                      <span className={isSelected ? 'text-primary' : 'text-muted-foreground/60'}>
                         {role.icon}
                       </span>
                       <div>
                         <p className="font-semibold text-sm leading-tight mb-1">
                           {role.label}
                         </p>
-                        <p className="text-xs text-[#A8928D] leading-snug">
+                        <p className="text-xs text-muted-foreground/60 leading-snug">
                           {role.description}
                         </p>
                       </div>
@@ -395,7 +395,7 @@ export function PhoneOtpForm() {
                     onChange={e => setTermsAccepted(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-5 h-5 rounded-md border-2 border-[#E8D0C8] bg-white peer-checked:bg-[#789A99] peer-checked:border-[#789A99] transition-all flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-md border-2 border-[#E8D0C8] bg-white peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
                     {termsAccepted && (
                       <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
                         <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -403,14 +403,14 @@ export function PhoneOtpForm() {
                     )}
                   </div>
                 </div>
-                <span className="text-xs text-[#6B5750] leading-relaxed">
+                <span className="text-xs text-muted-foreground leading-relaxed">
                   Я ознайомлений(а) та погоджуюсь з{' '}
                   <a
                     href="/legal/terms-of-service"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="text-[#789A99] underline underline-offset-2 hover:text-[#5C7E7D] transition-colors"
+                    className="text-primary underline underline-offset-2 hover:text-primary/90 transition-colors"
                   >
                     Умовами надання послуг
                   </a>
@@ -420,7 +420,7 @@ export function PhoneOtpForm() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="text-[#789A99] underline underline-offset-2 hover:text-[#5C7E7D] transition-colors"
+                    className="text-primary underline underline-offset-2 hover:text-primary/90 transition-colors"
                   >
                     Публічною офертою
                   </a>{' '}
@@ -430,7 +430,7 @@ export function PhoneOtpForm() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="text-[#789A99] underline underline-offset-2 hover:text-[#5C7E7D] transition-colors"
+                    className="text-primary underline underline-offset-2 hover:text-primary/90 transition-colors"
                   >
                     Політикою конфіденційності
                   </a>
@@ -442,7 +442,7 @@ export function PhoneOtpForm() {
                 type="button"
                 onClick={() => setStep('phone')}
                 disabled={!termsAccepted}
-                className="flex items-center justify-center w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100"
+                className="flex items-center justify-center w-full py-4 rounded-2xl bg-primary text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100"
               >
                 Продовжити
               </button>
@@ -463,7 +463,7 @@ export function PhoneOtpForm() {
               <button
                 type="button"
                 onClick={() => { setStep('role_select'); setError(''); }}
-                className="flex items-center gap-1.5 text-xs font-medium text-[#789A99] bg-[#789A99]/10 rounded-full px-3 py-1.5 mb-5 hover:bg-[#789A99]/18 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 rounded-full px-3 py-1.5 mb-5 hover:bg-primary/18 transition-colors"
               >
                 <ArrowLeft size={13} />
                 {roleLabel}
@@ -471,13 +471,13 @@ export function PhoneOtpForm() {
 
               {/* Header */}
               <div className="mb-7 text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">
-                  <Phone size={24} className="text-[#789A99]" />
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/15 mb-4">
+                  <Phone size={24} className="text-primary" />
                 </div>
-                <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1.5">
+                <h1 className="heading-serif text-2xl text-foreground mb-1.5">
                   Вхід у Bookit
                 </h1>
-                <p className="text-sm text-[#A8928D]">
+                <p className="text-sm text-muted-foreground/60">
                   Введіть номер — надішлемо SMS з кодом
                 </p>
               </div>
@@ -487,7 +487,7 @@ export function PhoneOtpForm() {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isGoogleLoading}
-                className="flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl bg-white text-[#2C1A14] text-base font-semibold border border-[#E8D0C8] hover:border-[#D4B8AE] hover:shadow-md active:scale-[0.98] transition-all shadow-sm mb-5 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl bg-white text-foreground text-base font-semibold border border-[#E8D0C8] hover:border-[#D4B8AE] hover:shadow-md active:scale-[0.98] transition-all shadow-sm mb-5 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isGoogleLoading ? <Loader2 size={18} className="animate-spin" /> : <GoogleIcon />}
                 Продовжити з Google
@@ -499,14 +499,14 @@ export function PhoneOtpForm() {
                   <span className="w-full border-t border-[#E8D8D2]" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white/80 px-3 text-[#A8928D] tracking-wide">Або через SMS</span>
+                  <span className="bg-white/80 px-3 text-muted-foreground/60 tracking-wide">Або через SMS</span>
                 </div>
               </div>
 
               {/* Phone field */}
               <div className="mb-4">
-                <div className="flex items-center gap-0 rounded-2xl border border-[#E8D0C8] bg-white overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-                  <span className="pl-4 pr-2 text-[#6B5750] font-medium text-base select-none shrink-0">
+                <div className="flex items-center gap-0 rounded-2xl border border-[#E8D0C8] bg-white overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
+                  <span className="pl-4 pr-2 text-muted-foreground font-medium text-base select-none shrink-0">
                     +38
                   </span>
                   <input
@@ -516,13 +516,13 @@ export function PhoneOtpForm() {
                     value={formatPhoneDisplay(phone)}
                     onChange={e => handlePhoneChange(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSendSms()}
-                    className="flex-1 py-4 pr-4 text-[#2C1A14] text-base bg-transparent outline-none placeholder:text-[#C4A89E]"
+                    className="flex-1 py-4 pr-4 text-foreground text-base bg-transparent outline-none placeholder:text-[#C4A89E]"
                     autoFocus
                     autoComplete="tel-national"
                   />
                 </div>
                 {error && (
-                  <p className="mt-2 text-sm text-[#C05B5B] pl-1">{error}</p>
+                  <p className="mt-2 text-sm text-destructive pl-1">{error}</p>
                 )}
               </div>
 
@@ -530,7 +530,7 @@ export function PhoneOtpForm() {
                 type="button"
                 onClick={handleSendSms}
                 disabled={loading || phone.length < 9}
-                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-primary text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : null}
                 {loading ? 'Відправляємо...' : 'Отримати код'}
@@ -549,13 +549,13 @@ export function PhoneOtpForm() {
             >
               {/* Header */}
               <div className="mb-7 text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#789A99]/15 mb-4">
-                  <MessageSquare size={24} className="text-[#789A99]" />
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/15 mb-4">
+                  <MessageSquare size={24} className="text-primary" />
                 </div>
-                <h1 className="heading-serif text-2xl text-[#2C1A14] mb-1.5">
+                <h1 className="heading-serif text-2xl text-foreground mb-1.5">
                   Введіть код
                 </h1>
-                <p className="text-sm text-[#A8928D]">
+                <p className="text-sm text-muted-foreground/60">
                   Код надіслано на +38 {formatPhoneDisplay(phone)}
                 </p>
               </div>
@@ -574,20 +574,20 @@ export function PhoneOtpForm() {
                     onKeyDown={e => handleDigitKeyDown(i, e)}
                     onPaste={i === 0 ? handleDigitPaste : undefined}
                     autoFocus={i === 0}
-                    className="w-11 h-14 text-center text-xl font-bold text-[#2C1A14] rounded-2xl border-2 border-[#E8D0C8] bg-white outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all caret-[#789A99]"
+                    className="w-11 h-14 text-center text-xl font-bold text-foreground rounded-2xl border-2 border-[#E8D0C8] bg-white outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all caret-[#789A99]"
                   />
                 ))}
               </div>
 
               {error && (
-                <p className="mb-4 text-sm text-[#C05B5B] text-center">{error}</p>
+                <p className="mb-4 text-sm text-destructive text-center">{error}</p>
               )}
 
               <button
                 type="button"
                 onClick={() => handleVerifyOtp()}
                 disabled={loading || digits.some(d => !d)}
-                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#789A99] text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-primary text-white text-base font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : null}
                 {loading ? 'Перевіряємо...' : 'Підтвердити'}
@@ -602,7 +602,7 @@ export function PhoneOtpForm() {
                     setDigits(['', '', '', '', '', '']);
                     setError('');
                   }}
-                  className="flex items-center gap-1.5 text-sm text-[#6B5750] hover:text-[#2C1A14] transition-colors"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ArrowLeft size={15} />
                   Змінити номер
@@ -612,7 +612,7 @@ export function PhoneOtpForm() {
                   type="button"
                   onClick={handleResend}
                   disabled={resendCooldown > 0}
-                  className="text-sm text-[#789A99] font-medium disabled:text-[#A8928D] disabled:cursor-default hover:underline transition-colors"
+                  className="text-sm text-primary font-medium disabled:text-muted-foreground/60 disabled:cursor-default hover:underline transition-colors"
                 >
                   {resendCooldown > 0 ? `Повторно через ${resendCooldown}с` : 'Надіслати знову'}
                 </button>

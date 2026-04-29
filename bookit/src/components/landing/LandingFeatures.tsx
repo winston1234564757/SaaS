@@ -51,10 +51,10 @@ export function LandingFeatures() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="display-md text-[#2C1A14] text-balance">
+        <h2 className="display-md text-foreground text-balance">
           Не просто запис — повноцінна машина для зростання бізнесу
         </h2>
-        <p className="mt-3 text-[#6B5750] text-lg max-w-xl mx-auto text-balance">
+        <p className="mt-3 text-muted-foreground text-lg max-w-xl mx-auto text-balance">
           Інструменти, які раніше були тільки у великих мереж, тепер у вашому смартфоні.
         </p>
       </motion.div>
@@ -77,8 +77,8 @@ export function LandingFeatures() {
                 <Icon size={22} style={{ color: f.color }} />
               </div>
               <div>
-                <h3 className="heading-serif text-xl text-[#2C1A14] mb-2">{f.title}</h3>
-                <p className="text-sm text-[#6B5750] leading-relaxed">{f.description}</p>
+                <h3 className="heading-serif text-xl text-foreground mb-2">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
               </div>
             </motion.div>
           );

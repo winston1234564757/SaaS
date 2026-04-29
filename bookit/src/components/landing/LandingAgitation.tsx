@@ -49,12 +49,12 @@ export function LandingAgitation() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <p className="text-sm font-semibold text-[#C05B5B] uppercase tracking-widest mb-3">
+        <p className="text-sm font-semibold text-destructive uppercase tracking-widest mb-3">
           Звучить знайомо?
         </p>
-        <h2 className="display-md text-[#2C1A14] text-balance">
+        <h2 className="display-md text-foreground text-balance">
           Ви втрачаєте гроші прямо зараз.{' '}
-          <em className="not-italic text-[#C05B5B]">Щодня.</em>
+          <em className="not-italic text-destructive">Щодня.</em>
         </h2>
       </motion.div>
 
@@ -83,10 +83,10 @@ export function LandingAgitation() {
                 <span className="text-3xl">{pain.emoji}</span>
               </div>
               <div>
-                <h3 className="heading-serif text-lg text-[#2C1A14] mb-2 leading-snug">
+                <h3 className="heading-serif text-lg text-foreground mb-2 leading-snug">
                   {pain.title}
                 </h3>
-                <p className="text-sm text-[#6B5750] leading-relaxed">{pain.description}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{pain.description}</p>
               </div>
             </motion.div>
           );
@@ -97,7 +97,7 @@ export function LandingAgitation() {
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ delay: 0.5 }}
-        className="text-center text-base text-[#6B5750] mt-8 max-w-lg mx-auto text-balance"
+        className="text-center text-base text-muted-foreground mt-8 max-w-lg mx-auto text-balance"
       >
         І так — кожен тиждень. Місяць за місяцем. Поки щось не зміниться.
       </motion.p>

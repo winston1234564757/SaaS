@@ -12,6 +12,7 @@ import {
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { getNow } from '@/lib/utils/now';
+import { parseError } from '@/lib/utils/errors';
 
 type BookingSlice = Pick<
   BookingWithServices,
@@ -54,7 +55,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
     startTransition(async () => {
       const { error } = await action();
       if (error) {
-        showToast({ type: 'error', title: 'Помилка', message: error });
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
         showToast({ type: 'success', title: successTitle });
         await (onSuccess ?? defaultInvalidate)();
@@ -77,7 +78,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
             icon: <CheckCircle2 size={14} />,
             label: 'Підтвердити',
             onClick: () => run(() => confirmBooking(id), 'Запис підтверджено'),
-            className: 'text-[#789A99]',
+            className: 'text-primary',
             disabled: isPending,
           },
         ]
@@ -88,7 +89,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
             icon: <UserCheck size={14} />,
             label: 'Завершити',
             onClick: () => run(() => completeBooking(id), 'Запис завершено'),
-            className: 'text-[#5C9E7A]',
+            className: 'text-success',
             disabled: isPending,
           },
         ]
@@ -99,7 +100,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
             icon: <XCircle size={14} />,
             label: 'Скасувати',
             onClick: () => run(() => cancelBooking(id), 'Запис скасовано'),
-            className: 'text-[#C05B5B]',
+            className: 'text-destructive',
             disabled: isPending,
           },
         ]
@@ -110,7 +111,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
     <DropdownMenu
       trigger={
         isPending ? (
-          <Loader2 size={16} className="animate-spin text-[#789A99]" />
+          <Loader2 size={16} className="animate-spin text-primary" />
         ) : (
           <MoreVertical size={16} />
         )

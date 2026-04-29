@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { MonoProvider } from '@/lib/billing/MonoProvider';
 import { getBaseUrl } from '@/lib/utils/url';
 import type { ProviderId } from '@/lib/billing/PaymentProvider';
+import { parseError } from '@/lib/utils/errors';
 
 const TEST_AMOUNT_KOPECKS = 500; // 5 UAH
 
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ checkoutUrl: result.checkoutUrl, orderId: result.orderId });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
+    const message = parseError(err);
     console.error('[test-charge] provider error:', message);
     return NextResponse.json({ error: 'Provider error', detail: message }, { status: 502 });
   }

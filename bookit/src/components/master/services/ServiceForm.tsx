@@ -79,7 +79,7 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
       <div className="flex flex-col gap-5">
         {/* Emoji picker */}
         <div>
-          <p className="text-xs font-medium text-[#6B5750] mb-2">Іконка</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Іконка</p>
           <div className="flex items-center gap-3">
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
@@ -94,7 +94,7 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
                   onClick={() => setForm(f => ({ ...f, emoji: e }))}
                   className={`w-9 h-9 rounded-xl text-xl transition-all ${
                     form.emoji === e
-                      ? 'bg-[#789A99]/20 ring-1.5 ring-[#789A99] scale-110'
+                      ? 'bg-primary/20 ring-1.5 ring-[#789A99] scale-110'
                       : 'bg-white/70 hover:bg-white border border-white/80'
                   }`}
                 >
@@ -107,37 +107,37 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
 
         {/* Name */}
         <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Назва</label>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Назва</label>
           <input
             type="text"
             value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             placeholder="Наприклад: Класичний манікюр"
-            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 ${
-              errors.name ? 'border-[#C05B5B]' : 'border-white/80'
+            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-foreground placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 ${
+              errors.name ? 'border-destructive' : 'border-white/80'
             }`}
           />
-          {errors.name && <p className="text-xs text-[#C05B5B] mt-1">{errors.name}</p>}
+          {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
         </div>
 
         {/* Description */}
         <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">
-            Опис <span className="text-[#A8928D] font-normal">(необов'язково)</span>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            Опис <span className="text-muted-foreground/60 font-normal">(необов'язково)</span>
           </label>
           <textarea
             rows={3}
             value={form.description ?? ''}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder="Розкажіть клієнтам про послугу"
-            className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 resize-none"
+            className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 resize-none"
           />
         </div>
 
         {/* Image */}
         <div>
-          <p className="text-xs font-medium text-[#6B5750] mb-2">
-            Фото <span className="text-[#A8928D] font-normal">(необов'язково)</span>
+          <p className="text-xs font-medium text-muted-foreground mb-2">
+            Фото <span className="text-muted-foreground/60 font-normal">(необов'язково)</span>
           </p>
           <ImageUploader
             folder="services"
@@ -149,7 +149,7 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
 
         {/* Category */}
         <div>
-          <p className="text-xs font-medium text-[#6B5750] mb-2">Категорія</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Категорія</p>
           <div className="flex flex-wrap gap-1.5">
             {CATEGORIES.map(cat => (
               <button
@@ -157,8 +157,8 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
                 onClick={() => setForm(f => ({ ...f, category: cat }))}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   form.category === cat
-                    ? 'bg-[#789A99] text-white'
-                    : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                    ? 'bg-primary text-white'
+                    : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
                 }`}
               >
                 {cat}
@@ -169,23 +169,23 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
 
         {/* Price */}
         <div>
-          <label className="text-xs font-medium text-[#6B5750] mb-1.5 block">Ціна (₴)</label>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ціна (₴)</label>
           <input
             type="number"
             min={0}
             value={form.price || ''}
             onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
             placeholder="0"
-            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 ${
-              errors.price ? 'border-[#C05B5B]' : 'border-white/80'
+            className={`w-full px-4 py-3 rounded-2xl bg-white/70 border text-sm text-foreground placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 ${
+              errors.price ? 'border-destructive' : 'border-white/80'
             }`}
           />
-          {errors.price && <p className="text-xs text-[#C05B5B] mt-1">{errors.price}</p>}
+          {errors.price && <p className="text-xs text-destructive mt-1">{errors.price}</p>}
         </div>
 
         {/* Duration */}
         <div>
-          <p className="text-xs font-medium text-[#6B5750] mb-2">Тривалість</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Тривалість</p>
           <div className="flex flex-wrap gap-1.5 mb-3">
             {DURATIONS.map(d => (
               <button
@@ -196,8 +196,8 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   form.duration === d && customDurationStr === ''
-                    ? 'bg-[#789A99] text-white'
-                    : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                    ? 'bg-primary text-white'
+                    : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
                 }`}
               >
                 {formatDuration(d)}
@@ -218,12 +218,12 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
                 if (!isNaN(v) && v >= 5) setForm(f => ({ ...f, duration: Math.min(480, v) }));
               }}
               placeholder="хв"
-              className="w-24 px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20"
+              className="w-24 px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20"
             />
-            <span className="text-xs text-[#A8928D]">
+            <span className="text-xs text-muted-foreground/60">
               {customDurationStr ? formatDuration(form.duration) : formatDuration(form.duration)}
               {customDurationStr !== '' && (
-                <span className="ml-1.5 text-[#789A99] font-medium">нестандарт</span>
+                <span className="ml-1.5 text-primary font-medium">нестандарт</span>
               )}
             </span>
           </div>
@@ -234,20 +234,20 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
           onClick={() => setForm(f => ({ ...f, popular: !f.popular }))}
           className={`flex items-center gap-3 w-full px-4 py-3 rounded-2xl border transition-all ${
             form.popular
-              ? 'bg-[#D4935A]/10 border-[#D4935A]/30'
+              ? 'bg-warning/10 border-warning/30'
               : 'bg-white/70 border-white/80 hover:bg-white'
           }`}
         >
           <Star
             size={16}
-            className={form.popular ? 'fill-[#D4935A] text-[#D4935A]' : 'text-[#A8928D]'}
+            className={form.popular ? 'fill-[#D4935A] text-warning' : 'text-muted-foreground/60'}
           />
           <div className="text-left flex-1">
-            <p className="text-sm font-medium text-[#2C1A14]">Популярна послуга</p>
-            <p className="text-xs text-[#A8928D]">Відображається першою на публічній сторінці</p>
+            <p className="text-sm font-medium text-foreground">Популярна послуга</p>
+            <p className="text-xs text-muted-foreground/60">Відображається першою на публічній сторінці</p>
           </div>
           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-            form.popular ? 'border-[#D4935A] bg-[#D4935A]' : 'border-[#D5C0BA]'
+            form.popular ? 'border-warning bg-warning' : 'border-[#D5C0BA]'
           }`}>
             {form.popular && <div className="w-2 h-2 rounded-full bg-white" />}
           </div>
@@ -256,7 +256,7 @@ export function ServiceForm({ isOpen, onClose, onSave, initial, masterId }: Serv
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm transition-all hover:bg-[#6B8C8B] active:scale-[0.98]"
+          className="w-full py-3.5 rounded-2xl bg-primary text-white font-semibold text-sm transition-all hover:bg-[#6B8C8B] active:scale-[0.98]"
         >
           {initial ? 'Зберегти зміни' : 'Додати послугу'}
         </button>

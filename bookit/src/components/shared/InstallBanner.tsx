@@ -72,13 +72,13 @@ export function InstallBanner() {
         {!isIOS && (
           <button
             onClick={install}
-            className="flex items-center gap-1.5 bg-white text-[#5C7E7D] text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0"
+            className="flex items-center gap-1.5 bg-white text-primary/90 text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0 active:scale-95 transition-all"
           >
             <Download size={12} />
             Додати
           </button>
         )}
-        <button onClick={dismiss} className="text-white/70 flex-shrink-0 ml-1">
+        <button onClick={dismiss} className="text-white/70 flex-shrink-0 ml-1 active:scale-95 transition-all">
           <X size={16} />
         </button>
       </div>

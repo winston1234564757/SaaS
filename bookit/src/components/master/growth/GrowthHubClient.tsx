@@ -46,13 +46,13 @@ function GrowthDrawers({ loyaltyData, referralData, partnersData }: GrowthHubCli
   return (
     <>
       <HubDrawer isOpen={drawer === 'loyalty'} onClose={closeDrawer} title="Лояльність">
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D] animate-pulse">Завантаження...</div>}>
+        <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
           <LoyaltyPage isDrawer={true} />
         </Suspense>
       </HubDrawer>
 
       <HubDrawer isOpen={drawer === 'referral'} onClose={closeDrawer} title="Реферальна програма">
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D] animate-pulse">Завантаження...</div>}>
+        <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
           <ReferralPage
             masterId={referralData.masterId}
             referralCode={referralData.code}
@@ -69,7 +69,7 @@ function GrowthDrawers({ loyaltyData, referralData, partnersData }: GrowthHubCli
       </HubDrawer>
 
       <HubDrawer isOpen={drawer === 'partners'} onClose={closeDrawer} title="Партнерська мережа">
-        <Suspense fallback={<div className="p-8 text-center text-[#A8928D] animate-pulse">Завантаження...</div>}>
+        <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
           <PartnersPage
             partners={partnersData.partners}
             inviteLink={partnersData.inviteLink}
@@ -99,12 +99,12 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
     <div className="flex flex-col gap-8">
       {/* Header Area */}
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-12 h-12 rounded-2xl bg-[#D4935A]/10 flex items-center justify-center text-[#D4935A]">
+        <div className="w-12 h-12 rounded-2xl bg-warning/10 flex items-center justify-center text-warning">
           <Rocket size={24} />
         </div>
         <div>
-          <h1 className="display-md text-[#2C1A14]">Growth Hub</h1>
-          <p className="text-sm text-[#6B5750]">Інструменти залучення та утримання клієнтів</p>
+          <h1 className="display-md text-foreground">Growth Hub</h1>
+          <p className="text-sm text-muted-foreground">Інструменти залучення та утримання клієнтів</p>
         </div>
       </div>
 

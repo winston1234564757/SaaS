@@ -24,9 +24,11 @@ export async function cancelBooking(bookingId: string): Promise<void> {
   const { data: booking } = await supabase
     .from('bookings')
     .select(`
+      master_id,
       date, start_time,
       booking_services ( service_name ),
       master_profiles!inner (
+        id,
         telegram_chat_id,
         profiles!inner ( full_name )
       )
@@ -58,7 +60,26 @@ export async function cancelBooking(bookingId: string): Promise<void> {
     services: services || 'Послуга',
   });
 
-  await sendTelegramMessage(chatId, text);
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua';
+  const replyMarkup = { inline_keyboard: [[{ text: 'Відкрити запис', url: `${SITE_URL}/dashboard/bookings?bookingId=${bookingId}` }]] };
+  await sendTelegramMessage(chatId, text, replyMarkup);
+
+  const admin = createAdminClient();
+  const { data: pushSubs } = await admin
+    .from('push_subscriptions')
+    .select('endpoint, subscription')
+    .eq('user_id', booking.master_id);
+
+  if (pushSubs && pushSubs.length > 0) {
+    const { sendPush } = await import('@/lib/push');
+    await Promise.allSettled(
+      pushSubs.map(sub => sendPush(sub.subscription as any, {
+        title: 'Запис скасовано ❌',
+        body: `Клієнт ${clientName} скасував свій запис на ${booking.date}`,
+        url: `/dashboard/bookings?bookingId=${bookingId}`,
+      }))
+    );
+  }
 }
 
 export async function submitReview(params: {
@@ -142,6 +163,8 @@ export async function submitReview(params: {
     ? (masterResult.value.data?.telegram_chat_id as string | null)
     : null;
   if (chatId) {
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua';
+    const replyMarkup = { inline_keyboard: [[{ text: 'Переглянути', url: `${SITE_URL}/dashboard/reviews` }]] };
     await sendTelegramMessage(
       chatId,
       buildReviewMessage({ 
@@ -149,6 +172,23 @@ export async function submitReview(params: {
         rating: params.rating, 
         comment: `${params.orderId ? '[Замовлення] ' : ''}${params.comment || ''}`.trim() 
       }),
+      replyMarkup
     ).catch(() => {});
+  }
+
+  const { data: pushSubs } = await admin
+    .from('push_subscriptions')
+    .select('endpoint, subscription')
+    .eq('user_id', finalMasterId);
+
+  if (pushSubs && pushSubs.length > 0) {
+    const { sendPush } = await import('@/lib/push');
+    await Promise.allSettled(
+      pushSubs.map(sub => sendPush(sub.subscription as any, {
+        title: 'Новий відгук ⭐',
+        body: `${clientName} залишив відгук: ${params.rating}/5`,
+        url: `/dashboard/reviews`,
+      }))
+    );
   }
 }

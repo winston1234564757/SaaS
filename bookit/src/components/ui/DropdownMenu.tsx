@@ -82,7 +82,7 @@ export function DropdownMenu({
         aria-expanded={open}
         className={
           triggerClassName ??
-          'flex items-center justify-center w-11 h-11 rounded-xl text-[#A8928D] hover:bg-white/60 hover:text-[#6B5750] transition-colors disabled:opacity-40 shrink-0'
+          'flex items-center justify-center w-11 h-11 rounded-xl text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-all active:scale-95 disabled:opacity-40 shrink-0'
         }
       >
         {trigger}
@@ -96,7 +96,7 @@ export function DropdownMenu({
             ref={menuRef}
             role="menu"
             style={menuStyle}
-            className="min-w-[172px] rounded-2xl bg-white/95 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_rgba(44,26,20,0.12)] overflow-hidden"
+            className="min-w-[172px] rounded-2xl bg-background/95 backdrop-blur-xl border border-border/80 shadow-[0_8px_32px_rgba(44,26,20,0.12)] overflow-hidden"
           >
             {items.map((item, i) => (
               <button
@@ -109,7 +109,7 @@ export function DropdownMenu({
                   setOpen(false);
                   item.onClick();
                 }}
-                className={`w-full flex items-center gap-2.5 px-4 min-h-[44px] text-sm font-medium transition-colors hover:bg-[#F5E8E3]/60 disabled:opacity-40 ${item.className ?? 'text-[#2C1A14]'}`}
+                className={`w-full flex items-center gap-2.5 px-4 min-h-[44px] text-sm font-medium transition-all hover:bg-muted active:scale-95 disabled:opacity-40 ${item.className ?? 'text-foreground'}`}
               >
                 {item.icon}
                 {item.label}

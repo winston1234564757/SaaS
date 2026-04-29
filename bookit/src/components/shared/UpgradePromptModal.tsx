@@ -11,7 +11,7 @@ const PRO_PERKS = [
   'Експорт клієнтів у CSV',
   'Програма лояльності без обмежень',
   'Без водяного знаку Bookit',
-  'Повний маркетинговий пакет сторіс',
+  'Всі маркетингові інструменти',
 ];
 
 const MARKETING_PERKS = [
@@ -49,7 +49,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-[#2C1A14]/30 backdrop-blur-sm z-[80]"
+            className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-[80]"
             onClick={onClose}
           />
 
@@ -62,7 +62,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-xl text-[#A8928D] hover:text-[#2C1A14] hover:bg-[#F5E8E3] transition-colors"
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
             >
               <X size={16} />
             </button>
@@ -73,17 +73,17 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
                 style={{ background: isMarketing ? 'rgba(212,147,90,0.15)' : 'rgba(120,154,153,0.15)' }}
               >
                 {isMarketing
-                  ? <Star size={22} className="text-[#D4935A]" />
-                  : <Zap size={22} className="text-[#789A99]" />
+                  ? <Star size={22} className="text-warning" />
+                  : <Zap size={22} className="text-primary" />
                 }
               </div>
-              <h2 className="heading-serif text-lg text-[#2C1A14]">
+              <h2 className="heading-serif text-lg text-foreground">
                 {isMarketing
                   ? (feature ?? 'Ця функція доступна в Pro')
                   : feature ? `«${feature}» — функція Pro` : 'Ця функція доступна в Pro'
                 }
               </h2>
-              <p className="text-sm text-[#6B5750] text-balance leading-relaxed">
+              <p className="text-sm text-muted-foreground text-balance leading-relaxed">
                 {isMarketing
                   ? (description ?? 'Ваші відгуки — це ваша найкраща реклама. Переходьте на PRO, щоб створювати професійний контент за 2 кліки.')
                   : (description ?? 'Оновіть тариф, щоб розблокувати цю та інші просунуті функції.')
@@ -93,17 +93,17 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
 
             <ul className="flex flex-col gap-2">
               {(isMarketing ? MARKETING_PERKS : PRO_PERKS).map((perk) => (
-                <li key={perk} className="flex items-start gap-2.5 text-sm text-[#6B5750]">
+                <li key={perk} className="flex items-start gap-2.5 text-sm text-muted-foreground">
                   <Check
                     size={14}
-                    className={isMarketing ? 'text-[#D4935A] mt-0.5 flex-shrink-0' : 'text-[#789A99] mt-0.5 flex-shrink-0'}
+                    className={isMarketing ? 'text-warning mt-0.5 flex-shrink-0' : 'text-primary mt-0.5 flex-shrink-0'}
                   />
                   {perk}
                 </li>
               ))}
             </ul>
 
-            <p className="text-center text-xs text-[#A8928D]">
+            <p className="text-center text-xs text-muted-foreground/60">
               700 ₴/місяць · Скасування будь-коли
             </p>
 
@@ -113,15 +113,15 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
                 className={`w-full h-12 rounded-2xl font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
                   isMarketing
                     ? 'bg-gradient-to-r from-[#D4935A] to-[#C07840] text-white hover:opacity-90 shadow-[0_4px_16px_rgba(212,147,90,0.35)]'
-                    : 'bg-[#789A99] text-white hover:bg-[#5C7E7D] shadow-[0_4px_16px_rgba(120,154,153,0.35)]'
-                }`}
+                    : 'bg-primary text-white hover:bg-primary/90 shadow-[0_4px_16px_rgba(120,154,153,0.35)]'
+                } active:scale-95 transition-all`}
               >
                 <Zap size={16} />
                 Перейти на Pro →
               </button>
               <button
                 onClick={onClose}
-                className="w-full h-10 rounded-2xl text-[#A8928D] text-sm hover:text-[#6B5750] transition-colors"
+                className="w-full h-10 rounded-2xl text-muted-foreground/60 text-sm hover:text-muted-foreground transition-colors active:scale-95 transition-all"
               >
                 Пізніше
               </button>

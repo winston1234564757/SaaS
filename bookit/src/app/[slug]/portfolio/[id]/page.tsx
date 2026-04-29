@@ -146,11 +146,11 @@ export default async function PortfolioItemPage(
       >
         <Link
           href={`/${masterSlug}/portfolio`}
-          className="w-9 h-9 rounded-2xl bg-white/60 flex items-center justify-center text-[#6B5750]"
+          className="w-9 h-9 rounded-2xl bg-white/60 flex items-center justify-center text-muted-foreground"
         >
           <ArrowLeft size={18} />
         </Link>
-        <p className="text-sm font-bold text-[#2C1A14] truncate flex-1">{item.title}</p>
+        <p className="text-sm font-bold text-foreground truncate flex-1">{item.title}</p>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
@@ -185,21 +185,21 @@ export default async function PortfolioItemPage(
           className="rounded-3xl p-5 space-y-3"
           style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
         >
-          <h1 className="text-xl font-bold text-[#2C1A14] font-display">{item.title}</h1>
+          <h1 className="text-xl font-bold text-foreground font-display">{item.title}</h1>
 
           <div className="flex flex-wrap gap-2">
             {item.serviceName && (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-[#6B5750] bg-[#F5E8E3] rounded-full px-3 py-1">
+              <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-secondary rounded-full px-3 py-1">
                 <Scissors size={11} /> {item.serviceName}
               </span>
             )}
-            <span className="text-xs text-[#A8928D] py-1">
+            <span className="text-xs text-muted-foreground/60 py-1">
               {formatDateFull(item.created_at)}
             </span>
           </div>
 
           {item.description && (
-            <p className="text-sm text-[#6B5750] leading-relaxed">{item.description}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
           )}
         </div>
 
@@ -214,15 +214,15 @@ export default async function PortfolioItemPage(
                 <Image src={item.taggedClientAvatar} alt={item.taggedClientName} fill className="object-cover" sizes="40px" />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-2xl bg-[#F5E8E3] flex items-center justify-center shrink-0">
-                <User size={16} className="text-[#A8928D]" />
+              <div className="w-10 h-10 rounded-2xl bg-secondary flex items-center justify-center shrink-0">
+                <User size={16} className="text-muted-foreground/60" />
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#A8928D]">Клієнт</p>
-              <p className="text-sm font-semibold text-[#2C1A14]">{item.taggedClientName}</p>
+              <p className="text-xs text-muted-foreground/60">Клієнт</p>
+              <p className="text-sm font-semibold text-foreground">{item.taggedClientName}</p>
             </div>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#5C9E7A]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-success">
               <CheckCircle size={12} /> Підтверджено
             </div>
           </div>
@@ -233,14 +233,14 @@ export default async function PortfolioItemPage(
             className="rounded-3xl p-4 flex items-center gap-3"
             style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.4)' }}
           >
-            <div className="w-10 h-10 rounded-2xl bg-[#F5E8E3] flex items-center justify-center shrink-0">
-              <User size={16} className="text-[#A8928D]" />
+            <div className="w-10 h-10 rounded-2xl bg-secondary flex items-center justify-center shrink-0">
+              <User size={16} className="text-muted-foreground/60" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#A8928D]">Клієнт</p>
-              <p className="text-sm font-semibold text-[#2C1A14]">{item.taggedClientName}</p>
+              <p className="text-xs text-muted-foreground/60">Клієнт</p>
+              <p className="text-sm font-semibold text-foreground">{item.taggedClientName}</p>
             </div>
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#D4935A]">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-warning">
               <Clock size={12} /> Очікує
             </div>
           </div>
@@ -249,7 +249,7 @@ export default async function PortfolioItemPage(
         {/* Reviews */}
         {item.reviews.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-sm font-bold text-[#2C1A14]">Відгуки про цю роботу</h2>
+            <h2 className="text-sm font-bold text-foreground">Відгуки про цю роботу</h2>
             <div className="space-y-2">
               {item.reviews.map(r => (
                 <div
@@ -258,15 +258,15 @@ export default async function PortfolioItemPage(
                   style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)' }}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-[#2C1A14]">{r.client_name ?? 'Клієнт'}</p>
+                    <p className="text-xs font-bold text-foreground">{r.client_name ?? 'Клієнт'}</p>
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: r.rating }).map((_, i) => (
-                        <Star key={i} size={11} fill="#D4935A" className="text-[#D4935A]" />
+                        <Star key={i} size={11} fill="#D4935A" className="text-warning" />
                       ))}
                     </div>
                   </div>
-                  {r.comment && <p className="text-xs text-[#6B5750] leading-relaxed">{r.comment}</p>}
-                  <p className="text-[10px] text-[#A8928D]">{formatDateFull(r.created_at)}</p>
+                  {r.comment && <p className="text-xs text-muted-foreground leading-relaxed">{r.comment}</p>}
+                  <p className="text-[10px] text-muted-foreground/60">{formatDateFull(r.created_at)}</p>
                 </div>
               ))}
             </div>

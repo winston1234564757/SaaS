@@ -63,12 +63,12 @@ export function LocationPicker(props: Props) {
     return (
       <div className="space-y-2">
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/30 border border-white/40 border-dashed">
-          <MapPin size={16} className="text-[#A8928D] shrink-0" />
+          <MapPin size={16} className="text-muted-foreground/60 shrink-0" />
           <div>
-            <p className="text-xs font-medium text-[#6B5750]">
+            <p className="text-xs font-medium text-muted-foreground">
               {props.address || 'Адреса не вказана'}
             </p>
-            <p className="text-[11px] text-[#A8928D] mt-0.5">
+            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
               Інтеграція з картою очікує активації API
             </p>
           </div>
@@ -225,13 +225,13 @@ function LocationPickerMap({ value, address, onChange }: Props) {
     <div className="space-y-2">
       {/* Search input */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A8928D] pointer-events-none" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
           defaultValue={address}
           placeholder="Пошук адреси..."
-          className="w-full pl-8 pr-3 py-2 rounded-xl text-sm bg-white/70 border border-white/60 text-[#2C1A14] placeholder-[#A8928D] outline-none focus:ring-2 focus:ring-[#789A99]/40"
+          className="w-full pl-8 pr-3 py-2 rounded-xl text-sm text-foreground placeholder-[#A8928D] bg-secondary/70 border border-border backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
@@ -240,11 +240,11 @@ function LocationPickerMap({ value, address, onChange }: Props) {
         <div ref={containerRef} className="w-full h-full" />
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-            <Loader2 size={20} className="animate-spin text-[#789A99]" />
+            <Loader2 size={20} className="animate-spin text-primary" />
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-xs text-[#C05B5B] text-center px-4">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-xs text-destructive text-center px-4">
             {error}
           </div>
         )}
@@ -252,11 +252,11 @@ function LocationPickerMap({ value, address, onChange }: Props) {
 
       {/* Coords hint */}
       {value ? (
-        <p className="text-[11px] text-[#A8928D] text-center">
+        <p className="text-[11px] text-muted-foreground/60 text-center">
           {value.lat.toFixed(6)}, {value.lng.toFixed(6)} · Перетягніть маркер для уточнення
         </p>
       ) : (
-        <p className="text-[11px] text-[#A8928D] text-center">
+        <p className="text-[11px] text-muted-foreground/60 text-center">
           Знайдіть адресу або натисніть на карті
         </p>
       )}

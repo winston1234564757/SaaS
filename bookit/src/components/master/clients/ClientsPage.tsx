@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram, LayoutGrid, List, ChevronDown } from 'lucide-react';
+import { Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram, LayoutGrid, List, ChevronDown, Send } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { ClientDetailSheet } from './ClientDetailSheet';
 import { useClients } from '@/lib/supabase/hooks/useClients';
@@ -106,8 +106,20 @@ export function ClientsPage() {
   return (
     <div className="flex flex-col gap-4 pb-8">
       <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Клієнти</h1>
-        <p className="text-sm text-[#A8928D]">Ваша база клієнтів та CRM</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="heading-serif text-xl text-foreground mb-0.5">Клієнти</h1>
+            <p className="text-sm text-muted-foreground/60">Ваша база клієнтів та CRM</p>
+          </div>
+          <button
+            onClick={() => router.push('/dashboard/marketing?tab=broadcasts')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold text-white shrink-0 transition-opacity active:opacity-80"
+            style={{ background: 'linear-gradient(135deg, #2C1A14, #4A2E24)' }}
+          >
+            <Send size={13} />
+            Розсилка
+          </button>
+        </div>
       </div>
 
       {!isLoading && clients.length > 0 && (
@@ -120,8 +132,8 @@ export function ClientsPage() {
           ].map(stat => (
             <div key={stat.label} className="bento-card p-3 text-center">
               <stat.icon size={15} className="mx-auto mb-1" style={{ color: stat.color }} />
-              <p className="text-sm font-bold text-[#2C1A14] truncate">{stat.value}</p>
-              <p className="text-[9px] text-[#A8928D] leading-tight">{stat.label}</p>
+              <p className="text-sm font-bold text-foreground truncate">{stat.value}</p>
+              <p className="text-[9px] text-muted-foreground/60 leading-tight">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -166,14 +178,14 @@ export function ClientsPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Пошук за ім'ям або телефоном..."
-          className="flex-1 min-w-0 px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+          className="flex-1 min-w-0 px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all"
         />
 
         {/* Sort dropdown */}
         <div className="relative">
           <button
             onClick={() => setSortOpen(p => !p)}
-            className="h-full px-3 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#6B5750] hover:bg-white transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+            className="h-full px-3 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-muted-foreground hover:bg-white transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
             <span className="hidden sm:inline">{SORT_OPTIONS.find(o => o.value === sort)?.label}</span>
             <ChevronDown size={14} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
@@ -186,8 +198,8 @@ export function ClientsPage() {
                   onClick={() => { setParam('sort', opt.value); setSortOpen(false); }}
                   className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
                     sort === opt.value
-                      ? 'bg-[#789A99]/12 text-[#5C7E7D] font-semibold'
-                      : 'text-[#6B5750] hover:bg-[#F5E8E3]/60'
+                      ? 'bg-primary/12 text-primary/90 font-semibold'
+                      : 'text-muted-foreground hover:bg-secondary/60'
                   }`}
                 >
                   {opt.label}
@@ -204,7 +216,7 @@ export function ClientsPage() {
               key={v}
               onClick={() => setParam('view', v)}
               className={`px-3 py-3 transition-colors cursor-pointer ${
-                view === v ? 'bg-[#789A99]/15 text-[#5C7E7D]' : 'text-[#A8928D] hover:text-[#6B5750]'
+                view === v ? 'bg-primary/15 text-primary/90' : 'text-muted-foreground/60 hover:text-muted-foreground'
               }`}
             >
               {v === 'list' ? <List size={16} /> : <LayoutGrid size={16} />}
@@ -220,17 +232,17 @@ export function ClientsPage() {
 
       {isLoading ? (
         <div className="bento-card p-10 flex flex-col items-center gap-3">
-          <Loader2 size={24} className="text-[#789A99] animate-spin" />
-          <p className="text-sm text-[#A8928D]">Завантаження клієнтів...</p>
+          <Loader2 size={24} className="text-primary animate-spin" />
+          <p className="text-sm text-muted-foreground/60">Завантаження клієнтів...</p>
         </div>
       ) : filtered.length === 0 ? (
         search ? (
           <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-            <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
-              <Users size={26} className="text-[#A8928D]" />
+            <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+              <Users size={26} className="text-muted-foreground/60" />
             </div>
-            <p className="text-sm font-semibold text-[#2C1A14]">Нічого не знайдено</p>
-            <p className="text-xs text-[#A8928D]">Спробуйте інший запит</p>
+            <p className="text-sm font-semibold text-foreground">Нічого не знайдено</p>
+            <p className="text-xs text-muted-foreground/60">Спробуйте інший запит</p>
           </div>
         ) : (
           <motion.div
@@ -239,11 +251,11 @@ export function ClientsPage() {
             className="bento-card p-6 flex flex-col gap-5"
           >
             <div className="text-center">
-              <div className="w-16 h-16 rounded-3xl bg-[#789A99]/10 flex items-center justify-center mx-auto mb-4">
-                <Users size={28} className="text-[#789A99]" />
+              <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Users size={28} className="text-primary" />
               </div>
-              <p className="text-base font-bold text-[#2C1A14]">Ваша база клієнтів порожня</p>
-              <p className="text-sm text-[#A8928D] mt-1 text-balance">
+              <p className="text-base font-bold text-foreground">Ваша база клієнтів порожня</p>
+              <p className="text-sm text-muted-foreground/60 mt-1 text-balance">
                 Ось як залучити перших клієнтів за 24 години
               </p>
             </div>
@@ -260,10 +272,10 @@ export function ClientsPage() {
                       <StepIcon size={16} style={{ color: step.color }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#2C1A14]">{step.title}</p>
-                      <p className="text-xs text-[#A8928D] mt-0.5 leading-relaxed">{step.desc}</p>
+                      <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">{step.desc}</p>
                       {step.href && (
-                        <a href={step.href} className="inline-flex mt-2 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors">
+                        <a href={step.href} className="inline-flex mt-2 text-xs font-semibold text-primary hover:text-primary/90 transition-colors">
                           {step.cta} →
                         </a>
                       )}
@@ -297,10 +309,10 @@ export function ClientsPage() {
                     {client.is_vip ? '⭐' : client.client_name[0]?.toUpperCase() ?? '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2C1A14] truncate">{client.client_name}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{client.client_name}</p>
                     <a
                       href={`tel:${client.client_phone}`}
-                      className="flex items-center gap-1 text-xs text-[#A8928D] hover:text-[#789A99] transition-colors mt-0.5"
+                      className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-primary transition-colors mt-0.5"
                       onClick={e => e.stopPropagation()}
                     >
                       <Phone size={11} />
@@ -320,14 +332,14 @@ export function ClientsPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#F5E8E3]/60">
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-secondary/60">
                   <div>
-                    <p className="text-[10px] text-[#A8928D]">Візитів</p>
-                    <p className="text-sm font-bold text-[#2C1A14]">{client.total_visits}</p>
+                    <p className="text-[10px] text-muted-foreground/60">Візитів</p>
+                    <p className="text-sm font-bold text-foreground">{client.total_visits}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-[#A8928D]">Витрачено</p>
-                    <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(client.total_spent)}</p>
+                    <p className="text-[10px] text-muted-foreground/60">Витрачено</p>
+                    <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
                   </div>
                 </div>
                 {tags.length > 0 && (
@@ -366,10 +378,10 @@ export function ClientsPage() {
                     {client.is_vip ? '⭐' : client.client_name[0]?.toUpperCase() ?? '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2C1A14] truncate">{client.client_name}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{client.client_name}</p>
                     <a
                       href={`tel:${client.client_phone}`}
-                      className="flex items-center gap-1 text-xs text-[#A8928D] hover:text-[#789A99] transition-colors mt-0.5"
+                      className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-primary transition-colors mt-0.5"
                       onClick={e => e.stopPropagation()}
                     >
                       <Phone size={11} />
@@ -377,16 +389,16 @@ export function ClientsPage() {
                     </a>
                   </div>
                   <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
-                    <p className="text-sm font-bold text-[#2C1A14]">{formatPrice(client.total_spent)}</p>
+                    <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
                     <div className="flex items-center gap-1">
-                      <Calendar size={10} className="text-[#A8928D]" />
-                      <span className="text-[11px] text-[#A8928D]">{client.total_visits} візит.</span>
+                      <Calendar size={10} className="text-muted-foreground/60" />
+                      <span className="text-[11px] text-muted-foreground/60">{client.total_visits} візит.</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Retention badge + auto-tags row */}
-                <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-[#F5E8E3]/60">
+                <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-secondary/60">
                   <span
                     className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
                     style={{ color: ret.color, background: ret.bg }}
@@ -400,7 +412,7 @@ export function ClientsPage() {
                     </span>
                   ))}
                   {client.last_visit_at && (
-                    <span className="text-[10px] text-[#A8928D] ml-auto">
+                    <span className="text-[10px] text-muted-foreground/60 ml-auto">
                       {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
                     </span>
                   )}

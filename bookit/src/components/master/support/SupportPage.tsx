@@ -174,16 +174,16 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     <div className="border-b border-white/30 last:border-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-3 text-left text-sm font-medium text-[#2C1A14] gap-3"
+        className="w-full flex items-center justify-between py-3 text-left text-sm font-medium text-foreground gap-3"
       >
         <span>{q}</span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-[#789A99] transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-primary transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open && (
-        <p className="pb-3 text-sm text-[#6B5750] leading-relaxed">{a}</p>
+        <p className="pb-3 text-sm text-muted-foreground leading-relaxed">{a}</p>
       )}
     </div>
   );
@@ -193,25 +193,25 @@ export function SupportPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#2C1A14]">Підтримка</h1>
-        <p className="text-sm text-[#6B5750] mt-1">Відповіді на часті питання та зв&apos;язок з командою</p>
+        <h1 className="text-2xl font-bold text-foreground">Підтримка</h1>
+        <p className="text-sm text-muted-foreground mt-1">Відповіді на часті питання та зв&apos;язок з командою</p>
       </div>
 
       <div className="bento-card p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-[#789A99]/10 flex items-center justify-center">
-            <MessageCircle size={20} className="text-[#789A99]" />
+          <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <MessageCircle size={20} className="text-primary" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#2C1A14]">Написати підтримці</p>
-            <p className="text-xs text-[#6B5750]">Відповідаємо протягом 2 годин</p>
+            <p className="text-sm font-semibold text-foreground">Написати підтримці</p>
+            <p className="text-xs text-muted-foreground">Відповідаємо протягом 2 годин</p>
           </div>
         </div>
         <a
           href="https://t.me/bookit_support"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2 bg-[#789A99] text-white text-sm font-medium rounded-2xl hover:bg-[#6a8a89] transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-2xl hover:bg-[#6a8a89] transition-colors"
         >
           Telegram
         </a>
@@ -220,8 +220,8 @@ export function SupportPage() {
       {FAQ_ITEMS.map(({ category, icon: Icon, questions }) => (
         <div key={category} className="bento-card p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Icon size={16} className="text-[#789A99]" />
-            <h2 className="text-sm font-semibold text-[#2C1A14]">{category}</h2>
+            <Icon size={16} className="text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">{category}</h2>
           </div>
           <div>
             {questions.map((item) => (
@@ -232,13 +232,13 @@ export function SupportPage() {
       ))}
 
       <div className="text-center py-4">
-        <HelpCircle size={24} className="text-[#A8928D] mx-auto mb-2" />
-        <p className="text-sm text-[#6B5750]">Не знайшли відповідь?</p>
+        <HelpCircle size={24} className="text-muted-foreground/60 mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Не знайшли відповідь?</p>
         <a
           href="https://t.me/bookit_support"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-[#789A99] underline underline-offset-2"
+          className="text-sm text-primary underline underline-offset-2"
         >
           Напишіть нам
         </a>

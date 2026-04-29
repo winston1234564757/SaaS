@@ -218,11 +218,11 @@ function ReschedulePanel({
     <div className="flex flex-col gap-3">
       {/* Date strip */}
       <div>
-        <p className="text-[11px] text-[#A8928D] mb-2">Оберіть нову дату</p>
+        <p className="text-[11px] text-muted-foreground/60 mb-2">Оберіть нову дату</p>
         {scheduleQuery.isLoading ? (
           <div className="flex items-center gap-2 py-2">
-            <Loader2 size={14} className="animate-spin text-[#789A99]" />
-            <span className="text-xs text-[#A8928D]">Завантаження розкладу...</span>
+            <Loader2 size={14} className="animate-spin text-primary" />
+            <span className="text-xs text-muted-foreground/60">Завантаження розкладу...</span>
           </div>
         ) : (
           <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
@@ -239,20 +239,20 @@ function ReschedulePanel({
                   disabled={disabled}
                   className={`flex-shrink-0 flex flex-col items-center w-11 py-2 rounded-xl transition-all ${
                     isSelected
-                      ? 'bg-[#789A99] text-white shadow-md'
+                      ? 'bg-primary text-white shadow-md'
                       : off
-                      ? 'bg-white/40 border border-dashed border-[#E8D5CF] opacity-40 cursor-not-allowed'
+                      ? 'bg-white/40 border border-dashed border-secondary/80 opacity-40 cursor-not-allowed'
                       : full
-                      ? 'bg-[#C05B5B]/8 border border-dashed border-[#C05B5B]/30 cursor-not-allowed'
-                      : 'bg-[#F5E8E3]/60 text-[#6B5750] hover:bg-[#F5E8E3]'
+                      ? 'bg-destructive/8 border border-dashed border-destructive/30 cursor-not-allowed'
+                      : 'bg-secondary/60 text-muted-foreground hover:bg-secondary'
                   }`}
                 >
-                  <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-[#A8928D]'}`}>
+                  <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-muted-foreground/60'}`}>
                     {UA_DAYS_SHORT[d.getDay()]}
                   </span>
                   <span className="text-sm font-bold leading-none mt-1">{d.getDate()}</span>
-                  {full && <span className="text-[8px] text-[#C05B5B] leading-none mt-0.5">зайнято</span>}
-                  {off  && <span className="text-[8px] text-[#A8928D] leading-none mt-0.5">вих.</span>}
+                  {full && <span className="text-[8px] text-destructive leading-none mt-0.5">зайнято</span>}
+                  {off  && <span className="text-[8px] text-muted-foreground/60 leading-none mt-0.5">вих.</span>}
                 </button>
               );
             })}
@@ -263,21 +263,21 @@ function ReschedulePanel({
       {/* Slots */}
       {selectedDate && !scheduleQuery.isLoading && (
         <div>
-          <p className="text-[11px] text-[#A8928D] mb-2">Доступні слоти</p>
+          <p className="text-[11px] text-muted-foreground/60 mb-2">Доступні слоти</p>
           {currentDayOff ? (
-            <p className="text-xs text-[#A8928D] py-2">Майстер не працює цього дня</p>
+            <p className="text-xs text-muted-foreground/60 py-2">Майстер не працює цього дня</p>
           ) : !hasAvailableSlots ? (
-            <p className="text-xs text-[#A8928D] py-2">Немає вільних слотів</p>
+            <p className="text-xs text-muted-foreground/60 py-2">Немає вільних слотів</p>
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {renderItems.map((item, idx) =>
                 item.kind === 'break' ? (
                   <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
-                    <div className="flex-1 h-px bg-[#F5E8E3]" />
-                    <span className="text-[10px] text-[#A8928D] flex-shrink-0">
+                    <div className="flex-1 h-px bg-secondary" />
+                    <span className="text-[10px] text-muted-foreground/60 flex-shrink-0">
                       {item.label} · {item.start}–{item.end}
                     </span>
-                    <div className="flex-1 h-px bg-[#F5E8E3]" />
+                    <div className="flex-1 h-px bg-secondary" />
                   </div>
                 ) : (
                   <button
@@ -285,17 +285,17 @@ function ReschedulePanel({
                     onClick={() => setSelectedSlot(item.slot.time)}
                     className={`relative py-2.5 rounded-xl text-center text-xs font-semibold transition-all ${
                       selectedSlot === item.slot.time
-                        ? 'bg-[#789A99] text-white shadow-sm ring-2 ring-[#789A99]/30'
+                        ? 'bg-primary text-white shadow-sm ring-2 ring-[#789A99]/30'
                         : item.slot.isSuggested
-                        ? 'bg-[#789A99]/10 border border-[#789A99]/30 text-[#2C1A14]'
-                        : 'bg-[#F5E8E3]/60 text-[#6B5750] hover:bg-[#F5E8E3]'
+                        ? 'bg-primary/10 border border-primary/30 text-foreground'
+                        : 'bg-secondary/60 text-muted-foreground hover:bg-secondary'
                     }`}
                   >
                     {item.slot.isSuggested && selectedSlot !== item.slot.time && (
-                      <span className="absolute -top-1 -right-0.5 text-[7px] bg-[#789A99] text-white rounded-full px-1 py-0.5 font-bold leading-none">★</span>
+                      <span className="absolute -top-1 -right-0.5 text-[7px] bg-primary text-white rounded-full px-1 py-0.5 font-bold leading-none">★</span>
                     )}
                     <span className="block font-bold">{item.slot.time}</span>
-                    <span className={`block text-[10px] font-normal mt-0.5 ${selectedSlot === item.slot.time ? 'text-white/70' : 'text-[#A8928D]'}`}>
+                    <span className={`block text-[10px] font-normal mt-0.5 ${selectedSlot === item.slot.time ? 'text-white/70' : 'text-muted-foreground/60'}`}>
                       {computeEndTime(item.slot.time, durationMinutes)}
                     </span>
                   </button>
@@ -306,20 +306,20 @@ function ReschedulePanel({
         </div>
       )}
 
-      {saveError && <p className="text-xs text-[#C05B5B]">{saveError}</p>}
+      {saveError && <p className="text-xs text-destructive">{saveError}</p>}
 
       <div className="flex gap-2 mt-1">
         <button
           onClick={handleConfirm}
           disabled={isSaving || !selectedDate || !selectedSlot}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors disabled:opacity-50"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 active:scale-95 transition-all"
         >
           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <CalendarClock size={14} />}
           Зберегти перенесення
         </button>
         <button
           onClick={onCancel}
-          className="px-4 py-2.5 rounded-xl bg-[#F5E8E3] text-[#A8928D] text-sm font-semibold hover:bg-[#EBCFC7] transition-colors"
+          className="px-4 py-2.5 rounded-xl bg-secondary text-muted-foreground/60 text-sm font-semibold hover:bg-[#EBCFC7] transition-colors active:scale-95 transition-all"
         >
           Скасувати
         </button>
@@ -410,15 +410,15 @@ export function BookingDetailsModal() {
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-[#E8D5CF]" />
+              <div className="w-10 h-1 rounded-full bg-secondary/80" />
             </div>
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-2 pb-4">
-              <h2 className="text-base font-bold text-[#2C1A14]">Деталі запису</h2>
+              <h2 className="text-base font-bold text-foreground">Деталі запису</h2>
               <button
                 onClick={close}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#A8928D] hover:bg-[#EBCFC7] transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground/60 hover:bg-[#EBCFC7] transition-colors active:scale-95 transition-all"
               >
                 <X size={15} />
               </button>
@@ -427,7 +427,7 @@ export function BookingDetailsModal() {
             {/* Content */}
             {isLoading || !booking ? (
               <div className="flex justify-center items-center py-16">
-                <Loader2 size={24} className="text-[#789A99] animate-spin" />
+                <Loader2 size={24} className="text-primary animate-spin" />
               </div>
             ) : (
               <div className="px-5 pb-8 flex flex-col gap-4">
@@ -435,8 +435,8 @@ export function BookingDetailsModal() {
                 <div className="bg-white rounded-2xl p-4 flex flex-col gap-2 shadow-sm">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-base font-bold text-[#2C1A14]">{booking.client_name}</p>
-                      <p className="text-sm text-[#A8928D] mt-0.5">{formatDate(booking.date)}</p>
+                      <p className="text-base font-bold text-foreground">{booking.client_name}</p>
+                      <p className="text-sm text-muted-foreground/60 mt-0.5">{formatDate(booking.date)}</p>
                     </div>
                     <span
                       className="text-xs font-semibold px-2.5 py-1 rounded-full mt-0.5"
@@ -446,14 +446,14 @@ export function BookingDetailsModal() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 text-sm text-[#6B5750]">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <Clock size={13} className="text-[#A8928D]" />
+                      <Clock size={13} className="text-muted-foreground/60" />
                       {booking.start_time} — {booking.end_time}
                     </span>
                     <a
                       href={`tel:${booking.client_phone}`}
-                      className="flex items-center gap-1.5 text-[#789A99] hover:text-[#5C7E7D] transition-colors"
+                      className="flex items-center gap-1.5 text-primary hover:text-primary/90 transition-colors"
                     >
                       <Phone size={13} />
                       {booking.client_phone}
@@ -462,11 +462,11 @@ export function BookingDetailsModal() {
 
                   <div>
                     {booking.source === 'manual' ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-[#A8928D] bg-[#F5E8E3] px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/60 bg-secondary px-2 py-0.5 rounded-full">
                         <PenLine size={9} /> Ручний запис
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-[#789A99] bg-[#789A99]/10 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                         <Globe size={9} /> Онлайн
                       </span>
                     )}
@@ -477,21 +477,21 @@ export function BookingDetailsModal() {
                 {clientLtv && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex items-center gap-1.5 mb-3">
-                      <TrendingUp size={13} className="text-[#789A99]" />
-                      <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide">Клієнт</p>
+                      <TrendingUp size={13} className="text-primary" />
+                      <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide">Клієнт</p>
                     </div>
                     <div className="flex gap-4">
                       <div className="flex-1">
-                        <p className="text-[11px] text-[#A8928D]">Візитів</p>
-                        <p className="text-lg font-bold text-[#2C1A14]">{clientLtv.total_visits}</p>
+                        <p className="text-[11px] text-muted-foreground/60">Візитів</p>
+                        <p className="text-lg font-bold text-foreground">{clientLtv.total_visits}</p>
                       </div>
                       <div className="flex-1">
-                        <p className="text-[11px] text-[#A8928D]">Виручка</p>
-                        <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(clientLtv.total_spent)}</p>
+                        <p className="text-[11px] text-muted-foreground/60">Виручка</p>
+                        <p className="text-lg font-bold text-foreground">{formatPrice(clientLtv.total_spent)}</p>
                       </div>
                       <div className="flex-1">
-                        <p className="text-[11px] text-[#A8928D]">Середній чек</p>
-                        <p className="text-lg font-bold text-[#2C1A14]">{formatPrice(clientLtv.average_check)}</p>
+                        <p className="text-[11px] text-muted-foreground/60">Середній чек</p>
+                        <p className="text-lg font-bold text-foreground">{formatPrice(clientLtv.average_check)}</p>
                       </div>
                     </div>
                   </div>
@@ -502,20 +502,20 @@ export function BookingDetailsModal() {
                   const grandTotal = booking.total_price;
                   return (
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
-                      <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-3">Деталі замовлення</p>
+                      <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-3">Деталі замовлення</p>
 
                       <div className="flex flex-col gap-2.5">
                         {/* Services */}
                         {booking.services.map((s, i) => (
                           <div key={i} className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-2 min-w-0">
-                              <Clock size={12} className="text-[#A8928D] shrink-0 mt-0.5" />
+                              <Clock size={12} className="text-muted-foreground/60 shrink-0 mt-0.5" />
                               <div className="min-w-0">
-                                <span className="text-sm text-[#2C1A14]">{s.name}</span>
-                                <span className="text-xs text-[#A8928D] ml-1.5">{formatDurationFull(s.duration)}</span>
+                                <span className="text-sm text-foreground">{s.name}</span>
+                                <span className="text-xs text-muted-foreground/60 ml-1.5">{formatDurationFull(s.duration)}</span>
                               </div>
                             </div>
-                            <span className="text-sm font-medium text-[#2C1A14] shrink-0">{formatPrice(s.price)}</span>
+                            <span className="text-sm font-medium text-foreground shrink-0">{formatPrice(s.price)}</span>
                           </div>
                         ))}
 
@@ -528,13 +528,13 @@ export function BookingDetailsModal() {
                             {booking.products!.map((p, i) => (
                               <div key={i} className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <ShoppingBag size={12} className="text-[#A8928D] shrink-0" />
-                                  <span className="text-sm text-[#2C1A14] truncate">{p.name}</span>
+                                  <ShoppingBag size={12} className="text-muted-foreground/60 shrink-0" />
+                                  <span className="text-sm text-foreground truncate">{p.name}</span>
                                   {p.quantity > 1 && (
-                                    <span className="text-xs text-[#A8928D] shrink-0">×{p.quantity}</span>
+                                    <span className="text-xs text-muted-foreground/60 shrink-0">×{p.quantity}</span>
                                   )}
                                 </div>
-                                <span className="text-sm font-medium text-[#2C1A14] shrink-0">{formatPrice(p.price * p.quantity)}</span>
+                                <span className="text-sm font-medium text-foreground shrink-0">{formatPrice(p.price * p.quantity)}</span>
                               </div>
                             ))}
                           </>
@@ -544,8 +544,8 @@ export function BookingDetailsModal() {
                       {/* Total */}
                       <div className="mt-4 pt-3 border-t-2 border-[#F0DDD8]">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold text-[#6B5750]">Загалом</span>
-                          <span className="text-xl font-bold text-[#2C1A14]">{formatPrice(grandTotal)}</span>
+                          <span className="text-sm font-semibold text-muted-foreground">Загалом</span>
+                          <span className="text-xl font-bold text-foreground">{formatPrice(grandTotal)}</span>
                         </div>
                         {booking.dynamic_pricing_label && (
                           <div className="mt-2">
@@ -559,27 +559,27 @@ export function BookingDetailsModal() {
 
                 {/* Client notes */}
                 {booking.notes && (
-                  <div className="bg-[#F5E8E3]/50 rounded-2xl px-4 py-3">
-                    <p className="text-xs font-semibold text-[#A8928D] mb-1">Коментар клієнта</p>
-                    <p className="text-sm text-[#6B5750] italic">{booking.notes}</p>
+                  <div className="bg-secondary/50 rounded-2xl px-4 py-3">
+                    <p className="text-xs font-semibold text-muted-foreground/60 mb-1">Коментар клієнта</p>
+                    <p className="text-sm text-muted-foreground italic">{booking.notes}</p>
                   </div>
                 )}
 
                 {/* Master notes */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-2">Нотатки майстра</p>
+                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">Нотатки майстра</p>
                   <textarea
                     value={notes}
                     onChange={e => { setNotes(e.target.value); setNotesDirty(true); }}
                     placeholder="Додайте нотатки, видимі лише вам..."
                     rows={3}
-                    className="w-full text-sm text-[#2C1A14] placeholder-[#C8B0AA] bg-[#FDFAF8] border border-[#F0DDD8] rounded-xl px-3 py-2.5 outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 resize-none transition-all"
+                    className="w-full text-sm text-foreground placeholder-[#C8B0AA] bg-[#FDFAF8] border border-[#F0DDD8] rounded-xl px-3 py-2.5 outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 resize-none transition-all"
                   />
                   {notesDirty && (
                     <button
                       onClick={handleSaveNotes}
                       disabled={isSavingNotes}
-                      className="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 text-xs font-medium transition-colors disabled:opacity-50"
+                      className="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-medium transition-colors disabled:opacity-50 active:scale-95 transition-all"
                     >
                       {isSavingNotes ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
                       Зберегти нотатку
@@ -590,7 +590,7 @@ export function BookingDetailsModal() {
                 {/* Status actions */}
                 {canAct && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-3">Дії</p>
+                    <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-3">Дії</p>
 
                     {showReschedule ? (
                       masterProfile?.id ? (
@@ -614,7 +614,7 @@ export function BookingDetailsModal() {
                           <button
                             onClick={() => updateStatus('confirmed')}
                             disabled={isUpdatingStatus}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20 text-sm font-semibold transition-colors disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-primary/10 text-primary hover:bg-primary/20 text-sm font-semibold transition-colors disabled:opacity-50"
                           >
                             {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                             Підтвердити
@@ -623,14 +623,14 @@ export function BookingDetailsModal() {
                         <button
                           onClick={() => updateStatus('completed')}
                           disabled={isUpdatingStatus}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#5C9E7A]/10 text-[#5C9E7A] hover:bg-[#5C9E7A]/20 text-sm font-semibold transition-colors disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-success/10 text-success hover:bg-success/20 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
                           {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
                           Завершити
                         </button>
                         <button
                           onClick={() => setShowReschedule(true)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#D4935A]/10 text-[#D4935A] hover:bg-[#D4935A]/20 text-sm font-semibold transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-warning/10 text-warning hover:bg-warning/20 text-sm font-semibold transition-colors"
                         >
                           <CalendarClock size={14} />
                           Перенести
@@ -638,7 +638,7 @@ export function BookingDetailsModal() {
                         <button
                           onClick={() => updateStatus('cancelled')}
                           disabled={isUpdatingStatus}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#C05B5B]/10 text-[#C05B5B] hover:bg-[#C05B5B]/20 text-sm font-semibold transition-colors disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
                           {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
                           Скасувати
@@ -647,7 +647,7 @@ export function BookingDetailsModal() {
                           <button
                             onClick={() => updateStatus('no_show')}
                             disabled={isUpdatingStatus}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#A8928D]/10 text-[#A8928D] hover:bg-[#A8928D]/20 text-sm font-semibold transition-colors disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-muted-foreground/60/10 text-muted-foreground/60 hover:bg-muted-foreground/60/20 text-sm font-semibold transition-colors disabled:opacity-50"
                           >
                             Не прийшов
                           </button>

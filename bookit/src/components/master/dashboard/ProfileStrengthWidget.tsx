@@ -119,9 +119,9 @@ export function ProfileStrengthWidget() {
   }
 
   const badgeColor =
-    progress >= 80 ? 'text-[#5C9E7A] bg-[#5C9E7A]/12' :
-    progress >= 40 ? 'text-[#D4935A] bg-[#D4935A]/12' :
-    'text-[#789A99] bg-[#789A99]/12';
+    progress >= 80 ? 'text-success bg-success/12' :
+    progress >= 40 ? 'text-warning bg-warning/12' :
+    'text-primary bg-primary/12';
 
   return (
     <AnimatePresence>
@@ -159,8 +159,8 @@ export function ProfileStrengthWidget() {
                 transition={{ delay: 0.4 }}
                 className="w-full"
               >
-                <p className="text-sm font-bold text-[#2C1A14]">Ваш профіль ідеальний!</p>
-                <p className="text-xs text-[#A8928D] mt-1 mb-4">
+                <p className="text-sm font-bold text-foreground">Ваш профіль ідеальний!</p>
+                <p className="text-xs text-muted-foreground/60 mt-1 mb-4">
                   Ви готові приймати клієнтів на 100%
                 </p>
                 <motion.button
@@ -170,7 +170,7 @@ export function ProfileStrengthWidget() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
                   whileTap={{ scale: 0.97 }}
-                  className="w-full py-2.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors"
+                  className="w-full py-2.5 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
                 >
                   Вперед, до роботи →
                 </motion.button>
@@ -188,7 +188,7 @@ export function ProfileStrengthWidget() {
                       initial={{ scale: 0.7, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring' as const, stiffness: 400, damping: 22 }}
-                      className="text-base font-bold text-[#2C1A14]"
+                      className="text-base font-bold text-foreground"
                     >
                       {Math.round(progress)}%
                     </motion.span>
@@ -196,10 +196,10 @@ export function ProfileStrengthWidget() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#2C1A14] leading-tight">
+                  <p className="text-sm font-semibold text-foreground leading-tight">
                     Сила вашого бренду
                   </p>
-                  <p className="text-xs text-[#A8928D] mt-0.5 leading-snug">
+                  <p className="text-xs text-muted-foreground/60 mt-0.5 leading-snug">
                     Заповніть профіль, щоб клієнти обирали вас першими
                   </p>
                   <span
@@ -225,12 +225,12 @@ export function ProfileStrengthWidget() {
                         whileTap={{ scale: 0.98 }}
                         className="flex items-center gap-3 py-2.5 px-3 rounded-2xl cursor-pointer"
                       >
-                        <div className="w-5 h-5 rounded-full border-2 border-[#E8D5CF] bg-white/60 shrink-0" />
+                        <div className="w-5 h-5 rounded-full border-2 border-secondary/80 bg-white/60 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-[#2C1A14]">{step.label}</p>
-                          <p className="text-[11px] text-[#A8928D]">{step.sub}</p>
+                          <p className="text-xs font-medium text-foreground">{step.label}</p>
+                          <p className="text-[11px] text-muted-foreground/60">{step.sub}</p>
                         </div>
-                        <ChevronRight size={13} className="text-[#A8928D] shrink-0" />
+                        <ChevronRight size={13} className="text-muted-foreground/60 shrink-0" />
                       </motion.div>
                     </Link>
                   </motion.div>

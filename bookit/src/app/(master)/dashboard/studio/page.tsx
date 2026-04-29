@@ -27,12 +27,12 @@ export default function StudioPage() {
     <div className="flex flex-col gap-4 pb-8">
       <div className="bento-card p-5">
         <div className="flex items-center gap-2.5 mb-0.5">
-          <h1 className="heading-serif text-xl text-[#2C1A14]">Студія</h1>
-          <span className="text-[10px] font-bold text-white bg-[#789A99] px-2 py-0.5 rounded-full tracking-wide">
+          <h1 className="heading-serif text-xl text-foreground">Студія</h1>
+          <span className="text-[10px] font-bold text-white bg-primary px-2 py-0.5 rounded-full tracking-wide">
             У розробці
           </span>
         </div>
-        <p className="text-sm text-[#A8928D]">Управління командою майстрів</p>
+        <p className="text-sm text-muted-foreground/60">Управління командою майстрів</p>
       </div>
 
       <div className="bento-card p-6 flex flex-col items-center gap-6 text-center">
@@ -40,12 +40,12 @@ export default function StudioPage() {
           className="w-20 h-20 rounded-3xl flex items-center justify-center"
           style={{ background: 'rgba(120,154,153,0.12)' }}
         >
-          <Building2 size={34} className="text-[#789A99]" />
+          <Building2 size={34} className="text-primary" />
         </div>
 
         <div>
-          <p className="text-xl font-bold text-[#2C1A14] mb-2">Модуль Studio готується</p>
-          <p className="text-sm text-[#6B5750] max-w-xs leading-relaxed">
+          <p className="text-xl font-bold text-foreground mb-2">Модуль Studio готується</p>
+          <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
             Ми активно будуємо інструменти для команд та салонів.
             Залишіть контакт — сповістимо вас першими.
           </p>
@@ -58,11 +58,11 @@ export default function StudioPage() {
                 className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                 style={{ background: 'rgba(120,154,153,0.12)' }}
               >
-                <Icon size={15} className="text-[#789A99]" />
+                <Icon size={15} className="text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#2C1A14]">{title}</p>
-                <p className="text-xs text-[#A8928D] leading-relaxed mt-0.5">{desc}</p>
+                <p className="text-sm font-semibold text-foreground">{title}</p>
+                <p className="text-xs text-muted-foreground/60 leading-relaxed mt-0.5">{desc}</p>
               </div>
             </div>
           ))}

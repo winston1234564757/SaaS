@@ -60,8 +60,8 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-[#2C1A14]">Портфоліо</h1>
-          <p className="text-sm text-[#6B5750] mt-0.5">
+          <h1 className="text-xl font-bold text-foreground">Портфоліо</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             {publishedCount} {pluralUk(publishedCount, 'робота', 'роботи', 'робіт')}
             {isStarter && ` · ${STARTER_LIMIT} макс.`}
           </p>
@@ -72,7 +72,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
               href={`/${masterSlug}/portfolio`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#789A99] border border-[#789A99]/40 hover:bg-[#789A99]/8 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-primary border border-primary/40 hover:bg-primary/8 transition-colors"
             >
               <ExternalLink size={13} /> Переглянути
             </a>
@@ -80,7 +80,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
           <button
             onClick={handleCreate}
             disabled={atLimit}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-50 active:scale-95 transition-all"
             style={{ background: '#789A99' }}
           >
             <Plus size={16} /> Додати
@@ -96,17 +96,17 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
           className="rounded-3xl p-4 flex items-start gap-3"
           style={{ background: 'rgba(212,147,90,0.08)', border: '1px solid rgba(212,147,90,0.2)' }}
         >
-          <div className="w-9 h-9 rounded-2xl bg-[#D4935A]/15 flex items-center justify-center shrink-0">
-            <Lock size={16} className="text-[#D4935A]" />
+          <div className="w-9 h-9 rounded-2xl bg-warning/15 flex items-center justify-center shrink-0">
+            <Lock size={16} className="text-warning" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-[#2C1A14]">Ліміт Starter: {STARTER_LIMIT} робіт</p>
-            <p className="text-xs text-[#6B5750] mt-0.5">
+            <p className="text-sm font-bold text-foreground">Ліміт Starter: {STARTER_LIMIT} робіт</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Перейдіть на Pro — необмежена кількість робіт, більше фото та повний доступ до аналітики.
             </p>
             <a
               href="/dashboard/billing"
-              className="inline-block mt-2 text-xs font-semibold text-[#D4935A] underline underline-offset-2"
+              className="inline-block mt-2 text-xs font-semibold text-warning underline underline-offset-2"
             >
               Переглянути тарифи →
             </a>
@@ -122,18 +122,18 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
           className="rounded-3xl py-16 flex flex-col items-center justify-center gap-4 text-center"
           style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.4)' }}
         >
-          <div className="w-16 h-16 rounded-3xl bg-[#F5E8E3] flex items-center justify-center">
+          <div className="w-16 h-16 rounded-3xl bg-secondary flex items-center justify-center">
             <Images size={28} className="text-[#C8B8B2]" />
           </div>
           <div>
-            <p className="text-base font-bold text-[#2C1A14]">Портфоліо порожнє</p>
-            <p className="text-sm text-[#6B5750] mt-1 max-w-xs mx-auto">
+            <p className="text-base font-bold text-foreground">Портфоліо порожнє</p>
+            <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
               Додайте свої роботи, щоб клієнти бачили ваш стиль і рівень
             </p>
           </div>
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white active:scale-95 transition-all"
             style={{ background: '#789A99' }}
           >
             <Plus size={16} /> Додати першу роботу
@@ -162,7 +162,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
           {!atLimit && (
             <button
               onClick={handleCreate}
-              className="rounded-3xl aspect-[4/3] flex flex-col items-center justify-center gap-2 text-[#A8928D] hover:text-[#789A99] transition-colors"
+              className="rounded-3xl aspect-[4/3] flex flex-col items-center justify-center gap-2 text-muted-foreground/60 hover:text-primary transition-colors active:scale-95 transition-all"
               style={{ border: '2px dashed #E8D5CF' }}
             >
               <Plus size={20} />

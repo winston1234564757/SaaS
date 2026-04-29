@@ -20,31 +20,31 @@ function BarTooltipContent({ dayFull, bookings, revenue, isToday, isPast }: {
 }) {
   return (
     <div className="flex flex-col gap-1 min-w-[130px]">
-      <p className="text-xs font-bold text-[#2C1A14] flex items-center gap-1.5">
+      <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
         {dayFull}
         {isToday && (
-          <span className="text-[10px] font-semibold text-[#789A99] bg-[#789A99]/12 px-1.5 py-0.5 rounded-full">
+          <span className="text-[10px] font-semibold text-primary bg-primary/12 px-1.5 py-0.5 rounded-full">
             сьогодні
           </span>
         )}
       </p>
-      <div className="h-px bg-[#F5E8E3]" />
+      <div className="h-px bg-secondary" />
       {bookings === 0 ? (
-        <p className="text-[11px] text-[#A8928D]">Записів немає</p>
+        <p className="text-[11px] text-muted-foreground/60">Записів немає</p>
       ) : (
         <>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[11px] text-[#6B5750]">Записів</span>
-            <span className="text-[11px] font-semibold text-[#2C1A14]">{bookings}</span>
+            <span className="text-[11px] text-muted-foreground">Записів</span>
+            <span className="text-[11px] font-semibold text-foreground">{bookings}</span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[11px] text-[#6B5750]">Виручка</span>
-            <span className="text-[11px] font-semibold text-[#789A99]">
+            <span className="text-[11px] text-muted-foreground">Виручка</span>
+            <span className="text-[11px] font-semibold text-primary">
               {revenue > 0 ? revenue.toLocaleString('uk-UA') + ' ₴' : '—'}
             </span>
           </div>
           {isPast && !isToday && (
-            <p className="text-[10px] text-[#A8928D]">Завершений день</p>
+            <p className="text-[10px] text-muted-foreground/60">Завершений день</p>
           )}
         </>
       )}
@@ -87,8 +87,8 @@ export function WeeklyOverview() {
       className="bento-card p-5"
     >
       <div className="flex items-center justify-between mb-5">
-        <h2 className="heading-serif text-base text-[#2C1A14]">Цей тиждень</h2>
-        <span className="text-xs text-[#A8928D]">{totalBookings} записів</span>
+        <h2 className="heading-serif text-base text-foreground">Цей тиждень</h2>
+        <span className="text-xs text-muted-foreground/60">{totalBookings} записів</span>
       </div>
 
       {/* Bar chart */}
@@ -175,7 +175,7 @@ export function WeeklyOverview() {
         {DAYS_SHORT.map((day, i) => (
           <div key={day} className="flex-1 text-center">
             <span className={`text-[11px] font-medium ${
-              i === todayIdx ? 'text-[#789A99] font-bold' : 'text-[#A8928D]'
+              i === todayIdx ? 'text-primary font-bold' : 'text-muted-foreground/60'
             }`}>
               {day}
             </span>
@@ -183,9 +183,9 @@ export function WeeklyOverview() {
         ))}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-[#F5E8E3]/60 flex items-center justify-between">
-        <span className="text-xs text-[#A8928D]">Виручка за тиждень</span>
-        <span className="text-sm font-bold text-[#2C1A14]">
+      <div className="mt-4 pt-4 border-t border-secondary/60 flex items-center justify-between">
+        <span className="text-xs text-muted-foreground/60">Виручка за тиждень</span>
+        <span className="text-sm font-bold text-foreground">
           {totalRevenue.toLocaleString('uk-UA')} ₴
         </span>
       </div>

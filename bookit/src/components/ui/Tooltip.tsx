@@ -37,7 +37,7 @@ export function Tooltip({ content, children, position = 'top', className, delay 
               'bg-white/90 backdrop-blur-xl',
               'border border-white/70',
               'shadow-[0_8px_30px_rgb(0,0,0,0.14)]',
-              'text-[#2C1A14] rounded-2xl p-4',
+              'text-foreground rounded-2xl p-4',
               // Radix animations
               'origin-[--radix-tooltip-content-transform-origin]',
               'data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95',

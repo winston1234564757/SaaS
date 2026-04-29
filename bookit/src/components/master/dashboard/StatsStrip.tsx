@@ -53,11 +53,11 @@ export function StatsStrip() {
       bg: 'rgba(120, 154, 153, 0.12)',
       tooltip: (
         <div className="flex flex-col gap-1 min-w-[150px]">
-          <p className="text-xs font-bold text-[#2C1A14]">Записи сьогодні</p>
-          <div className="h-px bg-[#F5E8E3]" />
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-[#6B5750]">Підтверджено</span><span className="text-[11px] font-semibold text-[#5C9E7A]">{s.todayConfirmed}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-[#6B5750]">Очікують</span><span className="text-[11px] font-semibold text-[#D4935A]">{s.todayPending}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-[#6B5750]">Завершено</span><span className="text-[11px] font-semibold text-[#A8928D]">{s.todayCompleted}</span></div>
+          <p className="text-xs font-bold text-foreground">Записи сьогодні</p>
+          <div className="h-px bg-secondary" />
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Підтверджено</span><span className="text-[11px] font-semibold text-success">{s.todayConfirmed}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Очікують</span><span className="text-[11px] font-semibold text-warning">{s.todayPending}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Завершено</span><span className="text-[11px] font-semibold text-muted-foreground/60">{s.todayCompleted}</span></div>
         </div>
       ),
     },
@@ -71,10 +71,10 @@ export function StatsStrip() {
       bg: 'rgba(92, 158, 122, 0.12)',
       tooltip: (
         <div className="flex flex-col gap-1 min-w-[150px]">
-          <p className="text-xs font-bold text-[#2C1A14]">Виручка сьогодні</p>
-          <div className="h-px bg-[#F5E8E3]" />
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-[#6B5750]">З завершених</span><span className="text-[11px] font-semibold text-[#2C1A14]">{fmt(s.todayRevenue)}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-[#6B5750]">Записів завершено</span><span className="text-[11px] font-semibold text-[#789A99]">{s.todayCompleted}</span></div>
+          <p className="text-xs font-bold text-foreground">Виручка сьогодні</p>
+          <div className="h-px bg-secondary" />
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">З завершених</span><span className="text-[11px] font-semibold text-foreground">{fmt(s.todayRevenue)}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Записів завершено</span><span className="text-[11px] font-semibold text-primary">{s.todayCompleted}</span></div>
         </div>
       ),
     },
@@ -88,10 +88,10 @@ export function StatsStrip() {
       bg: 'rgba(212, 147, 90, 0.12)',
       tooltip: (
         <div className="flex flex-col gap-1 min-w-[150px]">
-          <p className="text-xs font-bold text-[#2C1A14]">Клієнти цього тижня</p>
-          <div className="h-px bg-[#F5E8E3]" />
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-[#6B5750]">Унікальних</span><span className="text-[11px] font-semibold text-[#D4935A]">{s.weekClients}</span></div>
-          <p className="text-[10px] text-[#A8928D] mt-0.5">з підтверджених та завершених</p>
+          <p className="text-xs font-bold text-foreground">Клієнти цього тижня</p>
+          <div className="h-px bg-secondary" />
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Унікальних</span><span className="text-[11px] font-semibold text-warning">{s.weekClients}</span></div>
+          <p className="text-[10px] text-muted-foreground/60 mt-0.5">з підтверджених та завершених</p>
         </div>
       ),
     },
@@ -116,8 +116,8 @@ export function StatsStrip() {
                   <Icon size={18} style={{ color: stat.color }} />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-[#2C1A14] leading-none">{stat.value}</p>
-                  <p className="text-xs text-[#A8928D] mt-1.5 leading-tight">{stat.label}</p>
+                  <p className="text-xl font-bold text-foreground leading-none">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1.5 leading-tight">{stat.label}</p>
                 </div>
                 <p className="text-xs font-semibold" style={{ color: stat.subPositive ? '#5C9E7A' : '#A8928D' }}>
                   {stat.sub}
@@ -134,13 +134,13 @@ export function StatsStrip() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25, type: 'spring', stiffness: 300, damping: 24 }}
       >
-        <Link href="/dashboard/pricing" className="block px-4 py-3 rounded-2xl bg-[#D4935A]/8 border border-[#D4935A]/20 hover:bg-[#D4935A]/12 transition-colors">
+        <Link href="/dashboard/pricing" className="block px-4 py-3 rounded-2xl bg-warning/8 border border-warning/20 hover:bg-warning/12 transition-colors">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-7 h-7 rounded-xl bg-[#D4935A]/15 flex items-center justify-center flex-shrink-0">
+            <div className="w-7 h-7 rounded-xl bg-warning/15 flex items-center justify-center flex-shrink-0">
               <Sparkles size={13} style={{ color: '#D4935A' }} />
             </div>
-            <p className="text-xs font-semibold text-[#2C1A14] flex-1">Динамічне ціноутворення — тріал</p>
-            <span className="text-[11px] font-bold text-[#D4935A]">{dpEarnedUah} / {dpLimitUah} ₴</span>
+            <p className="text-xs font-semibold text-foreground flex-1">Динамічне ціноутворення — тріал</p>
+            <span className="text-[11px] font-bold text-warning">{dpEarnedUah} / {dpLimitUah} ₴</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(212, 147, 90, 0.15)' }}>
             <div
@@ -148,7 +148,7 @@ export function StatsStrip() {
               style={{ width: `${dpPct}%`, background: '#D4935A' }}
             />
           </div>
-          <p className="text-[11px] text-[#6B5750] mt-1.5">
+          <p className="text-[11px] text-muted-foreground mt-1.5">
             Залишилось {dpLimitUah - dpEarnedUah} ₴ до кінця тріалу → перейдіть на Pro
           </p>
         </Link>
@@ -159,16 +159,16 @@ export function StatsStrip() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 24 }}
-        className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#789A99]/8 border border-[#789A99]/20"
+        className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/8 border border-primary/20"
       >
-        <div className="w-8 h-8 rounded-xl bg-[#789A99]/15 flex items-center justify-center flex-shrink-0">
-          <Zap size={14} className="text-[#789A99]" />
+        <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+          <Zap size={14} className="text-primary" />
         </div>
-        <p className="text-xs text-[#6B5750] flex-1 leading-relaxed">
-          Ви вже активний майстер — <span className="font-semibold text-[#2C1A14]">Pro</span> розблокує аналітику, CRM та автоматичні нагадування
+        <p className="text-xs text-muted-foreground flex-1 leading-relaxed">
+          Ви вже активний майстер — <span className="font-semibold text-foreground">Pro</span> розблокує аналітику, CRM та автоматичні нагадування
         </p>
         <Link href="/dashboard/billing?plan=pro"
-          className="flex-shrink-0 text-[11px] font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors whitespace-nowrap">
+          className="flex-shrink-0 text-[11px] font-semibold text-primary hover:text-primary/90 transition-colors whitespace-nowrap">
           Спробувати →
         </Link>
       </motion.div>

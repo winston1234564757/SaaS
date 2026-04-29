@@ -22,7 +22,7 @@ function GoogleIcon() {
 }
 
 const inputCls =
-  'w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all';
+  'w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all';
 
 export function NavLoginSheet({ open, onClose }: Props) {
   const [email, setEmail] = useState('');
@@ -70,7 +70,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 420, damping: 42 }}
-            className="fixed bottom-0 left-0 right-0 z-[61] bg-[#FFE8DC] rounded-t-3xl shadow-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+            className="fixed bottom-0 left-0 right-0 z-[61] bg-background rounded-t-3xl shadow-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
           >
             {/* Handle */}
             <div className="w-10 h-1 rounded-full bg-[#D4B9B0] mx-auto mb-5" />
@@ -78,12 +78,12 @@ export function NavLoginSheet({ open, onClose }: Props) {
             {/* Header */}
             <div className="flex items-start justify-between mb-5">
               <div>
-                <h2 className="text-lg font-bold text-[#2C1A14]">Увійти до Bookit</h2>
-                <p className="text-sm text-[#6B5750] mt-0.5">Всі записи в одному місці</p>
+                <h2 className="text-lg font-bold text-foreground">Увійти до Bookit</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">Всі записи в одному місці</p>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-[#A8928D] hover:bg-black/5 transition-colors flex-shrink-0"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground/60 hover:bg-black/5 transition-colors flex-shrink-0 active:scale-95 transition-all"
                 aria-label="Закрити"
               >
                 <X size={16} />
@@ -94,22 +94,22 @@ export function NavLoginSheet({ open, onClose }: Props) {
             <button
               onClick={handleGoogle}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-white/80 bg-white/80 hover:bg-white backdrop-blur-sm text-sm font-semibold text-[#2C1A14] disabled:opacity-50 transition-colors mb-4"
+              className="w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-white/80 bg-white/80 hover:bg-white backdrop-blur-sm text-sm font-semibold text-foreground disabled:opacity-50 transition-colors mb-4 active:scale-95 transition-all"
             >
               <GoogleIcon />
               Продовжити з Google
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-px bg-[#E8D5CF]" />
-              <span className="text-xs text-[#A8928D]">або</span>
-              <div className="flex-1 h-px bg-[#E8D5CF]" />
+              <div className="flex-1 h-px bg-secondary/80" />
+              <span className="text-xs text-muted-foreground/60">або</span>
+              <div className="flex-1 h-px bg-secondary/80" />
             </div>
 
             {/* Email + Password */}
             <form onSubmit={handleEmail} className="flex flex-col gap-3">
               <div className="relative">
-                <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D] pointer-events-none" />
+                <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
                 <input
                   type="email"
                   placeholder="Email"
@@ -120,7 +120,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
                 />
               </div>
               <div className="relative">
-                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D] pointer-events-none" />
+                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
                 <input
                   type="password"
                   placeholder="Пароль"
@@ -130,11 +130,11 @@ export function NavLoginSheet({ open, onClose }: Props) {
                   autoComplete="current-password"
                 />
               </div>
-              {error && <p className="text-xs text-[#C05B5B] px-1">{error}</p>}
+              {error && <p className="text-xs text-destructive px-1">{error}</p>}
               <button
                 type="submit"
                 disabled={loading || !email.trim() || !password}
-                className="w-full h-12 rounded-xl bg-[#789A99] hover:bg-[#6B8C8B] text-white text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center"
+                className="w-full h-12 rounded-xl bg-primary hover:bg-[#6B8C8B] text-white text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center active:scale-95 transition-all"
               >
                 {loading ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -144,9 +144,9 @@ export function NavLoginSheet({ open, onClose }: Props) {
               </button>
             </form>
 
-            <p className="text-xs text-center text-[#A8928D] mt-4">
+            <p className="text-xs text-center text-muted-foreground/60 mt-4">
               Ще немає акаунту?{' '}
-              <a href="/register" className="text-[#789A99] font-medium underline underline-offset-4">
+              <a href="/register" className="text-primary font-medium underline underline-offset-4">
                 Зареєструватись
               </a>
             </p>

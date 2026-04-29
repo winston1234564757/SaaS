@@ -49,57 +49,57 @@ export function StudioJoinPage({ studio, token }: Props) {
       >
         {joined ? (
           <>
-            <div className="w-16 h-16 rounded-3xl bg-[#5C9E7A]/12 flex items-center justify-center">
-              <CheckCircle size={30} className="text-[#5C9E7A]" />
+            <div className="w-16 h-16 rounded-3xl bg-success/12 flex items-center justify-center">
+              <CheckCircle size={30} className="text-success" />
             </div>
             <div>
-              <p className="text-lg font-bold text-[#2C1A14] mb-1">Ви у команді! 🎉</p>
-              <p className="text-sm text-[#A8928D]">Переходимо до кабінету студії...</p>
+              <p className="text-lg font-bold text-foreground mb-1">Ви у команді! 🎉</p>
+              <p className="text-sm text-muted-foreground/60">Переходимо до кабінету студії...</p>
             </div>
           </>
         ) : !studio ? (
           <>
-            <div className="w-16 h-16 rounded-3xl bg-[#C05B5B]/10 flex items-center justify-center">
-              <AlertCircle size={28} className="text-[#C05B5B]" />
+            <div className="w-16 h-16 rounded-3xl bg-destructive/10 flex items-center justify-center">
+              <AlertCircle size={28} className="text-destructive" />
             </div>
             <div>
-              <p className="text-base font-semibold text-[#2C1A14] mb-1">Посилання недійсне</p>
-              <p className="text-sm text-[#A8928D]">Студія не знайдена або посилання застаріло</p>
+              <p className="text-base font-semibold text-foreground mb-1">Посилання недійсне</p>
+              <p className="text-sm text-muted-foreground/60">Студія не знайдена або посилання застаріло</p>
             </div>
-            <Link href="/dashboard" className="text-sm text-[#789A99] font-medium hover:underline">
+            <Link href="/dashboard" className="text-sm text-primary font-medium hover:underline">
               До кабінету →
             </Link>
           </>
         ) : (
           <>
-            <div className="w-16 h-16 rounded-3xl bg-[#5C9E7A]/12 flex items-center justify-center">
-              <Building2 size={28} className="text-[#5C9E7A]" />
+            <div className="w-16 h-16 rounded-3xl bg-success/12 flex items-center justify-center">
+              <Building2 size={28} className="text-success" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wide mb-1">Запрошення до студії</p>
-              <p className="text-xl font-bold text-[#2C1A14] mb-1">{studio.name}</p>
-              <p className="text-sm text-[#6B5750]">
+              <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-1">Запрошення до студії</p>
+              <p className="text-xl font-bold text-foreground mb-1">{studio.name}</p>
+              <p className="text-sm text-muted-foreground">
                 Після приєднання ви отримаєте доступ до всіх Pro функцій у складі команди
               </p>
             </div>
 
             {error && (
-              <div className="w-full flex items-center gap-2 p-3 rounded-xl bg-[#C05B5B]/10 border border-[#C05B5B]/20">
-                <AlertCircle size={14} className="text-[#C05B5B] shrink-0" />
-                <p className="text-xs text-[#C05B5B] text-left">{error}</p>
+              <div className="w-full flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                <AlertCircle size={14} className="text-destructive shrink-0" />
+                <p className="text-xs text-destructive text-left">{error}</p>
               </div>
             )}
 
             <button
               onClick={handleJoin}
               disabled={isPending}
-              className="w-full py-3.5 rounded-2xl bg-[#5C9E7A] text-white text-sm font-semibold disabled:opacity-60 transition-all"
+              className="w-full py-3.5 rounded-2xl bg-success text-white text-sm font-semibold disabled:opacity-60 transition-all active:scale-95 transition-all"
               style={{ boxShadow: '0 4px 16px rgba(92,158,122,0.35)' }}
             >
               {isPending ? 'Приєднуємось...' : 'Приєднатися до студії →'}
             </button>
 
-            <Link href="/dashboard" className="text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors">
+            <Link href="/dashboard" className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
               Скасувати
             </Link>
           </>

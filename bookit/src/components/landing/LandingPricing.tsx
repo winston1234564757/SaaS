@@ -41,7 +41,7 @@ const plans = [
       'Telegram-сповіщення для вас і клієнтів',
       'PWA — додаток без App Store',
       'Детальна аналітика та CRM',
-      "Повний маркетинговий пакет (Вільні вікна, Відгуки, Анонси)",
+      "Всі маркетингові інструменти (Вільні вікна, Відгуки, Анонси)",
       'Власний брендинг (без знаку Bookit)',
       'CSV-експорт клієнтів та записів',
     ],
@@ -90,8 +90,8 @@ export function LandingPricing() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="display-md text-[#2C1A14] mb-3 text-balance">Прозорі ціни без сюрпризів</h2>
-        <p className="text-[#6B5750] text-lg text-balance">
+        <h2 className="display-md text-foreground mb-3 text-balance">Прозорі ціни без сюрпризів</h2>
+        <p className="text-muted-foreground text-lg text-balance">
           Починайте безкоштовно, масштабуйтесь коли готові
         </p>
       </motion.div>
@@ -110,24 +110,24 @@ export function LandingPricing() {
             }`}
           >
             {plan.badge && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 bg-[#789A99] text-white text-xs font-semibold rounded-full shadow-md whitespace-nowrap">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 bg-primary text-white text-xs font-semibold rounded-full shadow-md whitespace-nowrap">
                 <Sparkles size={10} />
                 {plan.badge}
               </div>
             )}
 
             <div>
-              <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wider mb-1">{plan.name}</p>
-              <p className="text-sm text-[#6B5750] leading-snug">{plan.description}</p>
+              <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1">{plan.name}</p>
+              <p className="text-sm text-muted-foreground leading-snug">{plan.description}</p>
             </div>
 
             <div className="flex items-end gap-1">
               {plan.label ? (
-                <span className="heading-serif text-3xl text-[#2C1A14]">{plan.label}</span>
+                <span className="heading-serif text-3xl text-foreground">{plan.label}</span>
               ) : (
                 <>
-                  <span className="heading-serif text-4xl text-[#2C1A14]">{plan.price} ₴</span>
-                  <span className="text-sm text-[#A8928D] mb-1">{plan.period}</span>
+                  <span className="heading-serif text-4xl text-foreground">{plan.price} ₴</span>
+                  <span className="text-sm text-muted-foreground/60 mb-1">{plan.period}</span>
                 </>
               )}
             </div>
@@ -135,14 +135,14 @@ export function LandingPricing() {
             <ul className="flex flex-col gap-2">
               {plan.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-2.5">
-                  <Check size={14} className="text-[#789A99] mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-[#6B5750]">{feature}</span>
+                  <Check size={14} className="text-primary mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-muted-foreground">{feature}</span>
                 </li>
               ))}
             </ul>
 
             {'anchor' in plan && plan.anchor && (
-              <p className="text-xs text-[#789A99] leading-relaxed px-1 text-balance">
+              <p className="text-xs text-primary leading-relaxed px-1 text-balance">
                 {plan.anchor as string}
               </p>
             )}
@@ -153,10 +153,10 @@ export function LandingPricing() {
               disabled={'disabled' in plan && plan.disabled}
               className={`mt-auto flex items-center justify-center h-12 rounded-2xl font-semibold text-sm transition-colors ${
                 'disabled' in plan && plan.disabled
-                  ? 'bg-white/50 text-[#A8928D] cursor-not-allowed'
+                  ? 'bg-white/50 text-muted-foreground/60 cursor-not-allowed'
                   : plan.highlight
-                  ? 'bg-[#789A99] text-white hover:bg-[#5C7E7D] shadow-[0_4px_14px_rgba(120,154,153,0.35)]'
-                  : 'bg-white/70 text-[#2C1A14] hover:bg-white/90'
+                  ? 'bg-primary text-white hover:bg-primary/90 shadow-[0_4px_14px_rgba(120,154,153,0.35)]'
+                  : 'bg-white/70 text-foreground hover:bg-white/90'
               }`}
             >
               {plan.cta}
@@ -169,7 +169,7 @@ export function LandingPricing() {
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ delay: 0.5 }}
-        className="text-center text-sm text-[#A8928D] mt-6"
+        className="text-center text-sm text-muted-foreground/60 mt-6"
       >
         Стартовий план — назавжди безкоштовно. Без прихованих платежів.
       </motion.p>

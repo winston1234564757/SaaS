@@ -66,25 +66,25 @@ export default async function LegalPage({ params }: Props) {
     <div className="bento-card rounded-3xl p-6 sm:p-10">
       <article
         className="prose prose-stone max-w-none
-          prose-headings:font-playfair prose-headings:text-[#2C1A14]
+          prose-headings:font-playfair prose-headings:text-foreground
           prose-h1:text-3xl prose-h1:mb-6
-          prose-h2:text-xl prose-h2:text-[#2C1A14] prose-h2:mt-8 prose-h2:mb-3
-          prose-h3:text-base prose-h3:text-[#6B5750] prose-h3:font-semibold
-          prose-p:text-[#6B5750] prose-p:leading-relaxed
-          prose-li:text-[#6B5750]
-          prose-strong:text-[#2C1A14]
-          prose-a:text-[#789A99] prose-a:no-underline hover:prose-a:underline
+          prose-h2:text-xl prose-h2:text-foreground prose-h2:mt-8 prose-h2:mb-3
+          prose-h3:text-base prose-h3:text-muted-foreground prose-h3:font-semibold
+          prose-p:text-muted-foreground prose-p:leading-relaxed
+          prose-li:text-muted-foreground
+          prose-strong:text-foreground
+          prose-a:text-primary prose-a:no-underline hover:prose-a:underline
           prose-table:text-sm
-          prose-th:text-[#2C1A14] prose-th:font-semibold
-          prose-td:text-[#6B5750]
+          prose-th:text-foreground prose-th:font-semibold
+          prose-td:text-muted-foreground
           prose-hr:border-[#E8D0C8]
-          prose-blockquote:border-l-[#789A99] prose-blockquote:text-[#A8928D]"
+          prose-blockquote:border-l-[#789A99] prose-blockquote:text-muted-foreground/60"
         dangerouslySetInnerHTML={{ __html: html! }}
       />
 
-      <p className="mt-10 pt-6 border-t border-[#E8D0C8] text-xs text-[#A8928D] text-center">
+      <p className="mt-10 pt-6 border-t border-[#E8D0C8] text-xs text-muted-foreground/60 text-center">
         Цей документ носить інформаційний характер і складений відповідно до чинного законодавства України.
-        З питань — <a href="mailto:viktor.koshel24@gmail.com" className="text-[#789A99] hover:underline">viktor.koshel24@gmail.com</a>.
+        З питань — <a href="mailto:viktor.koshel24@gmail.com" className="text-primary hover:underline">viktor.koshel24@gmail.com</a>.
       </p>
     </div>
   );

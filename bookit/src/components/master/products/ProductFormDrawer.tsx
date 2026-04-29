@@ -193,10 +193,10 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 shrink-0">
-              <h2 className="text-base font-bold text-[#2C1A14]">
+              <h2 className="text-base font-bold text-foreground">
                 {isEdit ? 'Редагувати товар' : 'Новий товар'}
               </h2>
-              <button onClick={handleClose} className="w-8 h-8 rounded-full bg-[#F5E8E3] flex items-center justify-center text-[#6B5750]">
+              <button onClick={handleClose} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-95 transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -206,16 +206,16 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
 
               {/* Photos */}
               <div>
-                <label className="text-xs font-semibold text-[#6B5750] uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
                   Фото ({photos.length}/5)
                 </label>
                 <div className="flex gap-2 flex-wrap">
                   {photos.map(url => (
-                    <div key={url} className="relative w-20 h-20 rounded-2xl overflow-hidden bg-[#F5E8E3]">
+                    <div key={url} className="relative w-20 h-20 rounded-2xl overflow-hidden bg-secondary">
                       <Image src={url} alt="" fill className="object-cover" />
                       <button
                         onClick={() => removePhoto(url)}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[#C05B5B] text-white flex items-center justify-center"
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center"
                       >
                         <X size={10} />
                       </button>
@@ -225,7 +225,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     <button
                       onClick={() => fileRef.current?.click()}
                       disabled={uploading}
-                      className="w-20 h-20 rounded-2xl border-2 border-dashed border-[#D4B9B0] flex flex-col items-center justify-center gap-1 text-[#A8928D] hover:border-[#789A99] hover:text-[#789A99] transition-colors"
+                      className="w-20 h-20 rounded-2xl border-2 border-dashed border-[#D4B9B0] flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors"
                     >
                       {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
                       <span className="text-[9px]">Додати</span>
@@ -262,8 +262,8 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                       onClick={() => setCategory(c.value)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                         category === c.value
-                          ? 'bg-[#789A99] text-white'
-                          : 'bg-white/70 text-[#6B5750] border border-white/80 hover:bg-white'
+                          ? 'bg-primary text-white'
+                          : 'bg-white/70 text-muted-foreground border border-white/80 hover:bg-white'
                       }`}
                     >
                       {c.label}
@@ -315,17 +315,17 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               <div className="bg-white/60 rounded-2xl border border-white/80 p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Link2 size={15} className="text-[#789A99] shrink-0" />
+                    <Link2 size={15} className="text-primary shrink-0" />
                     <div>
-                      <p className="text-sm font-semibold text-[#2C1A14]">Рекомендувати при будь-якому записі</p>
-                      <p className="text-xs text-[#A8928D]">Пропонувати товар незалежно від послуги</p>
+                      <p className="text-sm font-semibold text-foreground">Рекомендувати при будь-якому записі</p>
+                      <p className="text-xs text-muted-foreground/60">Пропонувати товар незалежно від послуги</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setRecommendAlways(v => !v)}
                     className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${
-                      recommendAlways ? 'bg-[#789A99]' : 'bg-[#D4B9B0]'
+                      recommendAlways ? 'bg-primary' : 'bg-[#D4B9B0]'
                     }`}
                   >
                     <span
@@ -346,11 +346,11 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                       transition={{ duration: 0.18 }}
                       className="overflow-hidden"
                     >
-                      <p className="text-xs text-[#6B5750] mb-2 font-medium">
+                      <p className="text-xs text-muted-foreground mb-2 font-medium">
                         Оберіть послуги, до яких рекомендувати цей товар:
                       </p>
                       {activeServices.length === 0 ? (
-                        <p className="text-xs text-[#A8928D]">У вас ще немає активних послуг</p>
+                        <p className="text-xs text-muted-foreground/60">У вас ще немає активних послуг</p>
                       ) : (
                         <div className="flex gap-2 flex-wrap">
                           {activeServices.map(s => (
@@ -360,8 +360,8 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                               onClick={() => toggleService(s.id)}
                               className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                                 linkedServiceIds.includes(s.id)
-                                  ? 'bg-[#789A99] text-white'
-                                  : 'bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1]'
+                                  ? 'bg-primary text-white'
+                                  : 'bg-secondary text-muted-foreground hover:bg-[#EDD9D1]'
                               }`}
                             >
                               {s.emoji} {s.name}
@@ -376,14 +376,14 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
 
               {/* Error */}
               {error && (
-                <p className="text-xs text-[#C05B5B] px-1">{error}</p>
+                <p className="text-xs text-destructive px-1">{error}</p>
               )}
 
               {/* Save */}
               <button
                 onClick={handleSave}
                 disabled={isPending || uploading}
-                className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98] transition-all"
+                className="w-full py-3.5 rounded-2xl bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98] transition-all"
               >
                 {isPending
                   ? <><Loader2 size={16} className="animate-spin" /> Зберігаємо...</>
@@ -397,7 +397,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                   {!showDelete ? (
                     <button
                       onClick={() => setShowDelete(true)}
-                      className="w-full py-3 rounded-2xl text-xs font-medium text-[#C05B5B] hover:bg-[#C05B5B]/8 transition-colors"
+                      className="w-full py-3 rounded-2xl text-xs font-medium text-destructive hover:bg-destructive/8 transition-colors"
                     >
                       Видалити товар
                     </button>
@@ -405,14 +405,14 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowDelete(false)}
-                        className="flex-1 py-3 rounded-2xl text-xs font-medium text-[#6B5750] bg-white/60 hover:bg-white/80 transition-colors"
+                        className="flex-1 py-3 rounded-2xl text-xs font-medium text-muted-foreground bg-white/60 hover:bg-white/80 transition-colors"
                       >
                         Скасувати
                       </button>
                       <button
                         onClick={handleDelete}
                         disabled={isPending}
-                        className="flex-1 py-3 rounded-2xl text-xs font-semibold text-white bg-[#C05B5B] flex items-center justify-center gap-1.5 disabled:opacity-60 active:scale-[0.97] transition-all"
+                        className="flex-1 py-3 rounded-2xl text-xs font-semibold text-white bg-destructive flex items-center justify-center gap-1.5 disabled:opacity-60 active:scale-[0.97] transition-all"
                       >
                         <Trash2 size={13} /> Підтвердити
                       </button>
@@ -430,12 +430,12 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const INPUT_CLS = 'w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] outline-none focus:border-[#789A99]/50 transition-colors';
+const INPUT_CLS = 'w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/50 transition-colors';
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={className}>
-      <label className="text-xs font-semibold text-[#6B5750] uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{label}</label>
       {children}
     </div>
   );

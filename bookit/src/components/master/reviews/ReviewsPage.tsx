@@ -65,8 +65,8 @@ export function ReviewsPage() {
           primaryButtonText="Зрозуміло"
           onPrimaryClick={nextStep}
         />
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Відгуки</h1>
-        <p className="text-sm text-[#A8928D]">Керуйте відгуками клієнтів</p>
+        <h1 className="heading-serif text-xl text-foreground mb-0.5">Відгуки</h1>
+        <p className="text-sm text-muted-foreground/60">Керуйте відгуками клієнтів</p>
       </div>
 
       {/* Stats */}
@@ -79,10 +79,10 @@ export function ReviewsPage() {
           ].map(s => (
             <div key={s.label} className="bento-card p-3 text-center flex flex-col gap-0.5">
               <p className="text-base font-bold" style={{ color: s.countColor }}>{s.count}</p>
-              <p className="text-[10px] text-[#A8928D]">{s.label}</p>
-              <div className="mt-1 pt-1 border-t border-[#F5E8E3] flex items-center justify-center gap-0.5">
-                <Star size={9} className="fill-[#D4935A] text-[#D4935A]" />
-                <span className="text-[11px] font-semibold text-[#2C1A14]">{s.avg}</span>
+              <p className="text-[10px] text-muted-foreground/60">{s.label}</p>
+              <div className="mt-1 pt-1 border-t border-secondary flex items-center justify-center gap-0.5">
+                <Star size={9} className="fill-[#D4935A] text-warning" />
+                <span className="text-[11px] font-semibold text-foreground">{s.avg}</span>
               </div>
             </div>
           ))}
@@ -91,13 +91,13 @@ export function ReviewsPage() {
 
       {/* Pro nudge for Starter */}
       {isStarter && reviews.length > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#789A99]/8 border border-[#789A99]/20">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/8 border border-primary/20">
           <span className="text-base flex-shrink-0">⭐</span>
-          <p className="text-xs text-[#6B5750] flex-1 leading-relaxed">
-            З <span className="font-semibold text-[#2C1A14]">Pro</span> — автоматичні нагадування клієнтам залишити відгук після завершення запису
+          <p className="text-xs text-muted-foreground flex-1 leading-relaxed">
+            З <span className="font-semibold text-foreground">Pro</span> — автоматичні нагадування клієнтам залишити відгук після завершення запису
           </p>
           <Link href="/dashboard/billing?plan=pro"
-            className="flex-shrink-0 text-[11px] font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors whitespace-nowrap">
+            className="flex-shrink-0 text-[11px] font-semibold text-primary hover:text-primary/90 transition-colors whitespace-nowrap">
             Спробувати →
           </Link>
         </div>
@@ -113,8 +113,8 @@ export function ReviewsPage() {
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all',
                 filter === pill.key
-                  ? 'bg-[#2C1A14] text-white shadow-sm'
-                  : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                  ? 'bg-foreground text-white shadow-sm'
+                  : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
               )}
             >
               {pill.label}
@@ -122,7 +122,7 @@ export function ReviewsPage() {
                 'text-[10px] font-bold px-1.5 py-0.5 rounded-lg',
                 filter === pill.key
                   ? 'bg-white/20 text-white'
-                  : 'bg-[#F5E8E3] text-[#A8928D]'
+                  : 'bg-secondary text-muted-foreground/60'
               )}>
                 {pill.count}
               </span>
@@ -134,24 +134,24 @@ export function ReviewsPage() {
       {/* List */}
       {isLoading ? (
         <div className="bento-card p-10 flex flex-col items-center gap-3">
-          <Loader2 size={24} className="text-[#789A99] animate-spin" />
-          <p className="text-sm text-[#A8928D]">Завантаження відгуків...</p>
+          <Loader2 size={24} className="text-primary animate-spin" />
+          <p className="text-sm text-muted-foreground/60">Завантаження відгуків...</p>
         </div>
       ) : reviews.length === 0 ? (
         <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-          <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
-            <MessageSquare size={26} className="text-[#A8928D]" />
+          <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+            <MessageSquare size={26} className="text-muted-foreground/60" />
           </div>
-          <p className="text-sm font-semibold text-[#2C1A14]">Відгуків ще немає</p>
-          <p className="text-xs text-[#A8928D]">Клієнти зможуть залишати відгуки після завершених записів</p>
+          <p className="text-sm font-semibold text-foreground">Відгуків ще немає</p>
+          <p className="text-xs text-muted-foreground/60">Клієнти зможуть залишати відгуки після завершених записів</p>
         </div>
       ) : filteredReviews.length === 0 ? (
         <div className="bento-card p-8 flex flex-col items-center gap-2 text-center">
-          <EyeOff size={22} className="text-[#A8928D]" />
-          <p className="text-sm font-semibold text-[#2C1A14]">
+          <EyeOff size={22} className="text-muted-foreground/60" />
+          <p className="text-sm font-semibold text-foreground">
             {filter === 'hidden' ? 'Прихованих відгуків немає' : 'Публічних відгуків немає'}
           </p>
-          <p className="text-xs text-[#A8928D]">
+          <p className="text-xs text-muted-foreground/60">
             {filter === 'hidden'
               ? 'Усі відгуки зараз публічні'
               : 'Переключіть відгуки у "Публічний" режим'}
@@ -181,14 +181,14 @@ export function ReviewsPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-semibold text-[#2C1A14]">{r.client_name}</p>
+                        <p className="text-sm font-semibold text-foreground">{r.client_name}</p>
                         {!r.is_published && (
-                          <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-[#F5E8E3] text-[#A8928D]">
+                          <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground/60">
                             прихований
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-[#A8928D]">
+                      <p className="text-[10px] text-muted-foreground/60">
                         {formatDateFull(r.booking_date ?? r.created_at)}
                       </p>
                     </div>
@@ -202,8 +202,8 @@ export function ReviewsPage() {
                     className={cn(
                       'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all disabled:opacity-50',
                       r.is_published
-                        ? 'bg-[#5C9E7A]/12 text-[#5C9E7A] hover:bg-[#C05B5B]/10 hover:text-[#C05B5B]'
-                        : 'bg-[#F5E8E3] text-[#A8928D] hover:bg-[#5C9E7A]/12 hover:text-[#5C9E7A]'
+                        ? 'bg-success/12 text-success hover:bg-destructive/10 hover:text-destructive'
+                        : 'bg-secondary text-muted-foreground/60 hover:bg-success/12 hover:text-success'
                     )}
                   >
                     {isToggling === r.id ? (
@@ -222,17 +222,17 @@ export function ReviewsPage() {
                     <Star
                       key={idx}
                       size={14}
-                      className={idx < r.rating ? 'fill-[#D4935A] text-[#D4935A]' : 'text-[#E8D5CF]'}
+                      className={idx < r.rating ? 'fill-[#D4935A] text-warning' : 'text-secondary/80'}
                     />
                   ))}
-                  <span className="text-xs font-bold text-[#2C1A14] ml-1.5">{r.rating}.0</span>
+                  <span className="text-xs font-bold text-foreground ml-1.5">{r.rating}.0</span>
                 </div>
 
                 {/* Comment */}
                 {r.comment && (
                   <p className={cn(
                     'text-sm mt-2 leading-relaxed',
-                    r.is_published ? 'text-[#6B5750]' : 'text-[#A8928D]'
+                    r.is_published ? 'text-muted-foreground' : 'text-muted-foreground/60'
                   )}>
                     {r.comment}
                   </p>

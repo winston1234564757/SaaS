@@ -31,6 +31,7 @@ import { StepServicesForm } from './steps/StepServicesForm';
 import { StepProfitPredictor } from './steps/StepProfitPredictor';
 import { StepProfilePreview } from './steps/StepProfilePreview';
 import { StepSuccess } from './steps/StepSuccess';
+import { parseError } from '@/lib/utils/errors';
 
 interface OnboardingWizardProps {
   initialStep: Step;
@@ -174,7 +175,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
         referralCode,
       });
 
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: error }); return; }
+      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
 
       setSavedSlug(finalSlug);
       saveOnboardingProgress('SCHEDULE_PROMPT', { ...buildSnapshot(), slug: finalSlug }).catch(err =>
@@ -182,7 +183,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       );
       goTo('SCHEDULE_PROMPT');
     } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: err instanceof Error ? err.message : 'Щось пішло не так' });
+      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
     } finally {
       setSaving(false);
     }
@@ -192,11 +193,11 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
     setSaving(true);
     try {
       const { error } = await saveOnboardingSchedule({ schedule, bufferTime, breaks });
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: error }); return; }
+      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
       persistProgress('SERVICES_PROMPT');
       goTo('SERVICES_PROMPT');
     } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: err instanceof Error ? err.message : 'Щось пішло не так' });
+      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
     } finally {
       setSaving(false);
     }
@@ -224,11 +225,11 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
           }));
       }
       const { error } = await saveOnboardingServices(servicesToSave);
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: error }); return; }
+      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
       persistProgress('PROFIT_PREDICTOR');
       goTo('PROFIT_PREDICTOR');
     } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: err instanceof Error ? err.message : 'Щось пішло не так' });
+      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
     } finally {
       setSaving(false);
     }
@@ -240,7 +241,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       await saveOnboardingProgress('PROFILE_PREVIEW', buildSnapshot());
       goTo('PROFILE_PREVIEW');
     } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: err instanceof Error ? err.message : 'Щось пішло не так' });
+      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
     } finally {
       setSaving(false);
     }
@@ -250,11 +251,11 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
     setSaving(true);
     try {
       const { error } = await saveOnboardingBusinessName(businessName);
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: error }); return; }
+      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
       await saveOnboardingProgress('SUCCESS', buildSnapshot());
       goTo('SUCCESS');
     } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: err instanceof Error ? err.message : 'Щось пішло не так' });
+      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
     } finally {
       setSaving(false);
     }
@@ -298,8 +299,8 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       <div className="w-full max-w-sm">
 
         <p className="text-center mb-7">
-          <span className="font-serif text-2xl font-semibold text-[#2C1A14]">
-            Bookit<span className="text-[#789A99]">.</span>
+          <span className="font-serif text-2xl font-semibold text-foreground">
+            Bookit<span className="text-primary">.</span>
           </span>
         </p>
 

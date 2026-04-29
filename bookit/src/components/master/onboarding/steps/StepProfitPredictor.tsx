@@ -80,15 +80,15 @@ export function StepProfitPredictor({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors mb-5 cursor-pointer"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-5 cursor-pointer active:scale-95 transition-all"
         >
           <ArrowLeft size={13} /> Назад
         </button>
 
-        <h2 className="font-display text-2xl font-semibold text-[#2C1A14] leading-tight mb-1">
+        <h2 className="font-display text-2xl font-semibold text-foreground leading-tight mb-1">
           Порахуємо приховані гроші
         </h2>
-        <p className="text-sm text-[#A8928D]">
+        <p className="text-sm text-muted-foreground/60">
           Скільки пустих вікон у тебе буває на тиждень?
         </p>
       </div>
@@ -96,12 +96,12 @@ export function StepProfitPredictor({
       {/* ── Slider ── */}
       <div className="px-6 pb-4">
         <div className="flex justify-between items-end mb-3">
-          <span className="text-xs text-[#A8928D]">1 вікно</span>
+          <span className="text-xs text-muted-foreground/60">1 вікно</span>
           <div className="text-center">
-            <span className="font-display text-4xl font-bold text-[#2C1A14]">{emptySlots}</span>
-            <p className="text-[10px] text-[#A8928D] mt-0.5">вікон/тиждень</p>
+            <span className="font-display text-4xl font-bold text-foreground">{emptySlots}</span>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">вікон/тиждень</p>
           </div>
-          <span className="text-xs text-[#A8928D]">15 вікон</span>
+          <span className="text-xs text-muted-foreground/60">15 вікон</span>
         </div>
 
         {/* Custom slider */}
@@ -127,7 +127,7 @@ export function StepProfitPredictor({
           />
           {/* Custom thumb */}
           <div
-            className="absolute w-5 h-5 rounded-full bg-white shadow-md border-2 border-[#C05B5B] pointer-events-none transition-all duration-100"
+            className="absolute w-5 h-5 rounded-full bg-white shadow-md border-2 border-destructive pointer-events-none transition-all duration-100"
             style={{ left: `calc(${pct}% - ${pct * 0.12}px)` }}
           />
         </div>
@@ -138,7 +138,7 @@ export function StepProfitPredictor({
         style={{ background: 'linear-gradient(135deg, #FFF0EE 0%, #FFE4DF 100%)', border: '1px solid #F5C8C0' }}
       >
         <div className="px-5 py-5 text-center">
-          <p className="text-xs font-semibold text-[#C05B5B]/70 uppercase tracking-wider mb-2">
+          <p className="text-xs font-semibold text-destructive/70 uppercase tracking-wider mb-2">
             Ти недоотримуєш щомісяця
           </p>
           <div className="flex items-baseline justify-center gap-1">
@@ -149,16 +149,16 @@ export function StepProfitPredictor({
             >
               {animatedLoss.toLocaleString('uk-UA')}
             </motion.span>
-            <span className="text-2xl font-bold text-[#C05B5B]">₴</span>
+            <span className="text-2xl font-bold text-destructive">₴</span>
           </div>
-          <p className="text-sm text-[#C05B5B]/80 mt-2 font-medium">
+          <p className="text-sm text-destructive/80 mt-2 font-medium">
             {emptySlots} вікон × {basePrice} ₴ × 4 тижні
           </p>
         </div>
 
         {/* Progress bar — shows potential to recover */}
         <div className="px-5 pb-4">
-          <div className="flex justify-between text-[10px] text-[#C05B5B]/60 mb-1">
+          <div className="flex justify-between text-[10px] text-destructive/60 mb-1">
             <span>Поточні втрати</span>
             <span>Можна повернути з Flash Deals ⚡</span>
           </div>
@@ -178,7 +178,7 @@ export function StepProfitPredictor({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.2 }}
-                className="text-[10px] text-[#5C9E7A] font-semibold mt-1.5 text-right"
+                className="text-[10px] text-success font-semibold mt-1.5 text-right"
               >
                 ↑ Flash Deals покриють до 80% втрат
               </motion.p>
@@ -268,7 +268,7 @@ export function StepProfitPredictor({
           type="button"
           onClick={onSave}
           disabled={saving}
-          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 cursor-pointer"
+          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 cursor-pointer active:scale-95 transition-all"
           style={{
             background: 'linear-gradient(135deg, #789A99 0%, #5C7E7D 100%)',
             color: '#fff',
@@ -283,7 +283,7 @@ export function StepProfitPredictor({
           type="button"
           onClick={onBack}
           disabled={saving}
-          className="w-full py-2 text-sm text-[#A8928D] hover:text-[#789A99] transition-colors cursor-pointer"
+          className="w-full py-2 text-sm text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer active:scale-95 transition-all"
         >
           Назад
         </button>

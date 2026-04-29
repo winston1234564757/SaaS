@@ -51,8 +51,8 @@ export function ServicesPage() {
     <div className="flex flex-col gap-4 pb-24">
       {/* Header */}
       <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Послуги</h1>
-        <p className="text-sm text-[#A8928D]">
+        <h1 className="heading-serif text-xl text-foreground mb-0.5">Послуги</h1>
+        <p className="text-sm text-muted-foreground/60">
           {activeServices > 0
             ? `${activeServices} активних послуг`
             : 'Додайте послуги для публічної сторінки'}
@@ -74,7 +74,7 @@ export function ServicesPage() {
           <LoadingState />
         ) : services.length === 0 ? (
           <EmptyState
-            icon={<Scissors size={28} className="text-[#A8928D]" />}
+            icon={<Scissors size={28} className="text-muted-foreground/60" />}
             text="Додайте першу послугу"
             sub="Вона з'явиться на вашій публічній сторінці"
           />
@@ -102,7 +102,7 @@ export function ServicesPage() {
         whileTap={{ scale: 0.94 }}
         id="tour-services-add"
         onClick={() => setServiceFormOpen(true)}
-        className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#789A99] text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
+        className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
         style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
       >
         <Plus size={24} />
@@ -122,19 +122,19 @@ export function ServicesPage() {
 function LoadingState() {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3">
-      <Loader2 size={24} className="text-[#789A99] animate-spin" />
-      <p className="text-sm text-[#A8928D]">Завантаження...</p>
+      <Loader2 size={24} className="text-primary animate-spin" />
+      <p className="text-sm text-muted-foreground/60">Завантаження...</p>
     </div>
   );
 }
 
 function ErrorBanner({ message }: { message: string }) {
   return (
-    <div className="bento-card p-3 flex items-start gap-2 border border-[#D4935A]/40 bg-[#FFF7F0]">
-      <div className="mt-0.5 text-[#D4935A]">
+    <div className="bento-card p-3 flex items-start gap-2 border border-warning/40 bg-[#FFF7F0]">
+      <div className="mt-0.5 text-warning">
         <AlertTriangle size={16} />
       </div>
-      <div className="text-xs text-[#6B5750]">
+      <div className="text-xs text-muted-foreground">
         <p className="font-semibold">Проблема з завантаженням даних.</p>
         <p className="mt-0.5">{message}</p>
       </div>
@@ -145,11 +145,11 @@ function ErrorBanner({ message }: { message: string }) {
 function EmptyState({ icon, text, sub }: { icon: React.ReactNode; text: string; sub: string }) {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-      <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
+      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
         {icon}
       </div>
-      <p className="text-sm font-semibold text-[#2C1A14]">{text}</p>
-      <p className="text-xs text-[#A8928D]">{sub}</p>
+      <p className="text-sm font-semibold text-foreground">{text}</p>
+      <p className="text-xs text-muted-foreground/60">{sub}</p>
     </div>
   );
 }

@@ -44,28 +44,28 @@ export function JoinPartnerClient({ inviter, token }: Props) {
       >
         {!success ? (
           <>
-            <div className="w-20 h-20 bg-[#F5E8E3] rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm">
+            <div className="w-20 h-20 bg-secondary rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm">
               🤝
             </div>
             
-            <h1 className="heading-serif text-2xl text-[#2C1A14] mb-3">Нове партнерство!</h1>
+            <h1 className="heading-serif text-2xl text-foreground mb-3">Нове партнерство!</h1>
             
-            <div className="flex items-center justify-center gap-3 bg-[#789A99]/5 p-3 rounded-2xl mb-6">
+            <div className="flex items-center justify-center gap-3 bg-primary/5 p-3 rounded-2xl mb-6">
                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm">
                  {inviter.emoji}
                </div>
                <div className="text-left">
-                  <p className="text-xs text-[#A8928D] uppercase tracking-wider leading-none mb-1">Запрошення від</p>
-                  <p className="text-sm font-bold text-[#2C1A14]">{inviter.name}</p>
+                  <p className="text-xs text-muted-foreground/60 uppercase tracking-wider leading-none mb-1">Запрошення від</p>
+                  <p className="text-sm font-bold text-foreground">{inviter.name}</p>
                </div>
             </div>
 
-            <p className="text-sm text-[#6B5750] leading-relaxed mb-8">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-8">
               Приєднуйтесь до мережі <b>{inviter.name}</b>, щоб взаємно рекомендувати один одного вашим клієнтам та збільшувати продажі.
             </p>
 
             {error && (
-              <p className="text-xs text-[#C05B5B] mb-4 bg-[#C05B5B]/10 p-2 rounded-lg">
+              <p className="text-xs text-destructive mb-4 bg-destructive/10 p-2 rounded-lg">
                 {error}
               </p>
             )}
@@ -73,7 +73,7 @@ export function JoinPartnerClient({ inviter, token }: Props) {
             <button
               onClick={handleJoin}
               disabled={loading}
-              className="w-full py-4 rounded-2xl bg-[#789A99] text-white font-bold text-sm hover:bg-[#5C7E7D] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-primary text-white font-bold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={18} />
@@ -85,7 +85,7 @@ export function JoinPartnerClient({ inviter, token }: Props) {
             
             <Link 
               href="/dashboard"
-              className="inline-block mt-4 text-xs text-[#A8928D] hover:text-[#2C1A14] transition-colors"
+              className="inline-block mt-4 text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
             >
               Скасувати
             </Link>
@@ -96,12 +96,12 @@ export function JoinPartnerClient({ inviter, token }: Props) {
             animate={{ scale: 1, opacity: 1 }}
             className="py-10"
           >
-            <CheckCircle2 size={64} className="text-[#789A99] mx-auto mb-6" strokeWidth={1.5} />
-            <h2 className="heading-serif text-2xl text-[#2C1A14] mb-2">Ми партнери!</h2>
-            <p className="text-sm text-[#A8928D] mb-8">
+            <CheckCircle2 size={64} className="text-primary mx-auto mb-6" strokeWidth={1.5} />
+            <h2 className="heading-serif text-2xl text-foreground mb-2">Ми партнери!</h2>
+            <p className="text-sm text-muted-foreground/60 mb-8">
               Вашу мережу розширено. Переходимо до дашборду...
             </p>
-            <Loader2 className="animate-spin text-[#789A99] mx-auto" size={24} />
+            <Loader2 className="animate-spin text-primary mx-auto" size={24} />
           </motion.div>
         )}
       </motion.div>

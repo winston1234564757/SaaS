@@ -138,15 +138,15 @@ export function StepServicesForm({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors mb-5 cursor-pointer"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-5 cursor-pointer active:scale-95 transition-all"
         >
           <ArrowLeft size={13} /> Назад
         </button>
 
-        <h2 className="font-display text-2xl font-semibold text-[#2C1A14] leading-tight mb-1">
+        <h2 className="font-display text-2xl font-semibold text-foreground leading-tight mb-1">
           Сфера діяльності
         </h2>
-        <p className="text-sm text-[#A8928D]">
+        <p className="text-sm text-muted-foreground/60">
           Оберіть напрямок — ми згенеруємо базовий прайс
         </p>
       </div>
@@ -157,7 +157,7 @@ export function StepServicesForm({
           type="button"
           onClick={goPrev}
           disabled={!canPrev}
-          className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25"
+          className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
           style={canPrev
             ? { background: tints.bg, color: tints.iconColor }
             : { background: 'rgba(255,255,255,0.5)', color: '#C5B0AB' }
@@ -189,7 +189,7 @@ export function StepServicesForm({
           type="button"
           onClick={goNext}
           disabled={!canNext}
-          className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25"
+          className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
           style={canNext
             ? { background: tints.bg, color: tints.iconColor }
             : { background: 'rgba(255,255,255,0.5)', color: '#C5B0AB' }
@@ -300,18 +300,18 @@ export function StepServicesForm({
             className="overflow-hidden"
           >
             <div className="flex items-center gap-3 px-6 mb-5">
-              <div className="flex-1 h-px bg-[#E8D5CF]" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#A8928D]">
+              <div className="flex-1 h-px bg-secondary/80" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/60">
                 Ціноутворення
               </span>
-              <div className="flex-1 h-px bg-[#E8D5CF]" />
+              <div className="flex-1 h-px bg-secondary/80" />
             </div>
 
             <div className="px-6 pb-6 flex flex-col gap-4">
               <div>
-                <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
                   Ціна за{' '}
-                  <span className="text-[#2C1A14]">{template.baseName.toLowerCase()}</span>
+                  <span className="text-foreground">{template.baseName.toLowerCase()}</span>
                   {' '}(грн)
                 </label>
                 <input
@@ -322,7 +322,7 @@ export function StepServicesForm({
                   min="0"
                   className={inputCls}
                 />
-                <p className="text-[10px] text-[#A8928D] mt-1">
+                <p className="text-[10px] text-muted-foreground/60 mt-1">
                   Стандартна процедура — Базовий і Преміум розраховуються автоматично
                 </p>
               </div>
@@ -336,7 +336,7 @@ export function StepServicesForm({
                     transition={{ duration: 0.22 }}
                     className="flex flex-col gap-2.5"
                   >
-                    <p className="text-xs font-semibold text-[#6B5750]">
+                    <p className="text-xs font-semibold text-muted-foreground">
                       Ваш прайс-лист — вимкніть зайве:
                     </p>
 
@@ -377,9 +377,9 @@ export function StepServicesForm({
                               {isSel && <Check size={10} strokeWidth={3.5} className="text-white" />}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-[#2C1A14] leading-snug">{def.name}</p>
+                              <p className="text-sm font-semibold text-foreground leading-snug">{def.name}</p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[11px] text-[#A8928D]">{timeStr}</span>
+                                <span className="text-[11px] text-muted-foreground/60">{timeStr}</span>
                                 <span
                                   className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                                   style={{ color: cfg.accent, background: cfg.barColor }}
@@ -412,7 +412,7 @@ export function StepServicesForm({
           type="button"
           onClick={onSave}
           disabled={isSaveDisabled}
-          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 cursor-pointer"
+          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 cursor-pointer active:scale-95 transition-all"
           style={{
             background: 'linear-gradient(135deg, #789A99 0%, #5C7E7D 100%)',
             color: '#fff',
@@ -427,7 +427,7 @@ export function StepServicesForm({
           type="button"
           onClick={onBack}
           disabled={saving}
-          className="w-full py-2 text-sm text-[#A8928D] hover:text-[#789A99] transition-colors cursor-pointer"
+          className="w-full py-2 text-sm text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer active:scale-95 transition-all"
         >
           Скасувати
         </button>

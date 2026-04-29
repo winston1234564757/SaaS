@@ -372,6 +372,35 @@ export async function createBooking(
     }
   }
 
+  // ── 7.5a. Phone-bound broadcast discount ────────────────────────────────────
+  let phoneDiscountPct = 0;
+  let phoneDiscountId: string | null = null;
+  let phoneDiscountBroadcastId: string | null = null;
+
+  if (p.source === 'online') {
+    const { data: pd } = await admin
+      .from('phone_discounts')
+      .select('id, discount_percent, service_id, broadcast_id')
+      .eq('phone', p.clientPhone)
+      .eq('master_id', p.masterId)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (pd) {
+      const serviceIds = p.services.map(s => s.id);
+      // If discount is service-specific, require that service in the booking
+      const serviceMatch = !(pd.service_id) || serviceIds.includes(pd.service_id as string);
+      if (serviceMatch) {
+        phoneDiscountPct = pd.discount_percent as number;
+        phoneDiscountId = pd.id as string;
+        phoneDiscountBroadcastId = pd.broadcast_id as string | null;
+      }
+    }
+  }
+
   // ── 7.5b. C2C Referrer Bonus Validation ────────────────────────────────────
   // Server re-computes balance — client-supplied c2cBonusToUse is a hint only.
   let c2cBonusActual = 0;
@@ -397,17 +426,20 @@ export async function createBooking(
   const dynamicMarkup   = Math.max(0, adjustedServicesPrice - totalServicesPrice); // peak: +X₴
   const dynamicDiscount = Math.max(0, totalServicesPrice - adjustedServicesPrice); // quiet: -X₴
 
-  // Loyalty і flash знижки рахуються від originalTotal — незалежно від markup
+  // Loyalty, flash і phone-broadcast знижки рахуються від originalTotal
   const loyaltyDiscountAmount = Math.round(originalTotal * loyaltyDiscountPercent / 100);
   const flashDealAmount       = flashDealDiscountPct > 0
     ? Math.round(originalTotal * flashDealDiscountPct / 100)
+    : 0;
+  const phoneDiscountAmount   = phoneDiscountPct > 0
+    ? Math.round(originalTotal * phoneDiscountPct / 100)
     : 0;
   const c2cFriendAmount = c2cFriendDiscountPct > 0
     ? Math.round(originalTotal * c2cFriendDiscountPct / 100)
     : 0;
 
   // Сума лише знижок (завжди >= 0), обмежена 40% від originalTotal (+ C2C не входить в цей cap)
-  const totalDiscounts    = dynamicDiscount + loyaltyDiscountAmount + flashDealAmount;
+  const totalDiscounts    = dynamicDiscount + loyaltyDiscountAmount + flashDealAmount + phoneDiscountAmount;
   const effectiveDiscount = Math.min(maxAllowedDiscount, totalDiscounts);
 
   // C2C friend discount: поверх effectiveDiscount, не входить в 40% cap
@@ -446,6 +478,7 @@ export async function createBooking(
     dynamic_pricing_label: (() => {
       const parts: string[] = [];
       if (dynamicResult?.label) parts.push(dynamicResult.label);
+      if (phoneDiscountPct > 0) parts.push(`Знижка з розсилки −${phoneDiscountPct}%`);
       if (c2cFriendDiscountPct > 0) parts.push(`Реферальна програма −${c2cFriendDiscountPct}%`);
       if (c2cBonusActual > 0) parts.push(`Реф. бонус −${c2cBonusActual}%`);
       return parts.join(' · ') || null;
@@ -517,6 +550,23 @@ export async function createBooking(
     }
   }
 
+  // 11a. Mark phone broadcast discount as used + update broadcast_recipients
+  if (phoneDiscountId) {
+    const now = new Date().toISOString();
+    await Promise.all([
+      admin.from('phone_discounts')
+        .update({ used_at: now })
+        .eq('id', phoneDiscountId),
+      phoneDiscountBroadcastId
+        ? admin.from('broadcast_recipients')
+            .update({ discount_used_at: now, booked_at: now })
+            .eq('broadcast_id', phoneDiscountBroadcastId)
+            .eq('phone', p.clientPhone)
+            .is('discount_used_at', null)
+        : Promise.resolve(),
+    ]);
+  }
+
   // 11. Mark flash deal as claimed
   if (p.flashDealId && flashDealDiscountPct > 0) {
     await admin
@@ -559,22 +609,19 @@ export async function createBooking(
   // Clear Next.js server-side data cache
   revalidatePath('/', 'layout');
 
-  // 13. Сповіщення майстру — тільки для manual-записів (Push → Telegram → SMS).
-  // Online-бронювання: каскад запускається у BookingWizard після успішного createBooking
-  // через notifyMasterOnBooking() → notifyMasterNewBooking(), щоб уникнути дублювання.
-  if (p.source === 'manual') {
-    void notifyMasterNewBooking({
-      masterId: p.masterId,
-      bookingId,
-      clientName: p.clientName,
-      date: p.date ?? new Date().toISOString().slice(0, 10),
-      startTime: p.startTime ?? '00:00',
-      services: canonicalServices.map(s => s.name).join(', '),
-      totalPrice: finalTotal,
-      notes: p.notes,
-      products: canonicalProducts.map(cp => ({ name: cp.name, quantity: cp.quantity })),
-    });
-  }
+  // 13. Сповіщення майстру про новий запис (Push → Telegram → SMS).
+  // Обов'язково робимо await, інакше Next.js Serverless Container може "вбити" процес до завершення відправки.
+  await notifyMasterNewBooking({
+    masterId: p.masterId,
+    bookingId,
+    clientName: p.clientName,
+    date: p.date ?? new Date().toISOString().slice(0, 10),
+    startTime: p.startTime ?? '00:00',
+    services: canonicalServices.map(s => s.name).join(', '),
+    totalPrice: finalTotal,
+    notes: p.notes,
+    products: canonicalProducts.map(cp => ({ name: cp.name, quantity: cp.quantity })),
+  }).catch(e => console.error('[notifyMasterNewBooking Error]', e));
 
   return { bookingId, error: null, finalTotal };
 }

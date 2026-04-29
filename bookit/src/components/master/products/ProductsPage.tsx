@@ -61,11 +61,11 @@ export function ProductsPage() {
       <div className="bento-card p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h1 className="heading-serif text-xl text-[#2C1A14]">Магазин</h1>
-            <p className="text-sm text-[#A8928D] mt-0.5">Товари та замовлення</p>
+            <h1 className="heading-serif text-xl text-foreground">Магазин</h1>
+            <p className="text-sm text-muted-foreground/60 mt-0.5">Товари та замовлення</p>
           </div>
           {newOrders > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D4935A]/12 text-[#D4935A]">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
               <ShoppingBag size={14} strokeWidth={2.5} />
               <span className="text-xs font-bold">{newOrders} нових</span>
             </div>
@@ -100,7 +100,7 @@ export function ProductsPage() {
             <ShoppingBag size={14} />
             Замовлення
             {newOrders > 0 && (
-              <span className="ml-1 w-4 h-4 rounded-full bg-[#D4935A] text-white text-[9px] font-bold flex items-center justify-center">
+              <span className="ml-1 w-4 h-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center">
                 {newOrders > 9 ? '9+' : newOrders}
               </span>
             )}
@@ -152,8 +152,8 @@ export function ProductsPage() {
                   onClick={() => setOrderFilter(f.value)}
                   className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     orderFilter === f.value
-                      ? 'bg-[#789A99] text-white'
-                      : 'bg-white/60 text-[#6B5750] hover:bg-white/80'
+                      ? 'bg-primary text-white'
+                      : 'bg-white/60 text-muted-foreground hover:bg-white/80'
                   }`}
                 >
                   {f.label}
@@ -186,7 +186,7 @@ export function ProductsPage() {
           transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 22 }}
           whileTap={{ scale: 0.94 }}
           onClick={() => setFormOpen(true)}
-          className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#789A99] text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
+          className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
           style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
         >
           <Plus size={24} />
@@ -214,9 +214,9 @@ export function ProductsPage() {
 
 function StatChip({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
-    <div className={`flex-1 px-3 py-2 rounded-xl text-center ${warn ? 'bg-[#D4935A]/10' : 'bg-[#F5E8E3]'}`}>
-      <p className={`text-base font-bold ${warn ? 'text-[#D4935A]' : 'text-[#2C1A14]'}`}>{value}</p>
-      <p className={`text-[10px] ${warn ? 'text-[#D4935A]' : 'text-[#A8928D]'}`}>{label}</p>
+    <div className={`flex-1 px-3 py-2 rounded-xl text-center ${warn ? 'bg-warning/10' : 'bg-secondary'}`}>
+      <p className={`text-base font-bold ${warn ? 'text-warning' : 'text-foreground'}`}>{value}</p>
+      <p className={`text-[10px] ${warn ? 'text-warning' : 'text-muted-foreground/60'}`}>{label}</p>
     </div>
   );
 }
@@ -226,8 +226,8 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button
       onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-sm font-medium transition-all ${
-        active ? 'bg-[#789A99] text-white shadow-sm' : 'bg-white/60 text-[#6B5750] hover:bg-white/80'
-      }`}
+        active ? 'bg-primary text-white shadow-sm' : 'bg-white/60 text-muted-foreground hover:bg-white/80'
+      } active:scale-95 transition-all`}
     >
       {children}
     </button>
@@ -237,16 +237,16 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 function EmptyProducts({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-      <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
-        <Package size={28} className="text-[#A8928D]" />
+      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+        <Package size={28} className="text-muted-foreground/60" />
       </div>
       <div>
-        <p className="text-sm font-semibold text-[#2C1A14]">Товарів ще немає</p>
-        <p className="text-xs text-[#A8928D] mt-1">Додайте перший продукт для продажу</p>
+        <p className="text-sm font-semibold text-foreground">Товарів ще немає</p>
+        <p className="text-xs text-muted-foreground/60 mt-1">Додайте перший продукт для продажу</p>
       </div>
       <button
         onClick={onAdd}
-        className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-2xl bg-[#789A99] text-white text-xs font-bold hover:bg-[#5C7E7D] transition-colors shadow-lg shadow-[#789A99]/20"
+        className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-2xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-[#789A99]/20 active:scale-95 transition-all"
       >
         <Plus size={14} /> Додати товар
       </button>
@@ -257,11 +257,11 @@ function EmptyProducts({ onAdd }: { onAdd: () => void }) {
 function EmptyOrders() {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-      <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
-        <ShoppingBag size={28} className="text-[#A8928D]" />
+      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+        <ShoppingBag size={28} className="text-muted-foreground/60" />
       </div>
-      <p className="text-sm font-semibold text-[#2C1A14]">Замовлень поки немає</p>
-      <p className="text-xs text-[#A8928D]">Вони з'являться тут після перших покупок</p>
+      <p className="text-sm font-semibold text-foreground">Замовлень поки немає</p>
+      <p className="text-xs text-muted-foreground/60">Вони з'являться тут після перших покупок</p>
     </div>
   );
 }
@@ -272,11 +272,11 @@ function SkeletonList() {
       {[1, 2, 3].map(i => (
         <div key={i} className="bento-card p-4 animate-pulse">
           <div className="flex gap-3">
-            <div className="w-16 h-16 rounded-2xl bg-[#F5E8E3]" />
+            <div className="w-16 h-16 rounded-2xl bg-secondary" />
             <div className="flex-1 flex flex-col gap-2 pt-1">
-              <div className="h-3.5 bg-[#F5E8E3] rounded-full w-2/3" />
-              <div className="h-3 bg-[#F5E8E3] rounded-full w-1/3" />
-              <div className="h-3 bg-[#F5E8E3] rounded-full w-1/2" />
+              <div className="h-3.5 bg-secondary rounded-full w-2/3" />
+              <div className="h-3 bg-secondary rounded-full w-1/3" />
+              <div className="h-3 bg-secondary rounded-full w-1/2" />
             </div>
           </div>
         </div>

@@ -38,7 +38,7 @@ function SortablePhoto({ photo, onDelete, deleting }: SortablePhotoProps) {
       <button
         {...attributes}
         {...listeners}
-        className="absolute top-1 left-1 w-6 h-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        className="absolute top-1 left-1 w-6 h-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing active:scale-95 transition-all"
       >
         <GripVertical size={12} className="text-white" />
       </button>
@@ -158,7 +158,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading || disabled}
-            className="w-24 h-24 rounded-2xl border-2 border-dashed border-[#C8B8B2] flex flex-col items-center justify-center gap-1 text-[#A8928D] hover:border-[#789A99] hover:text-[#789A99] transition-colors shrink-0"
+            className="w-24 h-24 rounded-2xl border-2 border-dashed border-[#C8B8B2] flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors shrink-0"
           >
             {uploading
               ? <Loader2 size={18} className="animate-spin" />
@@ -168,12 +168,12 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
         )}
       </div>
 
-      <p className="text-xs text-[#A8928D]">
+      <p className="text-xs text-muted-foreground/60">
         {photos.length} / {MAX_PHOTOS} фото · Перетягуйте для зміни порядку
       </p>
 
       {uploadError && (
-        <p className="text-xs text-[#C05B5B] bg-[#C05B5B]/8 rounded-xl px-3 py-2">
+        <p className="text-xs text-destructive bg-destructive/8 rounded-xl px-3 py-2">
           Помилка завантаження: {uploadError}
         </p>
       )}

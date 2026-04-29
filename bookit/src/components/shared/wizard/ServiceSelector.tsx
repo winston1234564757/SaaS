@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Clock, Check } from 'lucide-react';
-import { formatDurationFull, pluralize } from '@/lib/utils/dates';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import { fmt, slide } from './helpers';
 import type { WizardService } from './types';
 
@@ -54,7 +54,7 @@ export function ServiceSelector({
 
       {categories.map(cat => (
         <div key={cat} className="mb-5">
-          <p className="text-[11px] font-bold text-[#A8928D] uppercase tracking-widest mb-2">{cat}</p>
+          <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-2">{cat}</p>
           <div className="space-y-2">
             {services.filter(s => s.category === cat).map(svc => {
               const sel = selectedServices.some(s => s.id === svc.id);
@@ -65,8 +65,8 @@ export function ServiceSelector({
                   data-testid="service-card"
                   className={`flex items-start gap-3 px-4 pt-4 pb-4 rounded-2xl border text-left w-full transition-colors ${
                     sel
-                      ? 'bg-[#789A99]/10 border-[#789A99]/40'
-                      : 'bg-white/60 border-white/80 hover:border-[#789A99]/25 hover:bg-white/80'
+                      ? 'bg-primary/10 border-primary/40'
+                      : 'bg-white/60 border-white/80 hover:border-primary/25 hover:bg-white/80'
                   }`}
                 >
                   <div
@@ -77,8 +77,8 @@ export function ServiceSelector({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2C1A14]">{svc.name}</p>
-                    <p className="text-xs text-[#A8928D] flex items-center gap-1 mt-0.5">
+                    <p className="text-sm font-semibold text-foreground">{svc.name}</p>
+                    <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mt-0.5">
                       <Clock size={10} /> {formatDurationFull(svc.duration)}
                     </p>
 
@@ -94,7 +94,7 @@ export function ServiceSelector({
                         <div style={{ overflow: 'hidden', minHeight: 0 }}>
                           <div className="pt-2 pr-2 pb-0.5">
                             <p
-                              className="text-xs text-[#6B5750] leading-relaxed"
+                              className="text-xs text-muted-foreground leading-relaxed"
                               style={{
                                 opacity: sel ? 1 : 0,
                                 transition: 'opacity 0.3s ease 0.3s',
@@ -112,18 +112,18 @@ export function ServiceSelector({
                     <div className="text-right">
                       {c2cDiscountPct ? (
                         <div className="flex flex-col">
-                          <p className="text-sm font-bold text-[#789A99]">{fmt(Math.round(svc.price * (1 - c2cDiscountPct / 100)))}</p>
-                          <p className="text-[10px] text-[#A8928D] line-through decoration-1">{fmt(svc.price)}</p>
+                          <p className="text-sm font-bold text-primary">{fmt(Math.round(svc.price * (1 - c2cDiscountPct / 100)))}</p>
+                          <p className="text-[10px] text-muted-foreground/60 line-through decoration-1">{fmt(svc.price)}</p>
                         </div>
                       ) : (
-                        <p className="text-sm font-bold text-[#2C1A14]">{fmt(svc.price)}</p>
+                        <p className="text-sm font-bold text-foreground">{fmt(svc.price)}</p>
                       )}
                       {svc.popular && (
-                        <span className="text-[9px] font-semibold text-[#789A99]">популярне</span>
+                        <span className="text-[9px] font-semibold text-primary">популярне</span>
                       )}
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      sel ? 'bg-[#789A99] border-[#789A99]' : 'border-[#C8B8B2] bg-white/60'
+                      sel ? 'bg-primary border-primary' : 'border-[#C8B8B2] bg-white/60'
                     }`}>
                       {sel && <Check size={12} className="text-white" strokeWidth={3} />}
                     </div>
@@ -139,10 +139,10 @@ export function ServiceSelector({
       {partners.length > 0 && (
         <div className="mt-8 mb-4">
           <div className="flex items-center justify-between mb-3 px-1">
-            <p className="text-[11px] font-bold text-[#A8928D] uppercase tracking-widest">
+            <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">
               Рекомендуємо також
             </p>
-            <span className="text-[10px] font-semibold text-[#789A99] bg-[#789A99]/10 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
               Наші партнери
             </span>
           </div>
@@ -154,14 +154,14 @@ export function ServiceSelector({
                 href={`/${p.slug}`}
                 className="flex-shrink-0 w-[140px] bento-card p-3 flex flex-col items-center text-center gap-2 hover:bg-white/90 active:scale-95 transition-all scroll-ml-1"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#F5E8E3] flex items-center justify-center text-2xl mb-1">
+                <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-2xl mb-1">
                   {p.emoji}
                 </div>
                 <div className="min-w-0 w-full">
-                  <p className="text-xs font-bold text-[#2C1A14] truncate">{p.name}</p>
-                  <p className="text-[10px] text-[#A8928D] truncate lowercase italic">{p.category}</p>
+                  <p className="text-xs font-bold text-foreground truncate">{p.name}</p>
+                  <p className="text-[10px] text-muted-foreground/60 truncate lowercase italic">{p.category}</p>
                 </div>
-                <div className="mt-1 text-[10px] font-bold text-[#789A99] border-t border-[#E8D0C8] pt-2 w-full">
+                <div className="mt-1 text-[10px] font-bold text-primary border-t border-[#E8D0C8] pt-2 w-full">
                   Дивитись →
                 </div>
               </Link>
@@ -186,10 +186,10 @@ export function ServiceSelector({
                 transition: 'opacity 0.2s ease 0.05s',
               }}
             >
-              <label className="text-xs font-medium text-[#6B5750] mb-1.5 flex items-center gap-1.5">
-                <Clock size={11} className="text-[#789A99]" />
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <Clock size={11} className="text-primary" />
                 Нестандартна тривалість, хв
-                <span className="font-normal text-[#A8928D]">(необов'язково)</span>
+                <span className="font-normal text-muted-foreground/60">(необов'язково)</span>
               </label>
               <div className="flex items-center gap-3">
                 <input
@@ -201,15 +201,15 @@ export function ServiceSelector({
                     onClearTime();
                   }}
                   placeholder={String(totalDuration)}
-                  className="w-24 px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20"
+                  className="w-24 px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20"
                 />
                 {durationOverride !== null && (
                   <button onClick={() => { onDurationOverrideChange(null); onClearTime(); }}
-                    className="text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors">
+                    className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
                     Скинути
                   </button>
                 )}
-                <span className="text-xs text-[#A8928D]">
+                <span className="text-xs text-muted-foreground/60">
                   {durationOverride !== null ? `стандарт: ${totalDuration}хв` : 'за послугами'}
                 </span>
               </div>
@@ -228,7 +228,7 @@ export function ServiceSelector({
       >
         <div style={{ overflow: 'hidden', minHeight: 0 }}>
           <div className="pb-4">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#789A99]/8 border border-[#789A99]/20"
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/8 border border-primary/20"
               style={{
                 opacity: selectedServices.length > 0 ? 1 : 0,
                 transition: 'opacity 0.2s ease 0.05s',
@@ -237,11 +237,11 @@ export function ServiceSelector({
               <div className="flex -space-x-1 flex-shrink-0">
                 {selectedServices.slice(0, 3).map(s => <span key={s.id}>{s.emoji}</span>)}
               </div>
-              <p className="text-xs text-[#6B5750] flex-1 min-w-0 break-words leading-tight">
-                <span className="font-semibold text-[#2C1A14]">
-                  {selectedServices.length === 1 ? selectedServices[0].name : pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])}
+              <p className="text-xs text-muted-foreground flex-1 min-w-0 break-words leading-tight">
+                <span className="font-semibold text-foreground">
+                  {selectedServices.length === 1 ? selectedServices[0].name : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
                 </span>
-                <span className="ml-1 text-[#A8928D]">· {formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</span>
+                <span className="ml-1 text-muted-foreground/60">· {formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</span>
               </p>
             </div>
           </div>
@@ -255,18 +255,18 @@ export function ServiceSelector({
           data-testid="wizard-next-btn"
           className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
             canGoToDatetime
-              ? 'bg-[#789A99] text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
-              : 'bg-[#E8D5CF] text-[#A8928D] cursor-not-allowed'
+              ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
+              : 'bg-secondary/80 text-muted-foreground/60 cursor-not-allowed'
           }`}
         >
           {canGoToDatetime
-            ? `Далі · ${pluralize(selectedServices.length, ['послуга', 'послуги', 'послуг'])} · ${fmt(c2cDiscountPct ? Math.round(totalServicesPrice * (1 - c2cDiscountPct / 100)) : totalServicesPrice)}`
+            ? `Далі · ${pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')} · ${fmt(c2cDiscountPct ? Math.round(totalServicesPrice * (1 - c2cDiscountPct / 100)) : totalServicesPrice)}`
             : 'Обери послугу'}
         </button>
         {mode === 'client' && hasProducts && !canGoToDatetime && onSkipToProducts && (
           <button
             onClick={onSkipToProducts}
-            className="w-full py-2.5 rounded-2xl text-sm font-medium text-[#789A99] border border-[#789A99]/30 hover:bg-[#789A99]/8 active:scale-[0.98] transition-all"
+            className="w-full py-2.5 rounded-2xl text-sm font-medium text-primary border border-primary/30 hover:bg-primary/8 active:scale-[0.98] transition-all"
           >
             Тільки товари →
           </button>

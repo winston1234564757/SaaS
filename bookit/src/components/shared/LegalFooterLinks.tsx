@@ -17,7 +17,7 @@ export function LegalFooterLinks({ variant = 'compact', className = '' }: Props)
             href={`/legal/${doc.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors py-1"
+            className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-1"
           >
             {doc.label}
           </Link>
@@ -34,7 +34,7 @@ export function LegalFooterLinks({ variant = 'compact', className = '' }: Props)
             href={`/legal/${doc.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors"
+            className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
           >
             {doc.label}
           </Link>

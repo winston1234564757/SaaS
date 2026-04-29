@@ -94,8 +94,8 @@ export function VacationManager() {
   }
 
   const inputClass =
-    'w-full px-3 py-2 rounded-xl bg-white/80 border border-white/80 text-xs text-[#2C1A14] outline-none focus:border-[#789A99] transition-colors';
-  const labelClass = 'text-[11px] font-medium text-[#6B5750] mb-1 block';
+    'w-full px-3 py-2 rounded-xl bg-white/80 border border-white/80 text-xs text-foreground outline-none focus:border-primary transition-colors';
+  const labelClass = 'text-[11px] font-medium text-muted-foreground mb-1 block';
 
   // ── Типи ──────────────────────────────────────────────────────────────────
   const TYPES: { key: TimeOffType; label: string }[] = [
@@ -123,8 +123,8 @@ export function VacationManager() {
         </div>
       ) : entries.length === 0 ? (
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/50">
-          <Umbrella size={15} className="text-[#A8928D] flex-shrink-0" />
-          <p className="text-xs text-[#A8928D]">
+          <Umbrella size={15} className="text-muted-foreground/60 flex-shrink-0" />
+          <p className="text-xs text-muted-foreground/60">
             Запорука якісної роботи — якісний відпочинок)
           </p>
         </div>
@@ -145,14 +145,14 @@ export function VacationManager() {
                 >
                   <span style={{ color }} className="flex-shrink-0 flex items-center"><Icon size={13} /></span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#2C1A14] leading-tight">
+                    <p className="text-xs font-semibold text-foreground leading-tight">
                       {entryLabel(e)}
                     </p>
-                    <p className="text-[11px] text-[#A8928D]">{entrySubLabel(e)}</p>
+                    <p className="text-[11px] text-muted-foreground/60">{entrySubLabel(e)}</p>
                   </div>
                   <button
                     onClick={() => remove(e.id)}
-                    className="w-6 h-6 flex items-center justify-center rounded-lg text-[#A8928D] hover:text-[#C05B5B] hover:bg-[#C05B5B]/10 transition-colors flex-shrink-0"
+                    className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
                   >
                     <X size={12} />
                   </button>
@@ -185,8 +185,8 @@ export function VacationManager() {
                       onClick={() => setType(t.key)}
                       className={`flex-1 py-1.5 rounded-xl text-[11px] font-semibold border transition-colors ${
                         type === t.key
-                          ? 'bg-[#789A99] text-white border-[#789A99]'
-                          : 'bg-white/70 text-[#6B5750] border-white/80 hover:border-[#789A99]'
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-white/70 text-muted-foreground border-white/80 hover:border-primary'
                       }`}
                     >
                       {t.label}
@@ -250,21 +250,21 @@ export function VacationManager() {
 
               {/* Помилка */}
               {addError && (
-                <p className="text-[11px] text-[#C05B5B]">{addError}</p>
+                <p className="text-[11px] text-destructive">{addError}</p>
               )}
 
               {/* Кнопки */}
               <div className="flex gap-2">
                 <button
                   onClick={resetForm}
-                  className="flex-1 py-2 rounded-xl text-xs font-medium text-[#A8928D] bg-white/60 hover:bg-white/80 transition-colors"
+                  className="flex-1 py-2 rounded-xl text-xs font-medium text-muted-foreground/60 bg-white/60 hover:bg-white/80 transition-colors active:scale-95 transition-all"
                 >
                   Скасувати
                 </button>
                 <button
                   onClick={handleAdd}
                   disabled={!isFormValid() || isAdding}
-                  className="flex-1 py-2 rounded-xl text-xs font-semibold bg-[#789A99] text-white hover:bg-[#6B8C8B] transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                  className="flex-1 py-2 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-[#6B8C8B] transition-colors disabled:opacity-50 flex items-center justify-center gap-1 active:scale-95 transition-all"
                 >
                   {isAdding ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                   Зберегти
@@ -279,9 +279,9 @@ export function VacationManager() {
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-white/60 border border-dashed border-[#C8B8B2] text-xs font-medium text-[#6B5750] hover:bg-white/80 transition-colors w-full"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-white/60 border border-dashed border-[#C8B8B2] text-xs font-medium text-muted-foreground hover:bg-white/80 transition-colors w-full"
         >
-          <Plus size={13} className="text-[#A8928D]" />
+          <Plus size={13} className="text-muted-foreground/60" />
           Додати виняток з розкладу
         </button>
       )}

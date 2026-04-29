@@ -15,8 +15,11 @@ export function escHtml(s: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
-export async function sendTelegramMessage(chatId: string, text: string): Promise<boolean> {
-  if (!BOT_TOKEN || !chatId) return false;
+export async function sendTelegramMessage(chatId: string, text: string, replyMarkup?: any): Promise<boolean> {
+  if (!BOT_TOKEN || !chatId) {
+    console.warn(`[Telegram] Missing BOT_TOKEN or chatId. BOT_TOKEN exists: ${!!BOT_TOKEN}`);
+    return false;
+  }
   try {
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
@@ -26,11 +29,16 @@ export async function sendTelegramMessage(chatId: string, text: string): Promise
         text,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
       }),
     });
     const json = await res.json();
+    if (!json.ok) {
+      console.error(`[Telegram] API error: ${json.description}`, json);
+    }
     return json.ok === true;
-  } catch {
+  } catch (error) {
+    console.error(`[Telegram] Network/Fetch error:`, error);
     return false;
   }
 }

@@ -89,7 +89,7 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
           <Loader2
             className={`w-5 h-5 ${
               visualState === 'refreshing' ? 'animate-spin' : ''
-            } text-[#789A99]`}
+            } text-primary`}
           />
         </div>
       )}

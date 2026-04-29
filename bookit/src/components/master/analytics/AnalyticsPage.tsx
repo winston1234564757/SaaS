@@ -21,7 +21,7 @@ import {
   type TopService, type TopClient,
 } from '@/lib/supabase/hooks/useAnalytics';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { pluralize } from '@/lib/utils/dates';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { ClientRow } from '@/components/master/clients/ClientsPage';
 
@@ -65,12 +65,12 @@ function DateRangeBar({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="bg-[#F5E8E3]/60 p-1.5 rounded-2xl flex gap-0.5 overflow-x-auto scrollbar-hide">
+      <div className="bg-secondary/60 p-1.5 rounded-2xl flex gap-0.5 overflow-x-auto scrollbar-hide">
         {PRESETS.map(p => (
           <button key={p.key} onClick={() => setPreset(p.key)}
             className={`flex-1 flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${preset === p.key
-                ? 'bg-white shadow-[0_2px_10px_rgb(0,0,0,0.08)] text-[#2C1A14] font-semibold'
-                : 'text-[#A8928D] hover:text-[#6B5750] hover:bg-white/30'
+                ? 'bg-white shadow-[0_2px_10px_rgb(0,0,0,0.08)] text-foreground font-semibold'
+                : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-white/30'
               }`}>
             {p.label}
           </button>
@@ -78,12 +78,12 @@ function DateRangeBar({
       </div>
       <div className="flex items-center gap-2">
         <button onClick={goPrev}
-          className="w-8 h-8 rounded-full bg-white/70 border border-white/80 flex items-center justify-center text-[#6B5750] hover:bg-white transition-colors flex-shrink-0 shadow-sm">
+          className="w-8 h-8 rounded-full bg-white/70 border border-white/80 flex items-center justify-center text-muted-foreground hover:bg-white transition-colors flex-shrink-0 shadow-sm active:scale-95 transition-all">
           <ChevronLeft size={14} />
         </button>
-        <p className="flex-1 text-center text-sm font-semibold text-[#2C1A14]">{label}</p>
+        <p className="flex-1 text-center text-sm font-semibold text-foreground">{label}</p>
         <button onClick={goNext} disabled={!canGoNext}
-          className="w-8 h-8 rounded-full bg-white/70 border border-white/80 flex items-center justify-center text-[#6B5750] hover:bg-white transition-colors flex-shrink-0 shadow-sm disabled:opacity-30">
+          className="w-8 h-8 rounded-full bg-white/70 border border-white/80 flex items-center justify-center text-muted-foreground hover:bg-white transition-colors flex-shrink-0 shadow-sm disabled:opacity-30 active:scale-95 transition-all">
           <ChevronRight size={14} />
         </button>
       </div>
@@ -96,8 +96,8 @@ function DateRangeBar({
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-4">
-      <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wider">{title}</p>
-      {subtitle && <p className="text-[11px] text-[#A8928D]/70 mt-0.5">{subtitle}</p>}
+      <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">{title}</p>
+      {subtitle && <p className="text-[11px] text-muted-foreground/60/70 mt-0.5">{subtitle}</p>}
     </div>
   );
 }
@@ -110,30 +110,30 @@ function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
     <div>
       <button onClick={() => setOpen(o => !o)} className="w-full text-left">
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-sm font-medium text-[#2C1A14] truncate pr-2">{svc.name}</span>
-          <span className="text-sm font-bold text-[#5C9E7A] flex-shrink-0">{formatPrice(svc.revenue)}</span>
+          <span className="text-sm font-medium text-foreground truncate pr-2">{svc.name}</span>
+          <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(svc.revenue)}</span>
         </div>
-        <div className="h-2 rounded-full bg-[#F5E8E3]">
+        <div className="h-2 rounded-full bg-secondary">
           <div
             className="h-full rounded-full bg-gradient-to-r from-[#789A99] to-[#789A99]/50 transition-all duration-700"
             style={{ width: `${Math.round((svc.revenue / maxRev) * 100)}%` }}
           />
         </div>
         <div className="flex items-center justify-between mt-1">
-          <span className="text-[11px] text-[#A8928D]">{pluralize(svc.count, ['запис', 'записи', 'записів'])}</span>
-          <ChevronDown size={12} className={`text-[#A8928D] transition-transform ${open ? 'rotate-180' : ''}`} />
+          <span className="text-[11px] text-muted-foreground/60">{pluralUk(svc.count, 'запис', 'записи', 'записів')}</span>
+          <ChevronDown size={12} className={`text-muted-foreground/60 transition-transform ${open ? 'rotate-180' : ''}`} />
         </div>
       </button>
       <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
         <div style={{ overflow: 'hidden', minHeight: 0 }}>
-          <div className="mt-2 p-3 rounded-2xl bg-[#789A99]/[0.06] border border-[#789A99]/15 grid grid-cols-3 gap-2">
+          <div className="mt-2 p-3 rounded-2xl bg-primary/[0.06] border border-primary/15 grid grid-cols-3 gap-2">
             {[
               { label: 'Cross-sell', value: `${svc.crossSellRate}%`, color: '#789A99' },
               { label: 'З товарами', value: `${Math.round(svc.count * svc.crossSellRate / 100)}/${svc.count}`, color: '#2C1A14' },
               { label: 'Серед. чек', value: svc.count > 0 ? formatPrice(Math.round(svc.revenue / svc.count)) : '—', color: '#2C1A14' },
             ].map(item => (
               <div key={item.label}>
-                <p className="text-[10px] text-[#A8928D] mb-0.5">{item.label}</p>
+                <p className="text-[10px] text-muted-foreground/60 mb-0.5">{item.label}</p>
                 <p className="text-sm font-bold" style={{ color: item.color }}>{item.value}</p>
               </div>
             ))}
@@ -195,9 +195,9 @@ function DowChart({ data, bookings, bestIdx }: { data: number[]; bookings: numbe
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  <p className="text-sm text-[#6B5750] mb-0.5">{UA_DOW_FULL[i]}</p>
-                  <p className="text-base font-bold text-[#2C1A14]">{formatPrice(v)}</p>
-                  <p className="text-[11px] text-[#6B5750]">{pct}% · {pluralize(bookings[i], ['запис', 'записи', 'записів'])}</p>
+                  <p className="text-sm text-muted-foreground mb-0.5">{UA_DOW_FULL[i]}</p>
+                  <p className="text-base font-bold text-foreground">{formatPrice(v)}</p>
+                  <p className="text-[11px] text-muted-foreground">{pct}% · {pluralUk(bookings[i], 'запис', 'записи', 'записів')}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -205,9 +205,9 @@ function DowChart({ data, bookings, bestIdx }: { data: number[]; bookings: numbe
               initial={{ height: 0 }}
               animate={{ height: Math.max(3, Math.round((v / max) * 36)) }}
               transition={{ delay: i * 0.04, ...SPRING }}
-              className={`w-full rounded-t-md cursor-pointer ${i === bestIdx ? 'bg-[#789A99]' : 'bg-[#789A99]/20'}`}
+              className={`w-full rounded-t-md cursor-pointer ${i === bestIdx ? 'bg-primary' : 'bg-primary/20'}`}
             />
-            <span className={`text-[9px] leading-none ${i === bestIdx ? 'font-bold text-[#789A99]' : 'text-[#C8B8B2]'}`}>
+            <span className={`text-[9px] leading-none ${i === bestIdx ? 'font-bold text-primary' : 'text-[#C8B8B2]'}`}>
               {UA_DOW[i]}
             </span>
           </div>
@@ -271,16 +271,16 @@ function ProUpgradeCard() {
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.1 }}
     >
       {/* Декоративні блоби */}
-      <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#789A99]/15 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-[#5C9E7A]/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -top-8 -right-8 w-32 h-32 bg-primary/15 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-success/10 rounded-full blur-2xl pointer-events-none" />
 
       <div className="flex items-center gap-3 mb-5 relative">
         <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#789A99] to-[#5C9E7A] flex items-center justify-center shadow-[0_4px_14px_rgba(120,154,153,0.4)] flex-shrink-0">
           <Crown size={19} className="text-white" />
         </div>
         <div>
-          <p className="text-sm font-bold text-[#2C1A14]">Глибока аналітика</p>
-          <p className="text-[11px] text-[#A8928D]">Доступно з Pro-тарифом</p>
+          <p className="text-sm font-bold text-foreground">Глибока аналітика</p>
+          <p className="text-[11px] text-muted-foreground/60">Доступно з Pro-тарифом</p>
         </div>
       </div>
 
@@ -293,10 +293,10 @@ function ProUpgradeCard() {
           { icon: Download, label: 'CSV-експорт усіх транзакцій' },
         ].map(f => (
           <div key={f.label} className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-xl bg-[#789A99]/10 flex items-center justify-center flex-shrink-0">
-              <f.icon size={13} className="text-[#789A99]" />
+            <div className="w-7 h-7 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <f.icon size={13} className="text-primary" />
             </div>
-            <p className="text-[13px] text-[#6B5750]">{f.label}</p>
+            <p className="text-[13px] text-muted-foreground">{f.label}</p>
           </div>
         ))}
       </div>
@@ -360,9 +360,9 @@ function MonthBarChart({ monthStats }: { monthStats: Array<{ month: string; reve
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  <p className="text-sm text-[#6B5750] mb-0.5">{m.month}</p>
-                  <p className="text-base font-bold text-[#2C1A14]">{formatPrice(m.revenue)}</p>
-                  <p className="text-[11px] text-[#6B5750]">{pluralize(m.bookings, ['запис', 'записи', 'записів'])}</p>
+                  <p className="text-sm text-muted-foreground mb-0.5">{m.month}</p>
+                  <p className="text-base font-bold text-foreground">{formatPrice(m.revenue)}</p>
+                  <p className="text-[11px] text-muted-foreground">{pluralUk(m.bookings, 'запис', 'записи', 'записів')}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -372,7 +372,7 @@ function MonthBarChart({ monthStats }: { monthStats: Array<{ month: string; reve
               className="w-full rounded-t-xl bg-gradient-to-t from-[#789A99]/60 to-[#789A99]/25"
               style={{ minHeight: 4, cursor: 'pointer' }}
             />
-            <span className="text-[10px] text-[#A8928D]">{m.month}</span>
+            <span className="text-[10px] text-muted-foreground/60">{m.month}</span>
           </div>
         );
       })}
@@ -449,11 +449,11 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         />
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Аналітика</h1>
-            <p className="text-sm text-[#A8928D]">Статистика та звіти</p>
+            <h1 className="heading-serif text-xl text-foreground mb-0.5">Аналітика</h1>
+            <p className="text-sm text-muted-foreground/60">Статистика та звіти</p>
           </div>
           <button onClick={() => refetch()} disabled={isFetching}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-[#F5E8E3] text-[#6B5750] hover:bg-[#EDD9D1] transition-colors disabled:opacity-40">
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-[#EDD9D1] transition-colors disabled:opacity-40">
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
         </div>
@@ -462,10 +462,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           setPreset={range.setPreset} goPrev={range.goPrev} goNext={range.goNext}
         />
         {isLockedDateRange && (
-          <div className="mt-3 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#789A99]/8 border border-[#789A99]/20">
-            <Crown size={13} className="text-[#789A99] flex-shrink-0" />
-            <p className="text-[12px] text-[#6B5750] flex-1">Цей діапазон доступний у Pro</p>
-            <Link href="/dashboard/billing" className="text-[11px] font-bold text-[#789A99] whitespace-nowrap">
+          <div className="mt-3 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-primary/8 border border-primary/20">
+            <Crown size={13} className="text-primary flex-shrink-0" />
+            <p className="text-[12px] text-muted-foreground flex-1">Цей діапазон доступний у Pro</p>
+            <Link href="/dashboard/billing" className="text-[11px] font-bold text-primary whitespace-nowrap">
               Оновити →
             </Link>
           </div>
@@ -474,7 +474,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
       {/* ── Error ── */}
       {isError && (
-        <div className="bento-card p-5 text-center text-sm text-[#C05B5B]">
+        <div className="bento-card p-5 text-center text-sm text-destructive">
           Помилка завантаження.{' '}
           <button onClick={() => refetch()} className="underline">Повторити</button>
         </div>
@@ -487,18 +487,18 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wider">{range.label}</p>
-            <p className="text-[11px] text-[#A8928D]/60 mt-0.5">{range.startDate} — {range.endDate}</p>
+            <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">{range.label}</p>
+            <p className="text-[11px] text-muted-foreground/60/60 mt-0.5">{range.startDate} — {range.endDate}</p>
           </div>
         </div>
 
         {isLockedDateRange ? (
           <div className="flex flex-col items-center py-6 gap-2.5" data-testid="locked-date-range">
-            <div className="w-12 h-12 rounded-2xl bg-[#789A99]/10 flex items-center justify-center">
-              <Crown size={20} className="text-[#789A99]" data-testid="paywall-lock" />
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Crown size={20} className="text-primary" data-testid="paywall-lock" />
             </div>
-            <p className="text-sm font-bold text-[#2C1A14]">Виберіть поточний місяць</p>
-            <p className="text-[12px] text-[#A8928D] text-center max-w-[200px]">
+            <p className="text-sm font-bold text-foreground">Виберіть поточний місяць</p>
+            <p className="text-[12px] text-muted-foreground/60 text-center max-w-[200px]">
               Безкоштовна аналітика доступна лише для поточного місяця
             </p>
           </div>
@@ -517,9 +517,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 </div>
                 {s.value === null
                   ? <Skeleton h="h-7" w="w-20" />
-                  : <p className="text-2xl font-bold tracking-tight text-[#2C1A14] leading-none">{s.value}</p>
+                  : <p className="text-2xl font-bold tracking-tight text-foreground leading-none">{s.value}</p>
                 }
-                <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider">{s.label}</p>
+                <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{s.label}</p>
               </div>
             ))}
           </div>
@@ -535,11 +535,11 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           className="bento-card p-6 flex flex-col gap-5"
         >
           <div className="text-center">
-            <div className="w-16 h-16 rounded-3xl bg-[#789A99]/10 flex items-center justify-center mx-auto mb-4">
-              <BarChart2 size={28} className="text-[#789A99]" />
+            <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <BarChart2 size={28} className="text-primary" />
             </div>
-            <p className="text-base font-bold text-[#2C1A14]">Даних ще немає</p>
-            <p className="text-sm text-[#A8928D] mt-1 text-balance">
+            <p className="text-base font-bold text-foreground">Даних ще немає</p>
+            <p className="text-sm text-muted-foreground/60 mt-1 text-balance">
               Аналітика з'явиться після перших записів. Ось як їх отримати:
             </p>
           </div>
@@ -571,9 +571,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               <div key={step.title} className="flex gap-3 p-4 rounded-2xl bg-white/50">
                 <span className="text-xl flex-shrink-0 mt-0.5">{step.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#2C1A14]">{step.title}</p>
-                  <p className="text-xs text-[#A8928D] mt-0.5 leading-relaxed">{step.desc}</p>
-                  <Link href={step.href} className="inline-flex mt-1.5 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors">
+                  <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">{step.desc}</p>
+                  <Link href={step.href} className="inline-flex mt-1.5 text-xs font-semibold text-primary hover:text-primary/90 transition-colors">
                     {step.cta}
                   </Link>
                 </div>
@@ -612,17 +612,17 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 </div>
               </div>
             ) : !retention || retTotal === 0 ? (
-              <p className="text-sm text-[#A8928D] text-center py-4">Недостатньо даних за цей період</p>
+              <p className="text-sm text-muted-foreground/60 text-center py-4">Недостатньо даних за цей період</p>
             ) : (
               <div className="flex flex-col gap-3">
                 <div>
-                  <div className="flex justify-between text-[11px] text-[#A8928D] mb-1.5">
+                  <div className="flex justify-between text-[11px] text-muted-foreground/60 mb-1.5">
                     <span>Нові · {retention.newClients}</span>
                     <span>Постійні · {retention.returningClients}</span>
                   </div>
-                  <div className="h-3 rounded-full bg-[#F5E8E3] overflow-hidden flex">
-                    <div className="h-full bg-[#D4935A]/70 transition-all duration-700" style={{ width: `${100 - retRate}%` }} />
-                    <div className="h-full bg-[#789A99]/70 transition-all duration-700" style={{ width: `${retRate}%` }} />
+                  <div className="h-3 rounded-full bg-secondary overflow-hidden flex">
+                    <div className="h-full bg-warning/70 transition-all duration-700" style={{ width: `${100 - retRate}%` }} />
+                    <div className="h-full bg-primary/70 transition-all duration-700" style={{ width: `${retRate}%` }} />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-1">
@@ -633,7 +633,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                   ].map(item => (
                     <div key={item.label} className="flex flex-col items-center p-3 rounded-2xl bg-white/50 border border-white/80">
                       <p className="text-lg font-bold" style={{ color: item.color }}>{item.value}</p>
-                      <p className="text-[10px] text-[#A8928D] text-center leading-tight mt-0.5">{item.label}</p>
+                      <p className="text-[10px] text-muted-foreground/60 text-center leading-tight mt-0.5">{item.label}</p>
                     </div>
                   ))}
                 </div>
@@ -653,7 +653,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 ))}
               </div>
             ) : monthStats.length === 0 ? (
-              <p className="text-sm text-[#A8928D] text-center py-8">Недостатньо даних</p>
+              <p className="text-sm text-muted-foreground/60 text-center py-8">Недостатньо даних</p>
             ) : (
               <MonthBarChart monthStats={monthStats} />
             )}
@@ -675,10 +675,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
                 return (
                   <div className="flex flex-col gap-3">
-                    <div className="h-2 rounded-full bg-[#F5E8E3] overflow-hidden flex shadow-inner">
-                      <div className="h-full bg-[#789A99] transition-all duration-700" style={{ width: `${svcPct}%` }} />
-                      <div className="h-full bg-[#D4935A]/60 transition-all duration-700" style={{ width: `${bProdPct}%` }} />
-                      <div className="h-full bg-[#5C9E7A]/60 transition-all duration-700 flex-1" />
+                    <div className="h-2 rounded-full bg-secondary overflow-hidden flex shadow-inner">
+                      <div className="h-full bg-primary transition-all duration-700" style={{ width: `${svcPct}%` }} />
+                      <div className="h-full bg-warning/60 transition-all duration-700" style={{ width: `${bProdPct}%` }} />
+                      <div className="h-full bg-success/60 transition-all duration-700 flex-1" />
                     </div>
                     <div className="flex flex-col gap-1.5">
                       {[
@@ -687,14 +687,14 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                         { dot: '#5C9E7A99', label: 'Товари (Магаз)', pct: sProdPct, rev: shopProdRev },
                       ].map(item => (
                         <Tooltip key={item.label}
-                          content={<div><p className="text-xs text-[#6B5750] mb-0.5">{item.label}</p><p className="text-base font-bold text-[#2C1A14]">{formatPrice(item.rev)}</p></div>}
+                          content={<div><p className="text-xs text-muted-foreground mb-0.5">{item.label}</p><p className="text-base font-bold text-foreground">{formatPrice(item.rev)}</p></div>}
                         >
                           <div className="flex items-center justify-between cursor-default">
                             <div className="flex items-center gap-1.5">
                               <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: item.dot }} />
-                              <span className="text-[10px] text-[#A8928D] truncate max-w-[70px]">{item.label}</span>
+                              <span className="text-[10px] text-muted-foreground/60 truncate max-w-[70px]">{item.label}</span>
                             </div>
-                            <span className="text-[10px] font-bold text-[#2C1A14]">{item.pct}%</span>
+                            <span className="text-[10px] font-bold text-foreground">{item.pct}%</span>
                           </div>
                         </Tooltip>
                       ))}
@@ -709,8 +709,8 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               {isLoading ? <Skeleton h="h-20" rounded="rounded-xl" /> : bento ? (
                 <>
                   <div className="flex items-baseline gap-1">
-                    <p className="text-lg font-bold text-[#789A99]">{bento.bestDayOfWeek.day}</p>
-                    <p className="text-[11px] text-[#A8928D]">· {bento.bestDayOfWeek.pct}%</p>
+                    <p className="text-lg font-bold text-primary">{bento.bestDayOfWeek.day}</p>
+                    <p className="text-[11px] text-muted-foreground/60">· {bento.bestDayOfWeek.pct}%</p>
                   </div>
                   <DowChart
                     data={bento.bestDayOfWeek.data}
@@ -725,16 +725,16 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           {/* Bento mini: Серед. чек + Години + Джерело */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bento-card p-4 flex flex-col gap-2">
-              <BarChart2 size={15} className="text-[#789A99]" />
+              <BarChart2 size={15} className="text-primary" />
               {isLoading
                 ? <Skeleton h="h-5" w="w-14" />
-                : <p className="text-base font-bold text-[#2C1A14] leading-tight">
+                : <p className="text-base font-bold text-foreground leading-tight">
                   {bento && bento.avgCheck.current > 0 ? formatPrice(bento.avgCheck.current) : '—'}
                 </p>
               }
-              <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider leading-tight">Серед. чек</p>
+              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider leading-tight">Серед. чек</p>
               {bento?.avgCheck.delta !== null && bento?.avgCheck.delta !== undefined && (
-                <div className={`flex items-center gap-0.5 text-[10px] font-bold ${bento.avgCheck.delta > 0 ? 'text-[#5C9E7A]' : bento.avgCheck.delta < 0 ? 'text-[#C05B5B]' : 'text-[#A8928D]'
+                <div className={`flex items-center gap-0.5 text-[10px] font-bold ${bento.avgCheck.delta > 0 ? 'text-success' : bento.avgCheck.delta < 0 ? 'text-destructive' : 'text-muted-foreground/60'
                   }`}>
                   {bento.avgCheck.delta > 0 ? <TrendingUp size={10} /> : bento.avgCheck.delta < 0 ? <TrendingDown size={10} /> : <Minus size={10} />}
                   {bento.avgCheck.delta > 0 ? '+' : ''}{bento.avgCheck.delta}%
@@ -743,30 +743,30 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             </div>
 
             <div className="bento-card p-4 flex flex-col gap-2">
-              <Clock size={15} className="text-[#789A99]" />
+              <Clock size={15} className="text-primary" />
               {isLoading
                 ? <Skeleton h="h-5" w="w-12" />
-                : <p className="text-base font-bold text-[#2C1A14] leading-tight">{bento?.hoursBooked ?? '—'}г</p>
+                : <p className="text-base font-bold text-foreground leading-tight">{bento?.hoursBooked ?? '—'}г</p>
               }
-              <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider leading-tight">Год. заброньовано</p>
+              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider leading-tight">Год. заброньовано</p>
             </div>
 
             <div className="bento-card p-4 flex flex-col gap-2">
-              <Zap size={15} className="text-[#789A99]" />
-              <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider leading-tight">Джерело</p>
+              <Zap size={15} className="text-primary" />
+              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider leading-tight">Джерело</p>
               {isLoading ? <Skeleton h="h-8" rounded="rounded-lg" /> : (
                 <div className="flex flex-col gap-1.5 mt-auto">
                   <div className="flex justify-between">
-                    <span className="text-[10px] text-[#A8928D]">Онлайн</span>
-                    <span className="text-[10px] font-bold text-[#789A99]">{bento?.sourceBreakdown.online ?? '—'}</span>
+                    <span className="text-[10px] text-muted-foreground/60">Онлайн</span>
+                    <span className="text-[10px] font-bold text-primary">{bento?.sourceBreakdown.online ?? '—'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[10px] text-[#A8928D]">Вручну</span>
-                    <span className="text-[10px] font-bold text-[#2C1A14]">{bento?.sourceBreakdown.manual ?? '—'}</span>
+                    <span className="text-[10px] text-muted-foreground/60">Вручну</span>
+                    <span className="text-[10px] font-bold text-foreground">{bento?.sourceBreakdown.manual ?? '—'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[10px] text-[#A8928D]">Магазин</span>
-                    <span className="text-[10px] font-bold text-[#D4935A]">{bento?.sourceBreakdown.shop ?? '—'}</span>
+                    <span className="text-[10px] text-muted-foreground/60">Магазин</span>
+                    <span className="text-[10px] font-bold text-warning">{bento?.sourceBreakdown.shop ?? '—'}</span>
                   </div>
                 </div>
               )}
@@ -788,24 +788,24 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     disabled={!c.clientId}
                     className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white/60 transition-colors cursor-pointer disabled:cursor-default text-left w-full"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-[#D4935A]/20 text-[#D4935A]' : i === 1 ? 'bg-[#789A99]/15 text-[#789A99]' : 'bg-[#F5E8E3] text-[#A8928D]'
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-warning/20 text-warning' : i === 1 ? 'bg-primary/15 text-primary' : 'bg-secondary text-muted-foreground/60'
                       }`}>{i + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#2C1A14] truncate">{c.clientName}</p>
-                      <p className="text-[11px] text-[#A8928D]">{c.visits} відвідувань</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{c.clientName}</p>
+                      <p className="text-[11px] text-muted-foreground/60">{c.visits} відвідувань</p>
                     </div>
-                    <p className="text-sm font-bold text-[#5C9E7A] flex-shrink-0">{formatPrice(c.revenue)}</p>
+                    <p className="text-sm font-bold text-success flex-shrink-0">{formatPrice(c.revenue)}</p>
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#A8928D] text-center py-4">Немає даних за цей період</p>
+              <p className="text-sm text-muted-foreground/60 text-center py-4">Немає даних за цей період</p>
             )}
           </div>
 
           {/* Прогноз виручки */}
           <div className="bento-card p-5">
-            <p className="text-xs font-semibold text-[#A8928D] uppercase tracking-wider mb-4">Прогноз виручки</p>
+            <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-4">Прогноз виручки</p>
             {isLoading ? (
               <div className="flex flex-col gap-3">
                 <Skeleton h="h-16" rounded="rounded-2xl" />
@@ -816,16 +816,16 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50">
                   <div>
-                    <p className="text-xs text-[#A8928D] mb-1">{nextMonth} — очікувана виручка</p>
-                    <p className="text-3xl font-bold tracking-tight text-[#2C1A14]">{formatPrice(forecast.forecast)}</p>
+                    <p className="text-xs text-muted-foreground/60 mb-1">{nextMonth} — очікувана виручка</p>
+                    <p className="text-3xl font-bold tracking-tight text-foreground">{formatPrice(forecast.forecast)}</p>
                   </div>
-                  <div className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl ${forecastDelta > 0 ? 'bg-[#5C9E7A]/10' : forecastDelta < 0 ? 'bg-[#C05B5B]/10' : 'bg-[#F5E8E3]'
+                  <div className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl ${forecastDelta > 0 ? 'bg-success/10' : forecastDelta < 0 ? 'bg-destructive/10' : 'bg-secondary'
                     }`}>
-                    {forecastDelta > 0 ? <TrendingUp size={20} className="text-[#5C9E7A]" />
-                      : forecastDelta < 0 ? <TrendingDown size={20} className="text-[#C05B5B]" />
-                        : <Minus size={20} className="text-[#A8928D]" />}
+                    {forecastDelta > 0 ? <TrendingUp size={20} className="text-success" />
+                      : forecastDelta < 0 ? <TrendingDown size={20} className="text-destructive" />
+                        : <Minus size={20} className="text-muted-foreground/60" />}
                     {forecastPct !== null && (
-                      <span className={`text-xs font-bold ${forecastDelta > 0 ? 'text-[#5C9E7A]' : forecastDelta < 0 ? 'text-[#C05B5B]' : 'text-[#A8928D]'
+                      <span className={`text-xs font-bold ${forecastDelta > 0 ? 'text-success' : forecastDelta < 0 ? 'text-destructive' : 'text-muted-foreground/60'
                         }`}>{forecastDelta > 0 ? '+' : ''}{forecastPct}%</span>
                     )}
                   </div>
@@ -837,60 +837,60 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     const h = Math.max(3, Math.round((m.revenue / maxV) * 48));
                     return (
                       <Tooltip key={i}
-                        content={<div><p className="text-sm text-[#6B5750] mb-1">{m.month}</p><p className="text-lg font-bold text-[#2C1A14]">{formatPrice(m.revenue)}</p></div>}
+                        content={<div><p className="text-sm text-muted-foreground mb-1">{m.month}</p><p className="text-lg font-bold text-foreground">{formatPrice(m.revenue)}</p></div>}
                         className="flex-1 flex flex-col items-center gap-1"
                       >
                         <motion.div initial={{ height: 0 }} animate={{ height: h }}
                           transition={{ delay: 0.04 + i * 0.05, ...SPRING }}
-                          className="w-full rounded-t-lg bg-[#789A99]/40" />
-                        <span className="text-[9px] text-[#A8928D]">{m.month}</span>
+                          className="w-full rounded-t-lg bg-primary/40" />
+                        <span className="text-[9px] text-muted-foreground/60">{m.month}</span>
                       </Tooltip>
                     );
                   })}
                   <Tooltip
-                    content={<div><p className="text-sm text-[#6B5750] mb-1">Прогноз · {nextMonth}</p><p className="text-lg font-bold text-[#2C1A14]">{formatPrice(forecast.forecast)}</p>{forecastPct !== null && <p className="text-sm text-[#6B5750]">{forecastPct > 0 ? '+' : ''}{forecastPct}% до минулого місяця</p>}</div>}
+                    content={<div><p className="text-sm text-muted-foreground mb-1">Прогноз · {nextMonth}</p><p className="text-lg font-bold text-foreground">{formatPrice(forecast.forecast)}</p>{forecastPct !== null && <p className="text-sm text-muted-foreground">{forecastPct > 0 ? '+' : ''}{forecastPct}% до минулого місяця</p>}</div>}
                     className="flex-1 flex flex-col items-center gap-1"
                   >
                     <motion.div initial={{ height: 0 }}
                       animate={{ height: Math.max(3, Math.round((forecast.forecast / Math.max(...monthStats.map(x => x.revenue), forecast.forecast, 1)) * 48)) }}
                       transition={{ delay: monthStats.length * 0.05, ...SPRING }}
-                      className="w-full rounded-t-lg border-2 border-dashed border-[#789A99] bg-[#789A99]/15" />
-                    <span className="text-[9px] font-semibold text-[#789A99]">{nextMonth.slice(0, 3)}</span>
+                      className="w-full rounded-t-lg border-2 border-dashed border-primary bg-primary/15" />
+                    <span className="text-[9px] font-semibold text-primary">{nextMonth.slice(0, 3)}</span>
                   </Tooltip>
                 </div>
 
                 {/* Transparent breakdown — показує логіку розрахунку */}
                 {bento && bento.avgCheck.current > 0 && summary.bookings > 0 && (
-                  <div className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-[#F5E8E3]/60">
-                    <p className="text-[11px] text-[#6B5750] font-medium">Як рахується прогноз</p>
-                    <div className="flex items-center gap-1.5 text-xs text-[#A8928D]">
-                      <span className="font-semibold text-[#2C1A14]">{summary.bookings}</span>
+                  <div className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-secondary/60">
+                    <p className="text-[11px] text-muted-foreground font-medium">Як рахується прогноз</p>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                      <span className="font-semibold text-foreground">{summary.bookings}</span>
                       <span>записів за цей місяць</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#A8928D]">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
                       <span>×</span>
-                      <span className="font-semibold text-[#2C1A14]">{formatPrice(bento.avgCheck.current)}</span>
+                      <span className="font-semibold text-foreground">{formatPrice(bento.avgCheck.current)}</span>
                       <span>середній чек</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs border-t border-[#E8D5CF] pt-1.5 mt-0.5">
-                      <span className="text-[#A8928D]">=</span>
-                      <span className="font-bold text-[#2C1A14]">{formatPrice(summary.bookings * bento.avgCheck.current)}</span>
-                      <span className="text-[#A8928D]">простий прогноз</span>
+                    <div className="flex items-center gap-1.5 text-xs border-t border-secondary/80 pt-1.5 mt-0.5">
+                      <span className="text-muted-foreground/60">=</span>
+                      <span className="font-bold text-foreground">{formatPrice(summary.bookings * bento.avgCheck.current)}</span>
+                      <span className="text-muted-foreground/60">простий прогноз</span>
                     </div>
                   </div>
                 )}
 
                 {forecastDelta > 0 && forecastPct !== null && forecastPct >= 5 && (
-                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-[#5C9E7A]/8 border border-[#5C9E7A]/20">
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-success/8 border border-success/20">
                     <span className="text-base">🎉</span>
-                    <p className="text-xs font-semibold text-[#5C9E7A]">
+                    <p className="text-xs font-semibold text-success">
                       Ви зростаєте! Прогноз на {nextMonth} краще за минулий місяць на {forecastPct}%
                     </p>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-[#A8928D] text-center py-4">Потрібно мінімум 2 місяці даних для прогнозу</p>
+              <p className="text-sm text-muted-foreground/60 text-center py-4">Потрібно мінімум 2 місяці даних для прогнозу</p>
             )}
           </div>
 
@@ -907,7 +907,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 ))}
               </div>
             ) : topServices.length === 0 ? (
-              <p className="text-sm text-[#A8928D] text-center py-4">Немає завершених записів за цей період</p>
+              <p className="text-sm text-muted-foreground/60 text-center py-4">Немає завершених записів за цей період</p>
             ) : (
               <div className="flex flex-col gap-4">
                 {topServices.map(svc => <ServiceRow key={svc.name} svc={svc} maxRev={maxSvcRev} />)}
@@ -928,24 +928,24 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 ))}
               </div>
             ) : topProducts.length === 0 ? (
-              <p className="text-sm text-[#A8928D] text-center py-4">Немає продажів за цей період</p>
+              <p className="text-sm text-muted-foreground/60 text-center py-4">Немає продажів за цей період</p>
             ) : (
               <div className="flex flex-col gap-3">
                 {topProducts.map((prod, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-[#A8928D] w-4 flex-shrink-0">{i + 1}</span>
+                    <span className="text-xs font-bold text-muted-foreground/60 w-4 flex-shrink-0">{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between mb-1.5">
-                        <span className="text-sm font-medium text-[#2C1A14] truncate pr-2">{prod.name}</span>
-                        <span className="text-sm font-bold text-[#5C9E7A] flex-shrink-0">{formatPrice(prod.revenue)}</span>
+                        <span className="text-sm font-medium text-foreground truncate pr-2">{prod.name}</span>
+                        <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(prod.revenue)}</span>
                       </div>
-                      <div className="h-2 rounded-full bg-[#F5E8E3]">
+                      <div className="h-2 rounded-full bg-secondary">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-[#D4935A]/70 to-[#D4935A]/30 transition-all duration-700"
                           style={{ width: `${Math.round((prod.revenue / maxProdRev) * 100)}%` }}
                         />
                       </div>
-                      <span className="text-[11px] text-[#A8928D] mt-0.5 block">Продано: {prod.qty} шт.</span>
+                      <span className="text-[11px] text-muted-foreground/60 mt-0.5 block">Продано: {prod.qty} шт.</span>
                     </div>
                   </div>
                 ))}
@@ -956,12 +956,12 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           {/* CSV Експорт */}
           <div className="bento-card p-5">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-2xl bg-[#789A99]/10 flex items-center justify-center flex-shrink-0">
-                <Download size={16} className="text-[#789A99]" />
+              <div className="w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Download size={16} className="text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#2C1A14]">Експорт звіту</p>
-                <p className="text-[11px] text-[#A8928D]">CSV з усіма транзакціями · {range.label}</p>
+                <p className="text-sm font-semibold text-foreground">Експорт звіту</p>
+                <p className="text-[11px] text-muted-foreground/60">CSV з усіма транзакціями · {range.label}</p>
               </div>
             </div>
             <button onClick={handleExport} disabled={exporting || isLoading}

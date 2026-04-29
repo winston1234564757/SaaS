@@ -43,10 +43,10 @@ export function DashboardGreeting() {
   return (
     <div className="flex items-start justify-between mb-2">
       <div>
-        <h1 className="heading-serif text-2xl text-[#2C1A14]" suppressHydrationWarning>
+        <h1 className="heading-serif text-2xl text-foreground" suppressHydrationWarning>
           {greeting}, {firstName} {emoji}
         </h1>
-        <p className="text-sm text-[#A8928D] mt-0.5 capitalize" suppressHydrationWarning>{today}</p>
+        <p className="text-sm text-muted-foreground/60 mt-0.5 capitalize" suppressHydrationWarning>{today}</p>
       </div>
       <NotificationsBell />
     </div>

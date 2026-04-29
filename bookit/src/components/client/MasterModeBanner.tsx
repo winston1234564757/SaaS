@@ -19,7 +19,7 @@ export function MasterModeBanner() {
       </div>
       <button
         onClick={backToDashboard}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-semibold transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-semibold transition-colors active:scale-95 transition-all"
       >
         <LayoutDashboard size={13} />
         До дашборду

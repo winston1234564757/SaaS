@@ -46,9 +46,9 @@ export function LandingFAQ() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="display-md text-[#2C1A14] text-balance">
+        <h2 className="display-md text-foreground text-balance">
           Питання, які зупиняють вас{' '}
-          <em className="not-italic text-[#789A99]">прямо зараз</em>
+          <em className="not-italic text-primary">прямо зараз</em>
         </h2>
       </motion.div>
 
@@ -70,7 +70,7 @@ export function LandingFAQ() {
               onClick={() => toggle(i)}
               className="w-full flex items-center justify-between gap-4 p-5 text-left"
             >
-              <span className="text-base font-semibold text-[#2C1A14] leading-snug">
+              <span className="text-base font-semibold text-foreground leading-snug">
                 {faq.q}
               </span>
               <motion.div
@@ -78,7 +78,7 @@ export function LandingFAQ() {
                 transition={{ type: 'spring', stiffness: 300, damping: 26 }}
                 className="flex-shrink-0"
               >
-                <ChevronDown size={18} className="text-[#789A99]" />
+                <ChevronDown size={18} className="text-primary" />
               </motion.div>
             </button>
 
@@ -92,7 +92,7 @@ export function LandingFAQ() {
                   transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
                   className="overflow-hidden"
                 >
-                  <p className="px-5 pb-5 text-sm text-[#6B5750] leading-relaxed">
+                  <p className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">
                     {faq.a}
                   </p>
                 </motion.div>

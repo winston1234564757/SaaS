@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
-import { formatDurationFull, pluralize } from '@/lib/utils/dates';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import Image from 'next/image';
 
 function BookingFlowSkeleton() {
@@ -178,7 +178,7 @@ function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: stri
           <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${accent}25` }}>
             <Zap size={14} style={{ color: accent }} />
           </div>
-          <p className="text-sm font-semibold text-[#2C1A14] leading-tight">{deal.serviceName}</p>
+          <p className="text-sm font-semibold text-foreground leading-tight">{deal.serviceName}</p>
         </div>
         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: `${accent}20`, color: accent }}>
           -{deal.discountPct}%
@@ -187,10 +187,10 @@ function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: stri
 
       <div className="flex items-center justify-between mb-3">
         <div>
-          <p className="text-xs text-[#A8928D]">{dateLabel} о {deal.slotTime}</p>
+          <p className="text-xs text-muted-foreground/60">{dateLabel} о {deal.slotTime}</p>
           <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-base font-bold text-[#2C1A14]">{discounted} ₴</span>
-            <span className="text-xs text-[#A8928D] line-through">{deal.originalPrice} ₴</span>
+            <span className="text-base font-bold text-foreground">{discounted} ₴</span>
+            <span className="text-xs text-muted-foreground/60 line-through">{deal.originalPrice} ₴</span>
           </div>
         </div>
         <div className="flex items-center gap-1 text-xs font-mono font-bold" style={{ color: accent }}>
@@ -201,7 +201,7 @@ function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: stri
 
       <button
         onClick={onBook}
-        className="w-full py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        className="w-full py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-95 transition-all"
         style={{ background: accent }}
       >
         Записатися за акцією
@@ -447,7 +447,7 @@ export function PublicMasterPage({
                   🎁
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-bold text-[#2C1A14]">Привіт від подруги!</h3>
+                  <h3 className="text-sm font-bold text-foreground">Привіт від подруги!</h3>
                   <p className="text-xs" style={{ color: textSecondary }}>
                     Твій візит до {master.name} буде зі знижкою <span className="font-bold" style={{ color: theme.accent }}>-{c2cDiscountPct}%</span>
                   </p>
@@ -483,8 +483,8 @@ export function PublicMasterPage({
                   <Gift size={18} style={{ color: '#5C9E7A' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#2C1A14]">У тебе є реферальний бонус</p>
-                  <p className="text-xs text-[#6B5750]">
+                  <p className="text-sm font-semibold text-foreground">У тебе є реферальний бонус</p>
+                  <p className="text-xs text-muted-foreground">
                     -{c2cReferrerBalance}% на наступний запис — за приведених подруг
                   </p>
                 </div>
@@ -511,7 +511,7 @@ export function PublicMasterPage({
           <button
             onClick={handleShare}
             aria-label="Поділитись сторінкою"
-            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-2xl bg-white/70 border border-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white/90 transition-colors cursor-pointer"
+            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-2xl bg-white/70 border border-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white/90 transition-colors cursor-pointer active:scale-95 transition-all"
             style={{ color: textSecondary }}
           >
             <Share2 size={16} />
@@ -533,9 +533,9 @@ export function PublicMasterPage({
 
             {/* Name + verified badge */}
             <div className="flex items-center justify-center gap-1.5 mb-1">
-              <h1 className="heading-serif text-2xl leading-tight text-[#2C1A14]">{master.name}</h1>
+              <h1 className="heading-serif text-2xl leading-tight text-foreground">{master.name}</h1>
               {master.isVerified && (
-                <Tooltip content={<p className="text-[11px] text-[#2C1A14]">Верифікований майстер Bookit</p>} position="top">
+                <Tooltip content={<p className="text-[11px] text-foreground">Верифікований майстер Bookit</p>} position="top">
                   <BadgeCheck size={18} style={{ color: theme.accent }} className="flex-shrink-0 cursor-default" />
                 </Tooltip>
               )}
@@ -549,10 +549,10 @@ export function PublicMasterPage({
               <div className="mb-3">
                 <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full ${
                   availability.open
-                    ? 'bg-[#5C9E7A]/12 text-[#5C9E7A]'
-                    : 'bg-[#6B5750]/10 text-[#6B5750]'
+                    ? 'bg-success/12 text-success'
+                    : 'bg-muted-foreground/10 text-muted-foreground'
                 }`}>
-                  <span className={`size-1.5 rounded-full shrink-0 ${availability.open ? 'bg-[#5C9E7A] animate-pulse' : 'bg-[#A8928D]'}`} />
+                  <span className={`size-1.5 rounded-full shrink-0 ${availability.open ? 'bg-success animate-pulse' : 'bg-muted-foreground/60'}`} />
                   {availability.label}
                 </span>
               </div>
@@ -566,12 +566,12 @@ export function PublicMasterPage({
                     <Star
                       key={i}
                       size={13}
-                      className={i < Math.floor(master.rating) ? 'fill-[#D4935A] text-[#D4935A]' : 'text-[#E8D5CF]'}
+                      className={i < Math.floor(master.rating) ? 'fill-[#D4935A] text-warning' : 'text-secondary/80'}
                     />
                   ))}
                 </div>
-                <span className="text-sm font-bold text-[#2C1A14]">{master.rating.toFixed(1)}</span>
-                <span className="text-xs" style={{ color: textTertiary }}>· {pluralize(master.reviewsCount, ['відгук', 'відгуки', 'відгуків'])}</span>
+                <span className="text-sm font-bold text-foreground">{master.rating.toFixed(1)}</span>
+                <span className="text-xs" style={{ color: textTertiary }}>· {pluralUk(master.reviewsCount, 'відгук', 'відгуки', 'відгуків')}</span>
               </div>
             )}
 
@@ -770,7 +770,7 @@ export function PublicMasterPage({
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-bold" style={{ color: theme.textPrimary }}>Магазин</p>
                   <p className="text-xs mt-0.5" style={{ color: textSecondary }}>
-                    {(master.products ?? []).length} {(master.products ?? []).length === 1 ? 'товар' : (master.products ?? []).length < 5 ? 'товари' : 'товарів'} · самовивіз або доставка
+                    {(master.products ?? []).length} {pluralUk((master.products ?? []).length, 'товар', 'товари', 'товарів')} · самовивіз або доставка
                   </p>
                 </div>
                 {/* Arrow */}
@@ -847,11 +847,11 @@ export function PublicMasterPage({
                           {service.emoji}
                         </div>
                         <div className="flex-1 min-w-0 pr-16">
-                          <p className="text-sm font-semibold text-[#2C1A14]">{service.name}</p>
+                          <p className="text-sm font-semibold text-foreground">{service.name}</p>
                           <p className="text-xs mt-0.5 break-words leading-tight" style={{ color: textTertiary }}>{formatDurationFull(service.duration)}</p>
                         </div>
                         <div className="flex-shrink-0 text-right">
-                          <p className="text-base font-bold text-[#2C1A14]">{formatPrice(service.price)}</p>
+                          <p className="text-base font-bold text-foreground">{formatPrice(service.price)}</p>
                         </div>
                       </div>
                     </motion.button>
@@ -900,18 +900,18 @@ export function PublicMasterPage({
                       📦
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#2C1A14]">{product.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{product.name}</p>
                       {product.description && (
                         <p className="text-xs mt-0.5 line-clamp-1" style={{ color: textTertiary }}>
                           {product.description}
                         </p>
                       )}
                       {!product.inStock && (
-                        <span className="text-[10px] font-medium text-[#C05B5B]">Немає в наявності</span>
+                        <span className="text-[10px] font-medium text-destructive">Немає в наявності</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <p className="text-base font-bold text-[#2C1A14]">{formatPrice(product.price)}</p>
+                      <p className="text-base font-bold text-foreground">{formatPrice(product.price)}</p>
                       <div
                         className="w-7 h-7 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         style={{ background: `${theme.accent}20` }}
@@ -948,8 +948,8 @@ export function PublicMasterPage({
               <h2 className="heading-serif text-lg" style={{ color: theme.textPrimary }}>Відгуки</h2>
               {master.rating > 0 && master.reviewsCount > 0 && (
                 <div className="flex items-center gap-1">
-                  <Star size={13} className="fill-[#D4935A] text-[#D4935A]" />
-                  <span className="text-sm font-bold text-[#2C1A14]">{master.rating.toFixed(1)}</span>
+                  <Star size={13} className="fill-[#D4935A] text-warning" />
+                  <span className="text-sm font-bold text-foreground">{master.rating.toFixed(1)}</span>
                   <span className="text-xs" style={{ color: textTertiary }}>· {master.reviewsCount} відгуків</span>
                 </div>
               )}
@@ -965,13 +965,13 @@ export function PublicMasterPage({
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div>
-                      <p className="text-sm font-semibold text-[#2C1A14]">{review.clientName}</p>
+                      <p className="text-sm font-semibold text-foreground">{review.clientName}</p>
                       <div className="flex items-center gap-0.5 mt-0.5">
                         {Array.from({ length: 5 }).map((_, j) => (
                           <Star
                             key={j}
                             size={11}
-                            className={j < review.rating ? 'fill-[#D4935A] text-[#D4935A]' : 'text-[#E8D5CF]'}
+                            className={j < review.rating ? 'fill-[#D4935A] text-warning' : 'text-secondary/80'}
                           />
                         ))}
                       </div>

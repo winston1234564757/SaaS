@@ -39,11 +39,11 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
     return (
       <div className="rounded-2xl border border-white/60 bg-white/40 backdrop-blur-md shadow-sm px-4 py-3 flex items-start justify-between gap-3">
         <div className="flex items-start gap-2 min-w-0">
-          <MapPin size={14} className="mt-0.5 shrink-0 text-[#789A99]" />
+          <MapPin size={14} className="mt-0.5 shrink-0 text-primary" />
           <div className="min-w-0">
-            <p className="text-xs font-medium text-[#2C1A14] leading-snug line-clamp-2">{location}</p>
+            <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">{location}</p>
             {(floor || cabinet) && (
-              <p className="text-[11px] text-[#A8928D] mt-0.5">
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
                 {[floor && `${floor} поверх`, cabinet && `каб. ${cabinet}`].filter(Boolean).join(' · ')}
               </p>
             )}
@@ -54,7 +54,7 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
             href={mapUrl}
             target={mapUrl.startsWith('http') ? '_blank' : '_self'}
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-[#789A99] hover:bg-[#678a89] active:scale-95 transition-all"
+            className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-primary hover:bg-[#678a89] active:scale-95 transition-all"
           >
             <Navigation size={12} />
             Маршрут
@@ -92,13 +92,13 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
       {/* Address row + CTA */}
       <div className="px-4 py-3 flex items-start justify-between gap-3">
         <div className="flex items-start gap-2 min-w-0">
-          <MapPin size={14} className="mt-0.5 shrink-0 text-[#789A99]" />
+          <MapPin size={14} className="mt-0.5 shrink-0 text-primary" />
           <div className="min-w-0">
-            <p className="text-xs font-medium text-[#2C1A14] leading-snug line-clamp-2">
+            <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">
               {location}
             </p>
             {detailsLine && (
-              <p className="text-[11px] text-[#A8928D] mt-0.5">{detailsLine}</p>
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5">{detailsLine}</p>
             )}
           </div>
         </div>
@@ -108,7 +108,7 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
             href={mapUrl}
             target={mapUrl.startsWith('http') ? '_blank' : '_self'}
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-[#789A99] hover:bg-[#678a89] active:scale-95 transition-all"
+            className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-primary hover:bg-[#678a89] active:scale-95 transition-all"
           >
             <Navigation size={12} />
             Маршрут

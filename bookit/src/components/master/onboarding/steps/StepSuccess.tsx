@@ -43,7 +43,7 @@ function CopyButton({ text, size = 'sm' }: { text: string; size?: 'sm' | 'xs' })
     <button
       type="button"
       onClick={handleCopy}
-      className={`flex items-center font-semibold transition-all duration-200 cursor-pointer shrink-0 ${cls} ${done ? 'bg-[#5C9E7A]/15 text-[#5C9E7A]' : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20'}`}
+      className={`flex items-center font-semibold transition-all duration-200 cursor-pointer shrink-0 ${cls} ${done ? 'bg-success/15 text-success' : 'bg-primary/10 text-primary hover:bg-primary/20'} active:scale-95 transition-all`}
     >
       <AnimatePresence mode="wait" initial={false}>
         {done ? (
@@ -84,7 +84,7 @@ function TemplateCard({
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-[#2C1A14]">{label}</span>
+          <span className="text-xs font-bold text-foreground">{label}</span>
           <span
             className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
             style={{ background: '#789A99/15', color: '#789A99', backgroundColor: 'rgba(120,154,153,0.12)' }}
@@ -97,7 +97,7 @@ function TemplateCard({
 
       {/* Body */}
       <div className="px-4 pb-3">
-        <p className="text-[11px] text-[#6B5750] leading-relaxed whitespace-pre-line">
+        <p className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-line">
           {text}
         </p>
       </div>
@@ -186,14 +186,14 @@ export function StepSuccess({
             className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
             style={{ background: 'linear-gradient(135deg, #5C9E7A22 0%, #5C9E7A44 100%)', border: '1.5px solid #5C9E7A44' }}
           >
-            <Sparkles size={28} className="text-[#5C9E7A]" strokeWidth={1.8} />
+            <Sparkles size={28} className="text-success" strokeWidth={1.8} />
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.22 }}
-            className="font-display text-[1.65rem] font-semibold text-[#2C1A14] leading-tight mb-1.5"
+            className="font-display text-[1.65rem] font-semibold text-foreground leading-tight mb-1.5"
           >
             Твоя студія онлайн!
           </motion.h2>
@@ -201,7 +201,7 @@ export function StepSuccess({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.32 }}
-            className="text-sm text-[#A8928D]"
+            className="text-sm text-muted-foreground/60"
           >
             Клієнти вже можуть записуватись — ділись посиланням
           </motion.p>
@@ -215,13 +215,13 @@ export function StepSuccess({
           className="mx-6 mb-4 rounded-2xl px-4 py-3.5"
           style={{ background: 'rgba(255,255,255,0.80)', border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
         >
-          <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider mb-1.5">Твоя публічна сторінка</p>
-          <p className="text-sm font-mono font-semibold text-[#2C1A14] mb-3 truncate">{shortUrl}</p>
+          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1.5">Твоя публічна сторінка</p>
+          <p className="text-sm font-mono font-semibold text-foreground mb-3 truncate">{shortUrl}</p>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={copyLink}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${linkCopied ? 'bg-[#5C9E7A]/15 text-[#5C9E7A]' : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20'}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${linkCopied ? 'bg-success/15 text-success' : 'bg-primary/10 text-primary hover:bg-primary/20'} active:scale-95 transition-all`}
             >
               <AnimatePresence mode="wait" initial={false}>
                 {linkCopied
@@ -234,7 +234,7 @@ export function StepSuccess({
               href={`/${savedSlug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/60 text-[#6B5750] hover:bg-white/80 transition-all"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/60 text-muted-foreground hover:bg-white/80 transition-all"
             >
               <ExternalLink size={12} />
             </a>
@@ -246,7 +246,7 @@ export function StepSuccess({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.52 }}
-          className="px-6 text-[11px] font-semibold text-[#A8928D] uppercase tracking-wider mb-2.5"
+          className="px-6 text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2.5"
         >
           Готові шаблони для постів
         </motion.p>
@@ -303,7 +303,7 @@ export function StepSuccess({
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={onComplete}
-            className="w-full py-2.5 text-sm font-medium text-[#A8928D] hover:text-[#789A99] transition-colors cursor-pointer"
+            className="w-full py-2.5 text-sm font-medium text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer"
           >
             Перейти в Dashboard <ArrowRight size={13} className="inline" />
           </motion.button>

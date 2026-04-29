@@ -3,6 +3,8 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { sendPush } from '@/lib/push';
+import { sendTelegramMessage } from '@/lib/telegram';
+import { sendTurboSMS } from '@/lib/turbosms';
 
 import { revalidatePath } from 'next/cache';
 
@@ -267,8 +269,26 @@ async function notifyClientReviewNudge(bookingId: string, clientId: string): Pro
         subs.map(s => sendPush(s.subscription, {
           title: 'Як пройшов ваш візит? ⭐',
           body: 'Залишіть відгук — це допоможе майстру.',
-          url: `/my/bookings?bookingId=${bookingId}`,
+          url: `/my/bookings`,
         }))
+      );
+    }
+
+    // Telegram to client
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('telegram_chat_id')
+      .eq('id', clientId)
+      .single();
+
+    if (profile?.telegram_chat_id) {
+      const { sendTelegramMessage } = await import('@/lib/telegram');
+      const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua';
+      const replyMarkup = { inline_keyboard: [[{ text: 'Залишити відгук', url: `${SITE_URL}/my/bookings` }]] };
+      await sendTelegramMessage(
+        profile.telegram_chat_id, 
+        `<b>Як пройшов ваш візит? ⭐</b>\n\nЗалишіть відгук — це займе лише хвилину і дуже допоможе майстру.`, 
+        replyMarkup
       );
     }
   } catch (err) {
@@ -390,6 +410,17 @@ export async function notifyClientOnStatusChange(
       return;
     }
 
+    // ── Спроба 0: In-App Notification ────────────────────────────────────
+    if (booking.client_id) {
+      await admin.from('notifications').insert({
+        recipient_id: booking.client_id,
+        title,
+        body,
+        type: status === 'confirmed' ? 'new_booking' : 'booking_cancelled',
+        related_booking_id: bookingId,
+      });
+    }
+
     let pushSent = false;
 
     // ── Спроба 1: Web Push ───────────────────────────────────────────────
@@ -401,26 +432,53 @@ export async function notifyClientOnStatusChange(
 
       if (subs && subs.length > 0) {
         const results = await Promise.allSettled(
-          subs.map(sub => sendPush(sub.subscription, { title, body, url: '/my/bookings' }))
+          subs.map(sub => sendPush(sub.subscription as any, { title, body, url: '/my/bookings' }))
         );
-        pushSent = results.some(r => r.status === 'fulfilled' && r.value.ok);
+        console.log(`[notifyClientOnStatusChange] Push results for client ${booking.client_id}:`, results);
+        
+        let anyOk = false;
+        const expiredEndpoints: string[] = [];
+        results.forEach((r, i) => {
+          if (r.status === 'fulfilled') {
+            if (r.value.ok) anyOk = true;
+            if (r.value.gone) expiredEndpoints.push((subs[i].subscription as any).endpoint);
+          }
+        });
+        
+        if (expiredEndpoints.length > 0) {
+          admin.from('push_subscriptions').delete().in('endpoint', expiredEndpoints).then();
+        }
+        
+        pushSent = anyOk;
+      } else {
+        console.log(`[notifyClientOnStatusChange] No push subscriptions found for client ${booking.client_id}`);
+      }
+    } else {
+      console.log(`[notifyClientOnStatusChange] booking.client_id is null`);
+    }
+
+    if (pushSent) return;
+
+    // ── Спроба 2: Telegram ───────────────────────────────────────────────
+    let telegramSent = false;
+    if (booking.client_id) {
+      const { data: profile } = await admin
+        .from('profiles')
+        .select('telegram_chat_id')
+        .eq('id', booking.client_id)
+        .single();
+      
+      if (profile?.telegram_chat_id) {
+        const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua';
+        const replyMarkup = { inline_keyboard: [[{ text: 'Деталі запису', url: `${SITE_URL}/my/bookings` }]] };
+        telegramSent = await sendTelegramMessage(profile.telegram_chat_id, `<b>${title}</b>\n\n${body}`, replyMarkup);
       }
     }
 
-    // ── Спроба 2: TurboSMS fallback ──────────────────────────────────────
-    if (!pushSent) {
-      await fetch('https://api.turbosms.ua/message/send.json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.TURBOSMS_TOKEN}`,
-        },
-        body: JSON.stringify({
-          recipients: [booking.client_phone],
-          sms: { sender: 'BookIT', text: body },
-        }),
-      });
-    }
+    if (telegramSent) return;
+
+    // ── Спроба 3: TurboSMS fallback ──────────────────────────────────────
+    await sendTurboSMS(booking.client_phone, body);
   } catch (error) {
     console.error('[notifyClientOnStatusChange] Error:', error);
   }

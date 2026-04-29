@@ -27,7 +27,7 @@ export default async function DashboardPage() {
         <TodayScheduleWithHint />
         <WeeklyOverview />
         <QuickActionsWithHint />
-        <PushSubscribeCard />
+        <PushSubscribeCard role="master" />
         <ShareCardWithHint />
       </div>
       <DashboardDrawers />

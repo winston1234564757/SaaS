@@ -8,11 +8,11 @@ import type { UnifiedSale } from '@/lib/supabase/hooks/useOrders';
 import { cn } from '@/lib/utils/cn';
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: string }> = {
-  new:       { label: 'Нове',         color: 'text-[#D4935A]', bg: 'bg-[#D4935A]/10' },
-  confirmed: { label: 'Підтверджено', color: 'text-[#789A99]', bg: 'bg-[#789A99]/10' },
-  shipped:   { label: 'Відправлено',  color: 'text-[#5C9E7A]', bg: 'bg-[#5C9E7A]/10' },
-  completed: { label: 'Завершено',    color: 'text-[#5C9E7A]', bg: 'bg-[#5C9E7A]/10' },
-  cancelled: { label: 'Скасовано',    color: 'text-[#C05B5B]', bg: 'bg-[#C05B5B]/10' },
+  new:       { label: 'Нове',         color: 'text-warning', bg: 'bg-warning/10' },
+  confirmed: { label: 'Підтверджено', color: 'text-primary', bg: 'bg-primary/10' },
+  shipped:   { label: 'Відправлено',  color: 'text-success', bg: 'bg-success/10' },
+  completed: { label: 'Завершено',    color: 'text-success', bg: 'bg-success/10' },
+  cancelled: { label: 'Скасовано',    color: 'text-destructive', bg: 'bg-destructive/10' },
 };
 
 const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
@@ -56,18 +56,18 @@ export function OrderCard({ order, onStatusChange }: Props) {
         <div
           className={cn(
             'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
-            order.source === 'booking' ? 'bg-[#789A99]/15' : 'bg-[#D4935A]/12',
+            order.source === 'booking' ? 'bg-primary/15' : 'bg-warning/12',
           )}
         >
           {order.source === 'booking'
-            ? <CalendarDays size={16} className="text-[#789A99]" />
-            : <ShoppingBag  size={16} className="text-[#D4935A]" />
+            ? <CalendarDays size={16} className="text-primary" />
+            : <ShoppingBag  size={16} className="text-warning" />
           }
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-xs font-mono text-[#A8928D]">#{shortId}</span>
+            <span className="text-xs font-mono text-muted-foreground/60">#{shortId}</span>
             <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', cfg.color, cfg.bg)}>
               {cfg.label}
             </span>
@@ -75,18 +75,18 @@ export function OrderCard({ order, onStatusChange }: Props) {
             <span className={cn(
               'text-[10px] font-medium px-1.5 py-0.5 rounded-full',
               order.source === 'booking'
-                ? 'bg-[#789A99]/12 text-[#789A99]'
-                : 'bg-[#D4935A]/12 text-[#D4935A]',
+                ? 'bg-primary/12 text-primary'
+                : 'bg-warning/12 text-warning',
             )}>
               {order.source === 'booking' ? 'Бронювання' : 'Магазин'}
             </span>
             {order.source === 'shop' && order.delivery_type === 'nova_poshta' && (
-              <span className="text-[10px] text-[#6B5750] flex items-center gap-0.5">
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                 <Truck size={10} /> НП
               </span>
             )}
             {order.source === 'shop' && order.delivery_type === 'pickup' && (
-              <span className="text-[10px] text-[#6B5750] flex items-center gap-0.5">
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                 <MapPin size={10} /> Самовивіз
               </span>
             )}
@@ -94,23 +94,23 @@ export function OrderCard({ order, onStatusChange }: Props) {
 
           {/* Client label */}
           {clientLabel && (
-            <p className="text-xs text-[#6B5750] font-medium mb-0.5">{clientLabel}</p>
+            <p className="text-xs text-muted-foreground font-medium mb-0.5">{clientLabel}</p>
           )}
 
           {/* Items preview */}
-          <p className="text-xs text-[#6B5750] truncate">
+          <p className="text-xs text-muted-foreground truncate">
             {order.items.map(i => `${i.product_name} ×${i.qty}`).join(', ')}
           </p>
 
           <div className="flex items-center justify-between mt-2">
-            <span className="text-sm font-bold text-[#2C1A14]">{totalUah} ₴</span>
-            <span className="text-[10px] text-[#A8928D]">{dateStr}</span>
+            <span className="text-sm font-bold text-foreground">{totalUah} ₴</span>
+            <span className="text-[10px] text-muted-foreground/60">{dateStr}</span>
           </div>
         </div>
 
         <ChevronDown
           size={16}
-          className={cn('text-[#A8928D] shrink-0 mt-1 transition-transform', expanded && 'rotate-180')}
+          className={cn('text-muted-foreground/60 shrink-0 mt-1 transition-transform', expanded && 'rotate-180')}
         />
       </button>
 
@@ -124,21 +124,21 @@ export function OrderCard({ order, onStatusChange }: Props) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 border-t border-[#F5E8E3] pt-3 flex flex-col gap-3">
+            <div className="px-4 pb-4 border-t border-secondary pt-3 flex flex-col gap-3">
               {/* Items list */}
               <div className="flex flex-col gap-2">
                 {order.items.map(item => (
                   <div key={item.id} className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-[#F5E8E3] flex items-center justify-center shrink-0">
-                      <Package size={14} className="text-[#A8928D]" />
+                    <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                      <Package size={14} className="text-muted-foreground/60" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-[#2C1A14] truncate">{item.product_name}</p>
-                      <p className="text-[10px] text-[#A8928D]">
+                      <p className="text-xs font-medium text-foreground truncate">{item.product_name}</p>
+                      <p className="text-[10px] text-muted-foreground/60">
                         {item.qty} шт × {(item.price_kopecks / 100).toFixed(0)} ₴
                       </p>
                     </div>
-                    <p className="text-xs font-semibold text-[#2C1A14] shrink-0">
+                    <p className="text-xs font-semibold text-foreground shrink-0">
                       {((item.price_kopecks * item.qty) / 100).toFixed(0)} ₴
                     </p>
                   </div>
@@ -147,31 +147,31 @@ export function OrderCard({ order, onStatusChange }: Props) {
 
               {/* Delivery address (shop only) */}
               {order.delivery_address && (
-                <div className="flex items-start gap-2 px-3 py-2 rounded-xl bg-[#F5E8E3]">
-                  <Truck size={13} className="text-[#A8928D] mt-0.5 shrink-0" />
-                  <p className="text-xs text-[#6B5750]">{order.delivery_address}</p>
+                <div className="flex items-start gap-2 px-3 py-2 rounded-xl bg-secondary">
+                  <Truck size={13} className="text-muted-foreground/60 mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground">{order.delivery_address}</p>
                 </div>
               )}
 
               {/* Booking note */}
               {order.source === 'booking' && (
-                <p className="text-[10px] text-[#A8928D] px-1">
+                <p className="text-[10px] text-muted-foreground/60 px-1">
                   ℹ️ Статус замовлення синхронізований з бронюванням. Змінюйте в розділі «Записи».
                 </p>
               )}
 
               {/* Note */}
               {order.note && (
-                <p className="text-xs text-[#6B5750] italic px-1">"{order.note}"</p>
+                <p className="text-xs text-muted-foreground italic px-1">"{order.note}"</p>
               )}
 
               {/* Pickup Date */}
               {order.pickup_at && (
-                <div className="flex items-start gap-2 px-3 py-2 rounded-xl bg-[#789A99]/5 border border-[#789A99]/10">
-                  <CalendarDays size={13} className="text-[#789A99] mt-0.5 shrink-0" />
+                <div className="flex items-start gap-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
+                  <CalendarDays size={13} className="text-primary mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-[10px] font-bold text-[#789A99] uppercase tracking-wider">Дата самовивозу</p>
-                    <p className="text-xs text-[#2C1A14]">
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Дата самовивозу</p>
+                    <p className="text-xs text-foreground">
                       {new Date(order.pickup_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -190,8 +190,8 @@ export function OrderCard({ order, onStatusChange }: Props) {
                         className={cn(
                           'flex-1 py-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] border',
                           s === 'cancelled'
-                            ? 'border-[#C05B5B]/30 text-[#C05B5B] bg-[#C05B5B]/8 hover:bg-[#C05B5B]/12'
-                            : 'border-[#789A99]/30 text-[#789A99] bg-[#789A99]/8 hover:bg-[#789A99]/12',
+                            ? 'border-destructive/30 text-destructive bg-destructive/8 hover:bg-destructive/12'
+                            : 'border-primary/30 text-primary bg-primary/8 hover:bg-primary/12',
                         )}
                       >
                         {c.label}

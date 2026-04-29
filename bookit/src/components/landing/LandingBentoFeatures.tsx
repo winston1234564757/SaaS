@@ -22,9 +22,9 @@ export function LandingBentoFeatures() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="display-md text-[#2C1A14] text-balance max-w-2xl mx-auto">
+        <h2 className="display-md text-foreground text-balance max-w-2xl mx-auto">
           Інструменти, які раніше коштували мільйони.{' '}
-          <em className="not-italic text-[#789A99]">Тепер у вашому смартфоні.</em>
+          <em className="not-italic text-primary">Тепер у вашому смартфоні.</em>
         </h2>
       </motion.div>
 
@@ -40,18 +40,18 @@ export function LandingBentoFeatures() {
           }}
         >
           <div className="flex items-start justify-between">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#789A99] shadow-[0_4px_14px_rgba(120,154,153,0.4)]">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-primary shadow-[0_4px_14px_rgba(120,154,153,0.4)]">
               <Zap size={22} className="text-white" />
             </div>
-            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#789A99]/10 text-[#789A99]">
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/10 text-primary">
               Smart Slots
             </span>
           </div>
           <div>
-            <h3 className="heading-serif text-2xl text-[#2C1A14] mb-2 leading-snug text-balance">
+            <h3 className="heading-serif text-2xl text-foreground mb-2 leading-snug text-balance">
               Забудьте про "рваний" графік
             </h3>
-            <p className="text-[#6B5750] leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               Алгоритм не дозволить клієнту записатись так, щоб залишилось незручне вікно у 30 хвилин.
               Ваш день — ідеальний тетріс. Повна завантаженість без жодних зусиль з вашого боку.
             </p>
@@ -76,7 +76,7 @@ export function LandingBentoFeatures() {
                     : '1px dashed rgba(120,154,153,0.25)',
                 }}
               >
-                <p className="text-[10px] font-semibold text-[#789A99]">{slot.time}</p>
+                <p className="text-[10px] font-semibold text-primary">{slot.time}</p>
                 <p
                   className="text-[10px] mt-0.5 leading-tight"
                   style={{ color: slot.filled ? '#2C1A14' : '#A8928D' }}
@@ -103,24 +103,24 @@ export function LandingBentoFeatures() {
             >
               <TrendingDown size={22} className="text-white" />
             </div>
-            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#D4935A]/10 text-[#D4935A]">
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-warning/10 text-warning">
               Динамічні ціни
             </span>
           </div>
           <div>
-            <h3 className="heading-serif text-xl text-[#2C1A14] mb-2 leading-snug text-balance">
+            <h3 className="heading-serif text-xl text-foreground mb-2 leading-snug text-balance">
               Краще -15%, ніж безкоштовно
             </h3>
-            <p className="text-sm text-[#6B5750] leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Ранкові години порожні? Система автоматично знижує ціну на "мертві" слоти.
               Ви заробляєте — замість того, щоб просто чекати.
             </p>
           </div>
           {/* Price tag visual */}
           <div className="flex items-center gap-2 mt-auto">
-            <span className="heading-serif text-2xl text-[#D4935A]">425 ₴</span>
-            <span className="text-base text-[#A8928D] line-through">500 ₴</span>
-            <span className="text-xs font-semibold text-white bg-[#D4935A] px-2 py-0.5 rounded-lg ml-auto">
+            <span className="heading-serif text-2xl text-warning">425 ₴</span>
+            <span className="text-base text-muted-foreground/60 line-through">500 ₴</span>
+            <span className="text-xs font-semibold text-white bg-warning px-2 py-0.5 rounded-lg ml-auto">
               -15%
             </span>
           </div>
@@ -141,15 +141,15 @@ export function LandingBentoFeatures() {
             >
               <Gift size={22} className="text-white" />
             </div>
-            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#5C9E7A]/10 text-[#5C9E7A]">
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-success/10 text-success">
               Лояльність
             </span>
           </div>
           <div>
-            <h3 className="heading-serif text-xl text-[#2C1A14] mb-2 leading-snug text-balance">
+            <h3 className="heading-serif text-xl text-foreground mb-2 leading-snug text-balance">
               Знижки вбивають дохід. Кешбек — змушує повертатись.
             </h3>
-            <p className="text-sm text-[#6B5750] leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Налаштуйте бонуси один раз. Клієнти накопичують бали і повертаються знову — вже самі.
             </p>
           </div>
@@ -158,8 +158,8 @@ export function LandingBentoFeatures() {
             className="flex items-center justify-between px-3 py-2.5 rounded-2xl mt-auto"
             style={{ background: 'rgba(92,158,122,0.12)' }}
           >
-            <span className="text-sm text-[#5C9E7A] font-medium">🎁 Ваші бали</span>
-            <span className="heading-serif text-lg text-[#5C9E7A]">380 = 76 ₴</span>
+            <span className="text-sm text-success font-medium">🎁 Ваші бали</span>
+            <span className="heading-serif text-lg text-success">380 = 76 ₴</span>
           </div>
         </motion.div>
 
@@ -188,10 +188,10 @@ export function LandingBentoFeatures() {
             </div>
           </div>
           <div>
-            <h3 className="heading-serif text-2xl text-[#2C1A14] mb-2 leading-snug text-balance">
+            <h3 className="heading-serif text-2xl text-foreground mb-2 leading-snug text-balance">
               Палаючі вікна — нові клієнти за лічені хвилини
             </h3>
-            <p className="text-[#6B5750] leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               Хтось захворів і скасував візит на завтра? Один клік — і всі ваші клієнти
               отримують Push-сповіщення про "палаюче" вікно зі знижкою. Слот закривається за хвилини,
               а не залишається порожнім.
@@ -204,12 +204,12 @@ export function LandingBentoFeatures() {
           >
             <Flame size={18} style={{ color: '#C05B5B' }} className="flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#2C1A14]">Анна Коваленко · Манікюр</p>
-              <p className="text-xs text-[#6B5750]">Завтра 10:00 · Знижка 25%</p>
+              <p className="text-sm font-semibold text-foreground">Анна Коваленко · Манікюр</p>
+              <p className="text-xs text-muted-foreground">Завтра 10:00 · Знижка 25%</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-bold text-[#C05B5B]">375 ₴</p>
-              <p className="text-xs text-[#A8928D] line-through">500 ₴</p>
+              <p className="text-sm font-bold text-destructive">375 ₴</p>
+              <p className="text-xs text-muted-foreground/60 line-through">500 ₴</p>
             </div>
           </div>
         </motion.div>

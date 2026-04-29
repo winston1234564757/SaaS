@@ -49,12 +49,12 @@ export function LandingMagic() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <p className="text-sm font-semibold text-[#5C9E7A] uppercase tracking-widest mb-3">
+        <p className="text-sm font-semibold text-success uppercase tracking-widest mb-3">
           Рішення
         </p>
-        <h2 className="display-md text-[#2C1A14] text-balance">
+        <h2 className="display-md text-foreground text-balance">
           Bookit вирішує це{' '}
-          <em className="not-italic text-[#789A99]">автоматично.</em>{' '}
+          <em className="not-italic text-primary">автоматично.</em>{' '}
           Поки ви зайняті.
         </h2>
       </motion.div>
@@ -86,10 +86,10 @@ export function LandingMagic() {
                 </span>
               </div>
               <div>
-                <h3 className="heading-serif text-lg text-[#2C1A14] mb-2 leading-snug">
+                <h3 className="heading-serif text-lg text-foreground mb-2 leading-snug">
                   {s.title}
                 </h3>
-                <p className="text-sm text-[#6B5750] leading-relaxed">{s.description}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
               </div>
             </motion.div>
           );

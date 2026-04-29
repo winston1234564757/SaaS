@@ -10,6 +10,7 @@ import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
+import { parseError } from '@/lib/utils/errors';
 import {
   confirmBooking,
   cancelBooking,
@@ -59,7 +60,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
     startConfirm(async () => {
       const { error } = await confirmBooking(booking.id);
       if (error) {
-        showToast({ type: 'error', title: 'Помилка', message: error });
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
         showToast({ type: 'success', title: 'Запис підтверджено' });
         await invalidateAll();
@@ -70,7 +71,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
     startCancel(async () => {
       const { error } = await cancelBooking(booking.id);
       if (error) {
-        showToast({ type: 'error', title: 'Помилка', message: error });
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
         showToast({ type: 'success', title: 'Запис скасовано' });
         await invalidateAll();
@@ -81,7 +82,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
     startComplete(async () => {
       const { error } = await completeBooking(booking.id);
       if (error) {
-        showToast({ type: 'error', title: 'Помилка', message: error });
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
         showToast({ type: 'success', title: 'Запис завершено' });
         await invalidateAll();
@@ -92,7 +93,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
     startNoShow(async () => {
       const { error } = await updateBookingStatus(booking.id, 'no_show');
       if (error) {
-        showToast({ type: 'error', title: 'Помилка', message: error });
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
         showToast({ type: 'success', title: 'Статус оновлено' });
         await invalidateAll();
@@ -119,14 +120,14 @@ export function BookingCard({ booking, index }: BookingCardProps) {
           {/* Main clickable row */}
           <button
             onClick={openModal}
-            className="w-full flex items-center gap-3 px-3 py-3.5 text-left hover:bg-white/25 transition-colors rounded-xl"
+            className="w-full flex items-center gap-3 px-3 py-3.5 text-left hover:bg-white/25 transition-colors rounded-xl active:scale-95 transition-all"
           >
             {/* Time */}
             <div className="shrink-0 w-[52px] text-center">
-              <p className="text-[15px] font-bold tabular-nums text-[#2C1A14] leading-none">
+              <p className="text-[15px] font-bold tabular-nums text-foreground leading-none">
                 {booking.start_time}
               </p>
-              <p className="text-[11px] text-[#A8928D] mt-0.5 tabular-nums">
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5 tabular-nums">
                 {booking.end_time}
               </p>
             </div>
@@ -136,10 +137,10 @@ export function BookingCard({ booking, index }: BookingCardProps) {
 
             {/* Name + Service */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#2C1A14] truncate">
+              <p className="text-sm font-semibold text-foreground truncate">
                 {booking.client_name}
               </p>
-              <p className="text-xs text-[#A8928D] truncate mt-0.5">
+              <p className="text-xs text-muted-foreground/60 truncate mt-0.5">
                 {serviceNames}
               </p>
             </div>
@@ -152,7 +153,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
               >
                 {cfg.label}
               </span>
-              <p className="text-sm font-bold text-[#2C1A14] tabular-nums">
+              <p className="text-sm font-bold text-foreground tabular-nums">
                 {formatPrice(booking.total_price)}
               </p>
             </div>
@@ -175,7 +176,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
                 <button
                   onClick={handleConfirm}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#789A99]/12 text-[#789A99] hover:bg-[#789A99]/20 text-xs font-semibold transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-primary/12 text-primary hover:bg-primary/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingConfirm
                     ? <Loader2 size={11} className="animate-spin" />
@@ -186,7 +187,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
               <button
                 onClick={handleComplete}
                 disabled={isAnyPending}
-                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#5C9E7A]/12 text-[#5C9E7A] hover:bg-[#5C9E7A]/20 text-xs font-semibold transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-success/12 text-success hover:bg-success/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
               >
                 {isPendingComplete
                   ? <Loader2 size={11} className="animate-spin" />
@@ -197,7 +198,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
                 <button
                   onClick={handleNoShow}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#A8928D]/12 text-[#A8928D] hover:bg-[#A8928D]/20 text-xs font-semibold transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-muted-foreground/60/12 text-muted-foreground/60 hover:bg-muted-foreground/60/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingNoShow
                     ? <Loader2 size={11} className="animate-spin" />
@@ -208,7 +209,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
               <button
                 onClick={handleCancel}
                 disabled={isAnyPending}
-                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-[#C05B5B]/12 text-[#C05B5B] hover:bg-[#C05B5B]/20 text-xs font-semibold transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-destructive/12 text-destructive hover:bg-destructive/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
               >
                 {isPendingCancel
                   ? <Loader2 size={11} className="animate-spin" />

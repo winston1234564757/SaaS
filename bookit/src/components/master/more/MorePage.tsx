@@ -101,10 +101,10 @@ export function MorePage() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="heading-serif text-xl text-[#2C1A14]">Ще</h1>
-            <p className="text-sm text-[#A8928D] mt-0.5">Інструменти для зростання вашого бізнесу</p>
+            <h1 className="heading-serif text-xl text-foreground">Ще</h1>
+            <p className="text-sm text-muted-foreground/60 mt-0.5">Інструменти для зростання вашого бізнесу</p>
           </div>
-          <span className="text-xs font-semibold text-[#789A99] bg-[#789A99]/10 px-2.5 py-1 rounded-full">
+          <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
             {tierLabel}
           </span>
         </div>
@@ -136,7 +136,7 @@ export function MorePage() {
                       <Icon size={18} style={{ color: item.accent }} />
                     </div>
                     {item.soon && (
-                      <span className="text-[10px] font-bold text-[#789A99] bg-[#789A99]/12 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold text-primary bg-primary/12 px-1.5 py-0.5 rounded-full">
                         Скоро
                       </span>
                     )}
@@ -144,8 +144,8 @@ export function MorePage() {
 
                   {/* Text */}
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-[#2C1A14] mb-1">{item.label}</p>
-                    <p className="text-xs text-[#6B5750] leading-relaxed line-clamp-3">{item.desc}</p>
+                    <p className="text-sm font-bold text-foreground mb-1">{item.label}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{item.desc}</p>
                   </div>
 
                   {/* Arrow */}

@@ -9,7 +9,7 @@ export async function PublicMobileHeader() {
   const user = session?.user ?? null;
 
   return (
-    <header className="flex md:hidden fixed top-0 left-0 right-0 z-50 h-14 border-b border-white/30 bg-[#FFE8DC]/85 backdrop-blur-md">
+    <header className="flex md:hidden fixed top-0 left-0 right-0 z-50 h-14 border-b border-white/30 bg-background/85 backdrop-blur-md">
       <div className="w-full px-4 flex items-center justify-between">
 
         {/* Left: back button (client component) */}
@@ -18,8 +18,8 @@ export async function PublicMobileHeader() {
         </div>
 
         {/* Center: logo */}
-        <Link href="/" className="heading-serif text-lg text-[#2C1A14]">
-          Bookit<span className="text-[#789A99]">.</span>
+        <Link href="/" className="heading-serif text-lg text-foreground">
+          Bookit<span className="text-primary">.</span>
         </Link>
 
         {/* Right: auth icon */}
@@ -28,7 +28,7 @@ export async function PublicMobileHeader() {
             <Link
               href="/my/profile"
               aria-label="Профіль"
-              className="w-9 h-9 rounded-xl bg-[#789A99]/15 flex items-center justify-center text-[#789A99]"
+              className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center text-primary"
             >
               <User size={17} strokeWidth={2} />
             </Link>
@@ -36,7 +36,7 @@ export async function PublicMobileHeader() {
             <Link
               href="/login"
               aria-label="Увійти"
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-[#6B5750] hover:bg-black/5 transition-colors"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-black/5 transition-colors"
             >
               <LogIn size={17} strokeWidth={2} />
             </Link>

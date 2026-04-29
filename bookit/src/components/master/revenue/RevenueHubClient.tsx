@@ -37,12 +37,12 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
     <div className="flex flex-col gap-8">
       {/* Header Area */}
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-12 h-12 rounded-2xl bg-[#789A99]/10 flex items-center justify-center text-[#789A99]">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
           <Wallet size={24} />
         </div>
         <div>
-          <h1 className="display-md text-[#2C1A14]">Revenue Hub</h1>
-          <p className="text-sm text-[#6B5750]">Управління доходами та спецпропозиціями</p>
+          <h1 className="display-md text-foreground">Revenue Hub</h1>
+          <p className="text-sm text-muted-foreground">Управління доходами та спецпропозиціями</p>
         </div>
       </div>
 

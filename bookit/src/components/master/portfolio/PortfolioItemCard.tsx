@@ -14,9 +14,9 @@ export function PortfolioItemCard({ item, onClick }: Props) {
   const coverPhoto = item.photos[0];
 
   const consentChip = item.consent_status === 'pending'
-    ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#D4935A]/15 text-[#D4935A]">Очікує</span>
+    ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-warning/15 text-warning">Очікує</span>
     : item.consent_status === 'approved'
-      ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#5C9E7A]/15 text-[#5C9E7A]">Підтв.</span>
+      ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-success/15 text-success">Підтв.</span>
       : null;
 
   return (
@@ -26,7 +26,7 @@ export function PortfolioItemCard({ item, onClick }: Props) {
       style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
     >
       {/* Cover */}
-      <div className="relative w-full aspect-[4/3] bg-[#F5E8E3]">
+      <div className="relative w-full aspect-[4/3] bg-secondary">
         {coverPhoto ? (
           <Image src={coverPhoto.url} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, 33vw" />
         ) : (
@@ -46,7 +46,7 @@ export function PortfolioItemCard({ item, onClick }: Props) {
         {/* Visibility badge */}
         <span className={cn(
           'absolute top-2 left-2 w-6 h-6 rounded-lg flex items-center justify-center',
-          item.is_published ? 'bg-[#5C9E7A]/20 text-[#5C9E7A]' : 'bg-black/30 text-white'
+          item.is_published ? 'bg-success/20 text-success' : 'bg-black/30 text-white'
         )}>
           {item.is_published ? <Eye size={12} /> : <EyeOff size={12} />}
         </span>
@@ -54,21 +54,21 @@ export function PortfolioItemCard({ item, onClick }: Props) {
 
       {/* Info */}
       <div className="p-3 space-y-1.5">
-        <p className="text-sm font-semibold text-[#2C1A14] leading-snug line-clamp-2">{item.title}</p>
+        <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{item.title}</p>
 
         <div className="flex flex-wrap gap-1.5 items-center">
           {item.service_name && (
-            <span className="flex items-center gap-1 text-[10px] font-medium text-[#6B5750] bg-[#F5E8E3] rounded-full px-2 py-0.5">
+            <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
               <Scissors size={9} /> {item.service_name}
             </span>
           )}
           {item.review_ids.length > 0 && (
-            <span className="flex items-center gap-1 text-[10px] font-medium text-[#6B5750] bg-[#F5E8E3] rounded-full px-2 py-0.5">
+            <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
               <Star size={9} /> {item.review_ids.length}
             </span>
           )}
           {item.tagged_client_id && (
-            <span className="flex items-center gap-1 text-[10px] font-medium text-[#6B5750] bg-[#F5E8E3] rounded-full px-2 py-0.5">
+            <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
               <User size={9} /> {consentChip}
             </span>
           )}

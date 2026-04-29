@@ -29,7 +29,7 @@ const BENEFITS = [
   { icon: Gift,         text: 'Бонуси та програми лояльності' },
 ];
 
-const inputCls = 'w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all';
+const inputCls = 'w-full h-12 px-4 rounded-xl bg-white/75 border border-white/80 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all';
 
 type Mode = 'main' | 'email';
 
@@ -96,15 +96,15 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
       >
         <div className="text-5xl">📬</div>
         <div>
-          <p className="text-base font-semibold text-[#2C1A14]">Перевір пошту</p>
-          <p className="text-sm text-[#6B5750] mt-1 leading-relaxed max-w-xs">
+          <p className="text-base font-semibold text-foreground">Перевір пошту</p>
+          <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-xs">
             Надіслали листа на <strong>{email}</strong>.{' '}
             Натисни посилання — і всі записи з'являться у твоєму акаунті.
           </p>
         </div>
         <button
           onClick={onSkip}
-          className="text-sm text-[#A8928D] underline underline-offset-4 mt-1"
+          className="text-sm text-muted-foreground/60 underline underline-offset-4 mt-1 active:scale-95 transition-all"
         >
           Зрозуміло, закрити
         </button>
@@ -128,8 +128,8 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           {/* Header */}
           <div className="text-center">
             <div className="text-3xl mb-2">✨</div>
-            <p className="text-base font-bold text-[#2C1A14]">Збережи запис у свій акаунт</p>
-            <p className="text-sm text-[#6B5750] mt-1">
+            <p className="text-base font-bold text-foreground">Збережи запис у свій акаунт</p>
+            <p className="text-sm text-muted-foreground mt-1">
               Реєстрація займе 10 секунд — і всі бонуси твої
             </p>
           </div>
@@ -144,10 +144,10 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
                 transition={{ delay: i * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/50 border border-white/70"
               >
-                <div className="w-8 h-8 rounded-xl bg-[#789A99]/12 flex items-center justify-center flex-shrink-0">
-                  <Icon size={16} className="text-[#789A99]" />
+                <div className="w-8 h-8 rounded-xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+                  <Icon size={16} className="text-primary" />
                 </div>
-                <span className="text-sm text-[#2C1A14] font-medium">{text}</span>
+                <span className="text-sm text-foreground font-medium">{text}</span>
               </motion.div>
             ))}
           </div>
@@ -156,7 +156,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           <button
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-white/80 bg-white/80 hover:bg-white backdrop-blur-sm transition-colors text-sm font-semibold text-[#2C1A14] disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-white/80 bg-white/80 hover:bg-white backdrop-blur-sm transition-colors text-sm font-semibold text-foreground disabled:opacity-50 active:scale-95 transition-all"
           >
             <GoogleIcon />
             Продовжити з Google
@@ -164,16 +164,16 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
 
           {/* Divider */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#E8D5CF]" />
-            <span className="text-xs text-[#A8928D]">або</span>
-            <div className="flex-1 h-px bg-[#E8D5CF]" />
+            <div className="flex-1 h-px bg-secondary/80" />
+            <span className="text-xs text-muted-foreground/60">або</span>
+            <div className="flex-1 h-px bg-secondary/80" />
           </div>
 
           {/* Email option */}
           <button
             onClick={() => setMode('email')}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 h-12 rounded-xl bg-[#789A99] hover:bg-[#6B8C8B] text-white text-sm font-semibold transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 h-12 rounded-xl bg-primary hover:bg-[#6B8C8B] text-white text-sm font-semibold transition-colors disabled:opacity-50"
           >
             <Mail size={15} />
             Зареєструватись з Email
@@ -182,7 +182,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           {/* Skip */}
           <button
             onClick={onSkip}
-            className="text-sm text-[#A8928D] text-center py-1 hover:text-[#6B5750] transition-colors"
+            className="text-sm text-muted-foreground/60 text-center py-1 hover:text-muted-foreground transition-colors active:scale-95 transition-all"
           >
             Пізніше
           </button>
@@ -202,21 +202,21 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           {/* Back */}
           <button
             onClick={() => { setMode('main'); setError(''); }}
-            className="flex items-center gap-1.5 text-sm text-[#6B5750] w-fit"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground w-fit"
           >
             <ChevronLeft size={15} />
             Назад
           </button>
 
           <div>
-            <p className="text-base font-bold text-[#2C1A14]">Реєстрація</p>
-            <p className="text-sm text-[#A8928D] mt-0.5">Безкоштовно, без зайвого</p>
+            <p className="text-base font-bold text-foreground">Реєстрація</p>
+            <p className="text-sm text-muted-foreground/60 mt-0.5">Безкоштовно, без зайвого</p>
           </div>
 
           {/* Inputs */}
           <div className="flex flex-col gap-3">
             <div className="relative">
-              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D]" />
+              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
               <input
                 type="text"
                 placeholder="Твоє ім'я"
@@ -226,7 +226,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
               />
             </div>
             <div className="relative">
-              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D]" />
+              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
               <input
                 type="email"
                 placeholder="Email"
@@ -236,7 +236,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
               />
             </div>
             <div className="relative">
-              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D]" />
+              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
               <input
                 type="password"
                 placeholder="Пароль (мін. 6 символів)"
@@ -248,13 +248,13 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           </div>
 
           {error && (
-            <p className="text-xs text-[#C05B5B] px-1">{error}</p>
+            <p className="text-xs text-destructive px-1">{error}</p>
           )}
 
           <button
             onClick={handleEmailSignup}
             disabled={loading || !name.trim() || !email.trim() || password.length < 6}
-            className="w-full h-12 rounded-xl bg-[#789A99] hover:bg-[#6B8C8B] text-white text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full h-12 rounded-xl bg-primary hover:bg-[#6B8C8B] text-white text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 transition-all"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -263,7 +263,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
             )}
           </button>
 
-          <button onClick={onSkip} className="text-sm text-[#A8928D] text-center">
+          <button onClick={onSkip} className="text-sm text-muted-foreground/60 text-center active:scale-95 transition-all">
             Пізніше
           </button>
         </motion.div>

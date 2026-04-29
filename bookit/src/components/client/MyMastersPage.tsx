@@ -32,8 +32,8 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Мої майстри</h1>
-        <p className="text-sm text-[#A8928D]">
+        <h1 className="heading-serif text-xl text-foreground mb-0.5">Мої майстри</h1>
+        <p className="text-sm text-muted-foreground/60">
           {masters.length > 0
             ? `${masters.length} ${pluralMasters(masters.length)}`
             : 'Ще немає майстрів'}
@@ -49,15 +49,15 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
           className="bento-card p-8 text-center"
         >
           <p className="text-4xl mb-3">🌸</p>
-          <p className="text-sm font-medium text-[#2C1A14] mb-1">
+          <p className="text-sm font-medium text-foreground mb-1">
             Ти ще не записувалась до жодного майстра
           </p>
-          <p className="text-xs text-[#A8928D] mb-5">
+          <p className="text-xs text-muted-foreground/60 mb-5">
             Знайди свого ідеального майстра та запишись онлайн
           </p>
           <Link
             href="/explore"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#5C7E7D] transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
           >
             Знайти майстра
           </Link>
@@ -72,7 +72,7 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
           ))}
           <Link
             href="/explore"
-            className="w-full flex items-center justify-center gap-2 py-3.5 mt-2 rounded-2xl bg-[#F5E8E3]/50 text-[#6B5750] font-semibold hover:bg-[#F5E8E3] active:scale-[0.98] transition-all border border-[#F5E8E3] text-sm"
+            className="w-full flex items-center justify-center gap-2 py-3.5 mt-2 rounded-2xl bg-secondary/50 text-muted-foreground font-semibold hover:bg-secondary active:scale-[0.98] transition-all border border-secondary text-sm"
           >
             <Search size={15} />
             Знайти нових майстрів
@@ -102,22 +102,22 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-[#2C1A14] truncate">{master.name}</p>
+          <p className="text-sm font-bold text-foreground truncate">{master.name}</p>
 
           {master.categories.length > 0 && (
-            <p className="text-xs text-[#A8928D] mt-0.5 truncate">
+            <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">
               {master.categories.join(' · ')}
             </p>
           )}
 
           {master.city && (
             <div className="flex items-center gap-1 mt-0.5">
-              <MapPin size={11} className="text-[#A8928D] flex-shrink-0" />
-              <span className="text-xs text-[#A8928D] truncate">{master.city}</span>
+              <MapPin size={11} className="text-muted-foreground/60 flex-shrink-0" />
+              <span className="text-xs text-muted-foreground/60 truncate">{master.city}</span>
             </div>
           )}
 
-          <p className="text-xs text-[#6B5750] mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {master.visitCount} {pluralVisits(master.visitCount)} · Останній: {relativeDate(master.lastVisitDate)}
           </p>
         </div>
@@ -125,7 +125,7 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
         {/* Book button */}
         <Link
           href={`/${master.slug}`}
-          className="flex-shrink-0 px-3 py-2 rounded-2xl bg-[#789A99] text-white text-xs font-semibold hover:bg-[#5C7E7D] transition-colors"
+          className="flex-shrink-0 px-3 py-2 rounded-2xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
         >
           Записатись
         </Link>

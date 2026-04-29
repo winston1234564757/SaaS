@@ -1,6 +1,28 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--text-primary);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--text-primary);
+  --color-muted: var(--background-deep);
+  --color-muted-foreground: var(--text-tertiary);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: #ffffff;
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-border: var(--border);
+  --color-input: rgba(255, 255, 255, 0.80);
+  
+  --radius-xl: var(--card-radius);
+  --radius-lg: var(--button-radius);
+  --radius-md: var(--input-radius);
+}
+
 :root {
   /* Brand */
   --accent: #789A99;
@@ -251,4 +273,50 @@ body {
 
 .peach-gradient {
   background: linear-gradient(135deg, #FFD2C2 0%, #F5C4B2 100%);
+}
+
+/* ─── Global Form Controls Standardization ─── */
+@layer base {
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), textarea, select) {
+    background-color: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    color: var(--text-primary) !important;
+    transition: all 0.2s ease !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus, textarea:focus, select:focus) {
+    outline: none !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(120, 154, 153, 0.2), inset 0 2px 4px rgba(0,0,0,0.02) !important;
+    background-color: rgba(255, 255, 255, 0.65) !important;
+  }
+  
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):disabled, textarea:disabled, select:disabled) {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+  }
+
+  /* Помилки валідації (aria-invalid) */
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"])[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]) {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 2px rgba(192, 91, 91, 0.2), inset 0 2px 4px rgba(0,0,0,0.02) !important;
+    background-color: rgba(255, 235, 235, 0.45) !important;
+  }
+
+  :where(select) {
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B5750' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+    background-position: right 0.75rem center !important;
+    background-repeat: no-repeat !important;
+    background-size: 1.5em 1.5em !important;
+    padding-right: 2.5rem !important;
+  }
+
+  :where(textarea) {
+    resize: vertical !important;
+    min-height: 100px !important;
+  }
 }

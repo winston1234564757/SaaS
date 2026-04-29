@@ -52,7 +52,7 @@ const DaysToggle = React.memo(({ value, onChange, activeColor }: {
           'min-w-[36px] min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer',
           value.includes(d.key)
             ? 'text-white shadow-sm'
-            : 'bg-white/70 text-[#6B5750] border-white/80 hover:border-current/40 hover:bg-white/90'
+            : 'bg-white/70 text-muted-foreground border-white/80 hover:border-current/40 hover:bg-white/90'
         )}
         style={value.includes(d.key) ? { background: activeColor, borderColor: activeColor } : {}}
       >
@@ -270,23 +270,23 @@ const PricingHeader = React.memo(({ currentStep, closeTour, nextStep, enabledCou
     />
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-[#789A99]/14 flex items-center justify-center shrink-0">
-          <ArrowUpDown size={20} className="text-[#789A99]" />
+        <div className="w-11 h-11 rounded-2xl bg-primary/14 flex items-center justify-center shrink-0">
+          <ArrowUpDown size={20} className="text-primary" />
         </div>
         <div>
-          <h1 className="heading-serif text-xl text-[#2C1A14] leading-tight">Ціноутворення</h1>
-          <p className="text-sm text-[#A8928D]">Автоматичне коригування цін</p>
+          <h1 className="heading-serif text-xl text-foreground leading-tight">Ціноутворення</h1>
+          <p className="text-sm text-muted-foreground/60">Автоматичне коригування цін</p>
         </div>
       </div>
-      <span className={cn('text-xs font-bold px-2.5 py-1 rounded-full', enabledCount > 0 ? 'bg-[#789A99]/12 text-[#789A99]' : 'bg-[#F5E8E3] text-[#A8928D]')}>
+      <span className={cn('text-xs font-bold px-2.5 py-1 rounded-full', enabledCount > 0 ? 'bg-primary/12 text-primary' : 'bg-secondary text-muted-foreground/60')}>
         {enabledCount > 0 ? `${enabledCount} активних` : 'Вимкнено'}
       </span>
     </div>
     <div className="grid grid-cols-3 gap-2 mt-4">
       {INFO_CHIPS.map(({ icon: Icon, label, hint }) => (
         <div key={label} title={hint} className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl bg-white/50 border border-white/70 text-center">
-          <Icon size={14} className="text-[#789A99]" />
-          <span className="text-[10px] font-semibold text-[#6B5750]">{label}</span>
+          <Icon size={14} className="text-primary" />
+          <span className="text-[10px] font-semibold text-muted-foreground">{label}</span>
         </div>
       ))}
     </div>
@@ -304,7 +304,7 @@ const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled,
           <p className="text-sm font-semibold">{title}</p>
           {impact && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${color}18`, color }}>{impact}</span>}
         </div>
-        <p className="text-xs text-[#A8928D] truncate">{hint}</p>
+        <p className="text-xs text-muted-foreground/60 truncate">{hint}</p>
       </div>
       <div className="relative w-11 h-6 rounded-full transition-colors" style={{ background: isEnabled ? color : '#E8D5CF' }}>
         <motion.div animate={{ x: isEnabled ? 21 : 2 }} className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm" />
@@ -313,7 +313,7 @@ const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled,
     <AnimatePresence>
       {isEnabled && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-          <div className="mx-4 mb-4 p-4 rounded-2xl bg-white/40 border border-[#E8D5CF]">{children}</div>
+          <div className="mx-4 mb-4 p-4 rounded-2xl bg-white/40 border border-secondary/80">{children}</div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -322,12 +322,12 @@ const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled,
 
 const RuleInput = ({ label, value, onChange }: any) => (
   <div>
-    <p className="text-[10px] font-medium text-[#6B5750] mb-1">{label}</p>
+    <p className="text-[10px] font-medium text-muted-foreground mb-1">{label}</p>
     <input 
       type="number" 
       value={value} 
       onChange={e => onChange(Number(e.target.value))}
-      className="w-full px-3 py-2 rounded-xl border border-[#E8D5CF] bg-white/60 text-sm focus:outline-none focus:ring-2 focus:ring-[#789A99]/30 transition-all"
+      className="w-full px-3 py-2 rounded-xl border border-secondary/80 bg-white/60 text-sm focus:outline-none focus:ring-2 focus:ring-[#789A99]/30 transition-all"
     />
   </div>
 );
@@ -338,7 +338,7 @@ const SaveButton = ({ saving, saved, onSave, error }: any) => (
       whileTap={{ scale: 0.98 }}
       onClick={onSave}
       disabled={saving}
-      className="w-full flex items-center justify-center gap-2 bg-[#789A99] disabled:opacity-50 text-white font-bold rounded-2xl py-4 shadow-lg cursor-pointer transition-colors"
+      className="w-full flex items-center justify-center gap-2 bg-primary disabled:opacity-50 text-white font-bold rounded-2xl py-4 shadow-lg cursor-pointer transition-colors"
     >
       {saving ? 'Зберігаємо…' : saved ? <><CheckCircle2 size={16}/> Збережено!</> : 'Зберегти зміни'}
     </motion.button>

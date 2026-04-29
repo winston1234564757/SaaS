@@ -29,7 +29,7 @@
 | `/dashboard/studio` | Studio-режим: запрошення майстрів | `studio/page.tsx` | `studio/actions.ts` | `master/studio/StudioPage.tsx` |
 | `/dashboard/partners` | Партнери (studio join flow) | `partners/page.tsx` | — | `master/partners/PartnersPage.tsx` |
 | `/dashboard/revenue` | Revenue Hub | `revenue/page.tsx` | — | `master/revenue/RevenuePage.tsx` |
-| `/dashboard/marketing` | SMM Hub: Story Generator | `marketing/page.tsx` | — | `master/marketing/StoryGenerator.tsx` |
+| `/dashboard/marketing` | Marketing Hub: Story Generator + Broadcast розсилки (in-app/Push/Telegram/SMS) | `marketing/page.tsx` | `marketing/actions.ts` | `master/marketing/StoryGenerator.tsx`, `BroadcastEditor.tsx`, `BroadcastDetailSheet.tsx`, `BroadcastHistory.tsx` |
 | `/dashboard/growth` | Growth tools | `growth/page.tsx` | — | `master/growth/GrowthPage.tsx` |
 | `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (drag-reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemEditor.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` |
 | `/dashboard/products` | Товари: CRUD, стоки, замовлення | `products/page.tsx` | `products/actions.ts` | `master/products/ProductsPage.tsx` |
@@ -58,7 +58,12 @@
 - Кроки: послуги → товари → дата → слот → підтвердження → SMS OTP (guest)
 - Server Action: `src/lib/actions/createBooking.ts`
 - Ціноутворення: `src/lib/actions/computeBookingPrice.ts`
-- Auth після букінгу: `src/components/public/PostBookingAuth.tsx`
+- Auth після букінгу: `src/components/public/PostBookingAuth.tsx` — отримує `masterId`, `masterC2cEnabled`, `masterC2cDiscountPct`; динамічно фетчить `loyalty_programs` для майстра (Supabase browser client, RLS публічний SELECT); рендерить loyalty card / C2C teaser / BookIT fallback
+- Phone discount lookup: `getActivePhoneDiscount` (debounced, 400ms) → показується в ClientDetails до підтвердження
+
+### Short Link Redirect
+- Route: `src/app/r/[code]/route.ts` — redirect + click tracking (`broadcast_links.clicks++`)
+- Формат: `bookit.com.ua/r/[6-char-code]` → `target_url` (з `?serviceId=` для pre-selection)
 
 ### Booking URL (Studio path)
 - Route: `src/app/studio/[slug]/page.tsx` — окрема точка входу для Studio-сторінки
@@ -134,6 +139,7 @@
 | `useFlashDeals.ts` | — | Flash-акції |
 | `useReviews.ts` | — | Відгуки |
 | `usePortfolioItems.ts` | 2 хв | Portfolio items майстра (з photos + review_ids) |
+| `useBroadcasts.ts` | — | Broadcasts list, preview recipients, clients picker, delivery results |
 | `useTimeOff.ts` | — | Відпустки / вихідні |
 | `useVacation.ts` | — | Schedule exceptions |
 | `useWizardSchedule.ts` | — | 30-денний розклад для BookingWizard |
@@ -155,12 +161,21 @@
 - `src/lib/actions/computeBookingPrice.ts` — фінальний розрахунок ціни бронювання
 - `src/lib/actions/createBooking.ts` — повна логіка створення запису (26KB)
 
-### Notifications
-- `src/lib/notifications.ts` — orchestrator: `notifyNewBooking`, `notifyClientReviewNudge`, `notifyClientPortfolioConsent` (in-app + Telegram + SMS cascade)
-- `src/lib/push.ts` — `broadcastPush(subscriptions[], payload)` — VAPID Web Push
-- `src/lib/telegram.ts` — `sendTelegramMessage`, `buildBookingMessage`, `escHtml`
-- `src/lib/turbosms.ts` — SMS fallback (TurboSMS API)
-- In-app: DB-тригер при INSERT/UPDATE `bookings` → INSERT `notifications`
+### Notifications (Deep Linked)
+- Всі канали підтримують глибокі посилання (Deep Linking) на конкретні елементи системи.
+- `src/lib/notifications.ts` — orchestrator:
+  - `notifyMasterNewBooking` — Push (з deep link) → Telegram (з Inline кнопкою) → SMS
+  - `notifyClientBroadcast` — in-app + Push + Telegram + SMS
+  - `notifyClientPortfolioConsent` — in-app + Push + Telegram (з кнопками) + SMS
+- Фоновий Cron: `/api/cron/check-uncompleted` та `/api/cron/rebooking` надсилають Telegram з Inline кнопками.
+- `src/lib/push.ts` — `sendPush`, `broadcastPush` (з підтримкою `url` payload).
+- `src/lib/telegram.ts` — `sendTelegramMessage` (підтримує `replyMarkup` для кнопок).
+- `src/lib/turbosms.ts` — SMS fallback (TurboSMS API).
+- In-app:
+  - `notifications` таблиця має поле `related_booking_id`.
+  - Клієнтські та майстерські In-App сповіщення (Toast / Bell) клікабельні та ведуть на конкретний запис чи відгук.
+  - Наповнюється як DB-тригерами (new_booking, booking_cancelled), так і вручну (review, broadcast).
+- `notifications.type` values: `new_booking`, `booking_cancelled`, `new_review`, `unhandled_booking`, `portfolio_consent_request`, `broadcast`, `rebooking_reminder`
 
 ### Billing (`src/lib/billing/`)
 | Файл | Відповідальність |
@@ -186,6 +201,7 @@
 | `slug.ts` | slug генерація |
 | `now.ts` | `getNow()` — debug clock override через cookie |
 | `cn.ts` | `clsx` + `tailwind-merge` |
+| `broadcastUtils.ts` | `matchesTagFilters`, `personalizeMessage`, `buildTargetUrl` (`?serviceId=`), `generateShortCode` |
 
 ### Validations
 - `src/lib/validations/booking.ts` — Zod schema для BookingWizard
@@ -253,6 +269,10 @@
 | `master_alliances` | B2B граф: хто кого запросив (незмінний) |
 | `master_referrals` | Білінговий трекер реферала (`status`, `is_first_payment_made`) |
 | `waitlists` | Листи очікування на слот |
+| `broadcasts` | Broadcast-кампанія: `master_id`, `message`, `discount_percent`, `target_tags[]`, `service_id`, `product_id`, `channels[]`, `status` |
+| `broadcast_recipients` | Per-recipient трекінг: `broadcast_id`, `client_id`, `phone`, `push_sent`, `telegram_sent`, `sms_sent`, `clicked_at`, `booked_at`, `discount_used_at` |
+| `broadcast_links` | Short links: `code` (6-char), `target_url`, `recipient_id`, `clicks` → `bookit.com.ua/r/[code]` |
+| `phone_discounts` | Phone-bound одноразова знижка: `phone`, `master_id`, `discount_percent`, `service_id` (nullable), `broadcast_id`, `expires_at`, `used_at` |
 
 ### Payments
 | Таблиця | Призначення |
@@ -305,7 +325,7 @@
 | `get_retention_status` | Retention dashboard — міграція 076 |
 
 ### Міграції
-115 міграцій (001–115). Актуальна схема: міграція **115** (`recreate_portfolios_bucket`).
+119+ міграцій. Актуальна схема: міграції **116–119** (broadcasts, broadcast_recipients, broadcast_links, phone_discounts).
 Місце: `supabase/migrations/*.sql`
 
 Останні ключові:

@@ -81,17 +81,16 @@ export async function GET(req: Request) {
       // ── Канал 1: Telegram ───────────────────────────────────────────────────
       const clientTg = clientTgMap.get(clientId);
       if (clientTg) {
-        try {
-          await sendTelegramMessage(
-            clientTg,
-            `💅 <b>${escHtml(masterName)}</b> нагадує про ваш наступний візит!\n\n` +
-            `Запишіться зараз, щоб обрати найкращий час.\n\n` +
-            `<a href="${escHtml(bookingUrl)}">Записатися →</a>`,
-          );
+        const replyMarkup = { inline_keyboard: [[{ text: 'Записатися', url: bookingUrl }]] };
+        const sent = await sendTelegramMessage(
+          clientTg,
+          `💅 <b>${escHtml(masterName)}</b> нагадує про ваш наступний візит!\n\n` +
+          `Запишіться зараз, щоб обрати найкращий час.`,
+          replyMarkup
+        );
+        if (sent) {
           telegramSent++;
           return; // Telegram доставлено — SMS не потрібен
-        } catch (e) {
-          console.warn('[cron/rebooking] Telegram error for client', clientId, e);
         }
       }
 

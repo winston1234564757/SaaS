@@ -54,15 +54,15 @@ function QuietHoursWidget({ insight }: { insight: QuietHoursInsight }) {
         className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
         style={{ background: 'rgba(120,154,153,0.12)' }}
       >
-        <Moon size={18} className="text-[#789A99]" />
+        <Moon size={18} className="text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-[#2C1A14] mb-0.5">Тихий час приносить клієнтів</p>
-        <p className="text-xs text-[#6B5750] leading-relaxed">
+        <p className="text-xs font-bold text-foreground mb-0.5">Тихий час приносить клієнтів</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Завдяки знижкам у тихий час ви отримали{' '}
-          <span className="font-bold text-[#2C1A14]">{insight.count} {label}</span>{' '}
+          <span className="font-bold text-foreground">{insight.count} {label}</span>{' '}
           на суму{' '}
-          <span className="font-bold text-[#789A99]">
+          <span className="font-bold text-primary">
             {insight.totalUah.toLocaleString('uk-UA')} ₴
           </span>
         </p>
@@ -111,8 +111,8 @@ function TrialActiveView({
                 <Sparkles size={16} style={{ color: '#5C9E7A' }} />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#2C1A14] leading-tight">Пробний режим</p>
-                <p className="text-[11px] text-[#A8928D]">Динамічне ціноутворення</p>
+                <p className="text-sm font-bold text-foreground leading-tight">Пробний режим</p>
+                <p className="text-[11px] text-muted-foreground/60">Динамічне ціноутворення</p>
               </div>
             </div>
             <span
@@ -129,26 +129,26 @@ function TrialActiveView({
               className="rounded-xl px-3 py-2.5"
               style={{ background: 'rgba(255,255,255,0.55)' }}
             >
-              <p className="text-[10px] text-[#A8928D] mb-0.5 font-medium uppercase tracking-wide">
+              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">
                 Зароблено
               </p>
-              <p className="text-base font-bold text-[#2C1A14]">{earnedUah} ₴</p>
+              <p className="text-base font-bold text-foreground">{earnedUah} ₴</p>
             </div>
             <div
               className="rounded-xl px-3 py-2.5"
               style={{ background: 'rgba(255,255,255,0.55)' }}
             >
-              <p className="text-[10px] text-[#A8928D] mb-0.5 font-medium uppercase tracking-wide">
+              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">
                 Ліміт
               </p>
-              <p className="text-base font-bold text-[#6B5750]">{limitUah} ₴</p>
+              <p className="text-base font-bold text-muted-foreground">{limitUah} ₴</p>
             </div>
           </div>
 
           {/* Прогрес-бар */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] text-[#6B5750]">Використано ліміту</span>
+              <span className="text-[11px] text-muted-foreground">Використано ліміту</span>
               <span className="text-[11px] font-bold" style={{ color }}>{pct}%</span>
             </div>
             <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.6)' }}>
@@ -167,13 +167,13 @@ function TrialActiveView({
 
         {/* Нижня зона */}
         <div className="px-5 pb-4 pt-3.5">
-          <p className="text-xs text-[#6B5750] leading-relaxed mb-3">
-            Фіча працює <strong className="text-[#2C1A14]">безкоштовно</strong>.
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            Фіча працює <strong className="text-foreground">безкоштовно</strong>.
             Коли ліміт вичерпається — клієнти побачать базові ціни.
           </p>
           <button
             onClick={onUpgrade}
-            className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors active:scale-95 transition-all"
             style={{
               color: '#789A99',
               background: 'rgba(120,154,153,0.08)',
@@ -224,8 +224,8 @@ function TrialExhaustedView({
             <Lock size={22} style={{ color: '#C05B5B' }} />
           </div>
           <div>
-            <h2 className="heading-serif text-lg text-[#2C1A14] mb-1">Пробний ліміт вичерпано</h2>
-            <p className="text-sm text-[#6B5750] text-balance leading-relaxed max-w-xs mx-auto">
+            <h2 className="heading-serif text-lg text-foreground mb-1">Пробний ліміт вичерпано</h2>
+            <p className="text-sm text-muted-foreground text-balance leading-relaxed max-w-xs mx-auto">
               Ви використали всі <strong>{limitUah} ₴</strong> екстра-прибутку.
               Фіча тимчасово вимкнена — клієнти бачать базові ціни.
             </p>
@@ -236,7 +236,7 @@ function TrialExhaustedView({
             <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(192,91,91,0.12)' }}>
               <div className="h-full w-full rounded-full" style={{ background: '#C05B5B' }} />
             </div>
-            <p className="text-[11px] text-[#A8928D] mt-1.5 text-center">
+            <p className="text-[11px] text-muted-foreground/60 mt-1.5 text-center">
               {kopToUah(trial.earned)} ₴ з {limitUah} ₴ — 100%
             </p>
           </div>
@@ -279,16 +279,16 @@ function ProGateView({ onUpgrade }: { onUpgrade: () => void }) {
         className="bento-card p-6 text-center flex flex-col items-center gap-3"
       >
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(120,154,153,0.15)' }}>
-          <TrendingUp size={26} className="text-[#789A99]" />
+          <TrendingUp size={26} className="text-primary" />
         </div>
         <div>
-          <h1 className="heading-serif text-xl text-[#2C1A14] mb-1">Динамічне ціноутворення</h1>
-          <p className="text-sm text-[#6B5750] text-balance leading-relaxed max-w-xs mx-auto">
+          <h1 className="heading-serif text-xl text-foreground mb-1">Динамічне ціноутворення</h1>
+          <p className="text-sm text-muted-foreground text-balance leading-relaxed max-w-xs mx-auto">
             Автоматично підвищуйте ціни в пікові години та давайте знижки в тихі —
             щоб завжди мати повний розклад.
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#789A99] bg-[#789A99]/10">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-primary bg-primary/10">
           <Zap size={12} />
           Доступно в тарифі Pro
         </span>
@@ -304,11 +304,11 @@ function ProGateView({ onUpgrade }: { onUpgrade: () => void }) {
             className="bento-card p-4 flex items-start gap-3 opacity-70"
           >
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(120,154,153,0.1)' }}>
-              <Icon size={16} className="text-[#789A99]" />
+              <Icon size={16} className="text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-[#2C1A14]">{label}</p>
-              <p className="text-xs text-[#A8928D] mt-0.5">{description}</p>
+              <p className="text-sm font-semibold text-foreground">{label}</p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">{description}</p>
             </div>
           </motion.div>
         ))}
@@ -319,7 +319,7 @@ function ProGateView({ onUpgrade }: { onUpgrade: () => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING, delay: 0.32 }}
         onClick={onUpgrade}
-        className="w-full h-13 rounded-2xl bg-[#789A99] text-white font-bold text-sm hover:bg-[#5C7E7D] transition-colors shadow-[0_4px_16px_rgba(120,154,153,0.35)] flex items-center justify-center gap-2"
+        className="w-full h-13 rounded-2xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors shadow-[0_4px_16px_rgba(120,154,153,0.35)] flex items-center justify-center gap-2"
       >
         <Zap size={16} />
         Розблокувати динамічне ціноутворення

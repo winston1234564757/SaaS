@@ -79,34 +79,34 @@ export function WelcomeHints() {
               <div className="flex items-start gap-3">
                 {/* Pulsing beacon */}
                 <div className="relative shrink-0 mt-0.5">
-                  <div className="w-11 h-11 rounded-2xl bg-[#789A99]/15 flex items-center justify-center text-xl">
+                  <div className="w-11 h-11 rounded-2xl bg-primary/15 flex items-center justify-center text-xl">
                     {hint.emoji}
                   </div>
                   <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#789A99] opacity-60" />
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#789A99]" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
                   </span>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <p className="text-[10px] font-semibold text-[#789A99] uppercase tracking-wide">
+                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wide">
                       {hint.badge}
                     </p>
                     <button
                       type="button"
                       onClick={dismiss}
-                      className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/60 border border-white/80 text-[#A8928D] hover:text-[#6B5750] transition-colors shrink-0"
+                      className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/60 border border-white/80 text-muted-foreground/60 hover:text-muted-foreground transition-colors shrink-0 active:scale-95 transition-all"
                     >
                       <X size={11} />
                     </button>
                   </div>
-                  <p className="text-sm font-semibold text-[#2C1A14] mb-1">{hint.title}</p>
-                  <p className="text-xs text-[#6B5750] leading-relaxed mb-3">{hint.text}</p>
+                  <p className="text-sm font-semibold text-foreground mb-1">{hint.title}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">{hint.text}</p>
                   <button
                     type="button"
                     onClick={dismiss}
-                    className="w-full py-2 rounded-xl bg-[#789A99] text-white text-xs font-semibold hover:bg-[#5C7E7D] transition-colors"
+                    className="w-full py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors active:scale-95 transition-all"
                   >
                     Зрозуміло
                   </button>

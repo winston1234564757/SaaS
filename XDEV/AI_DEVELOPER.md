@@ -1,4 +1,4 @@
-# CLAUDE.md — AI Development Constitution
+# AIDEVELOPER.md — AI Development Constitution
 
 > Конституція для AI-агентів, що працюють з кодовою базою BookIT.  
 > Порушення будь-якого правила = критична помилка.
@@ -167,6 +167,14 @@ Client → supabase.auth.verifyOtp({ email, token, type: 'magiclink' })
 
 ### Telegram
 - `escHtml()` на **всіх** user-supplied strings перед вставкою в HTML parse_mode.
+- Завжди використовуй Inline Buttons (`replyMarkup`) для Call-to-Action. Ніколи не залишай текстових посилань.
+
+### Notifications & Deep Linking
+Усі нотифікації (In-App, Web Push, Telegram) **ОБОВ'ЯЗКОВО** повинні підтримувати Deep Linking на конкретний об'єкт (картку запису, відгук, налаштування).
+- **Telegram**: завжди передавай `replyMarkup: { inline_keyboard: [[{text, url}]] }`.
+- **Push**: завжди передавай `url: '...'` в payload.
+- **In-app**: завжди зберігай `related_booking_id` або обробляй onClick.
+Система працює каскадно: `Push -> Telegram -> SMS`. Завжди перевіряй наявність `push_subscriptions` перед фоллбеком на Telegram.
 
 ---
 
@@ -205,12 +213,21 @@ const [templates, exceptions, timeOffs, bookings] = await Promise.all([...]);
 - Display/Headings: **Playfair Display** (Cyrillic subset) — `font-display`
 - CSS класи: `.display-xl`, `.display-lg`, `.display-md`, `.heading-serif`
 
-### UI Rules
+### UI Rules & Premium Standards
 - Card radius: 24px | Button radius: 16px | Input radius: 12px
 - `.bento-card` — backdrop-blur, Mica, border rgba(255,255,255,0.4), box-shadow
 - Emoji в desktop UI — **тільки якщо явно запросив користувач**
 - Mobile-first, touch targets мінімум 44×44px
 - `will-change: transform` для GPU-анімацій
+- УСІ кнопки та клікабельні елементи повинні мати тактильний відгук: `active:scale-95 transition-all`.
+- Модалки та Sheets ПОВИННІ використовувати Radix UI (Focus Trap, Esc closure).
+- Toasts завжди мають z-[100], а модалки z-50.
+
+### UX Copywriting & Forms (Tone of Voice)
+- Використовуй виключно терміни: `Майстер` (не спеціаліст/робітник), `Клієнт` (не юзер/покупець), `Бронювання/Запис`, `Підписка/Тариф` (не пакет).
+- ЗАБОРОНЕНО використовувати хардкод чи тернарні оператори для множини (напр. `count === 1 ? 'відгук' : 'відгуків'`). **ЗАВЖДИ** використовуй `import { pluralUk } from '@/lib/utils/pluralUk'`.
+- Усі системні/бекенд помилки (Zod, Network, Postgres) **ПОВИННІ** проходити через `parseError(err)` з `src/lib/utils/errors.ts` перед показом юзеру. НІЯКИХ "String must contain".
+- Форми ПОВИННІ використовувати атрибут `aria-invalid="true"` на інпутах при помилках валідації (викликає червоне світіння через глобальні стилі) та `aria-describedby` для читабельного повідомлення під полем. Ніколи не блокуй мовчки кнопку "Далі" без пояснень.
 
 ### Tailwind v4
 ```css

@@ -8,20 +8,32 @@ import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 
+interface MasterLoyaltyProgram {
+  id: string;
+  name: string;
+  targetVisits: number;
+  rewardValue: number;
+}
+
 interface Props {
   bookingId: string;
   /** Телефон клієнта у форматі 380XXXXXXXXX, вже введений під час бронювання */
   clientPhone?: string;
   onSkip: () => void;
+  masterId?: string;
+  masterC2cEnabled?: boolean;
+  masterC2cDiscountPct?: number | null;
 }
 
 type Step = 'choose' | 'phone' | 'otp';
 
-export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
+export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, masterC2cEnabled, masterC2cDiscountPct }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
   const [step, setStep] = useState<Step>('choose');
+  const [loyaltyPrograms, setLoyaltyPrograms] = useState<MasterLoyaltyProgram[]>([]);
+  const [loyaltyLoaded, setLoyaltyLoaded] = useState(false);
   // phone зберігається як 9 цифр без ведучого 0 (напр. 967953488)
   const [phone, setPhone] = useState<string>(() => {
     if (!clientPhone) return '';
@@ -38,6 +50,27 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => () => { if (cooldownRef.current) clearInterval(cooldownRef.current); }, []);
+
+  useEffect(() => {
+    if (!masterId) { setLoyaltyLoaded(true); return; }
+    supabase
+      .from('loyalty_programs')
+      .select('id, name, target_visits, reward_value')
+      .eq('master_id', masterId)
+      .eq('is_active', true)
+      .order('target_visits', { ascending: true })
+      .limit(3)
+      .then(({ data }: { data: { id: string; name: string; target_visits: number; reward_value: number }[] | null }) => {
+        if (data) setLoyaltyPrograms(data.map(p => ({
+          id: p.id,
+          name: p.name,
+          targetVisits: p.target_visits,
+          rewardValue: Number(p.reward_value),
+        })));
+        setLoyaltyLoaded(true);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [masterId]);
 
   function getCleanPhone() {
     return toFullPhone(phone);
@@ -188,21 +221,21 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
           >
             {/* ── Hero ──────────────────────────────────────────────────────── */}
             <div className="text-center mb-5">
-              <div className="inline-flex items-center gap-1.5 bg-[#789A99]/12 rounded-full px-3 py-1 mb-3">
-                <span className="text-[10px] font-semibold text-[#789A99] uppercase tracking-widest">
+              <div className="inline-flex items-center gap-1.5 bg-primary/12 rounded-full px-3 py-1 mb-3">
+                <span className="text-[10px] font-semibold text-primary uppercase tracking-widest">
                   Твій beauty-кабінет
                 </span>
               </div>
-              <h2 className="heading-serif text-xl text-[#2C1A14] leading-snug mb-1">
+              <h2 className="heading-serif text-xl text-foreground leading-snug mb-1">
                 Збережи запис —<br />керуй красою легко
               </h2>
-              <p className="text-xs text-[#A8928D] leading-relaxed">
+              <p className="text-xs text-muted-foreground/60 leading-relaxed">
                 Безкоштовно. Без спаму. Тільки твої записи.
               </p>
             </div>
 
             {/* ── Bento переваг ─────────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 gap-2 mb-5">
+            <div className="grid grid-cols-2 gap-2 mb-3">
               {[
                 {
                   icon: '📋',
@@ -234,79 +267,127 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
                   style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
                 >
                   <span className="text-xl leading-none mb-0.5">{icon}</span>
-                  <span className="text-xs font-semibold text-[#2C1A14]">{title}</span>
-                  <span className="text-[11px] text-[#A8928D] leading-tight">{desc}</span>
+                  <span className="text-xs font-semibold text-foreground">{title}</span>
+                  <span className="text-[11px] text-muted-foreground/60 leading-tight">{desc}</span>
                 </motion.div>
               ))}
             </div>
 
-            {/* ── Лояльність ────────────────────────────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-2xl overflow-hidden mb-5"
-              style={{ background: 'linear-gradient(135deg, #789A99 0%, #5a7f7e 100%)', boxShadow: '0 4px 20px rgba(120,154,153,0.35)' }}
-            >
-              <div className="px-4 pt-4 pb-3">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-[10px] font-semibold text-white/60 uppercase tracking-widest mb-0.5">
-                      Програма лояльності
-                    </p>
-                    <p className="heading-serif text-base text-white leading-tight">
-                      Краса, що винагороджує
-                    </p>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-                    <span className="text-xl">💎</span>
-                  </div>
-                </div>
-
-                {/* Прогрес до першої нагороди */}
-                <div className="bg-white/10 rounded-xl p-3 mb-3">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[11px] text-white/80 font-medium">До першої знижки</span>
-                    <span className="text-[11px] text-white font-bold">1 / 5 візитів</span>
-                  </div>
-                  <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full" style={{ width: '20%' }} />
-                  </div>
-                  <p className="text-[10px] text-white/60 mt-1.5">Ще 4 візити — і отримаєш знижку 10%</p>
-                </div>
-
-                {/* Мілстоуни */}
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    { visits: 5, reward: '−10%' },
-                    { visits: 10, reward: '−15%' },
-                    { visits: 20, reward: 'VIP' },
-                  ].map(({ visits, reward }) => (
-                    <div
-                      key={visits}
-                      className="rounded-xl bg-white/10 px-2 py-2 text-center"
-                    >
-                      <p className="text-[10px] text-white/50 mb-0.5">{visits} візитів</p>
-                      <p className="text-xs font-bold text-white">{reward}</p>
+            {/* ── Лояльність / C2C / Fallback ───────────────────────────────── */}
+            {loyaltyLoaded && (
+              <>
+                {loyaltyPrograms.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="rounded-2xl overflow-hidden mb-3"
+                    style={{ background: 'linear-gradient(135deg, #789A99 0%, #5a7f7e 100%)', boxShadow: '0 4px 20px rgba(120,154,153,0.35)' }}
+                  >
+                    <div className="px-4 pt-4 pb-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-[10px] font-semibold text-white/60 uppercase tracking-widest mb-0.5">
+                            Програма лояльності
+                          </p>
+                          <p className="heading-serif text-base text-white leading-tight">
+                            {loyaltyPrograms[0].name}
+                          </p>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                          <span className="text-xl">💎</span>
+                        </div>
+                      </div>
+                      <div className={`grid gap-1.5 ${loyaltyPrograms.length === 1 ? 'grid-cols-1' : loyaltyPrograms.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                        {loyaltyPrograms.map(({ id, targetVisits, rewardValue }) => (
+                          <div key={id} className="rounded-xl bg-white/10 px-2 py-2 text-center">
+                            <p className="text-[10px] text-white/50 mb-0.5">{targetVisits} візитів</p>
+                            <p className="text-xs font-bold text-white">−{rewardValue}%</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="px-4 py-2.5 bg-black/10 flex items-center gap-1.5">
+                      <span className="text-[10px] text-white/60">🎁</span>
+                      <p className="text-[10px] text-white/70 leading-tight">
+                        Знижки нараховуються автоматично після підтверджених візитів
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
 
-              {/* Footer */}
-              <div className="px-4 py-2.5 bg-black/10 flex items-center gap-1.5">
-                <span className="text-[10px] text-white/60">🎁</span>
-                <p className="text-[10px] text-white/70 leading-tight">
-                  Бонуси нараховуються автоматично після кожного підтвердженого візиту
-                </p>
-              </div>
-            </motion.div>
+                {masterC2cEnabled && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: loyaltyPrograms.length > 0 ? 0.15 : 0.1 }}
+                    className="rounded-2xl mb-3 p-4 flex items-center gap-3"
+                    style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                      <span className="text-xl">🤝</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Запроси подругу</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+                        Вона отримає −{masterC2cDiscountPct ?? 10}% на перший візит, а ти накопиш бонус — після реєстрації нижче
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {loyaltyPrograms.length === 0 && !masterC2cEnabled && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="rounded-2xl overflow-hidden mb-3"
+                    style={{ background: 'linear-gradient(135deg, #789A99 0%, #5a7f7e 100%)', boxShadow: '0 4px 20px rgba(120,154,153,0.35)' }}
+                  >
+                    <div className="px-4 pt-4 pb-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-[10px] font-semibold text-white/60 uppercase tracking-widest mb-0.5">
+                            Твій beauty-простір
+                          </p>
+                          <p className="heading-serif text-base text-white leading-tight">
+                            Один акаунт — всі майстри
+                          </p>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                          <span className="text-xl">✨</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {[
+                          { icon: '📅', text: 'Всі записи в одному місці' },
+                          { icon: '⭐', text: 'Відгуки після кожного візиту' },
+                          { icon: '🔔', text: 'Push-нагадування за 24 год' },
+                          { icon: '🎁', text: 'Бонуси від улюблених майстрів' },
+                        ].map(({ icon, text }) => (
+                          <div key={text} className="rounded-xl bg-white/10 px-2.5 py-2 flex items-center gap-1.5">
+                            <span className="text-sm leading-none">{icon}</span>
+                            <p className="text-[10px] text-white/80 leading-tight">{text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="px-4 py-2.5 bg-black/10 flex items-center gap-1.5">
+                      <span className="text-[10px] text-white/60">🚀</span>
+                      <p className="text-[10px] text-white/70 leading-tight">
+                        Безкоштовно для клієнтів — завжди
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </>
+            )}
 
             {/* ── CTA ───────────────────────────────────────────────────────── */}
             <button
               type="button"
               onClick={handleGoogle}
-              className="flex items-center justify-center gap-2.5 w-full py-4 px-4 rounded-2xl bg-white text-[#2C1A14] text-sm font-semibold border border-[#E8D0C8] hover:border-[#D4B8AE] hover:shadow-lg active:scale-[0.98] transition-all shadow-md shadow-black/6 mb-3"
+              className="flex items-center justify-center gap-2.5 w-full py-4 px-4 rounded-2xl bg-white text-foreground text-sm font-semibold border border-[#E8D0C8] hover:border-[#D4B8AE] hover:shadow-lg active:scale-[0.98] transition-all shadow-md shadow-black/6 mb-3"
             >
               <GoogleIcon />
               Продовжити з Google
@@ -314,14 +395,14 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
 
             <div className="relative flex items-center gap-3 mb-3">
               <span className="flex-1 border-t border-[#EFE4DF]" />
-              <span className="text-[10px] text-[#A8928D] uppercase tracking-widest font-medium">або</span>
+              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium">або</span>
               <span className="flex-1 border-t border-[#EFE4DF]" />
             </div>
 
             <button
               type="button"
               onClick={() => setStep('phone')}
-              className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 mb-3"
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 mb-3"
             >
               📱 Підтвердити номер телефону
             </button>
@@ -329,7 +410,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
             <button
               type="button"
               onClick={onSkip}
-              className="text-xs text-[#A8928D] text-center py-1 hover:text-[#6B5750] transition-colors"
+              className="text-xs text-muted-foreground/60 text-center py-1 hover:text-muted-foreground transition-colors active:scale-95 transition-all"
             >
               Пропустити, без акаунту →
             </button>
@@ -345,8 +426,8 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
             exit={{ opacity: 0, x: -16 }}
             className="flex flex-col gap-3"
           >
-            <div className="flex items-center gap-0 rounded-2xl border border-[#E8D0C8] bg-white overflow-hidden focus-within:border-[#789A99] focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-              <span className="pl-3.5 pr-2 text-[#6B5750] text-sm font-medium shrink-0">+38</span>
+            <div className="flex items-center gap-0 rounded-2xl border border-[#E8D0C8] bg-white overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
+              <span className="pl-3.5 pr-2 text-muted-foreground text-sm font-medium shrink-0">+38</span>
               <input
                 type="tel"
                 inputMode="numeric"
@@ -355,23 +436,23 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
                 onChange={e => handlePhoneChange(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSendSms()}
                 autoFocus
-                className="flex-1 py-3.5 pr-3.5 text-[#2C1A14] text-sm bg-transparent outline-none placeholder:text-[#C4A89E]"
+                className="flex-1 py-3.5 pr-3.5 text-foreground text-sm bg-transparent outline-none placeholder:text-[#C4A89E]"
               />
             </div>
 
-            {error && <p className="text-xs text-[#C05B5B] pl-1">{error}</p>}
+            {error && <p className="text-xs text-destructive pl-1">{error}</p>}
 
             <button
               type="button"
               onClick={handleSendSms}
               disabled={loading || phone.length < 9}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-md shadow-[#789A99]/20 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-md shadow-[#789A99]/20 disabled:opacity-50"
             >
               {loading && <Loader2 size={15} className="animate-spin" />}
               {loading ? 'Відправляємо...' : 'Отримати код'}
             </button>
 
-            <button type="button" onClick={() => { setStep('choose'); setError(''); }} className="flex items-center justify-center gap-1 text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors">
+            <button type="button" onClick={() => { setStep('choose'); setError(''); }} className="flex items-center justify-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
               <ArrowLeft size={13} /> Назад
             </button>
           </motion.div>
@@ -386,7 +467,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
             exit={{ opacity: 0, x: -16 }}
             className="flex flex-col gap-3"
           >
-            <p className="text-xs text-[#6B5750] text-center">
+            <p className="text-xs text-muted-foreground text-center">
               Код надіслано на +38 {formatPhoneDisplay(phone)}
             </p>
 
@@ -403,28 +484,28 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip }: Props) {
                   onKeyDown={e => handleDigitKeyDown(i, e)}
                   onPaste={i === 0 ? handlePaste : undefined}
                   autoFocus={i === 0}
-                  className="w-10 h-12 text-center text-lg font-bold text-[#2C1A14] rounded-xl border-2 border-[#E8D0C8] bg-white outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+                  className="w-10 h-12 text-center text-lg font-bold text-foreground rounded-xl border-2 border-[#E8D0C8] bg-white outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all"
                 />
               ))}
             </div>
 
-            {error && <p className="text-xs text-[#C05B5B] text-center">{error}</p>}
+            {error && <p className="text-xs text-destructive text-center">{error}</p>}
 
             <button
               type="button"
               onClick={() => handleVerify()}
               disabled={loading || digits.some(d => !d)}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#789A99] text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-md shadow-[#789A99]/20 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-md shadow-[#789A99]/20 disabled:opacity-50"
             >
               {loading && <Loader2 size={15} className="animate-spin" />}
               {loading ? 'Перевіряємо...' : 'Підтвердити'}
             </button>
 
             <div className="flex items-center justify-between">
-              <button type="button" onClick={() => { setStep('phone'); setDigits(['', '', '', '', '', '']); setError(''); }} className="flex items-center gap-1 text-xs text-[#A8928D] hover:text-[#6B5750] transition-colors">
+              <button type="button" onClick={() => { setStep('phone'); setDigits(['', '', '', '', '', '']); setError(''); }} className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
                 <ArrowLeft size={13} /> Змінити номер
               </button>
-              <button type="button" onClick={handleResend} disabled={resendCooldown > 0} className="text-xs text-[#789A99] disabled:text-[#A8928D] disabled:cursor-default hover:underline">
+              <button type="button" onClick={handleResend} disabled={resendCooldown > 0} className="text-xs text-primary disabled:text-muted-foreground/60 disabled:cursor-default hover:underline">
                 {resendCooldown > 0 ? `Через ${resendCooldown}с` : 'Надіслати знову'}
               </button>
             </div>

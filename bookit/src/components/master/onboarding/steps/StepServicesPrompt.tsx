@@ -38,8 +38,8 @@ export function StepServicesPrompt({
         🚀
       </motion.div>
 
-      <h2 className="heading-serif text-xl text-[#2C1A14] mb-2">Майже все!</h2>
-      <p className="text-sm text-[#6B5750] mb-7 leading-relaxed">
+      <h2 className="heading-serif text-xl text-foreground mb-2">Майже все!</h2>
+      <p className="text-sm text-muted-foreground mb-7 leading-relaxed">
         Додамо вашу першу послугу чи товар, щоб клієнтам було з чого обирати?
       </p>
 
@@ -47,14 +47,14 @@ export function StepServicesPrompt({
         <button
           type="button"
           onClick={onAddService}
-          className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#5C7E7D] transition-colors"
+          className="w-full py-3.5 rounded-2xl bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors active:scale-95 transition-all"
         >
           Додати послугу <ArrowRight size={16} />
         </button>
         <button
           type="button"
           onClick={onSkip}
-          className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-[#6B5750] hover:bg-white transition-colors"
+          className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-muted-foreground hover:bg-white transition-colors active:scale-95 transition-all"
         >
           Завершити та перейти в Dashboard
         </button>

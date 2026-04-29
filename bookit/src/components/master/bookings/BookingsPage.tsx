@@ -165,8 +165,8 @@ export function BookingsPage() {
     <div className="flex flex-col gap-4 pb-8">
       {/* Хедер */}
       <div id="tour-bookings-header" className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-[#2C1A14] mb-0.5">Записи</h1>
-        <p className="text-sm text-[#A8928D]">Керуйте розкладом і статусами</p>
+        <h1 className="heading-serif text-xl text-foreground mb-0.5">Записи</h1>
+        <p className="text-sm text-muted-foreground/60">Керуйте розкладом і статусами</p>
 
         {/* Перемикач виду */}
         <div className="flex gap-2 mt-4">
@@ -176,7 +176,7 @@ export function BookingsPage() {
               data-testid={`bookings-view-${v}`}
               onClick={() => setView(v)}
               className={`flex-1 py-2 rounded-2xl text-xs font-medium transition-all ${
-                view === v ? 'bg-[#789A99] text-white' : 'bg-white/60 text-[#6B5750] hover:bg-white/80'
+                view === v ? 'bg-primary text-white' : 'bg-white/60 text-muted-foreground hover:bg-white/80'
               }`}
             >
               {v === 'day' ? 'День' : v === 'week' ? 'Тиждень' : 'Місяць'}
@@ -189,18 +189,18 @@ export function BookingsPage() {
           <button
             data-testid="bookings-nav-prev"
             onClick={() => navigate(-1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-white transition-colors"
           >
             <ChevronLeft size={16} />
           </button>
           <div className="text-center">
-            <p className="text-sm font-semibold text-[#2C1A14] capitalize">{label}</p>
+            <p className="text-sm font-semibold text-foreground capitalize">{label}</p>
             {isToday
-              ? <p className="text-[11px] text-[#789A99] font-medium">Сьогодні</p>
+              ? <p className="text-[11px] text-primary font-medium">Сьогодні</p>
               : (
                 <button
                   onClick={() => setAnchor(new Date())}
-                  className="text-[11px] text-[#789A99] font-medium hover:underline"
+                  className="text-[11px] text-primary font-medium hover:underline"
                 >
                   Повернутись до сьогодні
                 </button>
@@ -210,7 +210,7 @@ export function BookingsPage() {
           <button
             data-testid="bookings-nav-next"
             onClick={() => navigate(1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-white transition-colors"
           >
             <ChevronRight size={16} />
           </button>
@@ -219,11 +219,11 @@ export function BookingsPage() {
 
       {/* Помилка завантаження */}
       {error && (
-        <div className="bento-card p-3 flex items-start gap-2 border border-[#D4935A]/40 bg-[#FFF7F0]">
-          <div className="mt-0.5 text-[#D4935A]">
+        <div className="bento-card p-3 flex items-start gap-2 border border-warning/40 bg-[#FFF7F0]">
+          <div className="mt-0.5 text-warning">
             <AlertTriangle size={16} />
           </div>
-          <div className="text-xs text-[#6B5750]">
+          <div className="text-xs text-muted-foreground">
             <p className="font-semibold">Не вдалося завантажити записи.</p>
             <p className="mt-0.5">
               Перезавантажте сторінку. Якщо проблема повторюється, перевірте підключення до мережі або права доступу (RLS).
@@ -234,14 +234,14 @@ export function BookingsPage() {
 
       {/* Пошук */}
       <div className="relative">
-        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D]" />
+        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
         <input
           data-testid="bookings-search-input"
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Пошук за клієнтом або телефоном..."
-          className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder-[#A8928D] outline-none focus:bg-white focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20 transition-all"
+          className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all"
         />
       </div>
 
@@ -254,8 +254,8 @@ export function BookingsPage() {
               onClick={() => setStatusFilter(f.value)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 statusFilter === f.value
-                  ? 'bg-[#789A99] text-white'
-                  : 'bg-white/70 border border-white/80 text-[#6B5750] hover:bg-white'
+                  ? 'bg-primary text-white'
+                  : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
               }`}
             >
               {f.label}
@@ -268,13 +268,13 @@ export function BookingsPage() {
           <button
             onClick={() => exportToCsv(filtered, label)}
             disabled={filtered.length === 0}
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-medium text-[#6B5750] hover:bg-white transition-all disabled:opacity-40"
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-medium text-muted-foreground hover:bg-white transition-all disabled:opacity-40"
           >
             <Download size={12} /> CSV
           </button>
         ) : (
           <button
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-medium text-[#A8928D] cursor-not-allowed"
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-medium text-muted-foreground/60 cursor-not-allowed active:scale-95 transition-all"
             title="Тільки для Pro"
             disabled
           >
@@ -295,13 +295,13 @@ export function BookingsPage() {
           >
             <div className="flex gap-2">
               <div className="flex-1 bento-card p-3 text-center">
-                <p className="text-lg font-bold text-[#2C1A14]">{filtered.length}</p>
-                <p className="text-[11px] text-[#A8928D]">записів</p>
+                <p className="text-lg font-bold text-foreground">{filtered.length}</p>
+                <p className="text-[11px] text-muted-foreground/60">записів</p>
               </div>
               {totalRevenue > 0 && (
                 <div className="flex-1 bento-card p-3 text-center">
-                  <p className="text-lg font-bold text-[#5C9E7A]">{totalRevenue.toLocaleString('uk-UA')} ₴</p>
-                  <p className="text-[11px] text-[#A8928D]">завершені</p>
+                  <p className="text-lg font-bold text-success">{totalRevenue.toLocaleString('uk-UA')} ₴</p>
+                  <p className="text-[11px] text-muted-foreground/60">завершені</p>
                 </div>
               )}
             </div>
@@ -320,8 +320,8 @@ export function BookingsPage() {
             transition={{ duration: 0.2 }}
             className="bento-card p-10 flex flex-col items-center gap-3 w-full"
           >
-            <Loader2 size={24} className="text-[#789A99] animate-spin" />
-            <p className="text-sm text-[#A8928D]">Завантаження записів...</p>
+            <Loader2 size={24} className="text-primary animate-spin" />
+            <p className="text-sm text-muted-foreground/60">Завантаження записів...</p>
           </motion.div>
         ) : filtered.length === 0 ? (
           isGenuinelyEmpty ? (
@@ -334,11 +334,11 @@ export function BookingsPage() {
               className="flex flex-col gap-4 w-full"
             >
               <div className="bento-card p-6 flex flex-col items-center gap-3 text-center">
-                <div className="w-14 h-14 rounded-3xl bg-[#789A99]/10 flex items-center justify-center">
-                  <CalendarDays size={26} className="text-[#789A99]" />
+                <div className="w-14 h-14 rounded-3xl bg-primary/10 flex items-center justify-center">
+                  <CalendarDays size={26} className="text-primary" />
                 </div>
-                <p className="text-base font-bold text-[#2C1A14]">Ваші перші записи чекають</p>
-                <p className="text-sm text-[#A8928D] text-balance">Поділіться своєю сторінкою, щоб клієнти могли записатися онлайн</p>
+                <p className="text-base font-bold text-foreground">Ваші перші записи чекають</p>
+                <p className="text-sm text-muted-foreground/60 text-balance">Поділіться своєю сторінкою, щоб клієнти могли записатися онлайн</p>
               </div>
               <SharePageCard />
             </motion.div>
@@ -351,11 +351,11 @@ export function BookingsPage() {
               transition={{ duration: 0.2 }}
               className="bento-card p-10 flex flex-col items-center gap-3 text-center w-full"
             >
-              <div className="w-14 h-14 rounded-full bg-[#F5E8E3] flex items-center justify-center">
-                <CalendarDays size={26} className="text-[#A8928D]" />
+              <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+                <CalendarDays size={26} className="text-muted-foreground/60" />
               </div>
-              <p className="text-sm font-semibold text-[#2C1A14]">Записів немає</p>
-              <p className="text-xs text-[#A8928D]">Спробуйте змінити фільтри або діапазон дат</p>
+              <p className="text-sm font-semibold text-foreground">Записів немає</p>
+              <p className="text-xs text-muted-foreground/60">Спробуйте змінити фільтри або діапазон дат</p>
             </motion.div>
           )
         ) : view === 'day' ? (
@@ -375,7 +375,7 @@ export function BookingsPage() {
             {hasMore && (
               <button
                 onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
-                className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-[#789A99] hover:bg-white transition-colors"
+                className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-primary hover:bg-white transition-colors"
               >
                 Показати ще ({filtered.length - visibleCount})
               </button>
@@ -398,11 +398,11 @@ export function BookingsPage() {
               return (
                 <div key={date}>
                   <div className="flex items-center gap-2 mb-2 px-1">
-                    <p className="text-xs font-semibold text-[#6B5750] capitalize">
+                    <p className="text-xs font-semibold text-muted-foreground capitalize">
                       {dayName}, {dayNum} {month}
                     </p>
-                    <div className="flex-1 h-px bg-[#F5E8E3]" />
-                    <span className="text-[11px] text-[#A8928D]">{items.length} зап.</span>
+                    <div className="flex-1 h-px bg-secondary" />
+                    <span className="text-[11px] text-muted-foreground/60">{items.length} зап.</span>
                   </div>
                   <div className="flex flex-col gap-3">
                     {items.map((b, i) => (
@@ -417,7 +417,7 @@ export function BookingsPage() {
             {hasMore && (
               <button
                 onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
-                className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-[#789A99] hover:bg-white transition-colors"
+                className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-primary hover:bg-white transition-colors"
               >
                 Показати ще ({filtered.length - visibleCount})
               </button>
@@ -435,7 +435,7 @@ export function BookingsPage() {
         data-testid="fab-add-booking"
         id="tour-bookings-manual"
         onClick={() => setFormOpen(true)}
-        className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#789A99] text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
+        className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
         style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
       >
         <Plus size={24} />

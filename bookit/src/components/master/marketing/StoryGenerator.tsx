@@ -13,6 +13,7 @@ import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { useWizardSchedule, type ScheduleStore } from '@/lib/supabase/hooks/useWizardSchedule';
 import { generateAvailableSlots, type TimeRange } from '@/lib/utils/smartSlots';
 import type { WorkingHoursConfig } from '@/types/database';
+import { parseError } from '@/lib/utils/errors';
 
 /* ═══════════════════════════════════════════════════════
    PALETTES
@@ -704,7 +705,7 @@ export function StoryGenerator() {
       showToast({ type: 'success', title: 'Сторі збережено!', message: '1080×1920 px готово для Instagram' });
     } catch (e) {
       console.error('[StoryGenerator]', e);
-      showToast({ type: 'error', title: 'Помилка експорту', message: e instanceof Error ? e.message : 'Спробуйте ще раз' });
+      showToast({ type: 'error', title: 'Помилка експорту', message: parseError(e) });
     } finally {
       node.style.top    = '-9999px';
       node.style.left   = '-9999px';
@@ -743,7 +744,7 @@ export function StoryGenerator() {
     <div className="space-y-3">
       {mode === 'announcement' && (
         <div>
-          <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">Текст публікації</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст публікації</label>
           <textarea
             value={annoText} onChange={e => { setAnnoText(e.target.value); onControlChange(); }}
             rows={5} maxLength={200} placeholder="Ваш текст…"
@@ -751,7 +752,7 @@ export function StoryGenerator() {
             style={{ ...INPUT_STYLE, height: 'auto' }}
           />
           <div className="flex justify-end mt-1">
-            <span className="text-[10px] text-[#A8928D]">{annoText.length}/200</span>
+            <span className="text-[10px] text-muted-foreground/60">{annoText.length}/200</span>
           </div>
         </div>
       )}
@@ -759,11 +760,11 @@ export function StoryGenerator() {
       {mode === 'free_slots' && (
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">Послуга</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
             {services.length === 0 ? (
-              <div className="px-4 py-3 rounded-2xl text-xs text-[#A8928D]" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
+              <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
                 Немає активних послуг. Додайте у розділі{' '}
-                <span className="font-semibold text-[#789A99]">Послуги</span>.
+                <span className="font-semibold text-primary">Послуги</span>.
               </div>
             ) : (
               <select value={selectedSvcId ?? ''} onChange={e => { setSelectedSvcId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
@@ -774,10 +775,10 @@ export function StoryGenerator() {
             )}
           </div>
           <div>
-            <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">Дата</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
             <input type="date" value={slotsDate ?? ''} min={todayStr} onChange={e => { setSlotsDate(e.target.value || null); onControlChange(); }} className="outline-none text-sm" style={INPUT_STYLE} />
             {slotsDate && !slotsLoading && (
-              <p className={`text-[11px] mt-1.5 font-medium ${slots.length > 0 ? 'text-[#5C9E7A]' : 'text-[#A8928D]'}`}>
+              <p className={`text-[11px] mt-1.5 font-medium ${slots.length > 0 ? 'text-success' : 'text-muted-foreground/60'}`}>
                 {slots.length > 0 ? `${slots.length} вільних вікон знайдено` : 'Немає вільних вікон'}
               </p>
             )}
@@ -788,11 +789,11 @@ export function StoryGenerator() {
       {mode === 'vacation' && (
         <div className="space-y-2.5">
           <div>
-            <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">З якого числа</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">З якого числа</label>
             <input type="date" value={vacStart ?? ''} onChange={e => { setVacStart(e.target.value || null); onControlChange(); }} className="outline-none text-sm" style={INPUT_STYLE} />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">По яке число</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">По яке число</label>
             <input type="date" value={vacEnd ?? ''} min={vacStart ?? ''} onChange={e => { setVacEnd(e.target.value || null); onControlChange(); }} className="outline-none text-sm" style={INPUT_STYLE} />
           </div>
         </div>
@@ -800,11 +801,11 @@ export function StoryGenerator() {
 
       {mode === 'promo' && (
         <div>
-          <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">Активна Flash Deal</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Активна Flash Deal</label>
           {flashDeals.length === 0 ? (
-            <div className="px-4 py-3 rounded-2xl text-xs text-[#A8928D]" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
+            <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
               Немає активних флеш-акцій. Створіть у{' '}
-              <span className="font-semibold text-[#789A99]">Дохід → Flash Deals</span>.
+              <span className="font-semibold text-primary">Дохід → Flash Deals</span>.
             </div>
           ) : (
             <select value={dealIdx} onChange={e => { setDealIdx(Number(e.target.value)); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
@@ -820,9 +821,9 @@ export function StoryGenerator() {
 
       {mode === 'review_spotlight' && (
         <div>
-          <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">5★ відгук клієнта</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">5★ відгук клієнта</label>
           {starReviews.length === 0 ? (
-            <div className="px-4 py-3 rounded-2xl text-xs text-[#A8928D]" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
+            <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
               Немає опублікованих 5★ відгуків. Попросіть клієнта залишити відгук після запису.
             </div>
           ) : (
@@ -835,7 +836,7 @@ export function StoryGenerator() {
             </select>
           )}
           {selectedReview?.comment && (
-            <p className="text-[11px] text-[#6B5750] mt-2 leading-relaxed px-1 line-clamp-3">
+            <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed px-1 line-clamp-3">
               «{selectedReview.comment}»
             </p>
           )}
@@ -845,9 +846,9 @@ export function StoryGenerator() {
       {mode === 'flash_window' && (
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">Послуга</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
             {services.length === 0 ? (
-              <div className="px-4 py-3 rounded-2xl text-xs text-[#A8928D]" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
+              <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60" style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.85)' }}>
                 Немає активних послуг.
               </div>
             ) : (
@@ -859,16 +860,16 @@ export function StoryGenerator() {
             )}
           </div>
           <div>
-            <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">Дата</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
             <input type="date" value={flashWinDate ?? ''} min={todayStr} onChange={e => { setFlashWinDate(e.target.value || null); onControlChange(); }} className="outline-none text-sm" style={INPUT_STYLE} />
           </div>
           {flashWinDate && (
             <div>
-              <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">Час слоту</label>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Час слоту</label>
               {flashWinSlotsLoading ? (
-                <p className="text-[11px] text-[#A8928D]">Завантаження…</p>
+                <p className="text-[11px] text-muted-foreground/60">Завантаження…</p>
               ) : flashWinSlots.length === 0 ? (
-                <p className="text-[11px] text-[#A8928D]">Немає вільних вікон на цей день</p>
+                <p className="text-[11px] text-muted-foreground/60">Немає вільних вікон на цей день</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {flashWinSlots.map(s => (
@@ -889,8 +890,8 @@ export function StoryGenerator() {
             </div>
           )}
           <div>
-            <label className="text-xs font-semibold text-[#6B5750] mb-1.5 block">
-              Знижка: <span className="text-[#C05B5B] font-bold">−{flashWinDiscount}%</span>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+              Знижка: <span className="text-destructive font-bold">−{flashWinDiscount}%</span>
             </label>
             <input
               type="range" min={5} max={70} step={5}
@@ -899,7 +900,7 @@ export function StoryGenerator() {
               className="w-full cursor-pointer"
               style={{ accentColor: '#C05B5B' }}
             />
-            <div className="flex justify-between text-[10px] text-[#A8928D] mt-0.5">
+            <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5">
               <span>5%</span><span>70%</span>
             </div>
           </div>
@@ -914,8 +915,8 @@ export function StoryGenerator() {
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
       <div>
-        <h1 className="font-display text-2xl font-semibold text-[#2C1A14]">Конструктор Сторіс</h1>
-        <p className="text-sm text-[#A8928D] mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
+        <h1 className="font-display text-2xl font-semibold text-foreground">Конструктор Сторіс</h1>
+        <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
       </div>
 
       {/* Mode selector */}
@@ -950,7 +951,7 @@ export function StoryGenerator() {
         <div className="flex-1 space-y-4 w-full">
 
           <div>
-            <p className="text-xs font-semibold text-[#6B5750] mb-2">Палітра</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
             <div className="flex gap-2.5 flex-wrap">
               {PALETTES.map((p, i) => (
                 <button key={p.id} type="button" title={p.label}
@@ -969,7 +970,7 @@ export function StoryGenerator() {
                   )}
                 </button>
               ))}
-              <span className="self-center text-xs text-[#A8928D] ml-1">{PALETTES[palIdx].label}</span>
+              <span className="self-center text-xs text-muted-foreground/60 ml-1">{PALETTES[palIdx].label}</span>
             </div>
           </div>
 
@@ -992,8 +993,8 @@ export function StoryGenerator() {
               >
                 <span className="text-sm leading-none mt-0.5 shrink-0">✨</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-[#2C1A14] mb-0.5">{upgradeCopy.teaserTitle}</p>
-                  <p className="text-[11px] text-[#6B5750] leading-relaxed">{upgradeCopy.teaserDesc}</p>
+                  <p className="text-xs font-bold text-foreground mb-0.5">{upgradeCopy.teaserTitle}</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{upgradeCopy.teaserDesc}</p>
                 </div>
                 <span
                   className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl self-center"
@@ -1011,12 +1012,12 @@ export function StoryGenerator() {
             style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.85)' }}
           >
             <div className="text-left">
-              <p className="text-sm font-semibold text-[#2C1A14]">Показувати фото</p>
-              <p className="text-[11px] text-[#A8928D]">Аватар та ім'я майстра</p>
+              <p className="text-sm font-semibold text-foreground">Показувати фото</p>
+              <p className="text-[11px] text-muted-foreground/60">Аватар та ім'я майстра</p>
             </div>
             {showAvatar
-              ? <ToggleRight size={26} className="text-[#789A99] shrink-0" strokeWidth={1.8} />
-              : <ToggleLeft  size={26} className="text-[#A8928D] shrink-0" strokeWidth={1.8} />
+              ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} />
+              : <ToggleLeft  size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />
             }
           </button>
 
@@ -1058,14 +1059,14 @@ export function StoryGenerator() {
             </AnimatePresence>
           </motion.button>
 
-          <p className="text-[10px] text-[#A8928D] text-center -mt-1">
+          <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
             {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
           </p>
         </div>
 
         {/* Preview column */}
         <div className="shrink-0 mx-auto md:mx-0">
-          <p className="text-[10px] font-semibold text-[#A8928D] uppercase tracking-wider mb-2 text-center">
+          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2 text-center">
             Попередній перегляд
           </p>
 
@@ -1119,7 +1120,7 @@ export function StoryGenerator() {
             {/* 3-second countdown hint for starter on premium mode */}
             {isPremiumLocked && !blurActive && (
               <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                <span className="text-[9px] text-[#A8928D] bg-white/80 rounded-full px-2 py-0.5">
+                <span className="text-[9px] text-muted-foreground/60 bg-white/80 rounded-full px-2 py-0.5">
                   Перегляд · 10 сек
                 </span>
               </div>

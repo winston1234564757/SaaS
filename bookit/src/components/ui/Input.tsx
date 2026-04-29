@@ -16,13 +16,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-[#2C1A14]">
+          <label htmlFor={inputId} className="text-sm font-medium text-foreground">
             {label}
           </label>
         )}
         <div className="relative flex items-center">
           {prefix && (
-            <div className="absolute left-3.5 text-[#A8928D] pointer-events-none">
+            <div className="absolute left-3.5 text-muted-foreground pointer-events-none">
               {prefix}
             </div>
           )}
@@ -30,25 +30,27 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full h-12 px-4 rounded-xl text-base text-[#2C1A14] placeholder:text-[#A8928D]',
-              'bg-white/75 border border-white/80 backdrop-blur-sm',
-              'transition-all duration-200',
-              'focus:outline-none focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20',
-              error && 'border-[#C05B5B] focus:border-[#C05B5B] focus:ring-[#C05B5B]/15',
+              'w-full h-12 px-4 rounded-xl text-base text-foreground placeholder:text-muted-foreground',
+              'bg-secondary/70 border border-border backdrop-blur-sm',
+              'transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+              'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
+              error && 'border-destructive focus:border-destructive focus:ring-destructive/15',
               prefix && 'pl-10',
               suffix && 'pr-10',
               className
             )}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
             {...props}
           />
           {suffix && (
-            <div className="absolute right-3.5 text-[#A8928D]">
+            <div className="absolute right-3.5 text-muted-foreground">
               {suffix}
             </div>
           )}
         </div>
-        {error && <p className="text-xs text-[#C05B5B]">{error}</p>}
-        {hint && !error && <p className="text-xs text-[#A8928D]">{hint}</p>}
+        {error && <p id={`${inputId}-error`} className="text-xs text-destructive">{error}</p>}
+        {hint && !error && <p id={`${inputId}-hint`} className="text-xs text-muted-foreground">{hint}</p>}
       </div>
     );
   }

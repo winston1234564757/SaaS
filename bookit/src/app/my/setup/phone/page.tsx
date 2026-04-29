@@ -7,8 +7,8 @@ export default function PhoneSetupPage() {
     <div className="flex flex-col items-center justify-center min-h-[80dvh] px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 bg-[#789A99]/[0.12] rounded-full px-3 py-1">
-            <span className="text-[10px] font-semibold text-[#789A99] uppercase tracking-widest">
+          <div className="inline-flex items-center gap-1.5 bg-primary/[0.12] rounded-full px-3 py-1">
+            <span className="text-[10px] font-semibold text-primary uppercase tracking-widest">
               Один крок до акаунту
             </span>
           </div>

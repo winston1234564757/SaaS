@@ -38,8 +38,8 @@ export default async function JoinPartnerPage({
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
         <span className="text-5xl mb-4">🙊</span>
-        <h1 className="heading-serif text-2xl text-[#2C1A14] mb-2">Запрошення не знайдено</h1>
-        <p className="text-[#A8928D] text-sm max-w-xs">
+        <h1 className="heading-serif text-2xl text-foreground mb-2">Запрошення не знайдено</h1>
+        <p className="text-muted-foreground/60 text-sm max-w-xs">
           Можливо, посилання застаріло або воно невірне.
         </p>
       </div>

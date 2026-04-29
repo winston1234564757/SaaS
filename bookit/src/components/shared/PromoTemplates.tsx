@@ -26,8 +26,8 @@ function CopyButton({ text }: { text: string }) {
       type="button"
       onClick={handleCopy}
       className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-xl transition-all cursor-pointer shrink-0 ${
-        done ? 'bg-[#5C9E7A]/15 text-[#5C9E7A]' : 'bg-[#789A99]/10 text-[#789A99] hover:bg-[#789A99]/20'
-      }`}
+        done ? 'bg-success/15 text-success' : 'bg-primary/10 text-primary hover:bg-primary/20'
+      } active:scale-95 transition-all`}
     >
       <AnimatePresence mode="wait" initial={false}>
         {done
@@ -48,7 +48,7 @@ function LockedCopyButton({ onUpgrade }: LockedButton) {
     <button
       type="button"
       onClick={onUpgrade}
-      className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-xl bg-[#D4935A]/10 text-[#D4935A] hover:bg-[#D4935A]/20 transition-all cursor-pointer shrink-0"
+      className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-xl bg-warning/10 text-warning hover:bg-warning/20 transition-all cursor-pointer shrink-0 active:scale-95 transition-all"
     >
       <Lock size={10} strokeWidth={2.5} />
       PRO
@@ -112,11 +112,11 @@ export function PromoTemplates({ slug, defaultOpen = false, plan, onUpgrade }: P
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/40 hover:bg-white/60 transition-all cursor-pointer group"
       >
-        <span className="text-xs font-semibold text-[#6B5750] group-hover:text-[#2C1A14] transition-colors">
+        <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
           Шаблони для постів
         </span>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown size={13} className="text-[#A8928D]" />
+          <ChevronDown size={13} className="text-muted-foreground/60" />
         </motion.span>
       </button>
 
@@ -143,7 +143,7 @@ export function PromoTemplates({ slug, defaultOpen = false, plan, onUpgrade }: P
                   >
                     <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-[11px] font-bold ${locked ? 'text-[#A8928D]' : 'text-[#2C1A14]'}`}>
+                        <span className={`text-[11px] font-bold ${locked ? 'text-muted-foreground/60' : 'text-foreground'}`}>
                           {t.label}
                         </span>
                         <span
@@ -167,11 +167,11 @@ export function PromoTemplates({ slug, defaultOpen = false, plan, onUpgrade }: P
                       }
                     </div>
                     {locked && t.proDesc ? (
-                      <p className="px-3 pb-2.5 text-[11px] text-[#A8928D] leading-relaxed italic">
+                      <p className="px-3 pb-2.5 text-[11px] text-muted-foreground/60 leading-relaxed italic">
                         {t.proDesc}
                       </p>
                     ) : (
-                      <p className="px-3 pb-2.5 text-[11px] text-[#6B5750] leading-relaxed whitespace-pre-line">
+                      <p className="px-3 pb-2.5 text-[11px] text-muted-foreground leading-relaxed whitespace-pre-line">
                         {t.text}
                       </p>
                     )}

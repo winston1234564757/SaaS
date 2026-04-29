@@ -8,12 +8,12 @@ import type { PricingRules } from '@/lib/utils/dynamicPricing';
 import { HubDrawer } from '@/components/shared/HubDrawer';
 
 const FlashDealPage = dynamic(() => import('@/components/master/flash/FlashDealPage').then(m => m.FlashDealPage), {
-  loading: () => <div className="p-8 text-center text-[#A8928D] animate-pulse">Завантажуємо бандл...</div>,
+  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо бандл...</div>,
   ssr: false,
 });
 
 const DynamicPricingPage = dynamic(() => import('@/components/master/pricing/DynamicPricingPage').then(m => m.DynamicPricingPage), {
-  loading: () => <div className="p-8 text-center text-[#A8928D] animate-pulse">Завантажуємо бандл...</div>,
+  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо бандл...</div>,
   ssr: false,
 });
 

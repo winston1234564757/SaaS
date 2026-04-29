@@ -62,10 +62,10 @@ export function RestockDrawer({ product, open, onClose }: Props) {
 
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-base font-bold text-[#2C1A14]">Поповнити склад</h2>
-                <p className="text-xs text-[#A8928D] mt-0.5">{product.name} · зараз: {product.stock_qty} шт</p>
+                <h2 className="text-base font-bold text-foreground">Поповнити склад</h2>
+                <p className="text-xs text-muted-foreground/60 mt-0.5">{product.name} · зараз: {product.stock_qty} шт</p>
               </div>
-              <button onClick={handleClose} className="w-8 h-8 rounded-full bg-[#F5E8E3] flex items-center justify-center text-[#6B5750]">
+              <button onClick={handleClose} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-95 transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -74,14 +74,14 @@ export function RestockDrawer({ product, open, onClose }: Props) {
             <div className="flex items-center justify-center gap-5 my-6">
               <button
                 onClick={() => setQty(q => Math.max(1, q - 1))}
-                className="w-12 h-12 rounded-2xl bg-[#F5E8E3] flex items-center justify-center text-[#6B5750] active:scale-95 transition-all"
+                className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground active:scale-95 transition-all"
               >
                 <Minus size={20} />
               </button>
-              <span className="text-4xl font-bold text-[#2C1A14] w-16 text-center tabular-nums">{qty}</span>
+              <span className="text-4xl font-bold text-foreground w-16 text-center tabular-nums">{qty}</span>
               <button
                 onClick={() => setQty(q => q + 1)}
-                className="w-12 h-12 rounded-2xl bg-[#789A99] flex items-center justify-center text-white active:scale-95 transition-all"
+                className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white active:scale-95 transition-all"
               >
                 <Plus size={20} />
               </button>
@@ -93,17 +93,17 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               placeholder="Примітка (необов'язково)"
               value={note}
               onChange={e => setNote(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-[#2C1A14] placeholder:text-[#A8928D] outline-none focus:border-[#789A99]/50 mb-4"
+              className="w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/50 mb-4"
             />
 
             {error && (
-              <p className="text-xs text-[#C05B5B] mb-3 px-1">{error}</p>
+              <p className="text-xs text-destructive mb-3 px-1">{error}</p>
             )}
 
             <button
               onClick={handleSave}
               disabled={isPending}
-              className="w-full py-3.5 rounded-2xl bg-[#789A99] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98] transition-all"
+              className="w-full py-3.5 rounded-2xl bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98] transition-all"
             >
               <RefreshCw size={16} className={isPending ? 'animate-spin' : ''} />
               {isPending ? 'Зберігаємо...' : `Додати +${qty} шт`}

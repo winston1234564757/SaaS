@@ -22,7 +22,7 @@ export function PricingBadge({ dynamicLabel, flashDealPct, loyaltyLabel, size = 
     badges.push(
       <span
         key="flash"
-        className={`inline-flex items-center gap-1 ${px} rounded-full bg-[#D4935A]/10 text-[#D4935A] font-semibold ${textSize}`}
+        className={`inline-flex items-center gap-1 ${px} rounded-full bg-warning/10 text-warning font-semibold ${textSize}`}
       >
         <Zap size={iconSize} className="fill-current" />
         -{flashDealPct}%
@@ -36,7 +36,7 @@ export function PricingBadge({ dynamicLabel, flashDealPct, loyaltyLabel, size = 
       <span
         key="dynamic"
         className={`inline-flex items-center gap-1 ${px} rounded-full font-medium ${textSize} ${
-          isMarkup ? 'bg-[#C05B5B]/10 text-[#C05B5B]' : 'bg-[#789A99]/10 text-[#789A99]'
+          isMarkup ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'
         }`}
       >
         {isMarkup ? <TrendingUp size={iconSize} /> : <TrendingDown size={iconSize} />}
@@ -49,7 +49,7 @@ export function PricingBadge({ dynamicLabel, flashDealPct, loyaltyLabel, size = 
     badges.push(
       <span
         key="loyalty"
-        className={`inline-flex items-center gap-1 ${px} rounded-full bg-[#5C9E7A]/10 text-[#5C9E7A] font-medium ${textSize}`}
+        className={`inline-flex items-center gap-1 ${px} rounded-full bg-success/10 text-success font-medium ${textSize}`}
       >
         <Gift size={iconSize} />
         {loyaltyLabel}

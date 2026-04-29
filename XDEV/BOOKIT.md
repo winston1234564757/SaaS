@@ -2,7 +2,7 @@
 
 > Ukrainian SaaS для онлайн-запису у сервісному бізнесі  
 > "Твій розумний link in bio, який заробляє гроші"  
-> Оновлено: 2026-04-28
+> Оновлено: 2026-04-29
 
 ---
 
@@ -118,6 +118,18 @@
 - 6 преміальних палітр (Nude, Sage, Mono, Blush, Sky, Dark)
 - Export 1080×1920 (html-to-image, pixelRatio: 3)
 - Instagram link sticker
+
+**Marketing Hub — Broadcast Розсилки**
+- Два режими аудиторії: по тегах CRM (vip / new / regular / big_check / sleeping / at_risk / lost) або вручну обрані клієнти
+- При виборі тегу — список клієнтів з toggle для виключення окремих
+- Персоналізація тексту: `{{ім'я}}`, `{{кількість_візитів}}`, `{{знижка}}`
+- Каскадна доставка: in-app (завжди) → Push → Telegram → SMS (fallback)
+- Short link `bookit.com.ua/r/[code]` — click tracking + pre-selected послуга (`?serviceId=`)
+- Опційна phone-bound знижка: одноразова, прив'язана до номеру телефону, з TTL
+- Знижка видна клієнту вже в BookingFlow (debounced phone lookup) ДО підтвердження
+- 72-годинний cooldown між розсилками одному клієнту
+- BroadcastDetailSheet: per-client результати доставки (App / Push / Telegram / SMS ✓/✗)
+- Конверсія: `broadcast_recipients.booked_at`, `discount_used_at` — повний трекінг
 
 **Налаштування**
 - Розклад по днях тижня (`working_hours` jsonb)

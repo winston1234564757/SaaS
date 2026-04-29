@@ -53,21 +53,21 @@ export function WelcomeBanner() {
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div>
-          <p className="text-sm font-semibold text-[#2C1A14]">Налаштуй профіль</p>
-          <p className="text-xs text-[#A8928D] mt-0.5">{completed}/3 кроків виконано</p>
+          <p className="text-sm font-semibold text-foreground">Налаштуй профіль</p>
+          <p className="text-xs text-muted-foreground/60 mt-0.5">{completed}/3 кроків виконано</p>
         </div>
         <Link
           href="/dashboard/onboarding"
-          className="flex items-center gap-1 text-xs font-semibold text-[#789A99] hover:text-[#5C7E7D] transition-colors flex-shrink-0 bg-[#789A99]/10 px-3 py-1.5 rounded-xl"
+          className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/90 transition-colors flex-shrink-0 bg-primary/10 px-3 py-1.5 rounded-xl"
         >
           Налаштувати <ChevronRight size={13} />
         </Link>
       </div>
 
       {/* Progress track */}
-      <div className="w-full h-1.5 rounded-full bg-[#E8D5CF] mb-3">
+      <div className="w-full h-1.5 rounded-full bg-secondary/80 mb-3">
         <div
-          className="h-full rounded-full bg-[#789A99] transition-all duration-700"
+          className="h-full rounded-full bg-primary transition-all duration-700"
           style={{ width: `${(completed / 3) * 100}%` }}
         />
       </div>
@@ -77,15 +77,15 @@ export function WelcomeBanner() {
           <div key={label} className="flex items-center gap-2">
             <div
               className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
-                done ? 'bg-[#5C9E7A]' : 'bg-[#E8D5CF]'
+                done ? 'bg-success' : 'bg-secondary/80'
               }`}
             >
               {done
                 ? <Check size={9} className="text-white" strokeWidth={3} />
-                : <Icon size={9} className="text-[#A8928D]" />
+                : <Icon size={9} className="text-muted-foreground/60" />
               }
             </div>
-            <span className={`text-xs transition-colors ${done ? 'text-[#A8928D] line-through' : 'text-[#6B5750]'}`}>
+            <span className={`text-xs transition-colors ${done ? 'text-muted-foreground/60 line-through' : 'text-muted-foreground'}`}>
               {label}
             </span>
           </div>

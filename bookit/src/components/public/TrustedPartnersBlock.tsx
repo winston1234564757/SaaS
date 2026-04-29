@@ -21,12 +21,12 @@ export function TrustedPartnersBlock({ partners }: Props) {
   return (
     <section className="bento-card p-5 flex flex-col gap-4">
       <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-[#789A99]/12 flex items-center justify-center flex-shrink-0">
-          <Users size={17} className="text-[#789A99]" />
+        <div className="w-9 h-9 rounded-xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+          <Users size={17} className="text-primary" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-[#2C1A14]">Перевірені партнери</h3>
-          <p className="text-xs text-[#A8928D]">Майстри з цієї ж мережі довіри</p>
+          <h3 className="text-sm font-semibold text-foreground">Перевірені партнери</h3>
+          <p className="text-xs text-muted-foreground/60">Майстри з цієї ж мережі довіри</p>
         </div>
       </div>
 
@@ -35,16 +35,16 @@ export function TrustedPartnersBlock({ partners }: Props) {
           <Link
             key={p.id}
             href={`/${p.slug}`}
-            className="flex items-center gap-3 p-3 rounded-2xl bg-white/60 border border-[#E8D0C8] hover:bg-[#F5E8E3] active:scale-[0.98] transition-all"
+            className="flex items-center gap-3 p-3 rounded-2xl bg-white/60 border border-[#E8D0C8] hover:bg-secondary active:scale-[0.98] transition-all"
           >
-            <span className="text-2xl w-9 h-9 flex items-center justify-center rounded-xl bg-[#FFE8DC] flex-shrink-0">
+            <span className="text-2xl w-9 h-9 flex items-center justify-center rounded-xl bg-background flex-shrink-0">
               {p.avatarEmoji}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#2C1A14] truncate">{p.name}</p>
-              <p className="text-xs text-[#A8928D] truncate">{p.specialty}</p>
+              <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+              <p className="text-xs text-muted-foreground/60 truncate">{p.specialty}</p>
             </div>
-            <span className="text-xs text-[#789A99] font-medium flex-shrink-0">Записатись →</span>
+            <span className="text-xs text-primary font-medium flex-shrink-0">Записатись →</span>
           </Link>
         ))}
       </div>

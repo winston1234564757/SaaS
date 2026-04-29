@@ -69,7 +69,7 @@ export function ClientCombobox({ errors, watchName, setValue, onClientSelect }: 
   return (
     <div ref={containerRef} className="relative">
       <div className="relative">
-        <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8928D] pointer-events-none" />
+        <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
         <input
           data-testid="wizard-name-input"
           type="text"
@@ -78,15 +78,15 @@ export function ClientCombobox({ errors, watchName, setValue, onClientSelect }: 
           onChange={e => handleChange(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder="Олена Петрова або +380..."
-          className={`w-full h-12 pl-9 pr-4 rounded-xl bg-white/75 border text-sm text-[#2C1A14] placeholder:text-[#A8928D] focus:outline-none transition-all ${
+          className={`w-full h-12 pl-9 pr-4 rounded-xl bg-white/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
             errors.clientName
-              ? 'border-[#C05B5B] focus:ring-[#C05B5B]/20'
-              : 'border-white/80 focus:border-[#789A99] focus:ring-2 focus:ring-[#789A99]/20'
+              ? 'border-destructive focus:ring-[#C05B5B]/20'
+              : 'border-white/80 focus:border-primary focus:ring-2 focus:ring-[#789A99]/20'
           }`}
         />
       </div>
       {errors.clientName && (
-        <p className="text-[#C05B5B] text-[10px] mt-1 ml-1">{errors.clientName.message}</p>
+        <p className="text-destructive text-[10px] mt-1 ml-1">{errors.clientName.message}</p>
       )}
 
       {showDropdown && (filtered.length > 0 || query.trim().length >= 2) && (
@@ -96,26 +96,26 @@ export function ClientCombobox({ errors, watchName, setValue, onClientSelect }: 
               key={c.id}
               type="button"
               onMouseDown={() => handleSelect(c)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#789A99]/8 transition-colors text-left"
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/8 transition-colors text-left"
             >
-              <div className="w-7 h-7 rounded-full bg-[#FFE8DC] flex items-center justify-center text-xs font-bold text-[#789A99] shrink-0">
+              <div className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-xs font-bold text-primary shrink-0">
                 {c.is_vip ? '⭐' : (c.client_name[0]?.toUpperCase() ?? '?')}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-[#2C1A14] truncate">{c.client_name}</p>
-                <p className="text-[11px] text-[#A8928D]">{c.client_phone}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{c.client_name}</p>
+                <p className="text-[11px] text-muted-foreground/60">{c.client_phone}</p>
               </div>
               {c.is_vip && (
-                <span className="text-[10px] font-bold text-[#D4935A] bg-[#D4935A]/10 px-1.5 py-0.5 rounded-full shrink-0">
+                <span className="text-[10px] font-bold text-warning bg-warning/10 px-1.5 py-0.5 rounded-full shrink-0">
                   VIP
                 </span>
               )}
             </button>
           ))}
           {filtered.length === 0 && query.trim().length >= 2 && (
-            <div className="px-4 py-3 text-xs text-[#A8928D]">
+            <div className="px-4 py-3 text-xs text-muted-foreground/60">
               Новий клієнт:{' '}
-              <span className="font-semibold text-[#2C1A14]">{query.trim()}</span>
+              <span className="font-semibold text-foreground">{query.trim()}</span>
             </div>
           )}
         </div>

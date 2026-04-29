@@ -8,8 +8,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* Auth navbar */}
       <header className="p-4">
-        <Link href="/" className="heading-serif text-xl text-[#2C1A14]">
-          Bookit<span className="text-[#789A99]">.</span>
+        <Link href="/" className="heading-serif text-xl text-foreground">
+          Bookit<span className="text-primary">.</span>
         </Link>
       </header>
 
