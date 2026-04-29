@@ -421,16 +421,16 @@ export function SettingsPage() {
             <label className="text-xs font-medium text-muted-foreground mb-3 block">Твоя спеціалізація (можна кілька)</label>
             <div className="flex flex-wrap gap-2">
               {serviceCategories.map(cat => {
-                const isSelected = selectedCategories.includes(cat.label);
+                const isSelected = selectedCategories.includes(cat.id);
                 return (
                   <button
                     key={cat.id}
                     type="button"
                     onClick={() => {
                       if (isSelected) {
-                        setSelectedCategories(selectedCategories.filter(c => c !== cat.label));
+                        setSelectedCategories(selectedCategories.filter(c => c !== cat.id));
                       } else {
-                        setSelectedCategories([...selectedCategories, cat.label]);
+                        setSelectedCategories([...selectedCategories, cat.id]);
                       }
                       setIsDirty(true);
                     }}

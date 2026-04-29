@@ -8,6 +8,7 @@ import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
 import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
 import { ALL_STEPS } from '@/components/shared/wizard/helpers';
+import { serviceCategories } from '@/lib/constants/categories';
 
 export const revalidate = 300;
 
@@ -301,7 +302,9 @@ export default async function MasterPublicPage(
     id: data.id,
     slug: data.slug,
     name: data.business_name || profile.full_name,
-    specialty: ((data.categories as string[]) ?? []).join(', ') || 'Майстер краси',
+    specialty: (data.categories as string[] ?? [])
+      .map(id => serviceCategories.find(c => c.id === id)?.label || id)
+      .join(', ') || 'Майстер краси',
     location: locationQuery || 'Україна',
     mapUrl,
     lat: lat ?? null,
