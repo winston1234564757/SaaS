@@ -13,7 +13,7 @@
  * Precision: all discount fractions rounded to 2 decimal places to avoid FP errors.
  */
 
-export const BASE_PRICE_KOPECKS = 500; // 5 UAH for testing
+export const BASE_PRICE_KOPECKS = 70_000; // 700 UAH
 export const MAX_REFS_COUNTED   = 50;
 export const BOUNTY_PER_REF     = 0.10;
 export const MIN_KOPECKS        = 100;    // 1 UAH bank floor
