@@ -46,7 +46,10 @@ export function ExplorePage({ masters, cities }: Props) {
     let result = masters;
 
     if (activeCategory) {
-      result = result.filter(m => m.categories.includes(activeCategory));
+      const cat = serviceCategories.find(c => c.id === activeCategory);
+      result = result.filter(m => 
+        m.categories.includes(activeCategory) || (cat && m.categories.includes(cat.label))
+      );
     }
     if (activeCity) {
       result = result.filter(m => m.city === activeCity);
@@ -302,7 +305,9 @@ export function ExplorePage({ masters, cities }: Props) {
 }
 
 function MasterCard({ master, index }: { master: Master; index: number }) {
-  const masterCategories = serviceCategories.filter(c => master.categories.includes(c.id));
+  const masterCategories = serviceCategories.filter(c => 
+    master.categories.includes(c.id) || master.categories.includes(c.label)
+  );
 
   return (
     <motion.div

@@ -303,7 +303,7 @@ export default async function MasterPublicPage(
     slug: data.slug,
     name: data.business_name || profile.full_name,
     specialty: (data.categories as string[] ?? [])
-      .map(id => serviceCategories.find(c => c.id === id)?.label || id)
+      .map(val => serviceCategories.find(c => c.id === val || c.label === val)?.label || val)
       .join(', ') || 'Майстер краси',
     location: locationQuery || 'Україна',
     mapUrl,
