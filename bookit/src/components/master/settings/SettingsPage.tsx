@@ -418,6 +418,39 @@ export function SettingsPage() {
           </div>
 
           <div>
+            <label className="text-xs font-medium text-muted-foreground mb-3 block">Твоя спеціалізація (можна кілька)</label>
+            <div className="flex flex-wrap gap-2">
+              {serviceCategories.map(cat => {
+                const isSelected = selectedCategories.includes(cat.label);
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedCategories(selectedCategories.filter(c => c !== cat.label));
+                      } else {
+                        setSelectedCategories([...selectedCategories, cat.label]);
+                      }
+                      setIsDirty(true);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border",
+                      isSelected 
+                        ? "bg-primary/15 border-primary text-primary" 
+                        : "bg-white/50 border-white/80 text-muted-foreground hover:border-primary/30"
+                    )}
+                  >
+                    <span>{cat.emoji}</span>
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground/50 mt-1.5">Обери основні напрямки. Це допоможе клієнтам знайти тебе в каталозі.</p>
+          </div>
+
+          <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Особисте ім'я</label>
             <input data-testid="settings-name-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ваше ім'я та прізвище" className={inputCls} />
           </div>
