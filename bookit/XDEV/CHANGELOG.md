@@ -9,6 +9,12 @@
 - **System Map**: Створено високорівневу карту проекту `SYSTEM_MAP.md`.
 - **Cleanup**: Всі звіти з кореня перенесено в `XDEV/REPORTS/`.
 
+### 🎨 Marketing & Viral Tools
+- **Stories Generator**: Запущено інструмент для створення преміальних сторіз (9:16) прямо з портфоліо.
+  - 3 шаблони: "Шедевр" (фото), "Відгук" (текст + зірки), "Запис" (вільні вікна).
+  - Експорт у високій роздільній здатності через `html-to-image`.
+  - Преміальний дизайн: Glassmorphism, Playfair Display, тактильні кнопки.
+
 ### ✨ UX Stabilization (Premium Standards)
 - **BottomSheet Migration**: Всі модалки (включаючи `BookingWizard`) переведено на `vaul`.
 - **Premium Sticky Buttons**: Реалізовано "плаваючі" кнопки дій над навбаром у всіх кроках запису.
@@ -17,9 +23,9 @@
 - **Auto-save Indicators**: Стабілізовано відображення статусу "Зберігаємо..." через `mutateAsync`.
 
 ### 🐛 Bug Fixes
-- **Client Notes**: Виправлено збереження нотаток (перехід з `client_id` на `client_phone` у серверних діях).
+- **Client Notes**: Виправлено збереження нотаток (перехід з `client_id` на `client_phone` + додано інвалідацію React Query для миттєвого оновлення UI).
 - **Rules of Hooks**: Виправлено runtime-помилку в `BookingWizard.tsx` (некоректний порядок хуків).
-- **Duplicate Removal**: Видалено дубльований код у хвості `BookingWizard.tsx`.
+- **Raised Buttons**: Фінальне коригування висоти кнопок до `bottom-10` для ідеальної сумісності з навбаром.
 
 ---
 

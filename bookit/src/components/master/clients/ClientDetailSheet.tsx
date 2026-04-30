@@ -44,6 +44,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   const [loading, setLoading] = useState(false);
   const [reminding, setReminding] = useState(false);
   const { data: serverNote } = useClientNote(client?.client_phone);
+  const invalidateNote = useClientNoteInvalidate();
   const [noteValue, setNoteValue] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -116,6 +117,8 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
     const { error } = await saveClientNote(client.client_phone, val);
     if (error) {
       showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+    } else {
+      invalidateNote(client.client_phone);
     }
     setIsSavingNote(false);
   };

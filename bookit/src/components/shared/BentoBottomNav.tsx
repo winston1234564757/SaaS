@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Users, Settings,
   BarChart2, Scissors, ShoppingBag, Wallet,
-  GalleryVerticalEnd, Rocket, ImagePlay, MessageSquare,
+  GalleryVerticalEnd, Rocket, Sparkles, MessageSquare,
   Building2, CreditCard, HelpCircle, Scale, X, Plus, ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -140,7 +140,7 @@ export function BentoBottomNav() {
               <section className="mb-14">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-sage mb-6 opacity-60 text-right">Маркетинг</h3>
                 <div className="grid grid-cols-5 grid-rows-3 gap-3.5 h-[420px]">
-                  <BentoTile href="/dashboard/marketing" icon={ImagePlay} label="Розсилки" size="1x1" className="col-span-2" pathname={pathname} delay={0.5} />
+                  <BentoTile href="/dashboard/marketing" icon={Sparkles} label="Маркетинг" size="1x1" className="col-span-2" pathname={pathname} delay={0.5} />
                   <BentoTile href="/dashboard/portfolio" icon={GalleryVerticalEnd} label="Портфоліо" size="2x2" className="row-span-2 col-span-3" pathname={pathname} delay={0.6} />
                   <BentoTile href="/dashboard/reviews" icon={MessageSquare} label="Відгуки" size="1x1" className="col-span-2" pathname={pathname} delay={0.7} />
                   <BentoTile href="/dashboard/growth" icon={Rocket} label="Ріст" size="wide" className="col-span-5" pathname={pathname} delay={0.8} />

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Plus, BarChart2, Settings, Scissors, Users, CalendarDays, Zap, TrendingUp } from 'lucide-react';
+import { Plus, BarChart2, Settings, Scissors, Users, CalendarDays, Zap, TrendingUp, Sparkles } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { ManualBookingForm } from '@/components/master/bookings/ManualBookingForm';
 
@@ -34,7 +34,7 @@ export function QuickActions() {
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">
             Маркетинг
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Tooltip
               content={<p className="text-[11px] text-foreground">Запустити знижку на вільний слот</p>}
               position="top"
@@ -73,6 +73,24 @@ export function QuickActions() {
                   Ціноутворення
                 </span>
               </motion.button>
+            </Tooltip>
+
+            <Tooltip
+              content={<p className="text-[11px] text-foreground">Сторіс, розсилки та просування</p>}
+              position="top"
+              delay={400}
+            >
+              <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+                <Link href="/dashboard/marketing"
+                  className="flex flex-col items-center gap-2 py-3 px-1 rounded-2xl transition-all hover:bg-white/50 w-full cursor-pointer">
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-text-main shadow-[0_4px_14px_rgba(44,26,20,0.22)]">
+                    <Sparkles size={18} className="text-peach" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+                    Маркетинг
+                  </span>
+                </Link>
+              </motion.div>
             </Tooltip>
           </div>
         </div>

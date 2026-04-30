@@ -216,9 +216,10 @@ function FlashDealsStrip({ deals, accent, onBook }: { deals: FlashDeal[]; accent
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
-      className="mb-5"
+      className="mb-6"
     >
       <div className="flex items-center gap-2 mb-3 px-1">
         <Zap size={16} style={{ color: accent }} />
@@ -503,10 +504,10 @@ export function PublicMasterPage({
 
         {/* ── Header card — "High-end Cozy Minimalism" ── */}
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: 'spring', stiffness: 280, damping: 24 }}
-          className="bento-card relative mb-4 overflow-hidden"
+          className="bento-card relative mb-4 overflow-hidden border border-white/50"
         >
           {/* Share button — absolute top-right */}
           <button
@@ -523,12 +524,24 @@ export function PublicMasterPage({
             {/* Avatar */}
             <div
               className="w-24 h-24 rounded-[28px] flex items-center justify-center text-4xl relative overflow-hidden mb-4"
-              style={{ background: avatarBg, boxShadow: `0 8px 24px ${theme.accent}22` }}
+              style={{ 
+                background: avatarBg, 
+                boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : `0 8px 24px ${theme.accent}22`,
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.4)'}`
+              }}
             >
               {master.avatarUrl ? (
-                <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="96px" priority />
+                <Image 
+                  src={master.avatarUrl} 
+                  alt={master.name} 
+                  fill 
+                  className="object-cover" 
+                  sizes="96px" 
+                  priority 
+                  quality={90}
+                />
               ) : (
-                master.avatarEmoji ?? master.emoji
+                <span className="select-none">{master.avatarEmoji ?? master.emoji}</span>
               )}
             </div>
 
@@ -641,8 +654,9 @@ export function PublicMasterPage({
         {master.lat && master.lng && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08, type: 'spring', stiffness: 280, damping: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.05, type: 'spring', stiffness: 280, damping: 24 }}
             className="mb-4"
           >
             <MasterLocationCard
@@ -659,8 +673,9 @@ export function PublicMasterPage({
         {/* Loyalty Widget */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.09, type: 'spring', stiffness: 280, damping: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.08, type: 'spring', stiffness: 280, damping: 24 }}
           className="mb-4"
         >
           {master.loyalty && (
@@ -736,9 +751,10 @@ export function PublicMasterPage({
         {(master.tier === 'pro' || master.tier === 'studio') && (master.products ?? []).length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.13, type: 'spring', stiffness: 280, damping: 24 }}
-            className="mb-5"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
+            className="mb-6"
           >
             <Link
               href={`/${master.slug}/shop`}
@@ -824,35 +840,39 @@ export function PublicMasterPage({
                     <motion.button
                       key={service.id}
                       initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.18 + ci * 0.05 + i * 0.04, type: 'spring', stiffness: 300, damping: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-40px" }}
+                      transition={{ delay: i * 0.04, type: 'spring', stiffness: 300, damping: 24 }}
                       whileTap={{ scale: 0.985 }}
                       onClick={() => openBooking(service)}
-                      className="bento-card p-4 text-left w-full group relative overflow-hidden"
+                      className="bento-card p-4 text-left w-full group relative overflow-hidden border border-white/40 hover:border-white/80 hover:shadow-lg transition-all duration-300"
                     >
                       {service.popular && (
-                        <div className="absolute top-3 right-3">
+                        <div className="absolute top-3 right-3 z-10">
                           <span
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                            style={{ color: theme.accent, background: accentBg }}
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md"
+                            style={{ color: theme.accent, background: `${theme.accent}15`, border: `1px solid ${theme.accent}30` }}
                           >
                             Популярне
                           </span>
                         </div>
                       )}
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
-                          style={{ background: serviceEmojiCircleBg }}
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110"
+                          style={{ background: serviceEmojiCircleBg, border: '1px solid rgba(255,255,255,0.4)' }}
                         >
                           {service.emoji}
                         </div>
-                        <div className="flex-1 min-w-0 pr-16">
-                          <p className="text-sm font-semibold text-foreground">{service.name}</p>
-                          <p className="text-xs mt-0.5 break-words leading-tight" style={{ color: textTertiary }}>{formatDurationFull(service.duration)}</p>
+                        <div className="flex-1 min-w-0 pr-12">
+                          <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{service.name}</p>
+                          <p className="text-[11px] mt-0.5 font-medium opacity-70" style={{ color: textSecondary }}>
+                            <Clock size={10} className="inline mr-1 -mt-0.5" />
+                            {formatDurationFull(service.duration)}
+                          </p>
                         </div>
                         <div className="flex-shrink-0 text-right">
-                          <p className="text-base font-bold text-foreground">{formatPrice(service.price)}</p>
+                          <p className="text-base font-black text-foreground">{formatPrice(service.price)}</p>
                         </div>
                       </div>
                     </motion.button>

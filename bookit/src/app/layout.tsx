@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: '%s | Bookit',
   },
   description: "Твоя booking-сторінка за 2 хвилини. Запис, продаж товарів та CRM для б'юті-майстрів.",
-  metadataBase: new URL('https://bookit.com.ua'),
+  metadataBase: new URL('https://bookit-five-psi.vercel.app'),
   openGraph: {
     type: 'website',
     locale: 'uk_UA',

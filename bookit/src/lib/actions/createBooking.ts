@@ -473,7 +473,8 @@ export async function createBooking(
     total_services_price: totalServicesPrice,
     total_products_price: totalProductsPrice,
     total_price: finalTotal,
-    notes: p.notes?.trim() ?? null,
+    notes: p.source === 'manual' ? null : (p.notes?.trim() ?? null),
+    master_notes: p.source === 'manual' ? (p.notes?.trim() ?? null) : null,
     source: p.source === 'manual' ? 'manual' : 'public_page',
     dynamic_pricing_label: (() => {
       const parts: string[] = [];

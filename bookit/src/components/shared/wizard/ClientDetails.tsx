@@ -340,7 +340,7 @@ export function ClientDetails({
         )}
       </AnimatePresence>
 
-      <div className="sticky bottom-6 mt-8 pt-3 pb-0.5 bg-gradient-to-t from-[rgba(255,248,244,1)] via-[rgba(255,248,244,0.9)] to-transparent z-10">
+      <div className="sticky bottom-10 mt-8 pt-3 pb-0.5 bg-gradient-to-t from-[rgba(255,248,244,1)] via-[rgba(255,248,244,0.9)] to-transparent z-10">
         <button
           data-testid="wizard-submit-btn"
           disabled={!canSubmit || saving}

@@ -3,16 +3,17 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Download, Loader2, Check, ToggleLeft, ToggleRight,
-  Megaphone, Clock, Calendar, Zap, Star, Flame, Lock,
+  Download, Loader2, Check, ToggleLeft, ToggleRight, X,
+  Megaphone, Clock, Calendar, Zap, Star, Flame, Lock, Plus,
 } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/toast/context';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { useWizardSchedule, type ScheduleStore } from '@/lib/supabase/hooks/useWizardSchedule';
+import { usePortfolioItems } from '@/lib/supabase/hooks/usePortfolioItems';
 import { generateAvailableSlots, type TimeRange } from '@/lib/utils/smartSlots';
-import type { WorkingHoursConfig } from '@/types/database';
+import type { PortfolioItemFull, WorkingHoursConfig } from '@/types/database';
 import { parseError } from '@/lib/utils/errors';
 
 /* ═══════════════════════════════════════════════════════
@@ -44,9 +45,9 @@ const PALETTES: Palette[] = [
 /* ═══════════════════════════════════════════════════════
    MODES
    ═══════════════════════════════════════════════════════ */
-type Mode = 'announcement' | 'free_slots' | 'vacation' | 'promo' | 'review_spotlight' | 'flash_window';
+type Mode = 'announcement' | 'free_slots' | 'vacation' | 'promo' | 'review_spotlight' | 'flash_window' | 'portfolio_item';
 
-const PREMIUM_MODES = new Set<Mode>(['free_slots', 'vacation', 'promo', 'review_spotlight', 'flash_window']);
+const PREMIUM_MODES = new Set<Mode>(['free_slots', 'vacation', 'promo', 'review_spotlight', 'flash_window', 'portfolio_item']);
 
 const MODES: { id: Mode; label: string; Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; premium: boolean }[] = [
   { id: 'announcement',     label: 'Анонс',        Icon: Megaphone, premium: false },
@@ -55,6 +56,7 @@ const MODES: { id: Mode; label: string; Icon: React.ComponentType<{ size?: numbe
   { id: 'promo',            label: 'Акція',        Icon: Zap,       premium: true  },
   { id: 'review_spotlight', label: 'Відгук',       Icon: Star,      premium: true  },
   { id: 'flash_window',     label: 'Гаряче вікно', Icon: Flame,     premium: true  },
+  { id: 'portfolio_item',   label: 'Робота',       Icon: Star,      premium: true  },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -74,8 +76,8 @@ function getGridConfig(count: number): GridCfg {
 const UA_MONTHS = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
 const DOW_KEYS = ['sun','mon','tue','wed','thu','fri','sat'] as const;
 
-const SERIF = "'Playfair Display', Georgia, 'Times New Roman', serif";
-const SANS  = "'Inter', system-ui, -apple-system, sans-serif";
+const SANS  = "var(--font-inter, 'Inter'), system-ui, sans-serif";
+const SERIF = "var(--font-playfair, 'Playfair Display'), Georgia, serif";
 
 function formatUA(dateStr: string): string {
   const d = new Date(dateStr + 'T12:00:00');
@@ -245,6 +247,14 @@ const MODE_UPGRADE_COPY: Partial<Record<Mode, UpgradeCopy>> = {
     teaserTitle:  'Порожній слот → заповнений за годину',
     teaserDesc:   'Вкажіть знижку, оберіть час — сторіс готова за 10 секунд.',
   },
+  portfolio_item: {
+    modalTitle:   'Ваші роботи — ваша візитка',
+    modalDesc:    'Створюйте професійні анонси ваших найкращих робіт прямо з портфоліо. PRO-шаблон робить фото ще привабливішими для клієнтів.',
+    overlayTitle: 'Робота з портфоліо — тільки PRO',
+    overlayHint:  'Преміум-шаблон для ваших робіт',
+    teaserTitle:  'Фото, що приносять нові записи',
+    teaserDesc:   'Оберіть роботу — і сторіс готова. Ваші клієнти оцінять професійний підхід.',
+  },
 };
 
 /* ═══════════════════════════════════════════════════════
@@ -279,6 +289,12 @@ interface CanvasProps {
   flashWinDate: string | null;
   flashWinTime: string | null;
   flashWinDiscount: number;
+  bgPhotoUrl: string | null;
+  portfolioTitle: string | null;
+  portfolioDesc: string | null;
+  platePos: 'top' | 'center' | 'bottom';
+  textAlign: 'left' | 'center' | 'right';
+  transparency: number;
 }
 
 function StoryCanvas({
@@ -287,6 +303,8 @@ function StoryCanvas({
   vacStart, vacEnd, selectedDeal,
   reviewText, reviewClientName,
   flashWinSvcName, flashWinDate, flashWinTime, flashWinDiscount,
+  bgPhotoUrl, portfolioTitle, portfolioDesc,
+  platePos, textAlign, transparency,
 }: CanvasProps) {
   const avatarBlockH = showAvatar ? 110 : 0;
   const contentTop   = 50 + avatarBlockH + 10;
@@ -303,192 +321,174 @@ function StoryCanvas({
     </p>
   );
 
-  const slotGrid = (): React.ReactNode => {
-    if (slotsLoading)    return <p style={{ margin: 0, fontSize: 12, color: pal.muted, fontFamily: SANS }}>Завантаження…</p>;
-    if (!slotsDate)      return <p style={{ margin: 0, fontSize: 11, color: pal.muted, fontStyle: 'italic', fontFamily: SANS }}>Оберіть дату</p>;
-    if (slots.length === 0) return <p style={{ margin: 0, fontSize: 11, color: pal.muted, fontStyle: 'italic', fontFamily: SANS }}>Немає вільних місць</p>;
-    const cfg = getGridConfig(slots.length);
-    return (
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cfg.cols}, 1fr)`, gap: cfg.gap }}>
-        {slots.map(s => (
-          <div key={s} style={{
-            height: cfg.pillH, borderRadius: cfg.radius,
-            background: pal.pill,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: cfg.fontSize, fontWeight: cfg.fontWeight,
-            color: pal.pillText, fontFamily: SANS, letterSpacing: '0.01em',
-          }}>
-            {s}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   let content: React.ReactNode = null;
 
   if (mode === 'announcement') {
-    const fs = annoText.length > 80 ? 18 : annoText.length > 40 ? 22 : 27;
     content = (
-      <>
-        {label('Оголошення', { marginBottom: 20 })}
-        <p style={{ margin: 0, fontSize: fs, fontFamily: SERIF, fontWeight: 700, color: pal.text, lineHeight: 1.35, letterSpacing: '-0.01em' }}>
-          {annoText || '…'}
-        </p>
-      </>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 48, fontFamily: SERIF, color: pal.text, opacity: 0.1, lineHeight: 0.1, marginBottom: 5 }}>“</div>
+        <div style={{ 
+          fontSize: annoText.length > 100 ? 18 : 24, 
+          fontWeight: 700, fontFamily: SERIF, color: pal.text, 
+          lineHeight: 1.4, letterSpacing: '-0.01em', fontStyle: 'italic',
+          padding: '0 10px'
+        }}>
+          {annoText || "Ваше особливе повідомлення для клієнтів…"}
+        </div>
+        <div style={{ fontSize: 48, fontFamily: SERIF, color: pal.text, opacity: 0.1, lineHeight: 0.1, marginTop: 20, textAlign: 'right' }}>”</div>
+      </div>
     );
   }
 
   if (mode === 'free_slots') {
-    const day   = slotsDate ? new Date(slotsDate + 'T12:00:00').getDate() : '—';
-    const month = slotsDate ? UA_MONTHS[new Date(slotsDate + 'T12:00:00').getMonth()] : '';
     content = (
-      <>
-        {label('Вільні вікна', { marginBottom: 12 })}
-        <p style={{ margin: 0, fontSize: 56, fontFamily: SERIF, fontWeight: 700, color: pal.text, lineHeight: 0.9, letterSpacing: '-0.03em' }}>
-          {day}
-        </p>
-        <p style={{ margin: 0, marginBottom: selectedServiceName ? 14 : 20, fontSize: 17, fontFamily: SERIF, fontStyle: 'italic', fontWeight: 400, color: pal.muted, letterSpacing: '0.02em' }}>
-          {month}
-        </p>
-        {selectedServiceName && (
-          <div style={{ marginBottom: 16 }}>
-            {label('Послуга', { marginBottom: 4 })}
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: pal.text, fontFamily: SANS, letterSpacing: '-0.01em' }}>
-              {selectedServiceName}
-            </p>
-          </div>
-        )}
-        {slotGrid()}
-      </>
+      <div style={{ width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginBottom: 12 }}>
+          <div style={{ width: 24, height: 1, background: pal.dot, opacity: 0.2 }} />
+          <Calendar size={12} color={pal.dot} style={{ opacity: 0.6 }} />
+          <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: pal.muted }}>
+            {slotsDate ? new Date(slotsDate + 'T12:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' }) : 'Оберіть дату'}
+          </span>
+          <div style={{ width: 24, height: 1, background: pal.dot, opacity: 0.2 }} />
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 700, fontFamily: SERIF, color: pal.text, textAlign: 'center', marginBottom: 20, lineHeight: 1.2 }}>
+          {selectedServiceName || 'Вільні вікна'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          {slotsLoading ? (
+            <div style={{ gridColumn: 'span 3', textAlign: 'center', fontSize: 12, color: pal.muted, padding: 10 }}>Шукаю вікна…</div>
+          ) : slots.length > 0 ? (
+            slots.slice(0, 9).map(s => (
+              <div key={s} style={{ 
+                padding: '8px 0', borderRadius: 14, background: 'rgba(255,255,255,0.35)', 
+                border: '1px solid rgba(255,255,255,0.5)', color: pal.text, fontSize: 13, fontWeight: 700,
+                textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                fontFamily: SANS
+              }}>
+                {s}
+              </div>
+            ))
+          ) : (
+            <div style={{ gridColumn: 'span 3', textAlign: 'center', fontSize: 12, color: pal.muted, fontStyle: 'italic', padding: 10 }}>На жаль, вікон немає</div>
+          )}
+        </div>
+      </div>
     );
   }
 
   if (mode === 'vacation') {
-    const from = vacStart ? formatUA(vacStart) : '—';
-    const to   = vacEnd   ? formatUA(vacEnd)   : '—';
     content = (
-      <>
-        {label('Відпустка', { marginBottom: 22 })}
-        <p style={{ margin: 0, marginBottom: 2, fontSize: 11, color: pal.muted, fontFamily: SANS, fontWeight: 500 }}>з</p>
-        <p style={{ margin: 0, marginBottom: 6, fontSize: 42, fontFamily: SERIF, fontWeight: 700, color: pal.text, lineHeight: 1.0, letterSpacing: '-0.02em' }}>
-          {from}
-        </p>
-        <p style={{ margin: 0, marginBottom: 2, fontSize: 11, color: pal.muted, fontFamily: SANS, fontWeight: 500 }}>по</p>
-        <p style={{ margin: 0, marginBottom: 26, fontSize: 42, fontFamily: SERIF, fontWeight: 700, color: pal.text, lineHeight: 1.0, letterSpacing: '-0.02em' }}>
-          {to}
-        </p>
-        <p style={{ margin: 0, fontSize: 12, color: pal.muted, fontStyle: 'italic', fontFamily: SANS }}>
-          Записуйтесь заздалегідь
-        </p>
-      </>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ 
+          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', 
+          borderRadius: 100, background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.6)',
+          color: pal.muted, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20
+        }}>
+          🏠 Off-duty
+        </div>
+        <div style={{ fontSize: 12, color: pal.muted, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12, fontWeight: 600 }}>Відпустка</div>
+        <div style={{ fontSize: 36, fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1 }}>
+          {vacStart ? new Date(vacStart + 'T12:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }) : '—'} 
+        </div>
+        <div style={{ fontSize: 18, color: pal.dot, margin: '8px 0', opacity: 0.5 }}>до</div>
+        <div style={{ fontSize: 36, fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1 }}>
+          {vacEnd ? new Date(vacEnd + 'T12:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }) : '—'}
+        </div>
+        <div style={{ marginTop: 24, height: 1, width: 60, background: pal.dot, opacity: 0.1, marginInline: 'auto' }} />
+      </div>
     );
   }
 
   if (mode === 'promo') {
-    if (!selectedDeal) {
-      content = (
-        <>
-          {label('Flash Deal', { marginBottom: 18 })}
-          <p style={{ margin: 0, fontSize: 12, color: pal.muted, fontStyle: 'italic', fontFamily: SANS }}>Оберіть Flash Deal зі списку</p>
-        </>
-      );
-    } else {
-      const orig     = selectedDeal.original_price / 100;
-      const newPrice = Math.round(orig * (1 - selectedDeal.discount_pct / 100));
-      content = (
-        <>
-          {label('Flash Deal', { marginBottom: 18 })}
-          <p style={{ margin: 0, marginBottom: 18, fontSize: 20, fontFamily: SERIF, fontWeight: 700, color: pal.text, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-            {selectedDeal.service_name}
-          </p>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 16 }}>
-            <span style={{ fontSize: 15, fontWeight: 400, color: pal.muted, textDecoration: 'line-through', fontFamily: SANS }}>{orig}₴</span>
-            <span style={{ fontSize: 48, fontFamily: SERIF, fontWeight: 700, color: pal.text, letterSpacing: '-0.03em', lineHeight: 1 }}>{newPrice}₴</span>
+    content = (
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ 
+          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', 
+          borderRadius: 100, background: '#C05B5B', color: '#fff', fontSize: 10, fontWeight: 900, 
+          textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20, boxShadow: '0 4px 15px rgba(192,91,91,0.3)'
+        }}>
+          <Zap size={10} fill="#fff" /> Limited Offer
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1.2, marginBottom: 12 }}>
+          {selectedDeal?.service_name || 'Спеціальна ціна'}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span style={{ fontSize: 14, color: pal.muted, textDecoration: 'line-through', opacity: 0.6 }}>{selectedDeal?.original_price} ₴</span>
+            <span style={{ fontSize: 10, color: '#C05B5B', fontWeight: 800 }}>−{selectedDeal?.discount_pct}%</span>
           </div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: pal.pill, borderRadius: 8, padding: '5px 12px' }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: pal.pillText, letterSpacing: '0.08em', fontFamily: SANS }}>−{selectedDeal.discount_pct}%</span>
-            {selectedDeal.slot_date && (
-              <span style={{ fontSize: 10, color: pal.muted, fontFamily: SANS }}>
-                · {formatUA(selectedDeal.slot_date)} {selectedDeal.slot_time?.slice(0, 5) || ''}
-              </span>
-            )}
-          </div>
-        </>
-      );
-    }
+          <div style={{ width: 1, height: 32, background: pal.dot, opacity: 0.1 }} />
+          <span style={{ fontSize: 42, fontWeight: 900, color: pal.text, fontFamily: SERIF }}>
+            {selectedDeal ? Math.round(selectedDeal.original_price * (1 - selectedDeal.discount_pct/100)) : '—'}₴
+          </span>
+        </div>
+      </div>
+    );
   }
 
   if (mode === 'review_spotlight') {
-    if (!reviewText) {
-      content = (
-        <>
-          {label('Відгук клієнта', { marginBottom: 18 })}
-          <p style={{ margin: 0, fontSize: 12, color: pal.muted, fontStyle: 'italic', fontFamily: SANS }}>
-            Оберіть відгук зі списку нижче
-          </p>
-        </>
-      );
-    } else {
-      const fs = reviewText.length > 120 ? 14 : reviewText.length > 60 ? 17 : 21;
-      content = (
-        <>
-          {label('Відгук клієнта', { marginBottom: 16 })}
-          <p style={{ margin: 0, marginBottom: 16, fontSize: 20, color: '#D4935A', letterSpacing: 3, fontFamily: SANS }}>
-            ★★★★★
-          </p>
-          <p style={{ margin: 0, marginBottom: 20, fontSize: fs, fontFamily: SERIF, fontStyle: 'italic', fontWeight: 400, color: pal.text, lineHeight: 1.5, letterSpacing: '-0.005em' }}>
-            «{reviewText}»
-          </p>
-          {reviewClientName && (
-            <p style={{ margin: 0, fontSize: 11, color: pal.muted, fontFamily: SANS, fontWeight: 600, letterSpacing: '0.02em' }}>
-              — {reviewClientName}
-            </p>
-          )}
-        </>
-      );
-    }
+    content = (
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 3, marginBottom: 16 }}>
+          {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="#D4935A" color="#D4935A" style={{ opacity: 0.8 }} />)}
+        </div>
+        <div style={{ 
+          fontSize: reviewText && reviewText.length > 100 ? 16 : 20, 
+          fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1.5, fontStyle: 'italic', marginBottom: 24 
+        }}>
+          «{reviewText || "Неймовірний сервіс та якість! Обов'язково повернуся ще раз..."}»
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 800, color: pal.muted, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+          {reviewClientName || "Щасливий клієнт"}
+        </div>
+      </div>
+    );
   }
 
   if (mode === 'flash_window') {
-    if (!flashWinSvcName || !flashWinTime) {
-      content = (
-        <>
-          {label('Гаряче вікно', { marginBottom: 18 })}
-          <p style={{ margin: 0, fontSize: 12, color: pal.muted, fontStyle: 'italic', fontFamily: SANS }}>
-            Оберіть послугу, дату та час
-          </p>
-        </>
-      );
-    } else {
-      const fwDay   = flashWinDate ? new Date(flashWinDate + 'T12:00:00').getDate() : '';
-      const fwMonth = flashWinDate ? UA_MONTHS[new Date(flashWinDate + 'T12:00:00').getMonth()] : '';
-      content = (
-        <>
-          {label('Гаряче вікно', { marginBottom: 14 })}
-          <div style={{ display: 'inline-flex', alignItems: 'center', background: '#C05B5B', borderRadius: 10, padding: '7px 16px', marginBottom: 18 }}>
-            <span style={{ fontSize: 26, fontFamily: SERIF, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>
-              −{flashWinDiscount}%
-            </span>
+    content = (
+      <div style={{ width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginBottom: 16 }}>
+          <div style={{ width: 15, height: 1, background: '#C05B5B', opacity: 0.3 }} />
+          <div style={{ padding: '4px 12px', borderRadius: 100, background: 'rgba(192,91,91,0.1)', color: '#C05B5B', fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Flash Window</div>
+          <div style={{ width: 15, height: 1, background: '#C05B5B', opacity: 0.3 }} />
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 700, fontFamily: SERIF, color: pal.text, textAlign: 'center', marginBottom: 20, lineHeight: 1.2 }}>
+          {flashWinSvcName || 'Гаряче вікно'}
+        </div>
+        <div style={{ 
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '16px 24px', borderRadius: 24, background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.5)' 
+        }}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 10, color: pal.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Коли</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: pal.text }}>{flashWinDate ? new Date(flashWinDate + 'T12:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }) : '—'}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: pal.muted }}>о {flashWinTime || '—'}</div>
           </div>
-          <p style={{ margin: 0, marginBottom: 14, fontSize: 20, fontFamily: SERIF, fontWeight: 700, color: pal.text, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
-            {flashWinSvcName}
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ background: pal.pill, borderRadius: 8, padding: '5px 12px' }}>
-              <span style={{ fontSize: 12, fontFamily: SANS, fontWeight: 700, color: pal.pillText }}>
-                {fwDay} {fwMonth}
-              </span>
-            </div>
-            <div style={{ background: pal.pill, borderRadius: 8, padding: '5px 12px' }}>
-              <span style={{ fontSize: 12, fontFamily: SANS, fontWeight: 700, color: pal.pillText }}>
-                {flashWinTime}
-              </span>
-            </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 10, color: '#C05B5B', fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 }}>Sale</div>
+            <div style={{ fontSize: 32, fontWeight: 900, color: '#C05B5B', fontFamily: SERIF, lineHeight: 1 }}>−{flashWinDiscount}%</div>
           </div>
-        </>
-      );
-    }
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'portfolio_item') {
+    content = (
+      <div style={{ width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: pal.dot, opacity: 0.3 }} />
+          <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: pal.muted }}>Focus</span>
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+          {portfolioTitle || "Моя нова робота"}
+        </div>
+        <div style={{ marginTop: 14, fontSize: 12, color: pal.muted, fontStyle: 'italic', opacity: 0.7 }}>
+          Деталі та запис у Direct ✉️
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -497,33 +497,92 @@ function StoryCanvas({
       position: 'relative', overflow: 'hidden',
       background: pal.bg, fontFamily: SANS, userSelect: 'none',
     }}>
-      <div style={{ position: 'absolute', top: 18, left: 22, display: 'flex', alignItems: 'center' }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: pal.brand, letterSpacing: '0.04em' }}>Bookit</span>
-        <span style={{ fontSize: 13, fontWeight: 900, color: pal.dot, marginLeft: 1 }}>.</span>
+      {/* Background Photo Layer */}
+      {bgPhotoUrl && (
+        <div style={{ position: 'absolute', inset: 0 }}>
+          <img src={bgPhotoUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)' }} />
+          {/* Subtle gradient vignette */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.3) 100%)' }} />
+        </div>
+      )}
+
+      <div style={{ 
+        position: 'absolute', top: 18, left: 22, display: 'flex', alignItems: 'center',
+        padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)'
+      }}>
+        <span style={{ fontSize: 10, fontStyle: 'italic', fontWeight: 700, color: bgPhotoUrl ? '#fff' : pal.brand, letterSpacing: '0.04em' }}>Bookit</span>
+        <span style={{ fontSize: 13, fontWeight: 900, color: bgPhotoUrl ? '#fff' : pal.dot, marginLeft: 1 }}>.</span>
       </div>
 
       {showAvatar && (
         <div style={{
-          position: 'absolute', top: 44, left: 0, right: 0,
+          position: 'absolute', top: 44, left: '50%', transform: 'translateX(-50%)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+          padding: '12px 20px', borderRadius: 24,
+          background: bgPhotoUrl ? 'rgba(255,255,255,0.15)' : 'transparent',
+          backdropFilter: bgPhotoUrl ? 'blur(10px)' : 'none',
+          border: bgPhotoUrl ? '1px solid rgba(255,255,255,0.2)' : 'none',
+          zIndex: 10,
         }}>
           <div style={{
             width: 72, height: 72, borderRadius: '50%',
             overflow: 'hidden', background: pal.pill,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: `2px solid ${bgPhotoUrl ? 'rgba(255,255,255,0.5)' : pal.bg}`,
           }}>
             {avatarBlob
               ? <img src={avatarBlob} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               : <span style={{ fontSize: 28, lineHeight: 1 }}>👤</span>
             }
           </div>
-          <span style={{ fontSize: 12, fontWeight: 600, color: pal.text, letterSpacing: '-0.01em', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ 
+            fontSize: 12, fontWeight: 600, color: bgPhotoUrl ? '#fff' : pal.text, 
+            letterSpacing: '-0.01em', maxWidth: 160, overflow: 'hidden', 
+            textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            textShadow: bgPhotoUrl ? '0 1px 4px rgba(0,0,0,0.2)' : 'none'
+          }}>
             {displayName}
           </span>
         </div>
       )}
 
-      <div style={{ position: 'absolute', top: contentTop, left: 28, right: 28, bottom: 120 }}>
+      {/* Main Content Plate */}
+      <div style={{ 
+        position: 'absolute',
+        left: 24, right: 24,
+        zIndex: 5,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center',
+        textAlign: textAlign,
+
+        // Vertical Positioning
+        ...(platePos === 'center' ? {
+          top: '50%',
+          transform: 'translateY(-50%)',
+        } : platePos === 'top' ? {
+          top: contentTop + 10,
+        } : {
+          bottom: 140,
+        }),
+
+        // Dynamic Sizing
+        width: 'auto',
+        alignSelf: textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center',
+        padding: mode === 'portfolio_item' ? '18px 24px' : '28px 32px',
+        borderRadius: 32,
+
+        // Premium Glass
+        background: bgPhotoUrl ? `rgba(255,255,255,${transparency / 100})` : 'transparent',
+        backdropFilter: bgPhotoUrl ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
+        WebkitBackdropFilter: bgPhotoUrl ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
+        boxShadow: bgPhotoUrl ? `0 15px 50px rgba(0,0,0,${Math.min(0.2, (100 - transparency) / 400)})` : 'none',
+        border: bgPhotoUrl ? `1px solid rgba(255,255,255,${Math.max(0.2, transparency / 100 + 0.1)})` : 'none',
+        
+        // Ensure legibility with global text shadow if very transparent
+        textShadow: transparency < 40 ? '0 1px 2px rgba(255,255,255,0.4)' : 'none',
+      }}>
         {content}
       </div>
 
@@ -557,7 +616,15 @@ const INPUT_STYLE: React.CSSProperties = {
   fontSize: 13, color: '#2C1A14', outline: 'none', boxSizing: 'border-box',
 };
 
-export function StoryGenerator() {
+interface StoryGeneratorProps {
+  isOpen?: boolean;
+  onClose?: boolean | (() => void);
+  items?: PortfolioItemFull[];
+  masterName?: string;
+  masterSlug?: string;
+}
+
+export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug }: StoryGeneratorProps = {}) {
   const { profile, masterProfile } = useMasterContext();
   const { showToast } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -581,10 +648,30 @@ export function StoryGenerator() {
   // Review Spotlight
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   // Flash Window
-  const [flashWinSvcId,   setFlashWinSvcId]   = useState<string | null>(null);
-  const [flashWinDate,    setFlashWinDate]    = useState<string | null>(null);
-  const [flashWinTime,    setFlashWinTime]    = useState<string | null>(null);
+  // Flash Window
+  const [flashWinSvcId,    setFlashWinSvcId]    = useState<string | null>(null);
+  const [flashWinDate,     setFlashWinDate]     = useState<string | null>(null);
+  const [flashWinTime,     setFlashWinTime]     = useState<string | null>(null);
   const [flashWinDiscount, setFlashWinDiscount] = useState(20);
+
+  // New Pro Controls
+  const [platePos,     setPlatePos]     = useState<'top' | 'center' | 'bottom'>('center');
+  const [textAlign,    setTextAlign]    = useState<'left' | 'center' | 'right'>('center');
+  const [transparency, setTransparency] = useState(38); // 0-100
+
+  // Custom Photo
+  const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
+  const [selectedBgPhotoId, setSelectedBgPhotoId] = useState<string | null>(null);
+  const bgPhotoUrl = useMemo(() => {
+    if (selectedBgPhotoId) {
+      const it = portfolioItems.find(i => i.id === selectedBgPhotoId);
+      return it?.photos[0]?.url ?? null;
+    }
+    return customBgPhoto;
+  }, [selectedBgPhotoId, portfolioItems, customBgPhoto]);
 
   // Blur tease
   const [blurActive,       setBlurActive]       = useState(false);
@@ -600,6 +687,24 @@ export function StoryGenerator() {
     setBlurActive(false);
     blurTimerRef.current = setTimeout(() => setBlurActive(true), 3_000);
   }, [mode, isStarterPlan]);
+
+  const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast({ type: 'error', title: 'Фото занадто велике', message: 'Макс. 10MB' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCustomBgPhoto(reader.result as string);
+      setSelectedBgPhotoId(null); // Switch to the new custom photo
+      onControlChange();
+    };
+    reader.readAsDataURL(file);
+  };
 
   // On mode switch: give 10s to configure before blur kicks in
   useEffect(() => {
@@ -637,8 +742,8 @@ export function StoryGenerator() {
   }, [avatarUrl]);
 
   const masterId    = masterProfile?.id ?? profile?.id ?? null;
-  const displayName = masterProfile?.business_name || profile?.full_name || "Ваше ім'я";
-  const slug        = masterProfile?.slug ?? 'bookit';
+  const displayName = masterName || masterProfile?.business_name || profile?.full_name || "Ваше ім'я";
+  const slug        = masterSlug || masterProfile?.slug || 'bookit';
 
   const services    = useServices(masterId);
   const selectedSvc = services.find(s => s.id === selectedSvcId) ?? null;
@@ -737,6 +842,10 @@ export function StoryGenerator() {
     flashWinDate,
     flashWinTime,
     flashWinDiscount,
+    bgPhotoUrl,
+    portfolioTitle: customBgPhoto ? 'Ваше фото' : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.title ?? null),
+    portfolioDesc: customBgPhoto ? null : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.description ?? null),
+    platePos, textAlign, transparency,
   };
 
   /* Controls */
@@ -911,9 +1020,8 @@ export function StoryGenerator() {
 
   const isBlurLocked = isPremiumLocked && blurActive;
 
-  return (
+  const contentBody = (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-
       <div>
         <h1 className="font-display text-2xl font-semibold text-foreground">Конструктор Сторіс</h1>
         <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
@@ -951,6 +1059,66 @@ export function StoryGenerator() {
         <div className="flex-1 space-y-4 w-full">
 
           <div>
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
+              >
+                <Plus size={12} /> Завантажити своє
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleCustomPhotoUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <button
+                type="button"
+                onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }}
+                className={`relative w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 ${
+                  (!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-white/60 bg-white/40 text-muted-foreground/40'
+                }`}
+              >
+                <X size={18} />
+              </button>
+              {customBgPhoto && (
+                <button
+                  type="button"
+                  onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
+                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                    (!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'
+                  }`}
+                >
+                  <img src={customBgPhoto} className="w-full h-full object-cover" />
+                  {(!selectedBgPhotoId && customBgPhoto) && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                      <Check size={14} className="text-white" strokeWidth={3} />
+                    </div>
+                  )}
+                </button>
+              )}
+
+              {portfolioItems.map(item => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
+                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                    selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'
+                  }`}
+                >
+                  <img src={item.photos[0]?.url} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
             <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
             <div className="flex gap-2.5 flex-wrap">
               {PALETTES.map((p, i) => (
@@ -975,6 +1143,51 @@ export function StoryGenerator() {
           </div>
 
           {controls}
+
+          {/* Layout Customization */}
+          <div className="pt-4 border-t border-white/40 space-y-4">
+            <div>
+              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Налаштування плашки</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[9px] text-muted-foreground block mb-1">Позиція</label>
+                  <div className="flex bg-white/40 rounded-xl p-0.5 border border-white/60">
+                    {(['top', 'center', 'bottom'] as const).map(p => (
+                      <button key={p} type="button" onClick={() => { setPlatePos(p); onControlChange(); }} 
+                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-all ${platePos === p ? 'bg-white shadow-sm text-primary' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                        {p === 'top' ? 'Вгору' : p === 'center' ? 'Центр' : 'Низ'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[9px] text-muted-foreground block mb-1">Текст</label>
+                  <div className="flex bg-white/40 rounded-xl p-0.5 border border-white/60">
+                    {(['left', 'center', 'right'] as const).map(a => (
+                      <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }} 
+                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-all ${textAlign === a ? 'bg-white shadow-sm text-primary' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                        {a === 'left' ? '⬅️' : a === 'center' ? '↔️' : '➡️'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">Прозорість скла</label>
+                <span className="text-[10px] font-bold text-primary">{transparency}%</span>
+              </div>
+              <input 
+                type="range" min={0} max={100} step={1}
+                value={transparency} 
+                onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
+                className="w-full cursor-pointer h-1.5 bg-white/50 rounded-lg appearance-none"
+                style={{ accentColor: '#789A99' }}
+              />
+            </div>
+          </div>
 
           {/* Inline teaser banner — shown to Starter on any premium mode */}
           <AnimatePresence>
@@ -1138,13 +1351,57 @@ export function StoryGenerator() {
         </div>
       </div>
 
-      <UpgradePromptModal
-        isOpen={showUpgradeModal}
+      <UpgradePromptModal 
+        isOpen={showUpgradeModal} 
         onClose={() => setShowUpgradeModal(false)}
         source="marketing"
         feature={upgradeCopy?.modalTitle}
         description={upgradeCopy?.modalDesc}
       />
     </div>
+  );
+
+  if (isOpen !== undefined) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed inset-0 z-[100] flex flex-col bg-background overflow-y-auto pb-20"
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border">
+              <h2 className="font-display text-lg font-bold">Генератор Сторіс</h2>
+              <button onClick={() => typeof onClose === 'function' && onClose()} className="p-2 hover:bg-secondary rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            {contentBody}
+            
+            <div
+              ref={canvasRef}
+              aria-hidden="true"
+              style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none' }}
+            >
+              <StoryCanvas {...canvasSharedProps} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
+  return (
+    <>
+      {contentBody}
+      <div
+        ref={canvasRef}
+        aria-hidden="true"
+        style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none' }}
+      >
+        <StoryCanvas {...canvasSharedProps} />
+      </div>
+    </>
   );
 }

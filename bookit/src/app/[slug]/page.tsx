@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/client';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies, headers } from 'next/headers';
 import { toZonedTime } from 'date-fns-tz';
@@ -8,7 +8,8 @@ import { getNow } from '@/lib/utils/now';
 import { PublicMasterPage } from '@/components/public/PublicMasterPage';
 import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
 import { ALL_STEPS } from '@/components/shared/wizard/helpers';
-import { serviceCategories } from '@/lib/constants/categories';
+import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
+import { getMaster } from './data';
 
 export const revalidate = 300;
 
@@ -23,28 +24,7 @@ export async function generateStaticParams() {
   return (data ?? []).map(({ slug }) => ({ slug }));
 }
 
-async function getMaster(slug: string) {
-  // Admin client bypasses RLS — needed for profiles!inner join on public pages
-  const supabase = createAdminClient();
-
-  let query = supabase
-    .from('master_profiles')
-    .select(`
-      id, slug, business_name, bio, city, address, latitude, longitude, floor, cabinet, rating, rating_count,
-      subscription_tier, instagram_url, telegram_url, categories,
-      mood_theme, avatar_emoji, pricing_rules, working_hours, c2c_enabled, c2c_discount_pct,
-      profiles!inner ( full_name, avatar_url ),
-      services ( id, name, emoji, category, price, duration_minutes, is_popular, is_active, sort_order, description )
-    `)
-    .eq('slug', slug);
-
-  if (process.env.NODE_ENV === 'production') {
-    query = query.eq('is_published', true);
-  }
-
-  const { data } = await query.single();
-  return data;
-}
+// getMaster moved to data.ts for sharing with OG image generator
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -55,13 +35,39 @@ export async function generateMetadata(
 
   const profile = master.profiles as unknown as { full_name: string; avatar_url: string | null };
   const displayName = master.business_name || profile.full_name;
+  
+  // SEO Engine: Specialty + City + Brand
+  const specialties = (master.categories as string[] ?? [])
+    .map(val => CATEGORY_TEMPLATES[val]?.label || val)
+    .slice(0, 2);
+  const mainSpecialty = specialties[0] || 'Б’юті-майстер';
+  const location = master.city ? `у м. ${master.city}` : '';
+  
+  const seoTitle = `${mainSpecialty} ${location} | ${displayName}`;
+  const seoDescription = master.bio 
+    ? (master.bio.length > 160 ? master.bio.slice(0, 157) + '...' : master.bio)
+    : `Онлайн-запис до ${displayName}. ${specialties.join(', ')}. Бронюйте зручний час онлайн на Bookit.`;
+
   return {
-    title: `${displayName} — Bookit`,
-    description: master.bio ?? `Онлайн-запис до ${displayName}`,
-    openGraph: {
-      title: displayName,
-      description: master.bio ?? '',
+    title: seoTitle,
+    description: seoDescription,
+    alternates: {
+      canonical: `/${slug}`,
     },
+    openGraph: {
+      title: seoTitle,
+      description: seoDescription,
+      url: `/${slug}`,
+      siteName: 'Bookit',
+      locale: 'uk_UA',
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDescription,
+    },
+    keywords: [...(master.categories as string[] ?? []), master.city, displayName, 'онлайн запис', 'bookit'].filter(Boolean),
   };
 }
 
@@ -303,7 +309,7 @@ export default async function MasterPublicPage(
     slug: data.slug,
     name: data.business_name || profile.full_name,
     specialty: (data.categories as string[] ?? [])
-      .map(val => serviceCategories.find(c => c.id === val || c.label === val)?.label || val)
+      .map(val => CATEGORY_TEMPLATES[val]?.label || val)
       .join(', ') || 'Майстер краси',
     location: locationQuery || 'Україна',
     mapUrl,
@@ -346,8 +352,39 @@ export default async function MasterPublicPage(
     }),
   };
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: master.name,
+    description: master.bio,
+    image: master.avatarUrl || undefined,
+    url: `https://bookit.com.ua/${master.slug}`,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: data.city,
+      streetAddress: data.address,
+    },
+    geo: lat && lng ? {
+      '@type': 'GeoCoordinates',
+      latitude: lat,
+      longitude: lng,
+    } : undefined,
+    aggregateRating: master.rating > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: master.rating,
+      reviewCount: master.reviewsCount,
+      bestRating: '5',
+      worstRating: '1',
+    } : undefined,
+    priceRange: '₴₴',
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div id="e2e-debug-now" style={{ display: 'none' }} data-now={now.toISOString()}>
         {now.toISOString()}
       </div>

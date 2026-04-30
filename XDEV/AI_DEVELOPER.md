@@ -204,6 +204,13 @@ const [templates, exceptions, timeOffs, bookings] = await Promise.all([...]);
 - Ніколи не fetchити слоти per-date ліниво — завжди pre-fetch вікно.
 - Date strip: off-days → `вих.` + dashed border; fully-booked → `зайнято` + red border.
 
+## SEO & OpenGraph Rules
+
+- **Shared Data Layer**: Кожна публічна сторінка (напр. `/[slug]`) повинна мати `data.ts` з кешованими функціями (`React.cache`). Це гарантує, що Page, Metadata та OG-image використовують один і той самий набір даних без зайвих запитів до БД.
+- **Dynamic OG Images**: Використовувати `opengraph-image.tsx` у папці роута. Дизайн має бути Premium (Mica, аватари, емодзі категорій).
+- **MetadataBase**: ПОВИННА бути задана в `layout.tsx` для коректної генерації абсолютних посилань на OG-картинки (інакше Телеграм їх не побачить).
+- **JSON-LD**: Кожна публічна сторінка об'єкта (майстер, товар) МУСИТЬ мати структуровані дані `application/ld+json`.
+
 ## 📱 Mobile Interaction Rules (v5.2.0+)
 - **BottomSheet Strategy**: Завжди використовувати `@/components/ui/BottomSheet`.
 - **Swipe-to-Dismiss**: Кожна модалка ПОВИННА мати iOS-handle та підтримувати свайп вниз для закриття.

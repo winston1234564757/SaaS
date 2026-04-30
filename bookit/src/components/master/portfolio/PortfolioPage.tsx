@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, ExternalLink, Images, Lock } from 'lucide-react';
+import { Sparkles, Plus, ExternalLink, Images, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePortfolioItems, useInvalidatePortfolio } from '@/lib/supabase/hooks/usePortfolioItems';
 import { PortfolioItemCard } from './PortfolioItemCard';
 import { PortfolioItemEditor } from './PortfolioItemEditor';
+import { StoryGenerator } from '@/components/master/marketing/StoryGenerator';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { useMasterContext } from '@/lib/supabase/context';
 import type { PortfolioItemFull, SubscriptionTier } from '@/types/database';
 
 const STARTER_LIMIT = 5;
@@ -40,10 +42,12 @@ interface Props {
 }
 
 export function PortfolioPage({ initialItems, tier, masterSlug, masterId, services, reviews, clients }: Props) {
+  const { masterProfile, profile } = useMasterContext();
   const { data: items = initialItems } = usePortfolioItems(initialItems);
   const invalidate = useInvalidatePortfolio();
 
   const [editingItem, setEditingItem] = useState<PortfolioItemFull | null | undefined>(undefined);
+  const [isStoryOpen, setIsStoryOpen] = useState(false);
   const isEditorOpen = editingItem !== undefined;
 
   const isStarter = tier === 'starter';
@@ -56,31 +60,37 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Портфоліо</h1>
+          <h1 className="text-2xl font-bold text-foreground">Портфоліо</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {publishedCount} {pluralUk(publishedCount, 'робота', 'роботи', 'робіт')}
             {isStarter && ` · ${STARTER_LIMIT} макс.`}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsStoryOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all active:scale-95"
+          >
+            <Sparkles size={14} /> Сторіз
+          </button>
           {masterSlug && (
             <a
               href={`/${masterSlug}/portfolio`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-primary border border-primary/40 hover:bg-primary/8 transition-colors"
+              className="hidden xs:flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all"
             >
-              <ExternalLink size={13} /> Переглянути
+              <ExternalLink size={14} /> Перегляд
             </a>
           )}
           <button
             onClick={handleCreate}
             disabled={atLimit}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-50 active:scale-95 transition-all"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-white transition-all disabled:opacity-50 active:scale-95 shadow-sm"
             style={{ background: '#789A99' }}
           >
             <Plus size={16} /> Додати
@@ -185,6 +195,15 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
           onSaved={() => { invalidate(); setEditingItem(undefined); }}
         />
       )}
+
+      {/* Story Generator */}
+      <StoryGenerator
+        isOpen={isStoryOpen}
+        onClose={() => setIsStoryOpen(false)}
+        items={items}
+        masterName={profile?.full_name || masterProfile?.business_name || 'Майстер'} 
+        masterSlug={masterSlug}
+      />
     </div>
   );
 }

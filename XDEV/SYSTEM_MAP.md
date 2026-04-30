@@ -51,10 +51,15 @@
 - Route: `src/app/[slug]/page.tsx` — Server Component, SSR, SEO
 - Actions: `src/app/[slug]/actions.ts` (server-side data fetch)
 - Key component: `src/components/public/PublicMasterPage.tsx` (~40KB, головний рендер сторінки)
-- Booking Entry Point: `src/components/public/BookingFlow.tsx` → монтує `BookingWizard`
-
-### Booking Wizard
-- Component: `src/components/shared/BookingWizard.tsx`
+- **Public Profile**: `/[slug]` (Next.js SSR + ISR).
+- **Dynamic OG Images**: `/[slug]/opengraph-image.tsx` (Edge Runtime). Premium design with Master Avatar + Category Emojis.
+- **Shared Data Layer**: `src/app/[slug]/data.ts` — єдине джерело даних для Page, Metadata та OG (через `React.cache`).
+- **Structured Data**: JSON-LD implementation for `ProfessionalService` and `AggregateRating`.
+- **B2C Layout**: Mica-style Glassmorphism with Bento Grid services.
+- **Booking Flow**: `BookingWizard` (Dynamic import).
+- **Portfolio**: Public gallery with lightbox.
+- **Shop**: Master-specific product listing.
+- Booking Entry Point: `src/components/shared/BookingWizard.tsx`
 - Кроки: послуги → товари → дата → слот → підтвердження → SMS OTP (guest)
 - Server Action: `src/lib/actions/createBooking.ts`
 - Ціноутворення: `src/lib/actions/computeBookingPrice.ts`
