@@ -419,35 +419,53 @@ export function SettingsPage() {
 
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-3 block">Твоя спеціалізація (можна кілька)</label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {serviceCategories.map(cat => {
-                const isSelected = selectedCategories.includes(cat.id);
+                // Robust mapping: check if any saved value matches either ID or Label
+                const isSelected = selectedCategories.some(val => val === cat.id || val === cat.label);
+                
                 return (
-                  <button
+                  <motion.button
                     key={cat.id}
                     type="button"
+                    whileTap={{ scale: 0.92 }}
+                    layout
                     onClick={() => {
                       if (isSelected) {
-                        setSelectedCategories(selectedCategories.filter(c => c !== cat.id));
+                        setSelectedCategories(selectedCategories.filter(c => c !== cat.id && c !== cat.label));
                       } else {
                         setSelectedCategories([...selectedCategories, cat.id]);
                       }
                       setIsDirty(true);
                     }}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border",
+                      "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all border relative overflow-hidden",
                       isSelected 
-                        ? "bg-primary/15 border-primary text-primary" 
-                        : "bg-white/50 border-white/80 text-muted-foreground hover:border-primary/30"
+                        ? "bg-gradient-to-br from-sage to-sage-dark text-white border-white/20 shadow-md shadow-sage/20" 
+                        : "bg-white/60 border-white/80 text-text-sub hover:border-sage/40 hover:bg-white"
                     )}
                   >
-                    <span>{cat.emoji}</span>
-                    {cat.label}
-                  </button>
+                    <span className={cn("text-lg", !isSelected && "filter grayscale opacity-70")}>{cat.emoji}</span>
+                    <span>{cat.label}</span>
+                    <AnimatePresence>
+                      {isSelected && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          className="ml-1"
+                        >
+                          <Check size={14} strokeWidth={3} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 );
               })}
             </div>
-            <p className="text-[10px] text-muted-foreground/50 mt-1.5">Обери основні напрямки. Це допоможе клієнтам знайти тебе в каталозі.</p>
+            <p className="text-[10px] text-muted-foreground/50 mt-2.5 leading-relaxed">
+              Оберіть основні напрямки. Це допоможе клієнтам знайти вас у каталозі та автоматизує налаштування послуг.
+            </p>
           </div>
 
           <div>

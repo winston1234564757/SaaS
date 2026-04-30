@@ -203,6 +203,7 @@ export function useBookingById(id: string | null) {
     updateStatus: (status: BookingStatus) => updateStatus.mutate(status),
     isUpdatingStatus: updateStatus.isPending,
     saveMasterNotes: (notes: string) => saveMasterNotesMutation.mutate(notes),
+    saveMasterNotesAsync: (notes: string) => saveMasterNotesMutation.mutateAsync(notes),
     isSavingNotes: saveMasterNotesMutation.isPending,
     reschedule: (params: { date: string; startTime: string; endTime: string }) => rescheduleMutation.mutate(params),
     isRescheduling: rescheduleMutation.isPending,

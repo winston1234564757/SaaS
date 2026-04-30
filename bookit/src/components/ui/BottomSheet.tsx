@@ -1,7 +1,6 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Drawer } from 'vaul';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -15,60 +14,58 @@ interface BottomSheetProps {
 
 export function BottomSheet({ isOpen, onClose, title, children, className }: BottomSheetProps) {
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(v) => !v && onClose()}>
-      <AnimatePresence>
-        {isOpen && (
-          <Dialog.Portal forceMount>
-            <Dialog.Overlay asChild>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-              />
-            </Dialog.Overlay>
-            
-            <Dialog.Content asChild>
-              <motion.div
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className={cn(
-                  'fixed bottom-0 left-0 right-0 z-50 outline-none',
-                  'bg-background rounded-t-[28px] shadow-2xl',
-                  'max-h-[90dvh] overflow-y-auto',
-                  className
-                )}
+    <Drawer.Root 
+      open={isOpen} 
+      onOpenChange={(v) => !v && onClose()}
+      dismissible={true}
+      shouldScaleBackground={false}
+      // prevents layout shift on focus
+      repositionInputs={false}
+    >
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]" />
+        <Drawer.Content
+          className={cn(
+            'fixed bottom-0 left-0 right-0 z-[100] outline-none flex flex-col',
+            'bg-background rounded-t-[32px] shadow-[0_-8px_40px_rgba(0,0,0,0.12)]',
+            'max-h-[96vh] will-change-transform',
+            className
+          )}
+        >
+          {/* iOS Handle Area */}
+          <div className="flex justify-center pt-3 pb-4 cursor-grab active:cursor-grabbing shrink-0">
+            <div className="w-12 h-1.5 bg-muted/30 rounded-full" />
+          </div>
+
+          {title && (
+            <div className="flex items-center justify-between px-6 py-2 shrink-0">
+              <Drawer.Title className="heading-serif text-xl text-foreground m-0">
+                {title}
+              </Drawer.Title>
+              <button
+                onClick={onClose}
+                className="w-9 h-9 flex items-center justify-center rounded-2xl bg-secondary/50 text-muted-foreground hover:bg-secondary/80 active:scale-90 transition-all"
               >
-                <Dialog.Title className="sr-only">{title ?? 'Bottom Sheet Content'}</Dialog.Title>
-                <Dialog.Description className="sr-only">Sheet dialog overlay</Dialog.Description>
+                <X size={18} />
+              </button>
+            </div>
+          )}
 
-                <div className="flex justify-center pt-3 pb-1">
-                  <div className="w-10 h-1 bg-muted rounded-full" />
-                </div>
+          {!title && (
+            <Drawer.Title className="sr-only">
+              Bottom Sheet Content
+            </Drawer.Title>
+          )}
 
-                {title && (
-                  <div className="flex items-center justify-between px-5 py-3">
-                    <h3 className="heading-serif text-lg text-foreground">{title}</h3>
-                    <Dialog.Close asChild>
-                      <button
-                        onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80 transition-colors active:scale-95 transition-all"
-                      >
-                        <X size={15} />
-                      </button>
-                    </Dialog.Close>
-                  </div>
-                )}
-
-                <div className="px-5 pb-8 pt-2">{children}</div>
-              </motion.div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        )}
-      </AnimatePresence>
-    </Dialog.Root>
+          {/* 
+            CRITICAL: Added extra bottom padding (pb-32 = 128px) 
+            to ensure content is never hidden by BottomNav and Safe Areas.
+          */}
+          <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-6 pt-2 pb-32">
+            {children}
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }

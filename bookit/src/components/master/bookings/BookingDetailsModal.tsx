@@ -330,6 +330,8 @@ function ReschedulePanel({
 
 // ── Main Modal ────────────────────────────────────────────────────────────────
 
+import { BottomSheet } from '@/components/ui/BottomSheet';
+
 export function BookingDetailsModal() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -341,326 +343,332 @@ export function BookingDetailsModal() {
     booking, isLoading,
     clientLtv,
     updateStatus, isUpdatingStatus,
-    saveMasterNotes, isSavingNotes,
+    saveMasterNotes, saveMasterNotesAsync, isSavingNotes,
     reschedule, isRescheduling, rescheduleError,
   } = useBookingById(bookingId);
 
-  const [notes, setNotes] = useState('');
-  const [notesDirty, setNotesDirty] = useState(false);
-  const [showReschedule, setShowReschedule] = useState(false);
+  // PERSISTENCE LOGIC: Keep the booking data visible while the modal is closing
+  const [lastBooking, setLastBooking] = useState<any>(null);
+  const [lastLtv, setLastLtv] = useState<any>(null);
 
   useEffect(() => {
     if (booking) {
+      setLastBooking(booking);
       setNotes(booking.master_notes ?? '');
       setNotesDirty(false);
       setShowReschedule(false);
     }
-  }, [booking?.id]);
+    if (clientLtv) {
+      setLastLtv(clientLtv);
+    }
+  }, [booking, clientLtv]);
 
-  const close = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('bookingId');
-    const qs = params.toString();
-    router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
-  }, [router, searchParams]);
+  const displayBooking = booking || lastBooking;
+  const displayLtv = clientLtv || lastLtv;
+
+  const [notes, setNotes] = useState('');
+  const [notesDirty, setNotesDirty] = useState(false);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+
+  // LIFECYCLE: Local open state to decouple animation from URL
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [close]);
+    if (bookingId) {
+      setIsModalOpen(true);
+    }
+  }, [bookingId]);
 
-
-
-  const handleSaveNotes = () => {
-    saveMasterNotes(notes);
-    setNotesDirty(false);
+  const handleClose = () => {
+    setIsModalOpen(false);
+    // Wait for animation to finish (approx 400ms) before changing URL
+    setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('bookingId');
+      const qs = params.toString();
+      router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
+    }, 400);
   };
 
-  const durationMinutes = useMemo(
-    () => (booking?.services ?? []).reduce((sum, s) => sum + s.duration, 0),
-    [booking?.services],
-  );
+  // AUTO-SAVE LOGIC
+  useEffect(() => {
+    if (!notesDirty) return;
+    
+    const timer = setTimeout(async () => {
+      setIsAutoSaving(true);
+      try {
+        await saveMasterNotesAsync(notes);
+      } finally {
+        setNotesDirty(false);
+        setIsAutoSaving(false);
+      }
+    }, 500); // Faster debounce for "instant" feel
 
-  const isOpen = !!bookingId;
-  const canAct = booking?.status === 'pending' || booking?.status === 'confirmed';
+    return () => clearTimeout(timer);
+  }, [notes, notesDirty, saveMasterNotesAsync]);
+
+  const canAct = displayBooking && ['pending', 'confirmed'].includes(displayBooking.status);
+  const durationMinutes = displayBooking?.services.reduce((acc: number, s: any) => acc + s.duration, 0) || 0;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={close}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
-          />
-
-          {/* Sheet */}
-          <motion.div
-            key="sheet"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 340, damping: 32 }}
-            className="fixed bottom-0 left-0 right-0 z-[55] max-h-[90dvh] overflow-y-auto rounded-t-3xl bg-[#FDFAF8] shadow-2xl"
-          >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-secondary/80" />
+    <BottomSheet 
+      isOpen={isModalOpen} 
+      onClose={handleClose}
+      title="Деталі запису"
+    >
+      {isLoading && !displayBooking ? (
+        <div className="flex justify-center items-center py-16">
+          <Loader2 size={24} className="text-primary animate-spin" />
+        </div>
+      ) : !displayBooking ? (
+        <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground/60">
+          <Loader2 size={20} className="animate-spin opacity-20" />
+          <p className="text-xs font-medium">Дані не знайдено</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-5">
+          {/* Identity Header (Matching ClientDetailSheet style) */}
+          <div className="flex items-center gap-4 bg-white/60 p-4 rounded-3xl border border-white/80 shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-peach to-white flex items-center justify-center text-peach-foreground text-xl font-black shadow-sm shrink-0">
+              {displayBooking.client_name[0]}
             </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-2 pb-4">
-              <h2 className="text-base font-bold text-foreground">Деталі запису</h2>
-              <button
-                onClick={close}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground/60 hover:bg-[#EBCFC7] transition-colors active:scale-95 transition-all"
-              >
-                <X size={15} />
-              </button>
-            </div>
-
-            {/* Content */}
-            {isLoading || !booking ? (
-              <div className="flex justify-center items-center py-16">
-                <Loader2 size={24} className="text-primary animate-spin" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-lg font-black text-foreground leading-tight truncate">{displayBooking.client_name}</h3>
+                <span
+                  className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0"
+                  style={{ color: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.color || '#789A99', background: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.bg || '#789A9910' }}
+                >
+                  {BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.label || displayBooking.status}
+                </span>
               </div>
-            ) : (
-              <div className="px-5 pb-8 flex flex-col gap-4">
-                {/* Client + date block */}
-                <div className="bg-white rounded-2xl p-4 flex flex-col gap-2 shadow-sm">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-base font-bold text-foreground">{booking.client_name}</p>
-                      <p className="text-sm text-muted-foreground/60 mt-0.5">{formatDate(booking.date)}</p>
-                    </div>
-                    <span
-                      className="text-xs font-semibold px-2.5 py-1 rounded-full mt-0.5"
-                      style={{ color: BOOKING_STATUS_CONFIG[booking.status].color, background: BOOKING_STATUS_CONFIG[booking.status].bg }}
-                    >
-                      {BOOKING_STATUS_CONFIG[booking.status].label}
-                    </span>
-                  </div>
+              <p className="text-xs font-bold text-muted-foreground/60 mt-0.5">{displayBooking.client_phone}</p>
+            </div>
+          </div>
 
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                      <Clock size={13} className="text-muted-foreground/60" />
-                      {booking.start_time} — {booking.end_time}
-                    </span>
-                    <a
-                      href={`tel:${booking.client_phone}`}
-                      className="flex items-center gap-1.5 text-primary hover:text-primary/90 transition-colors"
-                    >
-                      <Phone size={13} />
-                      {booking.client_phone}
-                    </a>
-                  </div>
-
-                  <div>
-                    {booking.source === 'manual' ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/60 bg-secondary px-2 py-0.5 rounded-full">
-                        <PenLine size={9} /> Ручний запис
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        <Globe size={9} /> Онлайн
-                      </span>
-                    )}
-                  </div>
+          {/* Time & Info card */}
+          <div className="bg-white/40 rounded-3xl p-5 border border-white/60 shadow-sm flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">Дата та час</p>
+                <p className="text-sm font-bold text-foreground">{formatDate(displayBooking.date)}</p>
+              </div>
+              <div className="text-right flex flex-col gap-1">
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">Вікно</p>
+                <div className="flex items-center gap-1.5 font-bold text-foreground text-sm">
+                  <Clock size={14} className="text-primary opacity-60" />
+                  {displayBooking.start_time} — {displayBooking.end_time}
                 </div>
+              </div>
+            </div>
 
-                {/* LTV клієнта */}
-                {clientLtv && (
-                  <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <TrendingUp size={13} className="text-primary" />
-                      <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide">Клієнт</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="flex-1">
-                        <p className="text-[11px] text-muted-foreground/60">Візитів</p>
-                        <p className="text-lg font-bold text-foreground">{clientLtv.total_visits}</p>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[11px] text-muted-foreground/60">Виручка</p>
-                        <p className="text-lg font-bold text-foreground">{formatPrice(clientLtv.total_spent)}</p>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[11px] text-muted-foreground/60">Середній чек</p>
-                        <p className="text-lg font-bold text-foreground">{formatPrice(clientLtv.average_check)}</p>
-                      </div>
-                    </div>
-                  </div>
+            <div className="flex items-center justify-between pt-2 border-t border-dashed border-white/60">
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">Джерело</p>
+                {displayBooking.source === 'manual' ? (
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-text-mute/60">
+                    <PenLine size={12} /> Ручний запис
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-[10px] font-black text-primary">
+                    <Globe size={12} /> Онлайн запис
+                  </span>
                 )}
+              </div>
+              <div className="flex flex-col gap-1 items-end">
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">Зв'язок</p>
+                <a
+                  href={`tel:${displayBooking.client_phone}`}
+                  className="flex items-center gap-1.5 text-primary font-bold hover:text-primary/90 transition-colors text-sm"
+                >
+                  <Phone size={14} /> Зателефонувати
+                </a>
+              </div>
+            </div>
+          </div>
 
-                {/* Order details — services + products unified */}
-                {(booking.services.length > 0 || (booking.products && booking.products.length > 0)) && (() => {
-                  const grandTotal = booking.total_price;
-                  return (
-                    <div className="bg-white rounded-2xl p-4 shadow-sm">
-                      <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-3">Деталі замовлення</p>
+          {/* LTV клієнта */}
+          {displayLtv && (
+            <div className="bg-white/40 rounded-3xl p-5 border border-white/60 shadow-sm">
+              <div className="flex items-center gap-1.5 mb-4">
+                <TrendingUp size={14} className="text-primary opacity-60" />
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">Профіль клієнта</p>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter mb-1">Візитів</p>
+                  <p className="text-xl font-black text-foreground">{displayLtv.total_visits}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter mb-1">Виручка</p>
+                  <p className="text-xl font-black text-foreground">{formatPrice(displayLtv.total_spent)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter mb-1">Сер. чек</p>
+                  <p className="text-xl font-black text-foreground">{formatPrice(displayLtv.average_check)}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
-                      <div className="flex flex-col gap-2.5">
-                        {/* Services */}
-                        {booking.services.map((s, i) => (
-                          <div key={i} className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <Clock size={12} className="text-muted-foreground/60 shrink-0 mt-0.5" />
-                              <div className="min-w-0">
-                                <span className="text-sm text-foreground">{s.name}</span>
-                                <span className="text-xs text-muted-foreground/60 ml-1.5">{formatDurationFull(s.duration)}</span>
-                              </div>
-                            </div>
-                            <span className="text-sm font-medium text-foreground shrink-0">{formatPrice(s.price)}</span>
-                          </div>
-                        ))}
+          {/* Order details */}
+          {(displayBooking.services.length > 0 || (displayBooking.products && displayBooking.products.length > 0)) && (
+            <div className="bg-white/40 rounded-3xl p-5 border border-white/60 shadow-sm">
+              <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] mb-4">Склад замовлення</p>
 
-                        {/* Products */}
-                        {(booking.products ?? []).length > 0 && (
-                          <>
-                            {booking.services.length > 0 && (
-                              <div className="border-t border-dashed border-[#F0DDD8] my-0.5" />
-                            )}
-                            {booking.products!.map((p, i) => (
-                              <div key={i} className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <ShoppingBag size={12} className="text-muted-foreground/60 shrink-0" />
-                                  <span className="text-sm text-foreground truncate">{p.name}</span>
-                                  {p.quantity > 1 && (
-                                    <span className="text-xs text-muted-foreground/60 shrink-0">×{p.quantity}</span>
-                                  )}
-                                </div>
-                                <span className="text-sm font-medium text-foreground shrink-0">{formatPrice(p.price * p.quantity)}</span>
-                              </div>
-                            ))}
-                          </>
-                        )}
+              <div className="flex flex-col gap-3">
+                {displayBooking.services.map((s: any, i: number) => (
+                  <div key={i} className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <Clock size={14} className="text-primary" />
                       </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-foreground truncate">{s.name}</p>
+                        <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{formatDurationFull(s.duration)}</p>
+                      </div>
+                    </div>
+                    <span className="text-sm font-black text-foreground shrink-0">{formatPrice(s.price)}</span>
+                  </div>
+                ))}
 
-                      {/* Total */}
-                      <div className="mt-4 pt-3 border-t-2 border-[#F0DDD8]">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold text-muted-foreground">Загалом</span>
-                          <span className="text-xl font-bold text-foreground">{formatPrice(grandTotal)}</span>
+                {(displayBooking.products ?? []).length > 0 && (
+                  <>
+                    <div className="border-t border-dashed border-white/60 my-1" />
+                    {displayBooking.products!.map((p: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
+                            <ShoppingBag size={14} className="text-muted-foreground" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-foreground truncate">{p.name}</p>
+                            <p className="text-[10px] font-medium text-muted-foreground/60">Кількість: {p.quantity}</p>
+                          </div>
                         </div>
-                        {booking.dynamic_pricing_label && (
-                          <div className="mt-2">
-                            <PricingBadge dynamicLabel={booking.dynamic_pricing_label} size="md" />
-                          </div>
-                        )}
+                        <span className="text-sm font-black text-foreground shrink-0">{formatPrice(p.price * p.quantity)}</span>
                       </div>
-                    </div>
-                  );
-                })()}
+                    ))}
+                  </>
+                )}
+              </div>
 
-                {/* Client notes */}
-                {booking.notes && (
-                  <div className="bg-secondary/50 rounded-2xl px-4 py-3">
-                    <p className="text-xs font-semibold text-muted-foreground/60 mb-1">Коментар клієнта</p>
-                    <p className="text-sm text-muted-foreground italic">{booking.notes}</p>
+              {/* Total */}
+              <div className="mt-5 pt-4 border-t-2 border-white/60">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">Разом до сплати</span>
+                  <span className="text-2xl font-black text-foreground">{formatPrice(displayBooking.total_price)}</span>
+                </div>
+                {displayBooking.dynamic_pricing_label && (
+                  <div className="mt-3">
+                    <PricingBadge dynamicLabel={displayBooking.dynamic_pricing_label} size="md" />
                   </div>
                 )}
+              </div>
+            </div>
+          )}
 
-                {/* Master notes */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">Нотатки майстра</p>
-                  <textarea
-                    value={notes}
-                    onChange={e => { setNotes(e.target.value); setNotesDirty(true); }}
-                    placeholder="Додайте нотатки, видимі лише вам..."
-                    rows={3}
-                    className="w-full text-sm text-foreground placeholder-[#C8B0AA] bg-[#FDFAF8] border border-[#F0DDD8] rounded-xl px-3 py-2.5 outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 resize-none transition-all"
+          {/* Notes */}
+          <div className="flex flex-col gap-3">
+            {displayBooking.notes && (
+              <div className="bg-primary/5 rounded-3xl p-4 border border-primary/10">
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">Коментар клієнта</p>
+                <p className="text-sm text-foreground/80 italic font-medium leading-relaxed">"{displayBooking.notes}"</p>
+              </div>
+            )}
+
+            <div className="bg-white/40 rounded-3xl p-5 border border-white/60 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">Нотатки майстра</p>
+                {isAutoSaving && (
+                  <span className="flex items-center gap-1.5 text-[10px] font-black text-primary animate-pulse uppercase tracking-widest">
+                    <Loader2 size={10} className="animate-spin" />
+                    Зберігаємо...
+                  </span>
+                )}
+              </div>
+              <textarea
+                value={notes}
+                onChange={e => { setNotes(e.target.value); setNotesDirty(true); }}
+                placeholder="Додайте нотатки, видимі лише вам..."
+                rows={3}
+                className="w-full text-sm text-foreground placeholder-text-mute/40 bg-white/60 border border-white/80 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none transition-all shadow-inner"
+              />
+            </div>
+          </div>
+
+          {/* Status actions */}
+          {canAct && (
+            <div className="bg-white/40 rounded-3xl p-5 border border-white/60 shadow-sm">
+              <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] mb-4">Керування записом</p>
+
+              {showReschedule ? (
+                masterProfile?.id ? (
+                  <ReschedulePanel
+                    masterId={masterProfile.id}
+                    currentBookingId={displayBooking.id}
+                    durationMinutes={durationMinutes}
+                    workingHours={masterProfile.working_hours ?? null}
+                    onConfirm={(date, startTime, endTime) => {
+                      reschedule({ date, startTime, endTime });
+                      setShowReschedule(false);
+                    }}
+                    onCancel={() => setShowReschedule(false)}
+                    isSaving={isRescheduling}
+                    saveError={rescheduleError}
                   />
-                  {notesDirty && (
+                ) : null
+              ) : (
+                <div className="grid grid-cols-2 gap-2.5">
+                  {displayBooking.status === 'pending' && (
                     <button
-                      onClick={handleSaveNotes}
-                      disabled={isSavingNotes}
-                      className="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-medium transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                      onClick={() => updateStatus('confirmed')}
+                      disabled={isUpdatingStatus}
+                      className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary/15 text-sm font-bold transition-all disabled:opacity-50 active:scale-95"
                     >
-                      {isSavingNotes ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                      Зберегти нотатку
+                      {isUpdatingStatus ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                      Підтвердити
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateStatus('completed')}
+                    disabled={isUpdatingStatus}
+                    className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-success/10 text-success hover:bg-success/15 text-sm font-bold transition-all disabled:opacity-50 active:scale-95"
+                  >
+                    {isUpdatingStatus ? <Loader2 size={16} className="animate-spin" /> : <Star size={16} />}
+                    Завершити
+                  </button>
+                  <button
+                    onClick={() => setShowReschedule(true)}
+                    className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-warning/10 text-warning hover:bg-warning/15 text-sm font-bold transition-all active:scale-95"
+                  >
+                    <CalendarClock size={16} />
+                    Перенести
+                  </button>
+                  <button
+                    onClick={() => updateStatus('cancelled')}
+                    disabled={isUpdatingStatus}
+                    className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-destructive/10 text-destructive hover:bg-destructive/15 text-sm font-bold transition-all disabled:opacity-50 active:scale-95"
+                  >
+                    {isUpdatingStatus ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
+                    Скасувати
+                  </button>
+                  {displayBooking.status === 'confirmed' && (
+                    <button
+                      onClick={() => updateStatus('no_show')}
+                      disabled={isUpdatingStatus}
+                      className="col-span-2 flex items-center justify-center gap-2 py-4 rounded-2xl bg-white/60 border border-white/80 text-muted-foreground/60 hover:text-muted-foreground text-sm font-bold transition-all disabled:opacity-50 active:scale-95"
+                    >
+                      Клієнт не з'явився
                     </button>
                   )}
                 </div>
-
-                {/* Status actions */}
-                {canAct && (
-                  <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-3">Дії</p>
-
-                    {showReschedule ? (
-                      masterProfile?.id ? (
-                        <ReschedulePanel
-                          masterId={masterProfile.id}
-                          currentBookingId={booking.id}
-                          durationMinutes={durationMinutes}
-                          workingHours={masterProfile.working_hours ?? null}
-                          onConfirm={(date, startTime, endTime) => {
-                            reschedule({ date, startTime, endTime });
-                            setShowReschedule(false);
-                          }}
-                          onCancel={() => setShowReschedule(false)}
-                          isSaving={isRescheduling}
-                          saveError={rescheduleError}
-                        />
-                      ) : null
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {booking.status === 'pending' && (
-                          <button
-                            onClick={() => updateStatus('confirmed')}
-                            disabled={isUpdatingStatus}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-primary/10 text-primary hover:bg-primary/20 text-sm font-semibold transition-colors disabled:opacity-50"
-                          >
-                            {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                            Підтвердити
-                          </button>
-                        )}
-                        <button
-                          onClick={() => updateStatus('completed')}
-                          disabled={isUpdatingStatus}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-success/10 text-success hover:bg-success/20 text-sm font-semibold transition-colors disabled:opacity-50"
-                        >
-                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
-                          Завершити
-                        </button>
-                        <button
-                          onClick={() => setShowReschedule(true)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-warning/10 text-warning hover:bg-warning/20 text-sm font-semibold transition-colors"
-                        >
-                          <CalendarClock size={14} />
-                          Перенести
-                        </button>
-                        <button
-                          onClick={() => updateStatus('cancelled')}
-                          disabled={isUpdatingStatus}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm font-semibold transition-colors disabled:opacity-50"
-                        >
-                          {isUpdatingStatus ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
-                          Скасувати
-                        </button>
-                        {booking.status === 'confirmed' && (
-                          <button
-                            onClick={() => updateStatus('no_show')}
-                            disabled={isUpdatingStatus}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-muted-foreground/60/10 text-muted-foreground/60 hover:bg-muted-foreground/60/20 text-sm font-semibold transition-colors disabled:opacity-50"
-                          >
-                            Не прийшов
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.div>
-        </>
+              )}
+            </div>
+          )}
+        </div>
       )}
-    </AnimatePresence>
+    </BottomSheet>
   );
 }

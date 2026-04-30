@@ -102,15 +102,15 @@ export function ProductCart({
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className="sticky bottom-6 mt-8 pt-3 pb-0.5 bg-gradient-to-t from-[rgba(255,248,244,1)] via-[rgba(255,248,244,0.9)] to-transparent z-10 flex gap-3">
         <button onClick={onContinue}
           data-testid="wizard-skip-products-btn"
-          className="flex-1 py-3.5 rounded-2xl border border-secondary/80 text-sm font-semibold text-muted-foreground hover:bg-secondary transition-all active:scale-95 transition-all">
-          Пропустити
+          className="flex-1 py-4 rounded-2xl border-2 border-primary/20 bg-white/40 text-[11px] font-black uppercase tracking-widest text-primary hover:bg-primary/5 active:scale-95 transition-all">
+          {cart.length > 0 ? 'Назад' : 'Пропустити'}
         </button>
         <button onClick={onContinue}
           data-testid="wizard-next-btn"
-          className="flex-1 py-3.5 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-[#6B8C8B] active:scale-[0.98] transition-all">
+          className="flex-[2] py-4 rounded-2xl bg-primary text-white text-sm font-black uppercase tracking-widest hover:bg-[#6B8C8B] active:scale-95 transition-all shadow-xl shadow-primary/20">
           {cart.length > 0 ? `Далі · ${fmt(totalProductsPrice)}` : 'Далі'}
         </button>
       </div>

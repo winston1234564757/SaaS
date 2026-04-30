@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-04-27 · Джерело: живий код (src/app, src/components, src/lib, supabase/migrations)
+> Оновлено: 2026-04-30 · Джерело: живий код (v5.2.0 "Vaul Engine")
 
 ---
 
@@ -8,7 +8,7 @@
 
 ### Layout & Auth Guard
 - `src/app/(master)/layout.tsx` — Server Component, server-side auth check; ініціює `MasterProvider`
-- `src/components/master/DashboardLayout.tsx` — shell: sidebar nav + bottom nav (mobile)
+- `src/components/master/DashboardLayout.tsx` — shell: sidebar nav + `BentoBottomNav` (Mosaic Command Center)
 
 ### Routes → Компоненти → Server Actions
 
@@ -332,3 +332,10 @@
 Останні ключові:
 - `114_portfolio_items.sql` — `portfolio_items`, `portfolio_item_photos`, `portfolio_item_reviews` + RLS
 - `115_recreate_portfolios_bucket.sql` — bucket `portfolios` (10MB, public) + storage policies
+
+ # #   [ S h a r e d   U I   &   I n t e r a c t i o n   S t a n d a r d s ] 
+ 
+ -   * * B o t t o m S h e e t   ( V a u l   E n g i n e ) * * :   @ / c o m p o n e n t s / u i / B o t t o m S h e e t . t s x .   N a t i v e   i O S - l i k e   s w i p e - t o - d i s m i s s   HB>@:8.   >;>B89  AB0=40@B  4;O  <>1V;L=8E  <>40;>:. 
+ -   * * P o p U p M o d a l * * :   @ / c o m p o n e n t s / u i / P o p U p M o d a l . t s x .   V1@84=89  :><?>=5=B:   D e s k t o p   ( R a d i x   D i a l o g )   /   M o b i l e   ( B o t t o m S h e e t ) . 
+ -   * * B e n t o   N a v i g a t i o n * * :   @ / c o m p o n e n t s / s h a r e d / B e n t o B o t t o m N a v . t s x .   A8<5B@8G=0  <>70WG=0  =02V30FVO  ( v 5 . 2 . 0 ) .  
+ 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 import { FloatingSidebar } from '@/components/shared/FloatingSidebar';
-import { BottomNav } from '@/components/shared/BottomNav';
+import { BentoBottomNav } from '@/components/shared/BentoBottomNav';
 import { InstallBanner } from '@/components/shared/InstallBanner';
 import { MasterProvider } from '@/lib/supabase/context';
 import { useRealtimeNotifications } from '@/lib/supabase/hooks/useRealtimeNotifications';
@@ -39,7 +39,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       </main>
       <div className="lg:hidden">
         <InstallBanner />
-        <BottomNav />
+        <BentoBottomNav />
       </div>
       <Suspense>
         <BookingDetailsModal />

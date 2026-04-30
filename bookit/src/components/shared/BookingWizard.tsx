@@ -17,10 +17,11 @@ import { DateTimePicker } from './wizard/DateTimePicker';
 import { ProductCart } from './wizard/ProductCart';
 import { ClientDetails } from './wizard/ClientDetails';
 import { BookingSuccess } from './wizard/BookingSuccess';
-import { X, ChevronLeft } from 'lucide-react';
+import { X, ChevronLeft, Loader2 } from 'lucide-react';
 import { createBooking } from '@/lib/actions/createBooking';
 import { createPublicOrder } from '@/app/[slug]/actions';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 import { getActivePhoneDiscount } from '@/app/(master)/dashboard/marketing/actions';
 import type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
 import { toISO, STEP_TITLE } from './wizard/helpers';
@@ -43,7 +44,7 @@ export function BookingWizard({
   const isFlashFastTrack = !!(flashDeal?.slotDate && flashDeal?.slotTime);
 
   const {
-    step, direction, go, goBack, closeWizard, hasProducts, availableProducts,
+    step, direction, go, goBack, hasProducts, availableProducts,
     selectedServices, cart,
     selectedDate, setSelectedDate, selectedDateRef,
     selectedTime, setSelectedTime,
@@ -210,220 +211,213 @@ export function BookingWizard({
   const canSubmit = (watchName?.trim()?.length ?? 0) >= 2 && (watchPhone?.length ?? 0) >= 13
     && (selectedServices.length > 0 || cart.length > 0);
 
-  if (!isOpen) return null;
+  // LIFECYCLE: Local open state to decouple animation
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setIsModalOpen(true);
+    else setIsModalOpen(false);
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+    setTimeout(onClose, 400);
+  };
+
+  const currentTitle = (() => {
+    const t = STEP_TITLE[step];
+    return typeof t === 'function' ? t(mode) : t;
+  })();
+
+  if (!isOpen && !isModalOpen) return null;
 
   // ── Shell ──────────────────────────────────────────────────────────────────────
   return (
     <>
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[55] flex items-end md:items-center justify-center pointer-events-none md:p-6">
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            className="fixed inset-0 bg-foreground/25 backdrop-blur-sm pointer-events-auto"
-            onClick={closeWizard}
-          />
-          <motion.div
-            initial={{ 
-              y: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : 0,
-              scale: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0.95,
-              opacity: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0,
-            }} 
-            animate={{ y: 0, scale: 1, opacity: 1 }} 
-            exit={{ 
-              y: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : 0,
-              scale: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0.95,
-              opacity: typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 350, damping: 32 }}
-            data-testid="wizard-panel"
-            className="relative z-[60] w-full max-h-[92dvh] md:max-h-[85vh] md:max-w-[800px] flex flex-col rounded-t-[28px] md:rounded-[32px] overflow-hidden pointer-events-auto shadow-2xl"
-            style={{ background: 'rgba(255,248,244,0.97)', backdropFilter: 'blur(32px)' }}
-          >
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0 md:hidden">
-              <div className="w-10 h-1 bg-secondary/80 rounded-full" />
+    <BottomSheet 
+      isOpen={isModalOpen} 
+      onClose={handleClose}
+      title={step !== 'success' ? currentTitle : ''}
+    >
+      <div className="flex flex-col min-h-0">
+        {/* Step Navigation Header */}
+        {step !== 'success' && (
+          <div className="flex items-center justify-between mb-4">
+            <button 
+              onClick={goBack}
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/60 border border-white/80 text-muted-foreground hover:bg-white transition-all active:scale-95"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            
+            <div className="flex-1 text-center px-4">
+              {masterName && <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest truncate">{masterName}</p>}
             </div>
-            <div className="flex items-center justify-between px-5 py-2 flex-shrink-0">
-              <button onClick={goBack}
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-[#EDD9D1] transition-colors active:scale-95 transition-all">
-                <ChevronLeft size={16} />
+
+            <div className="w-10 h-10" /> {/* Spacer to balance */}
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-32">
+          {isAtLimit && step !== 'success' && (
+            <div className="flex flex-col items-center text-center py-10 gap-4">
+              <div className="w-16 h-16 rounded-3xl bg-warning/10 flex items-center justify-center text-3xl">🔒</div>
+              <p className="text-base font-bold text-foreground">Ліміт записів вичерпано</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Майстер досяг ліміту 30 записів на місяць.<br />
+                Нові записи будуть доступні з наступного місяця.
+              </p>
+              <button onClick={handleClose}
+                className="mt-4 px-8 py-4 rounded-2xl bg-primary text-white text-sm font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20">
+                Зрозуміло
               </button>
-              <div className="text-center">
-                {step !== 'success' && (
-                  <>
-                    {masterName && <p className="text-[10px] text-muted-foreground/60">{masterName}</p>}
-                    <p className="text-sm font-semibold text-foreground">
-                      {(() => { const t = STEP_TITLE[step]; return typeof t === 'function' ? t(mode) : t; })()}
-                    </p>
-                  </>
+            </div>
+          )}
+
+          {!isAtLimit && (
+            <>
+              {step !== 'success' && <StepProgress step={step} hasProducts={hasProducts} />}
+              <AnimatePresence mode="wait" custom={direction}>
+                {step === 'services' && (
+                  <ServiceSelector
+                    key="services"
+                    services={services}
+                    selectedServices={selectedServices}
+                    onToggle={toggleService}
+                    mode={mode}
+                    partners={partners}
+                    direction={direction}
+                    durationOverride={durationOverride}
+                    totalDuration={totalDuration}
+                    effectiveDuration={effectiveDuration}
+                    totalServicesPrice={totalServicesPrice}
+                    hasProducts={hasProducts}
+                    c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
+                    onDurationOverrideChange={(v) => { setDurationOverride(v); setSelectedTime(null); }}
+                    onClearTime={() => setSelectedTime(null)}
+                    onContinue={() => go('datetime', 1)}
+                    onSkipToProducts={() => go('products', 1)}
+                  />
                 )}
-              </div>
-              <button onClick={closeWizard}
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-[#EDD9D1] transition-colors active:scale-95 transition-all">
-                <X size={14} />
-              </button>
-            </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-8">
-              {isAtLimit && step !== 'success' && (
-                <div className="flex flex-col items-center text-center py-10 gap-4">
-                  <div className="w-16 h-16 rounded-full bg-warning/12 flex items-center justify-center text-3xl">🔒</div>
-                  <p className="text-base font-semibold text-foreground">Ліміт записів вичерпано</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Майстер досяг ліміту 30 записів на місяць.<br />
-                    Нові записи будуть доступні з наступного місяця.
-                  </p>
-                  <button onClick={closeWizard}
-                    className="px-6 py-3 rounded-2xl bg-primary text-white text-sm font-semibold active:scale-95 transition-all">
-                    Зрозуміло
-                  </button>
-                </div>
-              )}
+                {step === 'datetime' && (
+                  <DateTimePicker
+                    key="datetime"
+                    days={days}
+                    scheduleStore={scheduleStore}
+                    scheduleLoading={scheduleLoading}
+                    scheduleError={scheduleError}
+                    onRetry={() => refetchSchedule()}
+                    selectedDate={selectedDate}
+                    selectedTime={selectedTime}
+                    offDayDates={offDayDates}
+                    fullyBookedDates={fullyBookedDates}
+                    slots={slots}
+                    selectedDayBreaks={selectedDayBreaks}
+                    effectiveDuration={effectiveDuration}
+                    totalServicesPrice={totalServicesPrice}
+                    selectedServices={selectedServices}
+                    dynamicPricing={dynamicPricing}
+                    useDynamicPrice={useDynamicPrice}
+                    mode={mode}
+                    hasProducts={hasProducts}
+                    direction={direction}
+                    onDateSelect={(d) => { setSelectedDate(d); setSelectedTime(null); }}
+                    onTimeSelect={setSelectedTime}
+                    onToggleDynamicPrice={() => setUseDynamicPrice(v => !v)}
+                    onContinue={() => go(hasProducts ? 'products' : 'details', 1)}
+                  />
+                )}
 
-              {!isAtLimit && (
-                <>
-                  {step !== 'success' && <StepProgress step={step} hasProducts={hasProducts} />}
-                  <AnimatePresence mode="wait" custom={direction}>
+                {step === 'products' && (
+                  <ProductCart
+                    key="products"
+                    availableProducts={availableProducts}
+                    suggestedProductIds={suggestedProductIds}
+                    cart={cart}
+                    totalProductsPrice={totalProductsPrice}
+                    direction={direction}
+                    onAdd={addToCart}
+                    onRemove={removeFromCart}
+                    cartQty={cartQty}
+                    onContinue={() => go('details', 1)}
+                  />
+                )}
 
-                    {step === 'services' && (
-                      <ServiceSelector
-                        services={services}
-                        selectedServices={selectedServices}
-                        onToggle={toggleService}
-                        mode={mode}
-                        partners={partners}
-                        direction={direction}
-                        durationOverride={durationOverride}
-                        totalDuration={totalDuration}
-                        effectiveDuration={effectiveDuration}
-                        totalServicesPrice={totalServicesPrice}
-                        hasProducts={hasProducts}
-                        c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
-                        onDurationOverrideChange={(v) => { setDurationOverride(v); setSelectedTime(null); }}
-                        onClearTime={() => setSelectedTime(null)}
-                        onContinue={() => go('datetime', 1)}
-                        onSkipToProducts={() => go('products', 1)}
-                      />
-                    )}
+                {step === 'details' && (
+                  <ClientDetails
+                    key="details"
+                    selectedDate={selectedDate}
+                    selectedTime={selectedTime}
+                    selectedServices={selectedServices}
+                    mode={mode}
+                    clientUserId={clientUserId}
+                    register={register}
+                    errors={errors}
+                    watchName={watchName}
+                    watchPhone={watchPhone}
+                    setValue={setValue}
+                    onClientSelect={mode === 'master'
+                      ? (c) => setSelectedClientId(c?.client_id ?? null)
+                      : undefined
+                    }
+                    clientNotes={clientNotes}
+                    setClientNotes={setClientNotes}
+                    discountPercent={discountPercent}
+                    setDiscountPercent={setDiscountPercent}
+                    masterDiscountAmount={masterDiscountAmount}
+                    dynamicPricing={dynamicPricing}
+                    useDynamicPrice={useDynamicPrice}
+                    loyaltyDiscount={loyaltyDiscount}
+                    loyaltyDiscountAmount={loyaltyDiscountAmount}
+                    flashDeal={flashDeal}
+                    flashDealAmount={flashDealAmount}
+                    totalServicesPrice={totalServicesPrice}
+                    totalProductsPrice={totalProductsPrice}
+                    finalTotal={finalTotal}
+                    canSubmit={canSubmit}
+                    saving={saving}
+                    saveError={saveError}
+                    onSubmit={handleSubmit}
+                    direction={direction}
+                    c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
+                    c2cFriendDiscountAmount={mode === 'client' && activeC2cDiscountPct ? Math.round((totalServicesPrice + totalProductsPrice) * activeC2cDiscountPct / 100) : 0}
+                    c2cAlreadyUsed={c2cAlreadyUsed}
+                    c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
+                    c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}
+                    setC2cBonusToUse={mode === 'client' ? setC2cBonusToUse : undefined}
+                    phoneDiscountPct={mode === 'client' ? phoneDiscountPct : 0}
+                    phoneDiscountAmount={mode === 'client' ? phoneDiscountAmount : 0}
+                  />
+                )}
 
-                    {step === 'datetime' && (
-                      <DateTimePicker
-                        days={days}
-                        scheduleStore={scheduleStore}
-                        scheduleLoading={scheduleLoading}
-                        scheduleError={scheduleError}
-                        onRetry={() => refetchSchedule()}
-                        selectedDate={selectedDate}
-                        selectedTime={selectedTime}
-                        offDayDates={offDayDates}
-                        fullyBookedDates={fullyBookedDates}
-                        slots={slots}
-                        selectedDayBreaks={selectedDayBreaks}
-                        effectiveDuration={effectiveDuration}
-                        totalServicesPrice={totalServicesPrice}
-                        selectedServices={selectedServices}
-                        dynamicPricing={dynamicPricing}
-                        useDynamicPrice={useDynamicPrice}
-                        mode={mode}
-                        hasProducts={hasProducts}
-                        direction={direction}
-                        onDateSelect={(d) => { setSelectedDate(d); setSelectedTime(null); }}
-                        onTimeSelect={setSelectedTime}
-                        onToggleDynamicPrice={() => setUseDynamicPrice(v => !v)}
-                        onContinue={() => go(hasProducts ? 'products' : 'details', 1)}
-                      />
-                    )}
-
-                    {step === 'products' && (
-                      <ProductCart
-                        availableProducts={availableProducts}
-                        suggestedProductIds={suggestedProductIds}
-                        cart={cart}
-                        totalProductsPrice={totalProductsPrice}
-                        direction={direction}
-                        onAdd={addToCart}
-                        onRemove={removeFromCart}
-                        cartQty={cartQty}
-                        onContinue={() => go('details', 1)}
-                      />
-                    )}
-
-                    {step === 'details' && (
-                      <ClientDetails
-                        selectedDate={selectedDate}
-                        selectedTime={selectedTime}
-                        selectedServices={selectedServices}
-                        mode={mode}
-                        clientUserId={clientUserId}
-                        register={register}
-                        errors={errors}
-                        watchName={watchName}
-                        watchPhone={watchPhone}
-                        setValue={setValue}
-                        onClientSelect={mode === 'master'
-                          ? (c) => setSelectedClientId(c?.client_id ?? null)
-                          : undefined
-                        }
-                        clientNotes={clientNotes}
-                        setClientNotes={setClientNotes}
-                        discountPercent={discountPercent}
-                        setDiscountPercent={setDiscountPercent}
-                        masterDiscountAmount={masterDiscountAmount}
-                        dynamicPricing={dynamicPricing}
-                        useDynamicPrice={useDynamicPrice}
-                        loyaltyDiscount={loyaltyDiscount}
-                        loyaltyDiscountAmount={loyaltyDiscountAmount}
-                        flashDeal={flashDeal}
-                        flashDealAmount={flashDealAmount}
-                        totalServicesPrice={totalServicesPrice}
-                        totalProductsPrice={totalProductsPrice}
-                        finalTotal={finalTotal}
-                        canSubmit={canSubmit}
-                        saving={saving}
-                        saveError={saveError}
-                        onSubmit={handleSubmit}
-                        direction={direction}
-                        c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
-                        c2cFriendDiscountAmount={mode === 'client' && activeC2cDiscountPct ? Math.round((totalServicesPrice + totalProductsPrice) * activeC2cDiscountPct / 100) : 0}
-                        c2cAlreadyUsed={c2cAlreadyUsed}
-                        c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
-                        c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}
-                        setC2cBonusToUse={mode === 'client' ? setC2cBonusToUse : undefined}
-                        phoneDiscountPct={mode === 'client' ? phoneDiscountPct : 0}
-                        phoneDiscountAmount={mode === 'client' ? phoneDiscountAmount : 0}
-                      />
-                    )}
-
-                    {step === 'success' && (
-                      <BookingSuccess
-                        selectedServices={selectedServices}
-                        selectedDate={selectedDate}
-                        selectedTime={selectedTime}
-                        totalDuration={totalDuration}
-                        cart={cart}
-                        clientUserId={clientUserId}
-                        createdBookingId={createdBookingId}
-                        clientPhone={clientPhone}
-                        masterName={masterName}
-                        masterId={masterId}
-                        masterC2cEnabled={masterC2cEnabled}
-                        masterC2cDiscountPct={masterC2cDiscountPct}
-                        flashDeal={flashDeal}
-                        finalTotal={finalTotal}
-                        direction={direction}
-                        onClose={closeWizard}
-                      />
-                    )}
-
-                  </AnimatePresence>
-                </>
-              )}
-            </div>
-          </motion.div>
+                {step === 'success' && (
+                  <BookingSuccess
+                    key="success"
+                    selectedServices={selectedServices}
+                    selectedDate={selectedDate}
+                    selectedTime={selectedTime}
+                    totalDuration={totalDuration}
+                    cart={cart}
+                    clientUserId={clientUserId}
+                    createdBookingId={createdBookingId}
+                    clientPhone={clientPhone}
+                    masterName={masterName}
+                    masterId={masterId}
+                    masterC2cEnabled={masterC2cEnabled}
+                    masterC2cDiscountPct={masterC2cDiscountPct}
+                    flashDeal={flashDeal}
+                    finalTotal={finalTotal}
+                    direction={direction}
+                    onClose={handleClose}
+                  />
+                )}
+              </AnimatePresence>
+            </>
+          )}
         </div>
-      )}
-    </AnimatePresence>
+      </div>
+    </BottomSheet>
 
     <UpgradePromptModal
       isOpen={upgradePromptOpen}
@@ -434,3 +428,4 @@ export function BookingWizard({
     </>
   );
 }
+

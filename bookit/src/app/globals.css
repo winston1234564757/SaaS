@@ -17,6 +17,18 @@
   --color-info: var(--info);
   --color-border: var(--border);
   --color-input: rgba(255, 255, 255, 0.80);
+
+  /* Brand Tokens */
+  --color-peach: var(--background);
+  --color-peach-deep: var(--background-deep);
+  --color-sage: var(--accent);
+  --color-sage-light: var(--accent-light);
+  --color-sage-dark: var(--accent-dark);
+  
+  /* Text Tokens */
+  --color-text-main: var(--text-primary);
+  --color-text-sub: var(--text-secondary);
+  --color-text-mute: var(--text-tertiary);
   
   --radius-xl: var(--card-radius);
   --radius-lg: var(--button-radius);

@@ -340,23 +340,25 @@ export function ClientDetails({
         )}
       </AnimatePresence>
 
-      <button
-        data-testid="wizard-submit-btn"
-        disabled={!canSubmit || saving}
-        onClick={onSubmit}
-        className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
-          canSubmit && !saving
-            ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
-            : 'bg-secondary/80 text-muted-foreground/60 cursor-not-allowed'
-        }`}
-      >
-        {saving
-          ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Зберігаємо...</>
-          : mode === 'client'
-            ? (selectedServices.length === 0 ? 'Підтвердити замовлення' : 'Підтвердити запис')
-            : 'Зберегти запис'
-        }
-      </button>
+      <div className="sticky bottom-6 mt-8 pt-3 pb-0.5 bg-gradient-to-t from-[rgba(255,248,244,1)] via-[rgba(255,248,244,0.9)] to-transparent z-10">
+        <button
+          data-testid="wizard-submit-btn"
+          disabled={!canSubmit || saving}
+          onClick={onSubmit}
+          className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-xl ${
+            canSubmit && !saving
+              ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-95 shadow-primary/20'
+              : 'bg-secondary/80 text-muted-foreground/40 cursor-not-allowed shadow-none'
+          }`}
+        >
+          {saving
+            ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Зберігаємо...</>
+            : mode === 'client'
+              ? (selectedServices.length === 0 ? 'Підтвердити замовлення' : 'Підтвердити запис')
+              : 'Зберегти запис'
+          }
+        </button>
+      </div>
     </motion.div>
   );
 }

@@ -2,7 +2,7 @@
 
 > Ukrainian SaaS для онлайн-запису у сервісному бізнесі  
 > "Твій розумний link in bio, який заробляє гроші"  
-> Оновлено: 2026-04-29
+> Оновлено: 2026-04-30
 
 ---
 
@@ -139,7 +139,15 @@
 - LocationPicker: Google Places Autocomplete + Google Maps (floor + cabinet)
 - Теми: classic / dark / rose-gold / mint
 - Ідентичність: Пріоритет `business_name` над `full_name` для публічних сторінок, каталогу та SEO.
-- Спеціалізації: Мультиселект категорій для пошуку та відображення плашок у Каталозі.
+- Спеціалізації: Мультиселект категорій з **Juicy Selection UX** (анімована підсвітка, robust mapping).
+
+**UI & Navigation (v5.2.0 "Vaul Engine")**
+- **Bento Bottom Nav**: Асиметрична мозаїчна сітка (3/5 Hero, 2/5 Side, 5/5 Wide).
+- **Peach Atmosphere**: Глибокі персикові градієнти з Glassmorphism (`backdrop-blur-3xl`).
+- **Command Center**: Центрована навігація для 15+ функціональних зон без UI-шуму.
+- **Vaul Engine (Standard)**: Всі модалки та шторки на мобілці використовують `@/components/ui/BottomSheet`.
+- **Hybrid Modals**: `PopUpModal` автоматично перемикається між Desktop Dialog та Mobile BottomSheet.
+- **iOS Native Feel**: Perfect swipe-to-dismiss, iOS-style handles, rubber-band physics, automatic body scroll locking.
 
 **Billing (Monobank)**
 - Checkout через Monobank (Ed25519 підпис верифікується строго)

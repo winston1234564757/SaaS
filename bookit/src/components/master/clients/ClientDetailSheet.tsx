@@ -33,6 +33,8 @@ interface RecentBooking {
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
 
+import { BottomSheet } from '@/components/ui/BottomSheet';
+
 export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
   const queryClient = useQueryClient();
@@ -41,335 +43,259 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   const [bookings, setBookings] = useState<RecentBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [reminding, setReminding] = useState(false);
-
-  // Notes
-  const { data: savedNote = '' } = useClientNote(client?.client_phone);
-  const invalidateNote = useClientNoteInvalidate();
-  const [noteText, setNoteText] = useState('');
-  const [noteSaving, setNoteSaving] = useState(false);
-  const [noteSaved, setNoteSaved] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Sync note from server when client changes or note loads
-  useEffect(() => {
-    setNoteText(savedNote);
-  }, [savedNote, client?.id]);
+  const { data: serverNote } = useClientNote(client?.client_phone);
+  const [noteValue, setNoteValue] = useState('');
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setNoteSaved(false);
-  }, [client?.id]);
-
-  useEffect(() => {
-    if (!client || !masterProfile?.id) return;
-    setLoading(true);
-    const supabase = createClient();
-    supabase
-      .from('bookings')
-        .select('id, date, start_time, status, total_price, booking_services(service_name)')
-        .eq('master_id', masterProfile.id)
-        .eq('client_phone', client.client_phone)
-        .order('date', { ascending: false })
-        .limit(8)
-        .then((res: { data: any[] | null }) => {
-          const data = res.data;
-          setBookings(
-            (data ?? []).map((b: any) => ({
-              id: b.id,
-              date: b.date,
-              start_time: b.start_time?.slice(0, 5) ?? '',
-              status: b.status,
-              total_price: Number(b.total_price),
-              service_name: b.booking_services?.[0]?.service_name ?? 'Послуга',
-            }))
-          );
-          setLoading(false);
-        });
-  }, [client?.id, masterProfile?.id]);
-
-  function handleNoteChange(val: string) {
-    setNoteText(val);
-    setNoteSaved(false);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => handleSaveNote(val), 1500);
-  }
-
-  async function handleSaveNote(text = noteText) {
-    if (!client?.client_phone) return;
-    setNoteSaving(true);
-    const { error } = await saveClientNote(client.client_phone, text);
-    if (error) {
-      showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
-    } else {
-      setNoteSaved(true);
-      invalidateNote(client.client_phone);
-      setTimeout(() => setNoteSaved(false), 2000);
+    if (serverNote !== undefined) {
+      setNoteValue(serverNote);
     }
-    setNoteSaving(false);
-  }
+  }, [serverNote]);
 
-  async function handleToggleVip() {
-    if (!client || !masterProfile?.id || isPending || !client.client_id) return;
-    
+  useEffect(() => {
+    if (!client?.client_phone) return;
+    async function fetchBookings() {
+      setLoading(true);
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('bookings')
+        .select(`
+          id, 
+          slot_date:date, 
+          slot_time:start_time, 
+          status, 
+          total_price, 
+          booking_services (
+            service_name
+          )
+        `)
+        .eq('client_phone', client!.client_phone)
+        .order('date', { ascending: false })
+        .order('start_time', { ascending: false })
+        .limit(5);
+
+      if (data) {
+        setBookings((data as any[]).map(b => ({
+          id: b.id,
+          date: b.slot_date,
+          start_time: b.slot_time,
+          status: b.status,
+          total_price: b.total_price,
+          service_name: b.booking_services?.[0]?.service_name || 'Послуга'
+        })));
+      }
+      setLoading(false);
+    }
+    fetchBookings();
+  }, [client?.client_phone]);
+
+  const handleToggleVip = () => {
+    const c = client;
+    if (!c?.relation_id) return;
     startTransition(async () => {
-      const newVip = !client.is_vip;
-      const { error } = await toggleClientVip(client.client_id!, newVip);
-      
+      const newVip = !c.is_vip;
+      const { error } = await toggleClientVip(c.relation_id!, newVip);
       if (error) {
         showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
-        onVipChange(client.id, newVip);
-        showToast({ type: 'success', title: newVip ? 'VIP статус надано' : 'VIP статус знято' });
-        await queryClient.invalidateQueries({ queryKey: ['clients'] });
-        await queryClient.invalidateQueries({ queryKey: ['client', client.client_id] });
+        onVipChange(c.id, newVip);
+        showToast({ 
+          type: 'success', 
+          title: newVip ? 'VIP статус надано' : 'VIP статус знято',
+          message: newVip ? 'Клієнт тепер має особливі привілеї' : 'VIP статус успішно знято'
+        });
       }
     });
-  }
+  };
+
+  const handleSaveNote = async (val: string) => {
+    if (!client?.client_phone) return;
+    setIsSavingNote(true);
+    const { error } = await saveClientNote(client.client_phone, val);
+    if (error) {
+      showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+    }
+    setIsSavingNote(false);
+  };
+
+  const onNoteChange = (val: string) => {
+    setNoteValue(val);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      handleSaveNote(val);
+    }, 1000);
+  };
 
   return (
-    <AnimatePresence>
-      {client && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40"
-          />
-
-          {/* Sheet */}
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-            className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto"
+    <BottomSheet 
+      isOpen={!!client} 
+      onClose={onClose}
+      title={client?.client_name ?? 'Інформація про клієнта'}
+    >
+      <div className="flex flex-col gap-5">
+        {/* Header/Identity Card */}
+        <div className="flex items-center gap-4 bg-white/40 p-4 rounded-3xl border border-white/60">
+          <div
+            className="w-16 h-16 rounded-[24px] flex items-center justify-center text-3xl flex-shrink-0 shadow-inner"
+            style={{ background: client?.is_vip ? 'rgba(212,147,90,0.18)' : 'rgba(255,210,194,0.4)' }}
           >
-            <div
-              className="rounded-t-[28px] border border-white/60 overflow-hidden"
-              style={{
-                background: 'rgba(255,248,244,0.96)',
-                backdropFilter: 'blur(24px)',
-                boxShadow: '0 -8px 40px rgba(44,26,20,0.14)',
-              }}
-            >
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="w-9 h-1 rounded-full bg-[#D4C5BE]" />
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center gap-3 px-5 pt-2 pb-4">
-                <div
-                  className="w-14 h-14 rounded-3xl flex items-center justify-center text-2xl flex-shrink-0"
-                  style={{ background: client.is_vip ? 'rgba(212,147,90,0.18)' : 'rgba(255,210,194,0.4)' }}
-                >
-                  {client.is_vip ? '⭐' : client.client_name[0]?.toUpperCase() ?? '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-base font-bold text-foreground truncate">{client.client_name}</p>
-                    {client.is_vip && (
-                      <span className="text-[10px] font-bold text-warning bg-warning/12 px-1.5 py-0.5 rounded-full flex-shrink-0">VIP</span>
-                    )}
-                  </div>
-                  <a href={`tel:${client.client_phone}`} className="flex items-center gap-1 text-xs text-primary hover:text-primary/90 transition-colors mt-0.5">
-                    <Phone size={11} />
-                    {client.client_phone}
-                  </a>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="w-9 h-9 flex items-center justify-center rounded-2xl bg-white/70 border border-white/80 text-muted-foreground/60 hover:text-muted-foreground transition-colors flex-shrink-0 active:scale-95 transition-all"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div className="px-5 pb-8 overflow-y-auto max-h-[60vh] flex flex-col gap-4">
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { icon: Calendar,   label: 'Візитів',      value: client.total_visits,           color: '#789A99' },
-                    { icon: TrendingUp, label: 'Витрачено',    value: formatPrice(client.total_spent), color: '#5C9E7A' },
-                    { icon: Star,       label: 'Сер. чек',     value: formatPrice(client.average_check), color: '#D4935A' },
-                  ].map(s => (
-                    <div key={s.label} className="bento-card p-3 text-center">
-                      <s.icon size={14} className="mx-auto mb-1" style={{ color: s.color }} />
-                      <p className="text-sm font-bold text-foreground leading-tight">{s.value}</p>
-                      <p className="text-[10px] text-muted-foreground/60">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Last visit */}
-                {client.last_visit_at && (
-                  <p className="text-xs text-muted-foreground/60 text-center">
-                    Остання візита:{' '}
-                    <span className="text-muted-foreground font-medium">
-                      {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </span>
-                  </p>
-                )}
-
-                {/* Auto tags */}
-                {(() => {
-                  const tags = getAutoTags(client);
-                  return tags.length > 0 ? (
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Теги</p>
-                      <div className="flex flex-wrap gap-2">
-                        {tags.map(tag => (
-                          <span
-                            key={tag.label}
-                            className="text-xs font-bold px-2.5 py-1 rounded-full"
-                            style={{ color: tag.color, background: tag.bg }}
-                          >
-                            {tag.label}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null;
-                })()}
-
-                {/* Churn reminder */}
-                {client && (client.retention_status === 'at_risk' || client.retention_status === 'lost') && (
-                  <div className="space-y-2">
-                    <button
-                      onClick={async () => {
-                        setReminding(true);
-                        const res = await sendChurnReminder(client.client_id, client.client_phone, client.client_name);
-                        if (res.error) {
-                          showToast({ type: 'error', title: 'Помилка', message: parseError(res.error) });
-                        } else {
-                          showToast({ type: 'success', title: 'Нагадування надіслано' });
-                        }
-                        setReminding(false);
-                      }}
-                      disabled={reminding}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all disabled:opacity-60"
-                    >
-                      <Bell size={15} />
-                      {reminding ? 'Надсилаємо...' : 'Нагадати про запис'}
-                    </button>
-                  </div>
-                )}
-
-                {/* VIP toggle */}
-                {client.relation_id ? (
-                  <button
-                    onClick={handleToggleVip}
-                    disabled={isPending}
-                    className={`flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold transition-all ${
-                      client.is_vip
-                        ? 'bg-warning/12 text-warning hover:bg-warning/20'
-                        : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
-                    } disabled:opacity-60 active:scale-95 transition-all`}
-                  >
-                    <Crown size={15} />
-                    {client.is_vip ? 'Прибрати VIP статус' : 'Позначити як VIP'}
-                  </button>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground/60 text-center">
-                    VIP доступний для клієнтів з акаунтом Bookit
-                  </p>
-                )}
-
-                {/* Archive client */}
-                <button
-                  onClick={async () => {
-                    if (!client?.client_id || !confirm('Архівувати клієнта? Він зникне зі списку активних, але історія записів залишиться.')) return;
-                    setLoading(true);
-                    const { error } = await archiveClient(client.client_id);
-                    if (error) {
-                      showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
-                    } else {
-                      showToast({ type: 'success', title: 'Клієнта архівовано' });
-                      onClose();
-                      await queryClient.invalidateQueries({ queryKey: ['clients'] });
-                    }
-                    setLoading(false);
-                  }}
-                  disabled={loading || !client?.client_id}
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 transition-all disabled:opacity-40"
-                >
-                  Архівувати клієнта
-                </button>
-
-
-                {/* Private notes */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <PenLine size={13} className="text-primary" />
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Приватні нотатки</p>
-                    </div>
-                    <button
-                      onClick={() => handleSaveNote()}
-                      disabled={noteSaving || noteText === savedNote}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
-                        noteSaved
-                          ? 'bg-success/12 text-success'
-                          : 'bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-40 disabled:cursor-not-allowed'
-                      }`}
-                    >
-                      {noteSaving ? <Loader2 size={11} className="animate-spin" /> : noteSaved ? <Check size={11} /> : null}
-                      {noteSaved ? 'Збережено' : 'Зберегти'}
-                    </button>
-                  </div>
-                  <textarea
-                    value={noteText}
-                    onChange={e => handleNoteChange(e.target.value)}
-                    placeholder="Формула фарбування, алергії, особливі побажання, звички клієнта..."
-                    rows={3}
-                    className="w-full text-sm text-foreground placeholder-[#C8B0AA] bg-white/60 border border-[#F0DDD8] rounded-2xl px-3.5 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 resize-none transition-all leading-relaxed"
-                  />
-                  <p className="text-[10px] text-muted-foreground/60 mt-1.5">Видимо тільки вам. Автозбереження через 1.5 сек.</p>
-                </div>
-
-                {/* Recent bookings */}
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Останні записи</p>
-                  {loading ? (
-                    <div className="flex justify-center py-4">
-                      <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                    </div>
-                  ) : bookings.length === 0 ? (
-                    <p className="text-xs text-muted-foreground/60 text-center py-4">Записів не знайдено</p>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      {bookings.map(b => {
-                        const cfg = BOOKING_STATUS_CONFIG[b.status as BookingStatus] ?? BOOKING_STATUS_CONFIG.pending;
-                        const d = new Date(b.date);
-                        return (
-                          <div key={b.id} className="flex items-center gap-3 py-2 px-3 rounded-2xl bg-white/50">
-                            <div className="flex-shrink-0 w-10 text-center">
-                              <p className="text-xs font-bold text-foreground">{b.start_time}</p>
-                              <p className="text-[10px] text-muted-foreground/60 break-words leading-tight">{formatDate(b.date)}</p>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-foreground break-words leading-tight">{b.service_name}</p>
-                              <span
-                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                                style={{ color: cfg.color, background: cfg.bg }}
-                              >
-                                {cfg.label}
-                              </span>
-                            </div>
-                            <p className="text-xs font-bold text-foreground flex-shrink-0">{formatPrice(b.total_price)}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
+            {client?.is_vip ? '⭐' : client?.client_name[0]?.toUpperCase() ?? '?'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-bold text-foreground truncate">{client?.client_name}</p>
+              {client?.is_vip && (
+                <span className="text-[10px] font-bold text-warning bg-warning/12 px-2 py-0.5 rounded-full flex-shrink-0">VIP</span>
+              )}
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+            <a href={`tel:${client?.client_phone}`} className="flex items-center gap-1.5 text-sm text-primary font-medium mt-1">
+              <Phone size={13} />
+              {client?.client_phone}
+            </a>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: Calendar,   label: 'Візитів',      value: client?.total_visits,           color: '#789A99' },
+            { icon: TrendingUp, label: 'Витрачено',    value: formatPrice(client?.total_spent ?? 0), color: '#5C9E7A' },
+            { icon: Star,       label: 'Сер. чек',     value: formatPrice(client?.average_check ?? 0), color: '#D4935A' },
+          ].map(s => (
+            <div key={s.label} className="bento-card p-3.5 text-center bg-white/40">
+              <s.icon size={16} className="mx-auto mb-1.5 opacity-60" style={{ color: s.color }} />
+              <p className="text-base font-bold text-foreground leading-tight">{s.value}</p>
+              <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wider">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          {client && (client.retention_status === 'at_risk' || client.retention_status === 'lost') && (
+            <button
+              onClick={async () => {
+                setReminding(true);
+                const res = await sendChurnReminder(client.client_id, client.client_phone, client.client_name);
+                if (res.error) {
+                  showToast({ type: 'error', title: 'Помилка', message: parseError(res.error) });
+                } else {
+                  showToast({ type: 'success', title: 'Нагадування надіслано' });
+                }
+                setReminding(false);
+              }}
+              disabled={reminding}
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-sm font-bold bg-destructive/10 text-destructive hover:bg-destructive/15 active:scale-95 transition-all disabled:opacity-60"
+            >
+              <Bell size={16} />
+              {reminding ? 'Надсилаємо...' : 'Нагадати про запис'}
+            </button>
+          )}
+
+          {client?.relation_id ? (
+            <button
+              onClick={handleToggleVip}
+              disabled={isPending}
+              className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-sm font-bold transition-all ${
+                client.is_vip
+                  ? 'bg-warning/12 text-warning hover:bg-warning/20'
+                  : 'bg-white/60 border border-white/80 text-muted-foreground hover:bg-white'
+              } disabled:opacity-60 active:scale-95 transition-all shadow-sm`}
+            >
+              <Crown size={16} />
+              {client.is_vip ? 'Прибрати VIP статус' : 'Позначити як VIP'}
+            </button>
+          ) : (
+            <p className="text-[11px] text-muted-foreground/60 text-center bg-white/20 py-2 rounded-xl border border-white/40">
+              VIP доступний для клієнтів з акаунтом Bookit
+            </p>
+          )}
+
+          <button
+            onClick={async () => {
+              if (!client?.client_id || !confirm('Архівувати клієнта? Він зникне зі списку активних, але історія записів залишиться.')) return;
+              setLoading(true);
+              const { error } = await archiveClient(client.client_id);
+              if (error) {
+                showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+              } else {
+                showToast({ type: 'success', title: 'Клієнта архівовано' });
+                onClose();
+                await queryClient.invalidateQueries({ queryKey: ['clients'] });
+              }
+              setLoading(false);
+            }}
+            disabled={loading || !client?.client_id}
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-sm font-bold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 active:scale-95 transition-all disabled:opacity-40"
+          >
+            Архівувати клієнта
+          </button>
+        </div>
+
+        {/* Private notes */}
+        <div className="bg-white/40 p-5 rounded-3xl border border-white/60 relative overflow-hidden group">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <PenLine size={14} className="text-muted-foreground/60" />
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Приватні нотатки</p>
+            </div>
+            {isSavingNote && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sage/10 text-sage">
+                <Loader2 size={10} className="animate-spin" />
+                <span className="text-[9px] font-bold uppercase tracking-tight">Зберігаємо...</span>
+              </div>
+            )}
+          </div>
+          <textarea
+            value={noteValue}
+            onChange={e => onNoteChange(e.target.value)}
+            placeholder="Формула фарбування, алергії, особливі побажання..."
+            rows={3}
+            className="w-full text-sm text-foreground placeholder-text-mute/40 bg-white/60 border border-white/80 rounded-2xl px-4 py-3.5 outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 resize-none transition-all leading-relaxed shadow-inner"
+          />
+          <p className="text-[10px] text-muted-foreground/50 mt-2 font-medium italic">Видимо тільки вам. Автозбереження увімкнено.</p>
+        </div>
+
+        {/* Recent bookings */}
+        <div className="bg-white/40 p-5 rounded-3xl border border-white/60">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Останні записи</p>
+          {loading ? (
+            <div className="flex justify-center py-6">
+              <Loader2 size={24} className="text-primary animate-spin opacity-40" />
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="text-center py-6 bg-white/20 rounded-2xl border border-dashed border-white/60">
+              <p className="text-xs text-muted-foreground/60">Записів не знайдено</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {bookings.map(b => {
+                const cfg = BOOKING_STATUS_CONFIG[b.status as BookingStatus] ?? BOOKING_STATUS_CONFIG.pending;
+                return (
+                  <div key={b.id} className="flex items-center gap-4 py-3 px-4 rounded-2xl bg-white/60 border border-white/40 shadow-sm">
+                    <div className="flex-shrink-0 w-12 text-center">
+                      <p className="text-xs font-black text-foreground">{b.start_time}</p>
+                      <p className="text-[9px] text-muted-foreground/60 font-bold uppercase mt-0.5">{formatDate(b.date)}</p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">{b.service_name}</p>
+                      <span
+                        className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter mt-1 inline-block"
+                        style={{ color: cfg.color, background: cfg.bg }}
+                      >
+                        {cfg.label}
+                      </span>
+                    </div>
+                    <p className="text-xs font-black text-foreground flex-shrink-0">{formatPrice(b.total_price)}</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </BottomSheet>
   );
 }

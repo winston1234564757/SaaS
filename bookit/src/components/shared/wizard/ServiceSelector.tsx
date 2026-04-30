@@ -249,15 +249,15 @@ export function ServiceSelector({
         </div>
       </div>
 
-      <div className="sticky bottom-0 pt-3 pb-1 bg-gradient-to-t from-[rgba(255,248,244,1)] to-transparent flex flex-col gap-2">
+      <div className="sticky bottom-6 mt-8 pt-3 pb-0.5 px-1 bg-gradient-to-t from-[rgba(255,248,244,1)] via-[rgba(255,248,244,0.9)] to-transparent z-10">
         <button
           disabled={!canGoToDatetime}
           onClick={onContinue}
           data-testid="wizard-next-btn"
-          className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
+          className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-primary/20 ${
             canGoToDatetime
-              ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
-              : 'bg-secondary/80 text-muted-foreground/60 cursor-not-allowed'
+              ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-95'
+              : 'bg-secondary/80 text-muted-foreground/40 cursor-not-allowed'
           }`}
         >
           {canGoToDatetime
@@ -267,7 +267,7 @@ export function ServiceSelector({
         {mode === 'client' && hasProducts && !canGoToDatetime && onSkipToProducts && (
           <button
             onClick={onSkipToProducts}
-            className="w-full py-2.5 rounded-2xl text-sm font-medium text-primary border border-primary/30 hover:bg-primary/8 active:scale-[0.98] transition-all"
+            className="w-full mt-3 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-primary border-2 border-primary/20 hover:bg-primary/5 active:scale-95 transition-all bg-white/40"
           >
             Тільки товари →
           </button>

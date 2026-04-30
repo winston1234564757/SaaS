@@ -329,15 +329,15 @@ export function DateTimePicker({
     )}
 
       {/* Continue CTA */}
-      <div className="sticky bottom-0 pt-3 pb-1 bg-gradient-to-t from-[rgba(255,248,244,1)] to-transparent">
+      <div className="sticky bottom-6 mt-8 pt-3 pb-0.5 bg-gradient-to-t from-[rgba(255,248,244,1)] via-[rgba(255,248,244,0.9)] to-transparent z-10">
         <button
           disabled={!canProceedDatetime}
           onClick={onContinue}
           data-testid="wizard-next-btn"
-          className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all ${
+          className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-primary/20 ${
             canProceedDatetime
-              ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
-              : 'bg-secondary/80 text-muted-foreground/60 cursor-not-allowed'
+              ? 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-95'
+              : 'bg-secondary/80 text-muted-foreground/40 cursor-not-allowed'
           }`}
         >
           {canProceedDatetime

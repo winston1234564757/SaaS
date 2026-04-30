@@ -17,9 +17,10 @@
 
 1. **Chain of Thought (CoT)**: ПЕРЕД будь-якою дією (читання файлу, написання коду, запуск команди) агент ЗОБОВ'ЯЗАНИЙ згенерувати детальний блок міркувань (`thought`).
 2. **Прозорість**: Блок міркувань має містити: аналіз поточного стану, оцінку ризиків, архітектурне обґрунтування та план дій. Жодних "магічних" фіксів без пояснення.
-3. **Темперамент**: Бути проактивним напарником (Pair Programmer), а не просто виконавцем. Якщо бачиш архітектурний косяк — кажи про нього прямо.
+3. **Темперамент**: Бути проактивним напарником (Pair Programmer), а не просто виконавцем. Якщо бачиш архітектурну проблему — кажи прямо.
 4. **Стандарти WOW**: Кожен UI-елемент має відповідати рівню "Premium SaaS". Якщо рішення виглядає як "простий MVP" — це відмова.
-5. **Контекстна пам'ять**: Перед початком роботи обов'язково просканувати `XDEV/SYSTEM_MAP.md` та останні міграції, щоб не перепитувати вже вирішені питання.
+5. **Contextual Memory & Changelog**: Перед початком роботи обов'язково просканувати `XDEV/SYSTEM_MAP.md`. Після КОЖНОЇ ітерації (фічі або фіксу) — **ОБОВ'ЯЗКОВО** оновити `src/app/(master)/dashboard/changelog/page.tsx` (для юзера), `XDEV/SYSTEM_MAP.md` та `XDEV/BOOKIT.md` (для архітектури).
+6. **Native iOS Feel**: Всі модальні вікна та шторки (drawers) МУСИТЬ бути реалізовані через `vaul` (компонент `@/components/ui/BottomSheet`). Використання голого `framer-motion` для шторок ЗАБОРОНЕНО через конфлікти скролу.
 
 ---
 
@@ -203,6 +204,12 @@ const [templates, exceptions, timeOffs, bookings] = await Promise.all([...]);
 - Ніколи не fetchити слоти per-date ліниво — завжди pre-fetch вікно.
 - Date strip: off-days → `вих.` + dashed border; fully-booked → `зайнято` + red border.
 
+## 📱 Mobile Interaction Rules (v5.2.0+)
+- **BottomSheet Strategy**: Завжди використовувати `@/components/ui/BottomSheet`.
+- **Swipe-to-Dismiss**: Кожна модалка ПОВИННА мати iOS-handle та підтримувати свайп вниз для закриття.
+- **Scroll Locking**: При відкритій шторці `body` скрол має бути заблокований через `vaul` mechanism.
+- **Z-Index Strategy**: Bottom Nav (75) > Toasts (100) > Modals (50) > Content (0).
+
 ---
 
 ## Design System (Locked)
@@ -226,6 +233,13 @@ const [templates, exceptions, timeOffs, bookings] = await Promise.all([...]);
 - CSS класи: `.display-xl`, `.display-lg`, `.display-md`, `.heading-serif`
 
 ### UI Rules & Premium Standards
+- **Mosaic Hub Architecture**: Mobile navigation and complex menus must use asymmetric, non-repeating Bento grids. No 2x2 grids everywhere. Use unique layouts per section (Hero 3/5, Side 2/5, Wide 5/5).
+- **Peach Atmosphere**: Global backgrounds and Hub states use deep peach-to-peach-deep gradients (`#FFE8DC` to `#FFD1B8`) with heavy `backdrop-blur-3xl`.
+- **Juicy Selection UX**: Toggleable items (specializations, categories, etc.) must:
+  - Use **Robust Mapping**: `isSelected = value === id || value === label`.
+  - Active: Vibrant `sage` gradient + `shadow-sage/20` + animated `Check` icon.
+  - Inactive: Grayscale emoji (`filter: grayscale`) + 70% opacity + `white/60` background.
+  - Feedback: `whileTap={{ scale: 0.92 }}`
 - Card radius: 24px | Button radius: 16px | Input radius: 12px
 - `.bento-card` — backdrop-blur, Mica, border rgba(255,255,255,0.4), box-shadow
 - Emoji в desktop UI — **тільки якщо явно запросив користувач**
@@ -233,7 +247,9 @@ const [templates, exceptions, timeOffs, bookings] = await Promise.all([...]);
 - `will-change: transform` для GPU-анімацій
 - УСІ кнопки та клікабельні елементи повинні мати тактильний відгук: `active:scale-95 transition-all`.
 - Модалки та Sheets ПОВИННІ використовувати Radix UI (Focus Trap, Esc closure).
-- Toasts завжди мають z-[100], а модалки z-50.
+- Toasts завжди мають z-[100], а модалки z-[90].
+- **Safe Interaction Zone**: Весь контент у BottomSheet ПОВИНЕН мати `pb-32` (128px) або `padding-bottom: calc(env(safe-area-inset-bottom) + 80px)`, щоб запобігти перекриттю з `BottomNav` та забезпечити доступ до останніх елементів списку.
+- **Vaul Performance**: Для запобігання лагам при свайпі закриття, ЗАВЖДИ використовувати `shouldScaleBackground={false}` та уникати `dvh` одиниць у висоті (використовувати стабільні `vh`), щоб клавіатура не викликала стрибків лейауту.
 
 ### UX Copywriting & Forms (Tone of Voice)
 - Використовуй виключно терміни: `Майстер` (не спеціаліст/робітник), `Клієнт` (не юзер/покупець), `Бронювання/Запис`, `Підписка/Тариф` (не пакет).
