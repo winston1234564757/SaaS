@@ -10,9 +10,10 @@ interface BottomSheetProps {
   title?: string;
   children: React.ReactNode;
   className?: string;
+  contentClassName?: string;
 }
 
-export function BottomSheet({ isOpen, onClose, title, children, className }: BottomSheetProps) {
+export function BottomSheet({ isOpen, onClose, title, children, className, contentClassName }: BottomSheetProps) {
   return (
     <Drawer.Root 
       open={isOpen} 
@@ -61,7 +62,7 @@ export function BottomSheet({ isOpen, onClose, title, children, className }: Bot
             CRITICAL: Added extra bottom padding (pb-32 = 128px) 
             to ensure content is never hidden by BottomNav and Safe Areas.
           */}
-          <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-6 pt-2 pb-32">
+          <div className={cn("flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-6 pt-2 pb-32", contentClassName)}>
             {children}
           </div>
         </Drawer.Content>

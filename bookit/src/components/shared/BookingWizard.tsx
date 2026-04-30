@@ -133,8 +133,17 @@ export function BookingWizard({
 
     // ── Product-only path (no services selected) ──────────────────────────────
     if (selectedServices.length === 0 && cart.length > 0 && mode === 'client') {
-      setSaving(true);
-      setSaveError('');
+      go('details', 1); // Go to details first to get name/phone
+      return;
+    }
+
+    if (selectedServices.length > 0 && (!selectedDate || !selectedTime)) return;
+
+    setSaving(true);
+    setSaveError('');
+
+    // If product-only
+    if (selectedServices.length === 0 && cart.length > 0) {
       const res = await createPublicOrder({
         masterId,
         clientName: watchName.trim(),
@@ -149,18 +158,14 @@ export function BookingWizard({
       return;
     }
 
-    if (!selectedDate || !selectedTime) return;
-
-    setSaving(true);
-    setSaveError('');
     const result = await createBooking({
       masterId,
       clientName:              watchName.trim(),
       clientPhone:             watchPhone.trim(),
       clientEmail:             mode === 'client' ? (clientEmail.trim().toLowerCase() || null) : null,
       clientId:                mode === 'client' ? (clientUserId || null) : (selectedClientId || null),
-      date:                    toISO(selectedDate),
-      startTime:               selectedTime,
+      date:                    toISO(selectedDate!),
+      startTime:               selectedTime!,
       services:                selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
       products:                cart.map(ci => ({ id: ci.product.id, name: ci.product.name, price: ci.product.price, quantity: ci.quantity })),
       notes:                   clientNotes.trim() || null,
@@ -187,7 +192,6 @@ export function BookingWizard({
         setSaveError('На жаль, запис до цього майстра тимчасово недоступний. Зверніться до майстра напряму.');
       } else {
         setSaveError(result.error);
-        // Slot was taken by another user — refresh schedule and go back to time picker
         if (result.error.includes('вже заброньований')) {
           setSelectedTime(null);
           refetchSchedule();
@@ -207,67 +211,39 @@ export function BookingWizard({
     go('success', 1);
   }
 
-  // Product-only orders don't need date/time but still need name+phone
   const canSubmit = (watchName?.trim()?.length ?? 0) >= 2 && (watchPhone?.length ?? 0) >= 13
     && (selectedServices.length > 0 || cart.length > 0);
 
-  // LIFECYCLE: Local open state to decouple animation
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const stepNumber = { services: 1, datetime: 2, products: 3, details: 4, success: 4 }[step];
 
-  useEffect(() => {
-    if (isOpen) setIsModalOpen(true);
-    else setIsModalOpen(false);
-  }, [isOpen]);
+  if (!isOpen) return null;
 
-  const handleClose = () => {
-    setIsModalOpen(false);
-    setTimeout(onClose, 400);
-  };
-
-  const currentTitle = (() => {
-    const t = STEP_TITLE[step];
-    return typeof t === 'function' ? t(mode) : t;
-  })();
-
-  if (!isOpen && !isModalOpen) return null;
-
-  // ── Shell ──────────────────────────────────────────────────────────────────────
   return (
     <>
-    <BottomSheet 
-      isOpen={isModalOpen} 
-      onClose={handleClose}
-      title={step !== 'success' ? currentTitle : ''}
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={step !== 'success' ? masterName : ''}
+      contentClassName="overflow-hidden pb-0"
     >
-      <div className="flex flex-col min-h-0">
-        {/* Step Navigation Header */}
-        {step !== 'success' && (
-          <div className="flex items-center justify-between mb-4">
-            <button 
-              onClick={goBack}
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/60 border border-white/80 text-muted-foreground hover:bg-white transition-all active:scale-95"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            
-            <div className="flex-1 text-center px-4">
-              {masterName && <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest truncate">{masterName}</p>}
-            </div>
-
-            <div className="w-10 h-10" /> {/* Spacer to balance */}
+      <div className="flex flex-col h-[85vh] md:h-[600px] -mx-6 -mt-2">
+        {/* Progress header */}
+        {!isAtLimit && step !== 'success' && (
+          <div className="flex items-center justify-center py-3 bg-primary/5 border-b border-primary/10 flex-shrink-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Крок {stepNumber} з 4</p>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-32">
+        <div className="flex-1 relative overflow-hidden">
           {isAtLimit && step !== 'success' && (
-            <div className="flex flex-col items-center text-center py-10 gap-4">
+            <div className="flex flex-col items-center text-center py-10 px-5 gap-4">
               <div className="w-16 h-16 rounded-3xl bg-warning/10 flex items-center justify-center text-3xl">🔒</div>
               <p className="text-base font-bold text-foreground">Ліміт записів вичерпано</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Майстер досяг ліміту 30 записів на місяць.<br />
                 Нові записи будуть доступні з наступного місяця.
               </p>
-              <button onClick={handleClose}
+              <button onClick={onClose}
                 className="mt-4 px-8 py-4 rounded-2xl bg-primary text-white text-sm font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20">
                 Зрозуміло
               </button>
@@ -275,12 +251,10 @@ export function BookingWizard({
           )}
 
           {!isAtLimit && (
-            <>
-              {step !== 'success' && <StepProgress step={step} hasProducts={hasProducts} />}
-              <AnimatePresence mode="wait" custom={direction}>
-                {step === 'services' && (
+            <AnimatePresence mode="wait" initial={false} custom={direction}>
+              {step === 'services' && (
+                <div key="services" className="h-full overflow-hidden px-5">
                   <ServiceSelector
-                    key="services"
                     services={services}
                     selectedServices={selectedServices}
                     onToggle={toggleService}
@@ -298,11 +272,12 @@ export function BookingWizard({
                     onContinue={() => go('datetime', 1)}
                     onSkipToProducts={() => go('products', 1)}
                   />
-                )}
+                </div>
+              )}
 
-                {step === 'datetime' && (
+              {step === 'datetime' && (
+                <div key="datetime" className="h-full overflow-hidden px-5">
                   <DateTimePicker
-                    key="datetime"
                     days={days}
                     scheduleStore={scheduleStore}
                     scheduleLoading={scheduleLoading}
@@ -327,11 +302,12 @@ export function BookingWizard({
                     onToggleDynamicPrice={() => setUseDynamicPrice(v => !v)}
                     onContinue={() => go(hasProducts ? 'products' : 'details', 1)}
                   />
-                )}
+                </div>
+              )}
 
-                {step === 'products' && (
+              {step === 'products' && (
+                <div key="products" className="h-full overflow-hidden px-5">
                   <ProductCart
-                    key="products"
                     availableProducts={availableProducts}
                     suggestedProductIds={suggestedProductIds}
                     cart={cart}
@@ -342,11 +318,12 @@ export function BookingWizard({
                     cartQty={cartQty}
                     onContinue={() => go('details', 1)}
                   />
-                )}
+                </div>
+              )}
 
-                {step === 'details' && (
+              {step === 'details' && (
+                <div key="details" className="h-full overflow-hidden px-5">
                   <ClientDetails
-                    key="details"
                     selectedDate={selectedDate}
                     selectedTime={selectedTime}
                     selectedServices={selectedServices}
@@ -389,11 +366,12 @@ export function BookingWizard({
                     phoneDiscountPct={mode === 'client' ? phoneDiscountPct : 0}
                     phoneDiscountAmount={mode === 'client' ? phoneDiscountAmount : 0}
                   />
-                )}
+                </div>
+              )}
 
-                {step === 'success' && (
+              {step === 'success' && (
+                <div key="success" className="h-full overflow-y-auto scrollbar-hide px-5">
                   <BookingSuccess
-                    key="success"
                     selectedServices={selectedServices}
                     selectedDate={selectedDate}
                     selectedTime={selectedTime}
@@ -409,11 +387,11 @@ export function BookingWizard({
                     flashDeal={flashDeal}
                     finalTotal={finalTotal}
                     direction={direction}
-                    onClose={handleClose}
+                    onClose={onClose}
                   />
-                )}
-              </AnimatePresence>
-            </>
+                </div>
+              )}
+            </AnimatePresence>
           )}
         </div>
       </div>
@@ -428,4 +406,3 @@ export function BookingWizard({
     </>
   );
 }
-
