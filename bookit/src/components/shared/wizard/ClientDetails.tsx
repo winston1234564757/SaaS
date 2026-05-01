@@ -51,6 +51,7 @@ interface ClientDetailsProps {
   c2cAlreadyUsed?: boolean;
   phoneDiscountPct?: number;
   phoneDiscountAmount?: number;
+  barterDiscountAmount?: number;
 }
 
 export function ClientDetails({
@@ -92,6 +93,7 @@ export function ClientDetails({
   c2cAlreadyUsed = false,
   phoneDiscountPct = 0,
   phoneDiscountAmount = 0,
+  barterDiscountAmount = 0,
 }: ClientDetailsProps) {
   return (
     <motion.div key="details" custom={direction} variants={slide}
@@ -121,7 +123,14 @@ export function ClientDetails({
           )}
         </div>
 
-        {mode === 'client' && clientUserId && (
+        {mode === 'client' && barterDiscountAmount > 0 && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 mb-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <p className="text-xs text-primary font-bold">Дякуємо, що розповів про Bookit! Твоя знижка −50% 🎁</p>
+          </div>
+        )}
+
+        {mode === 'client' && clientUserId && !barterDiscountAmount && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10 border border-success/20 mb-4">
             <div className="w-1.5 h-1.5 rounded-full bg-success" />
             <p className="text-xs text-success font-medium">Дані підтягнуто з вашого профілю</p>
@@ -255,10 +264,16 @@ export function ClientDetails({
               <span className="font-semibold text-amber-600">−{fmt(flashDealAmount)}</span>
             </div>
           )}
-          {mode === 'client' && phoneDiscountPct > 0 && (
+          {mode === 'client' && phoneDiscountPct > 0 && !barterDiscountAmount && (
             <div className="flex justify-between text-xs">
               <span className="text-warning">📩 Знижка з розсилки <span className="text-[10px] font-bold">-{phoneDiscountPct}%</span></span>
               <span className="font-semibold text-warning">−{fmt(phoneDiscountAmount)}</span>
+            </div>
+          )}
+          {mode === 'client' && barterDiscountAmount > 0 && (
+            <div className="flex justify-between text-xs">
+              <span className="text-primary font-bold">🎁 Знижка за пораду <span className="text-[10px]">−50%</span></span>
+              <span className="font-semibold text-primary">−{fmt(barterDiscountAmount)}</span>
             </div>
           )}
           {mode === 'client' && c2cAlreadyUsed && (
@@ -291,9 +306,9 @@ export function ClientDetails({
             </span>
             <span className="text-lg font-bold text-primary">
               {fmt(Math.max(0, finalTotal
-                - (mode === 'client' ? (c2cFriendDiscountAmount ?? 0) : 0)
-                - (mode === 'client' && c2cBonusToUse > 0 ? Math.round(finalTotal * c2cBonusToUse / 100) : 0)
-                - (mode === 'client' ? phoneDiscountAmount : 0)
+                - (mode === 'client' && !barterDiscountAmount ? (c2cFriendDiscountAmount ?? 0) : 0)
+                - (mode === 'client' && !barterDiscountAmount && c2cBonusToUse > 0 ? Math.round(finalTotal * c2cBonusToUse / 100) : 0)
+                - (mode === 'client' && !barterDiscountAmount ? phoneDiscountAmount : 0)
               ))}
             </span>
           </div>

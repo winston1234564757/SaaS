@@ -371,3 +371,43 @@ export async function processRegistrationReferral(
     return { success: false, error: e.message };
   }
 }
+
+// ── checkAmbassadorStatus ──────────────────────────────────────────
+
+/**
+ * Перевіряє, чи є клієнт за номером телефону амбасадором для конкретного майстра.
+ * Використовує admin client для обходу RLS (майстер не має доступу до чужих профілів).
+ */
+export async function checkAmbassadorStatus(
+  phone: string,
+  masterId: string
+): Promise<{ isAmbassador: boolean }> {
+  try {
+    const admin = createAdminClient();
+    const cleanPhone = phone.replace(/\D/g, '');
+
+    // 1. Шукаємо профіль клієнта за телефоном
+    const { data: prof } = await admin
+      .from('profiles')
+      .select('id')
+      .or(`phone.eq.+${cleanPhone},phone.eq.${cleanPhone}`)
+      .limit(1)
+      .maybeSingle();
+
+    if (!prof) return { isAmbassador: false };
+
+    // 2. Перевіряємо наявність промокоду (C2B зв'язок)
+    const { data: promo } = await admin
+      .from('client_promocodes')
+      .select('id')
+      .eq('client_id', prof.id)
+      .eq('master_id', masterId)
+      .limit(1)
+      .maybeSingle();
+
+    return { isAmbassador: !!promo };
+  } catch (e) {
+    console.error('[referrals] checkAmbassadorStatus error:', e);
+    return { isAmbassador: false };
+  }
+}

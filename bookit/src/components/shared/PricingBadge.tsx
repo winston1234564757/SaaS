@@ -40,7 +40,10 @@ export function PricingBadge({ dynamicLabel, flashDealPct, loyaltyLabel, size = 
         }`}
       >
         {isMarkup ? <TrendingUp size={iconSize} /> : <TrendingDown size={iconSize} />}
-        {dynamicLabel}
+        {dynamicLabel
+          .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]\s*/gu, '')
+          .replace(/Бартерна знижка/gi, 'Знижка Ambassador')
+        }
       </span>
     );
   }

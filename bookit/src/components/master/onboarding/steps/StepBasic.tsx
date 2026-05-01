@@ -118,10 +118,10 @@ export function StepBasic({
                 value={formatPhoneDisplay(phone)}
                 onChange={e => { onPhoneChange(normalizePhoneInput(e.target.value)); setShowErrors(false); }}
                 className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
-                aria-invalid={showErrors && phone.replace(/\D/g, '').length < 10}
+                aria-invalid={showErrors && phone.replace(/\D/g, '').length < 9}
               />
             </div>
-            {showErrors && phone.replace(/\D/g, '').length < 10 && (
+            {showErrors && phone.replace(/\D/g, '').length < 9 && (
               <p className="text-destructive text-[11px] mt-1.5 ml-1 font-medium">
                 Введіть коректний номер телефону
               </p>
@@ -165,7 +165,7 @@ export function StepBasic({
       <button
         type="button"
         onClick={() => {
-          if (!fullName.trim() || (!hasPhone && phone.replace(/\D/g, '').length < 10)) {
+          if (!fullName.trim() || (!hasPhone && phone.replace(/\D/g, '').length < 9)) {
             setShowErrors(true);
             return;
           }

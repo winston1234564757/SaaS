@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Crown, Building2, Zap, Loader2, X, PartyPopper, CreditCard } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
-import { createMonoInvoice, recoverCardToken } from '@/app/(master)/dashboard/billing/actions';
+import { createMonoInvoice, recoverCardToken, cancelSubscription } from '@/app/(master)/dashboard/billing/actions';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 
 type PaymentProvider = 'mono';
 
@@ -64,7 +65,7 @@ const PLANS = [
 ];
 
 export function BillingPage() {
-  const { masterProfile, refresh } = useMasterContext();
+  const { masterProfile, subscription, refresh } = useMasterContext();
   const router = useRouter();
   const currentTier = (masterProfile?.subscription_tier ?? 'starter') as Tier;
   const searchParams = useSearchParams();
@@ -74,6 +75,8 @@ export function BillingPage() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   // Detect return from payment or intended plan from landing
   useEffect(() => {
@@ -95,10 +98,12 @@ export function BillingPage() {
       recoverCardToken().then(result => {
         if ('error' in result) {
           console.warn('[BillingPage] recoverCardToken error:', result.error);
+        } else if ('ok' in result && result.found) {
+          refresh(); // Update context with newly found subscription
         }
       });
     }
-  }, [currentTier]);
+  }, [currentTier, refresh]);
 
   function handleUpgrade(tier: Tier) {
     setError(null);
@@ -118,8 +123,26 @@ export function BillingPage() {
       }
     });
   }
+  
+  async function handleCancelSubscription() {
+    setIsCanceling(true);
+    setError(null);
+    try {
+      const result = await cancelSubscription();
+      if ('error' in result) {
+        setError(result.error);
+      } else {
+        await refresh();
+        setShowCancelModal(false);
+      }
+    } catch (err) {
+      setError('Не вдалося скасувати підписку. Спробуйте пізніше.');
+    } finally {
+      setIsCanceling(false);
+    }
+  }
 
-  const isLoading = isPending;
+  const isLoading = isPending || isCanceling;
 
   return (
     <div className="flex flex-col gap-4 pb-8">
@@ -186,7 +209,7 @@ export function BillingPage() {
                 >
                   <PlanIcon size={18} style={{ color: plan?.color ?? '#789A99' }} />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-sm font-bold text-foreground">
                     {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
                   </p>
@@ -194,17 +217,39 @@ export function BillingPage() {
                     {currentTier === 'starter'
                       ? 'Безкоштовний план'
                       : masterProfile?.subscription_expires_at
-                        ? `Діє до ${new Date(masterProfile.subscription_expires_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })}`
+                        ? `${subscription?.status === 'canceled' ? 'Закінчується' : 'Діє до'} ${new Date(masterProfile.subscription_expires_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })}`
                         : 'Активна підписка'
                     }
                   </p>
                 </div>
-                <span
-                  className="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full"
-                  style={{ color: plan?.color, background: `${plan?.color}15` }}
-                >
-                  Активний
-                </span>
+                <div className="flex flex-col items-end gap-1 ml-auto">
+                  <span
+                    className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+                    style={{ 
+                      color: (subscription?.status === 'canceled' || (currentTier !== 'starter' && !subscription)) ? '#C05B5B' : plan?.color, 
+                      background: (subscription?.status === 'canceled' || (currentTier !== 'starter' && !subscription)) ? '#C05B5B15' : `${plan?.color}15` 
+                    }}
+                  >
+                    {subscription?.status === 'canceled' 
+                      ? 'Скасовано' 
+                      : (currentTier !== 'starter' && !subscription) 
+                        ? 'Автопродовження вимкнено' 
+                        : 'Активний'}
+                  </span>
+                  {currentTier !== 'starter' && subscription?.status === 'active' && (
+                    <button 
+                      onClick={() => setShowCancelModal(true)}
+                      className="text-[10px] font-medium text-muted-foreground/40 hover:text-destructive transition-colors underline underline-offset-2"
+                    >
+                      Скасувати підписку
+                    </button>
+                  )}
+                  {currentTier !== 'starter' && !subscription && !isLoading && (
+                    <p className="text-[9px] text-muted-foreground/40 text-right max-w-[120px]">
+                      Картка не прив'язана, автоматичного списання не буде
+                    </p>
+                  )}
+                </div>
               </>
             );
           })()}
@@ -399,6 +444,39 @@ export function BillingPage() {
           .
         </p>
       </div>
+
+      <PopUpModal
+        isOpen={showCancelModal}
+        onClose={() => !isCanceling && setShowCancelModal(false)}
+        title="Скасувати підписку?"
+      >
+        <div className="p-6">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+            Ви зможете користуватися перевагами тарифу <span className="font-semibold text-foreground">{currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}</span> до кінця поточного періоду, але наступних автоматичних списань не буде.
+          </p>
+          
+          <div className="flex flex-col gap-3">
+            <button
+              disabled={isCanceling}
+              onClick={handleCancelSubscription}
+              className="w-full py-3.5 rounded-2xl bg-destructive text-white text-sm font-semibold shadow-lg shadow-destructive/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isCanceling ? (
+                <><Loader2 size={16} className="animate-spin" /> Скасування...</>
+              ) : (
+                'Так, скасувати підписку'
+              )}
+            </button>
+            <button
+              disabled={isCanceling}
+              onClick={() => setShowCancelModal(false)}
+              className="w-full py-3.5 rounded-2xl bg-secondary text-muted-foreground text-sm font-semibold active:scale-95 transition-all"
+            >
+              Залишити як є
+            </button>
+          </div>
+        </div>
+      </PopUpModal>
     </div>
   );
 }

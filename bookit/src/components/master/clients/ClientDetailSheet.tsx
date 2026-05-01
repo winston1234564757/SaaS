@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2 } from 'lucide-react';
+import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2, Heart } from 'lucide-react';
 import { sendChurnReminder, saveClientNote, toggleClientVip, archiveClient } from '@/app/(master)/dashboard/clients/actions';
+import { checkAmbassadorStatus } from '@/lib/actions/referrals';
+import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { ClientRow } from './ClientsPage';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -28,6 +30,7 @@ interface RecentBooking {
   status: string;
   total_price: number;
   service_name: string;
+  dynamic_pricing_label?: string | null;
 }
 
 import { useToast } from '@/lib/toast/context';
@@ -43,6 +46,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   const [bookings, setBookings] = useState<RecentBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [reminding, setReminding] = useState(false);
+  const [isAmbassador, setIsAmbassador] = useState(false);
   const { data: serverNote } = useClientNote(client?.client_phone);
   const invalidateNote = useClientNoteInvalidate();
   const [noteValue, setNoteValue] = useState('');
@@ -54,6 +58,18 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
       setNoteValue(serverNote);
     }
   }, [serverNote]);
+
+  useEffect(() => {
+    const c = client;
+    if (!c || !c.client_phone || !masterProfile?.id) return;
+    const phone = c.client_phone;
+
+    async function check() {
+      const { isAmbassador: yes } = await checkAmbassadorStatus(phone, masterProfile!.id);
+      setIsAmbassador(yes);
+    }
+    check();
+  }, [client?.client_phone, masterProfile?.id]);
 
   useEffect(() => {
     if (!client?.client_phone) return;
@@ -68,6 +84,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
           slot_time:start_time, 
           status, 
           total_price, 
+          dynamic_pricing_label,
           booking_services (
             service_name
           )
@@ -81,9 +98,10 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
         setBookings((data as any[]).map(b => ({
           id: b.id,
           date: b.slot_date,
-          start_time: b.slot_time,
+          start_time: (b.slot_time as string)?.slice(0, 5) ?? '',
           status: b.status,
           total_price: b.total_price,
+          dynamic_pricing_label: b.dynamic_pricing_label,
           service_name: b.booking_services?.[0]?.service_name || 'Послуга'
         })));
       }
@@ -139,7 +157,12 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
     >
       <div className="flex flex-col gap-5">
         {/* Header/Identity Card */}
-        <div className="flex items-center gap-4 bg-white/40 p-4 rounded-3xl border border-white/60">
+        <div className="flex items-center gap-4 bg-white/40 p-4 rounded-3xl border border-white/60 relative overflow-hidden">
+          {isAmbassador && (
+            <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-bl-2xl shadow-sm z-10">
+              Ambassador
+            </div>
+          )}
           <div
             className="w-16 h-16 rounded-[24px] flex items-center justify-center text-3xl flex-shrink-0 shadow-inner"
             style={{ background: client?.is_vip ? 'rgba(212,147,90,0.18)' : 'rgba(255,210,194,0.4)' }}
@@ -153,10 +176,18 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                 <span className="text-[10px] font-bold text-warning bg-warning/12 px-2 py-0.5 rounded-full flex-shrink-0">VIP</span>
               )}
             </div>
-            <a href={`tel:${client?.client_phone}`} className="flex items-center gap-1.5 text-sm text-primary font-medium mt-1">
-              <Phone size={13} />
-              {client?.client_phone}
-            </a>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+              <a href={`tel:${client?.client_phone}`} className="flex items-center gap-1.5 text-sm text-primary font-medium">
+                <Phone size={13} />
+                {client?.client_phone}
+              </a>
+              {isAmbassador && (
+                <div className="flex items-center gap-1 text-[11px] font-bold text-sage bg-sage/10 px-2 py-0.5 rounded-lg border border-sage/20 leading-tight">
+                  <Heart size={12} className="fill-current" />
+                  VIP Ambassador: Запросив вас у Bookit
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -284,12 +315,19 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">{b.service_name}</p>
-                      <span
-                        className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter mt-1 inline-block"
-                        style={{ color: cfg.color, background: cfg.bg }}
-                      >
-                        {cfg.label}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        <span
+                          className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter inline-block"
+                          style={{ color: cfg.color, background: cfg.bg }}
+                        >
+                          {cfg.label}
+                        </span>
+                         {b.dynamic_pricing_label && (
+                          <div className="shrink-0 max-w-full">
+                            <PricingBadge dynamicLabel={b.dynamic_pricing_label} size="sm" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <p className="text-xs font-black text-foreground flex-shrink-0">{formatPrice(b.total_price)}</p>
                   </div>

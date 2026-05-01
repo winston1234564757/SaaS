@@ -33,10 +33,22 @@ export function formatPhoneDisplay(raw: string): string {
   return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6, 8)} ${d.slice(8, 10)}`;
 }
 
-/** Normalize user phone input: strip non-digits, remove leading 0, limit to 9 chars */
+/** Normalize user phone input: strip non-digits, remove country code if present, remove leading 0, limit to 9 chars */
 export function normalizePhoneInput(val: string): string {
   let raw = val.replace(/\D/g, '');
-  if (raw.startsWith('0')) raw = raw.slice(1);
+
+  // If user typed 380... or 38... at the start, remove it
+  if (raw.startsWith('380')) {
+    raw = raw.slice(3);
+  } else if (raw.startsWith('38')) {
+    raw = raw.slice(2);
+  }
+
+  // If user started with 0 (e.g. 096...), remove it
+  if (raw.startsWith('0')) {
+    raw = raw.slice(1);
+  }
+
   return raw.slice(0, 9);
 }
 

@@ -7,6 +7,8 @@ import { ServiceWorkerRegistration } from '@/components/shared/ServiceWorkerRegi
 import { RefCapture } from '@/components/shared/RefCapture';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { createClient } from '@/lib/supabase/server';
+import { TelegramProvider } from '@/components/providers/TelegramProvider';
+import Script from 'next/script';
 import './globals.css';
 
 const inter = Inter({
@@ -57,13 +59,37 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="uk" className={`${inter.variable} ${playfair.variable}`}>
+      <head>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="afterInteractive"
+          id="telegram-sdk-remote"
+        />
+        <Script
+          src="/lib/telegram-web-app.js"
+          strategy="beforeInteractive"
+          id="telegram-sdk-local"
+        />
+        <script dangerouslySetInnerHTML={{ __html: `window.TG_STATUS = 'loading';` }} />
+        <script dangerouslySetInnerHTML={{ __html: `
+          if (window.Telegram) { window.TG_STATUS = 'loaded'; }
+          else { 
+            var check = setInterval(function() {
+              if (window.Telegram) { window.TG_STATUS = 'loaded'; clearInterval(check); }
+            }, 100);
+            setTimeout(function() { clearInterval(check); if (window.TG_STATUS !== 'loaded') window.TG_STATUS = 'error'; }, 3000);
+          }
+        `}} />
+      </head>
       <body className="antialiased">
         <ServiceWorkerRegistration />
         <RefCapture />
         <NuqsAdapter>
           <QueryProvider>
             <ToastProvider>
-              {children}
+              <TelegramProvider>
+                {children}
+              </TelegramProvider>
             </ToastProvider>
           </QueryProvider>
         </NuqsAdapter>

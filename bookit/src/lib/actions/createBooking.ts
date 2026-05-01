@@ -133,6 +133,24 @@ export async function createBooking(
     }
   }
 
+  // 2.5. Barter Promocode check (C2B Referral)
+  let barterDiscountPct = 0;
+  let barterPromocodeId: string | null = null;
+  if (p.source === 'online' && resolvedClientId) {
+    const { data: promo } = await admin
+      .from('client_promocodes')
+      .select('id, discount_percentage')
+      .eq('client_id', resolvedClientId)
+      .eq('master_id', p.masterId)
+      .eq('is_used', false)
+      .limit(1)
+      .maybeSingle();
+    if (promo) {
+      barterDiscountPct = Number(promo.discount_percentage);
+      barterPromocodeId = promo.id;
+    }
+  }
+
   // 3. Master profile — pricing rules + subscription tier + trial counter
   // SEC-CRIT-2: include is_published to block calendar spam on unpublished masters (online source)
   console.log('[createBooking] Fetching master profile for ID:', p.masterId);
@@ -448,7 +466,16 @@ export async function createBooking(
   const c2cBonusAmount = c2cBonusActual > 0
     ? Math.round(preFinalTotal * c2cBonusActual / 100)
     : 0;
-  const finalTotal = Math.max(0, preFinalTotal - c2cFriendAmount - c2cBonusAmount);
+
+  let finalTotal = Math.max(0, preFinalTotal - c2cFriendAmount - c2cBonusAmount);
+
+  // ── 7.6b. Barter Override ──────────────────────────────────────────────────
+  let finalBarterAmount = 0;
+  if (barterDiscountPct > 0) {
+    finalBarterAmount = Math.round(originalTotal * barterDiscountPct / 100);
+    finalTotal = Math.max(0, originalTotal - finalBarterAmount);
+  }
+
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = p.startTime ? computeEndTime(p.startTime, effectiveDuration) : null;
 
@@ -478,10 +505,14 @@ export async function createBooking(
     source: p.source === 'manual' ? 'manual' : 'public_page',
     dynamic_pricing_label: (() => {
       const parts: string[] = [];
-      if (dynamicResult?.label) parts.push(dynamicResult.label);
-      if (phoneDiscountPct > 0) parts.push(`Знижка з розсилки −${phoneDiscountPct}%`);
-      if (c2cFriendDiscountPct > 0) parts.push(`Реферальна програма −${c2cFriendDiscountPct}%`);
-      if (c2cBonusActual > 0) parts.push(`Реф. бонус −${c2cBonusActual}%`);
+      if (barterDiscountPct > 0) {
+        parts.push(`Знижка за пораду −${barterDiscountPct}%`);
+      } else {
+        if (dynamicResult?.label) parts.push(dynamicResult.label);
+        if (phoneDiscountPct > 0) parts.push(`Знижка з розсилки −${phoneDiscountPct}%`);
+        if (c2cFriendDiscountPct > 0) parts.push(`Реферальна програма −${c2cFriendDiscountPct}%`);
+        if (c2cBonusActual > 0) parts.push(`Реф. бонус −${c2cBonusActual}%`);
+      }
       return parts.join(' · ') || null;
     })(),
     dynamic_extra_kopecks: dynamicExtraKopecks,
@@ -575,6 +606,13 @@ export async function createBooking(
       .update({ status: 'claimed', claimed_by: p.clientId ?? null, booking_id: bookingId })
       .eq('id', p.flashDealId)
       .eq('status', 'active');
+  }
+
+  // 11b. Mark barter promocode as used
+  if (barterPromocodeId) {
+    await admin.from('client_promocodes')
+      .update({ is_used: true })
+      .eq('id', barterPromocodeId);
   }
 
   // 12. C2C records — awaited for data integrity (lost insert = lost referral credit forever)

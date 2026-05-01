@@ -5,6 +5,7 @@ import { applyDynamicPricing, type PricingRules } from '@/lib/utils/dynamicPrici
 
 export interface ComputePriceInput {
   masterId: string;
+  clientId?: string | null;
   serviceIds: string[];
   productLines: Array<{ id: string; quantity: number }>;
   date: string;        // YYYY-MM-DD
@@ -29,6 +30,7 @@ export interface ComputePriceResult {
   loyaltyDiscountAmount: number;
   flashDealAmount: number;
   masterDiscountAmount: number;
+  barterDiscountAmount: number;
 }
 
 export async function computeBookingPrice(
@@ -36,7 +38,8 @@ export async function computeBookingPrice(
 ): Promise<ComputePriceResult> {
   const admin = createAdminClient();
 
-  const [{ data: mp }, { data: dbServices }, { data: dbProducts }] = await Promise.all([
+  // 1. Fetch Master, Services, Products AND active Barter Promocodes
+  const [masterRes, servicesRes, productsRes, barterRes] = await Promise.all([
     admin
       .from('master_profiles')
       .select('subscription_tier, pricing_rules, dynamic_pricing_extra_earned, timezone')
@@ -54,7 +57,22 @@ export async function computeBookingPrice(
           .in('id', input.productLines.map(p => p.id))
           .eq('master_id', input.masterId)
       : Promise.resolve({ data: [] as Array<{ id: string; price_kopecks: number }> }),
+    input.clientId
+      ? admin
+          .from('client_promocodes')
+          .select('id, discount_percentage')
+          .eq('client_id', input.clientId)
+          .eq('master_id', input.masterId)
+          .eq('is_used', false)
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
+
+  const mp = masterRes.data;
+  const dbServices = servicesRes.data;
+  const dbProducts = productsRes.data;
+  const barterPromo = barterRes.data;
 
   const masterTimezone = (mp as { timezone?: string } | null)?.timezone ?? 'Europe/Kyiv';
 
@@ -69,6 +87,31 @@ export async function computeBookingPrice(
 
   const originalTotal = totalServicesPrice + totalProductsPrice;
 
+  // ── Barter Discount (C2B Reward) ───────────────────────────────────────────
+  // If a barter promocode exists, it takes precedence and disables all other discounts.
+  const barterDiscountPct = barterPromo ? Number(barterPromo.discount_percentage) : 0;
+  
+  if (barterDiscountPct > 0) {
+    const barterDiscountAmount = Math.round(originalTotal * barterDiscountPct / 100);
+    return {
+      totalDuration,
+      effectiveDuration,
+      totalServicesPrice,
+      totalProductsPrice,
+      originalTotal,
+      adjustedServicesPrice: totalServicesPrice,
+      finalTotal: Math.max(0, originalTotal - barterDiscountAmount),
+      dynamicLabel: null,
+      dynamicModifier: 0,
+      loyaltyDiscountAmount: 0,
+      flashDealAmount: 0,
+      masterDiscountAmount: 0,
+      barterDiscountAmount,
+    };
+  }
+
+  // ── Standard Pricing Flow ──────────────────────────────────────────────────
+  
   // Dynamic pricing — runs server-side only
   const TRIAL_LIMIT_KOP = 100_000;
   const extraEarned = (mp?.dynamic_pricing_extra_earned as number) ?? 0;
@@ -132,5 +175,6 @@ export async function computeBookingPrice(
     loyaltyDiscountAmount,
     flashDealAmount,
     masterDiscountAmount,
+    barterDiscountAmount: 0,
   };
 }

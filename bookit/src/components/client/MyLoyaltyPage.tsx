@@ -232,48 +232,60 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
               ) : (
                 <motion.div key="c2b" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="flex flex-col gap-4">
                   {/* C2B — existing Refer & Earn */}
-                  <div className="bento-card overflow-hidden">
-                    <div className="bg-primary p-5 text-white">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h2 className="heading-serif text-xl mb-1">Запрошуй майстра — отримай -50%</h2>
+                  <div className="bento-card overflow-hidden border-none shadow-xl shadow-peach/20">
+                    <div className="bg-gradient-to-br from-sage to-[#6B8C8B] p-6 text-white relative overflow-hidden">
+                      {/* Decorative background element */}
+                      <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                      
+                      <div className="flex justify-between items-start mb-5 relative z-10">
+                        <div className="max-w-[70%]">
+                          <h2 className="heading-serif text-xl mb-1.5 leading-tight">Приводь майстрів — отримуй -50% для себе 🤝</h2>
                           <p className="text-xs text-white/80 leading-relaxed">
                             За кожного нового майстра, що зареєструється за твоїм посиланням, ти отримаєш 50% знижки на перший візит до нього.
                           </p>
                         </div>
-                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl shrink-0">
-                          🤝
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-[20px] flex items-center justify-center text-3xl shrink-0 shadow-lg border border-white/20">
+                          💝
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 bg-white/10 rounded-xl p-2 border border-white/20">
-                        <div className="flex-1 px-2 font-mono text-sm truncate opacity-90">{inviteLink}</div>
-                        <button
-                          onClick={() => copyToClipboard(inviteLink, 'c2b')}
-                          className="bg-white text-primary p-2 rounded-lg hover:bg-white/90 active:scale-95 transition-all"
-                        >
-                          {copied === 'c2b' ? <Check size={16} /> : <Copy size={16} />}
-                        </button>
+                      
+                      <div className="flex flex-col gap-2 relative z-10">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 ml-1">Твоє посилання для майстрів</p>
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-2.5 border border-white/20 shadow-inner">
+                          <div className="flex-1 px-3 font-mono text-[13px] truncate text-white/90">{inviteLink}</div>
+                          <button
+                            onClick={() => copyToClipboard(inviteLink, 'c2b')}
+                            className="bg-white text-sage p-2.5 rounded-xl hover:bg-white/90 active:scale-95 transition-all shadow-sm"
+                          >
+                            {copied === 'c2b' ? <Check size={18} /> : <Copy size={18} />}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="p-4 bg-white/50 flex items-center justify-around border-t border-[#E8D0C8]">
+                    <div className="p-5 bg-white/60 backdrop-blur-sm flex items-center justify-around border-t border-peach/30">
                       <div className="text-center">
-                        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">Запрошено</p>
-                        <p className="text-lg font-bold text-foreground">{totalMastersInvited}</p>
+                        <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider mb-1">Запрошено</p>
+                        <p className="text-xl font-black text-foreground">{totalMastersInvited}</p>
                       </div>
-                      <div className="w-px h-8 bg-[#E8D0C8]" />
+                      <div className="w-px h-10 bg-peach/40" />
                       <div className="text-center">
-                        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">Бонусів</p>
-                        <p className="text-lg font-bold text-foreground">{promocodes.length}</p>
+                        <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider mb-1">Бонусів</p>
+                        <p className="text-xl font-black text-foreground">{promocodes.length}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-xs font-bold text-foreground uppercase tracking-widest pl-1">Твої Бартерні Промокоди</h3>
+                  <div className="flex flex-col gap-3 mt-2">
+                    <div className="flex items-center gap-2 px-1">
+                      <Ticket size={14} className="text-primary/60" />
+                      <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">Твої Бонуси за Майстрів</h3>
+                    </div>
                     {promocodes.length === 0 ? (
-                      <div className="bento-card p-8 border-dashed border-2 border-[#E8D0C8] bg-transparent text-center flex flex-col items-center gap-2">
-                        <Ticket size={28} className="text-muted-foreground/60 opacity-50" />
-                        <p className="text-sm text-muted-foreground/60">Ще немає отриманих знижок</p>
+                      <div className="bento-card p-10 border-dashed border-2 border-peach/40 bg-white/20 text-center flex flex-col items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-peach/10 flex items-center justify-center">
+                          <Ticket size={24} className="text-peach/60" />
+                        </div>
+                        <p className="text-sm font-medium text-muted-foreground/60">Ще немає отриманих знижок</p>
                       </div>
                     ) : (
                       promocodes.map((pc, i) => (
@@ -282,22 +294,33 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.05 }}
-                          className={cn("bento-card p-4 flex items-center justify-between gap-4", pc.isUsed && "opacity-60 bg-white/40 grayscale-[0.5]")}
+                          className={cn(
+                            "bento-card p-4 flex items-center justify-between gap-4 transition-all hover:shadow-md",
+                            pc.isUsed && "opacity-60 bg-white/40 grayscale-[0.5]"
+                          )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-xl shrink-0">{pc.masterEmoji}</div>
+                            <div className="w-11 h-11 rounded-[14px] bg-peach/30 flex items-center justify-center text-xl shrink-0 shadow-inner">
+                              {pc.masterEmoji}
+                            </div>
                             <div>
                               <p className="text-sm font-bold text-foreground">{pc.masterName}</p>
-                              <p className="text-[10px] text-muted-foreground/60">Бартерний Промокод • {pc.discount}%</p>
+                              <p className="text-[10px] text-muted-foreground/60 font-medium">Бонус за рекомендацію • {pc.discount}%</p>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1.5">
-                            <div className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                              <Ticket size={10} />
-                              {pc.isUsed ? 'Використано' : 'Активний'}
+                            <div className={cn(
+                              "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm",
+                              pc.isUsed ? "bg-secondary text-muted-foreground" : "bg-primary/15 text-primary"
+                            )}>
+                              {pc.isUsed ? (
+                                <>Використано</>
+                              ) : (
+                                <><div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Активний</>
+                              )}
                             </div>
                             {!pc.isUsed && (
-                              <Link href={`/${pc.masterSlug}`} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1">
+                              <Link href={`/${pc.masterSlug}`} className="text-[11px] font-bold text-sage hover:text-sage/80 flex items-center gap-1 transition-colors">
                                 Записатись <ArrowRight size={12} />
                               </Link>
                             )}

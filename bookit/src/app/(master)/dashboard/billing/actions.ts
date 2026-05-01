@@ -169,3 +169,33 @@ export async function recoverCardToken(): Promise<{ ok: true; found: boolean } |
     return { error: 'Помилка відновлення картки' };
   }
 }
+
+export async function cancelSubscription(): Promise<{ ok: true } | { error: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Unauthorized' };
+
+    const admin = createAdminClient();
+
+    const { error } = await admin
+      .from('master_subscriptions')
+      .update({
+        status:     'canceled',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('master_id', user.id)
+      .eq('status',    'active'); // Only cancel active ones
+
+    if (error) {
+      console.error('[cancelSubscription] error:', error.message);
+      return { error: 'Не вдалося скасувати підписку в базі даних' };
+    }
+
+    console.log('[cancelSubscription] subscription canceled for master:', user.id);
+    return { ok: true };
+  } catch (e) {
+    console.error('[cancelSubscription] fatal:', String(e));
+    return { error: 'Помилка при скасуванні підписки' };
+  }
+}

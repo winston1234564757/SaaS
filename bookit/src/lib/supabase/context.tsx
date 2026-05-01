@@ -3,12 +3,13 @@
 import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createClient } from './client';
-import type { Profile, MasterProfile } from '@/types/database';
+import type { Profile, MasterProfile, MasterSubscription } from '@/types/database';
 
 interface MasterContextValue {
   user: User | null;
   profile: Profile | null;
   masterProfile: MasterProfile | null;
+  subscription: MasterSubscription | null;
   isLoading: boolean;
   refresh: () => Promise<void>;
 }
@@ -17,6 +18,7 @@ const MasterContext = createContext<MasterContextValue>({
   user: null,
   profile: null,
   masterProfile: null,
+  subscription: null,
   isLoading: false, // false — компоненти поза MasterProvider не блокуються вічним спінером
   refresh: async () => {},
 });
@@ -30,6 +32,7 @@ interface MasterProviderProps {
   initialUser?: User | null;
   initialProfile?: Profile | null;
   initialMasterProfile?: MasterProfile | null;
+  initialSubscription?: MasterSubscription | null;
 }
 
 export function MasterProvider({ children, initialUser, initialProfile, initialMasterProfile }: MasterProviderProps) {
@@ -39,6 +42,7 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   const [user, setUser] = useState<User | null>(initialUser ?? null);
   const [profile, setProfile] = useState<Profile | null>(initialProfile ?? null);
   const [masterProfile, setMasterProfile] = useState<MasterProfile | null>(initialMasterProfile ?? null);
+  const [subscription, setSubscription] = useState<MasterSubscription | null>(null);
   // isLoading=false одразу якщо сервер передав дані — хуки запускаються без затримки
   const [isLoading, setIsLoading] = useState(!initialUser);
 
@@ -48,9 +52,10 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   const hasInitialData = useRef(!!initialUser);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const [{ data: p, error: pErr }, { data: mp, error: mpErr }] = await Promise.all([
+    const [{ data: p, error: pErr }, { data: mp, error: mpErr }, { data: sub, error: subErr }] = await Promise.all([
       supabase.from('profiles').select('id, role, full_name, phone, email, avatar_url, telegram_chat_id, created_at, updated_at').eq('id', userId).single(),
       supabase.from('master_profiles').select('id, slug, business_name, bio, categories, mood_theme, accent_color, subscription_tier, subscription_expires_at, commission_rate, rating, rating_count, is_published, address, city, latitude, longitude, floor, cabinet, instagram_url, telegram_url, telegram_chat_id, avatar_emoji, has_seen_tour, seen_tours, pricing_rules, working_hours, timezone, referral_code, referred_by, retention_cycle_days, dynamic_pricing_extra_earned, c2c_enabled, c2c_discount_pct, created_at, updated_at').eq('id', userId).single(),
+      supabase.rpc('get_my_subscription').maybeSingle(),
     ]);
 
     if (!mountedRef.current) return;
@@ -63,6 +68,7 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
 
     setProfile(p ?? null);
     setMasterProfile(mp ?? null);
+    setSubscription(sub as MasterSubscription ?? null);
   }, [supabase]);
 
   const refresh = useCallback(async () => {
@@ -146,8 +152,8 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   }, [supabase, fetchProfile]);
 
   const contextValue = useMemo(
-    () => ({ user, profile, masterProfile, isLoading, refresh }),
-    [user, profile, masterProfile, isLoading, refresh]
+    () => ({ user, profile, masterProfile, subscription, isLoading, refresh }),
+    [user, profile, masterProfile, subscription, isLoading, refresh]
   );
 
   return (

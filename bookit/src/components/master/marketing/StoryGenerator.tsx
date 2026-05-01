@@ -84,13 +84,6 @@ function formatUA(dateStr: string): string {
   return `${d.getDate()} ${UA_MONTHS[d.getMonth()]}`;
 }
 
-/**
- * Derives available slot times from a pre-fetched ScheduleStore.
- * Single source of truth — identical logic to useBookingScheduleData in BookingWizard:
- *   breaks   = schedule_template.break_start/end  +  workingHours.breaks  (both sources!)
- *   stepMinutes = 15 (same as Wizard)
- *   selectedDate = Date object (timezone-safe, same as Wizard)
- */
 function useSlotsFromStore(
   date: string | null,
   durationMin: number,
@@ -108,7 +101,6 @@ function useSlotsFromStore(
     const exc = store.exceptions[date];
     if (exc?.is_day_off) return [];
 
-    // Mirror BookingWizard: merge template break AND workingHours.breaks
     const breaks: TimeRange[] = [
       ...(tpl.break_start && tpl.break_end
         ? [{ start: tpl.break_start.slice(0, 5), end: tpl.break_end.slice(0, 5) }]
@@ -116,11 +108,9 @@ function useSlotsFromStore(
       ...(workingHours?.breaks ?? []),
     ];
 
-    // Mirror BookingWizard: exc overrides work start/end for short_day
     const workStart = exc?.start_time?.slice(0, 5) ?? tpl.start_time.slice(0, 5);
     const workEnd   = exc?.end_time?.slice(0, 5)   ?? tpl.end_time.slice(0, 5);
 
-    // Pass Date object (same as Wizard) for correct timezone-aware past-cutoff
     const selectedDate = new Date(date + 'T12:00:00');
 
     return generateAvailableSlots({
@@ -502,7 +492,6 @@ function StoryCanvas({
         <div style={{ position: 'absolute', inset: 0 }}>
           <img src={bgPhotoUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)' }} />
-          {/* Subtle gradient vignette */}
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.3) 100%)' }} />
         </div>
       )}
@@ -557,7 +546,6 @@ function StoryCanvas({
         alignItems: textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center',
         textAlign: textAlign,
 
-        // Vertical Positioning
         ...(platePos === 'center' ? {
           top: '50%',
           transform: 'translateY(-50%)',
@@ -567,20 +555,17 @@ function StoryCanvas({
           bottom: 140,
         }),
 
-        // Dynamic Sizing
         width: 'auto',
         alignSelf: textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center',
         padding: mode === 'portfolio_item' ? '18px 24px' : '28px 32px',
         borderRadius: 32,
 
-        // Premium Glass
         background: bgPhotoUrl ? `rgba(255,255,255,${transparency / 100})` : 'transparent',
         backdropFilter: bgPhotoUrl ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
         WebkitBackdropFilter: bgPhotoUrl ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
         boxShadow: bgPhotoUrl ? `0 15px 50px rgba(0,0,0,${Math.min(0.2, (100 - transparency) / 400)})` : 'none',
         border: bgPhotoUrl ? `1px solid rgba(255,255,255,${Math.max(0.2, transparency / 100 + 0.1)})` : 'none',
         
-        // Ensure legibility with global text shadow if very transparent
         textShadow: transparency < 40 ? '0 1px 2px rgba(255,255,255,0.4)' : 'none',
       }}>
         {content}
@@ -635,31 +620,22 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const [exporting,  setExporting]  = useState(false);
   const [exported,   setExported]   = useState(false);
 
-  // Free text
   const [annoText,      setAnnoText]      = useState('Тепер до мене можна записатися онлайн 24/7.');
-  // Free slots
   const [slotsDate,     setSlotsDate]     = useState<string | null>(null);
   const [selectedSvcId, setSelectedSvcId] = useState<string | null>(null);
-  // Vacation
   const [vacStart,      setVacStart]      = useState<string | null>(null);
   const [vacEnd,        setVacEnd]        = useState<string | null>(null);
-  // Promo (flash deal)
   const [dealIdx,       setDealIdx]       = useState(0);
-  // Review Spotlight
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-  // Flash Window
-  // Flash Window
   const [flashWinSvcId,    setFlashWinSvcId]    = useState<string | null>(null);
   const [flashWinDate,     setFlashWinDate]     = useState<string | null>(null);
   const [flashWinTime,     setFlashWinTime]     = useState<string | null>(null);
   const [flashWinDiscount, setFlashWinDiscount] = useState(20);
 
-  // New Pro Controls
   const [platePos,     setPlatePos]     = useState<'top' | 'center' | 'bottom'>('center');
   const [textAlign,    setTextAlign]    = useState<'left' | 'center' | 'right'>('center');
-  const [transparency, setTransparency] = useState(38); // 0-100
+  const [transparency, setTransparency] = useState(38);
 
-  // Custom Photo
   const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -673,14 +649,12 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     return customBgPhoto;
   }, [selectedBgPhotoId, portfolioItems, customBgPhoto]);
 
-  // Blur tease
   const [blurActive,       setBlurActive]       = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isStarterPlan = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
 
-  // Called on every control interaction — resets blur to 3s after last change
   const onControlChange = useCallback(() => {
     if (!PREMIUM_MODES.has(mode) || !isStarterPlan) return;
     if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
@@ -700,13 +674,12 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     const reader = new FileReader();
     reader.onloadend = () => {
       setCustomBgPhoto(reader.result as string);
-      setSelectedBgPhotoId(null); // Switch to the new custom photo
+      setSelectedBgPhotoId(null);
       onControlChange();
     };
     reader.readAsDataURL(file);
   };
 
-  // On mode switch: give 10s to configure before blur kicks in
   useEffect(() => {
     if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
 
@@ -722,7 +695,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     };
   }, [mode, isStarterPlan]);
 
-  // Avatar as base64
   const [avatarBlob, setAvatarBlob] = useState<string | null>(null);
   const avatarUrl = profile?.avatar_url ?? null;
   useEffect(() => {
@@ -749,16 +721,13 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const selectedSvc = services.find(s => s.id === selectedSvcId) ?? null;
   const flashWinSvc = services.find(s => s.id === flashWinSvcId) ?? null;
 
-  // Single source of truth — same store as BookingWizard, covers 60 days ahead
   const todayStr  = new Date().toISOString().slice(0, 10);
   const futureStr = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(masterId, todayStr, futureStr);
 
-  // Derive buffer + timezone from context (no extra DB fetch needed)
   const wh        = (masterProfile?.working_hours as Partial<WorkingHoursConfig> | null) ?? {};
   const bufferMin = wh.buffer_time_minutes ?? 0;
 
-  // Free slots for "Вікна" mode
   const slots = useSlotsFromStore(
     mode === 'free_slots' ? slotsDate : null,
     selectedSvc?.duration_minutes ?? 60,
@@ -766,7 +735,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   );
   const slotsLoading = scheduleLoading;
 
-  // Free slots for "Гаряче вікно" mode — same store, zero extra requests
   const flashWinSlots = useSlotsFromStore(
     mode === 'flash_window' ? flashWinDate : null,
     flashWinSvc?.duration_minutes ?? 60,
@@ -781,7 +749,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   const selectedReview = starReviews.find(r => r.id === selectedReviewId) ?? null;
 
-  // Auto-select first service and first review
   useEffect(() => {
     if (services.length > 0 && !selectedSvcId)  setSelectedSvcId(services[0].id);
     if (services.length > 0 && !flashWinSvcId)  setFlashWinSvcId(services[0].id);
@@ -790,7 +757,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     if (starReviews.length > 0 && !selectedReviewId) setSelectedReviewId(starReviews[0].id);
   }, [starReviews, selectedReviewId]);
 
-  // Reset slot time when date or service changes
   useEffect(() => { setFlashWinTime(null); }, [flashWinDate, flashWinSvcId]);
 
   const handleDownload = useCallback(async () => {
@@ -798,9 +764,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     setExporting(true);
     const node = canvasRef.current;
 
-    node.style.top    = '0px';
-    node.style.left   = '0px';
-    node.style.zIndex = '-1';
     await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
     try {
@@ -812,9 +775,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       console.error('[StoryGenerator]', e);
       showToast({ type: 'error', title: 'Помилка експорту', message: parseError(e) });
     } finally {
-      node.style.top    = '-9999px';
-      node.style.left   = '-9999px';
-      node.style.zIndex = '';
       setExporting(false);
     }
   }, [exporting, mode, showToast]);
@@ -830,7 +790,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const isPremiumLocked = PREMIUM_MODES.has(mode) && isStarterPlan;
   const upgradeCopy = MODE_UPGRADE_COPY[mode] ?? null;
 
-  /* Canvas data props */
   const canvasSharedProps = {
     pal, mode, showAvatar, avatarBlob, displayName, slug,
     annoText, slotsDate, slots, slotsLoading,
@@ -848,7 +807,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     platePos, textAlign, transparency,
   };
 
-  /* Controls */
   const controls = (
     <div className="space-y-3">
       {mode === 'announcement' && (
@@ -1027,7 +985,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
       </div>
 
-      {/* Mode selector */}
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         {MODES.map(m => {
           const active = m.id === mode;
@@ -1054,10 +1011,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       </div>
 
       <div className="flex flex-col md:flex-row gap-5 items-start">
-
-        {/* Controls column */}
         <div className="flex-1 space-y-4 w-full">
-
           <div>
             <div className="flex justify-between items-center mb-2">
               <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
@@ -1144,7 +1098,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
           {controls}
 
-          {/* Layout Customization */}
           <div className="pt-4 border-t border-white/40 space-y-4">
             <div>
               <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Налаштування плашки</p>
@@ -1189,7 +1142,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             </div>
           </div>
 
-          {/* Inline teaser banner — shown to Starter on any premium mode */}
           <AnimatePresence>
             {isPremiumLocked && upgradeCopy && (
               <motion.div
@@ -1234,7 +1186,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             }
           </button>
 
-          {/* Download / Unlock button */}
           <motion.button
             whileTap={{ scale: 0.97 }} type="button"
             onClick={handleDownloadOrUpgrade}
@@ -1277,14 +1228,12 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
           </p>
         </div>
 
-        {/* Preview column */}
         <div className="shrink-0 mx-auto md:mx-0">
           <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2 text-center">
             Попередній перегляд
           </p>
 
           <div style={{ position: 'relative', width: 252, height: 448 }}>
-            {/* Canvas preview with blur tease */}
             <div style={{
               width: 252, height: 448, overflow: 'hidden',
               borderRadius: 20,
@@ -1297,7 +1246,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               </div>
             </div>
 
-            {/* Blur overlay badge */}
             <AnimatePresence>
               {isBlurLocked && (
                 <motion.div
@@ -1330,7 +1278,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               )}
             </AnimatePresence>
 
-            {/* 3-second countdown hint for starter on premium mode */}
             {isPremiumLocked && !blurActive && (
               <div className="absolute bottom-2 left-0 right-0 flex justify-center">
                 <span className="text-[9px] text-muted-foreground/60 bg-white/80 rounded-full px-2 py-0.5">
@@ -1338,15 +1285,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 </span>
               </div>
             )}
-          </div>
-
-          {/* Hidden capture target */}
-          <div
-            ref={canvasRef}
-            aria-hidden="true"
-            style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none' }}
-          >
-            <StoryCanvas {...canvasSharedProps} />
           </div>
         </div>
       </div>
@@ -1363,32 +1301,33 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   if (isOpen !== undefined) {
     return (
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed inset-0 z-[100] flex flex-col bg-background overflow-y-auto pb-20"
-          >
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border">
-              <h2 className="font-display text-lg font-bold">Генератор Сторіс</h2>
-              <button onClick={() => typeof onClose === 'function' && onClose()} className="p-2 hover:bg-secondary rounded-full transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            {contentBody}
-            
-            <div
-              ref={canvasRef}
-              aria-hidden="true"
-              style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none' }}
+      <>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed inset-0 z-[100] flex flex-col bg-background overflow-y-auto pb-20"
             >
-              <StoryCanvas {...canvasSharedProps} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border">
+                <h2 className="font-display text-lg font-bold">Генератор Сторіс</h2>
+                <button onClick={() => typeof onClose === 'function' && onClose()} className="p-2 hover:bg-secondary rounded-full transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              {contentBody}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div
+          ref={canvasRef}
+          aria-hidden="true"
+          style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none', opacity: 0 }}
+        >
+          <StoryCanvas {...canvasSharedProps} />
+        </div>
+      </>
     );
   }
 
@@ -1398,7 +1337,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       <div
         ref={canvasRef}
         aria-hidden="true"
-        style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none' }}
+        style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none', opacity: 0 }}
       >
         <StoryCanvas {...canvasSharedProps} />
       </div>

@@ -79,9 +79,10 @@ export function BookingWizard({
     totalDuration, effectiveDuration,
     totalServicesPrice, dynamicPricing,
     totalProductsPrice, finalTotal,
-    loyaltyDiscountAmount, masterDiscountAmount, flashDealAmount,
+    loyaltyDiscountAmount, masterDiscountAmount, flashDealAmount, barterDiscountAmount,
   } = useBookingPricing({
     masterId,
+    clientId: clientUserId,
     selectedServices, cart, durationOverride,
     selectedDate, selectedTime,
     useDynamicPrice, loyaltyDiscount, flashDeal, discountPercent,
@@ -349,6 +350,7 @@ export function BookingWizard({
                     loyaltyDiscountAmount={loyaltyDiscountAmount}
                     flashDeal={flashDeal}
                     flashDealAmount={flashDealAmount}
+                    barterDiscountAmount={barterDiscountAmount}
                     totalServicesPrice={totalServicesPrice}
                     totalProductsPrice={totalProductsPrice}
                     finalTotal={finalTotal}

@@ -6,6 +6,7 @@ import type { WizardService, CartItem } from './types';
 
 interface UseBookingPricingParams {
   masterId: string;
+  clientId?: string | null;
   selectedServices: WizardService[];
   cart: CartItem[];
   durationOverride: number | null;
@@ -26,6 +27,7 @@ function toYMD(d: Date): string {
 
 export function useBookingPricing({
   masterId,
+  clientId,
   selectedServices,
   cart,
   durationOverride,
@@ -57,6 +59,7 @@ export function useBookingPricing({
     queryKey: [
       'booking-price',
       masterId,
+      clientId,
       serviceIds,
       productLines,
       dateStr,
@@ -70,6 +73,7 @@ export function useBookingPricing({
     queryFn: () =>
       computeBookingPrice({
         masterId,
+        clientId,
         serviceIds,
         productLines,
         date: dateStr!,
@@ -118,6 +122,7 @@ export function useBookingPricing({
     loyaltyDiscountAmount: data?.loyaltyDiscountAmount ?? 0,
     masterDiscountAmount: data?.masterDiscountAmount ?? 0,
     flashDealAmount: data?.flashDealAmount ?? 0,
+    barterDiscountAmount: data?.barterDiscountAmount ?? 0,
     isPricePending: isPending && enabled,
   };
 }

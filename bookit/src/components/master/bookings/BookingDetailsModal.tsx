@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   X, Clock, Phone, Globe, PenLine,
   CheckCircle2, XCircle, Star, Save, Loader2,
-  TrendingUp, ShoppingBag, CalendarClock,
+  TrendingUp, ShoppingBag, CalendarClock, Heart,
 } from 'lucide-react';
 import { useBookingById } from '@/lib/supabase/hooks/useBookingById';
 import { createClient } from '@/lib/supabase/client';
@@ -562,7 +562,16 @@ export function BookingDetailsModal() {
                 </div>
                 {displayBooking.dynamic_pricing_label && (
                   <div className="mt-3">
-                    <PricingBadge dynamicLabel={displayBooking.dynamic_pricing_label} size="md" />
+                    {displayBooking.dynamic_pricing_label.includes('Бартерна') ? (
+                      <div className="flex items-center gap-2 text-[11px] font-bold text-sage bg-sage/10 px-3 py-2 rounded-xl border border-sage/20 leading-tight">
+                        <Heart size={14} className="fill-primary text-primary shrink-0" />
+                        <span>
+                          Знижка Ambassador: <span className="text-primary">{displayBooking.client_name}</span> запросив тебе у Bookit <Heart size={10} className="inline-block fill-primary text-primary ml-0.5 mb-0.5" />
+                        </span>
+                      </div>
+                    ) : (
+                      <PricingBadge dynamicLabel={displayBooking.dynamic_pricing_label} size="md" />
+                    )}
                   </div>
                 )}
               </div>

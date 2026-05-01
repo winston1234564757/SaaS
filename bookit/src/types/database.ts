@@ -29,6 +29,14 @@ export type ReferralStatus = 'pending' | 'registered' | 'activated';
 export type FlashDealStatus = 'active' | 'claimed' | 'expired';
 export type PortfolioConsentStatus = 'pending' | 'approved' | 'declined';
 
+// ── Telegram Webhook Logging ──────────────────────────────────────────────
+export type TelegramWebhookEventType =
+  | 'contact_received'
+  | 'profile_created'
+  | 'profile_updated'
+  | 'error';
+export type TelegramWebhookStatus = 'success' | 'error' | 'skipped';
+
 export interface PortfolioItem {
   id: string;
   master_id: string;
@@ -115,6 +123,22 @@ export interface MasterProfile {
   c2c_discount_pct?: number;
   ships_nova_poshta?: boolean;
   broadcasts_used?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SubscriptionStatus = 'active' | 'past_due' | 'canceled';
+
+export interface MasterSubscription {
+  id: string;
+  master_id: string;
+  provider: 'monobank';
+  token: string | null;
+  plan_id: SubscriptionTier;
+  status: SubscriptionStatus;
+  expires_at: string;
+  next_charge_at: string | null;
+  failed_attempts: number;
   created_at: string;
   updated_at: string;
 }
