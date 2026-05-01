@@ -342,13 +342,23 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
               className="bg-error/10 border border-error/20 p-4 rounded-xl space-y-3"
             >
               <p className="text-error text-sm font-medium">{error}</p>
-              <button
-                onClick={handleRetry}
-                className="w-full h-12 bg-error/20 hover:bg-error/30 text-error rounded-lg flex items-center justify-center gap-2 font-medium transition-all active:scale-95"
-              >
-                <RotateCw size={16} />
-                <span>Спробувати ще раз</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleRetry}
+                  className="flex-1 h-12 bg-error/20 hover:bg-error/30 text-error rounded-lg flex items-center justify-center gap-2 font-medium transition-all active:scale-95"
+                >
+                  <RotateCw size={16} />
+                  <span>Ще раз</span>
+                </button>
+                {activeTab === 'manual' && (
+                  <button
+                    onClick={() => setActiveTab('contact')}
+                    className="flex-1 h-12 bg-sage/20 hover:bg-sage/30 text-sage rounded-lg font-medium transition-all active:scale-95"
+                  >
+                    Контакт
+                  </button>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
