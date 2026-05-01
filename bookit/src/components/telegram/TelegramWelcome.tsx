@@ -125,39 +125,65 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
     setError(null);
 
     const tg = window.Telegram?.WebApp;
-    if (!tg?.initDataRaw) {
-      setError('Помилка: Telegram SDK не готовий');
+
+    // Get initData from various sources
+    let initData: string | undefined;
+
+    // Try tg.initDataRaw first
+    if (tg?.initDataRaw) {
+      initData = tg.initDataRaw;
+    } else {
+      // Try to extract from URL parameters
+      const fullUrl = (window.location.hash + window.location.search);
+      const params = new URLSearchParams(fullUrl.replace(/^#/, ''));
+      initData = params.get('tgWebAppData') || params.get('TGWEBAPPDATA') || undefined;
+    }
+
+    if (!initData) {
+      setError('Помилка: не вдалось отримати дані Telegram. Перезавантажте додаток.');
       setIsSubmitting(false);
       return;
     }
+
+    console.log('[TelegramWelcome] Manual submit: phone=', phone, 'initData length=', initData.length);
 
     try {
       const res = await fetch('/api/auth/telegram/link-phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          initData: tg.initDataRaw,
+          initData: initData,
           phone: phone,
         }),
       });
 
+      console.log('[TelegramWelcome] link-phone response:', res.status);
+
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to link phone');
+        let errorMsg = 'Помилка при зв\'язуванні номера';
+        try {
+          const data = await res.json();
+          errorMsg = data.error || errorMsg;
+        } catch (e) {
+          // response is not JSON
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await res.json();
+      console.log('[TelegramWelcome] link-phone success:', !!data.token);
+
       if (data.success && data.token) {
         setStatus('success');
         setTimeout(() => {
           onSuccess('linked');
         }, 500);
       } else {
-        throw new Error('Invalid response');
+        throw new Error(data.error || 'Невірна відповідь від сервера');
       }
     } catch (err: any) {
-      console.error('[TelegramWelcome] Manual link error:', err);
-      setError(err.message || 'Помилка при зв\'язуванні номера');
+      console.error('[TelegramWelcome] Manual link error:', err.message, err);
+      setError(err.message || 'Помилка при зв\'язуванні номера. Спробуйте ще раз.');
     } finally {
       setIsSubmitting(false);
     }

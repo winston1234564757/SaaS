@@ -57,9 +57,12 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           tg.expand();
 
           if (tg.initDataRaw) {
+            console.log('[TelegramProvider] SDK ready, initDataRaw available');
             setTgUser(tg.initDataUnsafe?.user || null);
             handleAutoLogin(tg.initDataRaw);
             return;
+          } else {
+            console.warn('[TelegramProvider] SDK ready but initDataRaw missing');
           }
         } catch (e: any) {
           console.error('[TelegramProvider] Init error:', e);
@@ -70,8 +73,9 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       if (hasTgParams) {
         const params = new URLSearchParams(fullUrl.replace(/^#/, ''));
         const rawData = params.get('tgWebAppData') || params.get('TGWEBAPPDATA');
-        
+
         if (rawData) {
+          console.log('[TelegramProvider] Using URL params for initData');
           handleAutoLogin(rawData);
           return;
         }
@@ -83,7 +87,10 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Max retries reached - show linking screen (user can enter phone manually)
+      console.warn('[TelegramProvider] Max retries reached, showing linking screen');
       clearTimeout(safetyTimeout);
+      setIsLinking(true);
       setIsReady(true);
     };
 
