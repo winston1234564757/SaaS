@@ -135,53 +135,21 @@ export async function POST(req: NextRequest) {
           );
         }
       } else {
-        // Create new profile
-        const fullName = `${contact.first_name || ''}${
-          contact.last_name ? ' ' + contact.last_name : ''
-        }`.trim();
+        // No existing profile found - profile creation is handled by the app (via link-phone endpoint)
+        console.log(`[TG-WEBHOOK] No profile found for phone: ${standardPhone}. User will need to create account.`);
+        await logWebhookEvent(admin, {
+          event_type: 'contact_received',
+          phone: standardPhone,
+          telegram_chat_id: chatId,
+          status: 'skipped',
+          error_message: 'No existing profile - creation deferred to app',
+          request_data: { raw_phone: rawPhone, first_name: contact.first_name, last_name: contact.last_name },
+        });
 
-        const { data: newProfile, error: insertErr } = await admin
-          .from('profiles')
-          .insert({
-            phone: standardPhone,
-            telegram_chat_id: String(chatId),
-            full_name: fullName || 'User',
-            role: 'client',
-          })
-          .select('id')
-          .single();
-
-        if (insertErr) {
-          console.error(`[TG-WEBHOOK] Insert error:`, insertErr);
-          await logWebhookEvent(admin, {
-            event_type: 'profile_created',
-            phone: standardPhone,
-            telegram_chat_id: chatId,
-            status: 'error',
-            error_message: insertErr.message,
-            request_data: { raw_phone: rawPhone, contact },
-          });
-
-          await sendTelegramMessage(
-            String(chatId),
-            '❌ Помилка при створенні профілю. Спробуйте пізніше.',
-          );
-        } else {
-          console.log(`[TG-WEBHOOK] New profile created: ${newProfile.id}`);
-          await logWebhookEvent(admin, {
-            event_type: 'profile_created',
-            phone: standardPhone,
-            telegram_chat_id: chatId,
-            profile_id: newProfile.id,
-            status: 'success',
-            request_data: { full_name: fullName },
-          });
-
-          await sendTelegramMessage(
-            String(chatId),
-            '🎁 Вітаємо! Ваш профіль створено. Повертайтеся в додаток для завершення запису.',
-          );
-        }
+        await sendTelegramMessage(
+          String(chatId),
+          '✅ Контакт отримано. Повертайтеся в додаток для завершення реєстрації.',
+        );
       }
 
       return NextResponse.json({ ok: true });
