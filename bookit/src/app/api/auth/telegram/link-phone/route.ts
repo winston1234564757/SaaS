@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { validateTelegramData } from '@/lib/telegram/validation';
-import { generateVirtualEmail } from '@/lib/utils/phone';
+import { generateVirtualEmail, normalizeToE164 } from '@/lib/utils/phone';
 
 export async function POST(req: NextRequest) {
   try {
     const { initData, phone } = await req.json();
-    console.log('[link-phone] Received request: phone length=', phone?.length);
+    console.log('[link-phone] Received: phone=', phone);
 
     if (!initData || !phone) {
-      console.error('[link-phone] Missing initData or phone');
       return NextResponse.json({ error: 'Missing data' }, { status: 400 });
     }
 
@@ -17,99 +16,111 @@ export async function POST(req: NextRequest) {
     let tgUser;
     try {
       tgUser = validateTelegramData(initData);
-      console.log('[link-phone] TG validation OK for user:', tgUser.id);
+      console.log('[link-phone] TG user:', tgUser.id);
     } catch (err: any) {
       console.error('[link-phone] TG validation failed:', err.message);
       return NextResponse.json({ error: `Validation failed: ${err.message}` }, { status: 401 });
     }
 
-    const cleanPhone = phone.replace(/\D/g, '');
-    const virtualEmail = generateVirtualEmail(cleanPhone);
+    // 2. Normalize phone to E.164 (same as SMS OTP flow: 380XXXXXXXXX)
+    const e164Phone = normalizeToE164(phone);
+    if (!e164Phone) {
+      console.error('[link-phone] Could not normalize phone:', phone);
+      return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 });
+    }
+
+    const virtualEmail = generateVirtualEmail(e164Phone); // e.g. 380967953488@bookit.app
+    const tgChatId = tgUser.id.toString();
     const admin = createAdminClient();
 
-    console.log('[link-phone] Phone:', cleanPhone, 'Email:', virtualEmail);
+    console.log('[link-phone] e164=', e164Phone, 'email=', virtualEmail, 'tgChatId=', tgChatId);
 
-    // 2. Try to create auth user (idempotent)
-    const { data: createdUser, error: createError } = await admin.auth.admin.createUser({
-      email: virtualEmail,
-      password: crypto.randomUUID(),
-      email_confirm: true,
-      user_metadata: { phone: cleanPhone, role: 'client' },
-    });
+    // 3. Check if profile already exists by phone (E.164) or email
+    const { data: existingByPhone } = await admin
+      .from('profiles')
+      .select('id, email')
+      .eq('phone', e164Phone)
+      .maybeSingle();
+
+    const { data: existingByEmail } = existingByPhone
+      ? { data: null }
+      : await admin.from('profiles').select('id').eq('email', virtualEmail).maybeSingle();
+
+    const existingProfile = existingByPhone ?? existingByEmail;
 
     let userId: string;
 
-    if (createError) {
-      console.log('[link-phone] Create user error:', createError.message);
+    if (existingProfile?.id) {
+      // Existing user — just link telegram_chat_id
+      userId = existingProfile.id;
+      console.log('[link-phone] Found existing profile:', userId);
 
-      // User already exists - try to find their ID
-      if (createError.message.includes('already exists')) {
-        const { data: existingProfile, error: findErr } = await admin
-          .from('profiles')
-          .select('id')
-          .eq('email', virtualEmail)
-          .maybeSingle();
+      const { error: linkErr } = await admin
+        .from('profiles')
+        .update({ telegram_chat_id: tgChatId })
+        .eq('id', userId);
 
-        if (findErr) {
-          console.error('[link-phone] Error finding existing profile:', findErr.message);
-          return NextResponse.json({ error: 'Database error' }, { status: 500 });
-        }
-
-        if (existingProfile?.id) {
-          userId = existingProfile.id;
-          console.log('[link-phone] Found existing user:', userId);
-        } else {
-          // Profile doesn't exist but auth user does - this shouldn't happen
-          console.error('[link-phone] Auth user exists but profile does not');
-          return NextResponse.json({ error: 'User state error' }, { status: 500 });
-        }
-      } else {
-        console.error('[link-phone] Unexpected create error:', createError.message);
-        return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+      if (linkErr) {
+        console.error('[link-phone] Failed to link telegram_chat_id:', linkErr.message);
+        return NextResponse.json({ error: 'Failed to link Telegram' }, { status: 500 });
       }
-    } else if (createdUser?.user?.id) {
-      userId = createdUser.user.id;
-      console.log('[link-phone] Created new user:', userId);
     } else {
-      console.error('[link-phone] Unexpected response: no user ID');
-      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+      // New user — create auth user + profile
+      console.log('[link-phone] Creating new auth user...');
+      const { data: createdUser, error: createError } = await admin.auth.admin.createUser({
+        email: virtualEmail,
+        password: crypto.randomUUID(),
+        email_confirm: true,
+        user_metadata: { phone: e164Phone, role: 'client' },
+      });
+
+      if (createError) {
+        console.error('[link-phone] createUser error (status may be 422):', createError.message);
+        return NextResponse.json(
+          { error: `Failed to create user: ${createError.message}` },
+          { status: 500 },
+        );
+      }
+
+      if (!createdUser?.user?.id) {
+        return NextResponse.json({ error: 'No user ID returned' }, { status: 500 });
+      }
+
+      userId = createdUser.user.id;
+      console.log('[link-phone] Created auth user:', userId);
+
+      const fullName =
+        tgUser.first_name + (tgUser.last_name ? ` ${tgUser.last_name}` : '');
+
+      const { error: insertErr } = await admin.from('profiles').insert({
+        id: userId,
+        phone: e164Phone,
+        email: virtualEmail,
+        telegram_chat_id: tgChatId,
+        full_name: fullName || 'User',
+        role: 'client',
+      });
+
+      if (insertErr) {
+        console.error('[link-phone] Profile insert error:', insertErr.message);
+        return NextResponse.json({ error: 'Failed to create profile' }, { status: 500 });
+      }
+
+      console.log('[link-phone] Profile created');
     }
 
-    // 3. Upsert profile with telegram data
-    console.log('[link-phone] Upserting profile:', userId);
-    const { error: upsertError } = await admin.from('profiles').upsert({
-      id: userId,
-      phone: cleanPhone,
-      email: virtualEmail,
-      telegram_chat_id: tgUser.id.toString(),
-      full_name: tgUser.first_name + (tgUser.last_name ? ` ${tgUser.last_name}` : ''),
-      role: 'client',
-    });
-
-    if (upsertError) {
-      console.error('[link-phone] Upsert error:', upsertError.message);
-      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
-    }
-
-    console.log('[link-phone] Profile upserted successfully');
-
-    // 4. Generate magiclink token
+    // 4. Generate magiclink token for auto-login
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
       type: 'magiclink',
       email: virtualEmail,
     });
 
-    if (linkError) {
-      console.error('[link-phone] generateLink error:', linkError.message);
+    if (linkError || !linkData?.properties?.email_otp) {
+      console.error('[link-phone] generateLink error:', linkError?.message);
       return NextResponse.json({ error: 'Failed to generate login token' }, { status: 500 });
     }
 
-    if (!linkData?.properties?.email_otp) {
-      console.error('[link-phone] No email_otp in response');
-      return NextResponse.json({ error: 'Failed to generate login token' }, { status: 500 });
-    }
-
-    console.log('[link-phone] Success! Token generated');
+    console.log('[link-phone] ✅ Success for userId:', userId);
 
     return NextResponse.json({
       success: true,
@@ -117,7 +128,7 @@ export async function POST(req: NextRequest) {
       token: linkData.properties.email_otp,
     });
   } catch (err: any) {
-    console.error('[api/auth/telegram/link-phone] Fatal error:', err.message, err);
+    console.error('[link-phone] Fatal error:', err.message);
     return NextResponse.json({ error: `Server error: ${err.message}` }, { status: 500 });
   }
 }
