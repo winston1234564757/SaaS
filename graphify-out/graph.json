@@ -19708,7 +19708,7 @@
       "label": "initTgWithRetry()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\providers\\TelegramProvider.tsx",
-      "source_location": "L107",
+      "source_location": "L103",
       "id": "telegramprovider_inittgwithretry",
       "community": 149,
       "norm_label": "inittgwithretry()"
@@ -71547,7 +71547,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\providers\\TelegramProvider.tsx",
-      "source_location": "L107",
+      "source_location": "L103",
       "weight": 1.0,
       "_src": "bookit_src_components_providers_telegramprovider_tsx",
       "_tgt": "telegramprovider_inittgwithretry",
