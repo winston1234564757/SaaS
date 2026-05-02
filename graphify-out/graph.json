@@ -19705,13 +19705,13 @@
       "norm_label": "usetelegram()"
     },
     {
-      "label": "initTgWithRetry()",
+      "label": "initTg()",
       "file_type": "code",
       "source_file": "bookit\\src\\components\\providers\\TelegramProvider.tsx",
-      "source_location": "L103",
-      "id": "telegramprovider_inittgwithretry",
+      "source_location": "L100",
+      "id": "telegramprovider_inittg",
       "community": 149,
-      "norm_label": "inittgwithretry()"
+      "norm_label": "inittg()"
     },
     {
       "label": "BookingFlow.tsx",
@@ -71547,12 +71547,12 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "bookit\\src\\components\\providers\\TelegramProvider.tsx",
-      "source_location": "L103",
+      "source_location": "L100",
       "weight": 1.0,
       "_src": "bookit_src_components_providers_telegramprovider_tsx",
-      "_tgt": "telegramprovider_inittgwithretry",
+      "_tgt": "telegramprovider_inittg",
       "source": "bookit_src_components_providers_telegramprovider_tsx",
-      "target": "telegramprovider_inittgwithretry",
+      "target": "telegramprovider_inittg",
       "confidence_score": 1.0
     },
     {
