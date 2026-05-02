@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegramMessage } from '@/lib/telegram';
-import { standardizePhoneForDb, isValidUkrainianPhone } from '@/lib/telegram/phone';
+import { isValidUkrainianPhone } from '@/lib/telegram/phone';
+import { normalizeToE164 } from '@/lib/utils/phone';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TOKEN_RE = /^[A-Z2-9]{8}$/;
@@ -16,7 +17,7 @@ async function logWebhookEvent(
     profile_id?: string | null;
     status: 'success' | 'error' | 'skipped';
     error_message?: string | null;
-    request_data?: any;
+    request_data?: unknown;
   }
 ) {
   try {
@@ -30,8 +31,9 @@ async function logWebhookEvent(
       error_message: event.error_message || null,
       request_data: event.request_data || null,
     });
-  } catch (err: any) {
-    console.error('[TG-WEBHOOK] Failed to log event:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown logging error';
+    console.error('[TG-WEBHOOK] Failed to log event:', message);
   }
 }
 
@@ -52,18 +54,18 @@ export async function POST(req: NextRequest) {
     if (message.contact) {
       const contact = message.contact;
       const rawPhone = contact.phone_number;
-      const standardPhone = standardizePhoneForDb(rawPhone);
+      const e164Phone = normalizeToE164(rawPhone);
 
       console.log(
-        `[TG-WEBHOOK] Received contact: raw="${rawPhone}" → normalized="${standardPhone}", chatId=${chatId}`
+        `[TG-WEBHOOK] Received contact: raw="${rawPhone}" → normalized="${e164Phone}", chatId=${chatId}`
       );
 
       // Validate phone format
-      if (!isValidUkrainianPhone(rawPhone)) {
+      if (!isValidUkrainianPhone(rawPhone) || !e164Phone) {
         console.warn(`[TG-WEBHOOK] Invalid phone format: ${rawPhone}`);
         await logWebhookEvent(admin, {
           event_type: 'contact_received',
-          phone: standardPhone,
+          phone: e164Phone,
           telegram_chat_id: chatId,
           status: 'skipped',
           error_message: 'Invalid phone format',
@@ -81,14 +83,14 @@ export async function POST(req: NextRequest) {
       const { data: existingProfile, error: selectErr } = await admin
         .from('profiles')
         .select('id')
-        .eq('phone', standardPhone)
+        .eq('phone', e164Phone)
         .maybeSingle();
 
       if (selectErr) {
         console.error(`[TG-WEBHOOK] Profile search error:`, selectErr);
         await logWebhookEvent(admin, {
           event_type: 'contact_received',
-          phone: standardPhone,
+          phone: e164Phone,
           telegram_chat_id: chatId,
           status: 'error',
           error_message: selectErr.message,
@@ -108,7 +110,7 @@ export async function POST(req: NextRequest) {
           console.error(`[TG-WEBHOOK] Update error:`, updateErr);
           await logWebhookEvent(admin, {
             event_type: 'profile_updated',
-            phone: standardPhone,
+            phone: e164Phone,
             telegram_chat_id: chatId,
             profile_id: existingProfile.id,
             status: 'error',
@@ -123,7 +125,7 @@ export async function POST(req: NextRequest) {
           console.log(`[TG-WEBHOOK] Profile ${existingProfile.id} updated with chat_id=${chatId}`);
           await logWebhookEvent(admin, {
             event_type: 'profile_updated',
-            phone: standardPhone,
+            phone: e164Phone,
             telegram_chat_id: chatId,
             profile_id: existingProfile.id,
             status: 'success',
@@ -136,10 +138,10 @@ export async function POST(req: NextRequest) {
         }
       } else {
         // No existing profile found - profile creation is handled by the app (via link-phone endpoint)
-        console.log(`[TG-WEBHOOK] No profile found for phone: ${standardPhone}. User will need to create account.`);
+        console.log(`[TG-WEBHOOK] No profile found for phone: ${e164Phone}. User will need to create account.`);
         await logWebhookEvent(admin, {
           event_type: 'contact_received',
-          phone: standardPhone,
+          phone: e164Phone,
           telegram_chat_id: chatId,
           status: 'skipped',
           error_message: 'No existing profile - creation deferred to app',
@@ -191,7 +193,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[TG-WEBHOOK] Fatal error:', err);
     return NextResponse.json({ ok: true });
   }

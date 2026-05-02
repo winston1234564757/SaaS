@@ -4,8 +4,14 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, Smartphone, ShieldCheck, RotateCw, Phone } from 'lucide-react';
 
+export interface TelegramLinkSuccessPayload {
+  email?: string;
+  token?: string;
+  initData?: string;
+}
+
 interface TelegramWelcomeProps {
-  onSuccess: (phone: string) => void;
+  onSuccess: (payload: TelegramLinkSuccessPayload) => void;
 }
 
 type PollingStatus = 'idle' | 'polling' | 'success' | 'timeout' | 'cancelled' | 'error' | 'manual_input';
@@ -48,7 +54,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           setError('Ви скасували запит контакту');
         }
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[TelegramWelcome] Error requesting contact:', err);
       setStatus('error');
       setError('Не вдалося ініціювати запит');
@@ -81,7 +87,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
 
           setStatus('success');
           setTimeout(() => {
-            onSuccess('linked');
+            onSuccess({ initData: initDataRaw });
           }, 500);
           return;
         }
@@ -91,7 +97,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             throw new Error('Timeout');
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`[TelegramWelcome] Poll attempt ${attempts} failed:`, err);
         if (attempts >= maxAttempts) {
           throw new Error('Timeout after all attempts');
@@ -164,7 +170,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
         try {
           const data = await res.json();
           errorMsg = data.error || errorMsg;
-        } catch (e) {
+        } catch {
           // response is not JSON
         }
         throw new Error(errorMsg);
@@ -176,14 +182,22 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
       if (data.success && data.token) {
         setStatus('success');
         setTimeout(() => {
-          onSuccess('linked');
+          onSuccess({
+            email: data.email,
+            token: data.token,
+            initData,
+          });
         }, 500);
       } else {
         throw new Error(data.error || 'Невірна відповідь від сервера');
       }
-    } catch (err: any) {
-      console.error('[TelegramWelcome] Manual link error:', err.message, err);
-      setError(err.message || 'Помилка при зв\'язуванні номера. Спробуйте ще раз.');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Помилка при зв\'язуванні номера. Спробуйте ще раз.';
+      console.error('[TelegramWelcome] Manual link error:', message, err);
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }

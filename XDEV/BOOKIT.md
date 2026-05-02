@@ -171,6 +171,7 @@ Flash Deal fast-track: wizard відкривається на кроці "detail
 - SMS OTP → virtual email → Supabase magiclink token
 - Pre-flight phone check (Starter: не відправляє SMS якщо номер вже/не зареєстрований)
 - Post-booking auth: `PostBookingAuth.tsx` прив'язує booking до щойно-авторизованого
+- Telegram Mini App client auth: `initData` → lookup by `telegram_chat_id`, з fallback через manual phone linking або contact-share linking у форматі E.164
 
 **My Area (`/my/`)**
 - Мої записи: список, скасування, "Записатись знову"

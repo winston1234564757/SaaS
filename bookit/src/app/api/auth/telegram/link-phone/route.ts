@@ -17,9 +17,10 @@ export async function POST(req: NextRequest) {
     try {
       tgUser = validateTelegramData(initData);
       console.log('[link-phone] TG user:', tgUser.id);
-    } catch (err: any) {
-      console.error('[link-phone] TG validation failed:', err.message);
-      return NextResponse.json({ error: `Validation failed: ${err.message}` }, { status: 401 });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Invalid Telegram authentication data';
+      console.error('[link-phone] TG validation failed:', message);
+      return NextResponse.json({ error: `Validation failed: ${message}` }, { status: 401 });
     }
 
     // 2. Normalize phone to E.164 (same as SMS OTP flow: 380XXXXXXXXX)
@@ -32,6 +33,8 @@ export async function POST(req: NextRequest) {
     const virtualEmail = generateVirtualEmail(e164Phone); // e.g. 380967953488@bookit.app
     const tgChatId = tgUser.id.toString();
     const admin = createAdminClient();
+    const fullName =
+      tgUser.first_name + (tgUser.last_name ? ` ${tgUser.last_name}` : '');
 
     console.log('[link-phone] e164=', e164Phone, 'email=', virtualEmail, 'tgChatId=', tgChatId);
 
@@ -65,8 +68,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Failed to link Telegram' }, { status: 500 });
       }
     } else {
-      // New user — create auth user + profile
-      console.log('[link-phone] Creating new auth user...');
+      // New or drifted identity — create auth user if needed, otherwise recover by email.
+      console.log('[link-phone] Creating or recovering auth user...');
       const { data: createdUser, error: createError } = await admin.auth.admin.createUser({
         email: virtualEmail,
         password: crypto.randomUUID(),
@@ -74,39 +77,65 @@ export async function POST(req: NextRequest) {
         user_metadata: { phone: e164Phone, role: 'client' },
       });
 
-      if (createError) {
-        console.error('[link-phone] createUser error (status may be 422):', createError.message);
+      if (createError && createError.status !== 422) {
+        console.error('[link-phone] createUser error:', createError.message);
         return NextResponse.json(
           { error: `Failed to create user: ${createError.message}` },
           { status: 500 },
         );
       }
 
-      if (!createdUser?.user?.id) {
-        return NextResponse.json({ error: 'No user ID returned' }, { status: 500 });
+      userId = createdUser?.user?.id ?? '';
+
+      if (!userId) {
+        const { data: rpcId, error: rpcError } = await admin.rpc('get_user_id_by_email', {
+          p_email: virtualEmail,
+        });
+
+        if (rpcError) {
+          console.error('[link-phone] get_user_id_by_email error:', rpcError.message);
+          return NextResponse.json({ error: 'Failed to resolve existing user' }, { status: 500 });
+        }
+
+        if (typeof rpcId !== 'string' || !rpcId) {
+          console.error('[link-phone] Could not resolve user ID for email:', virtualEmail);
+          return NextResponse.json({ error: 'Failed to resolve existing user' }, { status: 500 });
+        }
+
+        userId = rpcId;
+        console.log('[link-phone] Recovered existing auth user:', userId);
+      } else {
+        console.log('[link-phone] Created auth user:', userId);
       }
 
-      userId = createdUser.user.id;
-      console.log('[link-phone] Created auth user:', userId);
+      const { error: profileUpsertError } = await admin.from('profiles').upsert(
+        {
+          id: userId,
+          phone: e164Phone,
+          email: virtualEmail,
+          telegram_chat_id: tgChatId,
+          full_name: fullName || `User ${e164Phone.slice(-4)}`,
+          role: 'client',
+        },
+        { onConflict: 'id', ignoreDuplicates: false },
+      );
 
-      const fullName =
-        tgUser.first_name + (tgUser.last_name ? ` ${tgUser.last_name}` : '');
-
-      const { error: insertErr } = await admin.from('profiles').insert({
-        id: userId,
-        phone: e164Phone,
-        email: virtualEmail,
-        telegram_chat_id: tgChatId,
-        full_name: fullName || 'User',
-        role: 'client',
-      });
-
-      if (insertErr) {
-        console.error('[link-phone] Profile insert error:', insertErr.message);
+      if (profileUpsertError) {
+        console.error('[link-phone] Profile upsert error:', profileUpsertError.message);
         return NextResponse.json({ error: 'Failed to create profile' }, { status: 500 });
       }
 
-      console.log('[link-phone] Profile created');
+      const { error: clientProfileError } = await admin.from('client_profiles').upsert(
+        { id: userId },
+        { onConflict: 'id', ignoreDuplicates: true },
+      );
+
+      if (clientProfileError) {
+        console.error('[link-phone] client_profiles upsert error:', clientProfileError.message);
+        return NextResponse.json({ error: 'Failed to initialize client profile' }, { status: 500 });
+      }
+
+      console.log('[link-phone] Profile identity synced');
     }
 
     // 4. Generate magiclink token for auto-login
@@ -127,8 +156,9 @@ export async function POST(req: NextRequest) {
       email: virtualEmail,
       token: linkData.properties.email_otp,
     });
-  } catch (err: any) {
-    console.error('[link-phone] Fatal error:', err.message);
-    return NextResponse.json({ error: `Server error: ${err.message}` }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown server error';
+    console.error('[link-phone] Fatal error:', message);
+    return NextResponse.json({ error: `Server error: ${message}` }, { status: 500 });
   }
 }

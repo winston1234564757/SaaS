@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { TelegramWelcome } from '@/components/telegram/TelegramWelcome';
+import { TelegramLinkSuccessPayload, TelegramWelcome } from '@/components/telegram/TelegramWelcome';
 
 interface TelegramContextType {
   isReady: boolean;
@@ -10,7 +10,7 @@ interface TelegramContextType {
   isAuthenticated: boolean;
   isLinking: boolean;
   error: string | null;
-  handleLinkPhone: (phone: string) => Promise<void>;
+  handleLinkPhone: (payload: TelegramLinkSuccessPayload) => Promise<void>;
 }
 
 const TelegramContext = createContext<TelegramContextType | undefined>(undefined);
@@ -22,8 +22,64 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [tgUser, setTgUser] = useState<TelegramWebApp['initDataUnsafe']['user'] | null>(null);
   const [loadingStep, setLoadingStep] = useState<string>('Ініціалізація...');
+  const lastInitDataRef = useRef<string | null>(null);
 
   const supabase = createClient();
+
+  const handleAutoLogin = useCallback(async (initData: string) => {
+    lastInitDataRef.current = initData;
+    setError(null);
+    setLoadingStep('Автентифікація профілю...');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    try {
+      const res = await fetch('/api/auth/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setLoadingStep('Синхронізація сесії...');
+
+      if (data.success && data.token) {
+        const { error: authErr } = await supabase.auth.verifyOtp({
+          email: data.email,
+          token: data.token,
+          type: 'magiclink'
+        });
+        if (authErr) throw authErr;
+        setIsAuthenticated(true);
+        setIsLinking(false);
+      } else if (data.status === 'NEED_PHONE') {
+        setIsLinking(true);
+      } else if (data.status === 'WAITING_FOR_PHONE') {
+        // Profile exists but webhook hasn't set the phone yet - show linking screen
+        setIsLinking(true);
+      } else {
+        throw new Error(data.error || 'Failed to authenticate');
+      }
+    } catch (err: unknown) {
+      console.error('[TelegramProvider] Auth error:', err);
+      const message =
+        err instanceof Error
+          ? err.name === 'AbortError'
+            ? 'Сервер не відповідає. Спробуйте пізніше.'
+            : err.message
+          : 'Невідома помилка авторизації';
+      setError(message);
+    } finally {
+      setIsReady(true);
+    }
+  }, [supabase]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -39,10 +95,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     let retryCount = 0;
     const maxRetries = 15;
     const safetyTimeout = setTimeout(() => {
-      if (!isReady) {
-        console.warn('[TelegramProvider] Safety timeout reached');
-        setIsReady(true);
-      }
+      console.warn('[TelegramProvider] Safety timeout reached');
+      setIsReady(true);
     }, 8000);
 
     const initTg = () => {
@@ -64,7 +118,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           } else {
             console.warn('[TelegramProvider] SDK ready but initDataRaw missing');
           }
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error('[TelegramProvider] Init error:', e);
         }
       }
@@ -96,61 +150,56 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
     initTg();
     return () => clearTimeout(safetyTimeout);
-  }, [supabase]);
+  }, [handleAutoLogin]);
 
-  async function handleAutoLogin(initData: string) {
-    setLoadingStep('Автентифікація профілю...');
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
-
-    try {
-      const res = await fetch('/api/auth/telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Server error: ${res.status}`);
-      }
-
-      const data = await res.json();
+  async function handleLinkPhone(payload: TelegramLinkSuccessPayload) {
+    if (payload.email && payload.token) {
+      setError(null);
       setLoadingStep('Синхронізація сесії...');
+      setIsReady(false);
 
-      if (data.success && data.token) {
-        const { error: authErr } = await supabase.auth.verifyOtp({
-          email: data.email,
-          token: data.token,
-          type: 'magiclink'
-        });
-        if (authErr) throw authErr;
-        setIsAuthenticated(true);
-      } else if (data.status === 'NEED_PHONE') {
-        setIsLinking(true);
-      } else if (data.status === 'WAITING_FOR_PHONE') {
-        // Profile exists but webhook hasn't set the phone yet - show linking screen
-        setIsLinking(true);
-      } else {
-        throw new Error(data.error || 'Failed to authenticate');
+      const { error: authErr } = await supabase.auth.verifyOtp({
+        email: payload.email,
+        token: payload.token,
+        type: 'magiclink'
+      });
+
+      if (authErr) {
+        setError(authErr.message);
+        setIsReady(true);
+        return;
       }
-    } catch (err: any) {
-      console.error('[TelegramProvider] Auth error:', err);
-      setError(err.name === 'AbortError' ? 'Сервер не відповідає. Спробуйте пізніше.' : err.message);
-    } finally {
+
+      setIsAuthenticated(true);
+      setIsLinking(false);
       setIsReady(true);
+      return;
     }
+
+    const initDataFromPayload = payload.initData;
+    const initDataFromSdk = window.Telegram?.WebApp?.initDataRaw;
+    const initData = initDataFromPayload || initDataFromSdk || lastInitDataRef.current;
+
+    if (!initData) {
+      setError('Не вдалося відновити Telegram-сесію. Відкрийте додаток ще раз.');
+      return;
+    }
+
+    // If it was linked via bot webhook, just try to login again.
+    setIsReady(false);
+    await handleAutoLogin(initData);
   }
 
-  async function handleLinkPhone(linked: string) {
-    const tg = window.Telegram?.WebApp;
-    if (!tg?.initDataRaw) return;
+  async function handleRetryAuth() {
+    const initData = window.Telegram?.WebApp?.initDataRaw || lastInitDataRef.current;
+    if (!initData) {
+      setError(null);
+      setIsLinking(true);
+      return;
+    }
 
-    // If it was linked via bot webhook, just try to login again
-    setIsReady(false); // Show spinner while re-logging
-    handleAutoLogin(tg.initDataRaw);
+    setIsReady(false);
+    await handleAutoLogin(initData);
   }
 
   if (!isReady) {
@@ -174,7 +223,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         <h2 className="heading-serif text-2xl mb-2">Помилка входу</h2>
         <p className="text-muted-foreground mb-6">{error}</p>
         <button 
-          onClick={() => window.location.reload()}
+          onClick={() => void handleRetryAuth()}
           className="bento-card bg-sage text-white py-3 px-8 rounded-xl active:scale-95 transition-all"
         >
           Спробувати ще раз

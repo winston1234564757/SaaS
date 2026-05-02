@@ -105,6 +105,9 @@
 - `src/app/auth/callback/` — OAuth callback
 - SMS OTP: `src/app/api/auth/send-sms/`, `verify-sms/`, `link-booking/`
 - SMS OTP form: `src/components/public/ClientAuthSheet.tsx` + `NavLoginSheet.tsx`
+- Telegram Mini App: `src/components/providers/TelegramProvider.tsx` + `src/components/telegram/TelegramWelcome.tsx`
+- TMA API: `src/app/api/auth/telegram/route.ts`, `src/app/api/auth/telegram/link-phone/route.ts`, `src/app/api/telegram/webhook/route.ts`
+- TMA identity sync: `link-phone` must recover drifted identities where `auth.users` exists but `profiles` is missing; webhook contact path must use E.164 to match `profiles.phone`
 
 ### Invite / Join
 - `src/app/invite/[code]/` — реферальний лендінг

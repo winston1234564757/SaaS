@@ -109,20 +109,22 @@ POST /api/auth/telegram {initData}
 - TelegramWelcome має 2 вкладки (Contact + Manual)
 - Phone normalization консистентна (E.164 скрізь)
 - Logging в `telegram_webhook_logs` таблиці
+- `link-phone` відновлює drifted identity: якщо `auth.users` існує, але `profiles` відсутній, route резолвить user по email, upsert-ить `profiles` і `client_profiles`
+- Manual submit більше не залежить від повторного `tg.initDataRaw`: фронт може одразу завершити `verifyOtp` з токеном із `link-phone`
+- Contact webhook шукає профіль у форматі E.164, сумісному з SMS/TMA auth
 
 ### ⚠️ НЕ ПЕРЕВІРЕНО / ПОТЕНЦІЙНО ЗЛАМАНО:
 
-1. **Manual Phone (вкладка "Вручну")** — остання версія (`f08cfec`) ще не протестована на реальному боті
-   - Очікуємо: `link-phone` знаходить існуючий профіль по `380XXXXXXXXX`, линкує `telegram_chat_id`, повертає magiclink
+1. **Manual Phone (вкладка "Вручну")** — потрібен ретест після drift-fix
+   - Очікуємо: `link-phone` знаходить або відновлює identity по `380XXXXXXXXX`, линкує `telegram_chat_id`, повертає magiclink
    - Якщо все ще 500 → перевірити Vercel logs для `[link-phone]` записів
 
-2. **Contact Tab (tg.requestContact)** — все ще не підтверджено що polling спрацьовує
+2. **Contact Tab (tg.requestContact)** — все ще не підтверджено що polling спрацьовує після E.164 фіксу
    - Webhook отримує контакт → UPDATE profiles SET telegram_chat_id
    - Polling `/api/auth/telegram` знаходить профіль → повертає magiclink
    - ЙМОВІРНА ПРОБЛЕМА: якщо `tg.initDataRaw` недоступна під час polling → 400
 
-3. **TelegramProvider після max retries** — тепер показує TelegramWelcome (isLinking=true)
-   - Але initData для manual submit береться з URL params — треба тестувати
+3. **TelegramProvider retry state** — треба живим тестом підтвердити fallback через `lastInitDataRef` у кейсах без `tg.initDataRaw`
 
 ---
 

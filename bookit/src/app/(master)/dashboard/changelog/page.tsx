@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import { 
   Rocket, 
   LayoutGrid, 
-  MousePointer2, 
-  Zap, 
   ChevronLeft, 
   ExternalLink, 
   CheckCircle2,
@@ -16,6 +14,19 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 
 const UPDATES = [
+  {
+    title: 'Telegram Mini App Auth',
+    icon: Rocket,
+    color: 'sage',
+    description: 'Підсилили вхід клієнтів через Telegram Mini App, щоб телефонний лінкінг не ламався на старих акаунтах.',
+    details: [
+      'Manual phone flow відновлює профіль навіть якщо auth.users існує без рядка в profiles',
+      'Після ручного введення номера сесія відкривається одразу, без повторної залежності від initDataRaw',
+      'Contact webhook переведений на E.164, тому polling шукає той самий формат телефону що й SMS auth'
+    ],
+    link: '/dashboard',
+    linkText: 'Відкрити BookIT'
+  },
   {
     title: 'Vaul Engine',
     icon: Smartphone,
@@ -77,7 +88,7 @@ export default function ChangelogPage() {
 
           <div className="flex items-center gap-3 mb-2">
             <div className="px-3 py-1 rounded-full bg-sage/20 text-sage text-[10px] font-black uppercase tracking-widest">
-              v5.2.0 "Vaul Engine"
+              v5.2.0 &quot;Vaul Engine&quot;
             </div>
             <div className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse" />
           </div>
