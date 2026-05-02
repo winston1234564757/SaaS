@@ -6,8 +6,8 @@ import { generateVirtualEmail, normalizeToE164 } from '@/lib/utils/phone';
 
 export async function POST(req: NextRequest) {
   try {
-    const { initData, phone } = await req.json();
-    console.log('[link-phone] Received: phone=', phone);
+    const { initData, phone, role } = await req.json();
+    console.log('[link-phone] Received: phone=', phone, 'role=', role);
 
     if (!initData || !phone) {
       return NextResponse.json({ error: 'Missing data' }, { status: 400 });
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
         phone: e164Phone,
         telegramChatId: tgChatId,
         fullName: fullName || undefined,
+        role: role as 'client' | 'master',
       });
 
       userId = identity.userId;

@@ -251,8 +251,44 @@ const MODE_UPGRADE_COPY: Partial<Record<Mode, UpgradeCopy>> = {
    EXPORT
    ═══════════════════════════════════════════════════════ */
 async function exportCanvasPng(node: HTMLElement, filename: string) {
-  const [{ toPng }, { saveAs }] = await Promise.all([import('html-to-image'), import('file-saver')]);
-  saveAs(await toPng(node, { pixelRatio: 3, cacheBust: true }), filename);
+  const [{ domToCanvas }, { saveAs }] = await Promise.all([import('modern-screenshot'), import('file-saver')]);
+  
+  console.log('[StoryGenerator] Starting capture (modern-canvas)...', { 
+    nodeWidth: node.offsetWidth, 
+    nodeHeight: node.offsetHeight,
+  });
+
+  // Ensure all images are decoded before capture
+  const imgs = Array.from(node.querySelectorAll('img'));
+  const bgImgs = Array.from(node.querySelectorAll('*')).filter(el => (el as HTMLElement).style.backgroundImage);
+  
+  console.log(`[StoryGenerator] Found ${imgs.length} images and ${bgImgs.length} bg images to decode`);
+
+  try {
+    await Promise.race([
+      Promise.all(imgs.map(img => img.complete ? Promise.resolve() : img.decode().catch(() => {}))),
+      new Promise(r => setTimeout(r, 2000))
+    ]);
+
+    const canvas = await domToCanvas(node, { 
+      scale: 2, 
+      width: 360,
+      height: 640,
+      backgroundColor: '#ffffff',
+    });
+    
+    const dataUrl = canvas.toDataURL('image/png');
+    
+    if (!dataUrl || dataUrl.length < 10000) {
+      throw new Error(`Invalid dataUrl generated (length: ${dataUrl?.length ?? 0})`);
+    }
+
+    console.log('[StoryGenerator] Capture success, dataUrl length:', dataUrl.length, 'Prefix:', dataUrl.slice(0, 50));
+    saveAs(dataUrl, filename);
+  } catch (err) {
+    console.error('[StoryGenerator] Capture failed deeply:', err);
+    throw err;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -285,6 +321,7 @@ interface CanvasProps {
   platePos: 'top' | 'center' | 'bottom';
   textAlign: 'left' | 'center' | 'right';
   transparency: number;
+  isExporting?: boolean;
 }
 
 function StoryCanvas({
@@ -295,7 +332,16 @@ function StoryCanvas({
   flashWinSvcName, flashWinDate, flashWinTime, flashWinDiscount,
   bgPhotoUrl, portfolioTitle, portfolioDesc,
   platePos, textAlign, transparency,
+  isExporting = false,
 }: CanvasProps) {
+  if (isExporting) {
+    console.log('[StoryCanvas] Rendering for export:', {
+      hasBg: !!bgPhotoUrl,
+      hasAvatar: !!avatarBlob,
+      avatarLen: avatarBlob?.length ?? 0,
+      bgLen: bgPhotoUrl?.length ?? 0,
+    });
+  }
   const avatarBlockH = showAvatar ? 110 : 0;
   const contentTop   = 50 + avatarBlockH + 10;
 
@@ -489,8 +535,14 @@ function StoryCanvas({
     }}>
       {/* Background Photo Layer */}
       {bgPhotoUrl && (
-        <div style={{ position: 'absolute', inset: 0 }}>
-          <img src={bgPhotoUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ 
+          position: 'absolute', 
+          inset: 0,
+          backgroundImage: `url(${bgPhotoUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.3) 100%)' }} />
         </div>
@@ -521,7 +573,15 @@ function StoryCanvas({
             border: `2px solid ${bgPhotoUrl ? 'rgba(255,255,255,0.5)' : pal.bg}`,
           }}>
             {avatarBlob
-              ? <img src={avatarBlob} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ? <div style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  backgroundImage: `url(${avatarBlob})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  display: 'block'
+                }} />
               : <span style={{ fontSize: 28, lineHeight: 1 }}>👤</span>
             }
           </div>
@@ -561,8 +621,10 @@ function StoryCanvas({
         borderRadius: 32,
 
         background: bgPhotoUrl ? `rgba(255,255,255,${transparency / 100})` : 'transparent',
-        backdropFilter: bgPhotoUrl ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
-        WebkitBackdropFilter: bgPhotoUrl ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
+        // CRITICAL FIX: backdrop-filter breaks html-to-image rendering (results in white/blank screen)
+        // We disable it during export and rely on the rgba background above.
+        backdropFilter: (bgPhotoUrl && !isExporting) ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
+        WebkitBackdropFilter: (bgPhotoUrl && !isExporting) ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
         boxShadow: bgPhotoUrl ? `0 15px 50px rgba(0,0,0,${Math.min(0.2, (100 - transparency) / 400)})` : 'none',
         border: bgPhotoUrl ? `1px solid rgba(255,255,255,${Math.max(0.2, transparency / 100 + 0.1)})` : 'none',
         
@@ -641,13 +703,59 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
   const [selectedBgPhotoId, setSelectedBgPhotoId] = useState<string | null>(null);
-  const bgPhotoUrl = useMemo(() => {
+  const bgPhotoUrlRaw = useMemo(() => {
     if (selectedBgPhotoId) {
       const it = portfolioItems.find(i => i.id === selectedBgPhotoId);
       return it?.photos[0]?.url ?? null;
     }
     return customBgPhoto;
   }, [selectedBgPhotoId, portfolioItems, customBgPhoto]);
+
+  const [bgPhotoBlob, setBgPhotoBlob] = useState<string | null>(null);
+  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
+
+  useEffect(() => {
+    if (!bgPhotoUrlRaw) { 
+      setBgPhotoBlob(null); 
+      setIsPhotoLoading(false);
+      return; 
+    }
+    if (bgPhotoUrlRaw.startsWith('data:')) { 
+      setBgPhotoBlob(bgPhotoUrlRaw); 
+      setIsPhotoLoading(false);
+      return; 
+    }
+
+    setIsPhotoLoading(true);
+    let cancelled = false;
+    fetch(bgPhotoUrlRaw, { cache: 'no-cache' })
+      .then(r => {
+        if (!r.ok) throw new Error('Fetch failed');
+        return r.blob();
+      })
+      .then(b => new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(b);
+      }))
+      .then(dataUrl => { 
+        if (!cancelled) {
+          setBgPhotoBlob(dataUrl);
+          setIsPhotoLoading(false);
+        }
+      })
+      .catch((err) => { 
+        console.warn('[StoryGenerator] bg photo load failed:', err);
+        if (!cancelled) {
+          setBgPhotoBlob(null); 
+          setIsPhotoLoading(false);
+        }
+      }); 
+    return () => { cancelled = true; };
+  }, [bgPhotoUrlRaw]);
+
+  const bgPhotoUrl = bgPhotoBlob;
 
   const [blurActive,       setBlurActive]       = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -761,10 +869,29 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   const handleDownload = useCallback(async () => {
     if (!canvasRef.current || exporting) return;
+    
+    if (isPhotoLoading) {
+      showToast({ type: 'warning', title: 'Завантаження...', message: 'Чекаємо, поки фото підготується' });
+      return;
+    }
+
     setExporting(true);
     const node = canvasRef.current;
 
-    await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+    console.log('[StoryGenerator] Pre-capture state:', {
+      bgPhotoLen: bgPhotoUrl?.length ?? 0,
+      bgPhotoPrefix: bgPhotoUrl?.slice(0, 30),
+      avatarLen: avatarBlob?.length ?? 0,
+      avatarPrefix: avatarBlob?.slice(0, 30),
+      innerHTML_len: node.innerHTML.length,
+      mode,
+      platePos,
+      textAlign,
+      transparency
+    });
+
+    // Max reliability for mobile devices
+    await new Promise(r => setTimeout(r, 1500));
 
     try {
       await exportCanvasPng(node, `bookit-story-${mode}-${Date.now()}.png`);
@@ -777,7 +904,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     } finally {
       setExporting(false);
     }
-  }, [exporting, mode, showToast]);
+  }, [exporting, mode, showToast, isPhotoLoading, bgPhotoUrl, avatarBlob, platePos, textAlign, transparency, showAvatar, palIdx]);
 
   const handleDownloadOrUpgrade = useCallback(async () => {
     if (PREMIUM_MODES.has(mode) && isStarterPlan) {
@@ -1323,9 +1450,21 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         <div
           ref={canvasRef}
           aria-hidden="true"
-          style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none', opacity: 0 }}
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            width: 380, 
+            height: 660, 
+            pointerEvents: 'none', 
+            opacity: 0.05, 
+            zIndex: -200,
+            background: '#ffffff'
+          }}
         >
-          <StoryCanvas {...canvasSharedProps} />
+          <div style={{ transform: 'scale(1)', transformOrigin: 'top left' }}>
+            <StoryCanvas {...canvasSharedProps} isExporting={true} />
+          </div>
         </div>
       </>
     );
@@ -1337,9 +1476,21 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       <div
         ref={canvasRef}
         aria-hidden="true"
-        style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: 360, height: 640, pointerEvents: 'none', opacity: 0 }}
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: 380, 
+          height: 660, 
+          pointerEvents: 'none', 
+          opacity: 0.05, 
+          zIndex: -200,
+          background: '#ffffff'
+        }}
       >
-        <StoryCanvas {...canvasSharedProps} />
+        <div style={{ transform: 'scale(1)', transformOrigin: 'top left' }}>
+          <StoryCanvas {...canvasSharedProps} isExporting={true} />
+        </div>
       </div>
     </>
   );

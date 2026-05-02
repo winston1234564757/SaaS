@@ -135,6 +135,61 @@ body {
   border-radius: 2px;
 }
 
+/* ─── Suspended Curtain (CSS-only for background resume) ─── */
+body.app-loading .app-suspended-curtain {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.app-suspended-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background-color: #FFE8DC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.curtain-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  animation: pulse-curtain 2s infinite ease-in-out;
+  box-shadow: 0 10px 30px rgba(120, 154, 153, 0.15);
+}
+
+.curtain-text::after {
+  content: "Творимо красу... ✨";
+  animation: beauty-jokes 10s infinite;
+}
+
+@keyframes beauty-jokes {
+  0%, 15%  { content: "Шукаємо вільне віконечко... 🗓️"; }
+  20%, 35% { content: "Малюємо ідеальні стрілки... 👁️"; }
+  40%, 55% { content: "Створюємо магію перевтілення... ✨"; }
+  60%, 75% { content: "Підбираємо відтінок під настрій... 🎨"; }
+  80%, 95% { content: "Робимо світ трішки гарнішим... 🌸"; }
+}
+
+@keyframes pulse-curtain {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
 /* ─── Bento Card (Mica) ─── */
 .bento-card {
   background: rgba(255, 255, 255, 0.60);

@@ -61,6 +61,7 @@
     
     if (rawData) {
       WebApp.initData = rawData;
+      WebApp.initDataRaw = rawData;
       const dataParams = new URLSearchParams(rawData);
       const userStr = dataParams.get('user');
       if (userStr) {

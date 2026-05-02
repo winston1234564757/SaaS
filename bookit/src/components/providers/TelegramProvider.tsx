@@ -1,276 +1,192 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { TelegramLinkSuccessPayload, TelegramWelcome } from '@/components/telegram/TelegramWelcome';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient, resetFetchController } from '@/lib/supabase/client';
+import { BeautyLoader } from '@/components/shared/BeautyLoader';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface TelegramContextType {
   isReady: boolean;
-  user: TelegramWebApp['initDataUnsafe']['user'] | null;
   isAuthenticated: boolean;
-  isLinking: boolean;
-  error: string | null;
-  handleLinkPhone: (payload: TelegramLinkSuccessPayload) => Promise<void>;
+  tgUser: any | null;
 }
 
-const TelegramContext = createContext<TelegramContextType | undefined>(undefined);
+const TelegramContext = createContext<TelegramContextType>({
+  isReady: false,
+  isAuthenticated: false,
+  tgUser: null,
+});
+
+export const useTelegram = () => useContext(TelegramContext);
 
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLinking, setIsLinking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [tgUser, setTgUser] = useState<TelegramWebApp['initDataUnsafe']['user'] | null>(null);
-  const [loadingStep, setLoadingStep] = useState<string>('Ініціалізація...');
-  const lastInitDataRef = useRef<string | null>(null);
+  const [tgUser, setTgUser] = useState<any>(null);
+  const [loadingStep, setLoadingStep] = useState('Ініціалізація...');
+  const [minTimePassed, setMinTimePassed] = useState(false);
 
+  const router = useRouter();
   const supabase = createClient();
 
   const handleAutoLogin = useCallback(async (initData: string) => {
-    lastInitDataRef.current = initData;
-    setError(null);
-    setLoadingStep('Автентифікація профілю...');
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
-
     try {
+      setLoadingStep('Авторизація...');
       const res = await fetch('/api/auth/telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ initData }),
-        signal: controller.signal
       });
-      clearTimeout(timeoutId);
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Server error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Auth failed: ${res.status}`);
 
       const data = await res.json();
-      setLoadingStep('Синхронізація сесії...');
-
       if (data.success && data.token) {
-        const { error: authErr } = await supabase.auth.verifyOtp({
-          email: data.email,
-          token: data.token,
-          type: 'magiclink'
+        setLoadingStep('Синхронізація сесії...');
+        const { error } = await supabase.auth.setSession({
+          access_token: data.token,
+          refresh_token: data.token, // Using token as dummy refresh for session init
         });
-        if (authErr) throw authErr;
+
+        if (error) throw error;
         setIsAuthenticated(true);
-        setIsLinking(false);
-      } else if (data.status === 'NEED_PHONE') {
-        setIsLinking(true);
-      } else if (data.status === 'WAITING_FOR_PHONE') {
-        // Profile exists but webhook hasn't set the phone yet - show linking screen
-        setIsLinking(true);
+        // Force reload to update cookies for middleware
+        window.location.reload();
       } else {
-        throw new Error(data.error || 'Failed to authenticate');
+        setIsReady(true);
       }
-    } catch (err: unknown) {
-      console.error('[TelegramProvider] Auth error:', err);
-      const message =
-        err instanceof Error
-          ? err.name === 'AbortError'
-            ? 'Сервер не відповідає. Спробуйте пізніше.'
-            : err.message
-          : 'Невідома помилка авторизації';
-      setError(message);
-    } finally {
+    } catch (err) {
+      console.error('[TelegramProvider] Auto-login error:', err);
       setIsReady(true);
     }
-  }, [supabase]);
+  }, [supabase.auth]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const fullUrl = (window.location.hash + window.location.search);
-    const hasTgParams = fullUrl.toLowerCase().includes('tgwebappdata=');
+    // Ensure loader stays for at least 2.5 seconds for a premium feel
+    const timer = setTimeout(() => setMinTimePassed(true), 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
-    // CRITICAL: If we are not in Telegram (no params), skip everything immediately
-    if (!hasTgParams) {
-      setIsReady(true);
-      return;
-    }
-
-    let retryCount = 0;
-    const maxRetries = 15;
+  useEffect(() => {
+    // 8s safety timeout for TMA initialization
     const safetyTimeout = setTimeout(() => {
-      console.warn('[TelegramProvider] Safety timeout reached');
       setIsReady(true);
     }, 8000);
 
-    const initTg = () => {
+    const initTg = async () => {
+      try {
+        // 0. Preliminary session check with a strict timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500));
+        
+        const sessionResult = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const session = sessionResult?.data?.session;
+
+        if (session) {
+          setIsAuthenticated(true);
+          setIsReady(true);
+          clearTimeout(safetyTimeout);
+          return;
+        }
+      } catch (e) {
+        console.warn('[TelegramProvider] Session check timed out or failed, proceeding...');
+      }
+
       const tg = window.Telegram?.WebApp;
 
-      setLoadingStep(`Завантаження профілю...`);
-
       if (tg) {
+        setLoadingStep('Завантаження профілю...');
         try {
-          clearTimeout(safetyTimeout);
           tg.ready();
           tg.expand();
           
-          // Immersive UI: Set colors to match our brand palette (Peach)
           if (tg.setHeaderColor) tg.setHeaderColor('#FFE8DC');
           if (tg.setBackgroundColor) tg.setBackgroundColor('#FFE8DC');
-          
-          // Request real fullscreen if supported (Telegram 8.0+)
-          if (tg.requestFullscreen) {
-            try {
-              tg.requestFullscreen();
-            } catch (e) {
-              console.warn('requestFullscreen failed', e);
-            }
-          }
 
           if (tg.initDataRaw) {
-            console.log('[TelegramProvider] SDK ready, initDataRaw available');
             setTgUser(tg.initDataUnsafe?.user || null);
             handleAutoLogin(tg.initDataRaw);
-            return;
           } else {
-            console.warn('[TelegramProvider] SDK ready but initDataRaw missing');
+            const params = new URLSearchParams(window.location.hash.replace('#', ''));
+            const rawData = params.get('tgWebAppData');
+            if (rawData) {
+              handleAutoLogin(rawData);
+            } else {
+              setIsReady(true);
+              clearTimeout(safetyTimeout);
+            }
           }
-        } catch (e: unknown) {
-          console.error('[TelegramProvider] Init error:', e);
+        } catch (e) {
+          console.error('[TelegramProvider] SDK Error:', e);
+          setIsReady(true);
         }
+      } else {
+        setIsReady(true);
+        clearTimeout(safetyTimeout);
       }
-
-      // Fallback: if we have params in URL but no SDK object yet
-      if (hasTgParams) {
-        const params = new URLSearchParams(fullUrl.replace(/^#/, ''));
-        const rawData = params.get('tgWebAppData') || params.get('TGWEBAPPDATA');
-
-        if (rawData) {
-          console.log('[TelegramProvider] Using URL params for initData');
-          handleAutoLogin(rawData);
-          return;
-        }
-      }
-
-      if (retryCount < maxRetries) {
-        retryCount++;
-        setTimeout(initTg, 250);
-        return;
-      }
-
-      // Max retries reached - show linking screen (user can enter phone manually)
-      console.warn('[TelegramProvider] Max retries reached, showing linking screen');
-      clearTimeout(safetyTimeout);
-      setIsLinking(true);
-      setIsReady(true);
     };
 
     initTg();
-    return () => clearTimeout(safetyTimeout);
-  }, [handleAutoLogin]);
 
-  async function handleLinkPhone(payload: TelegramLinkSuccessPayload) {
-    if (payload.email && payload.token) {
-      setError(null);
-      setLoadingStep('Синхронізація сесії...');
-      setIsReady(false);
-
-      const { error: authErr } = await supabase.auth.verifyOtp({
-        email: payload.email,
-        token: payload.token,
-        type: 'magiclink'
-      });
-
-      if (authErr) {
-        setError(authErr.message);
-        setIsReady(true);
-        return;
+    // Fast resume from background with a "curtain" loader
+    const handleVisibilityChange = () => {
+      const { visibilityState } = document;
+      
+      if (visibilityState === 'hidden') {
+        // PRE-EMPTIVE: Add class before suspension
+        document.body.classList.add('app-loading');
+      } else if (visibilityState === 'visible') {
+        resetFetchController(); // KILL hanging requests
+        setLoadingStep('Повертаємось до роботи...');
+        setIsReady(false);
+        setMinTimePassed(false);
+        // Force at least 1.5s of loading on resume
+        setTimeout(() => setMinTimePassed(true), 1500);
+        setTimeout(() => {
+          initTg().finally(() => {
+            document.body.classList.remove('app-loading');
+          });
+        }, 1200);
       }
+    };
 
-      setIsAuthenticated(true);
-      setIsLinking(false);
-      setIsReady(true);
-      return;
-    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    const initDataFromPayload = payload.initData;
-    const initDataFromSdk = window.Telegram?.WebApp?.initDataRaw;
-    const initData = initDataFromPayload || initDataFromSdk || lastInitDataRef.current;
+    return () => {
+      clearTimeout(safetyTimeout);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [handleAutoLogin, supabase.auth]);
 
-    if (!initData) {
-      setError('Не вдалося відновити Telegram-сесію. Відкрийте додаток ще раз.');
-      return;
-    }
-
-    // If it was linked via bot webhook, just try to login again.
-    setIsReady(false);
-    await handleAutoLogin(initData);
-  }
-
-  async function handleRetryAuth() {
-    const initData = window.Telegram?.WebApp?.initDataRaw || lastInitDataRef.current;
-    if (!initData) {
-      setError(null);
-      setIsLinking(true);
-      return;
-    }
-
-    setIsReady(false);
-    await handleAutoLogin(initData);
-  }
-
-  if (!isReady) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-peach gap-4">
-        <div className="w-12 h-12 border-4 border-sage/30 border-t-sage rounded-full animate-spin" />
-        <div className="flex flex-col items-center gap-1">
-          <p className="text-sage text-base font-medium animate-pulse">Завантаження профілю...</p>
-          <p className="text-sage/60 text-[10px] font-mono uppercase tracking-widest">{loadingStep}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !isAuthenticated) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-peach p-6 text-center">
-        <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        </div>
-        <h2 className="heading-serif text-2xl mb-2">Помилка входу</h2>
-        <p className="text-muted-foreground mb-6">{error}</p>
-        <button 
-          onClick={() => void handleRetryAuth()}
-          className="bento-card bg-sage text-white py-3 px-8 rounded-xl active:scale-95 transition-all"
-        >
-          Спробувати ще раз
-        </button>
-      </div>
-    );
-  }
-
-  if (isLinking && !isAuthenticated) {
-    return (
-      <div className="bg-peach min-h-screen">
-        <TelegramWelcome onSuccess={handleLinkPhone} />
-      </div>
-    );
-  }
+  // Combined logic for showing loader: either not ready OR minimum time hasn't passed
+  const showLoader = !isReady || !minTimePassed;
 
   return (
-    <TelegramContext.Provider value={{ 
-      isReady, 
-      user: tgUser, 
-      isAuthenticated, 
-      isLinking, 
-      error,
-      handleLinkPhone
-    }}>
-      {children}
+    <TelegramContext.Provider value={{ isReady, isAuthenticated, tgUser }}>
+      <AnimatePresence mode="wait">
+        {showLoader ? (
+          <motion.div
+            key="loader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 z-[9999]"
+          >
+            <BeautyLoader message={loadingStep} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="w-full"
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </TelegramContext.Provider>
   );
 }
-
-export const useTelegram = () => {
-  const context = useContext(TelegramContext);
-  if (context === undefined) {
-    throw new Error('useTelegram must be used within a TelegramProvider');
-  }
-  return context;
-};

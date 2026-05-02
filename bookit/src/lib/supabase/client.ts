@@ -15,9 +15,9 @@ const customFetch = async (url: string | URL | Request, options?: RequestInit): 
   const controller = new AbortController();
   const urlStr = typeof url === 'string' ? url : (url instanceof Request ? url.url : String(url));
   const isAuth = urlStr.includes('/auth/');
-  // Auth timeout 8s: якщо fetch зависає (мережа після пробудження) → lock звільняється через 8s
-  // замість 30s, щоб не блокувати всі queries нескінченно
-  const timeout = isAuth ? 8_000 : 10_000;
+  // Auth timeout 2.5s: if fetch hangs on wakeup, release lock quickly
+  // General timeout 5s
+  const timeout = isAuth ? 2_500 : 5_000;
 
   // Глобальний kill switch — спрацьовує при resetFetchController()
   const globalSignal = globalFetchController.signal;

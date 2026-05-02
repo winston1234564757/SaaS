@@ -8,6 +8,8 @@ import { normalizeToE164 } from '@/lib/utils/phone';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TOKEN_RE = /^[A-Z2-9]{8}$/;
 const CONTACT_START_PARAM = 'share_phone';
+const CONTACT_MASTER_PARAM = 'share_phone_master';
+const CONTACT_CLIENT_PARAM = 'share_phone_client';
 const RAW_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || '';
 const BOT_NAME = RAW_BOT_NAME.replace('@', '').trim();
 
@@ -86,10 +88,33 @@ export async function POST(req: NextRequest) {
       const fullName = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
 
       try {
+        // Find if we have a pending role for this chat in the last 5 minutes? 
+        // Or just use the param from the /start message.
+        // For now, let's look at the telegram_webhook_logs to see the last /start param for this chatId
+        const { data: lastStart } = await admin
+          .from('telegram_webhook_logs')
+          .select('event_type, request_data')
+          .eq('telegram_chat_id', chatId)
+          .in('event_type', ['start_command', 'role_intent'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        let pendingRole: 'client' | 'master' = 'client';
+        if (lastStart) {
+          const reqData = lastStart.request_data as any;
+          if (lastStart.event_type === 'role_intent' && reqData?.role) {
+            pendingRole = reqData.role;
+          } else if (reqData?.param === CONTACT_MASTER_PARAM) {
+            pendingRole = 'master';
+          }
+        }
+
         const identity = await ensureTelegramClientIdentity({
           phone: e164Phone,
           telegramChatId: String(chatId),
           fullName: fullName || undefined,
+          role: pendingRole,
         });
 
         console.log(
@@ -149,7 +174,15 @@ export async function POST(req: NextRequest) {
     const param = text.split(' ')[1]?.trim();
     if (!param) return NextResponse.json({ ok: true });
 
-    if (param === CONTACT_START_PARAM) {
+    if (param === CONTACT_START_PARAM || param === CONTACT_MASTER_PARAM || param === CONTACT_CLIENT_PARAM) {
+      // Log the start command to preserve the role intent
+      await logWebhookEvent(admin, {
+        event_type: 'start_command',
+        telegram_chat_id: chatId,
+        status: 'success',
+        request_data: { param },
+      });
+
       await sendTelegramMessage(
         String(chatId),
         'Щоб підтвердити номер, натисніть кнопку нижче. Telegram надішле ваш контакт боту напряму.',

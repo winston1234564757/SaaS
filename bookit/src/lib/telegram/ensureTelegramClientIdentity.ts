@@ -5,6 +5,7 @@ interface EnsureTelegramClientIdentityParams {
   phone: string;
   telegramChatId: string;
   fullName?: string;
+  role?: 'client' | 'master';
 }
 
 interface EnsureTelegramClientIdentityResult {
@@ -17,6 +18,7 @@ export async function ensureTelegramClientIdentity({
   phone,
   telegramChatId,
   fullName,
+  role = 'client',
 }: EnsureTelegramClientIdentityParams): Promise<EnsureTelegramClientIdentityResult> {
   const admin = createAdminClient();
   const virtualEmail = generateVirtualEmail(phone);
@@ -49,6 +51,7 @@ export async function ensureTelegramClientIdentity({
         email: virtualEmail,
         telegram_chat_id: telegramChatId,
         full_name: fullName || undefined,
+        role: existingProfile.role === 'master' ? 'master' : role,
       })
       .eq('id', existingProfile.id);
 
@@ -76,7 +79,7 @@ export async function ensureTelegramClientIdentity({
     email: virtualEmail,
     password: crypto.randomUUID(),
     email_confirm: true,
-    user_metadata: { phone, role: 'client' },
+    user_metadata: { phone, role },
   });
 
   if (createUserError && createUserError.status !== 422) {
@@ -87,20 +90,24 @@ export async function ensureTelegramClientIdentity({
   let status: EnsureTelegramClientIdentityResult['status'] = 'created_auth_user';
 
   if (!userId) {
+    console.log(`[ensureTelegramClientIdentity] User exists in auth but not profiles. Recovering ID for ${virtualEmail}...`);
     const { data: rpcUserId, error: rpcError } = await admin.rpc('get_user_id_by_email', {
       p_email: virtualEmail,
     });
 
     if (rpcError) {
+      console.error('[ensureTelegramClientIdentity] RPC get_user_id_by_email failed:', rpcError);
       throw new Error(`Auth user recovery failed: ${rpcError.message}`);
     }
 
     if (typeof rpcUserId !== 'string' || !rpcUserId) {
-      throw new Error('Auth user recovery failed: empty user id');
+      console.error('[ensureTelegramClientIdentity] RPC returned empty ID for:', virtualEmail);
+      throw new Error(`Auth user recovery failed: user with email ${virtualEmail} reported as existing but not found in auth.users via RPC`);
     }
 
     userId = rpcUserId;
     status = 'recovered_auth_user';
+    console.log(`[ensureTelegramClientIdentity] Successfully recovered ID: ${userId}`);
   }
 
   const { error: profileUpsertError } = await admin.from('profiles').upsert(
@@ -110,7 +117,7 @@ export async function ensureTelegramClientIdentity({
       email: virtualEmail,
       telegram_chat_id: telegramChatId,
       full_name: fullName || `User ${phone.slice(-4)}`,
-      role: 'client',
+      role: existingProfile?.role === 'master' ? 'master' : role,
     },
     { onConflict: 'id', ignoreDuplicates: false },
   );

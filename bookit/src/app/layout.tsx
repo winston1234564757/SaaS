@@ -53,10 +53,11 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
+import { headers } from 'next/headers';
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const initialIsAuth = !!session?.user;
+  const headersList = await headers();
+  const initialIsAuth = headersList.get('x-is-auth') === 'true';
 
   return (
     <html lang="uk" className={`${inter.variable} ${playfair.variable}`}>
@@ -83,13 +84,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         `}} />
       </head>
       <body className="antialiased">
+        {/* Static CSS-only Curtain for Background Resume */}
+        <div className="app-suspended-curtain">
+          <div className="curtain-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#789A99" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path><path d="M19 3v4"></path><path d="M21 5h-4"></path></svg>
+          </div>
+          <p className="curtain-text"></p>
+        </div>
+
         <ServiceWorkerRegistration />
         <RefCapture />
         <NuqsAdapter>
           <QueryProvider>
             <ToastProvider>
               <TelegramProvider>
-                <div className="flex flex-col min-h-screen pt-[var(--tg-content-safe-area-inset-top,env(safe-area-inset-top,0px))]">
+                <div className="flex flex-col min-h-screen pt-[calc(var(--tg-content-safe-area-inset-top,0px)+20px)]">
                   <main className="flex-1">
                     {children}
                   </main>

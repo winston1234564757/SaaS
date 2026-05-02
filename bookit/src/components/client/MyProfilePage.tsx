@@ -71,7 +71,7 @@ export function MyProfilePage({ profile }: Props) {
   const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pt-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link

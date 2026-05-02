@@ -5,11 +5,11 @@ import { generateVirtualEmail } from '@/lib/utils/phone';
 
 export async function POST(req: NextRequest) {
   try {
-    const { initData } = await req.json();
+    const { initData, role } = await req.json();
     const debug = req.nextUrl.searchParams.get('debug') === '1';
 
     if (debug) {
-      console.log('[api/auth/telegram] DEBUG: Received request, initData length:', initData?.length);
+      console.log('[api/auth/telegram] DEBUG: Received request, initData length:', initData?.length, 'role:', role);
     }
 
     if (!initData) {
@@ -27,6 +27,16 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createAdminClient();
+
+    // 1.5 Log role intent if provided (helps native requestContact flow)
+    if (role) {
+      await admin.from('telegram_webhook_logs').insert({
+        event_type: 'role_intent',
+        telegram_chat_id: Number(tgUser.id),
+        status: 'success',
+        request_data: { role },
+      });
+    }
 
     // 2. Search for profile with this telegram_chat_id
     const tgChatIdStr = tgUser.id.toString();
