@@ -1,95 +1,32 @@
-# 📱 Telegram Mini App (TMA) — Master Doc & Development Log
+# BookIT Telegram Mini App (TGAPP) Architecture
 
-Цей файл є «єдиним джерелом істини» для інтеграції Telegram Mini App у BookIT. Він об'єднує технічну архітектуру, інструкції для AI-агентів (Handoff) та повну історію розробки.
+## 🔐 Authentication Flow (Native Phone)
 
----
+The authentication in TMA is designed to be frictionless, using Telegram's native contact sharing.
 
-## 🤖 AI HANDOFF & КОНТЕКСТ
-*Якщо ти — новий агент, почни з вивчення цього розділу.*
+1. **Detection**: `TelegramProvider` detects the environment via `window.Telegram`. If detected, `isTMA` state becomes `true`.
+2. **Contact Sharing**: `TelegramWelcome` prompts the user to share their phone number via `tg.requestContact()`.
+3. **Backend Link**: The phone is sent to `POST /api/auth/send-sms`, which:
+    - Generates a virtual email: `{phone}@bookit.app`.
+    - Creates a user/profile if not exists.
+    - Sends a Magic Link/OTP token (handled internally for TMA).
+4. **Verification**: The client calls `supabase.auth.verifyOtp` with the received token.
+5. **Cookie Flush (Critical)**: After `verifyOtp`, we wait **800ms**. This ensures the browser persists the Supabase session cookies.
+6. **Hard Redirect**: We use `window.location.href = '/dashboard'` to force a full page load, ensuring Middleware sees the cookies.
 
-### Ключові файли для вивчення
-1. `src/components/providers/TelegramProvider.tsx` — ініціалізація SDK та Auth.
-2. `src/components/telegram/TelegramWelcome.tsx` — UI реєстрації (контакт/ручне введення).
-3. `src/app/api/auth/telegram/route.ts` — валідація `initData` та пошук профілю.
-4. `src/app/api/telegram/webhook/route.ts` — обробник контактів від бота.
-5. `src/lib/telegram/ensureTelegramClientIdentity.ts` — ядро створення/лінкування профілів.
-6. `public/lib/telegram-web-app.js` — локальний SDK fallback (Critical!).
+## 🚀 Key Components
 
-### Залізні правила (Constitutional Rules)
-- **any ЗАБОРОНЕНО**: Тільки строга типізація через `src/types/telegram.d.ts`.
-- **Admin Client**: Тільки `createAdminClient()` для операцій у вебхуку/лінках.
-- **Identity**: Пріоритет лінкування: `telegram_chat_id` -> `phone` -> `email` (virtual).
-- **Safe Areas**: Завжди використовувати `var(--tg-content-safe-area-inset-top)` для відступів у Fullscreen.
+- `TelegramProvider.tsx`: Context provider that handles SDK initialization, auto-login via `initData`, and reactive auth state listening.
+- `RootPageClient.tsx`: The primary entry point. It bifurcates the flow between standard Web Landing and TMA Welcome based on `isTMA`.
+- `proxy.ts`: Middleware-level protection that redirects based on `user_role` and session presence.
 
----
+## 🛠 Troubleshooting & Gotchas
 
-## 🏗️ ТЕХНІЧНА АРХІТЕКТУРА
+- **Zombie Sessions**: If a user is deleted from the DB but has a local session, `TelegramProvider` detects the missing profile and forces a `signOut()`.
+- **Blank Screen (Race Condition)**: Resolved by adding a 800ms delay before redirecting after login to allow cookie persistence.
+- **TMA Detection Delay**: Resolved by checking for the `window.Telegram` object directly instead of waiting for full SDK initialization.
 
-- **SDK**: Офіційний скрипт Telegram + Smart Fallback. Локальний скрипт активується лише при наявності `tgWebAppData` в URL, щоб не ламати звичайний Web App/PWA.
-- **Auth Flow**:
-    1. Юзер відкриває TMA -> `TelegramProvider` валідує `initData`.
-    2. Якщо профілю немає -> `NEED_PHONE` -> `TelegramWelcome`.
-    3. **Авто-контакт**: TMA відкриває бота -> Юзер ділиться контактом -> Webhook створює профіль -> TMA поллінг бачить успіх -> Login.
-    4. **Ручне введення**: Юзер вводить номер -> `link-phone` API створює профіль -> Login.
-- **Immersive UI**: Використовується `requestFullscreen`, `setHeaderColor` та `viewport-fit=cover` для вигляду нативного додатка.
+## 📈 Quality Standards
 
----
-
-## 🛠️ КОМАНДИ ДЛЯ ДЕБАГУ
-
-### Перевірка Webhook
-```bash
-# Отримати статус вебхука
-curl https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getWebhookInfo
-```
-
-### SQL Запити (Supabase)
-```sql
--- Перевірити останні логи вебхука
-SELECT * FROM telegram_webhook_logs ORDER BY created_at DESC LIMIT 20;
-
--- Знайти профіль за Telegram Chat ID
-SELECT id, phone, email, telegram_chat_id, full_name 
-FROM profiles 
-WHERE telegram_chat_id = 'ВАШ_ID' 
-OR phone LIKE '%НОМЕР%';
-```
-
-### Корисні посилання
-- **Vercel Logs**: `https://vercel.com/vitossik/bookit/logs`
-- **TMA URL**: `https://t.me/BookIT_APP_bot/app`
-
----
-
-## 📝 ХРОНОЛОГІЯ РОЗРОБКИ
-
-### Фаза 1: Проблема SDK та Ініціалізації
-- **Виклик**: Скрипт Telegram завантажувався запізно або блокувався.
-- **Рішення**: Створено `public/lib/telegram-web-app.js` як стабільний фоллбек. Додано перевірку параметрів URL для виключення конфліктів із PWA.
-
-### Фаза 2: Авторизація через Контакт
-- **Виклик**: `requestContact` не повертав номер телефону в Mini App.
-- **Рішення**: Реалізовано "Bot Handoff" — TMA відкриває чат з ботом, де юзер ділиться номером. Вебхук обробляє контакт та оновлює БД.
-
-### Фаза 3: Виправлення Помилок SDK (Фаза "undefined")
-- **Виклик**: Помилка `openTelegramLink is not a function`.
-- **Рішення**: Оновлено локальний SDK стаб, додано методи `openLink`, `openTelegramLink` та `requestFullscreen`.
-
-### Фаза 4: Native Experience (Кнопки та Посилання)
-- **Виклик**: Кнопка "Відкрити BookIT" у боті лише вібрувала ("тряслася").
-- **Рішення**: Перехід з типу кнопки `url` на нативний `web_app`. Санітизація `botName` (видалення `@`).
-
-### Фаза 5: Immersive UI (Fullscreen)
-- **Виклик**: Некрасиві смуги зверху та перекриття кнопок Telegram.
-- **Рішення**: 
-    - Впроваджено `requestFullscreen` та синхронізацію кольорів (`#FFE8DC`).
-    - Додано динамічний відступ `var(--tg-content-safe-area-inset-top)` у `layout.tsx`.
-
----
-
-## 🏁 ПОТОЧНИЙ СТАН (2026-05-02)
-- **Web App / PWA**: ✅ Працює стабільно.
-- **TMA Auth Flow**: ✅ **ПРАЦЮЄ**. Авторизація через бота та ручне введення активні.
-- **UI/UX**: ✅ Преміальний повноекранний вигляд, адаптований під кнопки Telegram та вирізи iPhone.
-
-*Antigravity Agent @ 2026*
+- **Ultra-HD Marketing**: Story Generator renders at 3.5x scale (JPEG 0.9) for premium social sharing.
+- **Beauty Loader**: Always show the peach-colored Mica loader during transitions to maintain a premium feel.

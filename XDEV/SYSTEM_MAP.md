@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-04-30 · Джерело: живий код (v5.2.0 "Vaul Engine")
+> Оновлено: 2026-05-02 · Джерело: живий код (v5.2.1 "Vaul Engine")
 
 ---
 

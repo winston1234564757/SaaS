@@ -13,7 +13,7 @@ export async function proxy(request: NextRequest) {
 
   // 1. FAST PATH: Skip everything for public assets and static paths
   if (
-    pathname.includes('.') || 
+    pathname.includes('.') ||
     pathname.startsWith('/api/telegram/webhook') ||
     pathname.startsWith('/_next')
   ) {
@@ -25,9 +25,8 @@ export async function proxy(request: NextRequest) {
   });
 
   // 2. CHECK SESSION COOKIE: Minimal check WITHOUT network calls
-  // Supabase auth cookies start with 'sb-'
   const hasSession = request.cookies.getAll().some(c => c.name.includes('-auth-token'));
-  
+
   if (!hasSession) {
     if (pathname.startsWith('/dashboard') || pathname.startsWith('/my') || pathname === '/onboarding') {
       return NextResponse.redirect(new URL('/login', request.url));
@@ -36,10 +35,51 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // 3. GET CACHED ROLE: Use cookies to determine role WITHOUT calling Supabase DB
-  const role = request.cookies.get('user_role')?.value ?? null;
+  // 3. GET ROLE: Try cookie first (Zero-Network path)
+  let role = request.cookies.get('user_role')?.value ?? null;
+  const roleUid = request.cookies.get('user_role_uid')?.value ?? null;
 
-  // dashboard — masters only
+  // If session exists but role is missing in cookies, we MUST fetch it once from DB
+  // to initialize the role-based routing and cache it in a cookie.
+  if (!role) {
+    const { createServerClient } = await import('@supabase/ssr');
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.role) {
+        const userRole = profile.role as string;
+        const isProduction = process.env.NODE_ENV === 'production';
+        supabaseResponse.cookies.set('user_role', userRole, {
+          path: '/', maxAge: 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction,
+        });
+        supabaseResponse.cookies.set('user_role_uid', user.id, {
+          path: '/', maxAge: 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction,
+        });
+      }
+    }
+  }
   if (pathname.startsWith('/dashboard') && role !== null && role !== 'master') {
     return NextResponse.redirect(new URL('/my/bookings', request.url));
   }

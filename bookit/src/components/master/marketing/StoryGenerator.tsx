@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Loader2, Check, ToggleLeft, ToggleRight, X,
-  Megaphone, Clock, Calendar, Zap, Star, Flame, Lock, Plus,
+  Megaphone, Clock, Calendar, Zap, Star, Flame, Lock, Plus, Send
 } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
@@ -34,12 +34,12 @@ interface Palette {
 }
 
 const PALETTES: Palette[] = [
-  { id: 'nude',  label: 'Nude',  bg: '#F7F2EE', text: '#2E2925', muted: '#B09A8A', pill: '#EDE5DC', pillText: '#2E2925', sticker: '#FFFFFF', stickerText: '#2E2925', brand: '#C9B5A5', dot: '#8A6E5A' },
-  { id: 'sage',  label: 'Sage',  bg: '#EDF1EC', text: '#243228', muted: '#7A9E88', pill: '#D8E8DA', pillText: '#243228', sticker: '#FFFFFF', stickerText: '#243228', brand: '#9FBDA8', dot: '#3E7A56' },
-  { id: 'mono',  label: 'Mono',  bg: '#FAFAFA', text: '#0D0D0D', muted: '#999999', pill: '#F0F0F0', pillText: '#0D0D0D', sticker: '#0D0D0D', stickerText: '#FFFFFF', brand: '#CCCCCC', dot: '#0D0D0D' },
+  { id: 'nude', label: 'Nude', bg: '#F7F2EE', text: '#2E2925', muted: '#B09A8A', pill: '#EDE5DC', pillText: '#2E2925', sticker: '#FFFFFF', stickerText: '#2E2925', brand: '#C9B5A5', dot: '#8A6E5A' },
+  { id: 'sage', label: 'Sage', bg: '#EDF1EC', text: '#243228', muted: '#7A9E88', pill: '#D8E8DA', pillText: '#243228', sticker: '#FFFFFF', stickerText: '#243228', brand: '#9FBDA8', dot: '#3E7A56' },
+  { id: 'mono', label: 'Mono', bg: '#FAFAFA', text: '#0D0D0D', muted: '#999999', pill: '#F0F0F0', pillText: '#0D0D0D', sticker: '#0D0D0D', stickerText: '#FFFFFF', brand: '#CCCCCC', dot: '#0D0D0D' },
   { id: 'blush', label: 'Blush', bg: '#FDF6F5', text: '#3D2829', muted: '#C4888E', pill: '#F7E5E5', pillText: '#3D2829', sticker: '#FFFFFF', stickerText: '#3D2829', brand: '#D4AAAC', dot: '#B06070' },
-  { id: 'sky',   label: 'Sky',   bg: '#F0F4F8', text: '#1E3448', muted: '#6898C0', pill: '#DDE9F5', pillText: '#1E3448', sticker: '#FFFFFF', stickerText: '#1E3448', brand: '#8AB8D8', dot: '#2E6898' },
-  { id: 'dark',  label: 'Dark',  bg: '#141414', text: '#EEEEEE', muted: '#666666', pill: '#242424', pillText: '#EEEEEE', sticker: '#EEEEEE', stickerText: '#141414', brand: '#444444', dot: '#888888' },
+  { id: 'sky', label: 'Sky', bg: '#F0F4F8', text: '#1E3448', muted: '#6898C0', pill: '#DDE9F5', pillText: '#1E3448', sticker: '#FFFFFF', stickerText: '#1E3448', brand: '#8AB8D8', dot: '#2E6898' },
+  { id: 'dark', label: 'Dark', bg: '#141414', text: '#EEEEEE', muted: '#666666', pill: '#242424', pillText: '#EEEEEE', sticker: '#EEEEEE', stickerText: '#141414', brand: '#444444', dot: '#888888' },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -50,13 +50,13 @@ type Mode = 'announcement' | 'free_slots' | 'vacation' | 'promo' | 'review_spotl
 const PREMIUM_MODES = new Set<Mode>(['free_slots', 'vacation', 'promo', 'review_spotlight', 'flash_window', 'portfolio_item']);
 
 const MODES: { id: Mode; label: string; Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; premium: boolean }[] = [
-  { id: 'announcement',     label: 'Анонс',        Icon: Megaphone, premium: false },
-  { id: 'free_slots',       label: 'Вікна',        Icon: Clock,     premium: true  },
-  { id: 'vacation',         label: 'Відпустка',    Icon: Calendar,  premium: true  },
-  { id: 'promo',            label: 'Акція',        Icon: Zap,       premium: true  },
-  { id: 'review_spotlight', label: 'Відгук',       Icon: Star,      premium: true  },
-  { id: 'flash_window',     label: 'Гаряче вікно', Icon: Flame,     premium: true  },
-  { id: 'portfolio_item',   label: 'Робота',       Icon: Star,      premium: true  },
+  { id: 'announcement', label: 'Анонс', Icon: Megaphone, premium: false },
+  { id: 'free_slots', label: 'Вікна', Icon: Clock, premium: true },
+  { id: 'vacation', label: 'Відпустка', Icon: Calendar, premium: true },
+  { id: 'promo', label: 'Акція', Icon: Zap, premium: true },
+  { id: 'review_spotlight', label: 'Відгук', Icon: Star, premium: true },
+  { id: 'flash_window', label: 'Гаряче вікно', Icon: Flame, premium: true },
+  { id: 'portfolio_item', label: 'Робота', Icon: Star, premium: true },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -66,17 +66,17 @@ interface GridCfg { cols: number; gap: number; pillH: number; fontSize: number; 
 
 function getGridConfig(count: number): GridCfg {
   if (count <= 3) return { cols: 1, gap: 10, pillH: 58, fontSize: 20, fontWeight: 700, radius: 14 };
-  if (count <= 8) return { cols: 2, gap: 8,  pillH: 44, fontSize: 15, fontWeight: 600, radius: 12 };
-  return              { cols: 3, gap: 6,  pillH: 36, fontSize: 12, fontWeight: 600, radius: 10 };
+  if (count <= 8) return { cols: 2, gap: 8, pillH: 44, fontSize: 15, fontWeight: 600, radius: 12 };
+  return { cols: 3, gap: 6, pillH: 36, fontSize: 12, fontWeight: 600, radius: 10 };
 }
 
 /* ═══════════════════════════════════════════════════════
    HELPERS
    ═══════════════════════════════════════════════════════ */
-const UA_MONTHS = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
-const DOW_KEYS = ['sun','mon','tue','wed','thu','fri','sat'] as const;
+const UA_MONTHS = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
+const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
-const SANS  = "var(--font-inter, 'Inter'), system-ui, sans-serif";
+const SANS = "var(--font-inter, 'Inter'), system-ui, sans-serif";
 const SERIF = "var(--font-playfair, 'Playfair Display'), Georgia, serif";
 
 function formatUA(dateStr: string): string {
@@ -109,18 +109,18 @@ function useSlotsFromStore(
     ];
 
     const workStart = exc?.start_time?.slice(0, 5) ?? tpl.start_time.slice(0, 5);
-    const workEnd   = exc?.end_time?.slice(0, 5)   ?? tpl.end_time.slice(0, 5);
+    const workEnd = exc?.end_time?.slice(0, 5) ?? tpl.end_time.slice(0, 5);
 
     const selectedDate = new Date(date + 'T12:00:00');
 
     return generateAvailableSlots({
       workStart,
       workEnd,
-      bookings:          store.bookingsByDate[date] ?? [],
+      bookings: store.bookingsByDate[date] ?? [],
       breaks,
-      bufferMinutes:     bufferMin,
+      bufferMinutes: bufferMin,
       requestedDuration: durationMin,
-      stepMinutes:       15,
+      stepMinutes: 15,
       selectedDate,
     })
       .filter(s => s.available)
@@ -198,95 +198,97 @@ interface UpgradeCopy {
 
 const MODE_UPGRADE_COPY: Partial<Record<Mode, UpgradeCopy>> = {
   free_slots: {
-    modalTitle:   'Покажіть, коли ви вільні',
-    modalDesc:    'Генератор автоматично знаходить ваші відкриті слоти і збирає красиву сторіс за секунди — жодного ручного розкладу в Direct.',
+    modalTitle: 'Покажіть, коли ви вільні',
+    modalDesc: 'Генератор автоматично знаходить ваші відкриті слоти і збирає красиву сторіс за секунди — жодного ручного розкладу в Direct.',
     overlayTitle: 'Вільні вікна — тільки PRO',
-    overlayHint:  'Автоматичні слоти у сторіс',
-    teaserTitle:  'Ваш розклад — у сторіс автоматично',
-    teaserDesc:   'Клієнти бачать ваші вільні вікна без жодного повідомлення від вас.',
+    overlayHint: 'Автоматичні слоти у сторіс',
+    teaserTitle: 'Ваш розклад — у сторіс автоматично',
+    teaserDesc: 'Клієнти бачать ваші вільні вікна без жодного повідомлення від вас.',
   },
   vacation: {
-    modalTitle:   'Попередьте клієнтів красиво',
-    modalDesc:    'Стильна сторіс про відпустку — і ніхто не запишеться на закриті дні. Клієнти бачать дати і самі переносять запис.',
+    modalTitle: 'Попередьте клієнтів красиво',
+    modalDesc: 'Стильна сторіс про відпустку — і ніхто не запишеться на закриті дні. Клієнти бачать дати і самі переносять запис.',
     overlayTitle: 'Відпустка — тільки PRO',
-    overlayHint:  'Дати відпустки у сторіс',
-    teaserTitle:  'Жодного «а ви працюєте?» у Direct',
-    teaserDesc:   'Одна сторіс з датами — і клієнти самі переносять запис.',
+    overlayHint: 'Дати відпустки у сторіс',
+    teaserTitle: 'Жодного «а ви працюєте?» у Direct',
+    teaserDesc: 'Одна сторіс з датами — і клієнти самі переносять запис.',
   },
   promo: {
-    modalTitle:   'Ваші акції продають самі',
-    modalDesc:    'Flash Deal у сторіс = слоти закриваються в 2 рази швидше. PRO підключає акції прямо з розкладу за 2 кліки.',
+    modalTitle: 'Ваші акції продають самі',
+    modalDesc: 'Flash Deal у сторіс = слоти закриваються в 2 рази швидше. PRO підключає акції прямо з розкладу за 2 кліки.',
     overlayTitle: 'Flash Deal — тільки PRO',
-    overlayHint:  'Акційні слоти у сторіс',
-    teaserTitle:  'Флеш-акція, що окупається з першого запису',
-    teaserDesc:   'Ваш активний Flash Deal — одразу у сторіс зі знижкою.',
+    overlayHint: 'Акційні слоти у сторіс',
+    teaserTitle: 'Флеш-акція, що окупається з першого запису',
+    teaserDesc: 'Ваш активний Flash Deal — одразу у сторіс зі знижкою.',
   },
   review_spotlight: {
-    modalTitle:   'Відгуки, що продають без слів',
-    modalDesc:    'Реальний 5★ відгук у сторіс — це соціальний доказ, сильніший за будь-яку рекламу. PRO підбирає найкращий і верстає за секунду.',
+    modalTitle: 'Відгуки, що продають без слів',
+    modalDesc: 'Реальний 5★ відгук у сторіс — це соціальний доказ, сильніший за будь-яку рекламу. PRO підбирає найкращий і верстає за секунду.',
     overlayTitle: 'Review Spotlight — тільки PRO',
-    overlayHint:  '5★ відгук у сторіс',
-    teaserTitle:  'Ваші клієнти рекламують вас самі',
-    teaserDesc:   'Один відгук у сторіс = довіра, яку не купиш за гроші.',
+    overlayHint: '5★ відгук у сторіс',
+    teaserTitle: 'Ваші клієнти рекламують вас самі',
+    teaserDesc: 'Один відгук у сторіс = довіра, яку не купиш за гроші.',
   },
   flash_window: {
-    modalTitle:   'Закривайте слоти того ж дня',
-    modalDesc:    'Вільний слот зі знижкою у сторіс — і запис заповнюється ще до вечора. Це PRO-маркетинг, який окупається з першого клієнта.',
+    modalTitle: 'Закривайте слоти того ж дня',
+    modalDesc: 'Вільний слот зі знижкою у сторіс — і запис заповнюється ще до вечора. Це PRO-маркетинг, який окупається з першого клієнта.',
     overlayTitle: 'Гаряче вікно — тільки PRO',
-    overlayHint:  'Слот + знижка у сторіс',
-    teaserTitle:  'Порожній слот → заповнений за годину',
-    teaserDesc:   'Вкажіть знижку, оберіть час — сторіс готова за 10 секунд.',
+    overlayHint: 'Слот + знижка у сторіс',
+    teaserTitle: 'Порожній слот → заповнений за годину',
+    teaserDesc: 'Вкажіть знижку, оберіть час — сторіс готова за 10 секунд.',
   },
   portfolio_item: {
-    modalTitle:   'Ваші роботи — ваша візитка',
-    modalDesc:    'Створюйте професійні анонси ваших найкращих робіт прямо з портфоліо. PRO-шаблон робить фото ще привабливішими для клієнтів.',
+    modalTitle: 'Ваші роботи — ваша візитка',
+    modalDesc: 'Створюйте професійні анонси ваших найкращих робіт прямо з портфоліо. PRO-шаблон робить фото ще привабливішими для клієнтів.',
     overlayTitle: 'Робота з портфоліо — тільки PRO',
-    overlayHint:  'Преміум-шаблон для ваших робіт',
-    teaserTitle:  'Фото, що приносять нові записи',
-    teaserDesc:   'Оберіть роботу — і сторіс готова. Ваші клієнти оцінять професійний підхід.',
+    overlayHint: 'Преміум-шаблон для ваших робіт',
+    teaserTitle: 'Фото, що приносять нові записи',
+    teaserDesc: 'Оберіть роботу — і сторіс готова. Ваші клієнти оцінять професійний підхід.',
   },
 };
 
 /* ═══════════════════════════════════════════════════════
    EXPORT
    ═══════════════════════════════════════════════════════ */
-async function exportCanvasPng(node: HTMLElement, filename: string) {
-  const [{ domToCanvas }, { saveAs }] = await Promise.all([import('modern-screenshot'), import('file-saver')]);
-  
-  console.log('[StoryGenerator] Starting capture (modern-canvas)...', { 
-    nodeWidth: node.offsetWidth, 
+async function exportCanvasPng(node: HTMLElement, filename: string, skipSave = false) {
+  const [{ domToJpeg }, fileSaver] = await Promise.all([
+    import('modern-screenshot'),
+    skipSave ? Promise.resolve(null) : import('file-saver')
+  ]);
+
+  console.log('[StoryGenerator] Starting capture...', {
+    nodeWidth: node.offsetWidth,
     nodeHeight: node.offsetHeight,
+    skipSave
   });
 
-  // Ensure all images are decoded before capture
   const imgs = Array.from(node.querySelectorAll('img'));
-  const bgImgs = Array.from(node.querySelectorAll('*')).filter(el => (el as HTMLElement).style.backgroundImage);
-  
-  console.log(`[StoryGenerator] Found ${imgs.length} images and ${bgImgs.length} bg images to decode`);
 
   try {
     await Promise.race([
-      Promise.all(imgs.map(img => img.complete ? Promise.resolve() : img.decode().catch(() => {}))),
+      Promise.all(imgs.map(img => img.complete ? Promise.resolve() : img.decode().catch(() => { }))),
       new Promise(r => setTimeout(r, 2000))
     ]);
 
-    const canvas = await domToCanvas(node, { 
-      scale: 2, 
+    const dataUrl = await domToJpeg(node, {
+      scale: 3.5, // 360 * 3.5 = 1260px (Better than HD, but fits Vercel limits)
+      quality: 0.9,
       width: 360,
       height: 640,
       backgroundColor: '#ffffff',
     });
-    
-    const dataUrl = canvas.toDataURL('image/png');
-    
-    if (!dataUrl || dataUrl.length < 10000) {
+
+    if (!dataUrl || dataUrl.length < 15000) {
       throw new Error(`Invalid dataUrl generated (length: ${dataUrl?.length ?? 0})`);
     }
 
-    console.log('[StoryGenerator] Capture success, dataUrl length:', dataUrl.length, 'Prefix:', dataUrl.slice(0, 50));
-    saveAs(dataUrl, filename);
+    if (!skipSave && fileSaver?.saveAs) {
+      fileSaver.saveAs(dataUrl, filename);
+    }
+
+    return dataUrl;
   } catch (err) {
-    console.error('[StoryGenerator] Capture failed deeply:', err);
+    console.error('[StoryGenerator] Capture failed:', err);
     throw err;
   }
 }
@@ -343,7 +345,7 @@ function StoryCanvas({
     });
   }
   const avatarBlockH = showAvatar ? 110 : 0;
-  const contentTop   = 50 + avatarBlockH + 10;
+  const contentTop = 50 + avatarBlockH + 10;
 
   const label = (text: string, extra?: React.CSSProperties): React.ReactNode => (
     <p style={{
@@ -363,9 +365,9 @@ function StoryCanvas({
     content = (
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 48, fontFamily: SERIF, color: pal.text, opacity: 0.1, lineHeight: 0.1, marginBottom: 5 }}>“</div>
-        <div style={{ 
-          fontSize: annoText.length > 100 ? 18 : 24, 
-          fontWeight: 700, fontFamily: SERIF, color: pal.text, 
+        <div style={{
+          fontSize: annoText.length > 100 ? 18 : 24,
+          fontWeight: 700, fontFamily: SERIF, color: pal.text,
           lineHeight: 1.4, letterSpacing: '-0.01em', fontStyle: 'italic',
           padding: '0 10px'
         }}>
@@ -395,8 +397,8 @@ function StoryCanvas({
             <div style={{ gridColumn: 'span 3', textAlign: 'center', fontSize: 12, color: pal.muted, padding: 10 }}>Шукаю вікна…</div>
           ) : slots.length > 0 ? (
             slots.slice(0, 9).map(s => (
-              <div key={s} style={{ 
-                padding: '8px 0', borderRadius: 14, background: 'rgba(255,255,255,0.35)', 
+              <div key={s} style={{
+                padding: '8px 0', borderRadius: 14, background: 'rgba(255,255,255,0.35)',
                 border: '1px solid rgba(255,255,255,0.5)', color: pal.text, fontSize: 13, fontWeight: 700,
                 textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
                 fontFamily: SANS
@@ -415,8 +417,8 @@ function StoryCanvas({
   if (mode === 'vacation') {
     content = (
       <div style={{ textAlign: 'center' }}>
-        <div style={{ 
-          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', 
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px',
           borderRadius: 100, background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.6)',
           color: pal.muted, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20
         }}>
@@ -424,7 +426,7 @@ function StoryCanvas({
         </div>
         <div style={{ fontSize: 12, color: pal.muted, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12, fontWeight: 600 }}>Відпустка</div>
         <div style={{ fontSize: 36, fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1 }}>
-          {vacStart ? new Date(vacStart + 'T12:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }) : '—'} 
+          {vacStart ? new Date(vacStart + 'T12:00:00').toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }) : '—'}
         </div>
         <div style={{ fontSize: 18, color: pal.dot, margin: '8px 0', opacity: 0.5 }}>до</div>
         <div style={{ fontSize: 36, fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1 }}>
@@ -438,9 +440,9 @@ function StoryCanvas({
   if (mode === 'promo') {
     content = (
       <div style={{ textAlign: 'center' }}>
-        <div style={{ 
-          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', 
-          borderRadius: 100, background: '#C05B5B', color: '#fff', fontSize: 10, fontWeight: 900, 
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px',
+          borderRadius: 100, background: '#C05B5B', color: '#fff', fontSize: 10, fontWeight: 900,
           textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20, boxShadow: '0 4px 15px rgba(192,91,91,0.3)'
         }}>
           <Zap size={10} fill="#fff" /> Limited Offer
@@ -455,7 +457,7 @@ function StoryCanvas({
           </div>
           <div style={{ width: 1, height: 32, background: pal.dot, opacity: 0.1 }} />
           <span style={{ fontSize: 42, fontWeight: 900, color: pal.text, fontFamily: SERIF }}>
-            {selectedDeal ? Math.round(selectedDeal.original_price * (1 - selectedDeal.discount_pct/100)) : '—'}₴
+            {selectedDeal ? Math.round(selectedDeal.original_price * (1 - selectedDeal.discount_pct / 100)) : '—'}₴
           </span>
         </div>
       </div>
@@ -466,11 +468,11 @@ function StoryCanvas({
     content = (
       <div style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 3, marginBottom: 16 }}>
-          {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="#D4935A" color="#D4935A" style={{ opacity: 0.8 }} />)}
+          {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="#D4935A" color="#D4935A" style={{ opacity: 0.8 }} />)}
         </div>
-        <div style={{ 
-          fontSize: reviewText && reviewText.length > 100 ? 16 : 20, 
-          fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1.5, fontStyle: 'italic', marginBottom: 24 
+        <div style={{
+          fontSize: reviewText && reviewText.length > 100 ? 16 : 20,
+          fontWeight: 700, fontFamily: SERIF, color: pal.text, lineHeight: 1.5, fontStyle: 'italic', marginBottom: 24
         }}>
           «{reviewText || "Неймовірний сервіс та якість! Обов'язково повернуся ще раз..."}»
         </div>
@@ -492,9 +494,9 @@ function StoryCanvas({
         <div style={{ fontSize: 24, fontWeight: 700, fontFamily: SERIF, color: pal.text, textAlign: 'center', marginBottom: 20, lineHeight: 1.2 }}>
           {flashWinSvcName || 'Гаряче вікно'}
         </div>
-        <div style={{ 
+        <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '16px 24px', borderRadius: 24, background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.5)' 
+          padding: '16px 24px', borderRadius: 24, background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.5)'
         }}>
           <div style={{ textAlign: 'left' }}>
             <div style={{ fontSize: 10, color: pal.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Коли</div>
@@ -535,8 +537,8 @@ function StoryCanvas({
     }}>
       {/* Background Photo Layer */}
       {bgPhotoUrl && (
-        <div style={{ 
-          position: 'absolute', 
+        <div style={{
+          position: 'absolute',
           inset: 0,
           backgroundImage: `url(${bgPhotoUrl})`,
           backgroundSize: 'cover',
@@ -548,7 +550,7 @@ function StoryCanvas({
         </div>
       )}
 
-      <div style={{ 
+      <div style={{
         position: 'absolute', top: 18, left: 22, display: 'flex', alignItems: 'center',
         padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)'
       }}>
@@ -573,21 +575,21 @@ function StoryCanvas({
             border: `2px solid ${bgPhotoUrl ? 'rgba(255,255,255,0.5)' : pal.bg}`,
           }}>
             {avatarBlob
-              ? <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  backgroundImage: `url(${avatarBlob})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  display: 'block'
-                }} />
+              ? <div style={{
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${avatarBlob})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                display: 'block'
+              }} />
               : <span style={{ fontSize: 28, lineHeight: 1 }}>👤</span>
             }
           </div>
-          <span style={{ 
-            fontSize: 12, fontWeight: 600, color: bgPhotoUrl ? '#fff' : pal.text, 
-            letterSpacing: '-0.01em', maxWidth: 160, overflow: 'hidden', 
+          <span style={{
+            fontSize: 12, fontWeight: 600, color: bgPhotoUrl ? '#fff' : pal.text,
+            letterSpacing: '-0.01em', maxWidth: 160, overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             textShadow: bgPhotoUrl ? '0 1px 4px rgba(0,0,0,0.2)' : 'none'
           }}>
@@ -597,7 +599,7 @@ function StoryCanvas({
       )}
 
       {/* Main Content Plate */}
-      <div style={{ 
+      <div style={{
         position: 'absolute',
         left: 24, right: 24,
         zIndex: 5,
@@ -620,15 +622,15 @@ function StoryCanvas({
         padding: mode === 'portfolio_item' ? '18px 24px' : '28px 32px',
         borderRadius: 32,
 
-        background: bgPhotoUrl ? `rgba(255,255,255,${transparency / 100})` : 'transparent',
-        // CRITICAL FIX: backdrop-filter breaks html-to-image rendering (results in white/blank screen)
-        // We disable it during export and rely on the rgba background above.
-        backdropFilter: (bgPhotoUrl && !isExporting) ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
-        WebkitBackdropFilter: (bgPhotoUrl && !isExporting) ? `blur(${transparency < 20 ? 60 : 45}px) saturate(140%)` : 'none',
+        background: bgPhotoUrl
+          ? `linear-gradient(165deg, rgba(255,255,255,${Math.max(0.4, transparency / 100 + 0.1)}), rgba(255,255,255,${Math.max(0.3, transparency / 100)}))`
+          : 'transparent',
+        backdropFilter: bgPhotoUrl ? 'blur(20px) saturate(120%)' : 'none',
+        WebkitBackdropFilter: bgPhotoUrl ? 'blur(20px) saturate(120%)' : 'none',
         boxShadow: bgPhotoUrl ? `0 15px 50px rgba(0,0,0,${Math.min(0.2, (100 - transparency) / 400)})` : 'none',
-        border: bgPhotoUrl ? `1px solid rgba(255,255,255,${Math.max(0.2, transparency / 100 + 0.1)})` : 'none',
-        
-        textShadow: transparency < 40 ? '0 1px 2px rgba(255,255,255,0.4)' : 'none',
+        border: bgPhotoUrl ? `1px solid rgba(255,255,255,${Math.max(0.3, transparency / 100 + 0.2)})` : 'none',
+
+        textShadow: (bgPhotoUrl && transparency < 40) ? '0 1px 2px rgba(255,255,255,0.4)' : 'none',
       }}>
         {content}
       </div>
@@ -676,26 +678,26 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const { showToast } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const [palIdx,     setPalIdx]     = useState(0);
-  const [mode,       setMode]       = useState<Mode>('announcement');
+  const [palIdx, setPalIdx] = useState(0);
+  const [mode, setMode] = useState<Mode>('announcement');
   const [showAvatar, setShowAvatar] = useState(true);
-  const [exporting,  setExporting]  = useState(false);
-  const [exported,   setExported]   = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exported, setExported] = useState(false);
 
-  const [annoText,      setAnnoText]      = useState('Тепер до мене можна записатися онлайн 24/7.');
-  const [slotsDate,     setSlotsDate]     = useState<string | null>(null);
+  const [annoText, setAnnoText] = useState('Тепер до мене можна записатися онлайн 24/7.');
+  const [slotsDate, setSlotsDate] = useState<string | null>(null);
   const [selectedSvcId, setSelectedSvcId] = useState<string | null>(null);
-  const [vacStart,      setVacStart]      = useState<string | null>(null);
-  const [vacEnd,        setVacEnd]        = useState<string | null>(null);
-  const [dealIdx,       setDealIdx]       = useState(0);
+  const [vacStart, setVacStart] = useState<string | null>(null);
+  const [vacEnd, setVacEnd] = useState<string | null>(null);
+  const [dealIdx, setDealIdx] = useState(0);
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-  const [flashWinSvcId,    setFlashWinSvcId]    = useState<string | null>(null);
-  const [flashWinDate,     setFlashWinDate]     = useState<string | null>(null);
-  const [flashWinTime,     setFlashWinTime]     = useState<string | null>(null);
+  const [flashWinSvcId, setFlashWinSvcId] = useState<string | null>(null);
+  const [flashWinDate, setFlashWinDate] = useState<string | null>(null);
+  const [flashWinTime, setFlashWinTime] = useState<string | null>(null);
   const [flashWinDiscount, setFlashWinDiscount] = useState(20);
 
-  const [platePos,     setPlatePos]     = useState<'top' | 'center' | 'bottom'>('center');
-  const [textAlign,    setTextAlign]    = useState<'left' | 'center' | 'right'>('center');
+  const [platePos, setPlatePos] = useState<'top' | 'center' | 'bottom'>('center');
+  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>('center');
   const [transparency, setTransparency] = useState(38);
 
   const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
@@ -715,15 +717,15 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const [isPhotoLoading, setIsPhotoLoading] = useState(false);
 
   useEffect(() => {
-    if (!bgPhotoUrlRaw) { 
-      setBgPhotoBlob(null); 
+    if (!bgPhotoUrlRaw) {
+      setBgPhotoBlob(null);
       setIsPhotoLoading(false);
-      return; 
+      return;
     }
-    if (bgPhotoUrlRaw.startsWith('data:')) { 
-      setBgPhotoBlob(bgPhotoUrlRaw); 
+    if (bgPhotoUrlRaw.startsWith('data:')) {
+      setBgPhotoBlob(bgPhotoUrlRaw);
       setIsPhotoLoading(false);
-      return; 
+      return;
     }
 
     setIsPhotoLoading(true);
@@ -735,29 +737,29 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       })
       .then(b => new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload  = () => resolve(reader.result as string);
+        reader.onload = () => resolve(reader.result as string);
         reader.onerror = reject;
         reader.readAsDataURL(b);
       }))
-      .then(dataUrl => { 
+      .then(dataUrl => {
         if (!cancelled) {
           setBgPhotoBlob(dataUrl);
           setIsPhotoLoading(false);
         }
       })
-      .catch((err) => { 
+      .catch((err) => {
         console.warn('[StoryGenerator] bg photo load failed:', err);
         if (!cancelled) {
-          setBgPhotoBlob(null); 
+          setBgPhotoBlob(null);
           setIsPhotoLoading(false);
         }
-      }); 
+      });
     return () => { cancelled = true; };
   }, [bgPhotoUrlRaw]);
 
   const bgPhotoUrl = bgPhotoBlob;
 
-  const [blurActive,       setBlurActive]       = useState(false);
+  const [blurActive, setBlurActive] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -812,28 +814,28 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       .then(r => r.blob())
       .then(b => new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload  = () => resolve(reader.result as string);
+        reader.onload = () => resolve(reader.result as string);
         reader.onerror = reject;
         reader.readAsDataURL(b);
       }))
       .then(dataUrl => { if (!cancelled) setAvatarBlob(dataUrl); })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, [avatarUrl]);
 
-  const masterId    = masterProfile?.id ?? profile?.id ?? null;
+  const masterId = masterProfile?.id ?? profile?.id ?? null;
   const displayName = masterName || masterProfile?.business_name || profile?.full_name || "Ваше ім'я";
-  const slug        = masterSlug || masterProfile?.slug || 'bookit';
+  const slug = masterSlug || masterProfile?.slug || 'bookit';
 
-  const services    = useServices(masterId);
+  const services = useServices(masterId);
   const selectedSvc = services.find(s => s.id === selectedSvcId) ?? null;
   const flashWinSvc = services.find(s => s.id === flashWinSvcId) ?? null;
 
-  const todayStr  = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toISOString().slice(0, 10);
   const futureStr = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(masterId, todayStr, futureStr);
 
-  const wh        = (masterProfile?.working_hours as Partial<WorkingHoursConfig> | null) ?? {};
+  const wh = (masterProfile?.working_hours as Partial<WorkingHoursConfig> | null) ?? {};
   const bufferMin = wh.buffer_time_minutes ?? 0;
 
   const slots = useSlotsFromStore(
@@ -850,16 +852,16 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   );
   const flashWinSlotsLoading = scheduleLoading;
 
-  const flashDeals    = useActiveFlashDeals(masterId);
-  const starReviews   = useStarReviews(masterId);
-  const pal           = PALETTES[palIdx];
-  const selectedDeal  = flashDeals[dealIdx] ?? null;
+  const flashDeals = useActiveFlashDeals(masterId);
+  const starReviews = useStarReviews(masterId);
+  const pal = PALETTES[palIdx];
+  const selectedDeal = flashDeals[dealIdx] ?? null;
 
   const selectedReview = starReviews.find(r => r.id === selectedReviewId) ?? null;
 
   useEffect(() => {
-    if (services.length > 0 && !selectedSvcId)  setSelectedSvcId(services[0].id);
-    if (services.length > 0 && !flashWinSvcId)  setFlashWinSvcId(services[0].id);
+    if (services.length > 0 && !selectedSvcId) setSelectedSvcId(services[0].id);
+    if (services.length > 0 && !flashWinSvcId) setFlashWinSvcId(services[0].id);
   }, [services, selectedSvcId, flashWinSvcId]);
   useEffect(() => {
     if (starReviews.length > 0 && !selectedReviewId) setSelectedReviewId(starReviews[0].id);
@@ -869,7 +871,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   const handleDownload = useCallback(async () => {
     if (!canvasRef.current || exporting) return;
-    
+
     if (isPhotoLoading) {
       showToast({ type: 'warning', title: 'Завантаження...', message: 'Чекаємо, поки фото підготується' });
       return;
@@ -877,30 +879,53 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
     setExporting(true);
     const node = canvasRef.current;
-
-    console.log('[StoryGenerator] Pre-capture state:', {
-      bgPhotoLen: bgPhotoUrl?.length ?? 0,
-      bgPhotoPrefix: bgPhotoUrl?.slice(0, 30),
-      avatarLen: avatarBlob?.length ?? 0,
-      avatarPrefix: avatarBlob?.slice(0, 30),
-      innerHTML_len: node.innerHTML.length,
-      mode,
-      platePos,
-      textAlign,
-      transparency
-    });
+    const isTMA = typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData;
 
     // Max reliability for mobile devices
     await new Promise(r => setTimeout(r, 1500));
 
     try {
-      await exportCanvasPng(node, `bookit-story-${mode}-${Date.now()}.png`);
+      const filename = `bookit-story-${mode}-${Date.now()}.jpg`;
+      // In TMA we skip browser download and send via bot
+      const dataUrl = await exportCanvasPng(node, filename, isTMA);
+
+      if (isTMA) {
+        showToast({
+          type: 'info',
+          title: 'Генеруємо',
+          message: 'Майже готово, надсилаємо файл боту'
+        });
+
+        const { data: { session } } = await createClient().auth.getSession();
+
+        const res = await fetch('/api/marketing/send-story', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token || ''}`
+          },
+          body: JSON.stringify({
+            dataUrl,
+            filename,
+            caption: `Ваша сторіс "${MODES.find(m => m.id === mode)?.label}" готова! ✨`
+          }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Не вдалося відправити через бота');
+        }
+
+        showToast({ type: 'success', title: 'Відправлено!', message: 'Зазирніть у чат з ботом ✈️' });
+      } else {
+        showToast({ type: 'success', title: 'Сторі збережено!', message: '1080×1920 px готово для Instagram' });
+      }
+
       setExported(true);
       setTimeout(() => setExported(false), 2600);
-      showToast({ type: 'success', title: 'Сторі збережено!', message: '1080×1920 px готово для Instagram' });
     } catch (e) {
       console.error('[StoryGenerator]', e);
-      showToast({ type: 'error', title: 'Помилка експорту', message: parseError(e) });
+      showToast({ type: 'error', title: 'Помилка', message: parseError(e) });
     } finally {
       setExporting(false);
     }
@@ -1115,7 +1140,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         {MODES.map(m => {
           const active = m.id === mode;
-          const Icon   = m.Icon;
+          const Icon = m.Icon;
           return (
             <button key={m.id} type="button" onClick={() => setMode(m.id)}
               className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0"
@@ -1142,28 +1167,27 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
           <div>
             <div className="flex justify-between items-center mb-2">
               <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
-              <button 
+              <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
               >
                 <Plus size={12} /> Завантажити своє
               </button>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleCustomPhotoUpload} 
-                accept="image/*" 
-                className="hidden" 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleCustomPhotoUpload}
+                accept="image/*"
+                className="hidden"
               />
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               <button
                 type="button"
                 onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }}
-                className={`relative w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 ${
-                  (!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-white/60 bg-white/40 text-muted-foreground/40'
-                }`}
+                className={`relative w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-white/60 bg-white/40 text-muted-foreground/40'
+                  }`}
               >
                 <X size={18} />
               </button>
@@ -1171,9 +1195,8 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 <button
                   type="button"
                   onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
-                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                    (!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'
-                  }`}
+                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'
+                    }`}
                 >
                   <img src={customBgPhoto} className="w-full h-full object-cover" />
                   {(!selectedBgPhotoId && customBgPhoto) && (
@@ -1189,9 +1212,8 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                   key={item.id}
                   type="button"
                   onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
-                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                    selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'
-                  }`}
+                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'
+                    }`}
                 >
                   <img src={item.photos[0]?.url} className="w-full h-full object-cover" />
                 </button>
@@ -1233,7 +1255,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                   <label className="text-[9px] text-muted-foreground block mb-1">Позиція</label>
                   <div className="flex bg-white/40 rounded-xl p-0.5 border border-white/60">
                     {(['top', 'center', 'bottom'] as const).map(p => (
-                      <button key={p} type="button" onClick={() => { setPlatePos(p); onControlChange(); }} 
+                      <button key={p} type="button" onClick={() => { setPlatePos(p); onControlChange(); }}
                         className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-all ${platePos === p ? 'bg-white shadow-sm text-primary' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
                         {p === 'top' ? 'Вгору' : p === 'center' ? 'Центр' : 'Низ'}
                       </button>
@@ -1244,7 +1266,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                   <label className="text-[9px] text-muted-foreground block mb-1">Текст</label>
                   <div className="flex bg-white/40 rounded-xl p-0.5 border border-white/60">
                     {(['left', 'center', 'right'] as const).map(a => (
-                      <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }} 
+                      <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
                         className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-all ${textAlign === a ? 'bg-white shadow-sm text-primary' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
                         {a === 'left' ? '⬅️' : a === 'center' ? '↔️' : '➡️'}
                       </button>
@@ -1259,9 +1281,9 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 <label className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">Прозорість скла</label>
                 <span className="text-[10px] font-bold text-primary">{transparency}%</span>
               </div>
-              <input 
+              <input
                 type="range" min={0} max={100} step={1}
-                value={transparency} 
+                value={transparency}
                 onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
                 className="w-full cursor-pointer h-1.5 bg-white/50 rounded-lg appearance-none"
                 style={{ accentColor: '#789A99' }}
@@ -1309,7 +1331,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             </div>
             {showAvatar
               ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} />
-              : <ToggleLeft  size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />
+              : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />
             }
           </button>
 
@@ -1336,15 +1358,15 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 </motion.span>
               ) : isPremiumLocked ? (
                 <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Download size={16} /> Завантажити
+                  <Download size={16} /> {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData ? 'Отримати в Telegram' : 'Завантажити'}
                 </motion.span>
               ) : exported ? (
                 <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Check size={16} strokeWidth={3} /> Збережено!
+                  <Check size={16} strokeWidth={3} /> {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData ? 'Відправлено!' : 'Збережено!'}
                 </motion.span>
               ) : (
                 <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Download size={16} /> Завантажити для Сторіс
+                  <Megaphone size={16} /> {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
                 </motion.span>
               )}
             </AnimatePresence>
@@ -1416,8 +1438,8 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         </div>
       </div>
 
-      <UpgradePromptModal 
-        isOpen={showUpgradeModal} 
+      <UpgradePromptModal
+        isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         source="marketing"
         feature={upgradeCopy?.modalTitle}
@@ -1426,12 +1448,87 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     </div>
   );
 
+  const sharedBottom = (
+    <>
+      <AnimatePresence>
+        {exporting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-background/60 backdrop-blur-xl"
+          >
+            <div className="flex flex-col items-center gap-6 text-center px-8">
+              <div className="relative">
+                <motion.div
+                  animate={{
+                    rotate: 360,
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    rotate: { duration: 8, repeat: Infinity, ease: "linear" },
+                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                  className="w-24 h-24 rounded-full border-2 border-dashed border-primary/30"
+                />
+                <motion.div
+                  initial={{ x: -20, y: 20, opacity: 0 }}
+                  animate={{ x: 0, y: 0, opacity: 1 }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <Send className="w-10 h-10 text-primary" />
+                </motion.div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-display text-xl font-bold text-foreground">Створюємо магію... ✨</h3>
+                <p className="text-sm text-muted-foreground/60 max-w-[240px]">
+                  {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData
+                    ? 'Готуємо Ultra-HD файл для вашого Telegram'
+                    : 'Готуємо преміум-зображення для вашої галереї'}
+                </p>
+              </div>
+
+              <div className="w-48 h-1.5 bg-white/40 rounded-full overflow-hidden border border-white/60">
+                <motion.div
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "100%" }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-1/2 h-full bg-gradient-to-r from-transparent via-primary to-transparent"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div
+        ref={canvasRef}
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: '-9999px',
+          width: 360,
+          height: 640,
+          pointerEvents: 'none',
+          opacity: 1,
+          zIndex: -200,
+          background: '#ffffff',
+          overflow: 'hidden'
+        }}
+      >
+        <StoryCanvas {...canvasSharedProps} isExporting={true} />
+      </div>
+    </>
+  );
+
   if (isOpen !== undefined) {
     return (
       <>
         <AnimatePresence>
           {isOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
@@ -1447,25 +1544,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             </motion.div>
           )}
         </AnimatePresence>
-        <div
-          ref={canvasRef}
-          aria-hidden="true"
-          style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            width: 380, 
-            height: 660, 
-            pointerEvents: 'none', 
-            opacity: 0.05, 
-            zIndex: -200,
-            background: '#ffffff'
-          }}
-        >
-          <div style={{ transform: 'scale(1)', transformOrigin: 'top left' }}>
-            <StoryCanvas {...canvasSharedProps} isExporting={true} />
-          </div>
-        </div>
+        {sharedBottom}
       </>
     );
   }
@@ -1473,25 +1552,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   return (
     <>
       {contentBody}
-      <div
-        ref={canvasRef}
-        aria-hidden="true"
-        style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: 380, 
-          height: 660, 
-          pointerEvents: 'none', 
-          opacity: 0.05, 
-          zIndex: -200,
-          background: '#ffffff'
-        }}
-      >
-        <div style={{ transform: 'scale(1)', transformOrigin: 'top left' }}>
-          <StoryCanvas {...canvasSharedProps} isExporting={true} />
-        </div>
-      </div>
+      {sharedBottom}
     </>
   );
 }
