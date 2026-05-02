@@ -12,22 +12,22 @@ import { CheckCircle2 } from 'lucide-react';
 export function RootPageClient() {
   const { isAuthenticated, isTMA, isReady } = useTelegram();
   const supabase = createClient();
+  const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Auto-redirect effect when authenticated in TMA
+  // KROK 3: Soft redirect after manual auth
   useEffect(() => {
-    if (isTMA && isAuthenticated && !isVerifying) {
-      setShowSuccess(true);
+    if (isTMA && isAuthenticated && !isVerifying && showSuccess) {
       const timer = setTimeout(() => {
-        console.log('[RootPageClient] Triggering hard redirect to /dashboard');
-        // Add cache-buster to ensure the server doesn't return a cached guest page
-        window.location.href = '/dashboard?auth=' + Date.now();
+        console.log('[RootPageClient] Performing soft navigation to /dashboard');
+        router.replace('/dashboard');
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isTMA, isAuthenticated, isVerifying]);
+  }, [isTMA, isAuthenticated, isVerifying, showSuccess, router]);
 
+  // KROK 2: Don't render anything until TelegramProvider is ready
   if (!isReady) return null;
 
   if (isTMA) {
@@ -41,7 +41,7 @@ export function RootPageClient() {
           <p className="text-[#6B5750] mb-8">Авторизація успішна. Зараз ви будете перенаправлені...</p>
           
           <button 
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => router.replace('/dashboard')}
             className="px-8 py-4 bg-[#789A99] text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all"
           >
             Увійти в кабінет
@@ -70,7 +70,7 @@ export function RootPageClient() {
                     type: 'email',
                   });
                   if (error) throw error;
-                  // The useEffect above will catch the isAuthenticated change
+                  setShowSuccess(true);
                 } catch (e) {
                   console.error('Verify error:', e);
                   setIsVerifying(false);
@@ -82,6 +82,7 @@ export function RootPageClient() {
       );
     }
     
+    // Fallback if somehow already authenticated but not showing success
     return null;
   }
 

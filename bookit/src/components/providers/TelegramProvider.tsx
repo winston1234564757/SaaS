@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { BeautyLoader } from '@/components/shared/BeautyLoader';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -29,17 +29,12 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [isTMA, setIsTMA] = useState(false);
   const [tgUser, setTgUser] = useState<any>(null);
   const pathname = usePathname();
+  const router = useRouter();
   const [loadingStep, setLoadingStep] = useState('Ініціалізація...');
   const [minTimePassed, setMinTimePassed] = useState(false);
   
   const initAttemptedRef = useRef(false);
   const supabase = createClient();
-
-  const hasTgInUrl = useCallback(() => {
-    if (typeof window === 'undefined') return false;
-    const url = window.location.href;
-    return url.includes('tgWebAppData') || url.includes('tgWebAppData') || url.includes('TGWEBAPPDATA');
-  }, []);
 
   const handleAutoLogin = useCallback(async (initData: string) => {
     try {
@@ -64,10 +59,12 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
         if (error) throw error;
         
-        console.log('[TelegramProvider] Auto-login successful, hard redirecting');
+        console.log('[TelegramProvider] Auto-login successful');
         setIsAuthenticated(true);
-        // Hard redirect for auto-login cases
-        window.location.href = '/dashboard';
+        setIsReady(true);
+        
+        // KROK 3: Use soft navigation
+        router.replace('/dashboard');
       } else {
         setIsReady(true);
       }
@@ -75,7 +72,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       console.error('[TelegramProvider] Auto-login error:', err);
       setIsReady(true);
     }
-  }, [supabase.auth]);
+  }, [supabase.auth, router]);
 
   useEffect(() => {
     const timer = setTimeout(() => setMinTimePassed(true), 2500);
@@ -100,24 +97,29 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       }
     }, 12000);
 
-    const initTgWithRetry = async (attempts = 0) => {
-      const tg = typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : null;
-      
-      if (!tg && hasTgInUrl() && attempts < 15) {
-        setTimeout(() => initTgWithRetry(attempts + 1), 200);
-        return;
-      }
-
+    const initTg = async () => {
       try {
-        const isInTelegram = !!tg || hasTgInUrl();
-        if (isInTelegram) {
-          setIsTMA(true);
+        // KROK 2: Polling for WebApp readiness
+        let attempts = 0;
+        const checkWebApp = () => {
+          const tg = typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : null;
           if (tg) {
+            console.log('[TelegramProvider] WebApp Ready');
+            setIsTMA(true);
             tg.ready();
             tg.expand();
             if (tg.setHeaderColor) tg.setHeaderColor('#FFE8DC');
             if (tg.setBackgroundColor) tg.setBackgroundColor('#FFE8DC');
+            return tg;
           }
+          return null;
+        };
+
+        let tg = checkWebApp();
+        while (!tg && attempts < 20) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          tg = checkWebApp();
+          attempts++;
         }
 
         const { data: { session } } = await supabase.auth.getSession();
@@ -134,10 +136,10 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        if (isInTelegram) {
-          const rawData = tg?.initDataRaw || new URLSearchParams(window.location.hash.replace('#', '')).get('tgWebAppData') || new URLSearchParams(window.location.search).get('tgWebAppData');
+        if (tg) {
+          const rawData = tg.initDataRaw || new URLSearchParams(window.location.hash.replace('#', '')).get('tgWebAppData');
           if (rawData) {
-            setTgUser(tg?.initDataUnsafe?.user || null);
+            setTgUser(tg.initDataUnsafe?.user || null);
             await handleAutoLogin(rawData);
           } else {
             setIsReady(true);
@@ -153,8 +155,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    initTgWithRetry();
-  }, [handleAutoLogin, supabase.auth, hasTgInUrl]);
+    initTg();
+  }, [handleAutoLogin, supabase.auth]);
 
   // Loader visibility logic
   const showLoader = !isReady || (isTMA && !minTimePassed && !isAuthenticated);

@@ -64,13 +64,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <Script
           src="https://telegram.org/js/telegram-web-app.js"
-          strategy="afterInteractive"
-          id="telegram-sdk-remote"
-        />
-        <Script
-          src="/lib/telegram-web-app.js"
           strategy="beforeInteractive"
-          id="telegram-sdk-local"
+          id="telegram-sdk-remote"
         />
         <script dangerouslySetInnerHTML={{ __html: `window.TG_STATUS = 'loading';` }} />
         <script dangerouslySetInnerHTML={{ __html: `
