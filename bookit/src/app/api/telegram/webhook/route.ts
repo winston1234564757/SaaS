@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { ensureTelegramClientIdentity } from '@/lib/telegram/ensureTelegramClientIdentity';
 import { sendTelegramMessage } from '@/lib/telegram';
 import { isValidUkrainianPhone } from '@/lib/telegram/phone';
 import { normalizeToE164 } from '@/lib/utils/phone';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TOKEN_RE = /^[A-Z2-9]{8}$/;
+const CONTACT_START_PARAM = 'share_phone';
+const RAW_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || '';
+const BOT_NAME = RAW_BOT_NAME.replace('@', '').trim();
 
 async function logWebhookEvent(
   admin: ReturnType<typeof createAdminClient>,
@@ -79,78 +83,59 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      // Try to find existing profile by phone
-      const { data: existingProfile, error: selectErr } = await admin
-        .from('profiles')
-        .select('id')
-        .eq('phone', e164Phone)
-        .maybeSingle();
+      const fullName = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
 
-      if (selectErr) {
-        console.error(`[TG-WEBHOOK] Profile search error:`, selectErr);
-        await logWebhookEvent(admin, {
-          event_type: 'contact_received',
+      try {
+        const identity = await ensureTelegramClientIdentity({
           phone: e164Phone,
-          telegram_chat_id: chatId,
-          status: 'error',
-          error_message: selectErr.message,
-          request_data: { raw_phone: rawPhone },
+          telegramChatId: String(chatId),
+          fullName: fullName || undefined,
         });
-        return NextResponse.json({ ok: true });
-      }
 
-      // Update or create profile
-      if (existingProfile) {
-        const { error: updateErr } = await admin
-          .from('profiles')
-          .update({ telegram_chat_id: String(chatId) })
-          .eq('id', existingProfile.id);
-
-        if (updateErr) {
-          console.error(`[TG-WEBHOOK] Update error:`, updateErr);
-          await logWebhookEvent(admin, {
-            event_type: 'profile_updated',
-            phone: e164Phone,
-            telegram_chat_id: chatId,
-            profile_id: existingProfile.id,
-            status: 'error',
-            error_message: updateErr.message,
-          });
-
-          await sendTelegramMessage(
-            String(chatId),
-            '❌ Помилка при оновленні профілю. Спробуйте пізніше.',
-          );
-        } else {
-          console.log(`[TG-WEBHOOK] Profile ${existingProfile.id} updated with chat_id=${chatId}`);
-          await logWebhookEvent(admin, {
-            event_type: 'profile_updated',
-            phone: e164Phone,
-            telegram_chat_id: chatId,
-            profile_id: existingProfile.id,
-            status: 'success',
-          });
-
-          await sendTelegramMessage(
-            String(chatId),
-            '✅ Ваш номер підтверджено! Повертайтеся в додаток.',
-          );
-        }
-      } else {
-        // No existing profile found - profile creation is handled by the app (via link-phone endpoint)
-        console.log(`[TG-WEBHOOK] No profile found for phone: ${e164Phone}. User will need to create account.`);
+        console.log(
+          `[TG-WEBHOOK] Contact linked via ${identity.status}: profile=${identity.userId}, chat_id=${chatId}`
+        );
         await logWebhookEvent(admin, {
-          event_type: 'contact_received',
+          event_type: 'profile_updated',
           phone: e164Phone,
           telegram_chat_id: chatId,
-          status: 'skipped',
-          error_message: 'No existing profile - creation deferred to app',
-          request_data: { raw_phone: rawPhone, first_name: contact.first_name, last_name: contact.last_name },
+          profile_id: identity.userId,
+          status: 'success',
+          request_data: { raw_phone: rawPhone, sync_status: identity.status },
         });
 
         await sendTelegramMessage(
           String(chatId),
-          '✅ Контакт отримано. Повертайтеся в додаток для завершення реєстрації.',
+          '✅ Ваш номер підтверджено! Тепер можна повернутися в BookIT.',
+          {
+            inline_keyboard: [[
+              { 
+                text: 'Відкрити BookIT', 
+                web_app: { url: 'https://bookit-five-psi.vercel.app/' } 
+              },
+            ]],
+          },
+        );
+      } catch (identityError: unknown) {
+        const message =
+          identityError instanceof Error ? identityError.message : 'Unknown identity sync error';
+        console.error('[TG-WEBHOOK] Identity sync error:', message);
+        await logWebhookEvent(admin, {
+          event_type: 'profile_updated',
+          phone: e164Phone,
+          telegram_chat_id: chatId,
+          status: 'error',
+          error_message: message,
+          request_data: {
+            raw_phone: rawPhone,
+            first_name: contact.first_name,
+            last_name: contact.last_name,
+          },
+        });
+
+        await sendTelegramMessage(
+          String(chatId),
+          '❌ Помилка при підтвердженні номера. Спробуйте ще раз трохи пізніше.',
         );
       }
 
@@ -164,7 +149,18 @@ export async function POST(req: NextRequest) {
     const param = text.split(' ')[1]?.trim();
     if (!param) return NextResponse.json({ ok: true });
 
-    if (UUID_RE.test(param)) {
+    if (param === CONTACT_START_PARAM) {
+      await sendTelegramMessage(
+        String(chatId),
+        'Щоб підтвердити номер, натисніть кнопку нижче. Telegram надішле ваш контакт боту напряму.',
+        {
+          keyboard: [[{ text: 'Поділитися номером', request_contact: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true,
+          input_field_placeholder: 'Натисніть кнопку для підтвердження номера',
+        },
+      );
+    } else if (UUID_RE.test(param)) {
       const { error } = await admin
         .from('profiles')
         .update({ telegram_chat_id: String(chatId) })

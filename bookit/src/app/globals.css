@@ -88,6 +88,9 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   overscroll-behavior-y: none;
+  /* Support for Telegram/Notch safe areas */
+  padding-top: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ─── Typography ─── */

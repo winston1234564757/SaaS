@@ -45,11 +45,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#789A99',
+  themeColor: '#FFE8DC',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -88,12 +89,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <QueryProvider>
             <ToastProvider>
               <TelegramProvider>
-                {children}
+                <div className="flex flex-col min-h-screen pt-[var(--tg-content-safe-area-inset-top,env(safe-area-inset-top,0px))]">
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                  <MyBottomNav initialIsAuth={initialIsAuth} />
+                </div>
               </TelegramProvider>
             </ToastProvider>
           </QueryProvider>
         </NuqsAdapter>
-        <MyBottomNav initialIsAuth={initialIsAuth} />
       </body>
     </html>
   );

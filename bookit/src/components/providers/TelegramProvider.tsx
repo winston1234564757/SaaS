@@ -109,6 +109,19 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           clearTimeout(safetyTimeout);
           tg.ready();
           tg.expand();
+          
+          // Immersive UI: Set colors to match our brand palette (Peach)
+          if (tg.setHeaderColor) tg.setHeaderColor('#FFE8DC');
+          if (tg.setBackgroundColor) tg.setBackgroundColor('#FFE8DC');
+          
+          // Request real fullscreen if supported (Telegram 8.0+)
+          if (tg.requestFullscreen) {
+            try {
+              tg.requestFullscreen();
+            } catch (e) {
+              console.warn('requestFullscreen failed', e);
+            }
+          }
 
           if (tg.initDataRaw) {
             console.log('[TelegramProvider] SDK ready, initDataRaw available');

@@ -77,6 +77,9 @@ interface TelegramWebApp {
   openTelegramLink(url: string): void;
   showAlert(message: string, callback?: () => void): void;
   showConfirm(message: string, callback?: (confirmed: boolean) => void): void;
+  setHeaderColor(color: string): void;
+  setBackgroundColor(color: string): void;
+  requestFullscreen(): void;
 }
 
 interface Window {

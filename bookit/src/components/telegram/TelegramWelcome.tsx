@@ -16,6 +16,8 @@ interface TelegramWelcomeProps {
 
 type PollingStatus = 'idle' | 'polling' | 'success' | 'timeout' | 'cancelled' | 'error' | 'manual_input';
 type TabType = 'contact' | 'manual';
+const CONTACT_FALLBACK_ATTEMPT = 3;
+const CONTACT_BOT_START_PARAM = 'share_phone';
 
 export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
   const [status, setStatus] = useState<PollingStatus>('idle');
@@ -25,16 +27,39 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
   const [pollingMax, setPollingMax] = useState(10);
   const [manualPhone, setManualPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingStoppedRef = useRef(false);
+
+  function pushDebug(message: string) {
+    setDebugInfo((current) => {
+      const next = [...current, `${new Date().toLocaleTimeString('uk-UA', { hour12: false })} ${message}`];
+      return next;
+    });
+  }
+
+  function getTelegramInitData(): string | undefined {
+    const tg = window.Telegram?.WebApp;
+    if (tg?.initDataRaw) return tg.initDataRaw;
+
+    const fullUrl = window.location.hash + window.location.search;
+    const params = new URLSearchParams(fullUrl.replace(/^#/, ''));
+    return params.get('tgWebAppData') || params.get('TGWEBAPPDATA') || undefined;
+  }
 
   async function handleShareContact() {
     if (status !== 'idle' && status !== 'timeout' && status !== 'error') return;
 
     const tg = window.Telegram?.WebApp;
-    if (!tg) {
+    const rawBotName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || '';
+    const botName = rawBotName.replace('@', '').trim();
+
+    if (!tg || !botName) {
       setStatus('error');
-      setError('Telegram WebApp не доступний');
+      const errorMsg = !tg ? 'Telegram WebApp недоступний' : 'Username бота (NEXT_PUBLIC_TELEGRAM_BOT_NAME) не налаштований';
+      setError(errorMsg);
+      pushDebug(errorMsg);
       return;
     }
 
@@ -42,33 +67,82 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
     setError(null);
     setPollingAttempt(0);
     setPollingMax(10);
+    setDebugInfo([]);
+    pushDebug(`init flow: bot=@${botName}, tg.initDataRaw=${tg.initDataRaw ? 'yes' : 'no'}`);
 
     tg.HapticFeedback.impactOccurred('medium');
 
     try {
-      tg.requestContact((res: { status: 'sent' | 'cancelled' }) => {
-        if (res.status === 'sent') {
-          startPolling(tg.initDataRaw);
+      const initData = getTelegramInitData();
+      pushDebug(`initData available: ${initData ? 'yes' : 'no'}`);
+
+      if (!initData) {
+        setStatus('error');
+        setError('Помилка: не вдалось отримати дані Telegram. Перезавантажте додаток.');
+        pushDebug('missing initData for contact flow');
+        return;
+      }
+
+      const botLink = `https://t.me/${botName}?start=${CONTACT_BOT_START_PARAM}`;
+      pushDebug(`opening bot link: ${botLink}`);
+      
+      try {
+        if (typeof tg.openLink === 'function') {
+          tg.openLink(botLink);
+        } else if (typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(botLink);
         } else {
-          setStatus('cancelled');
-          setError('Ви скасували запит контакту');
+          pushDebug('SDK link methods missing, using window.open');
+          window.open(botLink, '_blank');
         }
-      });
+      } catch (openLinkErr) {
+        pushDebug(`SDK link failed: ${openLinkErr instanceof Error ? openLinkErr.message : 'Unknown'}`);
+        window.open(botLink, '_blank');
+      }
+      
+      setError('У чаті з ботом натисніть "Поділитися номером", потім поверніться в BookIT кнопку з повідомлення бота.');
+
+      setTimeout(() => {
+        pushDebug('starting polling...');
+        void startPolling(initData);
+      }, 1500);
     } catch (err: unknown) {
-      console.error('[TelegramWelcome] Error requesting contact:', err);
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[TelegramWelcome] Error opening bot chat:', errMsg, err);
       setStatus('error');
-      setError('Не вдалося ініціювати запит');
+      setError(`Не вдалося відкрити чат бота: ${errMsg}`);
+      pushDebug(`open bot error: ${errMsg}`);
     }
   }
 
   async function startPolling(initDataRaw: string) {
+    if (pollingIntervalRef.current) clearTimeout(pollingIntervalRef.current);
+    if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+
+    pollingStoppedRef.current = false;
     let attempts = 0;
     const maxAttempts = 10;
     const pollIntervalMs = 1000;
 
-    const tryPoll = async () => {
+    pushDebug(`polling initiated, initDataRaw=${initDataRaw ? 'yes' : 'no'}`);
+
+    const stopPolling = () => {
+      pollingStoppedRef.current = true;
+      if (pollingIntervalRef.current) {
+        clearTimeout(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current);
+        pollingTimeoutRef.current = null;
+      }
+    };
+
+    const tryPoll = async (): Promise<void> => {
+      if (pollingStoppedRef.current) return;
       attempts++;
       setPollingAttempt(attempts);
+      pushDebug(`poll attempt ${attempts}/${maxAttempts}`);
 
       try {
         const res = await fetch('/api/auth/telegram', {
@@ -77,44 +151,72 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           body: JSON.stringify({ initData: initDataRaw }),
         });
 
+        pushDebug(`poll response status=${res.status}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
+        pushDebug(`poll payload: ${data.status || (data.success ? 'success' : 'unknown')}`);
 
         if (data.success && data.token) {
-          if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-          if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+          stopPolling();
 
           setStatus('success');
           setTimeout(() => {
-            onSuccess({ initData: initDataRaw });
+            onSuccess({
+              email: data.email,
+              token: data.token,
+              initData: initDataRaw,
+            });
           }, 500);
           return;
         }
 
         if (data.status === 'NEED_PHONE' || data.status === 'WAITING_FOR_PHONE') {
+          if (attempts === CONTACT_FALLBACK_ATTEMPT) {
+            setActiveTab('manual');
+            setStatus('manual_input');
+            setError('Telegram не передав контакт боту. Введіть номер вручну, щоб продовжити без затримки.');
+            pushDebug('switching to manual fallback');
+            stopPolling();
+            return;
+          }
+
           if (attempts >= maxAttempts) {
-            throw new Error('Timeout');
+            stopPolling();
+            setStatus('timeout');
+            setError('Контакт не синхронізувався. Спробуйте вручну ввести номер.');
+            pushDebug('polling timeout');
+            return;
           }
         }
       } catch (err: unknown) {
         console.error(`[TelegramWelcome] Poll attempt ${attempts} failed:`, err);
+        pushDebug(`poll error on attempt ${attempts}`);
         if (attempts >= maxAttempts) {
-          throw new Error('Timeout after all attempts');
+          stopPolling();
+          setStatus('timeout');
+          setError('Контакт не синхронізувався. Спробуйте вручну ввести номер.');
+          pushDebug('polling timeout');
+          return;
         }
+      }
+
+      if (!pollingStoppedRef.current) {
+        pollingIntervalRef.current = setTimeout(() => {
+          void tryPoll();
+        }, pollIntervalMs);
       }
     };
 
-    pollingIntervalRef.current = setInterval(tryPoll, pollIntervalMs);
-    await tryPoll();
-
     pollingTimeoutRef.current = setTimeout(() => {
-      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-      if (status !== 'success') {
-        setStatus('timeout');
-        setError('Контакт не синхронізувався. Спробуйте вручну ввести номер.');
-      }
+      if (pollingStoppedRef.current) return;
+      stopPolling();
+      setStatus('timeout');
+      setError('Контакт не синхронізувався. Спробуйте вручну ввести номер.');
+      pushDebug('polling timeout');
     }, maxAttempts * pollIntervalMs + 2000);
+
+    await tryPoll();
   }
 
   async function handleManualSubmit(e: React.FormEvent) {
@@ -204,11 +306,13 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
   }
 
   function handleRetry() {
-    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    if (pollingIntervalRef.current) clearTimeout(pollingIntervalRef.current);
     if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
+    pollingStoppedRef.current = false;
     setStatus('idle');
     setError(null);
     setPollingAttempt(0);
+    setDebugInfo([]);
   }
 
   const isLoading = status === 'polling' || isSubmitting;
@@ -325,10 +429,13 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
                 ) : (
                   <>
                     <Share2 size={22} className="text-white" />
-                    <span>Підтвердити номер</span>
+                    <span>Через чат бота</span>
                   </>
                 )}
               </button>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Відкриємо чат з ботом, де Telegram попросить поділитися контактом стандартною кнопкою.
+              </p>
             </motion.div>
           )}
 
@@ -407,6 +514,19 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           <ShieldCheck size={14} />
           <span>Ваш номер захищено Telegram</span>
         </div>
+
+        {activeTab === 'contact' && debugInfo.length > 0 && (
+          <div className="rounded-2xl border border-sage/15 bg-white/50 p-4 text-left">
+            <p className="mb-2 text-[11px] font-black uppercase tracking-[0.2em] text-sage/70">
+              Debug Contact Flow
+            </p>
+            <div className="space-y-1 font-mono text-[11px] text-sage/80">
+              {debugInfo.map((item) => (
+                <div key={item}>{item}</div>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
     </div>
   );

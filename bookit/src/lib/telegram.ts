@@ -15,7 +15,7 @@ export function escHtml(s: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
-export async function sendTelegramMessage(chatId: string, text: string, replyMarkup?: any): Promise<boolean> {
+export async function sendTelegramMessage(chatId: string, text: string, replyMarkup?: unknown): Promise<boolean> {
   if (!BOT_TOKEN || !chatId) {
     console.warn(`[Telegram] Missing BOT_TOKEN or chatId. BOT_TOKEN exists: ${!!BOT_TOKEN}`);
     return false;
