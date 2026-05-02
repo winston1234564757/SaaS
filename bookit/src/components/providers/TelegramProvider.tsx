@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { BeautyLoader } from '@/components/shared/BeautyLoader';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -64,9 +64,9 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
         if (error) throw error;
         
-        console.log('[TelegramProvider] Auto-login successful, forcing hard redirect');
+        console.log('[TelegramProvider] Auto-login successful, hard redirecting');
         setIsAuthenticated(true);
-        // BRUTE FORCE: Hard redirect for auto-login
+        // Hard redirect for auto-login cases
         window.location.href = '/dashboard';
       } else {
         setIsReady(true);
@@ -84,11 +84,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      if (session) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
+      setIsAuthenticated(!!session);
     });
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
@@ -160,7 +156,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     initTgWithRetry();
   }, [handleAutoLogin, supabase.auth, hasTgInUrl]);
 
-  // Loader visibility logic: only for initialization or if explicitly readying
+  // Loader visibility logic
   const showLoader = !isReady || (isTMA && !minTimePassed && !isAuthenticated);
 
   return (
