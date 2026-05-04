@@ -1,11 +1,11 @@
-# AIDEVELOPER.md — AI Development Constitution
+# 💎 AIDEVELOPER.md — AI Development Constitution
 
-> Конституція для AI-агентів, що працюють з кодовою базою BookIT.  
+> Цей документ є залізним законом для будь-якого AI-агентів (Antigravity), що працюють з кодовою базою BookIT.  
 > Порушення будь-якого правила = критична помилка.
 
 ---
 
-## 💎 ЗАЛІЗНЕ ПРАВИЛО (Iron Rule)
+## 🧬 ЗАЛІЗНЕ ПРАВИЛО (Iron Rule)
 
 **АНАЛІЗУЙ ПОВНУ ЛОГІКУ ФУНКЦІОНАЛУ.** Дивись де, що і як має працювати в комплексі (від БД до UI). Не роби поверхневих фіксів. Якщо бракує розуміння або контексту — **ОБОВ'ЯЗКОВО ПИТАЙ УТОЧНЕННЯ** перед початком робіт.
 
@@ -24,7 +24,7 @@
 
 ---
 
-## Tech Stack (Locked)
+## 🛠 Tech Stack (Locked)
 
 | Шар | Технологія |
 |---|---|
@@ -45,10 +45,9 @@
 
 ---
 
-## Coding Standards
+## 🧪 Coding Standards
 
 ### TypeScript
-
 - **Strict mode — `any` ЗАБОРОНЕНИЙ** абсолютно. Немає виключень.
 - Supabase builder arrays — **БЕЗ** явної анотації типу:
   ```typescript
@@ -58,289 +57,115 @@
     supabase.from('services').upsert(...),
   ];
   await Promise.all(ops);
-  
-  // ❌ НЕПРАВИЛЬНО:
-  const ops: Promise<unknown>[] = [...];
   ```
 - Всі типи аліновані з `src/types/database.ts`. Ніяких ad-hoc інтерфейсів без потреби.
 - Нові таблиці/колонки → обов'язково оновити `database.ts`.
 
 ### Server vs Client Components
-
 - **Server Component за замовчуванням** — якщо компонент не має `useState`, `useEffect`, обробників подій.
 - `"use client"` — тільки для інтерактивних компонентів.
 - **Layout файли — Server Components** (або `async` Server Component) що отримують `initialUser`, `initialProfile`, `initialMasterProfile` і передають як props.
-- `"use client"` layout без `initialUser` → **заборонено** (причина: `isLoading: true` на mount, блокує context-dependent saves).
+- `"use client"` layout без `initialUser` → **заборонено**.
 
 ### Server Actions
-
-- Кожна Server Action (мутація) **МУСИТЬ** закінчуватись `revalidatePath(...)` або `revalidateTag(...)` — або явно поясненою причиною чому не потрібно (напр. 100% client-side zone).
+- Кожна Server Action (мутація) **МУСИТЬ** закінчуватись `revalidatePath(...)` або `revalidateTag(...)`.
 - Ніколи не `window.location.reload()` — тільки TanStack Query invalidation.
 - Admin-only операції: **виключно** `createAdminClient()` з `@/lib/supabase/admin`.
 
-### Zod Validation
-
-- Всі форми + API inputs валідуються через Zod.
-- Схеми — окремо від компонентів (у `src/lib/validations/` або поряд з action файлом).
-- `safeParse` + обробка `.error` обов'язкові.
-
 ### TanStack Query Conventions
-
 - `isPending` (v5) замість `isLoading` для mutation стану.
 - `isLoading` = `isPending && isFetching` — використовувати лише для "перше завантаження".
-- Skeleton guard: `isLoading: query.isLoading && !!entityId` — запобігає skeleton до готовності context.
-- Empty array `[]` → **завжди** Empty State, ніколи skeleton.
-- `invalidateQueries` — завжди з конкретним `queryKey`. Ніколи `invalidateQueries()` без аргументів.
-
-### React Query staleTime (стандарт)
-
-| Дані | staleTime |
-|---|---|
-| Dashboard stats | 1 хвилина |
-| Analytics | 5 хвилин |
-| Services / Products | 10 хвилин |
-| Notifications | 30 секунд |
-| Bookings list | 2 хвилини |
-
-### Anti-patterns (ЗАБОРОНЕНО)
-
-```typescript
-// ❌ getSession() в queryFn — deadlock!
-queryFn: async () => {
-  const { data: { session } } = await supabase.auth.getSession(); // ЗАБОРОНЕНО
-}
-
-// ✅ Supabase browser client прикріплює токен автоматично
-queryFn: async () => {
-  const { data } = await supabase.from('bookings').select('*');
-  return data;
-}
-```
-
-```typescript
-// ❌ Inline admin client
-const admin = createClient(process.env.URL!, process.env.SERVICE_ROLE_KEY!); // ЗАБОРОНЕНО
-
-// ✅ Єдина точка входу
-import { createAdminClient } from '@/lib/supabase/admin';
-const admin = createAdminClient();
-```
-
-```typescript
-// ❌ Math.random() для кодів
-const code = Math.floor(Math.random() * 10000); // ЗАБОРОНЕНО
-
-// ✅ Crypto
-const arr = new Uint32Array(1);
-crypto.getRandomValues(arr);
-```
+- Skeleton guard: `isLoading: query.isLoading && !!entityId`.
+- **staleTime (стандарт)**:
+  - Dashboard stats: 1m
+  - Analytics: 5m
+  - Services / Products: 10m
+  - Notifications: 30s
+  - Bookings list: 2m
 
 ---
 
-## Database Rules
+## 🗄 Database & Security Rules
 
-### RLS — Завжди
-
-- **Кожна нова таблиця** МУСИТЬ мати RLS увімкнений.
+### RLS & RPC
+- **RLS — Завжди**: Кожна нова таблиця МУСИТЬ мати RLS увімкнений.
 - Всі policies перевіряються через `auth.uid()`.
-- Тригери що записують в захищені таблиці → `SECURITY DEFINER`.
-- `createAdminClient()` — єдиний спосіб bypass RLS у server-side коді.
+- Складні запити з JOIN + агрегатами → завжди через `supabase.rpc()`.
+- RPC функції → `SECURITY DEFINER`, `REVOKE PUBLIC`, `GRANT TO service_role`.
 
-### RPC для складних агрегацій
-
-- Складні запити з JOIN + агрегатами → завжди через `supabase.rpc('function_name', params)`.
-- RPC функції → `SECURITY DEFINER`, `REVOKE PUBLIC`, `GRANT TO service_role` де потрібно.
-- Race-condition-safe batch операції: `FOR UPDATE SKIP LOCKED` в RPC.
-
-### Суворі правила для міграцій
-
+### Міграції
 - Нова колонка → `ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...`.
 - Нова RPC → `CREATE OR REPLACE FUNCTION`.
-- Partial indexes → `WHERE condition` для performance-критичних запитів.
 - Нові FK → перевірити каскад (`ON DELETE CASCADE` або `ON DELETE SET NULL`).
 
----
-
-## Auth & Security Rules
-
-### SMS OTP Flow
-```
-POST /api/auth/send-sms → rate-limit → INSERT sms_otps → TurboSMS
-POST /api/auth/verify-sms → atomic check_and_log_sms_attempt() RPC → admin.generateLink('magiclink') → { email, token }
-Client → supabase.auth.verifyOtp({ email, token, type: 'magiclink' })
-```
-- **НІКОЛИ** не повертати пароль або service role key у відповіді API.
-- `virtualEmail = phone.replace('+','') + '@bookit.app'`
-
-### Webhook Security
-- Monobank: Ed25519 верифікація **строга** — 403 при будь-якому збої підпису. Без soft-mode.
-
-### Cron Security
-- Кожен cron handler: `Authorization: Bearer {CRON_SECRET}` — **перший рядок**, без виключень.
-
-### Telegram
-- `escHtml()` на **всіх** user-supplied strings перед вставкою в HTML parse_mode.
-- Завжди використовуй Inline Buttons (`replyMarkup`) для Call-to-Action. Ніколи не залишай текстових посилань.
-
-### Notifications & Deep Linking
-Усі нотифікації (In-App, Web Push, Telegram) **ОБОВ'ЯЗКОВО** повинні підтримувати Deep Linking на конкретний об'єкт (картку запису, відгук, налаштування).
-- **Telegram**: завжди передавай `replyMarkup: { inline_keyboard: [[{text, url}]] }`.
-- **Push**: завжди передавай `url: '...'` в payload.
-- **In-app**: завжди зберігай `related_booking_id` або обробляй onClick.
-Система працює каскадно: `Push -> Telegram -> SMS`. Завжди перевіряй наявність `push_subscriptions` перед фоллбеком на Telegram.
+### Security
+- **SMS OTP Flow**: Rate-limit → `sms_otps` → Magic Link.
+- **Webhook Security**: Monobank Ed25519 верифікація **строга** (403 при будь-якому збої).
+- **Cron Security**: `Authorization: Bearer {CRON_SECRET}` — перший рядок кожного handler.
 
 ---
 
-## Slot Scheduling
+## 🎨 Design System (Premium Standards)
 
-Pre-fetch повний 30-денний розклад в одному `Promise.all`:
-```typescript
-// useWizardSchedule.ts pattern:
-const [templates, exceptions, timeOffs, bookings] = await Promise.all([...]);
-// ScheduleStore: { templates, exceptions, timeOffs, bookingsByDate }
-```
-
-- `generateAvailableSlots`, `scoreSlots`, `buildSlotRenderItems` — з `@/lib/utils/smartSlots`.
-- Ніколи не fetchити слоти per-date ліниво — завжди pre-fetch вікно.
-- Date strip: off-days → `вих.` + dashed border; fully-booked → `зайнято` + red border.
-
-## SEO & OpenGraph Rules
-
-- **Shared Data Layer**: Кожна публічна сторінка (напр. `/[slug]`) повинна мати `data.ts` з кешованими функціями (`React.cache`). Це гарантує, що Page, Metadata та OG-image використовують один і той самий набір даних без зайвих запитів до БД.
-- **Dynamic OG Images**: Використовувати `opengraph-image.tsx` у папці роута. Дизайн має бути Premium (Mica, аватари, емодзі категорій).
-- **MetadataBase**: ПОВИННА бути задана в `layout.tsx` для коректної генерації абсолютних посилань на OG-картинки (інакше Телеграм їх не побачить).
-- **JSON-LD**: Кожна публічна сторінка об'єкта (майстер, товар) МУСИТЬ мати структуровані дані `application/ld+json`.
-
-## 📱 Mobile Interaction Rules (v5.2.0+)
-- **BottomSheet Strategy**: Завжди використовувати `@/components/ui/BottomSheet`.
-- **Swipe-to-Dismiss**: Кожна модалка ПОВИННА мати iOS-handle та підтримувати свайп вниз для закриття.
-- **Scroll Locking**: При відкритій шторці `body` скрол має бути заблокований через `vaul` mechanism.
-- **Z-Index Strategy**: Bottom Nav (75) > Toasts (100) > Modals (50) > Content (0).
-
----
-
-## Design System (Locked)
-
-### Палітра
-| Токен | Hex |
-|---|---|
-| Background | `#FFE8DC` (персик/salmon) |
-| Accent | `#789A99` (sage teal) |
-| Text Primary | `#2C1A14` |
-| Text Secondary | `#6B5750` |
-| Text Tertiary | `#A8928D` |
-| Surface | `rgba(255,255,255,0.68)` (Mica) |
-| Success | `#5C9E7A` |
-| Warning | `#D4935A` |
-| Error | `#C05B5B` |
-
-### Типографіка
-- Body: **Inter** (Cyrillic subset) — `font-sans`
-- Display/Headings: **Playfair Display** (Cyrillic subset) — `font-display`
-- CSS класи: `.display-xl`, `.display-lg`, `.display-md`, `.heading-serif`
-
-### UI Rules & Premium Standards
-- **Mosaic Hub Architecture**: Mobile navigation and complex menus must use asymmetric, non-repeating Bento grids. No 2x2 grids everywhere. Use unique layouts per section (Hero 3/5, Side 2/5, Wide 5/5).
-- **Peach Atmosphere**: Global backgrounds and Hub states use deep peach-to-peach-deep gradients (`#FFE8DC` to `#FFD1B8`) with heavy `backdrop-blur-3xl`.
-- **Juicy Selection UX**: Toggleable items (specializations, categories, etc.) must:
-  - Use **Robust Mapping**: `isSelected = value === id || value === label`.
-  - Active: Vibrant `sage` gradient + `shadow-sage/20` + animated `Check` icon.
-  - Inactive: Grayscale emoji (`filter: grayscale`) + 70% opacity + `white/60` background.
-  - Feedback: `whileTap={{ scale: 0.92 }}`
-- Card radius: 24px | Button radius: 16px | Input radius: 12px
-- `.bento-card` — backdrop-blur, Mica, border rgba(255,255,255,0.4), box-shadow
-- Emoji в desktop UI — **тільки якщо явно запросив користувач**
-- Mobile-first, touch targets мінімум 44×44px
-- `will-change: transform` для GPU-анімацій
-- УСІ кнопки та клікабельні елементи повинні мати тактильний відгук: `active:scale-95 transition-all`.
-- Модалки та Sheets ПОВИННІ використовувати Radix UI (Focus Trap, Esc closure).
-- Toasts завжди мають z-[100], а модалки z-[90].
-- **Safe Interaction Zone**: Весь контент у BottomSheet ПОВИНЕН мати `pb-32` (128px) або `padding-bottom: calc(env(safe-area-inset-bottom) + 80px)`, щоб запобігти перекриттю з `BottomNav` та забезпечити доступ до останніх елементів списку.
-- **Vaul Performance**: Для запобігання лагам при свайпі закриття, ЗАВЖДИ використовувати `shouldScaleBackground={false}` та уникати `dvh` одиниць у висоті (використовувати стабільні `vh`), щоб клавіатура не викликала стрибків лейауту.
-
-### UX Copywriting & Forms (Tone of Voice)
-- Використовуй виключно терміни: `Майстер` (не спеціаліст/робітник), `Клієнт` (не юзер/покупець), `Бронювання/Запис`, `Підписка/Тариф` (не пакет).
-- ЗАБОРОНЕНО використовувати хардкод чи тернарні оператори для множини (напр. `count === 1 ? 'відгук' : 'відгуків'`). **ЗАВЖДИ** використовуй `import { pluralUk } from '@/lib/utils/pluralUk'`.
-- Усі системні/бекенд помилки (Zod, Network, Postgres) **ПОВИННІ** проходити через `parseError(err)` з `src/lib/utils/errors.ts` перед показом юзеру. НІЯКИХ "String must contain".
-- Форми ПОВИННІ використовувати атрибут `aria-invalid="true"` на інпутах при помилках валідації (викликає червоне світіння через глобальні стилі) та `aria-describedby` для читабельного повідомлення під полем. Ніколи не блокуй мовчки кнопку "Далі" без пояснень.
-- **Identity Display**: Завжди використовувати пріоритет: `business_name` → `full_name`. Якщо `business_name` заповнено — воно має бути основним заголовком на публічній сторінці, у бічному меню дашборду та в каталозі.
-- **Robust Category Mapping**: При відображенні спеціалізацій/категорій завжди перевіряти збіг як по `id`, так і по `label` (напр. `val === c.id || val === c.label`). Це забезпечує зворотну сумісність зі старими даними та стійкість до ручного введення.
-
-### Tailwind v4
-```css
-/* globals.css */
-@import "tailwindcss";
-
-@theme {
-  --color-peach: #FFE8DC;
-  --color-sage: #789A99;
-  /* ... */
-}
-/* НЕ @tailwind base/components/utilities */
-```
-
----
-
-## Data Pipeline First — Обов'язкова перевірка перед UI
-
-Перед рендером будь-яких даних — перевірити ВСІ три шари:
-
-| Шар | Питання | Як перевірити |
+### Палітра & Типографіка
+| Токен | Hex | Шар |
 |---|---|---|
-| **DB Layer** | Чи є колонка у таблиці? | `grep` міграції або `SELECT` query |
-| **Input Layer** | Чи є форма/UI для введення? | Прочитати відповідний CRUD компонент |
-| **Mutation Layer** | Чи є Server Action що зберігає? | Перевірити `.update({...})` виклики |
+| Background | `#FFE8DC` | Peach Atmosphere |
+| Accent | `#789A99` | Sage Teal |
+| Surface | `rgba(255,255,255,0.68)` | Mica |
+| Text Primary | `#2C1A14` | Body: **Inter** |
+| Success | `#5C9E7A` | Headings: **Playfair Display** |
 
-**Якщо ХОЧА Б ОДИН шар відсутній → СПОЧАТКУ додати шар, ПОТІМ UI.**
+### UI Rules
+- **Mosaic Hub Architecture**: Несиметричні Bento-сітки (Hero 3/5, Side 2/5, Wide 5/5). Жодних простих 2x2.
+- **Juicy Selection UX**: `isSelected = value === id || value === label`. Анімований Check + sage gradient.
+- **BottomSheet Strategy**: Кожна модалка ПОВИННА мати iOS-handle, `pb-32` для безпечної зони та `shouldScaleBackground={false}`.
+- **Z-Index**: Bottom Nav (75) > Toasts (100) > Modals (90) > Content (0).
+- **Tactile Feedback**: `active:scale-95 transition-all` для всіх кнопок.
 
 ---
 
-## PWA / Session Rules
+## 📊 Data Pipeline & SEO
 
-### Supabase Browser Client Architecture
-- `src/lib/supabase/client.ts` — singleton, `pwaDummyLock` (обходить Web Locks), `autoRefreshToken: false`
-- `resetFetchController()` — kill switch для in-flight запитів
-- Custom fetch timeout: 8s (auth) / 10s (інші)
+### Data Pipeline First
+Перед рендером — перевірити всі три шари: **DB Layer** → **Input Layer** (UI/Forms) → **Mutation Layer** (Server Actions). Якщо щось відсутнє — додати спочатку шар даних, потім UI.
 
-### Context Hydration
-```typescript
-// context.tsx — НІКОЛИ await всередині onAuthStateChange:
-onAuthStateChange((event, session) => {
-  // ✅ setTimeout(0) → наступний macrotask (після lockAcquired=false)
-  setTimeout(() => { if (mountedRef.current) fetchProfile(u.id); }, 0);
-  
-  // ❌ await fetchProfile(u.id) — циклічний deadlock!
-})
-```
+### SEO & OpenGraph
+- **Shared Data Layer**: `data.ts` з `React.cache` для Page, Metadata та OG-image.
+- **Dynamic OG Images**: Premium дизайн (Mica, аватари).
+- **JSON-LD**: Структуровані дані для всіх публічних сторінок.
 
-### 🔴 CRITICAL: useEffect Dependency Safety — onAuthStateChange
+---
 
-**НІКОЛИ не додавай `user`, `isLoading` або будь-який state що змінюється ВСЕРЕДИНІ ефекту до deps масиву auth-підписки.**
+## 🚀 Token Efficiency Rules (ОБОВ'ЯЗКОВО)
 
-```typescript
-// ❌ ЗАБОРОНЕНО — INFINITE RENDER LOOP (вбиває весь DOM):
-useEffect(() => {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    setUser(session?.user ?? null);   // ← змінює `user`
-    setIsLoading(false);              // ← змінює `isLoading`
-  });
-  return () => subscription.unsubscribe();
-}, [supabase, fetchProfile, isLoading, user]); // ❌ user та isLoading в deps = loop!
-// Механізм: setUser → user зміна → ефект cleanup+rerun → нова підписка → INITIAL_SESSION → setUser → ...
+> Порушення = марно витрачений бюджет.
 
-// ✅ ПРАВИЛЬНО — тільки стабільні значення в deps:
-useEffect(() => {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    setUser(session?.user ?? null);   // OK — не в deps
-    setIsLoading(false);              // OK — не в deps
-  });
-  return () => subscription.unsubscribe();
-}, [supabase, fetchProfile]); // ✅ обидва стабільні: useMemo([], []) та useCallback([supabase])
-```
+1. **Grep Before Read**: Спочатку `Grep` → отримати рядок → `Read` з offset±20. Ніколи не читати файл цілком для пошуку символу.
+2. **Read з offset**: Якщо відомий рядок — читай тільки його околицю.
+3. **Не перечитувати**: Якщо в сесії вже підтверджено стан — довіряй своїм висновкам.
+4. **Максимум 1 читання на файл**: Якщо файл вже прочитаний — використовуй пам'ять або Grep.
+5. **Архітектурне рішення**: Максимум 2 варіанти, вибір за 30 секунд. Простіший варіант — пріоритет.
+6. **Bug fix**: Пряма лінія, не екскурсія. Не читати "для контексту" те, що не стосується багу.
+7. **Schema-перевірка**: Тільки через міграції, а не через TypeScript код.
 
-**Правило:** deps auth-ефекту = ЛИШЕ те що потрібно для ПІДПИСКИ (client instance, stable callbacks). Ніколи — state що ефект сам же і змінює.
+---
 
-**Інцидент (2026-04-29):** Цей баг заморозив весь UI додатку. Мільйони ре-рендерів за секунду заблокували event loop. Симптом: DOM не реагує на жодну взаємодію.
+## ✅ Pre-Deploy Checklist
+
+- [ ] `src/proxy.ts` експортує `proxy` (не middleware.ts)
+- [ ] RLS policies активні та перевірені
+- [ ] Monobank webhook верифікує підпис (strict mode)
+- [ ] `CRON_SECRET` в env, handlers перевіряють Bearer
+- [ ] PWA manifest валідний, іконки присутні
+- [ ] `createAdminClient()` скрізь, де потрібен RLS bypass
+- [ ] Нуль `console.log` з конфіденційними даними
+
+---
+
+*Останнє оновлення: 2026-05-04 (Refactoring & Merging Phase)*
+*Version: 6.0.0 (Master AI Core)*
+ре-рендерів за секунду заблокували event loop. Симптом: DOM не реагує на жодну взаємодію.
 
 ---
 

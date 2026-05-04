@@ -62,21 +62,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="uk" className={`${inter.variable} ${playfair.variable}`}>
       <head>
+        {/* Single authoritative Telegram SDK — beforeInteractive ensures window.Telegram
+            is set before React hydrates, so TelegramProvider never needs to poll for it. */}
         <Script
-          src="https://telegram.org/js/telegram-web-app.js"
+          src="/lib/telegram-web-app.js"
           strategy="beforeInteractive"
-          id="telegram-sdk-remote"
+          id="telegram-sdk"
         />
-        <script dangerouslySetInnerHTML={{ __html: `window.TG_STATUS = 'loading';` }} />
-        <script dangerouslySetInnerHTML={{ __html: `
-          if (window.Telegram) { window.TG_STATUS = 'loaded'; }
-          else { 
-            var check = setInterval(function() {
-              if (window.Telegram) { window.TG_STATUS = 'loaded'; clearInterval(check); }
-            }, 100);
-            setTimeout(function() { clearInterval(check); if (window.TG_STATUS !== 'loaded') window.TG_STATUS = 'error'; }, 3000);
-          }
-        `}} />
       </head>
       <body className="antialiased">
         {/* Static CSS-only Curtain for Background Resume */}

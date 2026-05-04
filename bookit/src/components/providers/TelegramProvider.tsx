@@ -7,11 +7,19 @@ import { BeautyLoader } from '@/components/shared/BeautyLoader';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
+type TelegramUser = {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+};
+
 interface TelegramContextType {
   isReady: boolean;
   isAuthenticated: boolean;
   isTMA: boolean;
-  tgUser: any | null;
+  tgUser: TelegramUser | null;
 }
 
 const TelegramContext = createContext<TelegramContextType>({
@@ -23,22 +31,62 @@ const TelegramContext = createContext<TelegramContextType>({
 
 export const useTelegram = () => useContext(TelegramContext);
 
+const GUEST_PATHS = new Set<string>(['/', '/login', '/register']);
+const SAFETY_TIMEOUT_MS = 12_000;
+const MIN_LOADER_MS = 2_500;
+const SDK_RETRY_MAX = 15;
+const SDK_RETRY_DELAY = 200;
+
+function targetPathForRole(role: string | null | undefined): string {
+  return role === 'master' ? '/dashboard' : '/my/bookings';
+}
+
+function urlHasTgParams(): boolean {
+  if (typeof window === 'undefined') return false;
+  const url = window.location.href;
+  return url.includes('tgWebAppData') || url.includes('TGWEBAPPDATA');
+}
+
+function readTgInitDataFromUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const fromHash = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('tgWebAppData');
+  if (fromHash) return fromHash;
+  const fromSearch = new URLSearchParams(window.location.search).get('tgWebAppData');
+  return fromSearch ?? null;
+}
+
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isTMA, setIsTMA] = useState(false);
-  const [tgUser, setTgUser] = useState<any>(null);
-  const pathname = usePathname();
-  const router = useRouter();
+  const [tgUser, setTgUser] = useState<TelegramUser | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [loadingStep, setLoadingStep] = useState('Ініціалізація...');
   const [minTimePassed, setMinTimePassed] = useState(false);
-  
+
   const initAttemptedRef = useRef(false);
+  const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
-  const handleAutoLogin = useCallback(async (initData: string) => {
+  // ── Hard navigation helper ──────────────────────────────────────────────────
+  // У TMA WebView soft-nav (router.replace) часто застрягає в iframe race.
+  // Hard nav гарантує SSR-redraw зі свіжими cookies (proxy.ts читає sb-*-auth-token
+  // і одразу робить server-side редирект до /dashboard або /my/bookings).
+  const navigateAfterAuth = useCallback((role: string | null | undefined, inTma: boolean) => {
+    setIsRedirecting(true);
+    setLoadingStep('Вхід до кабінету...');
+    const target = targetPathForRole(role);
+    if (inTma) {
+      window.location.replace(target);
+    } else {
+      router.replace(target);
+    }
+  }, [router]);
+
+  // ── Auto-login flow (TMA, profile linked with phone) ────────────────────────
+  const handleAutoLogin = useCallback(async (initData: string, inTma: boolean) => {
     try {
-      console.log('[TelegramProvider] Auto-login starting...');
       setLoadingStep('Авторизація...');
       const res = await fetch('/api/auth/telegram', {
         method: 'POST',
@@ -47,8 +95,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) throw new Error(`Auth failed: ${res.status}`);
-
       const data = await res.json();
+
       if (data.success && data.token && data.email) {
         setLoadingStep('Синхронізація...');
         const { error } = await supabase.auth.verifyOtp({
@@ -56,110 +104,146 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
           token: data.token,
           type: 'email',
         });
-
         if (error) throw error;
-        
-        console.log('[TelegramProvider] Auto-login successful');
-        setIsAuthenticated(true);
-        setIsReady(true);
-        
-        // KROK 3: Use soft navigation
-        router.replace('/dashboard');
-      } else {
-        setIsReady(true);
+
+        // CRITICAL: trigger nav synchronously — no setIsAuthenticated/setIsReady race window.
+        // Page is unloading; further state mutations are wasted.
+        navigateAfterAuth(data.user?.role, inTma);
+        return;
       }
+
+      // NEED_PHONE / WAITING_FOR_PHONE → show TelegramWelcome
+      console.log('[TelegramProvider] Auto-login pending:', data.status);
+      setIsReady(true);
     } catch (err) {
       console.error('[TelegramProvider] Auto-login error:', err);
       setIsReady(true);
     }
-  }, [supabase.auth, router]);
+  }, [supabase.auth, navigateAfterAuth]);
 
+  // ── Min-loader timer (premium feel, 2.5s minimum on TMA cold start) ─────────
   useEffect(() => {
-    const timer = setTimeout(() => setMinTimePassed(true), 2500);
+    const timer = setTimeout(() => setMinTimePassed(true), MIN_LOADER_MS);
     return () => clearTimeout(timer);
   }, []);
 
+  // ── Auth subscription ───────────────────────────────────────────────────────
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      setIsAuthenticated(!!session);
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: Session | null) => {
+        console.log('[TelegramProvider] Auth event:', event, 'hasSession:', !!session);
+        setIsAuthenticated(!!session);
+      }
+    );
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
 
+  // ── One-shot init: detect TMA, check session, kick auto-login ───────────────
   useEffect(() => {
     if (initAttemptedRef.current) return;
     initAttemptedRef.current = true;
 
-    const safetyTimeout = setTimeout(() => {
-      if (!isReady) {
-        console.warn('[TelegramProvider] Safety timeout, forcing ready');
-        setIsReady(true);
-      }
-    }, 12000);
+    const safetyTimer = setTimeout(() => {
+      console.warn('[TelegramProvider] Safety timeout fired — forcing ready');
+      setIsReady(true);
+    }, SAFETY_TIMEOUT_MS);
 
-    const initTg = async () => {
+    const initWithRetry = async (attempts = 0): Promise<void> => {
+      const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
+
+      // SDK script may load slightly after first paint — retry briefly if URL has TG params.
+      if (!tg && urlHasTgParams() && attempts < SDK_RETRY_MAX) {
+        setTimeout(() => { void initWithRetry(attempts + 1); }, SDK_RETRY_DELAY);
+        return;
+      }
+
       try {
-        // KROK 2: Polling for WebApp readiness
-        let attempts = 0;
-        const checkWebApp = () => {
-          const tg = typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : null;
+        const inTma = !!tg || urlHasTgParams();
+        if (inTma) {
+          setIsTMA(true);
           if (tg) {
-            console.log('[TelegramProvider] WebApp Ready');
-            setIsTMA(true);
             tg.ready();
             tg.expand();
-            if (tg.setHeaderColor) tg.setHeaderColor('#FFE8DC');
-            if (tg.setBackgroundColor) tg.setBackgroundColor('#FFE8DC');
-            return tg;
+            try { tg.setHeaderColor?.('#FFE8DC'); } catch {}
+            try { tg.setBackgroundColor?.('#FFE8DC'); } catch {}
+            setTgUser((tg.initDataUnsafe?.user as TelegramUser) ?? null);
           }
-          return null;
-        };
-
-        let tg = checkWebApp();
-        while (!tg && attempts < 20) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          tg = checkWebApp();
-          attempts++;
         }
 
+        // 1. Existing session? Verify profile, redirect if on guest page.
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          const { data: profile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, role')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
           if (profile) {
             setIsAuthenticated(true);
+            const onGuest = GUEST_PATHS.has(pathname);
+            if (inTma && onGuest) {
+              clearTimeout(safetyTimer);
+              navigateAfterAuth(profile.role, true);
+              return;
+            }
             setIsReady(true);
-            clearTimeout(safetyTimeout);
+            clearTimeout(safetyTimer);
             return;
-          } else {
-            await supabase.auth.signOut();
-            setIsAuthenticated(false);
+          }
+
+          console.warn('[TelegramProvider] Session without profile — signing out');
+          await supabase.auth.signOut();
+          setIsAuthenticated(false);
+        }
+
+        // 2. No session but in TMA → try auto-login from initData.
+        if (inTma) {
+          const rawData = tg?.initDataRaw || readTgInitDataFromUrl();
+          if (rawData) {
+            await handleAutoLogin(rawData, true);
+            clearTimeout(safetyTimer);
+            return;
           }
         }
 
-        if (tg) {
-          const rawData = tg.initDataRaw || new URLSearchParams(window.location.hash.replace('#', '')).get('tgWebAppData');
-          if (rawData) {
-            setTgUser(tg.initDataUnsafe?.user || null);
-            await handleAutoLogin(rawData);
-          } else {
-            setIsReady(true);
-          }
-        } else {
-          setIsReady(true);
-        }
-      } catch (e) {
-        console.error('[TelegramProvider] init error:', e);
+        // 3. Not in TMA, or no initData → ready (welcome / landing).
         setIsReady(true);
-      } finally {
-        clearTimeout(safetyTimeout);
+        clearTimeout(safetyTimer);
+      } catch (e) {
+        console.error('[TelegramProvider] Init error:', e);
+        setIsReady(true);
+        clearTimeout(safetyTimer);
       }
     };
 
-    initTg();
-  }, [handleAutoLogin, supabase.auth]);
+    void initWithRetry();
+  }, [handleAutoLogin, navigateAfterAuth, pathname, supabase]);
 
-  // Loader visibility logic
-  const showLoader = !isReady || (isTMA && !minTimePassed && !isAuthenticated);
+  // ── Catch-all redirect: e.g. RootPageClient verifyOtp fires SIGNED_IN ───────
+  // — TelegramProvider doesn't know the role here, so fall back to '/' (proxy
+  //   server-redirects based on user_role cookie set by middleware).
+  useEffect(() => {
+    if (!isReady || !isAuthenticated || isRedirecting) return;
+    if (!GUEST_PATHS.has(pathname)) return;
+
+    setIsRedirecting(true);
+    setLoadingStep('Вхід до кабінету...');
+    if (isTMA) {
+      window.location.replace('/');
+    } else {
+      router.replace('/');
+    }
+  }, [isReady, isAuthenticated, isRedirecting, pathname, isTMA, router]);
+
+  // ── Loader visibility ───────────────────────────────────────────────────────
+  // Show loader when: still initializing, premium-min hold (TMA cold + not auth yet),
+  // or during nav transition. NEVER false during the brief "auth done, nav started"
+  // window — navigateAfterAuth flips isRedirecting before the redirect itself.
+  const showLoader =
+    !isReady ||
+    (isTMA && !minTimePassed && !isAuthenticated) ||
+    isRedirecting;
 
   return (
     <TelegramContext.Provider value={{ isReady, isAuthenticated, isTMA, tgUser }}>

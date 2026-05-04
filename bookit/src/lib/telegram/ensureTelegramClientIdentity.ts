@@ -11,6 +11,7 @@ interface EnsureTelegramClientIdentityParams {
 interface EnsureTelegramClientIdentityResult {
   email: string;
   userId: string;
+  role: 'client' | 'master';
   status: 'linked_existing_profile' | 'created_auth_user' | 'recovered_auth_user';
 }
 
@@ -44,6 +45,8 @@ export async function ensureTelegramClientIdentity({
   const existingProfile = existingByPhone ?? existingByEmail;
 
   if (existingProfile?.id) {
+    const resolvedRole: 'client' | 'master' = existingProfile.role === 'master' ? 'master' : role;
+
     const { error: profileUpdateError } = await admin
       .from('profiles')
       .update({
@@ -51,7 +54,7 @@ export async function ensureTelegramClientIdentity({
         email: virtualEmail,
         telegram_chat_id: telegramChatId,
         full_name: fullName || undefined,
-        role: existingProfile.role === 'master' ? 'master' : role,
+        role: resolvedRole,
       })
       .eq('id', existingProfile.id);
 
@@ -71,6 +74,7 @@ export async function ensureTelegramClientIdentity({
     return {
       email: existingByPhone?.email || virtualEmail,
       userId: existingProfile.id,
+      role: resolvedRole,
       status: 'linked_existing_profile',
     };
   }
@@ -110,6 +114,8 @@ export async function ensureTelegramClientIdentity({
     console.log(`[ensureTelegramClientIdentity] Successfully recovered ID: ${userId}`);
   }
 
+  const resolvedRole: 'client' | 'master' = role;
+
   const { error: profileUpsertError } = await admin.from('profiles').upsert(
     {
       id: userId,
@@ -117,7 +123,7 @@ export async function ensureTelegramClientIdentity({
       email: virtualEmail,
       telegram_chat_id: telegramChatId,
       full_name: fullName || `User ${phone.slice(-4)}`,
-      role: existingProfile?.role === 'master' ? 'master' : role,
+      role: resolvedRole,
     },
     { onConflict: 'id', ignoreDuplicates: false },
   );
@@ -138,6 +144,7 @@ export async function ensureTelegramClientIdentity({
   return {
     email: virtualEmail,
     userId,
+    role: resolvedRole,
     status,
   };
 }

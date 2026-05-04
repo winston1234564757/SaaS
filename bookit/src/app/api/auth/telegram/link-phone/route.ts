@@ -40,27 +40,19 @@ export async function POST(req: NextRequest) {
     console.log('[link-phone] e164=', e164Phone, 'email=', virtualEmail, 'tgChatId=', tgChatId);
 
     let userId: string;
+    let resolvedRole: 'client' | 'master';
 
     try {
-      console.log('[link-phone] Creating or recovering auth user...');
       const identity = await ensureTelegramClientIdentity({
         phone: e164Phone,
         telegramChatId: tgChatId,
         fullName: fullName || undefined,
-        role: role as 'client' | 'master',
+        role: (role === 'master' ? 'master' : 'client'),
       });
 
       userId = identity.userId;
-
-      if (identity.status === 'linked_existing_profile') {
-        console.log('[link-phone] Found existing profile:', userId);
-      } else if (identity.status === 'recovered_auth_user') {
-        console.log('[link-phone] Recovered existing auth user:', userId);
-      } else {
-        console.log('[link-phone] Created auth user:', userId);
-      }
-
-      console.log('[link-phone] Profile identity synced');
+      resolvedRole = identity.role;
+      console.log('[link-phone] Identity synced:', { userId, status: identity.status, role: resolvedRole });
     } catch (identityError: unknown) {
       const message =
         identityError instanceof Error ? identityError.message : 'Failed to sync identity';
@@ -79,12 +71,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to generate login token' }, { status: 500 });
     }
 
-    console.log('[link-phone] ✅ Success for userId:', userId);
+    console.log('[link-phone] ✅ Success for userId:', userId, 'role:', resolvedRole);
 
     return NextResponse.json({
       success: true,
       email: virtualEmail,
       token: linkData.properties.email_otp,
+      role: resolvedRole,
+      user: { id: userId, role: resolvedRole },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown server error';
