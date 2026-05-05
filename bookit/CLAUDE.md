@@ -2,7 +2,8 @@
 
 **🔥 ВАЖЛИВО:** Перш ніж працювати, прочитай:
 1. `.claude/SKILL_GUIDE.md` — як вибирати skills автоматично
-2. `XDEV/AI_DEVELOPER.md` — конституція розробки (замість цього файлу)
+2. `.claude/HUMANIZER_GUIDE.md` — як гуманізувати ВСІ тексти
+3. `XDEV/AI_DEVELOPER.md` — конституція розробки (замість цього файлу)
 
 ---
 
@@ -17,7 +18,10 @@ Claude **автоматично вибирає** skill/MCP на основі:
 
 ---
 
-## 📊 Встановлені Skills (16 total)
+## 📊 Встановлені Skills (17 total)
+
+### Copywriting & Content
+- ✅ **humanizer** — Humanize all text (landing, pricing, features) ⭐
 
 ### Design Skills
 - ✅ **impeccable** — audit & polish (QA gate)
@@ -46,6 +50,15 @@ Claude **автоматично вибирає** skill/MCP на основі:
 ---
 
 ## 🚀 Quick Workflows
+
+### Humanize Text (Landing, Pricing, Features)
+```
+"Write humanized copy for pricing page"
+→ Claude auto-selects: humanizer
+→ Removes AI patterns
+→ Outputs natural text
+→ QA with user
+```
 
 ### Build UI Component
 ```

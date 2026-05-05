@@ -157,6 +157,32 @@ User: "Convert this Figma screenshot to code" [image]
 
 ---
 
+## ✍️ Copywriting & Content Skills
+
+### **HUMANIZER** (Priority 1 for Text)
+**When to use:**
+- Writing landing page copy
+- Pricing page descriptions
+- Feature descriptions
+- Any project text that feels "AI-generated"
+- User says: "write", "copy", "humanize", "landing", "features"
+
+**What it does:**
+- Removes AI-generated writing patterns
+- Fixes: inflated symbolism, promotional language, vague attributions
+- Removes: em dash overuse, passive voice, rule-of-three patterns
+- Makes text sound natural and human-written
+- Based on Wikipedia's "Signs of AI writing" guide
+
+**Example:**
+```
+Input: "BookIT revolutionizes the beauty industry with cutting-edge booking solutions..."
+→ /humanizer fix
+Output: "BookIT makes it easy for beauty pros to manage bookings and clients..."
+```
+
+---
+
 ## 🔧 Code Skills
 
 ### **CODE-REVIEWER** (Priority 1)
@@ -231,6 +257,8 @@ User: "Convert this Figma screenshot to code" [image]
 | **Design review** | impeccable | (none) | a11y |
 | **Code review** | code-reviewer | (none) | (none) |
 | **Optimize frontend** | senior-frontend | (none) | tailwind |
+| **Write/humanize text** | humanizer | (none) | (none) |
+| **Landing page copy** | humanizer | design-taste-frontend | (none) |
 
 ---
 

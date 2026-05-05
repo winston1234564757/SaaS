@@ -108,7 +108,12 @@ Mobile/PWA:
 
 ---
 
-## 🛠️ Claude's Design Toolkit (Installed & Ready)
+## 🛠️ Claude's Toolkit (Installed & Ready)
+
+### **17 Total Skills** (Auto-Selection Enabled)
+
+#### **Copywriting (Priority 1)**
+- **humanizer** — Humanize all text (landing, pricing, features, copy) ⭐
 
 ### **16 Design Skills** (Auto-Selection Enabled)
 
@@ -213,6 +218,7 @@ Input: "Add smooth transitions to the form"
 
 | Task | Skill | Command |
 |------|-------|---------|
+| **Humanize Text** | humanizer | `/humanizer` |
 | Build UI | design-taste-frontend | `/design-taste-frontend build` |
 | Dark Mode (Brutal) | industrial-brutalist-ui | `/industrial-brutalist-ui` |
 | Audit Quality | impeccable | `/impeccable audit` |

@@ -300,6 +300,53 @@
 
 ---
 
+## 📝 Special: Humanizer for All Text
+
+**CRITICAL RULE:** All text content on BookIT (landing, pricing, features, copy, etc.) MUST be humanized.
+
+### **Humanizer Workflow**
+
+```
+1. Write draft text (AI-generated is fine)
+2. Run /humanizer
+3. Humanizer detects AI patterns:
+   - Inflated symbolism ("revolutionizes", "cutting-edge")
+   - Promotional language
+   - Passive voice
+   - Rule-of-three patterns
+   - AI vocabulary words
+   - Em dash overuse
+4. Output: Natural, human-written text
+5. QA with user (always!)
+```
+
+### **Where to Humanize**
+- ✅ Landing page copy
+- ✅ Pricing page descriptions
+- ✅ Feature descriptions
+- ✅ Marketing emails
+- ✅ Product descriptions
+- ✅ Error messages (if promotional)
+- ✅ Onboarding text
+- ✅ Button labels (if verbose)
+
+### **Example**
+
+**Before (AI-generated):**
+```
+"BookIT revolutionizes the beauty industry with cutting-edge 
+booking solutions that empower professionals to unlock their 
+potential and maximize revenue streams."
+```
+
+**After (Humanized via /humanizer):**
+```
+"BookIT helps beauty pros manage bookings, attract clients, 
+and earn more—without the complexity."
+```
+
+---
+
 ## 🚨 Important Rules
 
 ### **ЗАВЖДИ РОБИТИ:**

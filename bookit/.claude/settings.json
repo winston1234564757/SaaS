@@ -72,6 +72,12 @@
       "description": "Node.js, Express, database, API design",
       "triggerKeywords": ["backend", "api", "database", "server", "node"],
       "priority": 2
+    },
+    "copywriting": {
+      "primary": "humanizer",
+      "description": "Remove AI signs from text, make it sound natural and human-written",
+      "triggerKeywords": ["text", "copy", "write", "humanize", "landing", "pricing", "features", "description", "content"],
+      "priority": 1
     }
   },
   "mcpServers": {
