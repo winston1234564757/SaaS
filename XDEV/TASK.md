@@ -1,6 +1,6 @@
 # 🎨 TASK.md — Design & Development Mission for BookIT
 
-> **СТАТУС:** Фаза дизайну + розробки (Вітосе + Claude협力)
+> **СТАТУС:** Фаза дизайну + розробки (Вітосе + Claude)
 > **Остання оновлення:** 2026-05-05
 > **Конвенція:** Це ЖИВИЙ ДОКУМЕНТ. Оновлюється після кожної ітерації.
 
@@ -17,6 +17,7 @@
 5. `SYSTEM_MAP.md` — технічна архітектура (СКАНУЙ ПЕРЕД КОЖНОЮ РОБОТОЮ!)
 6. `UI_MAP.md` — карта UI компонентів
 7. `UX_STANDARDS.md` — стандарти UX
+8. `.claude/HUMANIZER_GUIDE.md` — гайд для гуманізації текстів
 
 ---
 
@@ -25,6 +26,7 @@
 **Контекст:** Перетворити BookIT на premium SaaS з поєднанням:
 - 🌬️ **"iPhone AIR"** aesthetic — легкість, простота, висока якість
 - 🏢 **"Brutal Studio"** dark mode — сучасна брутальність, дороговизна, precision
+- ✍️ **Human-Centered Copy** — гуманізовані тексти без AI-штампів
 
 ---
 
@@ -57,7 +59,7 @@
 ✓ High-end barbershop / private studio vibe
 ```
 
-**Не просто темна тема** — це окремий дизайн зі своєю энергією.
+**Не просто темна тема** — це окремий дизайн зі своєю енергією.
 
 ---
 
@@ -112,16 +114,16 @@ Mobile/PWA:
 
 ### **17 Total Skills** (Auto-Selection Enabled)
 
-#### **Copywriting (Priority 1)**
-- **humanizer** — Humanize all text (landing, pricing, features, copy) ⭐
+#### **✍️ Copywriting (Priority 1)**
+- **humanizer** — Humanize ALL text (landing, pricing, features, copy) ⭐⭐⭐
 
-### **16 Design Skills** (Auto-Selection Enabled)
+#### **🎨 Design Skills (16 total)**
 
-#### Priority 1 (QA & Audit)
+##### Priority 1 (QA & Audit)
 - **impeccable** — Design audit, anti-pattern detection, quality gate ⭐
 - **code-reviewer** — Code quality & security
 
-#### Priority 2 (Generation)
+##### Priority 2 (Generation)
 - **design-taste-frontend** — Premium UI code generation
 - **emil-design-eng** — Animations, micro-interactions, polish
 - **image-to-code** — Convert design mockups to code
@@ -129,7 +131,7 @@ Mobile/PWA:
 - **imagegen-frontend-web** — Web design concepts (1 image/section!)
 - **imagegen-frontend-mobile** — Mobile app screens
 
-#### Priority 3 (Style Variants)
+##### Priority 3 (Style Variants)
 - **minimalist-ui** — Editorial, clean, whitespace-focused
 - **industrial-brutalist-ui** — Mechanical, Swiss, sharp contrast ← FOR "BRUTAL STUDIO"
 - **high-end-visual-design** — Luxury/agency-level design
@@ -150,66 +152,67 @@ Mobile/PWA:
 Claude **автоматично вибирає** skill на основі:
 
 ```
-Користувач: "Design a premium dashboard"
+Користувач: "Write humanized copy for pricing page"
     ↓
-Claude читає keywords: "design", "dashboard"
+Claude читає keywords: "write", "copy", "pricing"
     ↓
-Матчить до: design-taste-frontend (priority 2)
+Матчить до: humanizer (priority 1)
     ↓
-Запускає /design-taste-frontend build
+Запускає /humanizer
     ↓
-Генерує код
+Видаляє AI-штампи: "revolutionizes" → "helps"
     ↓
-RUN /impeccable audit (ALWAYS!)
+Выдає природній текст
     ↓
-RUN /a11y check (contrast)
-    ↓
-RUN /tailwind optimize
+QA з Вітосе
 ```
 
 **Детальна карта:** див. `.claude/SKILL_GUIDE.md`
 
 ---
 
-## 📋 Typical Design Workflows
+## 📋 Typical Workflows
 
-### **Workflow 1: Build Premium Component**
+### **Workflow 1: Humanize Landing Page Copy**
 ```bash
-Input: "Build a modern booking confirmation card"
-1. /design-taste-frontend build
-2. /impeccable polish
-3. /a11y check colors
-4. /tailwind optimize
-→ Production code
+Input: "Write landing hero copy"
+1. Write draft
+2. /humanizer remove-AI-patterns
+3. Review natural text
+4. QA with user
+→ Production copy (sounds human!)
 ```
 
-### **Workflow 2: Dark Mode (Brutal Studio)**
+### **Workflow 2: Build Premium Component + Copy**
 ```bash
-Input: "Design dark mode for dashboard—brutal, expensive feel"
-1. /industrial-brutalist-ui (style template)
+Input: "Build pricing page with humanized copy"
+1. /humanizer fix [features copy]
+2. /design-taste-frontend build [layout]
+3. /impeccable audit
+4. /a11y check
+5. QA with user
+→ Premium pricing page
+```
+
+### **Workflow 3: Build UI + Humanize**
+```bash
+Input: "Build booking hero with human copy"
+1. /design-taste-frontend build [design]
+2. Write hero copy
+3. /humanizer humanize [copy]
+4. /impeccable audit
+5. /a11y check
+→ Premium component
+```
+
+### **Workflow 4: Dark Mode (Brutal Studio)**
+```bash
+Input: "Design dark mode—brutal feel, human copy"
+1. /industrial-brutalist-ui (style)
 2. /design-taste-frontend build
-3. /impeccable audit (harsh contrast check)
-4. /a11y verify (contrast for accessibility!)
+3. /humanizer fix [copy]
+4. /impeccable audit
 → Premium dark mode
-```
-
-### **Workflow 3: Image to Code**
-```bash
-Input: "Convert this Figma screenshot to code" [image]
-1. /image-to-code analyze
-2. /design-taste-frontend build
-3. /impeccable polish
-4. /tailwind optimize
-→ Pixel-perfect implementation
-```
-
-### **Workflow 4: Animation Polish**
-```bash
-Input: "Add smooth transitions to the form"
-1. /emil-design-eng add-motion
-2. /impeccable check-feel
-3. Implement in Framer Motion
-→ Shipped
 ```
 
 ---
@@ -219,6 +222,7 @@ Input: "Add smooth transitions to the form"
 | Task | Skill | Command |
 |------|-------|---------|
 | **Humanize Text** | humanizer | `/humanizer` |
+| **Write Copy** | humanizer | `/humanizer` |
 | Build UI | design-taste-frontend | `/design-taste-frontend build` |
 | Dark Mode (Brutal) | industrial-brutalist-ui | `/industrial-brutalist-ui` |
 | Audit Quality | impeccable | `/impeccable audit` |
@@ -230,44 +234,77 @@ Input: "Add smooth transitions to the form"
 
 ---
 
-## 🎯 **QA GATE — BEFORE EVERY DESIGN FINALIZATION**
+## 📝 HUMANIZER CRITICAL RULES
 
-> ⭐ **CRITICAL RULE:** Do NOT finalize any design without QA session with user
+> **ОБОВ'ЯЗКОВО:** Гуманізуй ВСІ тексти на BookIT
+
+### **Humanizer Workflow**
+```
+1. Write draft (AI is OK)
+2. Run /humanizer
+3. Humanizer detects & fixes:
+   ✗ "revolutionizes" → "helps"
+   ✗ "leverage" → remove
+   ✗ "unlock potential" → "grow"
+   ✗ Passive voice → active
+4. Output: Natural text
+5. QA with user
+```
+
+### **Where to Humanize (PRIORITY 1)**
+- ✅ Landing page hero & copy
+- ✅ Pricing page descriptions
+- ✅ Feature descriptions
+- ✅ Marketing emails
+- ✅ Onboarding text
+- ✅ Button labels (if verbose)
+- ✅ Error messages (friendly)
+
+### **Example**
+```
+BEFORE (AI):
+"BookIT revolutionizes the beauty industry by leveraging 
+cutting-edge technology to empower masters and maximize 
+revenue potential."
+
+AFTER (/humanizer):
+"BookIT helps beauty pros manage bookings and attract 
+more clients."
+```
+
+---
+
+## 🎯 **QA GATE — BEFORE EVERY FINALIZATION**
+
+> ⭐ **CRITICAL RULE:** Do NOT finalize any design/copy without QA session with user
 
 ### **QA Session Protocol**
 
-**Коли Claude думає, що дизайн готовий:**
-
+**For Design:**
 ```
-1. Claude готує скрін або демо
-
-2. Claude пропонує:
-   - "Вітосе, давай перевіримо дизайн перед фіналізацією"
-   - Показує концепцію
-   - Висвітлює ключові рішення (кольори, типографіка, spacing)
-   - Пропонує варіанти чи поліпшення
-
-3. Вітосе дає фідбек:
-   - ✅ Схвалює
-   - 🔄 Просить змінити (кольор, spacing, стиль)
-   - 💡 Пропонує нові ідеї
-
-4. Claude:
-   - Реалізує feedback
-   - Запускає /impeccable audit
-   - Перепропонує (п.2)
-
-5. Цикл повторюється доки Вітосе не скаже: "Готово!"
+1. Claude готує скрін/демо
+2. Claude пропонує: "Давай перевіримо дизайн"
+3. Показує рішення (кольори, spacing, motion)
+4. Вітосе дає фідбек
+5. Цикл до "Готово!"
 ```
 
-### **Що перевіряти на QA:**
-- ✓ Відповідність "iPhone AIR" або "Brutal Studio"
-- ✓ Колірна палітра (контраст + естетика)
-- ✓ Типографіка (sans + script, розміри, гієрархія)
-- ✓ Spacing & alignment (математична точність)
-- ✓ Motion & feel (Animation intensity 5/10?)
+**For Copy:**
+```
+1. Claude готує humanized текст
+2. Claude пропонує: "Давай перевіримо копію"
+3. Показує: "Видалив AI-штампи: 'revolutionize' → 'help'"
+4. Вітосе дає фідбек
+5. Цикл до "Готово!"
+```
+
+### **Що перевіряти**
+- ✓ Дизайн: відповідність "iPhone AIR" або "Brutal Studio"
+- ✓ Копія: звучить природно, без AI-штампів
+- ✓ Колірна палітра & контраст (WCAG AA)
+- ✓ Типографіка (sans + script)
+- ✓ Motion & feel (5/10 інтенсивність)
 - ✓ Mobile-first responsiveness
-- ✓ Accessibility (a11y контраст)
 
 ---
 
@@ -277,65 +314,60 @@ Input: "Add smooth transitions to the form"
 
 ### **ОБОВ'ЯЗКОВІ ДО ЧИТАННЯ**
 
-| Файл | Розмір | Коли читати | Використання |
-|------|--------|-----------|--------------|
-| `AI_DEVELOPER.md` | 15K | **ПЕРЕД кожною роботою** | Залізні правила, конвенції |
-| `SYSTEM_MAP.md` | 26K | **ПЕРЕД кожною роботою** | Архітектура, файли, структури |
-| `BOOKIT.md` | 15K | На старті проекту + QA | Бізнес-логіка, фічі, контекст |
-| `AI_ONBOARDING.md` | 16K | На старті проекту | Брифінг, місія, контекст |
+| Файл | Коли | Для чого |
+|------|------|---------|
+| `AI_DEVELOPER.md` | ПЕРЕД КОЖНОЮ роботою | Залізні правила |
+| `SYSTEM_MAP.md` | ПЕРЕД КОЖНОЮ роботою | Архітектура |
+| `BOOKIT.md` | На старті проекту | Business logic |
+| `AI_ONBOARDING.md` | На старті проекту | Брифінг |
 
 ### **ДОВІДНИКОВІ**
 
-| Файл | Розмір | Коли читати | Використання |
-|------|--------|-----------|--------------|
-| `UI_MAP.md` | 8.3K | Перед UI роботою | Карта компонентів, структури |
-| `UX_STANDARDS.md` | 1.8K | При дизайні | Правила UX, стандарти |
-| `CHANGELOG.md` | 3.2K | Після ітерацій | Історія змін |
-| `image.png` | 273K | Для вдохновення | Дизайн референс |
+| Файл | Коли | Для чого |
+|------|------|---------|
+| `.claude/HUMANIZER_GUIDE.md` | Перед текстом | Гайд гуманізації |
+| `.claude/SKILL_GUIDE.md` | Для reference | Карта skills |
+| `UI_MAP.md` | Перед UI роботою | Компоненти |
+| `UX_STANDARDS.md` | При дизайні | Правила UX |
+| `XDEV_PROTOCOL.md` | Для reference | Як читати файли |
 
 ---
 
 ## 🔄 Workflow для Вітосе + Claude
 
-### **Ітерація одного компонента:**
+### **Приклад: Humanize Pricing Page + Design**
 
 ```
-1️⃣ Вітосе: "Build booking hero with iPhone AIR feel"
+1️⃣ Вітосе: "Create humanized pricing page, Brutal Studio dark mode"
    
 2️⃣ Claude:
-   - Читає XDEV/SYSTEM_MAP.md (архітектура)
-   - Читає XDEV/AI_DEVELOPER.md (стандарти)
-   - Вибирає skill: design-taste-frontend
-   - Генерує дизайн & код
+   - Читає HUMANIZER_GUIDE.md
+   - Читає XDEV/SYSTEM_MAP.md
    
-3️⃣ Claude запускає:
-   - /impeccable audit
-   - /a11y check colors
-   - /tailwind optimize
+3️⃣ Copy fase:
+   - Пише draft feature descriptions
+   - Запускає /humanizer
+   - Видаляє: "cutting-edge" → "flexible"
+   - Видаляє: "leverage" → remove
+   - Выдає: "Manage up to 500 clients"
    
-4️⃣ Claude: "Вітосе, давай перевіримо героїку. Я використав:
-   - Мінімалістичні лінії 0.5px
-   - Велику негативну простір
-   - Sans-serif основний текст
-   - Script accent у назві
-   - Glassmorphism на CTA
+4️⃣ Design fase:
+   - Запускає /industrial-brutalist-ui
+   - Запускає /design-taste-frontend build
    
-   Варіанти: світлий (поточний) або спробувати темнішу версію?
-   Контраст: ✅ WCAG AA
+5️⃣ QA:
+   - Claude: "Вітосе, давай перевіримо:
+     - Копія: натуральна, без AI
+     - Дизайн: Brutal, темний, дорогий
+     - Контраст: WCAG AA ✅
    
-5️⃣ Вітосе дає фідбек:
-   - "Додай ще більше простору між строк"
-   - "CTA кнопка—зробимо наче Brutal?"
+6️⃣ Вітосе:
+   - Схвалює або просить змін
    
-6️⃣ Claude реалізує:
-   - Змінює spacing
-   - Запускає /industrial-brutalist-ui для CTA
-   - Перепропонує дизайн
-   
-7️⃣ Цикл → поки не скажеш "Готово!"
+7️⃣ Цикл → Готово!
 
 8️⃣ Claude:
-   - Оновлює SYSTEM_MAP.md (компонент додано)
+   - Оновлює SYSTEM_MAP.md
    - Оновлює CHANGELOG.md
 ```
 
@@ -345,70 +377,70 @@ Input: "Add smooth transitions to the form"
 
 ### **ЗАВЖДИ РОБИТИ:**
 1. ✅ Читай XDEV файли перед роботою
-2. ✅ Запускай `/impeccable audit` перед фіналізацією
-3. ✅ Запускай `/a11y check` для кольорів
-4. ✅ Пропонуй QA сесію з Вітосе (не приховуй рішення)
-5. ✅ Оновлюй SYSTEM_MAP.md & CHANGELOG.md після кожної ітерації
-6. ✅ Використовуй Framer Motion v12.35.1 для всіх анімацій
-7. ✅ Mobile-first підхід (дизайн для мобіля спочатку)
-8. ✅ Server Components за замовчуванням, `"use client"` тільки для інтерактивності
+2. ✅ **Гуманізуй ВСІ тексти** через `/humanizer`
+3. ✅ Запускай `/impeccable audit` перед фіналізацією
+4. ✅ Запускай `/a11y check` для кольорів
+5. ✅ Пропонуй QA сесію з Вітосе (ОБОВ'ЯЗКОВО!)
+6. ✅ Оновлюй SYSTEM_MAP.md & CHANGELOG.md після роботи
+7. ✅ Використовуй Framer Motion v12.35.1 для анімацій
+8. ✅ Mobile-first підхід (мобіль спочатку)
+9. ✅ Server Components за замовчуванням
 
 ### **НІКОЛИ НЕ РОБИТИ:**
 1. ❌ Не скорочуй QA сесію
-2. ❌ Не вибирай стиль без узгодження з Вітосе
-3. ❌ Не використовуй Emoji в дизайні (ONLY SVG)
-4. ❌ Не робити тяжкі shadows (стиль "Light Air")
+2. ❌ **Не публікуй AI-generated текст без /humanizer**
+3. ❌ Не використовуй: "revolutionize", "leverage", "empower"
+4. ❌ Не робити тяжкі shadows (Light Air)
 5. ❌ Не ігноруй SYSTEM_MAP.md перед роботою
-6. ❌ Не забувай про accessibility (a11y)
+6. ❌ Не забувай про a11y контраст
 7. ❌ Не робити половинчастих рішень
 
 ---
 
 ## 🏁 Success Criteria
 
-Дизайн готовий коли:
+Проект готовий коли:
 
-- ✅ Видповідає "iPhone AIR" або "Brutal Studio" філософії
-- ✅ Проходить `/impeccable audit` без проблем
-- ✅ `a11y` контраст: WCAG AA мінімум
-- ✅ Motion: 5/10 інтенсивність, smooth на Android
-- ✅ Типографіка: sans + script поєднання
-- ✅ Spacing: математично точний, мінімалістичний
-- ✅ Вітосе схвалив на QA сесії
-- ✅ SYSTEM_MAP.md & CHANGELOG.md оновлено
-
----
-
-## 📞 Questions for Claude
-
-Перед початком роботи задай собі:
-
-1. **Яка стиль потрібна?** (Air light, Brutal dark, або обидва?)
-2. **Яку палітру вибрати?** (а11y перевіримо разом)
-3. **Типографіка?** (sant-serif що + script accent?)
-4. **Motion?** (Потрібні анімації? Інтенсивність 5/10?)
-5. **Mobile-first?** (Як виглядає на мобілі?)
+- ✅ **Текст:** гуманізований через `/humanizer`, без AI-штампів
+- ✅ **Дизайн:** відповідає "iPhone AIR" або "Brutal Studio"
+- ✅ **Code:** пройшов `/impeccable audit`
+- ✅ **A11y:** контраст WCAG AA мінімум
+- ✅ **Motion:** 5/10 інтенсивність, smooth на Android
+- ✅ **Copy:** Вітосе схвалив на QA
+- ✅ **Docs:** SYSTEM_MAP.md & CHANGELOG.md оновлено
 
 ---
 
 ## 🚀 Current Status
 
-- ✅ 16 Design Skills встановлено
-- ✅ 3 MCP Servers готові
-- ✅ Auto-selection в `.claude/settings.json` активовано
-- ✅ SKILL_GUIDE.md створено
-- ✅ QA Protocol встановлено
+- ✅ **17 Skills** встановлено (1 copywriting + 16 design)
+- ✅ **3 MCP Servers** готові
+- ✅ **Auto-selection** активовано в settings.json
+- ✅ **Humanizer** інтегровано (priority 1)
+- ✅ **QA Protocol** встановлено
+- ✅ **Guides** створено (SKILL_GUIDE, HUMANIZER_GUIDE, XDEV_PROTOCOL)
 
-**Ти готовий перетворити BookIT! 🎭✨**
+**Ти готовий перетворити BookIT на premium SaaS з людяними текстами! 🎭✨**
 
 ---
 
-**Next Step:** Вітосе просто кажеш, яку частину дизайну бозолсь攻略розпочати, і Claude автоматично вибирає ранці skills.
+## 📞 Before Every Task
 
-Приклад:
+Задай собі:
+
+1. **Потрібен текст?** → `/humanizer`
+2. **Потрібен дизайн?** → Який стиль? (Air/Brutal?)
+3. **Потрібна копія?** → Draft → `/humanizer` → QA
+4. **Все готово?** → `/impeccable audit` → `/a11y check` → QA
+
+---
+
+**Next Step:** Вітосе просто каже що розпочати, Claude автоматично вибирає skills (humanizer, design, audit), запускає гайди, запропонує QA.
+
+**Приклад:**
 ```
-Вітосе: "Let's start with the master dashboard. iPhone AIR style."
-Claude: [читає XDEV, вибирає skills, пропонує QA]
+Вітосе: "Humanize the landing page and redesign the hero"
+Claude: [читає HUMANIZER_GUIDE + XDEV, вибирає /humanizer + /design-taste-frontend, пропонує QA]
 ```
 
-**Готово?** 🚀
+**Готово? 🚀**
