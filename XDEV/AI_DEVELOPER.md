@@ -125,6 +125,85 @@
 
 ---
 
+## 🤖 Skills & Design Prompts (6 Core Skills)
+
+### **Auto-Selection Rules**
+- Claude **автоматично вибирає** skill на основі keywords
+- **НЕ ПОТРІБНО** вручну викликати `/design-taste-frontend` — просто скажи "Build a form"
+- Keywords → settings.json → Primary Skill (priority 1 > 2)
+
+### **Available Skills (6)**
+
+#### **1. HUMANIZER** (Priority 1 - Copywriting)
+- Use for: landing pages, pricing, features, copy
+- Removes: "revolutionize", "leverage", "empower", passive voice
+- Always: humanize text before finalizing
+- Keywords: text, copy, write, humanize, landing, pricing
+
+#### **2. IMPECCABLE** (Priority 1 - Design Audit)
+- Use for: design audit, anti-pattern detection
+- Always: /impeccable audit after design generation
+- Detects: generic AI patterns, weak hierarchy, contrast issues
+- Keywords: audit, polish, critique, quality
+
+#### **3. CODE-REVIEWER** (Priority 1 - Code Quality)
+- Use for: code review, security checks, best practices
+- Always: review before commit
+- Keywords: review, security, quality, refactor
+
+#### **4. DESIGN-TASTE-FRONTEND** (Priority 2 - PRIMARY for UI)
+- Use for: building UI components, pages, dashboards
+- Replaces: imagegen-web, imagegen-mobile, high-end, minimalist, brutalist
+- Always: use design-taste + prompt for style (not separate skills)
+- Keywords: build, create, component, design, ui, interface
+
+#### **5. EMIL-DESIGN-ENG** (Priority 2 - Animations)
+- Use for: animations, transitions, micro-interactions, polish
+- Always: Framer Motion v12.35.1
+- Keywords: animate, motion, transition, feel, polish
+
+#### **6. SENIOR-FRONTEND** (Priority 2 - Implementation)
+- Use for: React/Next.js implementation, performance
+- Keywords: frontend, react, nextjs, implementation, performance
+
+### **Design Prompt Guidelines**
+
+#### **For "iPhone AIR" (Light)**
+```
+"Build [component] with iPhone AIR aesthetic:
+- Ultra-thin borders (0.5px)
+- Expansive negative space
+- Perfect grid alignment
+- Zero heavy shadows
+- Elegance over complexity"
+```
+
+#### **For "Brutal Studio" (Dark)**
+```
+"Design [component] in Brutal Studio style:
+- Deep charcoals, slate tones
+- Raw metallic accents
+- Rugged, masculine, expensive feel
+- High-end barbershop / studio vibe"
+```
+
+#### **Complete Design Workflow**
+```
+1. Humanizer: humanize copy first
+2. Design-Taste: /design-taste-frontend build [component]
+3. Emil-Design: /emil-design-eng add-motion (if needed)
+4. Impeccable: /impeccable audit
+5. A11y: check contrast
+6. Tailwind: optimize classes
+```
+
+### **MCP Servers (Always Available)**
+- **tailwind**: CSS utilities, optimization
+- **a11y**: color contrast, WCAG checks
+- **universal-icons**: icon search & selection
+
+---
+
 ## 📊 Data Pipeline & SEO
 
 ### Data Pipeline First

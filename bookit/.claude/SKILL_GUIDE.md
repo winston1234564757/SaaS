@@ -1,371 +1,365 @@
-# 🎯 Bookit Design & Development Skills Guide
+# 🎯 Bookit Skills Guide (6 Core Skills)
 
-## Auto-Selection Logic
+> **CLEANED VERSION:** 17 → 6 skills (removed duplicates & conflicts)
 
-When a task comes in, analyze keywords and automatically select the best skill(s):
+---
+
+## 🤖 Auto-Selection Logic
+
+When a task comes in, Claude analyzes and auto-selects:
 
 ```
 User Request
     ↓
-Extract Keywords (design, audit, build, animate, etc.)
+Extract Keywords (humanize, build, animate, audit, code...)
     ↓
 Match to Skill Map (settings.json skillSelection)
     ↓
-Select Primary Skill (priority 1 > 2 > 3)
+Select Primary Skill (Priority 1 > Priority 2)
     ↓
 Use Secondary Skills if needed
     ↓
-Always End with impeccable audit (if design task)
+Always end design with /impeccable audit
+Always end text with /humanizer check
 ```
 
 ---
 
-## 🎨 Design Skills Quick Reference
+## ✍️ Copywriting Skill
 
-### **1. IMPECCABLE** (Priority 1 for QA)
+### **HUMANIZER** (Priority 1)
+**Removes AI-generated writing patterns. Makes text sound natural.**
+
 **When to use:**
-- User says: "audit", "review", "polish", "critique", "quality check"
-- After any design generation (run as final step)
-- To catch AI patterns and generic designs
-- For accessibility & hierarchy checks
+- Landing page copy
+- Pricing page descriptions
+- Feature descriptions
+- Marketing emails
+- Button labels (if verbose)
+- Any text that sounds "AI-generated"
+
+**What it does:**
+- Detects: inflated language, AI buzzwords, passive voice
+- Removes: "revolutionize", "leverage", "empower", "unlock potential"
+- Converts: passive → active voice
+- Makes: corporate → conversational tone
+
+**Examples:**
+```
+BEFORE: "BookIT revolutionizes booking by leveraging AI technology"
+AFTER: "BookIT helps beauty pros manage bookings easily"
+
+BEFORE: "Unlock unprecedented growth potential"
+AFTER: "Earn more without the complexity"
+```
+
+**Keywords that trigger this:**
+- text, copy, write, humanize, landing, pricing, features, content
+
+---
+
+## 🎨 Design & Audit Skills
+
+### **IMPECCABLE** (Priority 1)
+**Audits design quality. Catches anti-patterns.**
+
+**When to use:**
+- After any design generation (ALWAYS before finalizing)
+- Design reviews and critiques
+- Checking for AI generic patterns
+- Verifying visual hierarchy
+- Accessibility checks
 
 **What it does:**
 - 27 deterministic anti-pattern rules
-- 12-rule LLM critique pass
-- UX/visual hierarchy audit
-- Accessibility review
+- Detects generic AI design clichés
+- Reviews visual hierarchy & contrast
+- Checks spacing & alignment
+- WCAG accessibility review
 
 **Example:**
 ```
-User: "This dashboard looks generic, make it better"
+User: "This dashboard looks generic"
 → /impeccable polish
+→ "Found: card-in-card nesting, overused fonts, weak hierarchy"
+→ Suggestions for improvement
 ```
+
+**Keywords:** audit, review, polish, critique, quality, design review
 
 ---
 
-### **2. DESIGN-TASTE-FRONTEND** (Priority 2 for Code)
+### **CODE-REVIEWER** (Priority 1)
+**Reviews code quality, security, best practices.**
+
+**When to use:**
+- Before committing code
+- Security audits
+- Code quality checks
+- Performance optimization review
+
+**What it does:**
+- Code quality analysis
+- Security vulnerability detection
+- Best practice verification
+- Performance suggestions
+- TypeScript/React patterns
+
+**Example:**
+```
+User: "Review the auth context code"
+→ /code-reviewer audit
+→ Reports: security issues, patterns, optimizations
+```
+
+**Keywords:** review, refactor, security, quality, best practice
+
+---
+
+## 🚀 UI & Implementation Skills
+
+### **DESIGN-TASTE-FRONTEND** (Priority 2 - PRIMARY for UI)
+**Generates premium UI code. This is the PRIMARY design generation skill.**
+
 **When to use:**
 - Building UI components
 - Creating pages/dashboards
-- Need "metric-based, strict component architecture"
-- User says: "build", "create", "design", "component"
+- Implementing designs
+- Need premium, polished interfaces
+- User says: "build", "create", "design", "component", "ui"
 
 **What it does:**
-- Premium frontend code with taste
+- Premium UI code generation (React/Next.js)
 - Strict CSS architecture
 - Hardware acceleration
-- Balanced design engineering
+- Metric-based design rules
+- Balanced component structure
+
+**Replaces:** imagegen-web, imagegen-mobile, high-end, minimalist, brutalist
+(use design-taste + prompt for style instead)
 
 **Example:**
 ```
-User: "Build a hero section for the landing page"
+User: "Build a modern booking form with iPhone AIR aesthetic"
 → /design-taste-frontend build
+→ Generates premium UI code with Air philosophy
+→ Ultra-thin, spacious, elegant
 ```
+
+**Keywords:** build, create, component, design, ui, interface, dashboard, page
 
 ---
 
-### **3. EMIL-DESIGN-ENG** (Priority 2 for Motion)
+### **EMIL-DESIGN-ENG** (Priority 2)
+**Animations, micro-interactions, polish. Makes UI feel premium.**
+
 **When to use:**
-- Animation needed
-- Micro-interactions
-- "Polish" the UI feel
-- User says: "animate", "transition", "motion", "feel"
+- Adding animations/transitions
+- Micro-interactions needed
+- Polishing the "feel" of the UI
+- Framer Motion implementation
+- User says: "animate", "transition", "motion", "feel", "polish"
 
 **What it does:**
-- UI polish philosophy
-- Animation decisions
+- Animation decision-making
+- Framer Motion code
 - Micro-interactions
 - Invisible details that make software feel great
+- UI polish philosophy
 
 **Example:**
 ```
 User: "Add smooth transitions to the booking flow"
-→ /emil-design-eng
+→ /emil-design-eng add-motion
+→ Adds Framer Motion animations
+→ Implements micro-interactions
+→ Polish & feel improvements
 ```
 
----
-
-### **4. IMAGE-TO-CODE** (Priority 2 for Conversion)
-**When to use:**
-- User has a design image/screenshot
-- Converting mockup to code
-- User says: "from this image", "screenshot", "mockup"
-
-**What it does:**
-- Analyze design images
-- Generate matching code
-- Pixel-perfect conversion
-
-**Example:**
-```
-User: "Convert this Figma screenshot to code" [image]
-→ /image-to-code
-```
+**Keywords:** animate, motion, micro-interaction, transition, polish, feel
 
 ---
-
-### **5. IMAGEGEN-FRONTEND-WEB** (Secondary for Web Design)
-**When to use:**
-- Need to generate design concepts
-- Creating landing page sections
-- User says: "design inspiration", "concepts", "mockups"
-
-**What it does:**
-- Generate premium website designs
-- One image per section
-- Composition variety
-- Conversion-aware layouts
-
----
-
-### **6. IMAGEGEN-FRONTEND-MOBILE** (Secondary for Mobile)
-**When to use:**
-- Mobile app screens
-- iOS/Android UI
-- User says: "mobile", "app screen", "ios", "android"
-
-**What it does:**
-- Premium mobile app concepts
-- iPhone mockups
-- Multi-screen consistency
-- App-native design
-
----
-
-### **7. MINIMALIST-UI** (Style Option)
-**When to use:**
-- User wants: "clean", "minimal", "editorial", "notion-like"
-- Whitespace-focused design
-- Restrained color palette
-
----
-
-### **8. INDUSTRIAL-BRUTALIST-UI** (Style Option)
-**When to use:**
-- User wants: "brutal", "mechanical", "harsh", "swiss typography"
-- Data-heavy dashboards
-- Raw, declassified-looking UI
-
----
-
-### **9. BRANDKIT** (Brand System)
-**When to use:**
-- Brand identity work
-- Logo systems
-- Color palettes
-- Brand guidelines
-
----
-
-## ✍️ Copywriting & Content Skills
-
-### **HUMANIZER** (Priority 1 for Text)
-**When to use:**
-- Writing landing page copy
-- Pricing page descriptions
-- Feature descriptions
-- Any project text that feels "AI-generated"
-- User says: "write", "copy", "humanize", "landing", "features"
-
-**What it does:**
-- Removes AI-generated writing patterns
-- Fixes: inflated symbolism, promotional language, vague attributions
-- Removes: em dash overuse, passive voice, rule-of-three patterns
-- Makes text sound natural and human-written
-- Based on Wikipedia's "Signs of AI writing" guide
-
-**Example:**
-```
-Input: "BookIT revolutionizes the beauty industry with cutting-edge booking solutions..."
-→ /humanizer fix
-Output: "BookIT makes it easy for beauty pros to manage bookings and clients..."
-```
-
----
-
-## 🔧 Code Skills
-
-### **CODE-REVIEWER** (Priority 1)
-**When to use:**
-- Code review requests
-- Security audit
-- Quality checks
-- User says: "review", "refactor", "security"
 
 ### **SENIOR-FRONTEND** (Priority 2)
-**When to use:**
-- React/Next.js development
-- Component architecture
-- Performance optimization
-- Frontend-specific tasks
+**React/Next.js implementation, performance optimization.**
 
-### **SENIOR-BACKEND** (Priority 2)
 **When to use:**
-- Node.js/Express development
-- Database design
-- API development
-- Backend-specific tasks
+- Implementing designs in code
+- React component architecture
+- Performance optimization
+- Next.js best practices
+- Frontend logic & state management
+
+**What it does:**
+- React/Next.js component scaffolding
+- Performance optimization
+- Bundle analysis
+- Best practice patterns
+- State management guidance
+
+**Example:**
+```
+User: "Implement the dashboard page"
+→ /senior-frontend implement
+→ Uses: Server Components, React patterns, performance best practices
+```
+
+**Keywords:** frontend, react, nextjs, component, performance, implementation
 
 ---
 
 ## 🔌 MCP Servers (Always Available)
 
-### **TAILWIND MCP** (Priority 1)
-**When to use:**
-- Suggest Tailwind utility classes
-- Optimize CSS
-- Check Tailwind v4 compatibility
-- ALWAYS use for CSS suggestions
+### **TAILWIND** (Priority 1)
+**CSS utilities optimization for Tailwind v4.**
 
-**Auto-trigger:**
-- User asks for CSS/styles
-- After code generation (verify classes)
+**When to use:**
+- Suggesting CSS classes
+- Optimizing styles
+- Tailwind v4 compatibility
+- Responsive design
+
+**Always use for:** CSS suggestions, style optimization
 
 ---
 
-### **A11Y MCP** (Priority 1)
-**When to use:**
-- Check color contrast
-- Verify WCAG compliance
-- Accessibility audit
-- ALWAYS check after design color selection
+### **A11Y** (Priority 1)
+**Color contrast checks, WCAG accessibility.**
 
-**Auto-trigger:**
-- After any color/background combo
-- Before shipping design
-- "Design System" color validation
+**When to use:**
+- After color selection
+- Design finalization
+- Accessibility verification
+
+**Always use:** Before finalizing any design with colors
 
 ---
 
-### **UNIVERSAL-ICONS MCP**
+### **UNIVERSAL-ICONS** (Priority 2)
+**Icon search and selection from universal icon sets.**
+
 **When to use:**
-- Search for icons
-- Find Lucide React alternatives
-- Icon selection help
+- Finding icons
+- Icon selection suggestions
+- Lucide React alternatives
 
 ---
 
 ## 📊 Decision Matrix
 
-| Task Type | Primary Skill | Secondary | MCP |
-|-----------|---------------|-----------|-----|
-| **Build UI component** | design-taste-frontend | imagegen-frontend-web | tailwind, a11y |
+| Task | Primary Skill | Secondary | MCP |
+|------|---------------|-----------|-----|
+| **Humanize text** | humanizer | (none) | (none) |
+| **Build UI component** | design-taste-frontend | emil-design-eng | tailwind, a11y |
+| **Add animations** | emil-design-eng | (none) | (none) |
+| **Implement React** | senior-frontend | (none) | tailwind |
 | **Audit design** | impeccable | (none) | a11y |
-| **Add animation** | emil-design-eng | (none) | (none) |
-| **Convert image→code** | image-to-code | design-taste-frontend | tailwind |
-| **Mobile screens** | imagegen-frontend-mobile | design-taste-frontend | a11y |
-| **Design review** | impeccable | (none) | a11y |
-| **Code review** | code-reviewer | (none) | (none) |
-| **Optimize frontend** | senior-frontend | (none) | tailwind |
-| **Write/humanize text** | humanizer | (none) | (none) |
-| **Landing page copy** | humanizer | design-taste-frontend | (none) |
+| **Review code** | code-reviewer | (none) | (none) |
+| **Check colors** | a11y MCP | (none) | (none) |
+| **Optimize CSS** | tailwind MCP | (none) | (none) |
+| **Find icons** | universal-icons MCP | (none) | (none) |
 
 ---
 
-## 🚀 Typical Workflows
+## 🎯 Typical Workflows
 
-### **Design Complete Flow**
+### **Humanize Landing Page Copy**
 ```
-1. /design-taste-frontend build
-2. /impeccable polish
-3. /a11y check (contrast)
-4. /tailwind optimize
-→ Ready to implement
+1. Write draft
+2. /humanizer remove-AI-patterns
+3. Review natural text
+4. QA with user
+→ Production copy
 ```
 
-### **Redesign Flow**
+### **Build Premium Dashboard**
 ```
-1. /imagegen-frontend-web create [concept]
-2. /image-to-code convert
+1. /design-taste-frontend build [dashboard]
+2. /emil-design-eng add-motion (optional)
 3. /impeccable audit
-4. /a11y verify
-5. /tailwind finalize
+4. /a11y check [colors]
+5. /tailwind optimize
+6. QA with user
 → Production code
 ```
 
-### **Animation Polish**
+### **Code Review & Optimize**
 ```
-1. /emil-design-eng add-motion
-2. /impeccable check-feel
-3. Code implementation
-→ Shipped
+1. /code-reviewer audit [file]
+2. Fix issues
+3. /senior-frontend optimize
+4. Final review
+→ Ready to merge
 ```
 
-### **Code Review Flow**
+### **Design + Copy Complete Page**
 ```
-1. /code-reviewer audit
-2. /a11y check (if UI)
-3. /senior-frontend optimize
-→ Merge-ready
+1. /humanizer fix [copy]
+2. /design-taste-frontend build [design]
+3. /impeccable audit
+4. /a11y verify
+5. /tailwind optimize
+→ Production page
 ```
 
 ---
 
-## ⚡ Quick Commands
+## ⚡ Quick Command Reference
 
 ```bash
-# Design audit (always do this)
-/impeccable audit [component]
+# Copywriting
+/humanizer [text]                  # Humanize text
 
-# Build UI
-/design-taste-frontend build [name]
+# Design
+/design-taste-frontend build       # Build UI
+/emil-design-eng add-motion        # Add animations
+/impeccable audit                  # Audit design
 
-# Polish animations
-/emil-design-eng [task]
+# Code
+/code-reviewer audit [file]        # Review code
+/senior-frontend implement         # React implementation
 
-# Check contrast
-/a11y check [colors]
-
-# Optimize CSS
-/tailwind optimize
-
-# Convert image to code
-/image-to-code [image]
-
-# Code review
-/code-reviewer audit [file]
+# A11y & CSS
+/a11y check [colors]               # Check contrast
+/tailwind optimize [classes]       # Optimize CSS
 ```
 
 ---
 
-## 🎯 Key Rules
+## 🎪 Important Notes
 
-1. **Always end design work with `/impeccable audit`** — no exceptions
-2. **Always check colors with `/a11y`** before shipping
-3. **Optimize Tailwind classes** with `/tailwind` after implementation
-4. **Use `/image-to-code` for design mockups** → pixel-perfect conversion
-5. **Choose style skill early** (minimal/brutalist) to guide generation
-6. **Mobile-first mindset** — test all designs on mobile first
+### **NO MANUAL SELECTION NEEDED**
+Claude auto-selects skills based on keywords. You don't need to type `/design-taste-frontend` — just say "Build a hero section" and Claude knows!
 
----
+### **ALWAYS AUDIT**
+- Design tasks → `/impeccable audit` (ALWAYS!)
+- Text tasks → `/humanizer` (ALWAYS!)
+- Code → `/code-reviewer` (ALWAYS!)
 
-## 📝 Example: Complete Design Task
-
-**User:** "Design a modern booking confirmation page for our SaaS"
-
-**Auto-flow:**
+### **CHAIN SKILLS**
+Many workflows use 3-4 skills in sequence:
 ```
-1. Analyze keywords: "design", "page" → design-taste-frontend
-2. /design-taste-frontend build booking-confirmation
-3. /imagegen-frontend-web [section designs]
-4. /image-to-code convert mockups
-5. /impeccable polish [code]
-6. /a11y check [colors]
-7. /tailwind optimize [classes]
-8. /emil-design-eng add-transitions
-→ Production-ready component
+humanizer → design-taste-frontend → impeccable → a11y → tailwind
 ```
 
----
-
-## 🔄 When Skills Conflict
-
-**Priority order:**
-1. **Impeccable** — always runs last for design (quality gate)
-2. **Specific style** (brutalist/minimal) — early in generation
-3. **Generic taste** (design-taste-frontend) — fallback
-4. **MCP a11y** — always runs before final approval
+### **MCP HELPERS**
+Use MCP servers for specific, focused tasks:
+- tailwind: when generating CSS
+- a11y: when selecting colors
+- universal-icons: when finding icons
 
 ---
 
-**Status:** ✅ Claude now self-selects skills based on context and keywords!
+## ✨ Key Differences from Old Version
+
+| Old (17 Skills) | New (6 Skills) | Benefit |
+|-----------------|---------------|----|
+| 6 design skills | 1 PRIMARY (design-taste) | No confusion |
+| image-gen only | design-taste (code) | Actionable |
+| Multiple audit | 1 audit (impeccable) | Clear QA |
+| Complex routing | Simple keywords | Fast selection |
+| Conflicts | No overlaps | High accuracy |
+
+---
+
+**READY TO USE THESE 6 SKILLS EFFECTIVELY!** 🚀
