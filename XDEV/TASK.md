@@ -1,6 +1,6 @@
 # 🎨 TASK.md — Design & Development Mission for BookIT
 
-> **СТАТУС:** Фаза дизайну + розробки (Вітосе + Claude)
+> **СТАТУС:** Фаза дизайну + розробки (Вітос + Claude)
 > **Остання оновлення:** 2026-05-05
 > **Конвенція:** Це ЖИВИЙ ДОКУМЕНТ. Оновлюється після кожної ітерації.
 
@@ -47,16 +47,17 @@
 - Background: Alabaster white, sophisticated grays
 - Accent: Refined, minimal
 - Feeling: Infinite space, luxury air gallery
+(ЦЕ ПРИКЛАД, ТОБІ ТРЕБА ЗАПРОПОНУВАТ І РОЗРОБИТИ ВЛАСНІ КОЛЬОРИ)
 
 ---
 
 ### 2. **"Brutal Studio" Dark Mode**
 ```
 ✓ Deep charcoals, slate tones
-✓ Raw metallic accents
 ✓ Rugged, masculine, expensive feel
 ✓ Not a simple inversion—complete mood shift
 ✓ High-end barbershop / private studio vibe
+(ЦЕ ПРИКЛАД, ТОБІ ТРЕБА ЗАПРОПОНУВАТ І РОЗРОБИТИ ВЛАСНІ КОЛЬОРИ)
 ```
 
 **Не просто темна тема** — це окремий дизайн зі своєю енергією.
@@ -76,7 +77,7 @@
 
 ### 4. **Motion & Performance**
 ```
-✓ Animation intensity: 5/10 (meaningful, not overwhelming)
+✓ Animation intensity: 7/10 (meaningful, not overwhelming)
 ✓ Every transition = purpose (guide eye or feedback)
 ✓ Optimized for low-end Android (Extreme Optimization)
 ✓ Bento-Air modules (modular but feels air-light)
@@ -110,34 +111,21 @@ Mobile/PWA:
 
 ---
 
-## 🛠️ Claude's Toolkit (Installed & Ready)
+## 🛠️ Claude's Toolkit (Cleaned & Ready)
 
-### **17 Total Skills** (Auto-Selection Enabled)
+### **6 Core Skills** (Auto-Selection Enabled)
 
 #### **✍️ Copywriting (Priority 1)**
 - **humanizer** — Humanize ALL text (landing, pricing, features, copy) ⭐⭐⭐
 
-#### **🎨 Design Skills (16 total)**
-
-##### Priority 1 (QA & Audit)
+#### **🎨 Design & Audit (Priority 1)**
 - **impeccable** — Design audit, anti-pattern detection, quality gate ⭐
-- **code-reviewer** — Code quality & security
+- **code-reviewer** — Code quality & security review
 
-##### Priority 2 (Generation)
-- **design-taste-frontend** — Premium UI code generation
+#### **🚀 UI & Animation (Priority 2)**
+- **design-taste-frontend** — Premium UI code generation (PRIMARY for all UI) ⭐⭐⭐
 - **emil-design-eng** — Animations, micro-interactions, polish
-- **image-to-code** — Convert design mockups to code
-- **senior-frontend** — React/Next.js optimization
-- **imagegen-frontend-web** — Web design concepts (1 image/section!)
-- **imagegen-frontend-mobile** — Mobile app screens
-
-##### Priority 3 (Style Variants)
-- **minimalist-ui** — Editorial, clean, whitespace-focused
-- **industrial-brutalist-ui** — Mechanical, Swiss, sharp contrast ← FOR "BRUTAL STUDIO"
-- **high-end-visual-design** — Luxury/agency-level design
-- **gpt-taste** — Elite UX + GSAP motion
-- **brandkit** — Brand identity systems
-- **stitch-design-taste** — Semantic design systems
+- **senior-frontend** — React/Next.js optimization & implementation
 
 ### **3 MCP Servers** (Always Available)
 
@@ -164,7 +152,7 @@ Claude читає keywords: "write", "copy", "pricing"
     ↓
 Выдає природній текст
     ↓
-QA з Вітосе
+QA з Вітос
 ```
 
 **Детальна карта:** див. `.claude/SKILL_GUIDE.md`
@@ -222,15 +210,14 @@ Input: "Design dark mode—brutal feel, human copy"
 | Task | Skill | Command |
 |------|-------|---------|
 | **Humanize Text** | humanizer | `/humanizer` |
-| **Write Copy** | humanizer | `/humanizer` |
-| Build UI | design-taste-frontend | `/design-taste-frontend build` |
-| Dark Mode (Brutal) | industrial-brutalist-ui | `/industrial-brutalist-ui` |
-| Audit Quality | impeccable | `/impeccable audit` |
-| Add Animations | emil-design-eng | `/emil-design-eng` |
-| Image to Code | image-to-code | `/image-to-code` |
-| Check Contrast | a11y MCP | `/a11y check` |
-| CSS Optimization | tailwind MCP | `/tailwind optimize` |
-| Icons | universal-icons MCP | (auto in code) |
+| **Build UI Component** | design-taste-frontend | `/design-taste-frontend build` |
+| **Add Animations** | emil-design-eng | `/emil-design-eng` |
+| **Implement Frontend** | senior-frontend | Code implementation |
+| **Audit Quality** | impeccable | `/impeccable audit` |
+| **Review Code** | code-reviewer | `/code-reviewer audit` |
+| **Check Contrast** | a11y MCP | `/a11y check` |
+| **CSS Optimization** | tailwind MCP | `/tailwind optimize` |
+| **Icons** | universal-icons MCP | (auto in code) |
 
 ---
 
@@ -285,7 +272,7 @@ more clients."
 1. Claude готує скрін/демо
 2. Claude пропонує: "Давай перевіримо дизайн"
 3. Показує рішення (кольори, spacing, motion)
-4. Вітосе дає фідбек
+4. Вітос дає фідбек
 5. Цикл до "Готово!"
 ```
 
@@ -294,7 +281,7 @@ more clients."
 1. Claude готує humanized текст
 2. Claude пропонує: "Давай перевіримо копію"
 3. Показує: "Видалив AI-штампи: 'revolutionize' → 'help'"
-4. Вітосе дає фідбек
+4. Вітос дає фідбек
 5. Цикл до "Готово!"
 ```
 
@@ -333,12 +320,12 @@ more clients."
 
 ---
 
-## 🔄 Workflow для Вітосе + Claude
+## 🔄 Workflow для Вітос + Claude
 
 ### **Приклад: Humanize Pricing Page + Design**
 
 ```
-1️⃣ Вітосе: "Create humanized pricing page, Brutal Studio dark mode"
+1️⃣ Вітос: "Create humanized pricing page, Brutal Studio dark mode"
    
 2️⃣ Claude:
    - Читає HUMANIZER_GUIDE.md
@@ -356,12 +343,12 @@ more clients."
    - Запускає /design-taste-frontend build
    
 5️⃣ QA:
-   - Claude: "Вітосе, давай перевіримо:
+   - Claude: "Вітос, давай перевіримо:
      - Копія: натуральна, без AI
      - Дизайн: Brutal, темний, дорогий
      - Контраст: WCAG AA ✅
    
-6️⃣ Вітосе:
+6️⃣ Вітос:
    - Схвалює або просить змін
    
 7️⃣ Цикл → Готово!
@@ -380,7 +367,7 @@ more clients."
 2. ✅ **Гуманізуй ВСІ тексти** через `/humanizer`
 3. ✅ Запускай `/impeccable audit` перед фіналізацією
 4. ✅ Запускай `/a11y check` для кольорів
-5. ✅ Пропонуй QA сесію з Вітосе (ОБОВ'ЯЗКОВО!)
+5. ✅ Пропонуй QA сесію з Вітос (ОБОВ'ЯЗКОВО!)
 6. ✅ Оновлюй SYSTEM_MAP.md & CHANGELOG.md після роботи
 7. ✅ Використовуй Framer Motion v12.35.1 для анімацій
 8. ✅ Mobile-first підхід (мобіль спочатку)
@@ -406,19 +393,19 @@ more clients."
 - ✅ **Code:** пройшов `/impeccable audit`
 - ✅ **A11y:** контраст WCAG AA мінімум
 - ✅ **Motion:** 5/10 інтенсивність, smooth на Android
-- ✅ **Copy:** Вітосе схвалив на QA
+- ✅ **Copy:** Вітос схвалив на QA
 - ✅ **Docs:** SYSTEM_MAP.md & CHANGELOG.md оновлено
 
 ---
 
-## 🚀 Current Status
+## 🚀 Current Status (CLEANED)
 
-- ✅ **17 Skills** встановлено (1 copywriting + 16 design)
-- ✅ **3 MCP Servers** готові
-- ✅ **Auto-selection** активовано в settings.json
-- ✅ **Humanizer** інтегровано (priority 1)
+- ✅ **6 Core Skills** (видалено 10 дублів/конфліктів)
+- ✅ **3 MCP Servers** готові (tailwind, a11y, universal-icons)
+- ✅ **Auto-selection** оптимізовано в settings.json
+- ✅ **No conflicts** — лише чіткі paths для Claude
 - ✅ **QA Protocol** встановлено
-- ✅ **Guides** створено (SKILL_GUIDE, HUMANIZER_GUIDE, XDEV_PROTOCOL)
+- ✅ **High accuracy** expected (менше confusion)
 
 **Ти готовий перетворити BookIT на premium SaaS з людяними текстами! 🎭✨**
 
@@ -435,11 +422,11 @@ more clients."
 
 ---
 
-**Next Step:** Вітосе просто каже що розпочати, Claude автоматично вибирає skills (humanizer, design, audit), запускає гайди, запропонує QA.
+**Next Step:** Вітос просто каже що розпочати, Claude автоматично вибирає skills (humanizer, design, audit), запускає гайди, запропонує QA.
 
 **Приклад:**
 ```
-Вітосе: "Humanize the landing page and redesign the hero"
+Вітос: "Humanize the landing page and redesign the hero"
 Claude: [читає HUMANIZER_GUIDE + XDEV, вибирає /humanizer + /design-taste-frontend, пропонує QA]
 ```
 

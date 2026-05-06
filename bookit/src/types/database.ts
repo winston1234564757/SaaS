@@ -123,6 +123,9 @@ export interface MasterProfile {
   c2c_discount_pct?: number;
   ships_nova_poshta?: boolean;
   broadcasts_used?: number;
+  waitlist_discount_pct?: number | null;
+  waitlist_lookback_days?: number | null;
+  waitlist_lookahead_days?: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -20,7 +20,7 @@ export default async function Page({
   const [mpResult, productsResult] = await Promise.all([
     admin
       .from('master_profiles')
-      .select('subscription_tier, broadcasts_used')
+      .select('subscription_tier, broadcasts_used, waitlist_discount_pct, waitlist_lookback_days, waitlist_lookahead_days')
       .eq('id', user.id)
       .single(),
     admin
@@ -47,6 +47,11 @@ export default async function Page({
       isPro={isPro}
       broadcastsUsed={broadcastsUsed}
       products={products}
+      waitlistConfig={{
+        discountPct: mpResult.data?.waitlist_discount_pct ?? null,
+        lookbackDays: mpResult.data?.waitlist_lookback_days ?? 14,
+        lookaheadDays: mpResult.data?.waitlist_lookahead_days ?? 3,
+      }}
     />
   );
 }

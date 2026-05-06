@@ -1,59 +1,22 @@
 {
-  "description": "Bookit Design & Development Configuration",
+  "description": "Bookit Design & Development Configuration (Cleaned: 6 Core Skills)",
   "modelPreferences": {
     "default": "haiku",
     "forDesign": "opus",
     "forCodeReview": "opus"
   },
   "skillSelection": {
-    "designUI": {
-      "primary": "impeccable",
-      "description": "UI audit, polish, anti-patterns, quality checks",
-      "triggerKeywords": ["audit", "polish", "critique", "redesign", "anti-pattern", "quality", "design review"],
+    "copywriting": {
+      "primary": "humanizer",
+      "description": "Humanize all text (landing, pricing, features, copy)",
+      "triggerKeywords": ["text", "copy", "write", "humanize", "landing", "pricing", "features", "description", "content"],
       "priority": 1
     },
-    "designGenerate": {
-      "primary": "design-taste-frontend",
-      "secondary": ["high-end-visual-design", "imagegen-frontend-web"],
-      "description": "Generate premium UI code with taste",
-      "triggerKeywords": ["build", "create", "component", "design", "ui", "interface"],
-      "priority": 2
-    },
-    "designMobile": {
-      "primary": "imagegen-frontend-mobile",
-      "description": "Mobile screen design and flows",
-      "triggerKeywords": ["mobile", "ios", "android", "app screen", "mobile ui"],
-      "priority": 3
-    },
-    "designAnimation": {
-      "primary": "emil-design-eng",
-      "description": "UI polish, animations, micro-interactions, invisible details",
-      "triggerKeywords": ["animation", "motion", "micro-interaction", "transition", "polish"],
-      "priority": 2
-    },
-    "designBrand": {
-      "primary": "brandkit",
-      "description": "Brand identity, logos, palettes, type systems",
-      "triggerKeywords": ["brand", "identity", "logo", "palette", "brand guidelines"],
-      "priority": 3
-    },
-    "designMinimal": {
-      "primary": "minimalist-ui",
-      "description": "Editorial, clean, whitespace-focused design",
-      "triggerKeywords": ["minimal", "editorial", "clean", "whitespace", "notion", "linear"],
-      "priority": 3
-    },
-    "designBrutalist": {
-      "primary": "industrial-brutalist-ui",
-      "description": "Mechanical, Swiss, sharp contrast design",
-      "triggerKeywords": ["brutal", "mechanical", "industrial", "swiss", "harsh", "sharp"],
-      "priority": 3
-    },
-    "designImage": {
-      "primary": "image-to-code",
-      "description": "Convert design images to code",
-      "triggerKeywords": ["image to code", "screenshot", "design image", "mockup"],
-      "priority": 2
+    "designAudit": {
+      "primary": "impeccable",
+      "description": "Design audit, anti-pattern detection, quality gate",
+      "triggerKeywords": ["audit", "polish", "critique", "redesign", "anti-pattern", "quality", "design review"],
+      "priority": 1
     },
     "codeReview": {
       "primary": "code-reviewer",
@@ -61,80 +24,90 @@
       "triggerKeywords": ["review", "refactor", "security", "quality", "best practice"],
       "priority": 1
     },
+    "designGenerate": {
+      "primary": "design-taste-frontend",
+      "description": "Generate premium UI code with taste",
+      "triggerKeywords": ["build", "create", "component", "design", "ui", "interface", "dashboard", "page"],
+      "priority": 2
+    },
+    "designAnimation": {
+      "primary": "emil-design-eng",
+      "description": "UI polish, animations, micro-interactions, invisible details",
+      "triggerKeywords": ["animation", "motion", "micro-interaction", "transition", "polish", "feel"],
+      "priority": 2
+    },
     "frontend": {
       "primary": "senior-frontend",
       "description": "React, Next.js, performance optimization",
-      "triggerKeywords": ["frontend", "react", "nextjs", "component", "performance"],
+      "triggerKeywords": ["frontend", "react", "nextjs", "component", "performance", "implementation"],
       "priority": 2
-    },
-    "backend": {
-      "primary": "senior-backend",
-      "description": "Node.js, Express, database, API design",
-      "triggerKeywords": ["backend", "api", "database", "server", "node"],
-      "priority": 2
-    },
-    "copywriting": {
-      "primary": "humanizer",
-      "description": "Remove AI signs from text, make it sound natural and human-written",
-      "triggerKeywords": ["text", "copy", "write", "humanize", "landing", "pricing", "features", "description", "content"],
-      "priority": 1
     }
   },
   "mcpServers": {
     "tailwind": {
-      "description": "Tailwind CSS utilities and optimization",
+      "description": "Tailwind CSS utilities and optimization (Tailwind v4)",
       "triggerKeywords": ["tailwind", "css", "style", "class", "utility"],
       "priority": 1,
-      "usagePattern": "Use for Tailwind v4 utility suggestions and CSS optimization"
+      "usagePattern": "Always use for CSS suggestions and optimization"
     },
     "a11y": {
-      "description": "Accessibility color contrast checks",
+      "description": "Accessibility color contrast checks (WCAG)",
       "triggerKeywords": ["contrast", "accessibility", "a11y", "wcag", "colorblind"],
       "priority": 1,
-      "usagePattern": "Always check contrast when designing UI with colors"
+      "usagePattern": "Always check contrast after color selection"
     },
     "universal-icons": {
       "description": "Icon search and selection",
       "triggerKeywords": ["icon", "icons", "lucide", "symbol"],
       "priority": 2,
-      "usagePattern": "Use for finding and suggesting icons from universal icon sets"
+      "usagePattern": "Use for finding icons from universal icon sets"
     }
   },
   "workflowRules": {
+    "copywritingWorkflow": {
+      "steps": [
+        "1. Write draft (AI is OK)",
+        "2. /humanizer remove-patterns",
+        "3. Review natural text",
+        "4. QA with user"
+      ]
+    },
     "designWorkflow": {
       "steps": [
-        "1. Understand requirements (visual goals, brand, audience)",
-        "2. Choose design skill based on style (minimal, brutalist, taste-forward, etc)",
-        "3. Generate design or image with imagegen skills",
-        "4. If from image: use image-to-code to convert",
-        "5. Use impeccable for audit & polish",
-        "6. Check a11y contrast with MCP a11y",
-        "7. Optimize Tailwind classes with tailwind MCP"
+        "1. /design-taste-frontend build [component]",
+        "2. /emil-design-eng add-motion (if needed)",
+        "3. /impeccable audit",
+        "4. /a11y check [colors]",
+        "5. /tailwind optimize [classes]",
+        "6. QA with user"
       ]
     },
     "codeWorkflow": {
       "steps": [
-        "1. Implement code using senior-frontend/senior-backend",
-        "2. Run code-reviewer for quality checks",
-        "3. Verify accessibility with a11y MCP",
-        "4. Optimize styles with tailwind MCP"
+        "1. /senior-frontend implement",
+        "2. /code-reviewer audit",
+        "3. /a11y check (if UI)",
+        "4. /tailwind optimize"
       ]
     }
   },
   "guidelines": {
     "alwaysUse": [
-      "a11y MCP для перевірки контрасту кольорів",
+      "humanizer для всіх текстів (copy, landing, pricing)",
       "impeccable для audit дизайну перед фіналізацією",
-      "Tailwind MCP для оптимізації CSS класів",
+      "a11y для перевірки контрасту кольорів",
+      "tailwind для оптимізації CSS класів",
       "TypeScript strict mode для всіх TypeScript файлів"
     ],
     "designPhilosophy": [
-      "Framer Motion v12.35.1 для анімацій",
+      "iPhone AIR aesthetic (light mode): ultra-thin, air, elegant",
+      "Brutal Studio aesthetic (dark mode): dark, harsh, expensive",
+      "Framer Motion v12.35.1 для всіх анімацій",
       "Mobile-first підхід (Tailwind v4)",
       "Server Components за замовчуванням, 'use client' тільки для інтерактивності",
       "Lucide React для іконок (обгорнути в span для style prop)"
     ],
-    "autoSelectLogic": "Analyze user request keywords first, match to skill priority list. If multiple skills apply, choose by: 1) Exact match (priority 1), 2) Primary > secondary, 3) Most specific match. For design tasks, ALWAYS run impeccable audit at end."
+    "autoSelectLogic": "Analyze user keywords → match to skill priority → select primary skill. For design: ALWAYS run impeccable audit at end. For text: ALWAYS run humanizer first."
   },
   "permissions": {
     "allowedRead": ["*"],

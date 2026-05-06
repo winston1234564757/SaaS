@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Bell, Check, X, Images, CalendarDays, Star, Megaphone, ExternalLink } from 'lucide-react';
+import { Bell, Check, X, Images, CalendarDays, Star, Megaphone, ExternalLink, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { approvePortfolioConsent, declinePortfolioConsent } from '@/app/my/portfolio-consent/actions';
 import { timeAgo } from '@/lib/utils/dates';
@@ -16,6 +16,7 @@ interface ClientNotification {
   isRead: boolean;
   createdAt: string;
   relatedBookingId: string | null;
+  relatedUrl: string | null;
 }
 
 interface PortfolioConsent {
@@ -35,6 +36,7 @@ function notifIcon(type: string) {
   if (type === 'new_booking' || type === 'booking_cancelled') return CalendarDays;
   if (type === 'new_review') return Star;
   if (type === 'broadcast') return Megaphone;
+  if (type === 'waitlist_freed_slot') return Zap;
   return Bell;
 }
 
@@ -163,23 +165,33 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                   onClick={() => {
                     if (isBroadcast && broadcast?.url) {
                       window.location.href = broadcast.url;
+                    } else if (notif.relatedUrl) {
+                      window.location.href = notif.relatedUrl;
                     } else if (notif.relatedBookingId || notif.type === 'new_booking' || notif.type === 'booking_cancelled' || notif.type === 'reminder') {
                       router.push('/my/bookings');
                     }
                   }}
-                  className={`rounded-3xl p-4 flex items-start gap-3 ${(isBroadcast && broadcast?.url) || notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'reminder'].includes(notif.type) ? 'cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all' : ''}`}
+                  className={`rounded-3xl p-4 flex items-start gap-3 ${(isBroadcast && broadcast?.url) || notif.relatedUrl || notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'reminder'].includes(notif.type) ? 'cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all' : ''}`}
                   style={{
                     background: notif.isRead ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.78)',
                     border: isBroadcast
                       ? '1px solid rgba(120,154,153,0.25)'
-                      : '1px solid rgba(255,255,255,0.4)',
+                      : notif.type === 'waitlist_freed_slot'
+                        ? '1px solid rgba(212,147,90,0.3)'
+                        : '1px solid rgba(255,255,255,0.4)',
                   }}
                 >
                   <div
                     className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
-                    style={{ background: isBroadcast ? 'rgba(120,154,153,0.12)' : '#F5E8E3' }}
+                    style={{
+                      background: isBroadcast
+                        ? 'rgba(120,154,153,0.12)'
+                        : notif.type === 'waitlist_freed_slot'
+                          ? 'rgba(212,147,90,0.12)'
+                          : '#F5E8E3'
+                    }}
                   >
-                    <Icon size={16} style={{ color: isBroadcast ? '#789A99' : '#A8928D' }} />
+                    <Icon size={16} style={{ color: isBroadcast ? '#789A99' : notif.type === 'waitlist_freed_slot' ? '#D4935A' : '#A8928D' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground">{notif.title}</p>
@@ -200,9 +212,21 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                         )}
                       </>
                     ) : (
-                      notif.body && (
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{notif.body}</p>
-                      )
+                      <>
+                        {notif.body && (
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{notif.body}</p>
+                        )}
+                        {notif.type === 'waitlist_freed_slot' && notif.relatedUrl && (
+                          <a
+                            href={notif.relatedUrl}
+                            className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-85"
+                            style={{ background: '#D4935A' }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Записатись зі знижкою <ExternalLink size={11} />
+                          </a>
+                        )}
+                      </>
                     )}
                     <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(notif.createdAt)}</p>
                   </div>
