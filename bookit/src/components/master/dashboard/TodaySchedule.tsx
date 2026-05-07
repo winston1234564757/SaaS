@@ -1,45 +1,44 @@
 'use client';
 
-import { useState, useMemo, useEffect, useTransition } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, ChevronRight, Loader2, Star, Package, LayoutList, CalendarDays, BarChart2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import {
+  ChevronRight, Loader2, AlertCircle, CheckCircle2,
+  BarChart2, List, TrendingUp,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { Tooltip } from '@/components/ui/Tooltip';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { useMasterContext } from '@/lib/supabase/context';
-import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/toast/context';
 import { BookingActionsDropdown } from '@/components/master/bookings/BookingActionsDropdown';
 import { completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import Link from 'next/link';
-import { cn } from '@/lib/utils/cn';
 import { useQueryClient } from '@tanstack/react-query';
 import { getNow } from '@/lib/utils/now';
 import { parseError } from '@/lib/utils/errors';
 
 type ViewMode = 'today' | 'tomorrow' | 'week';
-type DisplayMode = 'list' | 'calendar' | 'stats';
+type DisplayMode = 'list' | 'stats';
 
-const TABS: { id: ViewMode; label: string }[] = [
+const DATE_TABS: { id: ViewMode; label: string }[] = [
   { id: 'today',    label: 'Сьогодні' },
   { id: 'tomorrow', label: 'Завтра'   },
   { id: 'week',     label: 'Тиждень'  },
 ];
 
-const DISPLAY_MODES: { id: DisplayMode; Icon: typeof LayoutList; label: string }[] = [
-  { id: 'list',     Icon: LayoutList,    label: 'Список'  },
-  { id: 'calendar', Icon: CalendarDays,  label: 'Тиждень' },
-  { id: 'stats',    Icon: BarChart2,     label: 'Стата'   },
+const DISPLAY_TABS: { id: DisplayMode; label: string; Icon: React.ComponentType<{ size?: number }> }[] = [
+  { id: 'list',  label: 'Список',     Icon: List      },
+  { id: 'stats', label: 'Статистика', Icon: TrendingUp },
 ];
 
 const STATUS_CONFIG = {
-  confirmed: { label: 'Підтверджено', variant: 'success'  as const },
-  pending:   { label: 'Очікує',       variant: 'warning'  as const },
-  completed: { label: 'Завершено',    variant: 'default'  as const },
-  cancelled: { label: 'Скасовано',    variant: 'error'    as const },
-  no_show:   { label: 'Не прийшов',   variant: 'error'    as const },
+  confirmed: { label: 'Підтверджено', variant: 'success'  as const, color: 'var(--success)' },
+  pending:   { label: 'Очікує',       variant: 'warning'  as const, color: 'var(--warning)' },
+  completed: { label: 'Завершено',    variant: 'default'  as const, color: 'var(--text-tertiary)' },
+  cancelled: { label: 'Скасовано',    variant: 'error'    as const, color: 'var(--error)' },
+  no_show:   { label: 'Не прийшов',   variant: 'error'    as const, color: 'var(--error)' },
 };
 
 const UA_DAYS_SHORT = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
@@ -50,15 +49,10 @@ function toISO(d: Date) {
 
 function getDateRange(view: ViewMode): { from: string; to: string } {
   const today = getNow();
-  if (view === 'today') {
-    const s = toISO(today);
-    return { from: s, to: s };
-  }
+  if (view === 'today') { const s = toISO(today); return { from: s, to: s }; }
   if (view === 'tomorrow') {
-    const t = getNow();
-    t.setDate(today.getDate() + 1);
-    const s = toISO(t);
-    return { from: s, to: s };
+    const t = getNow(); t.setDate(today.getDate() + 1);
+    const s = toISO(t); return { from: s, to: s };
   }
   const day = today.getDay();
   const monday = getNow();
@@ -77,248 +71,393 @@ function isPastDue(b: BookingWithServices): boolean {
   return now > endDt;
 }
 
-function isNextBooking(b: BookingWithServices, list: BookingWithServices[]): boolean {
+function isCurrentlyActive(b: BookingWithServices): boolean {
+  if (b.status !== 'confirmed') return false;
   const now = getNow();
   const todayStr = toISO(now);
   if (b.date !== todayStr) return false;
   const nowMins = now.getHours() * 60 + now.getMinutes();
-  const [h, m] = b.start_time.split(':').map(Number);
-  const bMins = h * 60 + m;
-  const first = list.find(x => {
-    if (x.date !== todayStr) return false;
-    const [xh, xm] = x.start_time.split(':').map(Number);
-    return xh * 60 + xm >= nowMins;
-  });
-  return bMins >= nowMins && first?.id === b.id;
+  const [sh, sm] = b.start_time.split(':').map(Number);
+  const [eh, em] = b.end_time.split(':').map(Number);
+  return nowMins >= sh * 60 + sm && nowMins < eh * 60 + em;
 }
 
-type StatsPeriod = 'yesterday' | 'week';
-
-interface PeriodStats {
-  revenue: number;
-  count: number;
-  topProducts: { name: string; qty: number }[];
-}
-
-function EmptyScheduleWidget() {
-  const [period, setPeriod] = useState<StatsPeriod>('yesterday');
-  const [stats, setStats] = useState<PeriodStats | null>(null);
-  const [loading, setLoading] = useState(false);
-  const { masterProfile } = useMasterContext();
-
-  useEffect(() => {
-    const masterId = masterProfile?.id;
-    if (!masterId) return;
-    setLoading(true);
-    const today = getNow();
-    let from: string, to: string;
-    if (period === 'yesterday') {
-      const y = getNow();
-      y.setDate(today.getDate() - 1);
-      from = to = toISO(y);
-    } else {
-      const end = getNow();
-      end.setDate(today.getDate() - 1);
-      const start = getNow();
-      start.setDate(today.getDate() - 7);
-      from = toISO(start);
-      to = toISO(end);
-    }
-    const supabase = createClient();
-    supabase
-      .from('bookings')
-        .select('total_price, booking_products(product_name, quantity)')
-        .eq('master_id', masterId)
-        .eq('status', 'completed')
-        .gte('date', from)
-        .lte('date', to)
-        .then((res: { data: unknown[] | null }) => {
-          const rows = res.data ?? [];
-          const revenue = rows.reduce((s: number, b) => s + Number((b as any).total_price ?? 0), 0);
-          const count = rows.length;
-          const prodMap = new Map<string, number>();
-          rows.forEach(b => {
-            (((b as any).booking_products as unknown[]) ?? []).forEach((p: any) => {
-              prodMap.set(p.product_name, (prodMap.get(p.product_name) ?? 0) + (Number(p.quantity) || 1));
-            });
-          });
-          const topProducts = [...prodMap.entries()]
-            .map(([name, qty]) => ({ name, qty }))
-            .sort((a, b) => b.qty - a.qty)
-            .slice(0, 3);
-          setStats({ revenue, count, topProducts });
-          setLoading(false);
-        });
-  }, [period, masterProfile?.id]);
-
+/* ── Skeleton ─────────────────────────────────────────────── */
+function SkeletonCards() {
   return (
-    <div className="px-5 py-4">
-      <div className="flex gap-1.5 mb-4">
-        {(['yesterday', 'week'] as const).map(p => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              period === p
-                ? 'bg-primary text-white shadow-[0_2px_8px_rgba(120,154,153,0.3)]'
-                : 'text-muted-foreground hover:bg-white/60'
-            }`}
-          >
-            {p === 'yesterday' ? 'Вчора' : 'За тиждень'}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="flex items-center gap-2 py-2">
-          <Loader2 size={14} className="text-primary animate-spin" />
-          <span className="text-xs text-muted-foreground/60">Завантаження...</span>
-        </div>
-      ) : stats ? (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground/60">Виручка</span>
-            <span className="text-sm font-bold text-foreground">{formatPrice(stats.revenue)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground/60">Завершених записів</span>
-            <span className="text-sm font-semibold text-muted-foreground">{stats.count}</span>
-          </div>
-          {stats.topProducts.length > 0 && (
-            <>
-              <div className="h-px bg-secondary/60 my-1" />
-              <div className="flex items-center gap-2 mb-1">
-                <Package size={11} className="text-muted-foreground/60" />
-                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Топ продажі</span>
-              </div>
-              {stats.topProducts.map(p => (
-                <div key={p.name} className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground truncate">{p.name}</span>
-                  <span className="text-xs font-semibold text-primary">{p.qty} шт.</span>
-                </div>
-              ))}
-            </>
-          )}
-          {stats.count === 0 && stats.topProducts.length === 0 && (
-            <p className="text-xs text-muted-foreground/60 text-center pt-1">Даних немає</p>
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-// ── CalendarView — тижневий стрип з індикаторами записів ──────────────────────
-
-function CalendarView({ bookings }: { bookings: BookingWithServices[] }) {
-  const today = getNow();
-  const todayISO = toISO(today);
-  const day = today.getDay();
-  const monday = getNow();
-  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = getNow();
-    d.setTime(monday.getTime());
-    d.setDate(monday.getDate() + i);
-    const iso = toISO(d);
-    const count = bookings.filter(b => b.date === iso).length;
-    return { d, iso, count, isToday: iso === todayISO, dayName: UA_DAYS_SHORT[d.getDay()] };
-  });
-
-  const maxCount = Math.max(...days.map(d => d.count), 1);
-
-  return (
-    <div className="px-5 py-4">
-      <div className="grid grid-cols-7 gap-1.5">
-        {days.map(({ d, iso, count, isToday, dayName }) => (
-          <div key={iso} className="flex flex-col items-center gap-1.5">
-            <span className={`text-[10px] font-medium ${isToday ? 'text-primary' : 'text-muted-foreground/60'}`}>
-              {dayName}
-            </span>
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-semibold transition-all ${
-              isToday
-                ? 'bg-primary text-white shadow-md'
-                : 'text-muted-foreground bg-white/40'
-            }`}>
-              {d.getDate()}
+    <div className="flex flex-col gap-2.5 px-4 pb-4">
+      {[80, 65, 90].map((w, i) => (
+        <div
+          key={i}
+          className="rounded-2xl p-4"
+          style={{ background: 'var(--background-deep)', border: '0.5px solid var(--border)' }}
+        >
+          <div className="flex gap-3 items-center">
+            <div className="skeleton-shimmer rounded-lg shrink-0" style={{ width: 42, height: 36 }} />
+            <div className="flex-1 flex flex-col gap-1.5">
+              <div className="skeleton-shimmer rounded-md" style={{ height: 13, width: `${w}%` }} />
+              <div className="skeleton-shimmer rounded-md" style={{ height: 10, width: `${w * 0.55}%` }} />
             </div>
-            {/* Bar indicator */}
-            <div className="w-full flex flex-col items-center gap-0.5">
-              {count > 0 ? (
-                <>
-                  <motion.div
-                    initial={{ height: 0 }}
-                    className="w-1 rounded-full bg-primary/40"
-                    style={{ 
-                      height: Math.max(3, Math.round((count / maxCount) * 24)),
-                      backgroundColor: isToday ? 'var(--accent)' : undefined 
-                    }}
-                  />
-                  <span className="text-[10px] font-bold text-primary">{count}</span>
-                </>
-              ) : (
-                <div className="h-5" />
-              )}
-            </div>
+            <div className="skeleton-shimmer rounded-md shrink-0" style={{ width: 52, height: 28 }} />
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── StatsView — компактна статистика за обраний період ───────────────────────
-
-function StatsView({ bookings }: { bookings: BookingWithServices[] }) {
-  const completed = bookings.filter(b => b.status === 'completed');
-  const revenue = completed.reduce((s, b) => s + b.total_price, 0);
-  const avgCheck = completed.length > 0 ? Math.round(revenue / completed.length) : 0;
-
-  const svcMap = new Map<string, number>();
-  bookings.forEach(b => {
-    const name = b.services[0]?.name;
-    if (name) svcMap.set(name, (svcMap.get(name) ?? 0) + 1);
-  });
-  const topService = [...svcMap.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-
-  if (bookings.length === 0) {
-    return (
-      <div className="px-5 py-6 text-center">
-        <p className="text-sm text-muted-foreground/60">Записів немає за цей період</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="px-5 py-4 grid grid-cols-2 gap-2.5">
-      {[
-        { label: 'Всього',     value: String(bookings.length),  className: 'text-primary' },
-        { label: 'Завершено',  value: String(completed.length), className: 'text-success' },
-        { label: 'Виручка',    value: formatPrice(revenue),     className: 'text-foreground' },
-        { label: 'Сер. чек',   value: avgCheck > 0 ? formatPrice(avgCheck) : '—', className: 'text-foreground' },
-      ].map(item => (
-        <div key={item.label} className="p-3 rounded-2xl bg-white/50 border border-white/80">
-          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide mb-1">{item.label}</p>
-          <p className={cn("text-base font-bold", item.className)}>{item.value}</p>
         </div>
       ))}
-      {topService && (
-        <div className="col-span-2 p-3 rounded-2xl bg-white/50 border border-white/80 flex items-center gap-2">
-          <Star size={13} className="text-warning shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide">Топ послуга</p>
-            <p className="text-sm font-semibold text-foreground truncate">{topService}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
+/* ── Empty state ──────────────────────────────────────────── */
+function EmptyState({ view }: { view: ViewMode }) {
+  return (
+    <div className="flex flex-col items-center py-8 gap-2 px-5">
+      <div
+        className="w-12 h-12 rounded-2xl flex items-center justify-center mb-1"
+        style={{ background: 'var(--background-deep)' }}
+      >
+        <span style={{ color: 'var(--text-tertiary)' }}>
+          <BarChart2 size={20} strokeWidth={1.5} />
+        </span>
+      </div>
+      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+        {view === 'today' ? 'Записів на сьогодні немає'
+          : view === 'tomorrow' ? 'Завтра вільно'
+          : 'На тиждень записів немає'}
+      </p>
+      <p className="text-xs text-center" style={{ color: 'var(--text-tertiary)' }}>
+        Поділіться сторінкою з клієнтами
+      </p>
+    </div>
+  );
+}
+
+/* ── Booking card ─────────────────────────────────────────── */
+function BookingCard({
+  b, index, view, onComplete, isCompleting, onOpen, onSuccess,
+}: {
+  b: BookingWithServices;
+  index: number;
+  view: ViewMode;
+  onComplete: (id: string) => void;
+  isCompleting: boolean;
+  onOpen: (id: string) => void;
+  onSuccess: () => Promise<void>;
+}) {
+  const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
+  const svcName = b.services[0]?.name ?? 'Послуга';
+  const pastDue = isPastDue(b);
+  const active = isCurrentlyActive(b);
+
+  const cardBg = active
+    ? `color-mix(in srgb, ${cfg.color} 6%, var(--surface))`
+    : 'var(--surface)';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 32, delay: index * 0.07 }}
+    >
+      <div
+        className="relative rounded-2xl overflow-hidden cursor-pointer"
+        style={{
+          background: cardBg,
+          border: `0.5px solid ${active ? cfg.color + '44' : 'var(--border-strong)'}`,
+          borderLeft: `3px solid ${cfg.color}`,
+          opacity: b.status === 'completed' ? 0.55 : 1,
+        }}
+        onClick={() => onOpen(b.id)}
+      >
+        <div className="flex items-center gap-3 pl-5 pr-3 py-3.5">
+          {/* Time */}
+          <div className="shrink-0 text-right" style={{ minWidth: 44 }}>
+            <p
+              style={{
+                fontFamily: 'var(--font-cormorant, Georgia, serif)',
+                fontSize: '1.05rem',
+                fontWeight: 600,
+                letterSpacing: '-0.01em',
+                color: pastDue ? 'var(--warning)' : active ? cfg.color : 'var(--text-secondary)',
+                lineHeight: 1,
+              }}
+            >
+              {b.start_time}
+            </p>
+            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              {b.end_time}
+            </p>
+          </div>
+
+          <div className="self-stretch w-px shrink-0" style={{ background: 'var(--border)' }} />
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold truncate" style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+              {svcName}
+            </p>
+            <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              {b.client_name}
+              {view === 'week' && (
+                <span> · {UA_DAYS_SHORT[new Date(b.date).getDay()]} {new Date(b.date).getDate()}</span>
+              )}
+            </p>
+          </div>
+
+          {/* Price + badge */}
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <p
+              style={{
+                fontFamily: 'var(--font-cormorant, Georgia, serif)',
+                fontSize: '1rem',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+              }}
+            >
+              {formatPrice(b.total_price)}
+            </p>
+            <div className="flex items-center gap-1">
+              <Badge variant={cfg.variant}>{cfg.label}</Badge>
+              <BookingActionsDropdown booking={b} onSuccess={onSuccess} />
+            </div>
+          </div>
+        </div>
+
+        {/* Past-due strip */}
+        {pastDue && (
+          <div
+            className="flex items-center justify-between px-5 py-2"
+            style={{
+              background: 'rgba(200,120,64,0.08)',
+              borderTop: '0.5px solid rgba(200,120,64,0.2)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-1.5" style={{ color: 'var(--warning)' }}>
+              <AlertCircle size={11} />
+              <span className="text-[11px] font-semibold">Очікує завершення</span>
+            </div>
+            <button
+              onClick={() => onComplete(b.id)}
+              disabled={isCompleting}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold disabled:opacity-50 transition-opacity"
+              style={{ background: 'rgba(74,148,96,0.14)', color: 'var(--success)' }}
+            >
+              {isCompleting
+                ? <Loader2 size={10} className="animate-spin" />
+                : <CheckCircle2 size={10} />}
+              Завершити
+            </button>
+          </div>
+        )}
+      </div>
+
+      {active && (
+        <div className="flex items-center gap-2 px-1 py-1">
+          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--accent)' }} />
+          <div className="flex-1 h-px" style={{ background: 'var(--accent)', opacity: 0.35 }} />
+          <span className="text-[10px] font-semibold shrink-0" style={{ color: 'var(--accent)' }}>
+            зараз
+          </span>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+/* ── Stats view ───────────────────────────────────────────── */
+function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: ViewMode }) {
+  const completed         = bookings.filter(b => b.status === 'completed');
+  const confirmed         = bookings.filter(b => b.status === 'confirmed');
+  const pending           = bookings.filter(b => b.status === 'pending');
+  const activeBookings    = [...confirmed, ...pending];
+  const revenue           = completed.reduce((s, b) => s + b.total_price, 0);
+  const potential         = activeBookings.reduce((s, b) => s + b.total_price, 0);
+  const allFullyCompleted = bookings.length > 0 && activeBookings.length === 0;
+  const conversion        = bookings.length > 0
+    ? Math.round((completed.length / bookings.length) * 100)
+    : 0;
+
+  const viewLabel = view === 'today' ? 'сьогодні' : view === 'tomorrow' ? 'завтра' : 'за тиждень';
+
+  /* Top service for weekly view */
+  const topService = useMemo(() => {
+    if (view !== 'week' || bookings.length === 0) return null;
+    const counts = new Map<string, number>();
+    bookings.forEach(b => {
+      const svc = b.services[0]?.name;
+      if (svc) counts.set(svc, (counts.get(svc) ?? 0) + 1);
+    });
+    let topName = '';
+    let topCount = 0;
+    counts.forEach((count, name) => {
+      if (count > topCount) { topCount = count; topName = name; }
+    });
+    return topCount > 0 ? { name: topName, count: topCount } : null;
+  }, [bookings, view]);
+
+  const stats = [
+    { label: 'Всього',       value: String(bookings.length),   color: 'var(--text-primary)'   },
+    { label: 'Підтверджено', value: String(confirmed.length),  color: 'var(--success)'        },
+    { label: 'Очікують',     value: String(pending.length),    color: 'var(--warning)'        },
+    { label: 'Завершено',    value: String(completed.length),  color: 'var(--text-secondary)' },
+    { label: 'Виручка',      value: formatPrice(revenue),      color: 'var(--accent)'         },
+    {
+      label: 'Потенційно',
+      value: allFullyCompleted ? '🎉' : formatPrice(potential),
+      color: allFullyCompleted ? 'var(--success)' : 'var(--text-secondary)',
+    },
+  ];
+
+  return (
+    <div className="px-4 pb-4 flex flex-col gap-3">
+      {/* Conversion highlight */}
+      {bookings.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
+          style={{ background: 'var(--background-deep)', border: '0.5px solid var(--border)' }}
+        >
+          {/* SVG donut */}
+          <div className="relative shrink-0" style={{ width: 52, height: 52 }}>
+            <svg viewBox="0 0 52 52" style={{ width: 52, height: 52 }}>
+              <circle cx="26" cy="26" r="21" fill="none" stroke="var(--border)" strokeWidth="5" />
+              <circle
+                cx="26" cy="26" r="21"
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 21}`}
+                strokeDashoffset={`${2 * Math.PI * 21 * (1 - conversion / 100)}`}
+                style={{ transform: 'rotate(-90deg)', transformOrigin: '26px 26px', transition: 'stroke-dashoffset 0.7s ease' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span
+                style={{
+                  fontFamily: 'var(--font-cormorant, Georgia, serif)',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  lineHeight: 1,
+                }}
+              >
+                {conversion}%
+              </span>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Конверсія {viewLabel}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              {completed.length} з {bookings.length} записів завершено
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Top service — weekly only */}
+      {topService && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="px-4 py-3 rounded-2xl flex items-center justify-between"
+          style={{ background: 'var(--accent-light)', border: '0.5px solid var(--border)' }}
+        >
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--accent)' }}>
+              Топ послуга
+            </p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {topService.name}
+            </p>
+          </div>
+          <p
+            style={{
+              fontFamily: 'var(--font-cormorant, Georgia, serif)',
+              fontSize: '1.6rem',
+              fontWeight: 700,
+              color: 'var(--accent)',
+              lineHeight: 1,
+            }}
+          >
+            {topService.count}×
+          </p>
+        </motion.div>
+      )}
+
+      {/* Stats grid — 2×3 for readability */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+        {stats.map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: i * 0.05 }}
+            className="rounded-2xl px-4 py-4 flex flex-col justify-between"
+            style={{ background: 'var(--background-deep)', border: '0.5px solid var(--border)', minHeight: 76 }}
+          >
+            <p
+              style={{
+                fontFamily: s.value === '🎉' ? 'inherit' : 'var(--font-cormorant, Georgia, serif)',
+                fontSize: s.value === '🎉' ? '1.5rem' : '1.75rem',
+                fontWeight: 700,
+                color: s.color,
+                lineHeight: 1,
+              }}
+            >
+              {s.value}
+            </p>
+            <p className="text-[11px] font-medium mt-2" style={{ color: 'var(--text-secondary)' }}>
+              {s.label === 'Потенційно' && allFullyCompleted ? 'Все завершено!' : s.label}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Display toggle ───────────────────────────────────────── */
+function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m: DisplayMode) => void }) {
+  return (
+    <div
+      className="flex rounded-xl p-0.5 gap-0.5 relative"
+      style={{ background: 'var(--background-deep)' }}
+    >
+      {DISPLAY_TABS.map(tab => {
+        const isActive = tab.id === active;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onChange(tab.id)}
+            className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-[10px] font-semibold"
+            style={{ color: isActive ? 'white' : 'var(--text-tertiary)' }}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="schedule-display-pill"
+                className="absolute inset-0 rounded-[10px]"
+                style={{ background: 'var(--accent)', zIndex: 0 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              />
+            )}
+            <span style={{ position: 'relative', zIndex: 1 }}><tab.Icon size={10} /></span>
+            <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Main export ─────────────────────────────────────────── */
 export function TodaySchedule() {
   const [view, setView] = useState<ViewMode>('today');
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('list');
+  const [display, setDisplay] = useState<DisplayMode>('list');
   const range = getDateRange(view);
   const { bookings, isLoading } = useBookings(range.from, range.to);
   const queryClient = useQueryClient();
@@ -327,6 +466,24 @@ export function TodaySchedule() {
   const { showToast } = useToast();
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [, startComplete] = useTransition();
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const openBooking = (id: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('bookingId', id);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  const invalidateAll = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['bookings', masterId] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats', masterId] }),
+      queryClient.invalidateQueries({ queryKey: ['weekly-overview', masterId] }),
+      queryClient.invalidateQueries({ queryKey: ['monthly-booking-count', masterId] }),
+    ]);
+  };
 
   const handleQuickComplete = (id: string) => {
     setCompletingId(id);
@@ -339,7 +496,7 @@ export function TodaySchedule() {
           showToast({ type: 'success', title: 'Запис завершено' });
           await invalidateAll();
         }
-      } catch (err) {
+      } catch (_err) {
         showToast({ type: 'error', title: 'Помилка', message: 'Не вдалося завершити запис' });
       } finally {
         setCompletingId(null);
@@ -347,40 +504,15 @@ export function TodaySchedule() {
     });
   };
 
-  const invalidateAll = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['bookings', masterId] }),
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats', masterId] }),
-      queryClient.invalidateQueries({ queryKey: ['weekly-overview', masterId] }),
-      queryClient.invalidateQueries({ queryKey: ['monthly-booking-count', masterId] }),
-    ]);
-  };
-
-  const allBookings: BookingWithServices[] = bookings ?? [];
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const openBooking = (id: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('bookingId', id);
-    router.push(`?${params.toString()}`, { scroll: false });
-  };
-
   const filtered = useMemo(
-    () => allBookings.filter(b => b.status !== 'cancelled'),
-    [allBookings]
+    () => (bookings ?? [])
+      .filter(b => b.status !== 'cancelled')
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return a.start_time.localeCompare(b.start_time);
+      }),
+    [bookings]
   );
-
-  const grouped = useMemo(() => {
-    if (view !== 'week') return null;
-    const map = new Map<string, BookingWithServices[]>();
-    filtered.forEach(b => {
-      const arr = map.get(b.date) ?? [];
-      arr.push(b);
-      map.set(b.date, arr);
-    });
-    return map;
-  }, [filtered, view]);
 
   const totalRevenue = filtered
     .filter(b => b.status === 'completed')
@@ -390,62 +522,52 @@ export function TodaySchedule() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.25, type: 'spring', stiffness: 280, damping: 24 }}
+      transition={{ delay: 0.15, type: 'spring', stiffness: 180, damping: 34 }}
       className="bento-card overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
-        <div className="flex items-center gap-2">
-          <Clock size={16} className="text-primary" />
-          <h2 className="heading-serif text-base text-foreground">Записи</h2>
+        <div className="flex items-center gap-2.5">
+          <h2
+            className="heading-serif"
+            style={{ fontSize: '1rem', color: 'var(--text-primary)' }}
+          >
+            Записи
+          </h2>
           {!isLoading && (
-            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
+            >
               {filtered.length}
             </span>
           )}
         </div>
-        <Link href="/dashboard/bookings" className="text-xs text-primary font-medium flex items-center gap-0.5 hover:underline">
-          Усі <ChevronRight size={13} />
-        </Link>
+        <div className="flex items-center gap-2">
+          <DisplayToggle active={display} onChange={setDisplay} />
+          <Link
+            href="/dashboard/bookings"
+            className="flex items-center gap-0.5 text-xs font-semibold"
+            style={{ color: 'var(--accent)' }}
+          >
+            Усі <ChevronRight size={13} />
+          </Link>
+        </div>
       </div>
 
-      {/* Date tabs */}
-      <div className="flex gap-2 px-5 pb-4">
-        {TABS.map(tab => (
+      {/* Date tabs — always visible */}
+      <div className="flex gap-1.5 px-5 pb-3">
+        {DATE_TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setView(tab.id)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
-              view === tab.id
-                ? 'bg-primary text-white shadow-sm'
-                : 'text-muted-foreground hover:bg-white/60'
-            }`}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
+            style={{
+              background: view === tab.id ? 'var(--accent)' : 'var(--background-deep)',
+              color: view === tab.id ? 'white' : 'var(--text-tertiary)',
+            }}
           >
             {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Display mode toggle (3-segment sliding pill) */}
-      <div className="relative flex bg-secondary/60 rounded-2xl p-1 mx-5 mb-4">
-        {DISPLAY_MODES.map(mode => (
-          <button
-            key={mode.id}
-            onClick={() => setDisplayMode(mode.id)}
-            className={cn(
-              "relative flex-1 flex items-center justify-center gap-1.5 py-2 z-10 text-[10px] font-bold uppercase tracking-wider transition-colors",
-              displayMode === mode.id ? "text-foreground" : "text-muted-foreground/60"
-            )}
-          >
-            {displayMode === mode.id && (
-              <motion.div
-                layoutId="schedule-display-pill"
-                className="absolute inset-0 bg-white rounded-xl shadow-sm"
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              />
-            )}
-            <mode.Icon size={12} className="relative z-10" />
-            <span className="relative z-10">{mode.label}</span>
           </button>
         ))}
       </div>
@@ -453,182 +575,59 @@ export function TodaySchedule() {
       {/* Content */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={`${view}-${displayMode}`}
-          initial={{ opacity: 0, x: 8 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -8 }}
-          transition={{ duration: 0.15 }}
+          key={`${display}-${view}`}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
         >
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8 gap-2">
-              <Loader2 size={18} className="text-primary animate-spin" />
-              <span className="text-sm text-muted-foreground/60">Завантаження...</span>
-            </div>
-          ) : displayMode === 'calendar' ? (
-            <CalendarView bookings={filtered} />
-          ) : displayMode === 'stats' ? (
-            <StatsView bookings={filtered} />
-          ) : filtered.length === 0 ? (
-            view === 'today' ? (
-              <EmptyScheduleWidget />
-            ) : (
-              <div className="flex flex-col items-center py-8 gap-2 text-center px-5">
-                <p className="text-sm font-semibold text-foreground">
-                  {view === 'tomorrow' ? 'Завтра записів немає' : 'На тиждень записів немає'}
-                </p>
-                <p className="text-xs text-muted-foreground/60">Поділіться сторінкою з клієнтами</p>
-              </div>
-            )
-          ) : view === 'week' ? (
-            /* ── Week view: grouped by date ── */
-            <div className="flex flex-col divide-y divide-secondary/30">
-              {[...grouped!.entries()].map(([date, items]) => {
-                const d = new Date(date);
-                const dayName = UA_DAYS_SHORT[d.getDay()];
-                const dateLabel = `${dayName} ${d.getDate()}`;
-                return (
-                  <div key={date}>
-                    <div className="px-5 py-2.5 bg-white/20">
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{dateLabel}</span>
-                    </div>
-                    {items.map(b => {
-                      const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
-                      const svcName = b.services[0]?.name ?? 'Послуга';
-                      return (
-                        <div key={b.id} onClick={() => openBooking(b.id)} className="flex items-center gap-4 px-5 py-3 hover:bg-white/40 transition-colors cursor-pointer">
-                          <div className="w-12 shrink-0 text-right">
-                            <p className="text-sm font-semibold tabular-nums text-muted-foreground">{b.start_time}</p>
-                            <p className="text-[10px] text-muted-foreground/60">{b.end_time}</p>
-                          </div>
-                          <div className="w-2 h-2 rounded-full shrink-0 bg-secondary/80" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate">{svcName}</p>
-                            <p className="text-xs text-muted-foreground truncate">{b.client_name}</p>
-                          </div>
-                          <BookingActionsDropdown booking={b} onSuccess={invalidateAll} />
-                          <div className="flex flex-col items-end gap-1 shrink-0">
-                            <p className="text-sm font-bold text-foreground">{formatPrice(b.total_price)}</p>
-                            <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
+          {display === 'list' ? (
+            <div className="flex flex-col gap-2.5 px-4 pb-4">
+              {isLoading ? (
+                <SkeletonCards />
+              ) : filtered.length === 0 ? (
+                <EmptyState view={view} />
+              ) : (
+                filtered.map((b, i) => (
+                  <BookingCard
+                    key={b.id}
+                    b={b}
+                    index={i}
+                    view={view}
+                    onComplete={handleQuickComplete}
+                    isCompleting={completingId === b.id}
+                    onOpen={openBooking}
+                    onSuccess={invalidateAll}
+                  />
+                ))
+              )}
             </div>
           ) : (
-            /* ── Today / Tomorrow view: timeline ── */
-            <div className="flex flex-col divide-y divide-secondary/30">
-              {filtered.map((b, i) => {
-                const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
-                const svcName = b.services[0]?.name ?? 'Послуга';
-                const isCurrent = view === 'today' && isNextBooking(b, filtered);
-                const pastDue = isPastDue(b);
-                const isCompleting = completingId === b.id;
-
-                return (
-                  <div key={b.id} className={pastDue ? 'bg-warning/4' : ''}>
-                    {/* Main row */}
-                    <div
-                      onClick={() => openBooking(b.id)}
-                      className={`flex items-center gap-4 px-5 py-4 transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-primary/6'
-                          : b.status === 'completed'
-                          ? 'opacity-50'
-                          : 'hover:bg-white/40'
-                      }`}
-                    >
-                      {/* Час */}
-                      <div className="w-12 shrink-0 text-right">
-                        <p className={`text-sm font-semibold tabular-nums ${
-                          pastDue ? 'text-warning' : isCurrent ? 'text-primary' : 'text-muted-foreground'
-                        }`}>
-                          {b.start_time}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground/60">{b.end_time}</p>
-                      </div>
-
-                      {/* Dot + line */}
-                      <div className="flex flex-col items-center self-stretch gap-0.5 shrink-0">
-                        <Tooltip
-                          position="right"
-                          delay={150}
-                          content={
-                            <div className="flex flex-col gap-0.5 min-w-[140px]">
-                              <p className="text-[11px] font-bold text-foreground">{svcName}</p>
-                              <p className="text-[11px] text-muted-foreground">{b.client_name}</p>
-                              <div className="h-px bg-secondary my-0.5" />
-                              <p className="text-[11px] text-muted-foreground/60">{b.start_time}–{b.end_time}</p>
-                            </div>
-                          }
-                        >
-                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 cursor-default ${
-                            pastDue
-                              ? 'bg-warning ring-2 ring-warning/20 ring-offset-1'
-                              : isCurrent
-                              ? 'bg-primary ring-2 ring-primary/20 ring-offset-1'
-                              : b.status === 'completed'
-                              ? 'bg-muted-foreground/60'
-                              : 'bg-secondary/80'
-                          }`} />
-                        </Tooltip>
-                        {i < filtered.length - 1 && (
-                          <div className="w-px flex-1 bg-secondary/80/70" />
-                        )}
-                      </div>
-
-                      {/* Інфо */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">{svcName}</p>
-                        <p className="text-xs text-muted-foreground truncate">{b.client_name}</p>
-                      </div>
-
-                      {/* Дії */}
-                      <BookingActionsDropdown booking={b} onSuccess={invalidateAll} />
-
-                      {/* Ціна + статус */}
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <p className="text-sm font-bold text-foreground">{formatPrice(b.total_price)}</p>
-                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                      </div>
-                    </div>
-
-                    {/* Past-due nudge row */}
-                    {pastDue && (
-                      <div
-                        className="flex items-center gap-2.5 px-5 pb-3 -mt-1"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <div className="flex items-center gap-1 text-warning">
-                          <AlertCircle size={11} />
-                          <span className="text-[11px] font-semibold">Очікує завершення</span>
-                        </div>
-                        <button
-                          onClick={() => handleQuickComplete(b.id)}
-                          disabled={isCompleting}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-success/12 text-success text-[11px] font-semibold hover:bg-success/20 transition-colors disabled:opacity-50"
-                        >
-                          {isCompleting
-                            ? <Loader2 size={10} className="animate-spin" />
-                            : <CheckCircle2 size={10} />}
-                          Завершити
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            isLoading ? (
+              <SkeletonCards />
+            ) : (
+              <StatsView bookings={filtered} view={view} />
+            )
           )}
         </motion.div>
       </AnimatePresence>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-t border-secondary/60 bg-white/20">
-        <span className="text-xs text-muted-foreground/60">Виручка (завершені)</span>
-        <span className="text-sm font-bold text-foreground">{formatPrice(totalRevenue)}</span>
+      <div
+        className="flex items-center justify-between px-5 py-3.5"
+        style={{ borderTop: '0.5px solid var(--border)', background: 'var(--background-deep)' }}
+      >
+        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Виручка (завершені)</span>
+        <span
+          style={{
+            fontFamily: 'var(--font-cormorant, Georgia, serif)',
+            fontSize: '1.15rem',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+          }}
+        >
+          {formatPrice(totalRevenue)}
+        </span>
       </div>
     </motion.div>
   );

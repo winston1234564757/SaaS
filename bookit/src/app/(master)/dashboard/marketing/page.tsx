@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Маркетинг — Bookit' };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; mode?: string }>;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -20,7 +20,7 @@ export default async function Page({
   const [mpResult, productsResult] = await Promise.all([
     admin
       .from('master_profiles')
-      .select('subscription_tier, broadcasts_used, waitlist_discount_pct, waitlist_lookback_days, waitlist_lookahead_days')
+      .select('subscription_tier, broadcasts_used')
       .eq('id', user.id)
       .single(),
     admin
@@ -37,21 +37,17 @@ export default async function Page({
   const broadcastsUsed = mpResult.data?.broadcasts_used ?? 0;
   const products = productsResult.data ?? [];
 
-  const { tab } = await searchParams;
+  const { tab, mode } = await searchParams;
   const activeTab = tab === 'broadcasts' ? 'broadcasts' : 'stories';
 
   return (
     <MarketingTabs
       initialTab={activeTab}
+      initialMode={mode}
       isStarter={isStarter}
       isPro={isPro}
       broadcastsUsed={broadcastsUsed}
       products={products}
-      waitlistConfig={{
-        discountPct: mpResult.data?.waitlist_discount_pct ?? null,
-        lookbackDays: mpResult.data?.waitlist_lookback_days ?? 14,
-        lookaheadDays: mpResult.data?.waitlist_lookahead_days ?? 3,
-      }}
     />
   );
 }

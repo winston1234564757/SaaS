@@ -13,6 +13,7 @@ export interface DashboardStats {
   todayCompleted: number;
   todayRevenue: number;
   weekClients: number;
+  monthCompleted: number;
 }
 
 export interface DashboardStatsWithLoading extends DashboardStats {
@@ -24,9 +25,10 @@ export function useDashboardStats(): DashboardStatsWithLoading {
   const masterId = masterProfile?.id;
 
   // Recomputed every render — cheap ops; queryKey change triggers new fetch after midnight
-  const now       = getNow();
-  const today     = format(now, 'yyyy-MM-dd');
-  const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  const now        = getNow();
+  const today      = format(now, 'yyyy-MM-dd');
+  const weekStart  = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  const monthStart = format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd');
 
   // Realtime invalidation is handled by the consolidated channel
   // in useRealtimeNotifications — no separate channel needed here.
@@ -38,8 +40,9 @@ export function useDashboardStats(): DashboardStatsWithLoading {
 
       type TodayRow = { status: string; total_price: string | number };
       type WeekRow  = { client_phone: string | null; client_name: string | null };
+      type MonthRow = { count: number | null };
 
-      const [todayRes, weekRes] = await Promise.all([
+      const [todayRes, weekRes, monthRes] = await Promise.all([
         supabase
           .from('bookings')
           .select('status, total_price')
@@ -52,6 +55,13 @@ export function useDashboardStats(): DashboardStatsWithLoading {
           .gte('date', weekStart)
           .lte('date', today)
           .neq('status', 'cancelled'),
+        supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('master_id', masterId!)
+          .eq('status', 'completed')
+          .gte('date', monthStart)
+          .lte('date', today),
       ]);
 
       if (todayRes.error) throw todayRes.error;
@@ -77,19 +87,20 @@ export function useDashboardStats(): DashboardStatsWithLoading {
         todayCompleted: bookings.filter(b => b.status === 'completed').length,
         todayRevenue,
         weekClients,
+        monthCompleted: monthRes.count ?? 0,
       } satisfies DashboardStats;
     },
     enabled: !!masterId,
     staleTime: 30_000,
     placeholderData: {
       todayCount: 0, todayPending: 0, todayConfirmed: 0,
-      todayCompleted: 0, todayRevenue: 0, weekClients: 0,
+      todayCompleted: 0, todayRevenue: 0, weekClients: 0, monthCompleted: 0,
     },
   });
 
   const defaults = {
     todayCount: 0, todayPending: 0, todayConfirmed: 0,
-    todayCompleted: 0, todayRevenue: 0, weekClients: 0,
+    todayCompleted: 0, todayRevenue: 0, weekClients: 0, monthCompleted: 0,
   };
   return { ...(data ?? defaults), isLoading: isLoading && !!masterId };
 }

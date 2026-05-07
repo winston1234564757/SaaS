@@ -32,7 +32,6 @@ interface BookingFlowProps {
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;
   masterC2cDiscountPct?: number | null;
-  waitlistMaxDuration?: number | null;
 }
 
 export function BookingFlow({
@@ -43,7 +42,6 @@ export function BookingFlow({
   pricingRules, workingHours, flashDeal,
   c2cRefCode, c2cDiscountPct,
   masterC2cEnabled, masterC2cDiscountPct,
-  waitlistMaxDuration,
 }: BookingFlowProps) {
   // Flash deal fast-track: find the service and skip straight to details
   const flashService = flashDeal
@@ -79,7 +77,6 @@ export function BookingFlow({
       c2cDiscountPct={c2cDiscountPct}
       masterC2cEnabled={masterC2cEnabled}
       masterC2cDiscountPct={masterC2cDiscountPct}
-      waitlistMaxDuration={waitlistMaxDuration}
     />
   );
 }

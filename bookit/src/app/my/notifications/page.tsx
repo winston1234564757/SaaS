@@ -15,7 +15,7 @@ export default async function MyNotificationsPage() {
   const [{ data: notifications }, { data: pendingItems }] = await Promise.all([
     admin
       .from('notifications')
-      .select('id, type, title, body, is_read, related_booking_id, related_url, created_at')
+      .select('id, type, title, body, is_read, related_booking_id, created_at')
       .eq('recipient_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50),
@@ -61,7 +61,6 @@ export default async function MyNotificationsPage() {
         isRead: n.is_read as boolean,
         createdAt: n.created_at as string,
         relatedBookingId: n.related_booking_id as string | null,
-        relatedUrl: (n.related_url as string | null) ?? null,
       }))}
       portfolioConsents={portfolioConsents}
     />

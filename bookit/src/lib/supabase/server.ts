@@ -1,6 +1,19 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+// Cold-start protection: cap every SSR Supabase network call at 8 s.
+// Without this, getUser() (token refresh) hangs indefinitely on Vercel cold starts,
+// which keeps the Next.js loading.tsx skeleton visible forever.
+const ssrFetch = async (url: string | URL | Request, options?: RequestInit): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort('ssr-timeout'), 8_000);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -22,6 +35,7 @@ export async function createClient() {
           }
         },
       },
+      global: { fetch: ssrFetch },
     }
   );
 }

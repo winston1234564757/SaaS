@@ -3,14 +3,30 @@
 import { Suspense, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
-import { BlobBackground } from '@/components/shared/BlobBackground';
-import { FloatingSidebar } from '@/components/shared/FloatingSidebar';
-import { BentoBottomNav } from '@/components/shared/BentoBottomNav';
-import { InstallBanner } from '@/components/shared/InstallBanner';
-import { MasterProvider } from '@/lib/supabase/context';
+import { MasterProvider, useMasterContext } from '@/lib/supabase/context';
 import { useRealtimeNotifications } from '@/lib/supabase/hooks/useRealtimeNotifications';
 import { BookingDetailsModal } from '@/components/master/bookings/BookingDetailsModal';
+import { DashboardTopBar } from '@/components/master/DashboardTopBar';
+import { MobileHub } from '@/components/shared/MobileHub';
+import { InstallBanner } from '@/components/shared/InstallBanner';
 import type { Profile, MasterProfile } from '@/types/database';
+
+function ThemeApplier() {
+  const { masterProfile } = useMasterContext();
+  const moodTheme = masterProfile?.mood_theme ?? '';
+
+  useEffect(() => {
+    const isStudio = moodTheme === 'dark' || moodTheme === 'studio';
+    if (isStudio) {
+      document.documentElement.setAttribute('data-theme', 'studio');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    return () => { document.documentElement.removeAttribute('data-theme'); };
+  }, [moodTheme]);
+
+  return null;
+}
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
   useRealtimeNotifications();
@@ -26,21 +42,32 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     navigator.serviceWorker.addEventListener('message', handler);
     return () => navigator.serviceWorker.removeEventListener('message', handler);
   }, [router]);
+
   return (
-    <div className="min-h-dvh">
-      <BlobBackground />
+    <div className="min-h-dvh flex flex-col" style={{ background: 'var(--background)' }}>
+      <ThemeApplier />
+
+      {/* Desktop horizontal topbar */}
       <div className="hidden lg:block">
-        <FloatingSidebar />
+        <DashboardTopBar />
       </div>
-      <main className="relative z-0 lg:ml-[292px] min-h-dvh pb-[88px] lg:pb-8">
-        <div className="max-w-3xl mx-auto px-4 py-6">
+
+      {/* Content */}
+      <main className="flex-1 w-full">
+        <div
+          className="max-w-[1400px] mx-auto px-4 py-5 lg:px-8 lg:py-6"
+          style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 1rem)' }}
+        >
           {children}
         </div>
       </main>
+
+      {/* Mobile nav */}
       <div className="lg:hidden">
         <InstallBanner />
-        <BentoBottomNav />
+        <MobileHub />
       </div>
+
       <Suspense>
         <BookingDetailsModal />
       </Suspense>
@@ -49,13 +76,18 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 }
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
-  initialUser?: User | null;
-  initialProfile?: Profile | null;
+  children:              React.ReactNode;
+  initialUser?:          User | null;
+  initialProfile?:       Profile | null;
   initialMasterProfile?: MasterProfile | null;
 }
 
-export function DashboardLayout({ children, initialUser, initialProfile, initialMasterProfile }: DashboardLayoutProps) {
+export function DashboardLayout({
+  children,
+  initialUser,
+  initialProfile,
+  initialMasterProfile,
+}: DashboardLayoutProps) {
   return (
     <MasterProvider
       initialUser={initialUser}

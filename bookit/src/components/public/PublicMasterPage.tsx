@@ -310,14 +310,12 @@ export function PublicMasterPage({
   c2cDiscountPct = null,
   masterC2cEnabled = false,
   masterC2cDiscountPct = null,
-  waitlistMaxDuration = null,
 }: {
   master: Master;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;
   masterC2cDiscountPct?: number | null;
-  waitlistMaxDuration?: number | null;
 }) {
   const themeKey = (master.themeKey ?? 'default') as MoodThemeKey;
   const theme = moodThemes[themeKey] ?? moodThemes.default;
@@ -373,23 +371,9 @@ export function PublicMasterPage({
     setTodayDow(['sun','mon','tue','wed','thu','fri','sat'][getNow().getDay()]);
   }, []);
 
-  // Auto-open BookingFlow with pre-selected services from ?services=, ?serviceId=, or ?flash= query param
+  // Auto-open BookingFlow with pre-selected services from ?services= or ?serviceId= query param
   useEffect(() => {
     if (didAutoOpen.current) return;
-
-    // ?flash= — Waitlist / Flash Deal deep link: auto-open wizard with the deal pre-selected
-    const flashId = searchParams.get('flash');
-    if (flashId && master.flashDeals?.length) {
-      const deal = master.flashDeals.find(d => d.id === flashId);
-      if (deal) {
-        didAutoOpen.current = true;
-        setActiveFlashDeal(deal);
-        setRepeatServices(null);
-        setSelectedService(null);
-        setBookingOpen(true);
-        return;
-      }
-    }
 
     // ?serviceId= — deep link з Floating Bar "Хочу так само"
     const serviceId = searchParams.get('serviceId');
@@ -414,7 +398,7 @@ export function PublicMasterPage({
     setRepeatServices(matched);
     setSelectedService(null);
     setBookingOpen(true);
-  }, [searchParams, master.services, master.flashDeals]);
+  }, [searchParams, master.services]);
 
   const categories = [...new Set(master.services.map(s => s.category))];
 
@@ -1085,7 +1069,6 @@ export function PublicMasterPage({
         c2cDiscountPct={c2cDiscountPct}
         masterC2cEnabled={masterC2cEnabled}
         masterC2cDiscountPct={masterC2cDiscountPct}
-        waitlistMaxDuration={waitlistMaxDuration}
       />
 
     </div>

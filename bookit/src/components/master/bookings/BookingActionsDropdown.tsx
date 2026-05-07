@@ -1,8 +1,9 @@
 'use client';
 
 import { useTransition } from 'react';
-import { CheckCircle2, UserCheck, XCircle, MoreVertical, Loader2 } from 'lucide-react';
+import { CheckCircle2, UserCheck, XCircle, MoreVertical, Loader2, Calendar } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/lib/toast/context';
 import {
   confirmBooking,
@@ -11,7 +12,6 @@ import {
 } from '@/app/(master)/dashboard/bookings/actions';
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
-import { getNow } from '@/lib/utils/now';
 import { parseError } from '@/lib/utils/errors';
 
 type BookingSlice = Pick<
@@ -25,16 +25,10 @@ interface BookingActionsDropdownProps {
   onSuccess?: () => Promise<void>;
 }
 
-function isEndTimePast(date: string, endTime: string): boolean {
-  const now = getNow();
-  const [h, m] = endTime.split(':').map(Number);
-  const bookingEnd = new Date(date);
-  bookingEnd.setHours(h, m, 0, 0);
-  return now >= bookingEnd;
-}
-
 export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDropdownProps) {
   const qc = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -63,13 +57,20 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
     });
   };
 
-  const { id, status, date, end_time } = booking;
+  const openBookingModal = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('bookingId', booking.id);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
 
-  const canConfirm = status === 'pending';
-  const canComplete = status === 'confirmed' && isEndTimePast(date, end_time);
-  const canCancel   = status === 'pending' || status === 'confirmed';
+  const { id, status } = booking;
 
-  if (!canConfirm && !canComplete && !canCancel) return null;
+  const canConfirm    = status === 'pending';
+  const canComplete   = status === 'confirmed';
+  const canCancel     = status === 'pending' || status === 'confirmed';
+  const canReschedule = status === 'pending' || status === 'confirmed';
+
+  if (!canConfirm && !canComplete && !canCancel && !canReschedule) return null;
 
   const items = [
     ...(canConfirm
@@ -90,6 +91,17 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
             label: 'Завершити',
             onClick: () => run(() => completeBooking(id), 'Запис завершено'),
             className: 'text-success',
+            disabled: isPending,
+          },
+        ]
+      : []),
+    ...(canReschedule
+      ? [
+          {
+            icon: <Calendar size={14} />,
+            label: 'Перенести',
+            onClick: openBookingModal,
+            className: 'text-primary',
             disabled: isPending,
           },
         ]

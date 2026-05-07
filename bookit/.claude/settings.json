@@ -63,36 +63,102 @@
       "usagePattern": "Use for finding icons from universal icon sets"
     }
   },
+  "clarificationFramework": {
+    "enabled": true,
+    "description": "SMART SKILL SELECTION: Ask 3-5 clarifying questions BEFORE launching skill",
+    "workflow": [
+      "1. User gives initial prompt",
+      "2. Claude detects task type (design/copy/code/animation)",
+      "3. Claude asks 3-5 clarification questions (AskUserQuestion)",
+      "4. User answers questions",
+      "5. Claude analyzes context and selects precise skill + parameters",
+      "6. Claude confirms skill selection with context summary",
+      "7. Claude launches skill with full context",
+      "8. QA gate with user"
+    ],
+    "taskCategories": {
+      "design": {
+        "keywords": ["build", "create", "design", "component", "page", "interface", "dashboard", "ui", "theme", "dark mode", "light mode", "redesign"],
+        "questionCount": 5,
+        "skills": ["design-taste-frontend", "emil-design-eng"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#design-tasks"
+      },
+      "copy": {
+        "keywords": ["text", "copy", "write", "humanize", "landing", "pricing", "features", "description", "content", "message", "button", "label"],
+        "questionCount": 5,
+        "skills": ["humanizer"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#copy-humanizer-tasks"
+      },
+      "code": {
+        "keywords": ["review", "refactor", "security", "quality", "best practice", "audit code", "check", "fix"],
+        "questionCount": 5,
+        "skills": ["code-reviewer", "senior-frontend"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#code-review-tasks"
+      },
+      "animation": {
+        "keywords": ["animate", "motion", "transition", "micro-interaction", "polish", "feel", "smooth"],
+        "questionCount": 5,
+        "skills": ["emil-design-eng"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#animationmotion-tasks"
+      }
+    },
+    "skipClarificationWhen": [
+      "Simple fixes (typo, quick change)",
+      "Clear direction provided (exact spec or screenshot)",
+      "Follow-up to already-answered questions",
+      "Explicitly requested (user says 'just do it')"
+    ]
+  },
   "workflowRules": {
+    "newWorkflow": {
+      "name": "Prompt → Clarifications → Skill Selection → Execution",
+      "steps": [
+        "1. User gives prompt",
+        "2. Claude detects task type from keywords",
+        "3. Claude asks 3-5 clarification questions (per CLARIFICATION_FRAMEWORK.md)",
+        "4. User answers",
+        "5. Claude selects precise skill + parameters based on answers",
+        "6. Claude confirms selection with context summary",
+        "7. Claude launches skill with full context",
+        "8. QA gate with user (design/copy always need QA before finalization)"
+      ]
+    },
     "copywritingWorkflow": {
       "steps": [
-        "1. Write draft (AI is OK)",
-        "2. /humanizer remove-patterns",
-        "3. Review natural text",
-        "4. QA with user"
+        "1. Detect: humanizer task",
+        "2. Ask 5 questions: type, tone, audience, constraints, length",
+        "3. User answers",
+        "4. /humanizer with context: { type, tone, audience }",
+        "5. Review humanized text",
+        "6. QA with user"
       ]
     },
     "designWorkflow": {
       "steps": [
-        "1. /design-taste-frontend build [component]",
-        "2. /emil-design-eng add-motion (if needed)",
-        "3. /impeccable audit",
-        "4. /a11y check [colors]",
-        "5. /tailwind optimize [classes]",
-        "6. QA with user"
+        "1. Detect: design task",
+        "2. Ask 5 questions: scope, aesthetic, colors, motion, priority",
+        "3. User answers",
+        "4. /design-taste-frontend build with context: { aesthetic, palette, scope }",
+        "5. /emil-design-eng add-motion (if motion='yes')",
+        "6. /impeccable audit",
+        "7. /a11y check [colors]",
+        "8. QA with user"
       ]
     },
     "codeWorkflow": {
       "steps": [
-        "1. /senior-frontend implement",
-        "2. /code-reviewer audit",
-        "3. /a11y check (if UI)",
-        "4. /tailwind optimize"
+        "1. Detect: code review task",
+        "2. Ask 5 questions: focus, scope, context, severity, output format",
+        "3. User answers",
+        "4. /code-reviewer audit with context: { focus, scope, severity }",
+        "5. Generate report or fixed code",
+        "6. User reviews"
       ]
     }
   },
   "guidelines": {
     "alwaysUse": [
+      "🎯 ASK CLARIFICATIONS FIRST — 3-5 questions before any skill launch",
       "humanizer для всіх текстів (copy, landing, pricing)",
       "impeccable для audit дизайну перед фіналізацією",
       "a11y для перевірки контрасту кольорів",
@@ -107,7 +173,7 @@
       "Server Components за замовчуванням, 'use client' тільки для інтерактивності",
       "Lucide React для іконок (обгорнути в span для style prop)"
     ],
-    "autoSelectLogic": "Analyze user keywords → match to skill priority → select primary skill. For design: ALWAYS run impeccable audit at end. For text: ALWAYS run humanizer first."
+    "smartSelectionLogic": "NEW: Prompt → Ask 5 clarification questions (per CLARIFICATION_FRAMEWORK.md) → Analyze answers → Select precise skill + parameters → Launch with context → QA gate"
   },
   "permissions": {
     "allowedRead": ["*"],

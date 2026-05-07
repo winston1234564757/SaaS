@@ -2,12 +2,10 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { sendPush, broadcastPush } from '@/lib/push';
+import { sendPush } from '@/lib/push';
 import { sendTelegramMessage } from '@/lib/telegram';
 import { sendTurboSMS } from '@/lib/turbosms';
 
-import { format } from 'date-fns';
-import { uk } from 'date-fns/locale';
 import { revalidatePath } from 'next/cache';
 
 export async function confirmBooking(bookingId: string): Promise<{ error: string | null }> {
@@ -61,7 +59,7 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
 
     const { data: booking } = await admin
       .from('bookings')
-      .select('master_id, client_id, date, start_time, end_time')
+      .select('master_id')
       .eq('id', bookingId)
       .single();
 
@@ -81,10 +79,9 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
-    await Promise.allSettled([
-      notifyClientOnStatusChange(bookingId, 'cancelled'),
-      notifyFreedSlot(booking.master_id, booking.date, booking.start_time, booking.end_time, booking.client_id)
-    ]);
+    notifyClientOnStatusChange(bookingId, 'cancelled').catch(err => 
+      console.error('[cancelBooking] Notification failed:', err)
+    );
 
     return { error: null };
   } catch (err: any) {
@@ -150,7 +147,7 @@ export async function updateBookingStatus(
 
     const { data: booking } = await admin
       .from('bookings')
-      .select('master_id, client_id, date, start_time, end_time')
+      .select('master_id')
       .eq('id', bookingId)
       .single();
 
@@ -171,11 +168,9 @@ export async function updateBookingStatus(
     revalidatePath('/my/bookings');
     
     if (status === 'confirmed' || status === 'cancelled') {
-        const tasks = [notifyClientOnStatusChange(bookingId, status)];
-        if (status === 'cancelled') {
-          tasks.push(notifyFreedSlot(booking.master_id, booking.date, booking.start_time, booking.end_time, booking.client_id));
-        }
-        await Promise.allSettled(tasks);
+        notifyClientOnStatusChange(bookingId, status).catch(err => 
+          console.error('[updateBookingStatus] Notification failed:', err)
+        );
     }
 
     return { error: null };
@@ -458,132 +453,5 @@ export async function notifyClientOnStatusChange(
     await sendTurboSMS(booking.client_phone, body);
   } catch (error) {
     console.error('[notifyClientOnStatusChange] Error:', error);
-  }
-}
-
-export async function notifyFreedSlot(
-  masterId: string,
-  date: string,
-  time: string,
-  endTime: string | null,
-  excludedClientId: string | null
-): Promise<void> {
-  try {
-    const admin = createAdminClient();
-
-    // 1. Get Master Profile & Config
-    const { data: mp } = await admin
-      .from('master_profiles')
-      .select('slug, waitlist_discount_pct, profiles(full_name)')
-      .eq('id', masterId)
-      .single();
-    
-    if (!mp) return;
-
-    const masterName = (mp.profiles as any)?.full_name ?? 'Майстер';
-    let bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp.slug}`;
-    const dateStr = format(new Date(date + 'T00:00:00'), 'd MMMM', { locale: uk });
-    const timeStr = time.slice(0, 5);
-
-    let notifTitle = `⚡ Звільнилося місце!`;
-    let notifBody = `До ${masterName} щойно звільнилося місце на ${dateStr} о ${timeStr}. Встигніть записатися першим!`;
-
-    // Calculate duration
-    let durationMinutes = 60; // default
-    if (endTime) {
-      const startD = new Date(`1970-01-01T${time}Z`);
-      const endD = new Date(`1970-01-01T${endTime}Z`);
-      durationMinutes = Math.round((endD.getTime() - startD.getTime()) / 60000);
-      bookingUrl += `?max_duration=${durationMinutes}`;
-    }
-
-    // Check discount & create Flash Deal
-    if (mp.waitlist_discount_pct && mp.waitlist_discount_pct > 0) {
-      const { data: flashDeal, error: fdErr } = await admin.from('flash_deals').insert({
-        master_id: masterId,
-        service_id: null, // Any service
-        service_name: 'Звільнене вікно (Waitlist)',
-        slot_date: date,
-        slot_time: time,
-        original_price: 0,
-        discount_pct: mp.waitlist_discount_pct,
-        expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-        status: 'active'
-      }).select('id').single();
-
-      if (!fdErr && flashDeal) {
-        bookingUrl += (bookingUrl.includes('?') ? '&' : '?') + `flash=${flashDeal.id}`;
-        notifTitle = `🎁 Звільнилося місце зі знижкою -${mp.waitlist_discount_pct}%!`;
-        notifBody = `До ${masterName} щойно звільнилося місце на ${dateStr} о ${timeStr}. Забирайте з унікальною знижкою -${mp.waitlist_discount_pct}%, поки не зайняли інші!`;
-      }
-    }
-
-    // 2. Get eligible clients via RPC
-    const slotTimestamp = `${date}T${time.slice(0, 8)}+03:00`;
-    const { data: eligibleRows } = await admin
-      .rpc('get_freed_slot_clients', {
-        p_master_id: masterId,
-        p_slot_timestamp: slotTimestamp,
-        p_excluded_client_id: excludedClientId
-      });
-
-    const clientIds = (eligibleRows ?? []).map((r: any) => r.client_id);
-    if (clientIds.length === 0) return;
-
-    console.log(`[notifyFreedSlot] Sending Waitlist to ${clientIds.length} clients for ${dateStr} ${timeStr}`);
-
-    // 3. In-App Notifications
-    await admin.from('notifications').insert(
-      clientIds.map((clientId: string) => ({
-        recipient_id: clientId,
-        title: notifTitle,
-        body: notifBody,
-        type: 'waitlist_freed_slot',
-        channel: 'in_app',
-        related_master_id: masterId,
-        related_url: bookingUrl,
-      }))
-    );
-
-    // 4. Web Push
-    const { data: pushSubs } = await admin
-      .from('push_subscriptions')
-      .select('subscription, user_id')
-      .in('user_id', clientIds);
-
-    const pushedUserIds = new Set<string>();
-
-    if (pushSubs && pushSubs.length > 0) {
-      await broadcastPush(
-        pushSubs as any,
-        { title: notifTitle, body: notifBody, url: bookingUrl }
-      );
-      // We assume if they have an active sub, the push was sent
-      pushSubs.forEach(sub => pushedUserIds.add(sub.user_id));
-    }
-
-    // 5. Telegram (Fallback for clients who didn't get Push)
-    const clientsForTg = clientIds.filter((id: string) => !pushedUserIds.has(id));
-
-    if (clientsForTg.length > 0) {
-      const { data: profilesWithTg } = await admin
-        .from('profiles')
-        .select('telegram_chat_id')
-        .in('id', clientsForTg)
-        .not('telegram_chat_id', 'is', null);
-
-      if (profilesWithTg && profilesWithTg.length > 0) {
-        const tgMsg = `<b>${notifTitle}</b>\n\n${notifBody}\n\n<a href="${bookingUrl}">Записатися першим →</a>`;
-        await Promise.allSettled(
-          profilesWithTg.map(c => {
-            const { sendTelegramMessage: sendTg } = require('@/lib/telegram');
-            return sendTg(c.telegram_chat_id!, tgMsg);
-          })
-        );
-      }
-    }
-
-  } catch (error) {
-    console.error('[notifyFreedSlot] Error:', error);
   }
 }

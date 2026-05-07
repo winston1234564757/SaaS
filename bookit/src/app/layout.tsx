@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Inter, Playfair_Display, Great_Vibes, Cormorant_Garamond } from 'next/font/google';
 import  QueryProvider  from '@/lib/providers/QueryProvider';
 import { ToastProvider } from '@/lib/toast/context';
 import { MyBottomNav } from '@/components/client/MyBottomNav';
@@ -20,6 +20,21 @@ const inter = Inter({
 const playfair = Playfair_Display({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-playfair',
+  display: 'swap',
+  style: ['normal', 'italic'],
+});
+
+const greatVibes = Great_Vibes({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400'],
+  variable: '--font-great-vibes',
+  display: 'swap',
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-cormorant',
   display: 'swap',
   style: ['normal', 'italic'],
 });
@@ -45,7 +60,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#FFE8DC',
+  themeColor: '#FFF2DF',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -60,7 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const initialIsAuth = headersList.get('x-is-auth') === 'true';
 
   return (
-    <html lang="uk" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="uk" className={`${inter.variable} ${playfair.variable} ${greatVibes.variable} ${cormorant.variable}`}>
       <head>
         {/* Single authoritative Telegram SDK — beforeInteractive ensures window.Telegram
             is set before React hydrates, so TelegramProvider never needs to poll for it. */}

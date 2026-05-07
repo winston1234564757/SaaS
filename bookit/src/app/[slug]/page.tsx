@@ -76,7 +76,6 @@ export default async function MasterPublicPage(
 ) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
   const refCode = sp?.ref ?? null;
-  const waitlistMaxDuration = sp?.max_duration ? parseInt(sp.max_duration, 10) : null;
   const data = await getMaster(slug);
   if (!data) notFound();
 
@@ -395,7 +394,6 @@ export default async function MasterPublicPage(
         c2cDiscountPct={c2cDiscountPct}
         masterC2cEnabled={masterC2cEnabled === true}
         masterC2cDiscountPct={masterC2cEnabled ? ((data as any).c2c_discount_pct as number ?? 10) : null}
-        waitlistMaxDuration={waitlistMaxDuration}
       />
     </>
   );

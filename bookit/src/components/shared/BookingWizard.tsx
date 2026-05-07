@@ -39,7 +39,6 @@ export function BookingWizard({
   onSuccess, flashDeal, initialStep,
   c2cRefCode = null, c2cDiscountPct = null,
   masterC2cEnabled = false, masterC2cDiscountPct = null,
-  waitlistMaxDuration = null,
 }: BookingWizardProps) {
 
   const isFlashFastTrack = !!(flashDeal?.slotDate && flashDeal?.slotTime);
@@ -258,7 +257,6 @@ export function BookingWizard({
                 <div key="services" className="h-full overflow-hidden px-5">
                   <ServiceSelector
                     services={services}
-                    waitlistMaxDuration={waitlistMaxDuration}
                     selectedServices={selectedServices}
                     onToggle={toggleService}
                     mode={mode}

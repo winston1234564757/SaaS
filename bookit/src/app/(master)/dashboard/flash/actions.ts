@@ -106,7 +106,6 @@ export async function createFlashDeal(
   const { data: eligibleRows } = await admin
     .rpc('get_eligible_flash_deal_clients', {
       p_master_id:      user.id,
-      p_service_id:     params.serviceId,
       p_slot_timestamp: slotTimestamp,
     });
 

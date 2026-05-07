@@ -1,21 +1,26 @@
 # 📘 Bookit Development Guide
 
 **🔥 ВАЖЛИВО:** Перш ніж працювати, прочитай (в порядку):
-1. `.claude/HUMANIZER_GUIDE.md` — гайд для гуманізації текстів
-2. `.claude/SKILL_GUIDE.md` — як вибирати skills автоматично
-3. `XDEV/TASK.md` — місія, дизайн, rules
-4. `XDEV/AI_DEVELOPER.md` — конституція розробки
+1. `.claude/CLARIFICATION_FRAMEWORK.md` — ✨ NEW! 5 питань перед запуском скіла
+2. `.claude/HUMANIZER_GUIDE.md` — гайд для гуманізації текстів
+3. `.claude/SKILL_GUIDE.md` — як вибирати skills автоматично
+4. `XDEV/TASK.md` — місія, дизайн, rules
+5. `XDEV/AI_DEVELOPER.md` — конституція розробки
 
 ---
 
-## 🎯 Skill Auto-Selection
+## 🎯 SMART Skill Auto-Selection (with Clarifications!)
 
-Claude **автоматично вибирає** skill на основі:
-- Ключових слів у запиті (humanize, build, animate, audit...)
-- Типу задачі (copywriting, UI design, code review...)
-- Пріоритету в settings.json
+Claude **НЕ вибирає скіл одразу**. Замість цього:
 
-**Не потрібно** вручну викликати skills — Claude зробить це сам!
+1. **Детектує тип задачі** (design, copy, code, animation)
+2. **Задає 3-5 уточнювальних питань** (AskUserQuestion)
+3. **Аналізує відповіді** та вирахує точний скіл
+4. **Підтверджує вибір** перед запуском
+5. **Запускає skill З КОНТЕКСТОМ**
+6. **QA сесія** з користувачем
+
+**Не потрібно** вручну викликати skills — Claude запитає все, що потрібно!
 
 ---
 
@@ -40,52 +45,103 @@ Claude **автоматично вибирає** skill на основі:
 
 ---
 
-## 🚀 Quick Workflows
+## 🚀 Quick Workflows (Smart Clarifications First!)
 
 ### **Humanize Text (Copy, Landing, Pricing)**
 ```
-User: "Write humanized copy for pricing page"
-→ Claude auto-selects: humanizer
-→ Removes AI patterns
-→ Outputs natural text
-→ QA with user
+User: "Гуманізуй текст для тарифів"
+
+Claude: "Уточню! 🎯"
+[Asks 5 questions via AskUserQuestion]
+  Q1: Який текст? (hero, description, benefits?)
+  Q2: Тон голосу? (professional, conversational?)
+  Q3: Для кого? (masters, clients?)
+  Q4: Терміни для збереження?
+  Q5: Довжина? (label, sentence, paragraph?)
+
+User answers → Claude: "/humanizer з контекстом"
+→ Видаляє AI-штампи
+→ Природна копія
+→ QA з Вітос
 ```
 
 ### **Build Premium UI Component**
 ```
-User: "Build a modern booking form"
-→ Claude auto-selects: design-taste-frontend
-→ Generates premium UI code
-→ Runs /impeccable audit
-→ Checks /a11y contrast
-→ QA with user
+User: "Побудувати booking form"
+
+Claude: "Уточню деталі! 🎯"
+[Asks 5 design questions]
+  Q1: Яка область? (component, page, full flow?)
+  Q2: Який стиль? (iPhone AIR, Brutal Studio?)
+  Q3: Палітра? (BookIT default чи custom?)
+  Q4: Анімація потрібна?
+  Q5: Коли готово?
+
+User answers → Claude: "/design-taste-frontend build + /impeccable audit"
+→ Premium UI код
+→ /a11y контрас перевірка
+→ QA з Вітос
 ```
 
 ### **Design + Humanize (Complete Page)**
 ```
-User: "Design & write pricing page, iPhone AIR style"
-→ /humanizer (copy)
-→ /design-taste-frontend (layout)
-→ /impeccable (audit)
-→ /a11y (contrast)
-→ QA with user
+User: "Дизайн та копія для pricing page, iPhone AIR"
+
+Claude: "Уточню дизайн+копію! 🎯"
+[Design questions] + [Copy questions]
+
+User answers both
+
+Claude:
+  - /humanizer (копія)
+  - /design-taste-frontend (layout)
+  - /emil-design-eng (if motion)
+  - /impeccable audit
+  - /a11y контраст
+
+→ Premium pricing page (дизайн + людяна копія)
+→ QA з Вітос
 ```
 
-### **Add Animations**
+### **Dark Mode (Brutal Studio Theme)**
 ```
-User: "Add smooth transitions to the booking flow"
-→ Claude auto-selects: emil-design-eng
-→ Adds Framer Motion animations
-→ /impeccable check-feel
-→ QA with user
+User: "Зробити темну брутальну тему"
+
+Claude: "Деталізую Brutal редизайн! 🎯"
+[Asks 5 design questions]
+  Q1: Яка область? (dashboard, all, specific?)
+  Q2: Brutal Studio палітра?
+  Q3: Кольори? (deep charcoal + ?)
+  Q4: Анімація? (smooth, dramatic?)
+  Q5: Коли?
+
+User: "Dashboard, Brutal, dark+gold, smooth, ASAP"
+
+Claude: "/design-taste-frontend build
+  aesthetic: brutal
+  palette: { primary: #1a1a1a, accent: #d4a574 }
+  /emil-design-eng (transitions)"
+
+→ Dark Brutal theme (animated, accessible)
+→ /impeccable + /a11y
+→ QA з Вітос
 ```
 
 ### **Code Review**
 ```
-User: "Review the AuthContext code"
-→ Claude auto-selects: code-reviewer
-→ Reviews code quality & security
-→ Suggests improvements
+User: "Перевір код AuthContext"
+
+Claude: "Уточню review! 🎯"
+[Asks 5 code questions]
+  Q1: Що турбує? (security, perf, quality?)
+  Q2: Область? (file, function, module?)
+  Q3: Контекст? (auth, booking, analytics?)
+  Q4: Критичність? (blocker, high, medium?)
+  Q5: Output формат? (report, fixed code?)
+
+User answers → Claude: "/code-reviewer audit"
+→ Report + suggestions
+→ User reviews
 ```
 
 ---

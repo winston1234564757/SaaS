@@ -52,11 +52,14 @@ export function DropdownMenu({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
+    const onScroll = () => setOpen(false);
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true });
     return () => {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('scroll', onScroll, { capture: true });
     };
   }, [open]);
 

@@ -1,34 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { BookImage, Send, Bolt } from 'lucide-react';
+import { BookImage, Send } from 'lucide-react';
 import { StoryGenerator } from './StoryGenerator';
 import { BroadcastsTab } from './BroadcastsTab';
-import { WaitlistTab } from './WaitlistTab';
 
 interface Product { id: string; name: string; price: number }
 
 interface Props {
   initialTab: 'stories' | 'broadcasts';
+  initialMode?: string;
   isStarter: boolean;
   isPro: boolean;
   broadcastsUsed: number;
   products: Product[];
-  waitlistConfig: {
-    discountPct: number | null;
-    lookbackDays: number;
-    lookaheadDays: number;
-  };
 }
 
 const TABS = [
   { id: 'stories' as const,    label: 'Сторіс',    icon: BookImage },
   { id: 'broadcasts' as const, label: 'Розсилки',  icon: Send },
-  { id: 'waitlist' as const,   label: 'Waitlist',  icon: Bolt },
 ];
 
-export function MarketingTabs({ initialTab, isStarter, isPro, broadcastsUsed, products, waitlistConfig }: Props) {
-  const [tab, setTab] = useState<'stories' | 'broadcasts' | 'waitlist'>(initialTab as any);
+export function MarketingTabs({ initialTab, initialMode, isStarter, isPro, broadcastsUsed, products }: Props) {
+  const [tab, setTab] = useState<'stories' | 'broadcasts'>(initialTab);
 
   return (
     <div>
@@ -57,16 +51,14 @@ export function MarketingTabs({ initialTab, isStarter, isPro, broadcastsUsed, pr
 
       {/* Content */}
       {tab === 'stories' ? (
-        <StoryGenerator />
-      ) : tab === 'broadcasts' ? (
+        <StoryGenerator initialMode={initialMode} />
+      ) : (
         <BroadcastsTab
           broadcastsUsed={broadcastsUsed}
           isStarter={isStarter}
           isPro={isPro}
           products={products}
         />
-      ) : (
-        <WaitlistTab config={waitlistConfig} />
       )}
     </div>
   );

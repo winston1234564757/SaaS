@@ -11,10 +11,11 @@ import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/toast/context';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { useWizardSchedule, type ScheduleStore } from '@/lib/supabase/hooks/useWizardSchedule';
+import { useSlotsFromStore } from '@/lib/supabase/hooks/useSlotsFromStore';
 import { usePortfolioItems } from '@/lib/supabase/hooks/usePortfolioItems';
-import { generateAvailableSlots, type TimeRange } from '@/lib/utils/smartSlots';
 import type { PortfolioItemFull, WorkingHoursConfig } from '@/types/database';
 import { parseError } from '@/lib/utils/errors';
+import { getNow } from '@/lib/utils/now';
 
 /* ═══════════════════════════════════════════════════════
    PALETTES
@@ -84,49 +85,6 @@ function formatUA(dateStr: string): string {
   return `${d.getDate()} ${UA_MONTHS[d.getMonth()]}`;
 }
 
-function useSlotsFromStore(
-  date: string | null,
-  durationMin: number,
-  bufferMin: number,
-  workingHours: Partial<WorkingHoursConfig> | null,
-  store: ScheduleStore | undefined,
-): string[] {
-  return useMemo(() => {
-    if (!date || !store || durationMin <= 0) return [];
-
-    const dow = DOW_KEYS[new Date(date + 'T12:00:00').getDay()];
-    const tpl = store.templates[dow];
-    if (!tpl?.is_working) return [];
-
-    const exc = store.exceptions[date];
-    if (exc?.is_day_off) return [];
-
-    const breaks: TimeRange[] = [
-      ...(tpl.break_start && tpl.break_end
-        ? [{ start: tpl.break_start.slice(0, 5), end: tpl.break_end.slice(0, 5) }]
-        : []),
-      ...(workingHours?.breaks ?? []),
-    ];
-
-    const workStart = exc?.start_time?.slice(0, 5) ?? tpl.start_time.slice(0, 5);
-    const workEnd = exc?.end_time?.slice(0, 5) ?? tpl.end_time.slice(0, 5);
-
-    const selectedDate = new Date(date + 'T12:00:00');
-
-    return generateAvailableSlots({
-      workStart,
-      workEnd,
-      bookings: store.bookingsByDate[date] ?? [],
-      breaks,
-      bufferMinutes: bufferMin,
-      requestedDuration: durationMin,
-      stepMinutes: 15,
-      selectedDate,
-    })
-      .filter(s => s.available)
-      .map(s => s.time);
-  }, [date, durationMin, bufferMin, workingHours, store]);
-}
 
 /* ═══════════════════════════════════════════════════════
    DATA HOOKS
@@ -665,21 +623,26 @@ const INPUT_STYLE: React.CSSProperties = {
   fontSize: 13, color: '#2C1A14', outline: 'none', boxSizing: 'border-box',
 };
 
+const VALID_MODES = new Set<Mode>(['announcement', 'free_slots', 'vacation', 'promo', 'review_spotlight', 'flash_window', 'portfolio_item']);
+
 interface StoryGeneratorProps {
   isOpen?: boolean;
   onClose?: boolean | (() => void);
   items?: PortfolioItemFull[];
   masterName?: string;
   masterSlug?: string;
+  initialMode?: string;
 }
 
-export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug }: StoryGeneratorProps = {}) {
+export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug, initialMode }: StoryGeneratorProps = {}) {
   const { profile, masterProfile } = useMasterContext();
   const { showToast } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  const startMode: Mode = (initialMode && VALID_MODES.has(initialMode as Mode)) ? initialMode as Mode : 'announcement';
+
   const [palIdx, setPalIdx] = useState(0);
-  const [mode, setMode] = useState<Mode>('announcement');
+  const [mode, setMode] = useState<Mode>(startMode);
   const [showAvatar, setShowAvatar] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
@@ -831,8 +794,10 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const selectedSvc = services.find(s => s.id === selectedSvcId) ?? null;
   const flashWinSvc = services.find(s => s.id === flashWinSvcId) ?? null;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const futureStr = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const _now = getNow();
+  const todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
+  const _future = new Date(_now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const futureStr = `${_future.getFullYear()}-${String(_future.getMonth() + 1).padStart(2, '0')}-${String(_future.getDate()).padStart(2, '0')}`;
   const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(masterId, todayStr, futureStr);
 
   const wh = (masterProfile?.working_hours as Partial<WorkingHoursConfig> | null) ?? {};

@@ -25,8 +25,6 @@ interface ServiceSelectorProps {
   onClearTime: () => void;
   onContinue: () => void;
   onSkipToProducts?: () => void;
-  /** Waitlist deep-link: max available minutes in freed slot */
-  waitlistMaxDuration?: number | null;
 }
 
 export function ServiceSelector({
@@ -41,7 +39,6 @@ export function ServiceSelector({
   effectiveDuration,
   totalServicesPrice,
   c2cDiscountPct,
-  waitlistMaxDuration,
   onDurationOverrideChange,
   onClearTime,
   onContinue,
@@ -64,27 +61,17 @@ export function ServiceSelector({
             <div className="space-y-2">
               {services.filter(s => s.category === cat).map(svc => {
                 const sel = selectedServices.some(s => s.id === svc.id);
-                const isWaitlistLocked = !!(waitlistMaxDuration && svc.duration > waitlistMaxDuration);
                 return (
                   <button
                     key={svc.id}
-                    onClick={() => !isWaitlistLocked && onToggle(svc)}
+                    onClick={() => onToggle(svc)}
                     data-testid="service-card"
-                    disabled={isWaitlistLocked}
-                    title={isWaitlistLocked ? `Послуга не вміщується у звільнений час (${svc.duration} хв > ${waitlistMaxDuration} хв)` : undefined}
-                    className={`relative flex items-start gap-3 px-4 pt-4 pb-4 rounded-2xl border text-left w-full transition-all ${
-                      isWaitlistLocked
-                        ? 'opacity-40 bg-white/40 border-white/60 cursor-not-allowed'
-                        : sel
-                          ? 'bg-primary/10 border-primary/40 shadow-sm'
-                          : 'bg-white/60 border-white/80 hover:border-primary/25 hover:bg-white/80'
-                    } active:scale-[0.98] disabled:active:scale-100`}
+                    className={`flex items-start gap-3 px-4 pt-4 pb-4 rounded-2xl border text-left w-full transition-all ${
+                      sel
+                        ? 'bg-primary/10 border-primary/40 shadow-sm'
+                        : 'bg-white/60 border-white/80 hover:border-primary/25 hover:bg-white/80'
+                    } active:scale-[0.98]`}
                   >
-                    {isWaitlistLocked && (
-                      <span className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#A8928D]/20 text-[#A8928D] whitespace-nowrap">
-                        Не влазить у вікно
-                      </span>
-                    )}
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0 mt-0.5"
                       style={{ background: 'rgba(255,210,194,0.4)' }}

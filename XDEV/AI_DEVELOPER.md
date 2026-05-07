@@ -125,12 +125,29 @@
 
 ---
 
-## 🤖 Skills & Design Prompts (6 Core Skills)
+## 🤖 Skills & Design Prompts (6 Core Skills + Smart Clarifications)
 
-### **Auto-Selection Rules**
-- Claude **автоматично вибирає** skill на основі keywords
-- **НЕ ПОТРІБНО** вручну викликати `/design-taste-frontend` — просто скажи "Build a form"
-- Keywords → settings.json → Primary Skill (priority 1 > 2)
+### **NEW: Clarification-First Auto-Selection**
+> **Система змінена (май 2026):** Claude НЕ запускає скіл одразу. Замість цього задає **3-5 уточнювальних питань**.
+
+```
+1. User: "Зробити темну тему"
+2. Claude (NOT skill): "Уточню! 5 питань..."
+3. Claude asks: scope, aesthetic, colors, motion, priority
+4. User answers
+5. Claude analyzes + selects PRECISE skill
+6. Claude confirms: "Запускаю design-taste-frontend з параметрами..."
+7. Claude launches skill WITH CONTEXT
+8. QA gate
+```
+
+**Детальна система:** див. `.claude/CLARIFICATION_FRAMEWORK.md`
+
+### **Auto-Selection Rules (Updated)**
+- Claude **спочатку задає питання**, потім вибирає skill
+- **Не потрібно** вручну викликати скіли — просто дайте промт
+- Claude задає 3-5 уточнень → аналізує → вибирає точний skill
+- Keywords → task type detection → Clarification template → User answers → Skill selection
 
 ### **Available Skills (6)**
 
@@ -187,14 +204,35 @@
 - High-end barbershop / studio vibe"
 ```
 
-#### **Complete Design Workflow**
+#### **Complete Design Workflow (With Smart Clarifications)**
 ```
-1. Humanizer: humanize copy first
-2. Design-Taste: /design-taste-frontend build [component]
-3. Emil-Design: /emil-design-eng add-motion (if needed)
-4. Impeccable: /impeccable audit
-5. A11y: check contrast
-6. Tailwind: optimize classes
+1. User: "Build [something]"
+
+2. Claude (CLARIFICATIONS):
+   Q1: Scope? (component/page/feature/theme?)
+   Q2: Style? (iPhone AIR/Brutal Studio/custom?)
+   Q3: Colors? (BookIT default/custom palette?)
+   Q4: Motion? (none/subtle/playful/dramatic?)
+   Q5: Priority? (ASAP/this week/future?)
+
+3. User answers
+
+4. Claude analyzes + selects:
+   - design-taste-frontend (PRIMARY UI skill)
+   - emil-design-eng (if motion='yes')
+   - Parameters: { aesthetic, palette, scope, motion }
+
+5. Claude: "/design-taste-frontend build [with context]"
+
+6. Humanizer: humanize copy (if needed)
+
+7. Impeccable: /impeccable audit
+
+8. A11y: check contrast
+
+9. Tailwind: optimize classes
+
+10. QA with user: "Перевіримо результат?"
 ```
 
 ### **MCP Servers (Always Available)**

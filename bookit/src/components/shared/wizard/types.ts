@@ -52,7 +52,6 @@ export interface BookingWizardProps {
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;
   masterC2cDiscountPct?: number | null;
-  waitlistMaxDuration?: number | null;
 }
 
 export type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';

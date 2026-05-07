@@ -8,6 +8,36 @@
 
 ### **Tier 1: MUST READ BEFORE EVERY TASK**
 
+#### 0. `.claude/CLARIFICATION_FRAMEWORK.md` (✨ NEW! Smart Questions System)
+**Коли читати:** На старті БУДЬ-ЯКОї задачі (design, copy, code)
+**Що там:**
+- 3-5 уточнювальних питань для кожного типу задачі
+- Workflow: Prompt → Questions → User answers → Skill selection
+- Templates for: design, copy, code, animation
+- Mapping answers to skill parameters
+
+**Як використовувати:**
+```
+1. Користувач дає промт
+2. Я читаю CLARIFICATION_FRAMEWORK
+3. Я визначаю тип задачі (design/copy/code/animation)
+4. Я задаю 3-5 питань з шаблону
+5. На основі відповідей я вибираю точний скіл
+6. Я запускаю скіл З КОНТЕКСТОМ (не без контексту!)
+```
+
+**Приклад:**
+```
+Користувач: "Зробити темну тему"
+Я: [Читаю CLARIFICATION_FRAMEWORK → design questions]
+Я: "Уточню! 5 питань..." [AskUserQuestion]
+Q1: Яка область? | Q2: Brutal Studio? | Q3: Кольори? | Q4: Анімація? | Q5: Коли?
+Користувач: [answers]
+Я: "/design-taste-frontend build { aesthetic: brutal, palette: {...} }"
+```
+
+---
+
 #### 1. `TASK.md` (This is your mission brief)
 **Коли читати:** На старті ПОВ'ЯЗАНОЇ задачі (дизайн, UI, feature)
 **Що там:**
