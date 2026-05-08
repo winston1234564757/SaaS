@@ -31,7 +31,7 @@
 | Framework | **Next.js 16+ App Router**, Turbopack |
 | Language | **TypeScript** (strict mode, `noImplicitAny: true`) |
 | Routing Guard | `src/proxy.ts` → `export async function proxy(request: NextRequest)` |
-| Styling | **Tailwind CSS v4** — `@import "tailwindcss"` в `globals.css`. Нема `tailwind.config.ts` |
+| Styling | **Tailwind v4** <br> ```css <br> /* globals.css */ <br> @import "tailwindcss"; <br> <br> @theme { <br>   --color-background: var(--background); <br>   --color-primary: var(--accent); <br>   /* ... */ <br> } <br> /* НЕ @tailwind base/components/utilities */ <br> ``` |
 | Data Fetching | **TanStack Query v5** (staleTime per hook) |
 | Backend | **Supabase** (PostgreSQL + RLS + Realtime + Storage) |
 | Forms | **React Hook Form + Zod** |
@@ -107,14 +107,23 @@
 
 ## 🎨 Design System (Premium Standards)
 
-### Палітра & Типографіка
-| Токен | Hex | Шар |
+### Палітра — Dual Theme System
+| Токен | Blossom (Default Light) | Studio (Masculine Dark) |
 |---|---|---|
-| Background | `#FFE8DC` | Peach Atmosphere |
-| Accent | `#789A99` | Sage Teal |
-| Surface | `rgba(255,255,255,0.68)` | Mica |
-| Text Primary | `#2C1A14` | Body: **Inter** |
-| Success | `#5C9E7A` | Headings: **Playfair Display** |
+| Background | `#FFF2DF` | `#0E1D21` |
+| Accent | `#8C6E63` | `#D3A376` |
+| Text Primary | `#3E2522` | `#E0B4B2` |
+| Text Secondary | `#8C6E63` | `#ABAFB5` |
+| Text Tertiary | `rgba(140,110,99,0.68)` | `#677E8A` |
+| Surface | `rgba(255,255,255,0.68)` | `rgba(18,46,52,0.65)` |
+| Success | `#4E9870` | `#5AAA78` |
+| Warning | `#C87840` | `#C87840` |
+| Error | `#C04060` | `#B04858` |
+
+### Типографіка
+- Body: **Inter** (Cyrillic subset) — `font-sans`
+- Display/Headings: **Playfair Display** (Cyrillic subset) — `font-display` (Blossom only. Studio uses Inter for Headings).
+- CSS класи: `.display-xl`, `.display-lg`, `.display-md`, `.heading-serif`
 
 ### UI Rules
 - **Mosaic Hub Architecture**: Несиметричні Bento-сітки (Hero 3/5, Side 2/5, Wide 5/5). Жодних простих 2x2.
@@ -122,6 +131,7 @@
 - **BottomSheet Strategy**: Кожна модалка ПОВИННА мати iOS-handle, `pb-32` для безпечної зони та `shouldScaleBackground={false}`.
 - **Z-Index**: Bottom Nav (75) > Toasts (100) > Modals (90) > Content (0).
 - **Tactile Feedback**: `active:scale-95 transition-all` для всіх кнопок.
+- **Premium Segment-Action FAB (The Golden Standard)**: Використовувати для контекстних масових дій. Стиль: `bg-white/10`, `backdrop-blur-3xl`, `border-white/20`, `rounded-[32px]`, `shadow-2xl`. Текст: виключно humanized (напр. "Повернути скарби"), без технічних термінів типу "сегмент". Обов'язкова наявність кнопки закриття (X) та підтримка динамічного позиціонування.
 
 ---
 

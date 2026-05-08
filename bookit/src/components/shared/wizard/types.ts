@@ -48,6 +48,8 @@ export interface BookingWizardProps {
     slotTime?: string;
   } | null;
   initialStep?: WizardStep;
+  initialDate?: string;
+  initialTime?: string;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;

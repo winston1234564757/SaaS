@@ -143,7 +143,8 @@
 
 **UI & Navigation (v5.2.0 "Vaul Engine")**
 - **Bento Bottom Nav**: Асиметрична мозаїчна сітка (3/5 Hero, 2/5 Side, 5/5 Wide).
-- **Peach Atmosphere**: Глибокі персикові градієнти з Glassmorphism (`backdrop-blur-3xl`).
+- **Blossom Atmosphere**: Теплі коричневі та персикові тони з Glassmorphism (`backdrop-blur-3xl`).
+- **Studio Theme**: Темний режим для майстрів (Deep Teal & Gold).
 - **Command Center**: Центрована навігація для 15+ функціональних зон без UI-шуму.
 - **Vaul Engine (Standard)**: Всі модалки та шторки на мобілці використовують `@/components/ui/BottomSheet`.
 - **Hybrid Modals**: `PopUpModal` автоматично перемикається між Desktop Dialog та Mobile BottomSheet.

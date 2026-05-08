@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { ssrFetch } from '@/lib/supabase/server';
 
 export async function proxy(request: NextRequest) {
   // Server Actions мають заголовок Next-Action — не чіпаємо їх
@@ -57,16 +58,37 @@ export async function proxy(request: NextRequest) {
             );
           },
         },
+        global: { fetch: ssrFetch },
       }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    // getUser() re-validates the session, but can hang on cold starts.
+    // getSession() is faster (cookie-only) but less secure.
+    // We use a 5s timeout for getUser() then fallback to getSession().
+    let user = null;
+    try {
+      const userPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 5000)
+      );
+
+      const { data: { user: u } } = await (Promise.race([userPromise, timeoutPromise]) as Promise<any>);
+      user = u;
+    } catch (err) {
+      console.warn('[Proxy] getUser timed out or failed, falling back to getSession', err);
+      const { data: { session } } = await supabase.auth.getSession();
+      user = session?.user ?? null;
+    }
     if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      const profileRes = await Promise.race([
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 5000))
+      ]) as any;
+      const profile = profileRes?.data;
 
       if (profile?.role) {
         const userRole = profile.role as string;

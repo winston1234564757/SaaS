@@ -24,6 +24,8 @@ interface Props {
   tier?: string;
   usedThisMonth?: number;
   isDrawer?: boolean;
+  initialDate?: string;
+  initialTime?: string;
 }
 
 const STARTER_LIMIT = 5;
@@ -55,7 +57,14 @@ function progressBarColor(used: number): string {
   return '#5C9E7A';
 }
 
-export function FlashDealPage({ activeDeals: initialDeals, tier: initialTier, usedThisMonth: initialCount, isDrawer }: Props) {
+export function FlashDealPage({ 
+  activeDeals: initialDeals, 
+  tier: initialTier, 
+  usedThisMonth: initialCount, 
+  isDrawer,
+  initialDate,
+  initialTime
+}: Props) {
   const { masterProfile, isLoading: masterLoading } = useMasterContext();
   const tier = initialTier ?? masterProfile?.subscription_tier ?? 'starter';
 
@@ -77,8 +86,8 @@ export function FlashDealPage({ activeDeals: initialDeals, tier: initialTier, us
   const activeServices = useMemo(() => services.filter(s => s.active), [services]);
 
   const [serviceId, setServiceId]         = useState('');
-  const [slotDate, setSlotDate]           = useState(todayStr());
-  const [slotTime, setSlotTime]           = useState('');
+  const [slotDate, setSlotDate]           = useState(initialDate ?? todayStr());
+  const [slotTime, setSlotTime]           = useState(initialTime ?? '');
   const [originalPrice, setOriginalPrice] = useState('');
   const [discountPct, setDiscountPct]     = useState(20);
   const [expiresInHours, setExpiresInHours] = useState(4);

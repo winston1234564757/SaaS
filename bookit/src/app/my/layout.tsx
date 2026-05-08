@@ -9,16 +9,47 @@ import { SmartBackButton } from '@/components/shared/SmartBackButton';
 
 export default async function MyLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  
+  // getUser() re-validates the session, but can hang on cold starts.
+  // getSession() is faster (cookie-only) but less secure.
+  // We use a 5s timeout for getUser() then fallback to getSession().
+  let user = null;
+  try {
+    const userPromise = supabase.auth.getUser();
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('timeout')), 5000)
+    );
+    const { data: { user: u } } = await (Promise.race([userPromise, timeoutPromise]) as Promise<any>);
+    user = u;
+  } catch (err) {
+    console.warn('[MyLayout] getUser timed out or failed, falling back to getSession', err);
+    const { data: { session } } = await supabase.auth.getSession();
+    user = session?.user ?? null;
+  }
 
   if (!user) redirect('/login');
 
-  // Strict Identity Guard is now deferred to the client to avoid RSC pathname caching issues
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, phone')
-    .eq('id', user.id)
-    .single();
+  // DB queries with 5s timeout to prevent infinite loading.
+  const timeoutId = setTimeout(() => {}, 5000); // placeholder for consistency if needed, but we use Promise.race
+
+  let profile = null;
+
+  try {
+    const profileRes = await Promise.race([
+      supabase
+        .from('profiles')
+        .select('role, phone')
+        .eq('id', user.id)
+        .single(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 5000))
+    ]) as any;
+    
+    profile = profileRes.data;
+  } catch (err) {
+    console.error('[MyLayout] Data fetch failed or timed out:', err);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const cookieStore = await cookies();
   const viewMode = cookieStore.get('view_mode')?.value;

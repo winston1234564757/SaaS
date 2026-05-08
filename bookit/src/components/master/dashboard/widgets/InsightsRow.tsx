@@ -79,6 +79,7 @@ function TopClientCard({ onOpen }: { onOpen: (client: ClientRow) => void }) {
       total_spent:      topClient.totalSpent,
       average_check:    topClient.count > 0 ? Math.round(topClient.totalSpent / topClient.count) : 0,
       last_visit_at:    topClient.lastVisitAt,
+      last_service_name: null,
       is_vip:           false,
       relation_id:      null,
       retention_status: 'active',

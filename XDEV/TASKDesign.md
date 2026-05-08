@@ -1,7 +1,7 @@
 # 🎨 TASK.md — Design & Development Mission for BookIT
 
 > **СТАТУС:** Фаза дизайну + розробки (Вітос + Claude)
-> **Остання оновлення:** 2026-05-05
+> **Останнє оновлення:** 2026-05-08
 > **Конвенція:** Це ЖИВИЙ ДОКУМЕНТ. Оновлюється після кожної ітерації.
 
 ---
@@ -44,7 +44,8 @@ Desktop:
   - Blurred navigation layer (never obstructs)
 
 Mobile/PWA:
-  - Refined "Floating Island" bottom navigation
+  - Refined "Floating Island" bottom navigation (Bento Bottom Nav)
+  - Blossom (Light) or Studio (Dark) theme adherence
   - Native OS feel
   - Haptic-ready interactions
   - Thumb-reach ergonomics
@@ -110,7 +111,7 @@ Claude вирахує ТОЧНИЙ скіл + параметри:
   Context: { scope: 'dashboard', aesthetic: 'brutal', palette: {...}, motion: 'smooth' }
     ↓
 Claude ПІДТВЕРДЖУЄ вибір:
-  "Запускаю design-taste-frontend з Brutal Studio + animated transitions"
+  "Запускаю design-taste-frontend з Blossom (Light) + animated transitions"
     ↓
 Claude запускає skill З ПОВНИМ КОНТЕКСТОМ
     ↓
@@ -475,3 +476,18 @@ Claude: "Давай перевіримо результат! ✓"
 ```
 
 **ГОТОВО! 🚀 Система повністю автоматизована!**
+
+---
+
+## ✅ Phase 3: Bookings Command Center Redesign (Completed 2026-05-08)
+
+### 🎯 Результати:
+- **Vertical Stacked Layout (Rollback applied)**: Після серії ітерацій було прийнято рішення повернутися до початкової горизонтальної гармонії Bento-картки, але з покращеною обробкою довгих імен.
+- **Period Analytics View**: Інтегровано альтернативний режим перегляду для Тижня та Місяця. Замість порожнього таймлайну майстер бачить Bento-сітку з аналітикою (виручка, завантаженість, топ клієнтів).
+- **Day/Week/Month Logic**: Повністю переписано перемикання діапазонів у `BookingsPage.tsx`.
+- **Seed Ecosystem**: Створено `scripts/seed_week.js` для швидкого тестування аналітики на реальних даних.
+
+### 🛠 Наступні кроки (Phase 4):
+- [ ] Оптимізація мобільної версії `PeriodAnalyticsView`.
+- [ ] Шліфування UX для групових операцій у новому інтерфейсі.
+- [ ] Глобальний аудит продуктивності на реальних великих базах даних.

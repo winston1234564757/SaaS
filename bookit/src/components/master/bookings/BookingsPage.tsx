@@ -1,449 +1,406 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Loader2, Plus, Search, Download, Lock } from 'lucide-react';
+import { 
+  CalendarDays, 
+  ChevronLeft, 
+  ChevronRight, 
+  Search, 
+  Download, 
+  Plus, 
+  LayoutList, 
+  Clock, 
+  Zap,
+  Filter,
+  CheckCircle2,
+  X
+} from 'lucide-react';
+
+import { useMasterContext } from '@/lib/supabase/context';
+import { useBookingsDashboardLogic } from './hooks/useBookingsDashboardLogic';
+import { DashboardWidgets } from './dashboard/DashboardWidgets';
+import { VerticalTimeline } from './dashboard/VerticalTimeline';
+import { SmartQueue } from './dashboard/SmartQueue';
 import { BookingCard } from './BookingCard';
+import { BulkActionToolbar } from './dashboard/BulkActionToolbar';
+import { PeriodAnalyticsView } from './dashboard/PeriodAnalyticsView';
 import { ManualBookingForm } from './ManualBookingForm';
 import { SharePageCard } from '@/components/master/dashboard/SharePageCard';
-import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
-import { useMasterContext } from '@/lib/supabase/context';
-import type { BookingStatus } from '@/types/database';
+import { OpportunityMenu } from './dashboard/OpportunityMenu';
+import { useRouter } from 'next/navigation';
+import { 
+  format, 
+  isPast, 
+  parseISO, 
+  isSameDay, 
+  addDays, 
+  startOfWeek, 
+  eachDayOfInterval, 
+  endOfWeek, 
+  startOfMonth, 
+  endOfMonth 
+} from 'date-fns';
+import { uk } from 'date-fns/locale';
 
-const STATUS_UA: Record<string, string> = {
-  pending: 'Очікує', confirmed: 'Підтверджено',
-  completed: 'Завершено', cancelled: 'Скасовано', no_show: 'Не прийшов',
-};
+import { confirmBooking, cancelBooking, completeBooking } from '@/app/(master)/dashboard/bookings/actions';
+import { useToast } from '@/lib/toast/context';
+import { useQueryClient } from '@tanstack/react-query';
 
-function exportToCsv(bookings: BookingWithServices[], label: string) {
-  const headers = ['Дата', 'Час початку', 'Час кінця', 'Клієнт', 'Телефон', 'Послуга', 'Ціна', 'Статус'];
-  const rows = bookings.map(b => [
-    b.date, b.start_time, b.end_time,
-    `"${b.client_name}"`, b.client_phone,
-    `"${b.services.map(s => s.name).join('; ')}"`,
-    b.total_price, STATUS_UA[b.status] ?? b.status,
-  ]);
-  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `bookings-${label.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+type ViewMode = 'list' | 'timeline' | 'focus';
+type TimeRange = 'day' | 'week' | 'month';
 
-const PAGE_SIZE = 10;
-
-type ViewMode = 'day' | 'week' | 'month';
-
-const STATUS_FILTERS: { value: BookingStatus | 'all'; label: string }[] = [
-  { value: 'all',       label: 'Всі'           },
-  { value: 'pending',   label: 'Очікують'      },
-  { value: 'confirmed', label: 'Підтверджені'  },
-  { value: 'completed', label: 'Завершені'     },
-  { value: 'cancelled', label: 'Скасовані'     },
-];
-
-function toISO(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function addDays(d: Date, n: number) {
-  const r = new Date(d);
-  r.setDate(r.getDate() + n);
-  return r;
-}
-
-function startOfWeek(d: Date) {
-  const r = new Date(d);
-  const day = r.getDay();
-  r.setDate(r.getDate() - (day === 0 ? 6 : day - 1));
-  return r;
-}
-
-function startOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-
-function endOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0);
-}
-
-const UA_DAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд'];
-const UA_MONTHS = [
-  'Січень','Лютий','Березень','Квітень','Травень','Червень',
-  'Липень','Серпень','Вересень','Жовтень','Листопад','Грудень',
-];
 
 export function BookingsPage() {
-  const [view, setView] = useState<ViewMode>('day');
-  const [anchor, setAnchor] = useState(new Date());
-  const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
-  const [search, setSearch] = useState('');
-  const [formOpen, setFormOpen] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const router = useRouter();
   const { masterProfile } = useMasterContext();
-  const isPro = masterProfile?.subscription_tier === 'pro' || masterProfile?.subscription_tier === 'studio';
+  const { showToast } = useToast();
+  const qc = useQueryClient();
 
-  const { dateFrom, dateTo, label } = useMemo(() => {
-    if (view === 'day') {
-      const d = toISO(anchor);
-      const day = anchor.toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long' });
-      return { dateFrom: d, dateTo: d, label: day };
+  const [view, setView] = useState<ViewMode>('list');
+  const [timeRange, setTimeRange] = useState<TimeRange>('day');
+  const [anchor, setAnchor] = useState(new Date());
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [preselectedTime, setPreselectedTime] = useState<string | undefined>();
+  
+  const [opportunityOpen, setOpportunityOpen] = useState(false);
+  const [opportunityTime, setOpportunityTime] = useState('');
+
+  const dateFrom = useMemo(() => {
+    const d = new Date(anchor);
+    if (timeRange === 'week') {
+      const day = d.getDay();
+      d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+    } else if (timeRange === 'month') {
+      d.setDate(1);
     }
-    if (view === 'week') {
-      const start = startOfWeek(anchor);
-      const end = addDays(start, 6);
-      const label = `${start.getDate()} — ${end.getDate()} ${UA_MONTHS[end.getMonth()]}`;
-      return { dateFrom: toISO(start), dateTo: toISO(end), label };
+    return d.toISOString().split('T')[0];
+  }, [anchor, timeRange]);
+
+  const dateTo = useMemo(() => {
+    const d = new Date(anchor);
+    if (timeRange === 'week') {
+      const day = d.getDay();
+      d.setDate(d.getDate() - (day === 0 ? 6 : day - 1) + 6);
+    } else if (timeRange === 'month') {
+      d.setMonth(d.getMonth() + 1);
+      d.setDate(0);
     }
-    // month
-    const start = startOfMonth(anchor);
-    const end = endOfMonth(anchor);
-    return {
-      dateFrom: toISO(start),
-      dateTo: toISO(end),
-      label: `${UA_MONTHS[anchor.getMonth()]} ${anchor.getFullYear()}`,
-    };
-  }, [view, anchor]);
+    return d.toISOString().split('T')[0];
+  }, [anchor, timeRange]);
 
-  const _bk = useBookings(dateFrom, dateTo);
-  const bookings: BookingWithServices[] = _bk.bookings ?? [];
-  const { isLoading, error } = _bk;
+  const { bookings, stats, isLoading } = useBookingsDashboardLogic(dateFrom, dateTo);
 
-  const filtered = useMemo(() => {
-    let result = statusFilter === 'all' ? bookings : bookings.filter(b => b.status === statusFilter);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(b =>
-        b.client_name.toLowerCase().includes(q) || b.client_phone.includes(q)
-      );
-    }
-    return result;
-  }, [bookings, statusFilter, search]);
+  const now = new Date();
 
-  // Скидаємо пагінацію при зміні фільтрів
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [dateFrom, dateTo, statusFilter, search]);
 
-  const visibleItems = filtered.slice(0, visibleCount);
-  const hasMore = filtered.length > visibleCount;
-  const isGenuinelyEmpty = bookings.length === 0 && !search.trim() && statusFilter === 'all';
-
-  // Групуємо по даті для week/month
-  const grouped = useMemo(() => {
-    if (view === 'day') return null;
-    const map = new Map<string, typeof filtered>();
-    visibleItems.forEach(b => {
-      const arr = map.get(b.date) ?? [];
-      arr.push(b);
-      map.set(b.date, arr);
+  const filteredBookings = useMemo(() => {
+    return bookings.filter(b => {
+      const matchesSearch = b.client_name.toLowerCase().includes(search.toLowerCase()) || 
+                           b.client_phone.includes(search);
+      const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
+      return matchesSearch && matchesStatus;
     });
-    return map;
-  }, [visibleItems, view]);
+  }, [bookings, search, statusFilter]);
 
-  function navigate(dir: 1 | -1) {
+  // Grouping for list view
+  const groupedBookings = useMemo(() => {
+    const groups: Record<string, typeof filteredBookings> = {};
+    filteredBookings.forEach(b => {
+      if (!groups[b.date]) groups[b.date] = [];
+      groups[b.date].push(b);
+    });
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filteredBookings]);
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const handleBulkConfirm = async () => {
+    const ids = Array.from(selectedIds);
+    let successCount = 0;
+    for (const id of ids) {
+      const { error } = await confirmBooking(id);
+      if (!error) successCount++;
+    }
+    showToast({ type: 'success', title: 'Оброблено', message: `Підтверджено ${successCount} записів` });
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+    qc.invalidateQueries({ queryKey: ['bookings'] });
+  };
+
+  const handleBulkCancel = async () => {
+    const ids = Array.from(selectedIds);
+    let successCount = 0;
+    for (const id of ids) {
+      const { error } = await cancelBooking(id);
+      if (!error) successCount++;
+    }
+    showToast({ type: 'warning', title: 'Оброблено', message: `Скасовано ${successCount} записів` });
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+    qc.invalidateQueries({ queryKey: ['bookings'] });
+  };
+
+  const handleBulkComplete = async () => {
+    const ids = Array.from(selectedIds);
+    let successCount = 0;
+    for (const id of ids) {
+      const { error } = await completeBooking(id);
+      if (!error) successCount++;
+    }
+    showToast({ type: 'success', title: 'Оброблено', message: `Завершено ${successCount} записів` });
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+    qc.invalidateQueries({ queryKey: ['bookings'] });
+  };
+
+  const handleOpportunityAction = (action: 'booking' | 'flash' | 'story') => {
+    setOpportunityOpen(false);
+    const dateStr = anchor.toISOString().split('T')[0];
+
+    if (action === 'booking') {
+      setPreselectedTime(opportunityTime);
+      setFormOpen(true);
+    } else if (action === 'flash') {
+      router.push(`/dashboard/flash?date=${dateStr}&time=${opportunityTime}`);
+    } else if (action === 'story') {
+      router.push(`/dashboard/marketing?tab=stories&mode=free_slots&date=${dateStr}`);
+    }
+  };
+
+  const daysInRange = useMemo(() => {
+    if (timeRange === 'day') return [anchor];
+    const start = timeRange === 'week' ? startOfWeek(anchor, { weekStartsOn: 1 }) : startOfMonth(anchor);
+    const end = timeRange === 'week' ? endOfWeek(anchor, { weekStartsOn: 1 }) : endOfMonth(anchor);
+    return eachDayOfInterval({ start, end });
+  }, [anchor, timeRange]);
+
+  const navigate = (dir: 1 | -1) => {
     setAnchor(prev => {
-      if (view === 'day')   return addDays(prev, dir);
-      if (view === 'week')  return addDays(prev, dir * 7);
       const d = new Date(prev);
-      d.setMonth(d.getMonth() + dir);
+      if (timeRange === 'day') d.setDate(d.getDate() + dir);
+      else if (timeRange === 'week') d.setDate(d.getDate() + dir * 7);
+      else d.setMonth(d.getMonth() + dir);
       return d;
     });
-  }
+  };
 
-  const today = toISO(new Date());
-  const isToday = dateFrom === today && dateTo === today;
-
-  const totalRevenue = filtered
-    .filter(b => b.status === 'completed')
-    .reduce((sum, b) => sum + b.total_price, 0);
+  const rangeLabel = useMemo(() => {
+    if (timeRange === 'day') return format(anchor, 'EEEE d MMMM', { locale: uk });
+    if (timeRange === 'month') return format(anchor, 'LLLL yyyy', { locale: uk });
+    
+    const from = parseISO(dateFrom);
+    const to = parseISO(dateTo);
+    return `${format(from, 'd MMM', { locale: uk })} — ${format(to, 'd MMM', { locale: uk })}`;
+  }, [anchor, timeRange, dateFrom, dateTo]);
 
   return (
-    <div className="flex flex-col gap-4 pb-8">
-      {/* Хедер */}
-      <div id="tour-bookings-header" className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-foreground mb-0.5">Записи</h1>
-        <p className="text-sm text-muted-foreground/60">Керуйте розкладом і статусами</p>
+    <div className="flex flex-col gap-6 pb-32">
+      {/* 1. Header & Quick Switcher */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-end justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-6xl text-foreground -mb-2" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+              Записи
+            </h1>
+            <p className="text-xs text-muted-foreground/60 ml-12 mt-2">Керування розкладом та аналітика</p>
+          </div>
+          <div className="flex gap-2 mb-1">
+            <button 
+              onClick={() => { setSelectionMode(!selectionMode); setSelectedIds(new Set()); }}
+              className={`p-2.5 rounded-2xl border transition-all ${selectionMode ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-white/60 border-white/80 text-muted-foreground'}`}
+            >
+              <CheckCircle2 size={18} />
+            </button>
+            <button 
+              onClick={() => setFormOpen(true)}
+              className="p-2.5 rounded-2xl bg-foreground text-background border border-foreground shadow-lg shadow-black/10 transition-all active:scale-95"
+            >
+              <Plus size={18} />
+            </button>
+          </div>
+        </div>
 
-        {/* Перемикач виду */}
-        <div className="flex gap-2 mt-4">
-          {(['day', 'week', 'month'] as ViewMode[]).map(v => (
+
+        {/* Bento Widgets */}
+        <DashboardWidgets stats={stats} isLoading={isLoading} />
+      </div>
+
+      {/* 2. Controls & Filter Bar */}
+      <div className="flex flex-col gap-3">
+        {/* View Switcher */}
+        <div className="flex p-1.5 rounded-2xl bg-white/40 border border-white/60 backdrop-blur-sm">
+          {[
+            { id: 'list', icon: <LayoutList size={16} />, label: 'Список' },
+            { id: 'timeline', icon: <Clock size={16} />, label: 'Таймлайн' },
+            { id: 'focus', icon: <Zap size={16} />, label: 'Фокус' },
+          ].map(m => (
             <button
-              key={v}
-              data-testid={`bookings-view-${v}`}
-              onClick={() => setView(v)}
-              className={`flex-1 py-2 rounded-2xl text-xs font-medium transition-all ${
-                view === v ? 'bg-primary text-white' : 'bg-white/60 text-muted-foreground hover:bg-white/80'
+              key={m.id}
+              onClick={() => setView(m.id as ViewMode)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all ${
+                view === m.id ? 'bg-white shadow-sm text-primary' : 'text-muted-foreground/60 hover:text-muted-foreground'
               }`}
             >
-              {v === 'day' ? 'День' : v === 'week' ? 'Тиждень' : 'Місяць'}
+              {m.icon}
+              <span>{m.label}</span>
             </button>
           ))}
         </div>
 
-        {/* Навігація */}
-        <div className="flex items-center justify-between mt-3">
-          <button
-            data-testid="bookings-nav-prev"
-            onClick={() => navigate(-1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-white transition-colors"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-foreground capitalize">{label}</p>
-            {isToday
-              ? <p className="text-[11px] text-primary font-medium">Сьогодні</p>
-              : (
-                <button
-                  onClick={() => setAnchor(new Date())}
-                  className="text-[11px] text-primary font-medium hover:underline"
-                >
-                  Повернутись до сьогодні
-                </button>
-              )
-            }
+        {/* Date Navigation */}
+        <div className="flex items-center justify-between bg-white/60 p-2 rounded-2xl border border-white/80">
+          <div className="flex gap-1">
+            {['day', 'week', 'month'].map(r => (
+              <button
+                key={r}
+                onClick={() => setTimeRange(r as TimeRange)}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  timeRange === r ? 'bg-foreground text-background' : 'text-muted-foreground/40 hover:text-muted-foreground'
+                }`}
+              >
+                {r === 'day' ? 'День' : r === 'week' ? 'Тиж' : 'Міс'}
+              </button>
+            ))}
           </div>
-          <button
-            data-testid="bookings-nav-next"
-            onClick={() => navigate(1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-white transition-colors"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
 
-      {/* Помилка завантаження */}
-      {error && (
-        <div className="bento-card p-3 flex items-start gap-2 border border-warning/40 bg-[#FFF7F0]">
-          <div className="mt-0.5 text-warning">
-            <AlertTriangle size={16} />
-          </div>
-          <div className="text-xs text-muted-foreground">
-            <p className="font-semibold">Не вдалося завантажити записи.</p>
-            <p className="mt-0.5">
-              Перезавантажте сторінку. Якщо проблема повторюється, перевірте підключення до мережі або права доступу (RLS).
-            </p>
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate(-1)} className="p-1 hover:text-primary transition-colors"><ChevronLeft size={18} /></button>
+            <span className="text-xs font-bold text-foreground capitalize w-24 text-center">{rangeLabel}</span>
+            <button onClick={() => navigate(1)} className="p-1 hover:text-primary transition-colors"><ChevronRight size={18} /></button>
           </div>
         </div>
-      )}
 
-      {/* Пошук */}
-      <div className="relative">
-        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
-        <input
-          data-testid="bookings-search-input"
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Пошук за клієнтом або телефоном..."
-          className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all"
-        />
-      </div>
-
-      {/* Фільтр статусів + Export */}
-      <div id="tour-bookings-filter" className="flex items-center gap-2">
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 flex-1">
-          {STATUS_FILTERS.map(f => (
-            <button
-              key={f.value}
-              onClick={() => setStatusFilter(f.value)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                statusFilter === f.value
-                  ? 'bg-primary text-white'
-                  : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        {/* Search & Filter */}
+        <div className="relative group">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Клієнт, послуга, телефон..."
+            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/60 border border-white/80 text-sm focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+          />
         </div>
 
-        {/* CSV Export (Pro) */}
-        {isPro ? (
-          <button
-            onClick={() => exportToCsv(filtered, label)}
-            disabled={filtered.length === 0}
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-medium text-muted-foreground hover:bg-white transition-all disabled:opacity-40"
-          >
-            <Download size={12} /> CSV
-          </button>
-        ) : (
-          <button
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-medium text-muted-foreground/60 cursor-not-allowed active:scale-95 transition-all"
-            title="Тільки для Pro"
-            disabled
-          >
-            <Lock size={11} /> CSV
-          </button>
-        )}
       </div>
 
-      {/* Статистика */}
-      <AnimatePresence>
-        {filtered.length > 0 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0, scale: 0.95 }}
-            animate={{ height: 'auto', opacity: 1, scale: 1 }}
-            exit={{ height: 0, opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="overflow-hidden p-0.5 -m-0.5"
-          >
-            <div className="flex gap-2">
-              <div className="flex-1 bento-card p-3 text-center">
-                <p className="text-lg font-bold text-foreground">{filtered.length}</p>
-                <p className="text-[11px] text-muted-foreground/60">записів</p>
-              </div>
-              {totalRevenue > 0 && (
-                <div className="flex-1 bento-card p-3 text-center">
-                  <p className="text-lg font-bold text-success">{totalRevenue.toLocaleString('uk-UA')} ₴</p>
-                  <p className="text-[11px] text-muted-foreground/60">завершені</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Список */}
-      <AnimatePresence mode="popLayout">
-        {isLoading ? (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
-            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-            exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
-            transition={{ duration: 0.2 }}
-            className="bento-card p-10 flex flex-col items-center gap-3 w-full"
-          >
-            <Loader2 size={24} className="text-primary animate-spin" />
-            <p className="text-sm text-muted-foreground/60">Завантаження записів...</p>
-          </motion.div>
-        ) : filtered.length === 0 ? (
-          isGenuinelyEmpty ? (
+      {/* 3. Main View Area */}
+      <div className="min-h-[400px]">
+        <AnimatePresence mode="wait">
+          {isLoading ? (
             <motion.div
-              key="empty-share"
-              initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
-              animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-              exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col gap-4 w-full"
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center justify-center py-20"
             >
-              <div className="bento-card p-6 flex flex-col items-center gap-3 text-center">
-                <div className="w-14 h-14 rounded-3xl bg-primary/10 flex items-center justify-center">
-                  <CalendarDays size={26} className="text-primary" />
-                </div>
-                <p className="text-base font-bold text-foreground">Ваші перші записи чекають</p>
-                <p className="text-sm text-muted-foreground/60 text-balance">Поділіться своєю сторінкою, щоб клієнти могли записатися онлайн</p>
+              <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </motion.div>
+          ) : filteredBookings.length === 0 && view !== 'timeline' ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center gap-4 py-10"
+            >
+              <div className="w-20 h-20 rounded-full bg-muted/10 flex items-center justify-center">
+                <CalendarDays size={32} className="text-muted-foreground/20" />
               </div>
+              <p className="text-sm font-medium text-muted-foreground">Записів не знайдено</p>
               <SharePageCard />
             </motion.div>
           ) : (
             <motion.div
-              key="empty"
-              initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
-              animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-              exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
+              key={view}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2 }}
-              className="bento-card p-10 flex flex-col items-center gap-3 text-center w-full"
             >
-              <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
-                <CalendarDays size={26} className="text-muted-foreground/60" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">Записів немає</p>
-              <p className="text-xs text-muted-foreground/60">Спробуйте змінити фільтри або діапазон дат</p>
-            </motion.div>
-          )
-        ) : view === 'day' ? (
-          <motion.div 
-            key="day-list"
-            initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
-            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-            exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
-            transition={{ duration: 0.2 }}
-            className="flex flex-col gap-3 w-full"
-          >
-            {visibleItems.map((b, i) => (
-              <Suspense key={b.id}>
-                <BookingCard booking={b} index={i} />
-              </Suspense>
-            ))}
-            {hasMore && (
-              <button
-                onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
-                className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-primary hover:bg-white transition-colors"
-              >
-                Показати ще ({filtered.length - visibleCount})
-              </button>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="grouped-list"
-            initial={{ opacity: 0, filter: 'blur(4px)', y: 15 }}
-            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-            exit={{ opacity: 0, filter: 'blur(4px)', y: -15 }}
-            transition={{ duration: 0.2 }}
-            className="flex flex-col gap-4 w-full"
-          >
-            {[...grouped!.entries()].map(([date, items]) => {
-              const d = new Date(date);
-              const dayName = UA_DAYS[(d.getDay() + 6) % 7];
-              const dayNum = d.getDate();
-              const month = UA_MONTHS[d.getMonth()];
-              return (
-                <div key={date}>
-                  <div className="flex items-center gap-2 mb-2 px-1">
-                    <p className="text-xs font-semibold text-muted-foreground capitalize">
-                      {dayName}, {dayNum} {month}
-                    </p>
-                    <div className="flex-1 h-px bg-secondary" />
-                    <span className="text-[11px] text-muted-foreground/60">{items.length} зап.</span>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    {items.map((b, i) => (
-                      <Suspense key={b.id}>
-                        <BookingCard booking={b} index={i} />
-                      </Suspense>
-                    ))}
-                  </div>
+              {view === 'list' && (
+                <div className="flex flex-col gap-8">
+                  {groupedBookings.map(([date, dayBookings]) => (
+                    <div key={date} className="flex flex-col gap-4">
+                      <div className="flex items-center gap-4 px-1">
+                        <span className="text-xs font-black text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
+                          {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
+                        </span>
+                        <div className="h-px w-full bg-muted-foreground/10" />
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        {dayBookings.map((b, i) => (
+                          <BookingCard 
+                            key={b.id} 
+                            booking={b} 
+                            index={i} 
+                            selectionMode={selectionMode}
+                            isSelected={selectedIds.has(b.id)}
+                            onSelect={toggleSelect}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
-            {hasMore && (
-              <button
-                onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
-                className="w-full py-3 rounded-2xl bg-white/70 border border-white/80 text-sm font-medium text-primary hover:bg-white transition-colors"
-              >
-                Показати ще ({filtered.length - visibleCount})
-              </button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+              )}
 
-      {/* FAB */}
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.25, type: 'spring', stiffness: 400, damping: 22 }}
-        whileTap={{ scale: 0.94 }}
-        data-testid="fab-add-booking"
-        id="tour-bookings-manual"
-        onClick={() => setFormOpen(true)}
-        className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
-        style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
-      >
-        <Plus size={24} />
-      </motion.button>
+              {view === 'timeline' && (
+                timeRange === 'day' ? (
+                  <VerticalTimeline 
+                    bookings={bookings} 
+                    date={anchor.toISOString().split('T')[0]} 
+                    onOpportunityClick={(time) => { setOpportunityTime(time); setOpportunityOpen(true); }}
+                  />
+                ) : (
+                  <PeriodAnalyticsView 
+                    bookings={bookings} 
+                    days={daysInRange}
+                    onDayClick={(date) => { setAnchor(date); setTimeRange('day'); }}
+                  />
+                )
+              )}
+
+              {view === 'focus' && (
+                <SmartQueue bookings={filteredBookings} />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* 4. Overlays & Toolbars */}
+      <BulkActionToolbar 
+        selectedCount={selectedIds.size}
+        onConfirmAll={handleBulkConfirm}
+        onCompleteAll={handleBulkComplete}
+        onCancelAll={handleBulkCancel}
+        onClear={() => { setSelectedIds(new Set()); setSelectionMode(false); }}
+      />
 
       <ManualBookingForm
         isOpen={formOpen}
-        onClose={() => setFormOpen(false)}
+        onClose={() => { setFormOpen(false); setPreselectedTime(undefined); }}
+        initialTime={preselectedTime}
+        initialDate={anchor.toISOString().split('T')[0]}
+      />
+
+      <OpportunityMenu 
+        isOpen={opportunityOpen}
+        onClose={() => setOpportunityOpen(false)}
+        time={opportunityTime}
+        onAction={handleOpportunityAction}
       />
     </div>
   );

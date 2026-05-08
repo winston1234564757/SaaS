@@ -14,7 +14,8 @@ export interface FlashDealRow {
   status: string;
 }
 
-export default async function FlashPage() {
+export default async function FlashPage({ searchParams }: { searchParams: Promise<{ date?: string; time?: string }> }) {
+  const { date, time } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
@@ -47,6 +48,8 @@ export default async function FlashPage() {
         activeDeals={(deals ?? []) as FlashDealRow[]}
         tier={mp?.subscription_tier ?? 'starter'}
         usedThisMonth={usedThisMonth ?? 0}
+        initialDate={date}
+        initialTime={time}
       />
     </div>
   );

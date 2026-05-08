@@ -15,6 +15,7 @@ export interface ClientRow {
   total_spent: number;
   average_check: number;
   last_visit_at: string | null;
+  last_service_name: string | null;
   is_vip: boolean;
   relation_id: string | null;
   retention_status: RetentionStatus;
@@ -54,6 +55,7 @@ export function useClients() {
         total_spent:      Number(row.total_spent),
         average_check:    Number(row.average_check),
         last_visit_at:    row.last_visit_at ?? null,
+        last_service_name: (row as any).last_service_name ?? null,
         is_vip:           row.is_vip ?? false,
         relation_id:      row.relation_id ?? null,
         retention_status: (row.retention_status as RetentionStatus) ?? 'active',

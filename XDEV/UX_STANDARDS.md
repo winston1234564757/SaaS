@@ -1,6 +1,18 @@
 # ✨ PREMIUM UX STANDARDS — Design & Interaction Rules
 
-> Правила для створення інтерфейсу рівня BookIT Premium.
+
+## 🚫 No-Emoji Policy (Absolute)
+- **Правило**: Жодних емодзі в інтерфейсі (кнопки, заголовки, бейджі, селектори).
+- **Обґрунтування**: Емодзі дешевшають вигляд продукту. Для акцентів використовувати виключно **Lucide React** іконки з відповідною вагою та кольором.
+- **Виключення**: Тільки якщо це користувацький контент (напр. імена клієнтів або нотатки).
+
+## ⭕ Health Rings (Stories Aesthetic)
+- **Концепція**: Кольорові кільця навколо аватарок клієнтів/майстрів.
+- **Логіка**: 
+  - Зелений (`active`) — здоровий ритм візитів.
+  - Помаранчевий (`at_risk`) — ризик відтоку.
+  - Червоний (`lost`) — втрачений клієнт.
+- **Стиль**: `border: 2.5px solid color`, `opacity-60`, `padding: 2px` між кільцем та аватаром.
 
 ## 📱 Mobile-First Sheets (Vaul)
 - Всі модалки на мобільних — тільки через `BottomSheet` (`vaul`).
@@ -16,10 +28,21 @@
   };
   ```
 
+## 🔳 Side-Stripe (Status Indicators)
+- **Стандарт**: Тонка вертикальна лінія зліва картки.
+- **Реалізація**: `borderLeft: 3px solid color` прямо на контейнері картки.
+- **Чому**: Нативний CSS border автоматично слідує за `border-radius`, що виглядає преміально. Не використовувати окремі `div` для смужок.
+
+## 🎨 Theme Standards
+✓ **Blossom (Light)**: Background `#FFF2DF`, Accent `#8C6E63`, Text `#3E2522`.
+✓ **Studio (Dark)**: Background `#0E1D21`, Accent `#D3A376`, Text `#E0B4B2`.
+✓ Card radius: 24px (Blossom) / 16px (Studio).
+✓ Button radius: 14px (Blossom) / 10px (Studio).
+✓ Input radius: 12px (Blossom) / 10px (Studio).
+
 ## 🔘 Sticky Action Buttons
 - Кнопки "Далі", "Зберегти", "Підтвердити" мають бути **липкими** (`sticky`).
 - **Позиція**: `bottom-6` (над навігаційною панеллю).
-- 
 
 ## 💾 Persistence & Feedback
 - Автозбереження нотаток: 500ms debounce.

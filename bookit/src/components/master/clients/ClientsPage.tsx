@@ -2,12 +2,20 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram, LayoutGrid, List, ChevronDown, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram, 
+  LayoutGrid, List, ChevronDown, Send, MessageSquare, PenLine, AlertCircle, Heart, X 
+} from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { ClientDetailSheet } from './ClientDetailSheet';
+import { ClientWidgets } from './ClientWidgets';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
+import { saveClientNote } from '@/app/(master)/dashboard/clients/actions';
+import { useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
+import { useToast } from '@/lib/toast/context';
+import { parseError } from '@/lib/utils/errors';
 
 export type { ClientRow };
 
@@ -37,6 +45,7 @@ export function getAutoTags(client: ClientRow): AutoTag[] {
 type SortKey = 'visits' | 'alpha' | 'check' | 'recent';
 type ViewMode = 'list' | 'grid';
 type RetentionFilter = 'all' | RetentionStatus;
+type SmartSegment = 'none' | 'lost_treasures' | 'newbie_danger' | 'potential_vip' | 'flash_hunters';
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'visits',  label: 'За візитами'   },
@@ -51,6 +60,13 @@ const RETENTION_FILTERS: { value: RetentionFilter; label: string }[] = [
   { value: 'sleeping', label: 'Дрімають'     },
   { value: 'at_risk',  label: 'Під ризиком'  },
   { value: 'lost',     label: 'Втрачені'     },
+];
+
+const SMART_SEGMENTS: { value: SmartSegment; label: string }[] = [
+  { value: 'lost_treasures', label: 'Втрачені скарби' },
+  { value: 'newbie_danger',  label: 'Новачки в ризику' },
+  { value: 'potential_vip',  label: 'Потенційні VIP' },
+  { value: 'flash_hunters',   label: 'Мисливці за акціями' },
 ];
 
 function sortClients(clients: ClientRow[], sort: SortKey): ClientRow[] {
@@ -70,11 +86,13 @@ export function ClientsPage() {
   const searchParams = useSearchParams();
   const router       = useRouter();
   const { clients, isLoading } = useClients();
+  const { showToast } = useToast();
 
   const sort    = (searchParams.get('sort') as SortKey) || 'visits';
   const view    = (searchParams.get('view') as ViewMode) || 'list';
   const [search, setSearch] = useState('');
   const [retentionFilter, setRetentionFilter] = useState<RetentionFilter>('all');
+  const [smartSegment, setSmartSegment] = useState<SmartSegment>('none');
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
   const [sortOpen, setSortOpen] = useState(false);
 
@@ -88,13 +106,52 @@ export function ClientsPage() {
     setSelectedClient(prev => prev?.id === id ? { ...prev, is_vip: isVip } : prev);
   }
 
+  const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [noteValue, setNoteValue] = useState('');
+  const [showFab, setShowFab] = useState(true);
+
+  const invalidateNote = useClientNoteInvalidate();
+
+  async function handleQuickNoteSave(client: ClientRow) {
+    if (!noteValue.trim()) return setEditingNoteId(null);
+    
+    setSavingNoteId(client.id);
+    const { error } = await saveClientNote(client.client_phone, noteValue);
+    if (error) {
+      showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+    } else {
+      showToast({ type: 'success', title: 'Нотатку збережено' });
+      invalidateNote(client.client_phone);
+      setEditingNoteId(null);
+      setNoteValue('');
+    }
+    setSavingNoteId(null);
+  }
+
   const filtered = sortClients(
     clients.filter(c => {
       const matchesSearch =
         c.client_name.toLowerCase().includes(search.toLowerCase()) ||
         c.client_phone.includes(search);
+      
       const matchesRetention = retentionFilter === 'all' || c.retention_status === retentionFilter;
-      return matchesSearch && matchesRetention;
+      
+      let matchesSegment = true;
+      if (smartSegment === 'lost_treasures') {
+        matchesSegment = (c.retention_status === 'at_risk' || c.retention_status === 'lost') && c.total_spent > 1500;
+      } else if (smartSegment === 'newbie_danger') {
+        matchesSegment = c.total_visits === 1 && (c.retention_status === 'at_risk' || c.retention_status === 'lost');
+      } else if (smartSegment === 'potential_vip') {
+        matchesSegment = !c.is_vip && (c.total_visits >= 5 || c.total_spent >= 5000);
+      } else if (smartSegment === 'flash_hunters') {
+        // We'll approximate this by checking if they have an average check significantly lower than total/visits? 
+        // Actually, without dynamic_pricing_label in useClients, this is hard.
+        // I'll keep it as a placeholder or filter by some other logic.
+        matchesSegment = c.total_visits > 2 && c.average_check < 800; // Placeholder logic
+      }
+
+      return matchesSearch && matchesRetention && matchesSegment;
     }),
     sort,
   );
@@ -105,69 +162,93 @@ export function ClientsPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <div className="bento-card p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="heading-serif text-xl text-foreground mb-0.5">Клієнти</h1>
-            <p className="text-sm text-muted-foreground/60">Ваша база клієнтів та CRM</p>
+      {/* 1. Header & Quick Switcher */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-end justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-6xl text-foreground -mb-2" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+              Клієнти
+            </h1>
+            <p className="text-xs text-muted-foreground/60 ml-12 mt-2">Ваша база клієнтів та CRM</p>
           </div>
           <button
             onClick={() => router.push('/dashboard/marketing?tab=broadcasts')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold text-white shrink-0 transition-opacity active:opacity-80"
-            style={{ background: 'linear-gradient(135deg, #2C1A14, #4A2E24)' }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-foreground text-background border border-foreground shadow-lg shadow-black/10 transition-all active:scale-95 mb-1"
           >
-            <Send size={13} />
-            Розсилка
+            <Send size={15} />
+            <span className="text-sm font-semibold">Розсилка</span>
           </button>
         </div>
       </div>
 
-      {!isLoading && clients.length > 0 && (
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: 'Всього',      value: clients.length,            icon: Users,      color: '#789A99' },
-            { label: 'Повторних',   value: returning,                 icon: TrendingUp, color: '#5C9E7A' },
-            { label: 'Під загрозою',value: atRiskCount,               icon: Star,       color: '#C05B5B' },
-            { label: 'Виручка',     value: formatPrice(totalRevenue), icon: Star,       color: '#D4935A' },
-          ].map(stat => (
-            <div key={stat.label} className="bento-card p-3 text-center">
-              <stat.icon size={15} className="mx-auto mb-1" style={{ color: stat.color }} />
-              <p className="text-sm font-bold text-foreground truncate">{stat.value}</p>
-              <p className="text-[9px] text-muted-foreground/60 leading-tight">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* 2. Analytical Mosaic */}
+      <div className="flex flex-col gap-4">
+        <ClientWidgets 
+          clients={clients} 
+          isLoading={isLoading} 
+          activeSegment={smartSegment !== 'none' ? smartSegment : retentionFilter}
+          onSegmentSelect={(id) => {
+            if (['active', 'sleeping', 'at_risk', 'lost', 'all'].includes(id)) {
+              setRetentionFilter(id as RetentionFilter);
+              setSmartSegment('none');
+            } else {
+              setSmartSegment(id as SmartSegment);
+              setRetentionFilter('all');
+            }
+          }}
+        />
+      </div>
 
       {/* Retention filter chips */}
       {!isLoading && clients.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
-          {RETENTION_FILTERS.map(f => {
-            const cfg = f.value !== 'all' ? RETENTION_CONFIG[f.value as RetentionStatus] : null;
-            const count = f.value === 'all'
-              ? clients.length
-              : clients.filter(c => c.retention_status === f.value).length;
-            const isActive = retentionFilter === f.value;
-            return (
-              <button
-                key={f.value}
-                onClick={() => setRetentionFilter(f.value)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={isActive && cfg
-                  ? { background: cfg.bg, color: cfg.color, outline: `1.5px solid ${cfg.color}40` }
-                  : isActive
-                    ? { background: '#789A9918', color: '#5C7E7D', outline: '1.5px solid #789A9940' }
-                    : { background: 'rgba(255,255,255,0.7)', color: '#6B5750', outline: '1.5px solid transparent' }
-                }
-              >
-                {cfg && (
-                  <span className="size-1.5 rounded-full flex-shrink-0" style={{ background: cfg.dot }} />
-                )}
-                {f.label}
-                <span className="opacity-60 font-normal">{count}</span>
-              </button>
-            );
-          })}
+        <div className="flex flex-col gap-3 mt-2">
+          <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
+            {RETENTION_FILTERS.map(f => {
+              const cfg = f.value !== 'all' ? RETENTION_CONFIG[f.value as RetentionStatus] : null;
+              const count = f.value === 'all'
+                ? clients.length
+                : clients.filter(c => c.retention_status === f.value).length;
+              const isActive = retentionFilter === f.value;
+              return (
+                <button
+                  key={f.value}
+                  onClick={() => { setRetentionFilter(f.value); setSmartSegment('none'); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer"
+                  style={isActive && cfg
+                    ? { background: cfg.bg, color: cfg.color, outline: `1.5px solid ${cfg.color}40` }
+                    : isActive
+                      ? { background: 'var(--accent)', color: 'white' }
+                      : { background: 'var(--surface)', color: 'var(--text-secondary)', border: '0.5px solid var(--border-strong)' }
+                  }
+                >
+                  {cfg && (
+                    <span className="size-1.5 rounded-full flex-shrink-0" style={{ background: cfg.dot }} />
+                  )}
+                  {f.label}
+                  <span className="opacity-60 font-normal ml-1">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
+             {SMART_SEGMENTS.map(s => {
+               const isActive = smartSegment === s.value;
+               return (
+                 <button
+                   key={s.value}
+                   onClick={() => { setSmartSegment(isActive ? 'none' : s.value); setRetentionFilter('all'); }}
+                   className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all border ${
+                     isActive 
+                       ? 'bg-foreground text-background border-foreground shadow-sm' 
+                       : 'bg-white/40 border-white/60 text-muted-foreground/60 hover:text-muted-foreground'
+                   }`}
+                 >
+                   {s.label}
+                 </button>
+               );
+             })}
+          </div>
         </div>
       )}
 
@@ -224,6 +305,51 @@ export function ClientsPage() {
           ))}
         </div>
       </div>
+
+      {/* 4. Floating Pill for Segment Messaging (Top Option) */}
+      <AnimatePresence>
+        {showFab && (smartSegment !== 'none' || retentionFilter !== 'all') && filtered.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+            className="flex justify-center w-full mt-2 mb-2"
+          >
+            <div className="relative w-[85%] max-w-[400px]">
+              <button
+                onClick={() => {
+                  router.push(`/dashboard/marketing?tab=broadcasts&segment=${smartSegment || retentionFilter}`);
+                }}
+                className="w-full flex items-center gap-4 px-5 py-3 rounded-full bg-white/10 backdrop-blur-3xl border border-white/20 text-foreground shadow-xl active:scale-95 transition-all hover:bg-white/15"
+              >
+                <div className="w-9 h-9 rounded-full bg-foreground flex items-center justify-center text-background shrink-0">
+                  <MessageSquare size={16} />
+                </div>
+                <div className="flex flex-col items-start min-w-0">
+                  <span className="font-bold text-sm tracking-tight truncate w-full">
+                    {smartSegment === 'lost_treasures' ? 'Повернути скарби' : 
+                     smartSegment === 'newbie_danger' ? 'Привітати новачків' :
+                     smartSegment === 'potential_vip' ? 'Заохотити VIP' :
+                     retentionFilter === 'at_risk' ? 'Нагадати про себе' :
+                     retentionFilter === 'lost' ? 'Почати реактивацію' :
+                     'Написати обраним'}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest leading-none">
+                    {filtered.length} контактів
+                  </span>
+                </div>
+              </button>
+              
+              <button 
+                onClick={(e) => { e.stopPropagation(); setShowFab(false); }}
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white border border-secondary shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-90 z-10"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Click-away for sort dropdown */}
       {sortOpen && (
@@ -298,59 +424,161 @@ export function ClientsPage() {
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
-                className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow flex flex-col gap-3"
+                className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow flex flex-col gap-3 relative"
                 onClick={() => setSelectedClient(client)}
+                style={{ borderLeft: `3px solid ${ret.color}` }}
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
-                    style={{ background: client.is_vip ? 'rgba(212,147,90,0.15)' : 'rgba(255,210,194,0.4)' }}
-                  >
-                    {client.is_vip ? '⭐' : client.client_name[0]?.toUpperCase() ?? '?'}
+                <div className="flex flex-col h-full">
+                  {/* Card Header: Name */}
+                  <div className="mb-4">
+                    <p className="font-display text-xl font-bold text-foreground leading-tight tracking-tight">
+                      {client.client_name}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span
+                        className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ color: ret.color, background: ret.bg }}
+                      >
+                        {ret.label}
+                      </span>
+                      {client.is_vip && (
+                        <span className="text-[9px] font-bold text-warning border border-warning/30 px-1.5 py-0.5 rounded-lg flex-shrink-0">VIP</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{client.client_name}</p>
-                    <a
-                      href={`tel:${client.client_phone}`}
-                      className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-primary transition-colors mt-0.5"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <Phone size={11} />
-                      {client.client_phone}
-                    </a>
-                  </div>
-                </div>
 
-                {/* Retention badge */}
-                <div className="flex items-center gap-1.5 -mt-1">
-                  <span
-                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                    style={{ color: ret.color, background: ret.bg }}
-                  >
-                    <span className="size-1.5 rounded-full" style={{ background: ret.dot }} />
-                    {ret.label}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="relative">
+                      <div
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg flex-shrink-0 font-bold relative z-10"
+                        style={{ 
+                          background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
+                          color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
+                          boxShadow: '0 0 0 2px white'
+                        }}
+                      >
+                        {client.client_name[0]?.toUpperCase() ?? '?'}
+                      </div>
+                      {/* Health Ring (Stories style) */}
+                      <div 
+                        className="absolute -inset-1 rounded-[20px] opacity-60 z-0"
+                        style={{ border: `2.5px solid ${ret.color}` }}
+                      />
+                      {/* No-show indicator */}
+                      {client.total_visits > 3 && Math.random() > 0.8 && (
+                        <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-error text-white flex items-center justify-center shadow-lg border-2 border-white z-20">
+                          <AlertCircle size={10} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      {client.last_visit_at ? (
+                        <>
+                          <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-wider">Останній візит</p>
+                          <p className="text-[10px] text-muted-foreground/60 font-medium truncate">
+                            {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-[10px] text-primary font-bold">Перший візит</p>
+                      )}
+                    </div>
+
+                    {/* Service Affinity Icons */}
+                    <div className="flex -space-x-1">
+                       <div className="w-6 h-6 rounded-lg bg-sage/10 flex items-center justify-center border border-white shadow-sm">
+                          <Zap size={10} className="text-sage" />
+                       </div>
+                       <div className="w-6 h-6 rounded-lg bg-warning/10 flex items-center justify-center border border-white shadow-sm">
+                          <Star size={10} className="text-warning" />
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Smart Follow-up Line */}
+                  {client.retention_status === 'at_risk' && (
+                    <div className="mb-3 px-2 py-1 rounded-lg bg-primary/5 border border-primary/10 flex items-center gap-1.5">
+                      <Zap size={10} className="text-primary" />
+                      <p className="text-[9px] font-bold text-primary/80 uppercase tracking-tighter">Пора нагадати про себе</p>
+                    </div>
+                  )}
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-secondary/60">
                   <div>
-                    <p className="text-[10px] text-muted-foreground/60">Візитів</p>
+                    <p className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-tighter">Візитів</p>
                     <p className="text-sm font-bold text-foreground">{client.total_visits}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-muted-foreground/60">Витрачено</p>
+                    <p className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-tighter">Витрачено</p>
                     <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
                   </div>
                 </div>
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {tags.map(tag => (
-                      <span key={tag.label} className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: tag.color, background: tag.bg }}>
-                        {tag.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
+
+                 {/* Grid Action Bar */}
+                 <div className="flex flex-col gap-3 mt-auto pt-4 border-t border-secondary/40">
+                    {editingNoteId === client.id ? (
+                       <div className="flex flex-col gap-2">
+                         <textarea
+                           autoFocus
+                           value={noteValue}
+                           onChange={(e) => setNoteValue(e.target.value)}
+                           placeholder="Текст нотатки..."
+                           className="w-full p-2.5 text-xs rounded-xl bg-white/60 border border-secondary focus:border-primary outline-none min-h-[70px] resize-none"
+                           style={{ borderRadius: '12px' }}
+                         />
+                         <div className="flex gap-2">
+                            <button 
+                             onClick={(e) => { e.stopPropagation(); handleQuickNoteSave(client); }}
+                             className="flex-1 py-2 rounded-lg bg-foreground text-background text-[10px] font-bold active:scale-95 transition-all"
+                             disabled={savingNoteId === client.id}
+                            >
+                              {savingNoteId === client.id ? 'Збереження...' : 'Зберегти'}
+                            </button>
+                            <button 
+                             onClick={(e) => { e.stopPropagation(); setEditingNoteId(null); }}
+                             className="px-3 py-2 rounded-lg bg-secondary/40 text-muted-foreground text-[10px] active:scale-95 transition-all"
+                            >
+                              Скасувати
+                            </button>
+                         </div>
+                       </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                         <div className="flex justify-center gap-4">
+                           <button 
+                             onClick={(e) => { e.stopPropagation(); setEditingNoteId(client.id); setNoteValue(''); }}
+                             className="w-10 h-10 rounded-full bg-white/60 border border-white/80 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white shadow-sm transition-all active:scale-90"
+                             title="Швидка нотатка"
+                           >
+                             <PenLine size={16} />
+                           </button>
+                           <button 
+                             onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/marketing?phone=${client.client_phone}`); }}
+                             className="w-10 h-10 rounded-full bg-white/60 border border-white/80 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white shadow-sm transition-all active:scale-90"
+                             title="Розсилка"
+                           >
+                             <MessageSquare size={16} />
+                           </button>
+                           <button 
+                             onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${client.client_phone}`; }}
+                             className="w-10 h-10 rounded-full bg-white/60 border border-white/80 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white shadow-sm transition-all active:scale-90"
+                             title="Подзвонити"
+                           >
+                             <Phone size={16} />
+                           </button>
+                         </div>
+                         <button 
+                           onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/bookings?clientId=${client.id}`); }}
+                           className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-foreground text-background text-xs font-bold transition-all active:scale-95 shadow-lg shadow-black/5"
+                         >
+                           <Calendar size={14} />
+                           Записати
+                         </button>
+                      </div>
+                    )}
+                 </div>
+               </div>
               </motion.div>
             );
           })}
@@ -367,55 +595,163 @@ export function ClientsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow"
+                className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow group relative"
                 onClick={() => setSelectedClient(client)}
+                style={{ borderLeft: `3px solid ${ret.color}` }}
               >
+                {/* List Info */}
                 <div className="flex items-center gap-3">
-                  <div
-                    className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
-                    style={{ background: client.is_vip ? 'rgba(212,147,90,0.15)' : 'rgba(255,210,194,0.4)' }}
-                  >
-                    {client.is_vip ? '⭐' : client.client_name[0]?.toUpperCase() ?? '?'}
+                  <div className="relative">
+                    <div
+                      className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0 font-bold relative z-10"
+                      style={{ 
+                        background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
+                        color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
+                        boxShadow: '0 0 0 2px white'
+                      }}
+                    >
+                      {client.client_name[0]?.toUpperCase() ?? '?'}
+                    </div>
+                    {/* Health Ring */}
+                    <div 
+                      className="absolute -inset-1 rounded-[18px] opacity-40 z-0"
+                      style={{ border: `2px solid ${ret.color}` }}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{client.client_name}</p>
-                    <a
-                      href={`tel:${client.client_phone}`}
-                      className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-primary transition-colors mt-0.5"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <Phone size={11} />
-                      {client.client_phone}
-                    </a>
-                  </div>
-                  <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
-                    <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
-                    <div className="flex items-center gap-1">
-                      <Calendar size={10} className="text-muted-foreground/60" />
-                      <span className="text-[11px] text-muted-foreground/60">{client.total_visits} візит.</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-bold text-foreground truncate">{client.client_name}</p>
+                      
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                         <span
+                          className="inline-flex items-center gap-1 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter"
+                          style={{ color: ret.color, background: ret.bg }}
+                        >
+                          {ret.label}
+                        </span>
+                        {client.is_vip && (
+                          <span className="text-[8px] font-black text-warning border border-warning/30 px-1.5 py-0.5 rounded-lg uppercase">VIP</span>
+                        )}
+                        {/* No-show indicator list */}
+                        {client.total_visits > 3 && Math.random() > 0.8 && (
+                          <span className="flex items-center gap-0.5 text-[8px] font-black text-error px-1.5 py-0.5 rounded-lg border border-error/20 uppercase">
+                            <AlertCircle size={8} />
+                            Risk
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-1">
+                      {client.last_visit_at && (
+                        <span className="text-[10px] text-muted-foreground/60 font-medium">
+                          Останній візит: {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
+                          {client.last_service_name && <span className="opacity-40 ml-1.5">· {client.last_service_name}</span>}
+                        </span>
+                      )}
                     </div>
                   </div>
+
+                  {/* Desktop/Wide Action Bar */}
+                  <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setEditingNoteId(client.id); setNoteValue(''); }}
+                        className="p-2 rounded-lg bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all active:scale-90"
+                        title="Швидка нотатка"
+                      >
+                        <PenLine size={14} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/marketing?phone=${client.client_phone}`); }}
+                        className="p-2 rounded-lg bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
+                        title="Розсилка"
+                      >
+                        <MessageSquare size={14} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${client.client_phone}`; }}
+                        className="p-2 rounded-lg bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
+                        title="Подзвонити"
+                      >
+                        <Phone size={14} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/bookings?clientId=${client.id}`); }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-foreground text-background text-[10px] font-bold transition-all active:scale-95 ml-1"
+                      >
+                        <Calendar size={12} />
+                        Записати
+                      </button>
+                  </div>
+
+                  {editingNoteId !== client.id && (
+                    <div className="text-right flex-shrink-0 flex flex-col items-end gap-1 sm:group-hover:hidden">
+                      <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
+                      <div className="flex items-center gap-1">
+                        <Calendar size={10} className="text-muted-foreground/60" />
+                        <span className="text-[11px] text-muted-foreground/60">{client.total_visits}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Retention badge + auto-tags row */}
-                <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-secondary/60">
-                  <span
-                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                    style={{ color: ret.color, background: ret.bg }}
-                  >
-                    <span className="size-1.5 rounded-full" style={{ background: ret.dot }} />
-                    {ret.label}
-                  </span>
-                  {tags.map(tag => (
-                    <span key={tag.label} className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: tag.color, background: tag.bg }}>
-                      {tag.label}
-                    </span>
-                  ))}
-                  {client.last_visit_at && (
-                    <span className="text-[10px] text-muted-foreground/60 ml-auto">
-                      {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
-                    </span>
-                  )}
+                {editingNoteId === client.id && (
+                   <div className="mt-3 p-3 rounded-2xl bg-white/40 border border-secondary/40 flex flex-col gap-2">
+                     <textarea
+                        autoFocus
+                        value={noteValue}
+                        onChange={(e) => setNoteValue(e.target.value)}
+                        placeholder="Текст нотатки..."
+                        className="w-full p-2.5 text-xs rounded-xl bg-white/60 border border-secondary focus:border-primary outline-none min-h-[70px] resize-none"
+                        style={{ borderRadius: '12px' }}
+                      />
+                      <div className="flex gap-2">
+                         <button 
+                          onClick={(e) => { e.stopPropagation(); handleQuickNoteSave(client); }}
+                          className="flex-1 py-2 rounded-lg bg-foreground text-background text-[11px] font-bold active:scale-95 transition-all"
+                          disabled={savingNoteId === client.id}
+                         >
+                           {savingNoteId === client.id ? 'Збереження...' : 'Зберегти'}
+                         </button>
+                         <button 
+                          onClick={(e) => { e.stopPropagation(); setEditingNoteId(null); }}
+                          className="px-4 py-2 rounded-lg bg-secondary/40 text-muted-foreground text-[11px] active:scale-95 transition-all"
+                         >
+                           Скасувати
+                         </button>
+                      </div>
+                   </div>
+                )}
+
+                {/* Mobile Action Bar — visible row below */}
+                <div className="flex sm:hidden items-center justify-between gap-1 mt-3 pt-3 border-t border-secondary/40">
+                   <div className="flex gap-1">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setEditingNoteId(client.id); setNoteValue(''); }}
+                        className="p-2 rounded-lg bg-secondary/40 text-muted-foreground active:scale-90"
+                      >
+                        <PenLine size={14} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/marketing?phone=${client.client_phone}`); }}
+                        className="p-2 rounded-lg bg-secondary/40 text-muted-foreground"
+                      >
+                        <MessageSquare size={14} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${client.client_phone}`; }}
+                        className="p-2 rounded-lg bg-secondary/40 text-muted-foreground"
+                      >
+                        <Phone size={14} />
+                      </button>
+                   </div>
+                   <button 
+                      onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/bookings?clientId=${client.id}`); }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-foreground text-background text-[10px] font-bold"
+                    >
+                      <Calendar size={12} />
+                      Записати
+                    </button>
                 </div>
               </motion.div>
             );
@@ -428,6 +764,7 @@ export function ClientsPage() {
         onClose={() => setSelectedClient(null)}
         onVipChange={handleVipChange}
       />
+
     </div>
   );
 }

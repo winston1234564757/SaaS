@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-02 · Джерело: живий код (v5.2.1 "Vaul Engine")
+> Оновлено: 2026-05-08 · Джерело: живий код (v6.5 "Command Center Analytics")
 
 ---
 
@@ -15,8 +15,8 @@
 | Route | Відповідальність | Page | Actions | Key Component |
 |---|---|---|---|---|
 | `/dashboard` | Головна: статистика дня, розклад, нотифікації | `dashboard/page.tsx` | `dashboard/actions.ts` | `master/dashboard/TodaySchedule.tsx`, `DashboardHero.tsx`, `NotificationsBell.tsx` |
-| `/dashboard/bookings` | Список записів + пошук + статуси + ручне створення | `bookings/page.tsx` | `bookings/actions.ts` | `master/bookings/BookingsPage.tsx`, `BookingCard.tsx`, `BookingActionsDropdown.tsx` |
-| `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention | `clients/page.tsx` | `clients/actions.ts` | `master/clients/ClientsPage.tsx`, `ClientDetailSheet.tsx`, `ClientCombobox.tsx` |
+| `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching | `bookings/page.tsx` | `bookings/actions.ts` | `BookingsPage.tsx`, `BookingCard.tsx`, `PeriodAnalyticsView.tsx` |
+| `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` | `master/clients/ClientsPage.tsx`, `ClientDetailSheet.tsx`, `ClientWidgets.tsx` |
 | `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` |
 | `/dashboard/analytics` | Аналітика Pro: виручка, топ-послуги, retention-когорти, CSV | `analytics/page.tsx` | — | `master/analytics/AnalyticsPage.tsx` |
 | `/dashboard/reviews` | Відгуки клієнтів (тільки читання) | `reviews/page.tsx` | — | `master/reviews/ReviewsPage.tsx` |
@@ -55,10 +55,11 @@
 - **Dynamic OG Images**: `/[slug]/opengraph-image.tsx` (Edge Runtime). Premium design with Master Avatar + Category Emojis.
 - **Shared Data Layer**: `src/app/[slug]/data.ts` — єдине джерело даних для Page, Metadata та OG (через `React.cache`).
 - **Structured Data**: JSON-LD implementation for `ProfessionalService` and `AggregateRating`.
-- **B2C Layout**: Mica-style Glassmorphism with Bento Grid services.
-- **Booking Flow**: `BookingWizard` (Dynamic import).
-- **Portfolio**: Public gallery with lightbox.
-- **Shop**: Master-specific product listing.
+- **Bento Bottom Nav**: Асиметрична мозаїчна сітка (3/5 Hero, 2/5 Side, 5/5 Wide).
+- **Blossom Atmosphere**: Теплі коричневі та персикові тони з Glassmorphism (`backdrop-blur-3xl`).
+- **Studio Theme**: Темний режим для майстрів (Deep Teal & Gold).
+- **Command Center**: Центрована навігація для 15+ функціональних зон без UI-шуму.
+- **Vaul Engine (Standard)**: Всі модалки та шторки на мобілці використовують `@/components/ui/BottomSheet`.
 - Booking Entry Point: `src/components/shared/BookingWizard.tsx`
 - Кроки: послуги → товари → дата → слот → підтвердження → SMS OTP (guest)
 - Server Action: `src/lib/actions/createBooking.ts`

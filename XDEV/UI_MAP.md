@@ -54,7 +54,7 @@ All pages are located under `src/app/(master)/dashboard/`.
 ### 🧪 UI Atoms (Smallest Units)
 Located in `src/components/ui/`. These are the building blocks of the entire UI.
 
-*   **Button** (`Button.tsx`): The primary interaction element. Supports multiple variants (sage, peach, outline, ghost).
+*   **Button** (`Button.tsx`): The primary interaction element. Supports multiple variants (primary, accent, outline, ghost).
 *   **Input** (`Input.tsx`): Styled text fields with focus states and error handling.
 *   **Badge** (`Badge.tsx`): Status indicators (e.g., "Confirmed", "Paid", "Starter").
 *   **BentoCard** (`BentoCard.tsx`): The container for dashboard widgets, featuring Mica/glassmorphism styles.
@@ -76,6 +76,7 @@ Complex reusable blocks that visualize business logic. Located in `src/component
 *   **WeeklyOverview** (`WeeklyOverview.tsx`): Visual chart or summary of the week's performance.
 *   **ProfileStrengthWidget** (`ProfileStrengthWidget.tsx`): Gamified progress bar for profile completion.
 *   **NotificationsBell** (`NotificationsBell.tsx`): In-app notification center with real-time updates.
+*   **ClientWidgets** (`ClientWidgets.tsx`): Bento-grid widgets for CRM analytics (Retention, LTV, Referrals, Cleanup Wizard).
 *   **WelcomeBanner / Hints** (`WelcomeBanner.tsx`): Onboarding guidance for masters.
 
 ---
@@ -130,6 +131,7 @@ Triggered by specific actions in the dashboard.
 *   **Pricing Drawer** (`src/components/master/dashboard/PricingDrawer.tsx`): Configuration for peak hours and dynamic pricing rules.
 *   **Client Detail Sheet** (`src/components/master/clients/ClientDetailSheet.tsx`): Deep view of a single client's profile and history.
 *   **Booking Details Modal** (`src/components/master/bookings/BookingDetailsModal.tsx`): Full view/edit interface for a single appointment.
+*   **Period Analytics View** (`src/components/master/bookings/PeriodAnalyticsView.tsx`): Bento-grid analytics dashboard for Week/Month booking views.
 
 ---
 

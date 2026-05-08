@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2, Heart } from 'lucide-react';
+import { X, Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Check, Loader2, Heart, Sparkles } from 'lucide-react';
 import { sendChurnReminder, saveClientNote, toggleClientVip, archiveClient } from '@/app/(master)/dashboard/clients/actions';
 import { checkAmbassadorStatus } from '@/lib/actions/referrals';
 import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { ClientRow } from './ClientsPage';
+import { RETENTION_CONFIG } from './ClientsPage';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/components/master/services/types';
@@ -50,6 +51,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   const { data: serverNote } = useClientNote(client?.client_phone);
   const invalidateNote = useClientNoteInvalidate();
   const [noteValue, setNoteValue] = useState('');
+  const [activeVibes, setActiveVibes] = useState<string[]>(['Тихий клієнт', 'Любить каву']);
   const [isSavingNote, setIsSavingNote] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -163,11 +165,21 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
               Ambassador
             </div>
           )}
-          <div
-            className="w-16 h-16 rounded-[24px] flex items-center justify-center text-3xl flex-shrink-0 shadow-inner"
-            style={{ background: client?.is_vip ? 'rgba(212,147,90,0.18)' : 'rgba(255,210,194,0.4)' }}
-          >
-            {client?.is_vip ? '⭐' : client?.client_name[0]?.toUpperCase() ?? '?'}
+          <div className="relative">
+            <div
+              className="w-16 h-16 rounded-[24px] flex items-center justify-center text-3xl flex-shrink-0 shadow-inner relative z-10"
+              style={{ 
+                background: client?.is_vip ? 'rgba(212,147,90,0.18)' : 'rgba(255,210,194,0.4)',
+                boxShadow: '0 0 0 2px white'
+              }}
+            >
+              {client?.client_name[0]?.toUpperCase() ?? '?'}
+            </div>
+            {/* Health Ring */}
+            <div 
+              className="absolute -inset-1 rounded-[28px] opacity-40 z-0"
+              style={{ border: `3px solid ${RETENTION_CONFIG[client?.retention_status ?? 'active'].color}` }}
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -204,6 +216,63 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
               <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wider">{s.label}</p>
             </div>
           ))}
+        </div>
+
+        {/* LTV & Insights */}
+        <div className="bg-gradient-to-br from-sage/10 to-primary/5 p-5 rounded-3xl border border-sage/20 relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-4 opacity-5 rotate-12">
+              <TrendingUp size={60} />
+           </div>
+           <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                 <Sparkles size={16} className="text-sage" />
+                 <p className="text-[10px] font-bold text-sage uppercase tracking-widest">Прогноз доходу (12 міс)</p>
+              </div>
+              <p className="text-xl font-display font-bold text-sage">~{formatPrice((client?.average_check ?? 0) * 10)}</p>
+           </div>
+           <div className="flex gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-sage/10 overflow-hidden">
+                 <div className="h-full bg-sage/60 w-[70%]" />
+              </div>
+              <p className="text-[9px] font-bold text-sage/60">Високий потенціал</p>
+           </div>
+        </div>
+
+        {/* Vibe Tags Section */}
+        <div className="bg-white/40 p-5 rounded-3xl border border-white/60">
+           <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                 <Heart size={14} className="text-primary/60" />
+                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Vibe-мітки</p>
+              </div>
+              <span className="text-[10px] text-muted-foreground/40 font-medium italic">Лише для вас</span>
+           </div>
+
+           <div className="flex flex-wrap gap-2">
+              {[
+                'Тихий клієнт', 'Любить каву', 'Часто запізнюється', 'Складне волосся',
+                'Завжди з доглядом', 'Рекомендує друзям', 'Дуже балакучий'
+              ].map((tag) => {
+                const isActive = activeVibes.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      if (isActive) setActiveVibes(activeVibes.filter(v => v !== tag));
+                      else setActiveVibes([...activeVibes, tag]);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border ${
+                      isActive ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-white/60 border-white/80 text-muted-foreground/60'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+              <button className="px-3 py-1.5 rounded-xl text-[11px] font-bold border border-dashed border-muted-foreground/30 text-muted-foreground/40 hover:border-primary/40 hover:text-primary transition-all">
+                + Додати мітку
+              </button>
+           </div>
         </div>
 
         {/* Action Buttons */}

@@ -20,10 +20,23 @@ import {
 
 interface BookingCardProps {
   booking: BookingWithServices;
-  index: number;
+  index?: number;
+  compact?: boolean;
+  hideTime?: boolean;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
-export function BookingCard({ booking, index }: BookingCardProps) {
+export function BookingCard({ 
+  booking, 
+  index = 0, 
+  compact = false, 
+  hideTime = false,
+  selectionMode = false, 
+  isSelected = false, 
+  onSelect 
+}: BookingCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const qc = useQueryClient();
@@ -34,6 +47,10 @@ export function BookingCard({ booking, index }: BookingCardProps) {
   const hasBadge = !!booking.dynamic_pricing_label;
 
   const openModal = () => {
+    if (selectionMode) {
+      onSelect?.(booking.id);
+      return;
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set('bookingId', booking.id);
     router.push(`?${params.toString()}`, { scroll: false });
@@ -105,14 +122,12 @@ export function BookingCard({ booking, index }: BookingCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, type: 'spring', stiffness: 300, damping: 26 }}
-      className="bento-card overflow-hidden"
+      className={`bento-card overflow-hidden transition-all ${
+        isSelected ? 'border-accent ring-2 ring-accent/20' : ''
+      }`}
+      style={{ borderLeft: `3px solid ${cfg.color}` }}
     >
-      <div className="flex">
-        {/* ── Status accent strip ─────────────────── */}
-        <div
-          className="w-[3px] shrink-0 my-3 ml-3 rounded-full"
-          style={{ background: cfg.color }}
-        />
+      <div className="flex pl-1">
 
         {/* ── Card body ───────────────────────────── */}
         <div className="flex-1 min-w-0">
@@ -123,21 +138,27 @@ export function BookingCard({ booking, index }: BookingCardProps) {
             className="w-full flex items-center gap-3 px-3 py-3.5 text-left hover:bg-white/25 transition-colors rounded-xl active:scale-95 transition-all"
           >
             {/* Time */}
-            <div className="shrink-0 w-[52px] text-center">
-              <p className="text-[15px] font-bold tabular-nums text-foreground leading-none">
-                {booking.start_time}
-              </p>
-              <p className="text-[11px] text-muted-foreground/60 mt-0.5 tabular-nums">
-                {booking.end_time}
-              </p>
-            </div>
+            {!hideTime && (
+              <div className="shrink-0 w-[52px] text-center">
+                <p className="text-[15px] font-bold tabular-nums text-foreground leading-none">
+                  {booking.start_time}
+                </p>
+                {!compact && (
+                  <p className="text-[11px] text-muted-foreground/60 mt-0.5 tabular-nums">
+                    {booking.end_time}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Divider */}
-            <div className="w-px self-stretch bg-[#F0DDD6] shrink-0" />
+            {!hideTime && (
+              <div className="w-px self-stretch bg-[#F0DDD6] shrink-0" />
+            )}
 
             {/* Name + Service */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
+              <p className="font-display text-sm text-foreground truncate font-medium">
                 {booking.client_name}
               </p>
               <p className="text-xs text-muted-foreground/60 truncate mt-0.5">
@@ -146,21 +167,30 @@ export function BookingCard({ booking, index }: BookingCardProps) {
             </div>
 
             {/* Status pill + Price — isolated on the right, no badge here */}
-            <div className="shrink-0 flex flex-col items-end gap-1 ml-1">
-              <span
-                className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
-                style={{ color: cfg.color, background: cfg.bg }}
-              >
-                {cfg.label}
-              </span>
-              <p className="text-sm font-bold text-foreground tabular-nums">
+            {!compact && (
+              <div className="shrink-0 flex flex-col items-end gap-1 ml-1">
+                <span
+                  className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+                  style={{ color: cfg.color, background: cfg.bg }}
+                >
+                  {cfg.label}
+                </span>
+                <p className="text-sm font-bold text-foreground tabular-nums">
+                  {formatPrice(booking.total_price)}
+                </p>
+              </div>
+            )}
+
+            {/* Compact Price */}
+            {compact && (
+              <p className="text-sm font-bold text-foreground tabular-nums ml-auto">
                 {formatPrice(booking.total_price)}
               </p>
-            </div>
+            )}
           </button>
 
           {/* Pricing badge — own row, full available width */}
-          {hasBadge && (
+          {hasBadge && !compact && (
             <div className="px-3 pb-2.5 -mt-0.5">
               <PricingBadge dynamicLabel={booking.dynamic_pricing_label} size="sm" />
             </div>
@@ -198,7 +228,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
                 <button
                   onClick={handleNoShow}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-muted-foreground/60/12 text-muted-foreground/60 hover:bg-muted-foreground/60/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-muted-foreground/10 text-muted-foreground/60 hover:bg-muted-foreground/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingNoShow
                     ? <Loader2 size={11} className="animate-spin" />
@@ -209,7 +239,7 @@ export function BookingCard({ booking, index }: BookingCardProps) {
               <button
                 onClick={handleCancel}
                 disabled={isAnyPending}
-                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-destructive/12 text-destructive hover:bg-destructive/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-error/10 text-error hover:bg-error/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
               >
                 {isPendingCancel
                   ? <Loader2 size={11} className="animate-spin" />
@@ -219,6 +249,19 @@ export function BookingCard({ booking, index }: BookingCardProps) {
             </div>
           )}
         </div>
+
+        {/* ── Selection Overlay ───────────────────── */}
+        {selectionMode && (
+          <div className="absolute inset-y-0 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-white/80 to-transparent z-20">
+            <div 
+              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                isSelected ? 'bg-accent border-accent' : 'border-white/40 bg-white/20'
+              }`}
+            >
+              {isSelected && <Check size={14} className="text-white" strokeWidth={3} />}
+            </div>
+          </div>
+        )}
 
         {/* Right padding */}
         <div className="w-3 shrink-0" />

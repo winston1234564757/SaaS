@@ -246,6 +246,7 @@ function ClientSheetById({ clientId, masterId, clientName, onClose }: {
         total_spent: spent,
         average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
         last_visit_at:    bs[0]?.date ?? null,
+        last_service_name: bs[0]?.service_name ?? null,
         is_vip:           rel?.is_vip ?? false,
         relation_id:      rel?.id ?? null,
         retention_status: 'active' as const,
