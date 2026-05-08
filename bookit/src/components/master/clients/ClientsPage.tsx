@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram, 
-  LayoutGrid, List, ChevronDown, Send, MessageSquare, PenLine, AlertCircle, Heart, X 
+  LayoutGrid, List, ChevronDown, Send, MessageSquare, PenLine, AlertCircle, Heart, X, Sparkles,
+  CheckCircle2, Moon, AlertTriangle, UserX, Crown, Sparkle, Gem, Share2
 } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { ClientDetailSheet } from './ClientDetailSheet';
@@ -13,6 +14,7 @@ import { ClientWidgets } from './ClientWidgets';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
 import { saveClientNote } from '@/app/(master)/dashboard/clients/actions';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 import { useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
@@ -63,11 +65,92 @@ const RETENTION_FILTERS: { value: RetentionFilter; label: string }[] = [
 ];
 
 const SMART_SEGMENTS: { value: SmartSegment; label: string }[] = [
-  { value: 'lost_treasures', label: 'Втрачені скарби' },
-  { value: 'newbie_danger',  label: 'Новачки в ризику' },
-  { value: 'potential_vip',  label: 'Потенційні VIP' },
-  { value: 'flash_hunters',   label: 'Мисливці за акціями' },
+  { value: 'lost_treasures', label: 'Ризик втрати клієнта' },
+  { value: 'newbie_danger',  label: 'Ризик втрати новачка' },
+  { value: 'potential_vip',  label: 'Кандидати в VIP' },
+  { value: 'flash_hunters',   label: 'Чутливі до ціни' },
 ];
+
+function getSmartAction(client: ClientRow, segment: SmartSegment | 'none') {
+  const name = client.client_name.split(' ')[0];
+  
+  if (segment === 'lost_treasures' || client.retention_status === 'lost') {
+    return {
+      title: 'Повернути клієнта',
+      description: 'Клієнт у зоні відтоку. Рекомендуємо запропонувати бонус.',
+      template: `Привіт, ${name}! Давно не бачилися в нашому салоні. Маю для вас приємний бонус -10% на наступний візит. Буду рада бачити! ✨`,
+      icon: <UserX size={18} />
+    };
+  }
+  
+  if (segment === 'newbie_danger') {
+    return {
+      title: 'Закріпити новачка',
+      description: 'Клієнт був лише раз. Запитайте про враження.',
+      template: `Привіт, ${name}! Як вам результат нашого останнього візиту? Буду вдячна за відгук і з радістю чекатиму знову! ❤️`,
+      icon: <Sparkle size={18} />
+    };
+  }
+
+  if (segment === 'potential_vip' || (client.total_visits > 3 && !client.is_vip)) {
+    return {
+      title: 'Заохотити до VIP',
+      description: 'Лояльний клієнт. Час зробити приємний комплімент.',
+      template: `Вітаю, ${name}! Ви наш частий гість, тому на наступний візит я підготувала для вас особливий догляд у подарунок. Дякуємо за довіру! 👑`,
+      icon: <Crown size={18} />
+    };
+  }
+
+  return {
+    title: 'Запросити на запис',
+    description: 'Нагадайте про себе та запропонуйте вільне вікно.',
+    template: `Привіт, ${name}! Минуло вже достатньо часу з нашої останньої зустрічі. Маю вільні вікна на наступний тиждень, забронювати для вас місце? 📅`,
+    icon: <Calendar size={18} />
+  };
+}
+
+function formatClientName(name: string) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length <= 1) return name;
+  const first = parts[0];
+  const lastInitial = parts[1][0].toUpperCase();
+  return `${first} ${lastInitial}.`;
+}
+
+function ClientIconStack({ client }: { client: ClientRow }) {
+  const icons = [];
+  
+  // Status Icons
+  if (client.retention_status === 'active')   icons.push({ icon: <CheckCircle2 size={12} />, color: '#FFFFFF', bg: '#5C9E7A' });
+  if (client.retention_status === 'sleeping') icons.push({ icon: <Moon size={12} />, color: '#FFFFFF', bg: '#D4935A' });
+  if (client.retention_status === 'at_risk')  icons.push({ icon: <AlertTriangle size={12} />, color: '#FFFFFF', bg: '#C05B5B' });
+  if (client.retention_status === 'lost')     icons.push({ icon: <UserX size={12} />, color: '#FFFFFF', bg: '#6B5750' });
+
+  // Tag Icons
+  if (client.is_vip) icons.push({ icon: <Crown size={12} />, color: '#FFFFFF', bg: '#D4935A' });
+  if (client.total_visits === 1) icons.push({ icon: <Sparkle size={12} />, color: '#FFFFFF', bg: '#789A99' });
+  if (client.total_visits > 5)   icons.push({ icon: <Heart size={12} />, color: '#FFFFFF', bg: '#C05B5B' });
+  if (client.average_check > 1500) icons.push({ icon: <Gem size={12} />, color: '#FFFFFF', bg: '#789A99' });
+
+  return (
+    <div className="absolute top-4 right-4 flex flex-col items-center">
+      {icons.slice(0, 4).map((item, i) => (
+        <div 
+          key={i}
+          className="w-7 h-7 rounded-lg border-2 border-white flex items-center justify-center shadow-md transition-transform hover:scale-110 relative"
+          style={{ 
+            background: item.bg, 
+            color: item.color,
+            marginTop: i === 0 ? 0 : '-10px',
+            zIndex: 10 - i
+          }}
+        >
+          {item.icon}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function sortClients(clients: ClientRow[], sort: SortKey): ClientRow[] {
   switch (sort) {
@@ -92,7 +175,9 @@ export function ClientsPage() {
   const view    = (searchParams.get('view') as ViewMode) || 'list';
   const [search, setSearch] = useState('');
   const [retentionFilter, setRetentionFilter] = useState<RetentionFilter>('all');
-  const [smartSegment, setSmartSegment] = useState<SmartSegment>('none');
+  const [smartSegment, setSmartSegment] = useState<SmartSegment | 'none'>('none');
+  const [showSmartAction, setShowSmartAction] = useState<ClientRow | null>(null);
+  const [smartMessage, setSmartMessage] = useState('');
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
   const [sortOpen, setSortOpen] = useState(false);
 
@@ -241,8 +326,16 @@ export function ClientsPage() {
                    className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all border ${
                      isActive 
                        ? 'bg-foreground text-background border-foreground shadow-sm' 
-                       : 'bg-white/40 border-white/60 text-muted-foreground/60 hover:text-muted-foreground'
+                       : 'bg-white/60 border-white/80 text-muted-foreground hover:bg-white hover:border-muted-foreground/20'
                    }`}
+                   style={!isActive ? { 
+                     borderColor: s.value === 'lost_treasures' ? 'rgba(192, 91, 91, 0.2)' : 
+                                 s.value === 'newbie_danger' ? 'rgba(120, 154, 153, 0.2)' :
+                                 s.value === 'potential_vip' ? 'rgba(212, 147, 90, 0.2)' : 'rgba(120, 154, 153, 0.2)',
+                     background: s.value === 'lost_treasures' ? 'rgba(192, 91, 91, 0.05)' : 
+                                 s.value === 'newbie_danger' ? 'rgba(120, 154, 153, 0.05)' :
+                                 s.value === 'potential_vip' ? 'rgba(212, 147, 90, 0.05)' : 'rgba(120, 154, 153, 0.05)'
+                   } : {}}
                  >
                    {s.label}
                  </button>
@@ -431,8 +524,8 @@ export function ClientsPage() {
                 <div className="flex flex-col h-full">
                   {/* Card Header: Name */}
                   <div className="mb-4">
-                    <p className="font-display text-xl font-bold text-foreground leading-tight tracking-tight">
-                      {client.client_name}
+                    <p className="font-display text-lg font-bold text-foreground leading-tight tracking-tight max-w-[70%]">
+                      {formatClientName(client.client_name)}
                     </p>
                     <div className="flex items-center gap-1.5 mt-2">
                       <span
@@ -445,6 +538,8 @@ export function ClientsPage() {
                         <span className="text-[9px] font-bold text-warning border border-warning/30 px-1.5 py-0.5 rounded-lg flex-shrink-0">VIP</span>
                       )}
                     </div>
+
+                    <ClientIconStack client={client} />
                   </div>
 
                   <div className="flex items-center gap-3 mb-4">
@@ -473,26 +568,18 @@ export function ClientsPage() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      {client.last_visit_at ? (
-                        <>
-                          <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-wider">Останній візит</p>
-                          <p className="text-[10px] text-muted-foreground/60 font-medium truncate">
-                            {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-[10px] text-primary font-bold">Перший візит</p>
-                      )}
-                    </div>
-
-                    {/* Service Affinity Icons */}
-                    <div className="flex -space-x-1">
-                       <div className="w-6 h-6 rounded-lg bg-sage/10 flex items-center justify-center border border-white shadow-sm">
-                          <Zap size={10} className="text-sage" />
-                       </div>
-                       <div className="w-6 h-6 rounded-lg bg-warning/10 flex items-center justify-center border border-white shadow-sm">
-                          <Star size={10} className="text-warning" />
-                       </div>
+                      <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-wider">Останній візит</p>
+                      <div className="flex flex-col mt-0.5">
+                        <p className="text-sm text-foreground/90 font-display italic tracking-tight truncate leading-tight">
+                           {client.last_service_name || 'Остання послуга'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 uppercase tracking-tighter">
+                          {client.last_visit_at 
+                            ? new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })
+                            : 'Перший візит'
+                          }
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -505,14 +592,17 @@ export function ClientsPage() {
                   )}
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-secondary/60">
-                  <div>
-                    <p className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-tighter">Візитів</p>
-                    <p className="text-sm font-bold text-foreground">{client.total_visits}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-tighter">Витрачено</p>
-                    <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
-                  </div>
+                   <div>
+                     <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Візитів</p>
+                     <p className="text-xl font-bold text-sage leading-none mt-1">{client.total_visits}</p>
+                   </div>
+                   <div className="text-right">
+                     <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Витрачено</p>
+                     <p className="text-xl font-bold text-foreground leading-none mt-1">
+                       {formatPrice(client.total_spent).replace('₴', '')}
+                       <span className="text-xs font-normal text-muted-foreground/40 ml-0.5">₴</span>
+                     </p>
+                   </div>
                 </div>
 
                  {/* Grid Action Bar */}
@@ -553,13 +643,18 @@ export function ClientsPage() {
                            >
                              <PenLine size={16} />
                            </button>
-                           <button 
-                             onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/marketing?phone=${client.client_phone}`); }}
-                             className="w-10 h-10 rounded-full bg-white/60 border border-white/80 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white shadow-sm transition-all active:scale-90"
-                             title="Розсилка"
-                           >
-                             <MessageSquare size={16} />
-                           </button>
+                            <button 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                const action = getSmartAction(client, smartSegment);
+                                setSmartMessage(action.template);
+                                setShowSmartAction(client); 
+                              }}
+                              className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-all active:scale-90 hover:bg-primary hover:text-white"
+                              title="Smart-дія"
+                            >
+                              <Sparkles size={16} />
+                            </button>
                            <button 
                              onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${client.client_phone}`; }}
                              className="w-10 h-10 rounded-full bg-white/60 border border-white/80 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white shadow-sm transition-all active:scale-90"
@@ -765,6 +860,67 @@ export function ClientsPage() {
         onVipChange={handleVipChange}
       />
 
+      <BottomSheet 
+        isOpen={!!showSmartAction} 
+        onClose={() => setShowSmartAction(null)} 
+        title="Smart-дія"
+      >
+        {showSmartAction && (
+          <div className="flex flex-col gap-6">
+            <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 flex items-start gap-4">
+               <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-primary shadow-sm shrink-0">
+                  {getSmartAction(showSmartAction, smartSegment).icon}
+               </div>
+               <div>
+                  <h4 className="text-sm font-bold text-foreground">
+                    {getSmartAction(showSmartAction, smartSegment).title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground/70 mt-1">
+                    {getSmartAction(showSmartAction, smartSegment).description}
+                  </p>
+               </div>
+            </div>
+
+            <div className="space-y-3">
+               <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                  Повідомлення клієнту
+               </label>
+               <textarea 
+                  value={smartMessage}
+                  onChange={(e) => setSmartMessage(e.target.value)}
+                  className="w-full p-4 rounded-2xl bg-white border border-secondary/40 text-sm text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all min-h-[120px] resize-none"
+               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+               <button 
+                  onClick={() => {
+                    const url = `https://t.me/+${showSmartAction.client_phone.replace(/\D/g, '')}`;
+                    window.open(url, '_blank');
+                  }}
+                  className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#229ED9] text-white font-bold text-sm active:scale-95 transition-all shadow-lg shadow-blue-500/10"
+                >
+                  <Send size={16} />
+                  <span>Telegram</span>
+               </button>
+               <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(smartMessage);
+                    window.location.href = `tel:${showSmartAction.client_phone}`;
+                  }}
+                  className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-foreground text-background font-bold text-sm active:scale-95 transition-all"
+                >
+                  <Share2 size={16} />
+                  <span>Копіювати</span>
+               </button>
+            </div>
+            
+            <p className="text-[10px] text-center text-muted-foreground/40 italic">
+               * Посилання в Telegram відкриє чат за номером телефону
+            </p>
+          </div>
+        )}
+      </BottomSheet>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { formatPrice } from '@/components/master/services/types';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import type { ClientRow } from './ClientsPage';
 import { RETENTION_CONFIG } from './ClientsPage';
+import { useMasterContext } from '@/lib/supabase/context';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface ClientWidgetsProps {
@@ -17,6 +18,7 @@ interface ClientWidgetsProps {
 }
 
 export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegment }: ClientWidgetsProps) {
+  const { masterProfile } = useMasterContext();
   const [showCheckDetails, setShowCheckDetails] = useState(false);
   const [showReferralDetails, setShowReferralDetails] = useState(false);
   const [expandedAmbassadorId, setExpandedAmbassadorId] = useState<string | null>(null);
@@ -51,8 +53,18 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   // Newbies at Risk
   const newbiesAtRisk = clients.filter(c => c.total_visits === 1 && c.retention_status === 'at_risk');
 
-  // Top Referrers (Mock logic for now - clients with high visits are often referrers)
+  // Top Referrers
   const topReferrers = [...clients].sort((a, b) => b.total_visits - a.total_visits).slice(0, 3);
+
+  // Cleanup Logic: Master Cycle * 2
+  const cycle = masterProfile?.retention_cycle_days || 60;
+  const archiveThreshold = new Date();
+  archiveThreshold.setDate(archiveThreshold.getDate() - (cycle * 2));
+  
+  const archiveCount = clients.filter(c => {
+    if (!c.last_visit_at) return false;
+    return new Date(c.last_visit_at) < archiveThreshold;
+  }).length;
 
   return (
     <div className="grid grid-cols-2 gap-3">
@@ -210,7 +222,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
       </motion.div>
 
        {/* 4. Smart Action: Cleanup Wizard */}
-       {lostCount > 0 && (
+       {archiveCount > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -225,7 +237,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
              <div>
                 <h4 className="text-sm font-bold text-foreground">Пора почистити базу</h4>
                 <p className="text-xs text-muted-foreground/60 mt-1 max-w-[240px]">
-                   У вас {lostCount} {pluralUk(lostCount, 'клієнт', 'клієнти', 'клієнтів')} у глибокому відтоку. 
+                   У вас {archiveCount} {pluralUk(archiveCount, 'клієнт', 'клієнти', 'клієнтів')} у глибокому відтоку. 
                    Архівуйте їх, щоб бачити тільки актуальні дані.
                 </p>
              </div>
