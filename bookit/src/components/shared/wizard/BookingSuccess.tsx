@@ -114,7 +114,7 @@ export function BookingSuccess({
         )}
         {masterName && (
           <p className="text-xs text-muted-foreground/60 mt-1">
-            Очікуй підтвердження від {masterName} 🌸
+            Очікуй підтвердження від {masterName}
           </p>
         )}
       </div>

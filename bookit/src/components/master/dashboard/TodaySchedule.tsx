@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight, Loader2, AlertCircle, CheckCircle2,
-  BarChart2, List, TrendingUp,
+  BarChart2, List, TrendingUp, Trophy,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
@@ -302,7 +302,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
     { label: 'Виручка',      value: formatPrice(revenue),      color: 'var(--accent)'         },
     {
       label: 'Потенційно',
-      value: allFullyCompleted ? '🎉' : formatPrice(potential),
+      value: allFullyCompleted ? <Trophy size={20} className="mt-1" /> : formatPrice(potential),
       color: allFullyCompleted ? 'var(--success)' : 'var(--text-secondary)',
     },
   ];
@@ -402,8 +402,8 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
           >
             <p
               style={{
-                fontFamily: s.value === '🎉' ? 'inherit' : 'var(--font-cormorant, Georgia, serif)',
-                fontSize: s.value === '🎉' ? '1.5rem' : '1.75rem',
+                fontFamily: typeof s.value !== 'string' ? 'inherit' : 'var(--font-cormorant, Georgia, serif)',
+                fontSize: typeof s.value !== 'string' ? '1.5rem' : '1.75rem',
                 fontWeight: 700,
                 color: s.color,
                 lineHeight: 1,

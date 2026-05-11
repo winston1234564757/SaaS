@@ -14,7 +14,7 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://telegram.org",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://maps.googleapis.com https://maps.gstatic.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://maps.googleapis.com https://maps.gstatic.com https://api.qrserver.com",
       "connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://api.monobank.ua https://maps.googleapis.com",
       "frame-ancestors 'self' https://t.me https://web.telegram.org https://*.telegram.org", 
     ].join('; '),
@@ -33,6 +33,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'maps.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.qrserver.com',
       },
     ],
   },

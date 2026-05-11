@@ -85,6 +85,15 @@ export const moodThemes = {
     gradient: ['#FFE8E8', '#FFF0F0'],
     isExclusive: true,
   },
+  studio: {
+    name: 'Studio',
+    accent: '#D3A376',
+    background: '#0E1D21',
+    cardBg: 'rgba(18, 46, 52, 0.65)',
+    textPrimary: '#E0B4B2',
+    gradient: ['#122E34', '#0E1D21'],
+    isExclusive: true,
+  },
 } as const;
 
 export type MoodThemeKey = keyof typeof moodThemes;

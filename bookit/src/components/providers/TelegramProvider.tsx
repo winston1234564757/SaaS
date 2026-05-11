@@ -32,8 +32,8 @@ const TelegramContext = createContext<TelegramContextType>({
 export const useTelegram = () => useContext(TelegramContext);
 
 const GUEST_PATHS = new Set<string>(['/', '/login', '/register']);
-const SAFETY_TIMEOUT_MS = 12_000;
-const MIN_LOADER_MS = 2_500;
+const SAFETY_TIMEOUT_MS = 8_000;
+const MIN_LOADER_MS = 1_500;
 const SDK_RETRY_MAX = 15;
 const SDK_RETRY_DELAY = 200;
 
@@ -171,13 +171,20 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         }
 
         // 1. Existing session? Verify profile, redirect if on guest page.
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('session-timeout')), 5000))
+        ]) as any;
+
         if (session) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id, role')
-            .eq('id', session.user.id)
-            .maybeSingle();
+          const { data: profile } = await Promise.race([
+            supabase
+              .from('profiles')
+              .select('id, role')
+              .eq('id', session.user.id)
+              .maybeSingle(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 5000))
+          ]) as any;
 
           if (profile) {
             setIsAuthenticated(true);

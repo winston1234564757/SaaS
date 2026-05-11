@@ -22,6 +22,8 @@
   --color-info:                   var(--info);
   --color-border:                 var(--border);
   --color-input:                  var(--surface);
+  --color-accent:                 var(--accent);
+  --color-accent-foreground:      #ffffff;
 
   /* Brand aliases kept for existing components */
   --color-peach:       var(--background);

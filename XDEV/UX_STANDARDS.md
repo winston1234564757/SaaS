@@ -60,6 +60,22 @@
   - Вертикальне накладання (overlap) для компактності.
   - До 4 іконок у стеку.
 
+## 🔳 Asymmetric Bento Dashboard (Standard)
+- **Grid Structure**: Desktop dashboards must use a 4-column asymmetric Bento Grid 
+All names for example .
+
+(`lg:grid-cols-4`, `gap-4`).
+- **Layout Hierarchy**:
+  - **Identity (Hero)**: `lg:col-span-1 lg:row-span-2`. Портретна картка з фото та ім'ям.
+  - **Intelligence (Advisor)**: `lg:col-span-2`. Широкий блок з порадами та прогрес-баром.
+  - **Action (Quick Buttons)**: `lg:col-span-1`. Квадратні блоки для статусів/налаштувань.
+  - **Metrics (Analytics)**: `lg:col-span-2`. Широкий блок для графіків або пульсуючих метрик.
+- **Visuals**: Всі блоки — `.widget-card` (backdrop-blur, rounded-3xl/40px, mica shadow).
+- **Interactions**:
+  - Hover: `translate-y-[-4px]` + посилення тіні.
+  - Click: `scale-95` (тактильний відгук).
+
+
 ## ✨ Contextual Smart Actions
 - **Стандарт**: Кнопка ✨ (Sparkles) відкриває `SmartActionSheet`.
 - **Логіка**: Контент шторки динамічно змінюється залежно від сегмента клієнта (авто-шаблони повідомлень).

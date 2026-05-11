@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ssrFetch } from '@/lib/supabase/server';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Server Actions мають заголовок Next-Action — не чіпаємо їх
   if (request.headers.has('next-action')) {
     return NextResponse.next({ request });
@@ -16,7 +16,8 @@ export async function proxy(request: NextRequest) {
   if (
     pathname.includes('.') ||
     pathname.startsWith('/api/telegram/webhook') ||
-    pathname.startsWith('/_next')
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/auth/')
   ) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
@@ -63,50 +64,61 @@ export async function proxy(request: NextRequest) {
     );
 
     // getUser() re-validates the session, but can hang on cold starts.
-    // getSession() is faster (cookie-only) but less secure.
-    // We use a 5s timeout for getUser() then fallback to getSession().
+    // We use a tight 3s timeout then fallback to getSession().
     let user = null;
     try {
       const userPromise = supabase.auth.getUser();
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 5000)
+        setTimeout(() => reject(new Error('timeout')), 3000)
       );
 
       const { data: { user: u } } = await (Promise.race([userPromise, timeoutPromise]) as Promise<any>);
       user = u;
     } catch (err) {
-      console.warn('[Proxy] getUser timed out or failed, falling back to getSession', err);
-      const { data: { session } } = await supabase.auth.getSession();
-      user = session?.user ?? null;
+      console.warn('[Middleware] getUser timed out or failed, falling back to getSession', err);
+      try {
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('session-timeout')), 3000))
+        ]) as any;
+        user = session?.user ?? null;
+      } catch {
+        user = null;
+      }
     }
-    if (user) {
-      const profileRes = await Promise.race([
-        supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 5000))
-      ]) as any;
-      const profile = profileRes?.data;
 
-      if (profile?.role) {
-        const userRole = profile.role as string;
-        const isProduction = process.env.NODE_ENV === 'production';
-        supabaseResponse.cookies.set('user_role', userRole, {
-          path: '/', maxAge: 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction,
-        });
-        supabaseResponse.cookies.set('user_role_uid', user.id, {
-          path: '/', maxAge: 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction,
-        });
+    if (user) {
+      try {
+        const profileRes = await Promise.race([
+          supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 3000))
+        ]) as any;
+        
+        if (profileRes?.data?.role) {
+          role = profileRes.data.role as string;
+          const isProduction = process.env.NODE_ENV === 'production';
+          supabaseResponse.cookies.set('user_role', role, {
+            path: '/', maxAge: 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction,
+          });
+          supabaseResponse.cookies.set('user_role_uid', user.id, {
+            path: '/', maxAge: 60 * 60 * 24, httpOnly: true, sameSite: 'lax', secure: isProduction,
+          });
+        }
+      } catch (err) {
+        console.warn('[Middleware] Profile fetch timed out:', err);
       }
     }
   }
+
+  // Role-based redirection
   if (pathname.startsWith('/dashboard') && role !== null && role !== 'master') {
     return NextResponse.redirect(new URL('/my/bookings', request.url));
   }
 
-  // my — clients only (unless in master client-mode)
   if (pathname.startsWith('/my') && role === 'master') {
     const viewMode = request.cookies.get('view_mode')?.value;
     if (viewMode !== 'client') {
@@ -129,7 +141,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Set auth status header for layout to avoid duplicate DB hits
-  supabaseResponse.headers.set('x-is-auth', 'true');
+  supabaseResponse.headers.set('x-is-auth', role ? 'true' : 'false');
   return supabaseResponse;
 }
 
@@ -138,3 +150,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon\\.ico|icons/|sw\\.js|manifest\\.json|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
+

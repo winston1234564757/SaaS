@@ -87,10 +87,10 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     if (isLoading) {
       loadingTimeoutRef.current = setTimeout(() => {
         if (mountedRef.current && isLoading) {
-          console.warn('[MasterContext] isLoading застряг > 8с — примусове зняття');
+          console.warn('[MasterContext] isLoading застряг > 4с — примусове зняття');
           setIsLoading(false);
         }
-      }, 8_000);
+      }, 4_000);
     }
 
     // onAuthStateChange fires INITIAL_SESSION synchronously on subscribe,

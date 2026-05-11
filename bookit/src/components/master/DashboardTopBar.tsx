@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Users, Scissors,
-  BarChart2, GalleryVerticalEnd, Bell, Settings, ChevronDown,
+  BarChart2, GalleryVerticalEnd, Bell, Settings, ChevronDown, User,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -42,7 +42,8 @@ function ProfileMenu({ open, onClose }: { open: boolean; onClose: () => void }) 
 
   const tier  = masterProfile?.subscription_tier ?? 'starter';
   const name  = masterProfile?.business_name || profile?.full_name || 'Кабінет';
-  const emoji = masterProfile?.avatar_emoji ?? '💅';
+  const hasEmoji = !!masterProfile?.avatar_emoji;
+  const emoji = masterProfile?.avatar_emoji;
   const src   = profile?.avatar_url ?? null;
 
   return (
@@ -72,7 +73,9 @@ function ProfileMenu({ open, onClose }: { open: boolean; onClose: () => void }) 
               >
                 {src
                   ? <Image src={src} alt={name} width={40} height={40} className="object-cover w-full h-full" />
-                  : <span>{emoji}</span>}
+                  : hasEmoji 
+                    ? <span className="text-xl">{emoji}</span>
+                    : <User size={20} className="text-accent" />}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{name}</p>
@@ -120,7 +123,8 @@ export function DashboardTopBar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const name  = masterProfile?.business_name || profile?.full_name || '';
-  const emoji = masterProfile?.avatar_emoji ?? '💅';
+  const hasEmoji = !!masterProfile?.avatar_emoji;
+  const emoji = masterProfile?.avatar_emoji;
   const src   = profile?.avatar_url ?? null;
 
   return (
@@ -215,7 +219,9 @@ export function DashboardTopBar() {
               >
                 {src
                   ? <Image src={src} alt={name} width={28} height={28} className="object-cover w-full h-full" />
-                  : <span className="text-[15px] leading-none">{emoji}</span>}
+                  : hasEmoji
+                    ? <span className="text-[15px] leading-none">{emoji}</span>
+                    : <User size={14} className="text-accent" />}
               </div>
               <span
                 className="hidden xl:block text-[13px] font-medium max-w-[96px] truncate"

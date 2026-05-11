@@ -44,6 +44,7 @@
     "nuqs": "^2.8.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-easy-crop": "^5.5.7",
     "react-hook-form": "^7.71.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",

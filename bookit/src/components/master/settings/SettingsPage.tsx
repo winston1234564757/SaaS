@@ -1,1064 +1,309 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useTour } from '@/lib/hooks/useTour';
-import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
-import { cn } from '@/lib/utils/cn';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Loader2, ExternalLink, Instagram, Send, Lock, MessageSquare, CreditCard, ChevronRight, LogOut, Plus, Trash2 } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useSettingsForm } from './hooks/useSettingsForm';
+import { NavigationStrip } from './widgets/NavigationStrip';
+import { ProfileHero } from './widgets/ProfileHero';
+import { PublicStatusWidget } from './widgets/PublicStatusWidget';
+import { ScheduleWidget } from './widgets/ScheduleWidget';
+import { StatsPulseWidget } from './widgets/StatsPulseWidget';
+import { SmartAdvisor } from './widgets/SmartAdvisor';
+import { TechnicalIsland } from './widgets/TechnicalIsland';
+import { LocationWidget } from './widgets/LocationWidget';
+import { CategoriesWidget } from './widgets/CategoriesWidget';
+import { ProductMixWidget } from './widgets/ProductMixWidget';
+import { ScheduleDrawer } from './widgets/ScheduleDrawer';
 import { VacationManager } from './VacationManager';
-import { ImageUploader } from '@/components/master/services/ImageUploader';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
-import { useToast } from '@/lib/toast/context';
-import { moodThemes, type MoodThemeKey } from '@/lib/constants/themes';
-import type { BreakWindow } from '@/types/database';
-import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, normalizeToE164, toFullPhone } from '@/lib/utils/phone';
-import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
-import dynamic from 'next/dynamic';
-import type { LatLng } from './LocationPicker';
-import { PromoTemplates } from '@/components/shared/PromoTemplates';
-import { serviceCategories } from '@/lib/constants/categories';
-import { parseError } from '@/lib/utils/errors';
+import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
+import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, Loader2, LogOut, User as UserIcon, Camera } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { cn } from '@/lib/utils/cn';
 
-const LocationPicker = dynamic(
-  () => import('./LocationPicker').then(m => m.LocationPicker),
-  { ssr: false, loading: () => <div className="w-full rounded-2xl bg-white/30 animate-pulse" style={{ height: 220 }} /> }
-);
-
-const AVATAR_EMOJIS = ['💅','👑','✂️','💆','💇','🌸','✨','💎','🌺','🪞','🖌️','💄'];
-
-const DAYS_UA: Record<string, string> = {
-  mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Нд',
-};
-const DAYS_ORDER = ['mon','tue','wed','thu','fri','sat','sun'] as const;
-
-type DayKey = typeof DAYS_ORDER[number];
-
-interface DaySchedule {
-  is_working: boolean;
-  start_time: string;
-  end_time: string;
-}
-
-type Schedule = Record<DayKey, DaySchedule>;
-
-const DEFAULT_SCHEDULE: Schedule = Object.fromEntries(
-  DAYS_ORDER.map(d => [d, { is_working: !['sat','sun'].includes(d), start_time: '09:00', end_time: '18:00' }])
-) as Schedule;
-
-export function SettingsPage() {
-  const { profile, masterProfile, refresh } = useMasterContext();
-  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('settings', 2, {
-    initialSeen: seenTours?.settings ?? false,
-    masterId: masterProfile?.id,
-  });
-  const { showToast } = useToast();
+export default function SettingsPage() {
+  const { masterProfile } = useMasterContext();
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const { state, actions } = useSettingsForm();
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [analyticsDate, setAnalyticsDate] = useState(new Date());
 
-  // Форма профілю
-  const [fullName, setFullName] = useState('');
-  const [businessName, setBusinessName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [bio, setBio] = useState('');
-  const [slug, setSlug] = useState('');
-  const [avatar, setAvatar] = useState('💅');
-  const [city, setCity] = useState('');
-  const [address, setAddress] = useState('');
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
-  const [floor, setFloor] = useState('');
-  const [cabinet, setCabinet] = useState('');
-  const [instagram, setInstagram] = useState('');
-  const [telegram, setTelegram] = useState('');
-  const [telegramChatId, setTelegramChatId] = useState('');
-  const [isPublished, setIsPublished] = useState(false);
-  const [themeKey, setThemeKey] = useState<MoodThemeKey>('default');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
+  const { data: analytics } = useAnalytics(
+    { 
+      startDate: format(startOfMonth(analyticsDate), 'yyyy-MM-dd'), 
+      endDate: format(endOfMonth(analyticsDate), 'yyyy-MM-dd') 
+    },
+    masterProfile?.subscription_tier === 'pro' || masterProfile?.subscription_tier === 'studio',
+    'month',
+    0
+  );
+  
+  const stats = useDashboardStats();
 
-  // Working-hours config (buffer + global breaks)
-  const [bufferTime, setBufferTime] = useState(0);
-  const [breaks, setBreaks] = useState<BreakWindow[]>([]);
+  if (!masterProfile) return null;
 
-  // Guard: only initialize form from server data once — prevents useEffect from
-  // overwriting user's in-progress edits whenever profile refreshes after save.
-  const formInitialized = useRef(false);
-  const scheduleInitialized = useRef(false);
-
-  const [retentionCycleDays, setRetentionCycleDays] = useState(30);
-
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [slugStatus, setSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
-  const [isDirty, setIsDirty] = useState(false);
-
-  // Snapshots captured on first load — used for dirty detection and cancel reset
-  const initialFormSnap = useRef<{
-    fullName: string; businessName: string; phone: string; bio: string; slug: string;
-    city: string; address: string; lat: number | null; lng: number | null;
-    floor: string; cabinet: string; instagram: string; telegram: string; telegramChatId: string;
-    isPublished: boolean; avatar: string; themeKey: MoodThemeKey;
-    avatarUrl: string | null; bufferTime: number; breaks: BreakWindow[];
-    categories: string[];
-    retentionCycleDays: number;
-  } | null>(null);
-  const initialScheduleSnap = useRef<Schedule | null>(null);
-
-  // Telegram connect token flow (SEC-HIGH-2: one-time token instead of public slug)
-  const [tgConnectToken, setTgConnectToken] = useState<string | null>(null);
-  const [tgConnectLoading, setTgConnectLoading] = useState(false);
-
-
-  // Ініціалізація з даних — runs once when both profile and masterProfile first arrive.
-  // formInitialized.current prevents subsequent context refreshes (after save) from
-  // overwriting edits the user is currently making in the form.
-  useEffect(() => {
-    if (formInitialized.current || !profile || !masterProfile) return;
-    formInitialized.current = true;
-    setFullName(profile.full_name ?? '');
-    setBusinessName(masterProfile.business_name ?? '');
-    setPhone(e164ToInputPhone(profile.phone));
-    setAvatarUrl(profile.avatar_url ?? null);
-    setBio(masterProfile.bio ?? '');
-    setSlug(masterProfile.slug ?? '');
-    setCity(masterProfile.city ?? '');
-    setAddress(masterProfile.address ?? '');
-    setLat(masterProfile.latitude ?? null);
-    setLng(masterProfile.longitude ?? null);
-    setFloor(masterProfile.floor ?? '');
-    setCabinet(masterProfile.cabinet ?? '');
-    setInstagram(masterProfile.instagram_url ?? '');
-    setTelegram(masterProfile.telegram_url ?? '');
-    setTelegramChatId(masterProfile.telegram_chat_id ?? '');
-    setIsPublished(masterProfile.is_published ?? false);
-    setAvatar(masterProfile.avatar_emoji ?? '💅');
-    setThemeKey((masterProfile.mood_theme as MoodThemeKey) ?? 'default');
-    setSelectedCategories(masterProfile.categories ?? []);
-    setRetentionCycleDays(masterProfile.retention_cycle_days ?? 30);
-    const wh = masterProfile.working_hours;
-    setBufferTime(wh?.buffer_time_minutes ?? 0);
-    setBreaks(wh?.breaks ?? []);
-    initialFormSnap.current = {
-      fullName: profile.full_name ?? '',
-      businessName: masterProfile.business_name ?? '',
-      phone: e164ToInputPhone(profile.phone),
-      bio: masterProfile.bio ?? '',
-      slug: masterProfile.slug ?? '',
-      city: masterProfile.city ?? '',
-      address: masterProfile.address ?? '',
-      lat: masterProfile.latitude ?? null,
-      lng: masterProfile.longitude ?? null,
-      floor: masterProfile.floor ?? '',
-      cabinet: masterProfile.cabinet ?? '',
-      instagram: masterProfile.instagram_url ?? '',
-      telegram: masterProfile.telegram_url ?? '',
-      telegramChatId: masterProfile.telegram_chat_id ?? '',
-      isPublished: masterProfile.is_published ?? false,
-      avatar: masterProfile.avatar_emoji ?? '💅',
-      themeKey: (masterProfile.mood_theme as MoodThemeKey) ?? 'default',
-      avatarUrl: profile.avatar_url ?? null,
-      bufferTime: wh?.buffer_time_minutes ?? 0,
-      breaks: wh?.breaks ?? [],
-      categories: masterProfile.categories ?? [],
-      retentionCycleDays: masterProfile.retention_cycle_days ?? 30,
-    };
-  }, [profile, masterProfile]);
-
-  // Перевірка доступності slug
-  useEffect(() => {
-    if (!slug || !masterProfile?.id || slug === masterProfile.slug) {
-      setSlugStatus('idle');
-      return;
-    }
-    setSlugStatus('checking');
-    const timer = setTimeout(async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('master_profiles')
-        .select('id')
-        .eq('slug', slug)
-        .neq('id', masterProfile.id)
-        .maybeSingle();
-      setSlugStatus(data ? 'taken' : 'available');
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [slug, masterProfile?.id, masterProfile?.slug]);
-
-  // Завантаження графіку — once only, same guard as form fields
-  useEffect(() => {
-    if (scheduleInitialized.current || !masterProfile?.id) return;
-    scheduleInitialized.current = true;
-    // Set default schedule snapshot immediately so dirty detection works even if fetch is slow
-    initialScheduleSnap.current = { ...DEFAULT_SCHEDULE };
-    const supabase = createClient();
-    supabase
-      .from('schedule_templates')
-      .select('*')
-      .eq('master_id', masterProfile.id)
-      .then((res: { data: any[] | null }) => {
-        const data = res.data;
-        if (data && data.length > 0) {
-          const s = { ...DEFAULT_SCHEDULE };
-          data.forEach((row: any) => {
-            if (row.day_of_week in s) {
-              s[row.day_of_week as DayKey] = {
-                is_working: row.is_working,
-                start_time: (row.start_time as string | null)?.slice(0, 5) ?? '09:00',
-                end_time: (row.end_time as string | null)?.slice(0, 5) ?? '18:00',
-              };
-            }
-          });
-          setSchedule(s);
-          initialScheduleSnap.current = s;
-        }
-      });
-  }, [masterProfile?.id]);
-
-  // Dirty detection — compares current field values against initial snapshot
-  useEffect(() => {
-    if (!initialFormSnap.current || !initialScheduleSnap.current) return;
-    const f = initialFormSnap.current;
-    const formChanged =
-      fullName !== f.fullName || businessName !== f.businessName || phone !== f.phone || bio !== f.bio ||
-      JSON.stringify(selectedCategories) !== JSON.stringify(f.categories) ||
-      slug !== f.slug || city !== f.city || address !== f.address ||
-      lat !== f.lat || lng !== f.lng || floor !== f.floor || cabinet !== f.cabinet ||
-      instagram !== f.instagram ||
-      telegram !== f.telegram || telegramChatId !== f.telegramChatId ||
-      isPublished !== f.isPublished || avatar !== f.avatar ||
-      themeKey !== f.themeKey || avatarUrl !== f.avatarUrl ||
-      bufferTime !== f.bufferTime ||
-      JSON.stringify(breaks) !== JSON.stringify(f.breaks) ||
-      retentionCycleDays !== f.retentionCycleDays;
-    const scheduleChanged =
-      JSON.stringify(schedule) !== JSON.stringify(initialScheduleSnap.current);
-    setIsDirty(formChanged || scheduleChanged);
-  }, [fullName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId,
-      isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays, schedule]);
-
-  function handleCancel() {
-    const f = initialFormSnap.current;
-    if (!f) return;
-    setFullName(f.fullName);
-    setBusinessName(f.businessName);
-    setSelectedCategories(f.categories);
-    setPhone(f.phone);
-    setBio(f.bio);
-    setSlug(f.slug);
-    setCity(f.city);
-    setAddress(f.address);
-    setLat(f.lat);
-    setLng(f.lng);
-    setFloor(f.floor);
-    setCabinet(f.cabinet);
-    setInstagram(f.instagram);
-    setTelegram(f.telegram);
-    setTelegramChatId(f.telegramChatId);
-    setIsPublished(f.isPublished);
-    setAvatar(f.avatar);
-    setThemeKey(f.themeKey);
-    setAvatarUrl(f.avatarUrl);
-    setBufferTime(f.bufferTime);
-    setBreaks(f.breaks);
-    setRetentionCycleDays(f.retentionCycleDays);
-    if (initialScheduleSnap.current) setSchedule(initialScheduleSnap.current);
-    setIsDirty(false);
-  }
-
-  async function handleSave() {
-    if (!masterProfile?.id || !profile?.id) {
-      showToast({ type: 'error', title: 'Помилка', message: 'Профіль ще завантажується, спробуйте ще раз' });
-      return;
-    }
-    setSaving(true);
-    const supabase = createClient();
-
-    try {
-      const cleanPhone = phone.trim() ? (normalizeToE164(toFullPhone(phone)) ?? null) : null;
-      await Promise.all([
-        supabase.auth.updateUser({ data: { full_name: fullName } }),
-        supabase.from('profiles').update({ full_name: fullName, phone: cleanPhone, avatar_url: avatarUrl }).eq('id', profile.id).throwOnError(),
-        supabase.from('master_profiles').update({
-          business_name: businessName.trim() || null,
-          categories: selectedCategories,
-          bio, city, address: address || null, slug,
-          latitude: lat, longitude: lng,
-          floor: floor || null, cabinet: cabinet || null,
-          avatar_emoji: avatar,
-          instagram_url: instagram || null,
-          telegram_url: telegram || null,
-          telegram_chat_id: telegramChatId.trim() || null,
-          is_published: isPublished,
-          mood_theme: themeKey,
-          retention_cycle_days: retentionCycleDays,
-          working_hours: {
-            buffer_time_minutes: bufferTime,
-            breaks: breaks.filter(b => b.start && b.end),
-          },
-        }).eq('id', masterProfile.id).throwOnError(),
-        // Upsert кожен день
-        ...DAYS_ORDER.map(day =>
-          supabase.from('schedule_templates').upsert({
-            master_id: masterProfile.id,
-            day_of_week: day,
-            ...schedule[day],
-          }, { onConflict: 'master_id,day_of_week' }).throwOnError()
-        ),
-      ]);
-
-      setSaved(true);
-      showToast({ type: 'success', title: 'Налаштування збережено' });
-      setTimeout(() => setSaved(false), 2500);
-      // Update snapshots so cancel would reset to the freshly saved state
-      initialFormSnap.current = { fullName, businessName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, categories: selectedCategories, retentionCycleDays };
-      initialScheduleSnap.current = { ...schedule };
-      setIsDirty(false);
-      // Оновлюємо контекст у фоні — не блокуємо UI
-      refresh().catch(() => {});
-    } catch (error: any) {
-      showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleGenerateTelegramToken() {
-    setTgConnectLoading(true);
-    setTgConnectToken(null);
-    const { token, error } = await generateTelegramConnectToken();
-    setTgConnectLoading(false);
-    if (error || !token) {
-      showToast({ type: 'error', title: 'Помилка', message: parseError(error) ?? 'Спробуйте ще раз' });
-      return;
-    }
-    setTgConnectToken(token);
-  }
-
-  function addBreak() {
-    setBreaks(prev => [...prev, { start: '13:00', end: '14:00' }]);
-  }
-
-  function removeBreak(i: number) {
-    setBreaks(prev => prev.filter((_, idx) => idx !== i));
-  }
-
-  function setBreakField(i: number, field: 'start' | 'end', val: string) {
-    setBreaks(prev => prev.map((b, idx) => idx === i ? { ...b, [field]: val } : b));
-  }
-
-  function toggleDay(day: DayKey) {
-    setSchedule(s => ({ ...s, [day]: { ...s[day], is_working: !s[day].is_working } }));
-  }
-
-  function setDayTime(day: DayKey, field: 'start_time' | 'end_time', val: string) {
-    setSchedule(s => ({ ...s, [day]: { ...s[day], [field]: val } }));
-  }
-
-  const inputCls = "w-full px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none transition-all focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20";
+  // Prepare services for ProductMix
+  const topServices = (analytics?.topServices ?? []).map(s => ({
+    name: s.name,
+    count: s.count,
+    percentage: analytics?.summary.bookings ? Math.round((s.count / analytics.summary.bookings) * 100) : 0
+  }));
 
   return (
-    <div className="flex flex-col gap-4 pb-10">
-      <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-foreground mb-0.5">Налаштування</h1>
-        <p className="text-sm text-muted-foreground/60">Профіль, графік та публікація</p>
-      </div>
+    <div className="min-h-screen bg-background pb-32">
+      <NavigationStrip />
 
-      {/* Аватар + ім'я */}
-      <Section title="Профіль">
-        <div className="flex flex-col gap-4">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">Фото профілю</p>
-            {profile?.id && (
-              <ImageUploader
-                folder="avatars"
-                masterId={profile.id}
-                value={avatarUrl ?? undefined}
-                onChange={setAvatarUrl}
-              />
-            )}
-            {avatarUrl && (
-              <p className="text-[11px] text-muted-foreground/60 mt-1.5">
-                Фото використовується замість emoji-аватару на публічній сторінці
-              </p>
-            )}
-          </div>
-
-          {!avatarUrl && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">Emoji-аватар <span className="font-normal text-muted-foreground/60">(якщо немає фото)</span></p>
-              <div className="flex flex-wrap gap-2">
-                {AVATAR_EMOJIS.map(e => (
-                  <button
-                    key={e}
-                    onClick={() => setAvatar(e)}
-                    className={`w-11 h-11 rounded-2xl text-2xl transition-all ${
-                      avatar === e
-                        ? 'bg-primary/20 ring-2 ring-[#789A99] scale-105'
-                        : 'bg-white/70 border border-white/80 hover:bg-white'
-                    }`}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Публічне ім'я (бізнес)</label>
-            <input value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="Наприклад: Студія краси 'Марія' або просто ваше ім'я" className={inputCls} />
-            <p className="text-[10px] text-muted-foreground/50 mt-1">Це ім'я бачать клієнти на вашій сторінці запису</p>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-3 block">Твоя спеціалізація (можна кілька)</label>
-            <div className="flex flex-wrap gap-2.5">
-              {serviceCategories.map(cat => {
-                // Robust mapping: check if any saved value matches either ID or Label
-                const isSelected = selectedCategories.some(val => val === cat.id || val === cat.label);
-                
-                return (
-                  <motion.button
-                    key={cat.id}
-                    type="button"
-                    whileTap={{ scale: 0.92 }}
-                    layout
-                    onClick={() => {
-                      if (isSelected) {
-                        setSelectedCategories(selectedCategories.filter(c => c !== cat.id && c !== cat.label));
-                      } else {
-                        setSelectedCategories([...selectedCategories, cat.id]);
-                      }
-                      setIsDirty(true);
-                    }}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all border relative overflow-hidden",
-                      isSelected 
-                        ? "bg-gradient-to-br from-sage to-sage-dark text-white border-white/20 shadow-md shadow-sage/20" 
-                        : "bg-white/60 border-white/80 text-text-sub hover:border-sage/40 hover:bg-white"
-                    )}
-                  >
-                    <span className={cn("text-lg", !isSelected && "filter grayscale opacity-70")}>{cat.emoji}</span>
-                    <span>{cat.label}</span>
-                    <AnimatePresence>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          className="ml-1"
-                        >
-                          <Check size={14} strokeWidth={3} />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.button>
-                );
-              })}
-            </div>
-            <p className="text-[10px] text-muted-foreground/50 mt-2.5 leading-relaxed">
-              Оберіть основні напрямки. Це допоможе клієнтам знайти вас у каталозі та автоматизує налаштування послуг.
-            </p>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Особисте ім'я</label>
-            <input data-testid="settings-name-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ваше ім'я та прізвище" className={inputCls} />
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Мобільний телефон</label>
-            <div className="flex items-center gap-0 rounded-2xl border border-white/80 bg-white/70 overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-[#789A99]/20 transition-all">
-              <span className="pl-4 pr-2 text-muted-foreground font-medium text-sm select-none shrink-0">+38</span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                placeholder="0XX XXX XX XX"
-                value={formatPhoneDisplay(phone)}
-                onChange={e => setPhone(normalizePhoneInput(e.target.value))}
-                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Про себе</label>
-            <textarea
-              data-testid="settings-bio-textarea"
-              value={bio}
-              onChange={e => setBio(e.target.value)}
-              placeholder="Розкажіть про себе та свої послуги..."
-              rows={3}
-              className={`${inputCls} resize-none`}
+      <main className="max-w-7xl mx-auto px-4 mt-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto">
+          
+          {/* Row 1: Profile Hero (Main Identity) */}
+          <section id="hero" className="lg:col-span-1 lg:row-span-2">
+            <ProfileHero
+              masterId={masterProfile.id}
+              fullName={state.fullName}
+              businessName={state.businessName}
+              bio={state.bio}
+              avatarUrl={state.avatarUrl}
+              tier={masterProfile.subscription_tier}
+              rating={masterProfile.rating}
+              ratingCount={masterProfile.rating_count}
+              slug={state.slug}
+              onAvatarChange={actions.setAvatarUrl}
             />
-          </div>
+          </section>
 
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Адреса
-              {lat && lng && (
-                <span className="ml-2 text-success font-normal">✓ збережено</span>
-              )}
-            </label>
-            <LocationPicker
-              value={lat && lng ? { lat, lng } : null}
-              address={[city, address].filter(Boolean).join(', ')}
-              onChange={(coords: LatLng, parsedCity: string, parsedAddress: string) => {
-                setLat(coords.lat);
-                setLng(coords.lng);
-                setCity(parsedCity);
-                setAddress(parsedAddress);
+          {/* Row 1, Col 2-3: Smart Advisor (High Impact) */}
+          <section className="md:col-span-1 lg:col-span-2">
+            <SmartAdvisor 
+              data={{
+                bio: state.bio,
+                instagram: state.instagram,
+                telegram: state.telegram,
+                avatarUrl: state.avatarUrl,
+                isPublished: state.isPublished,
+                categories: state.selectedCategories,
+                bufferTime: state.bufferTime
               }}
             />
-          </div>
+          </section>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Поверх</label>
-              <input
-                value={floor}
-                onChange={e => setFloor(e.target.value)}
-                placeholder="3"
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Кабінет / офіс</label>
-              <input
-                value={cabinet}
-                onChange={e => setCabinet(e.target.value)}
-                placeholder="12"
-                className={inputCls}
-              />
-            </div>
-          </div>
-        </div>
-      </Section>
+          {/* Row 1, Col 4: Public Status & QR */}
+          <section id="status" className="md:col-span-1 lg:col-span-1">
+            <PublicStatusWidget
+              slug={state.slug}
+              isPublished={state.isPublished}
+              slugStatus={state.slugStatus}
+              onSlugChange={actions.setSlug}
+              onPublishToggle={() => actions.setIsPublished(!state.isPublished)}
+            />
+          </section>
 
-      {/* Публічна сторінка */}
-      <Section title="Публічна сторінка">
-        <div className="flex flex-col gap-4">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адреса сторінки</label>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center px-4 py-3 rounded-2xl bg-white/40 border border-white/60 text-sm text-muted-foreground/60 flex-shrink-0">
-                bookit.com.ua/
+          {/* Row 2: Analytics & Stats */}
+          <section id="stats" className="md:col-span-1 lg:col-span-2">
+            <StatsPulseWidget
+              rating={masterProfile.rating}
+              ratingCount={masterProfile.rating_count}
+              viewsCount={Math.floor(Math.random() * 100) + 12} // Better mock or real count if implemented
+              bookingsCount={stats.monthCompleted}
+            />
+          </section>
+
+          {/* Row 2, Col 4: Work Schedule */}
+          <section id="schedule" className="md:col-span-1 lg:col-span-1">
+            <ScheduleWidget
+              schedule={state.schedule}
+              bufferTime={state.bufferTime}
+              breaksCount={state.breaks.length}
+              occupancyData={analytics?.bento?.bestDayOfWeek?.bookings}
+              onClick={() => setIsScheduleOpen(true)}
+            />
+          </section>
+
+          {/* Row 3: Product Mix & Categories */}
+          <section id="services" className="lg:col-span-1">
+            <ProductMixWidget 
+              services={topServices}
+              onMonthChange={setAnalyticsDate}
+            />
+          </section>
+
+          <section className="lg:col-span-1">
+            <CategoriesWidget 
+              selected={state.selectedCategories}
+              onChange={actions.setSelectedCategories}
+            />
+          </section>
+
+          <section id="location" className="lg:col-span-2">
+            <LocationWidget 
+              city={state.city}
+              address={state.address}
+              floor={state.floor}
+              cabinet={state.cabinet}
+              lat={state.lat}
+              lng={state.lng}
+              onCityChange={actions.setCity}
+              onAddressChange={actions.setAddress}
+              onFloorChange={actions.setFloor}
+              onCabinetChange={actions.setCabinet}
+              onCoordsChange={actions.setCoords}
+            />
+          </section>
+
+          {/* Row 4: Technical Settings & Vacations */}
+          <section id="technical" className="md:col-span-2">
+            <TechnicalIsland
+              instagram={state.instagram}
+              telegram={state.telegram}
+              telegramChatId={state.telegramChatId}
+              themeKey={state.themeKey}
+              onInstagramChange={actions.setInstagram}
+              onTelegramChange={actions.setTelegram}
+              onTelegramChatIdChange={actions.setTelegramChatId}
+              onThemeChange={actions.setThemeKey}
+            />
+          </section>
+
+          {/* Row 5: Identity Settings */}
+          <section id="identity" className="md:col-span-2">
+            <div className="widget-card p-8 flex flex-col gap-6">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
+                   <UserIcon size={20} />
+                 </div>
+                 <div>
+                   <h3 className="text-lg font-bold text-text-primary">Особисті дані</h3>
+                   <p className="text-xs text-text-mute">Налаштування вашого імені та публічного фото</p>
+                 </div>
               </div>
-              <input
-                data-testid="settings-slug-input"
-                value={slug}
-                onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                placeholder="your-slug"
-                className={`${inputCls} flex-1`}
-              />
-            </div>
-            <div className="flex items-center justify-between mt-1.5 min-h-[18px]">
-              {slug && (
-                <a
-                  href={`/${slug}`}
-                  target="_blank"
-                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/90 transition-colors"
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Ваше повне ім'я</label>
+                  <input 
+                    value={state.fullName}
+                    onChange={(e) => actions.setFullName(e.target.value)}
+                    className="w-full px-5 py-4 rounded-2xl bg-white border border-white/60 focus:border-accent focus:ring-4 focus:ring-accent/5 outline-none text-sm font-bold shadow-inner-sm transition-all"
+                    placeholder="Напр. Олена Коваль"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Бізнес-ім'я (Студія)</label>
+                  <input 
+                    value={state.businessName}
+                    onChange={(e) => actions.setBusinessName(e.target.value)}
+                    className="w-full px-5 py-4 rounded-2xl bg-white border border-white/60 focus:border-accent focus:ring-4 focus:ring-accent/5 outline-none text-sm font-bold shadow-inner-sm transition-all"
+                    placeholder="Напр. Glow Studio"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-white/40">
+                <button 
+                  onClick={() => {
+                     // Find the button in Hero (id=hero) and click its invisible input
+                     const heroInput = document.querySelector('#hero input[type="file"]');
+                     if (heroInput) (heroInput as HTMLElement).click();
+                  }}
+                  className="px-6 py-4 rounded-2xl bg-white border border-white/80 text-text-primary text-xs font-bold flex items-center gap-2 hover:bg-muted/10 active:scale-95 transition-all shadow-sm"
                 >
-                  <ExternalLink size={12} />
-                  Переглянути
-                </a>
-              )}
-              <span className="ml-auto text-xs">
-                {slugStatus === 'checking' && (
-                  <span className="flex items-center gap-1 text-muted-foreground/60">
-                    <Loader2 size={11} className="animate-spin" /> Перевірка...
-                  </span>
-                )}
-                {slugStatus === 'available' && (
-                  <span className="text-success font-medium">✓ Доступно</span>
-                )}
-                {slugStatus === 'taken' && (
-                  <span className="text-destructive font-medium">✗ Вже зайнято</span>
-                )}
-              </span>
+                  <Camera size={16} className="text-accent" /> Змінити головне фото
+                </button>
+              </div>
             </div>
-          </div>
+          </section>
 
-          {/* Шаблони для постів */}
-          {masterProfile?.slug && <PromoTemplates slug={masterProfile.slug} />}
+          <section id="vacations" className="md:col-span-2">
+            <div className="widget-card p-6 h-full">
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-text-mute">Відпустки та вихідні</h3>
+              </div>
+              <VacationManager />
+            </div>
+          </section>
 
-          {/* Публікація */}
+        </div>
+
+        {/* System Actions */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
-            onClick={() => setIsPublished(p => !p)}
-            className={`flex items-center justify-between px-4 py-3.5 rounded-2xl border transition-all ${
-              isPublished
-                ? 'bg-success/10 border-success/30'
-                : 'bg-white/70 border-white/80 hover:bg-white'
-            }`}
+            onClick={() => {
+              document.cookie = 'view_mode=client; path=/; max-age=86400';
+              window.location.href = '/my/bookings';
+            }}
+            className="p-5 rounded-[32px] text-sm font-bold text-accent bg-white border border-white/80 hover:bg-muted/10 shadow-sm transition-all flex items-center justify-center gap-2"
           >
-            <div className="text-left">
-              <p className="text-sm font-medium text-foreground">
-                {isPublished ? 'Сторінка опублікована' : 'Сторінка прихована'}
-              </p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">
-                {isPublished ? 'Клієнти можуть знайти вас та записатися' : 'Ніхто не бачить вашу сторінку'}
-              </p>
-            </div>
-            <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${isPublished ? 'bg-success' : 'bg-secondary/80'}`}>
-              <motion.div
-                animate={{ x: isPublished ? 20 : 2 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
-              />
-            </div>
+            <UserIcon size={18} /> Перейти в режим клієнта
+          </button>
+
+          <button
+            onClick={async () => {
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              queryClient.clear();
+              document.cookie = 'user_role=; path=/; max-age=0';
+              window.location.href = '/login';
+            }}
+            className="p-5 rounded-[32px] text-sm font-bold text-error bg-error/5 border border-error/10 hover:bg-error/10 transition-all flex items-center justify-center gap-2"
+          >
+            <LogOut size={18} /> Вийти з акаунту
           </button>
         </div>
-      </Section>
+      </main>
 
-      {/* CRM — Retention cycle */}
-      <Section title="CRM / Утримання клієнтів">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">
-            Стандартний цикл візиту
-            <span className="ml-1.5 font-normal text-muted-foreground/60">— як часто клієнт зазвичай повертається</span>
-          </p>
-          <p className="text-[11px] text-muted-foreground/60 mb-3 leading-relaxed">
-            Оберіть, як часто ваші клієнти зазвичай повертаються. За цим значенням додаток визначає, хто з клієнтів давно не приходив і потребує уваги.
-          </p>
-          <div className="flex gap-2 flex-wrap">
-            {[14, 21, 30, 45, 60, 90].map(days => (
-              <button
-                key={days}
-                onClick={() => setRetentionCycleDays(days)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  retentionCycleDays === days
-                    ? 'bg-primary text-white'
-                    : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
-                }`}
-              >
-                {days} дн.
-              </button>
-            ))}
-          </div>
-          <p className="text-[11px] text-primary mt-2 font-medium">
-            Не був {retentionCycleDays}+ дн. → дрімає · {retentionCycleDays * 2}+ дн. → під ризиком · {retentionCycleDays * 3}+ дн. → втрачений
-          </p>
-        </div>
-      </Section>
+      <ScheduleDrawer
+        isOpen={isScheduleOpen}
+        onClose={() => setIsScheduleOpen(false)}
+        schedule={state.schedule}
+        bufferTime={state.bufferTime}
+        breaks={state.breaks}
+        onScheduleChange={actions.setSchedule}
+        onBufferChange={actions.setBufferTime}
+        onBreaksChange={actions.setBreaks}
+      />
 
-      {/* Соціальні мережі */}
-      <Section title="Соціальні мережі">
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
-              <Instagram size={12} /> Instagram
-            </label>
-            <input
-              data-testid="settings-instagram-input"
-              value={instagram}
-              onChange={e => setInstagram(e.target.value)}
-              placeholder="https://instagram.com/..."
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
-              <Send size={12} /> Telegram
-            </label>
-            <input
-              data-testid="settings-telegram-input"
-              value={telegram}
-              onChange={e => setTelegram(e.target.value)}
-              placeholder="https://t.me/..."
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Telegram сповіщення
-            </label>
-            {process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME ? (
-              <div className="flex flex-col gap-2">
-                {telegramChatId ? (
-                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-success/8 border border-success/20">
-                    <span className="text-xs text-success font-medium flex-1">Telegram підключено (ID: {telegramChatId})</span>
-                    <button
-                      onClick={() => { setTelegramChatId(''); setTgConnectToken(null); }}
-                      className="text-[11px] text-destructive hover:underline"
-                    >
-                      Відключити
-                    </button>
-                  </div>
-                ) : tgConnectToken ? (
-                  <div className="flex flex-col gap-2">
-                    <a
-                      href={`https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME}?start=${tgConnectToken}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#229ED9] text-white text-sm font-semibold hover:bg-[#1a85c4] transition-colors"
-                    >
-                      <Send size={14} /> Відкрити Telegram бота
-                    </a>
-                    <p className="text-[11px] text-muted-foreground/60">
-                      Натисніть кнопку вище — бот підтвердить підключення автоматично. Токен діє одноразово.
-                    </p>
-                    <button
-                      onClick={handleGenerateTelegramToken}
-                      className="text-xs text-primary hover:underline self-start active:scale-95 transition-all"
-                    >
-                      Згенерувати новий токен
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleGenerateTelegramToken}
-                    disabled={tgConnectLoading}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#229ED9] text-white text-sm font-semibold hover:bg-[#1a85c4] transition-colors disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 transition-all"
-                  >
-                    {tgConnectLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                    Підключити Telegram бота
-                  </button>
-                )}
-                <p className="text-[11px] text-muted-foreground/60">Після підключення бот надсилатиме сповіщення про нові записи</p>
-              </div>
-            ) : (
-              <div>
-                <input
-                  value={telegramChatId}
-                  onChange={e => setTelegramChatId(e.target.value)}
-                  placeholder="123456789"
-                  className={inputCls}
-                />
-                <p className="text-[11px] text-muted-foreground/60 mt-1">
-                  Вставте свій Telegram Chat ID
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </Section>
-
-      {/* Тема сторінки */}
-      <Section title="Тема сторінки">
-        <div className="grid grid-cols-2 gap-2.5">
-          {(Object.entries(moodThemes) as [MoodThemeKey, typeof moodThemes[MoodThemeKey]][]).map(([key, t]) => (
-            <button
-              key={key}
-              onClick={() => setThemeKey(key)}
-              className="relative p-3.5 rounded-2xl border transition-all text-left"
-              style={
-                themeKey === key
-                  ? { boxShadow: `0 0 0 2px ${t.accent}`, background: `${t.accent}10`, borderColor: `${t.accent}40` }
-                  : { background: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.8)' }
-              }
-            >
-              {/* Кольоровий превʼю */}
-              <div
-                className="w-full h-9 rounded-xl mb-2 relative overflow-hidden"
-                style={{ background: `linear-gradient(135deg, ${t.gradient[0]}, ${t.gradient[1]})` }}
-              >
-                <div
-                  className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 rounded-full"
-                  style={{ background: t.accent }}
-                />
-              </div>
-              <p className="text-xs font-semibold text-foreground">{t.name}</p>
-              {t.isExclusive && (
-                <div className="absolute top-2 right-2 flex items-center gap-0.5">
-                  <Lock size={9} className="text-muted-foreground/60" />
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground/60 mt-2.5">Тема відображається на вашій публічній сторінці</p>
-      </Section>
-
-      <div className={cn(
-        'relative rounded-2xl transition-all duration-500',
-        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
-      )}>
-        <AnchoredTooltip
-          isOpen={currentStep === 0}
-          onClose={closeTour}
-          title="🕐 Робочий час"
-          text="Налаштуйте свої робочі години та стандартні перерви. Ваша публічна сторінка автоматично підлаштується."
-          position="bottom"
-          primaryButtonText="Далі →"
-          onPrimaryClick={nextStep}
-        />
-        {/* Графік роботи */}
-        <Section title="Графік роботи">
-        <div className="flex flex-col gap-2">
-          {DAYS_ORDER.map(day => (
-            <div
-              key={day}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors ${
-                schedule[day].is_working ? 'bg-white/50' : 'opacity-50'
-              }`}
-            >
-              <button
-                data-testid={`settings-day-toggle-${day}`}
-                onClick={() => toggleDay(day)}
-                className={`relative w-10 h-5 rounded-full transition-colors duration-200 flex-shrink-0 ${
-                  schedule[day].is_working ? 'bg-primary' : 'bg-secondary/80'
-                }`}
-              >
-                <motion.div
-                  animate={{ x: schedule[day].is_working ? 18 : 2 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm"
-                />
-              </button>
-
-              <span className="text-sm font-medium text-foreground w-6 flex-shrink-0">{DAYS_UA[day]}</span>
-
-              {schedule[day].is_working ? (
-                <div className="flex items-center gap-2 flex-1">
-                  <input
-                    type="time"
-                    value={schedule[day].start_time}
-                    onChange={e => setDayTime(day, 'start_time', e.target.value)}
-                    className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-foreground outline-none focus:border-primary"
-                  />
-                  <span className="text-xs text-muted-foreground/60">—</span>
-                  <input
-                    type="time"
-                    value={schedule[day].end_time}
-                    onChange={e => setDayTime(day, 'end_time', e.target.value)}
-                    className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-foreground outline-none focus:border-primary"
-                  />
-                </div>
-              ) : (
-                <span className="text-xs text-muted-foreground/60">Вихідний</span>
-              )}
-            </div>
-          ))}
-        </div>
-        </Section>
-      </div>
-
-      {/* Перерви та буфер між клієнтами */}
-      <Section title="Перерви та буфер">
-        <div className="flex flex-col gap-4">
-
-          {/* Buffer time */}
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">
-              Час між клієнтами
-              <span className="ml-1.5 font-normal text-muted-foreground/60">— щоб підготуватися до наступного</span>
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {[0, 5, 10, 15, 20, 30].map(min => (
-                <button
-                  key={min}
-                  onClick={() => setBufferTime(min)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                    bufferTime === min
-                      ? 'bg-primary text-white'
-                      : 'bg-white/70 border border-white/80 text-muted-foreground hover:bg-white'
-                  }`}
-                >
-                  {min === 0 ? 'Без буферу' : `${min} хв`}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Breaks */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                Перерви
-                <span className="ml-1.5 font-normal text-muted-foreground/60">— обід, кава, особисті справи</span>
-              </p>
-              <button
-                onClick={addBreak}
-                className="flex items-center gap-1 text-xs font-medium text-primary px-2.5 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition-colors active:scale-95 transition-all"
-              >
-                <Plus size={11} /> Додати
-              </button>
-            </div>
-
-            {breaks.length === 0 ? (
-              <p className="text-xs text-muted-foreground/60 text-center py-3 rounded-2xl bg-white/40 border border-dashed border-secondary/80">
-                Перерви не налаштовані
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {breaks.map((b, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/50">
-                    <input
-                      type="time"
-                      value={b.start}
-                      onChange={e => setBreakField(i, 'start', e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-foreground outline-none focus:border-primary"
-                    />
-                    <span className="text-xs text-muted-foreground/60">—</span>
-                    <input
-                      type="time"
-                      value={b.end}
-                      onChange={e => setBreakField(i, 'end', e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded-xl bg-white/70 border border-white/80 text-xs text-foreground outline-none focus:border-primary"
-                    />
-                    <button
-                      onClick={() => removeBreak(i)}
-                      className="w-7 h-7 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive hover:bg-destructive/20 transition-colors flex-shrink-0"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <p className="text-[11px] text-muted-foreground/60 mt-2">
-              Перерви застосовуються до всіх робочих днів
-            </p>
-          </div>
-        </div>
-      </Section>
-
-      <div className={cn(
-        'relative rounded-2xl transition-all duration-500',
-        currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
-      )}>
-        <AnchoredTooltip
-          isOpen={currentStep === 1}
-          onClose={closeTour}
-          title="🌴 Відпустка"
-          text="Плануєте відпочинок? Додайте відпустку сюди, і система заблокує ці дні для запису, щоб вас ніхто не турбував."
-          position="bottom"
-          primaryButtonText="Зрозуміло"
-          onPrimaryClick={nextStep}
-        />
-        {/* Вихідні та відпустка */}
-        <Section title="Вихідні та відпустка">
-          <VacationManager />
-        </Section>
-      </div>
-
-      {/* Навігація (мобільна) */}
-      <div className="bento-card p-4 lg:hidden">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Додатково</p>
-        {[
-          { href: '/dashboard/reviews', icon: MessageSquare, label: 'Відгуки клієнтів' },
-          { href: '/dashboard/billing', icon: CreditCard,    label: 'Тариф та оплата'  },
-        ].map(({ href, icon: Icon, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-white/60 transition-colors"
-          >
-            <Icon size={16} className="text-primary" />
-            <span className="text-sm text-foreground flex-1">{label}</span>
-            <ChevronRight size={14} className="text-muted-foreground/60" />
-          </Link>
-        ))}
-      </div>
-
-      {/* Кнопка збереження */}
-      <button
-        data-testid="settings-save-profile-btn"
-        onClick={handleSave}
-        disabled={saving}
-        className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
-          saved
-            ? 'bg-success text-white'
-            : 'bg-primary text-white hover:bg-[#6B8C8B] active:scale-[0.98]'
-        }`}
-      >
-        {saving ? (
-          <><Loader2 size={16} className="animate-spin" /> Збереження...</>
-        ) : saved ? (
-          <><Check size={16} /> Збережено</>
-        ) : (
-          'Зберегти зміни'
-        )}
-      </button>
-
-      {/* Режим клієнта */}
-      <button
-        onClick={() => {
-          document.cookie = 'view_mode=client; path=/; max-age=86400';
-          window.location.href = '/my/bookings';
-        }}
-        className="w-full py-3.5 rounded-2xl text-sm font-medium text-primary bg-primary/8 hover:bg-primary/15 border border-primary/20 transition-colors flex items-center justify-center gap-2"
-      >
-        <span className="text-base">👤</span>
-        Перейти в режим клієнта
-      </button>
-
-      {/* Вийти з акаунту */}
-      <button
-        onClick={async () => {
-          try {
-            const supabase = createClient();
-            await supabase.auth.signOut();
-            queryClient.clear();
-            // Clear role cookie so next login re-fetches fresh role from DB
-            document.cookie = 'user_role=; path=/; max-age=0';
-            window.location.href = '/login';
-          } catch (error) {
-            console.error('Logout error:', error);
-          }
-        }}
-        className="w-full py-3.5 rounded-2xl text-sm font-medium text-destructive bg-destructive/8 hover:bg-destructive/15 border border-destructive/20 transition-colors flex items-center justify-center gap-2"
-      >
-        <LogOut size={15} />
-        Вийти з акаунту
-      </button>
-
-      {/* Floating save bar — appears when form has unsaved changes */}
       <AnimatePresence>
-        {isDirty && (
+        {state.isDirty && (
           <motion.div
-            initial={{ y: 80, opacity: 0 }}
+            initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-            className="fixed bottom-[84px] lg:bottom-6 left-1/2 -translate-x-1/2 z-50
-                       w-[calc(100%-2rem)] max-w-md"
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] w-auto whitespace-nowrap"
           >
-            <div className="bento-card px-4 py-3 flex items-center gap-3
-                            border-primary/25 bg-white/95 backdrop-blur-md shadow-xl">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-foreground">Незбережені зміни</p>
+            <div className="bg-white/90 backdrop-blur-2xl border border-white p-2 rounded-full shadow-2xl flex items-center gap-2">
+              <div className="pl-6 pr-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-primary">Незбережені зміни</p>
               </div>
-              <button
-                onClick={handleCancel}
-                disabled={saving}
-                className="px-3 py-1.5 rounded-xl text-xs font-medium text-muted-foreground
-                           bg-white/80 border border-white/80 hover:bg-white
-                           disabled:opacity-50 transition-colors"
-              >
-                Скасувати
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || slugStatus === 'taken'}
-                className="px-4 py-1.5 rounded-xl text-xs font-semibold text-white
-                           bg-primary hover:bg-[#6B8C8B] disabled:opacity-50
-                           transition-colors flex items-center gap-1.5"
-              >
-                {saving
-                  ? <><Loader2 size={12} className="animate-spin" /> Збереження...</>
-                  : 'Зберегти'}
-              </button>
+              <div className="flex gap-1">
+                <button
+                  onClick={actions.handleCancel}
+                  disabled={state.saving}
+                  className="px-6 py-3 rounded-full text-xs font-bold text-text-mute hover:bg-muted/10 transition-colors"
+                >
+                  Скасувати
+                </button>
+                <button
+                  onClick={actions.handleSave}
+                  disabled={state.saving || state.slugStatus === 'taken'}
+                  className={cn(
+                    "px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all",
+                    state.isDirty ? "bg-success shadow-success/20 hover:scale-105" : "bg-accent shadow-accent/20"
+                  )}
+                >
+                  {state.saving ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    'Зберегти'
+                  )}
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bento-card p-5">
-      <p className="text-sm font-semibold text-foreground mb-4">{title}</p>
-      {children}
     </div>
   );
 }

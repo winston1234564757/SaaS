@@ -2,7 +2,7 @@
 // src/components/shared/wizard/DateTimePicker.tsx
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Coffee, Calendar, Utensils } from 'lucide-react';
 import { addDays, parse as parseFns, format as formatFns, addMinutes } from 'date-fns';
 import {
   buildSlotRenderItems,
@@ -227,7 +227,9 @@ export function DateTimePicker({
 
             {offDayDates.has(toISO(selectedDate)) ? (
               <div className="flex flex-col items-center gap-2 py-8 rounded-2xl bg-stone-50 border border-dashed border-stone-200">
-                <span className="text-3xl">😴</span>
+                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-1 text-stone-400">
+                  <Coffee size={28} />
+                </div>
                 <p className="text-sm font-semibold text-stone-500">Вихідний день</p>
                 <p className="text-xs text-stone-400">Оберіть інший день</p>
               </div>
@@ -237,7 +239,9 @@ export function DateTimePicker({
 
               if (!hasAvail) return (
                 <div className="flex flex-col items-center gap-2 py-8 rounded-2xl bg-stone-50 border border-dashed border-stone-200">
-                  <span className="text-3xl">📅</span>
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-1 text-stone-400">
+                    <Calendar size={28} />
+                  </div>
                   <p className="text-sm font-semibold text-stone-500">Немає вільних слотів</p>
                   <p className="text-xs text-stone-400">Всі вікна зайняті</p>
                 </div>
@@ -250,8 +254,9 @@ export function DateTimePicker({
                       /* Break separator spans all 3 columns */
                       <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
                         <div className="flex-1 h-px bg-stone-200" />
-                        <span className="text-xs text-stone-400 flex-shrink-0">
-                          🍽 {item.label} · {item.start}–{item.end}
+                        <span className="text-xs text-stone-400 flex-shrink-0 flex items-center gap-1.5 font-medium">
+                          <Utensils size={11} strokeWidth={2.5} />
+                          {item.label} · {item.start}–{item.end}
                         </span>
                         <div className="flex-1 h-px bg-stone-200" />
                       </div>

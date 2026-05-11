@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, MapPin, Smartphone, Instagram, FileText, Sparkles, PartyPopper } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 
 const LS_KEY = 'bookit_strength_celebrated';
@@ -67,14 +67,16 @@ export function ProfileStrengthWidget() {
     {
       key: 'city',
       done: !!masterProfile?.city?.trim(),
-      label: '📍 Вкажіть ваше місто',
+      Icon: MapPin,
+      label: 'Вкажіть ваше місто',
       sub: 'щоб клієнти поруч знаходили вас',
       href: '/dashboard/settings',
     },
     {
       key: 'phone',
       done: !!profile?.phone?.trim(),
-      label: '📱 Додайте контактний телефон',
+      Icon: Smartphone,
+      label: 'Додайте контактний телефон',
       sub: "для зв'язку з клієнтами",
       href: '/dashboard/settings',
     },
@@ -84,14 +86,16 @@ export function ProfileStrengthWidget() {
         masterProfile?.instagram_url?.trim() ||
         masterProfile?.telegram_url?.trim()
       ),
-      label: '📸 Підключіть Instagram',
+      Icon: Instagram,
+      label: 'Підключіть Instagram',
       sub: 'це підвищує довіру на 80%',
       href: '/dashboard/settings',
     },
     {
       key: 'bio',
       done: !!masterProfile?.bio?.trim(),
-      label: '📝 Додайте пару слів про себе',
+      Icon: FileText,
+      label: 'Додайте пару слів про себе',
       sub: 'досвід та філософія',
       href: '/dashboard/settings',
     },
@@ -149,9 +153,9 @@ export function ProfileStrengthWidget() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring' as const, stiffness: 180, damping: 8 }}
-                className="text-4xl"
+                className="w-16 h-16 rounded-full bg-accent-light flex items-center justify-center text-accent"
               >
-                🎉
+                <PartyPopper size={32} />
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -225,9 +229,11 @@ export function ProfileStrengthWidget() {
                         whileTap={{ scale: 0.98 }}
                         className="flex items-center gap-3 py-2.5 px-3 rounded-2xl cursor-pointer"
                       >
-                        <div className="w-5 h-5 rounded-full border-2 border-secondary/80 bg-white/60 shrink-0" />
+                        <div className="w-8 h-8 rounded-lg bg-accent-light flex items-center justify-center text-accent shrink-0">
+                          <step.Icon size={14} />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground">{step.label}</p>
+                          <p className="text-xs font-semibold text-foreground">{step.label}</p>
                           <p className="text-[11px] text-muted-foreground/60">{step.sub}</p>
                         </div>
                         <ChevronRight size={13} className="text-muted-foreground/60 shrink-0" />
