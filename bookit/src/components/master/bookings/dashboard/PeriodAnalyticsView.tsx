@@ -59,10 +59,10 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest">
-                {format(stat.date, 'eee', { locale: uk })}
+                {format(stat.date, 'EEEE', { locale: uk })}
               </span>
               <span className="text-lg font-black text-foreground">
-                {format(stat.date, 'd MMM', { locale: uk })}
+                {format(stat.date, 'd MMMM', { locale: uk })}
               </span>
             </div>
             <div className={cn(

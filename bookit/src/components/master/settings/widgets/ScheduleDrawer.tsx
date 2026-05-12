@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Drawer } from 'vaul';
-import { X, Clock, Plus, Trash2, Info } from 'lucide-react';
+import { X, Clock, Plus, Trash2, Info, RefreshCw } from 'lucide-react';
 import type { Schedule, DayKey } from '../hooks/useSettingsForm';
 import { DAYS_ORDER } from '../hooks/useSettingsForm';
 import { cn } from '@/lib/utils/cn';
@@ -17,9 +17,11 @@ interface ScheduleDrawerProps {
   schedule: Schedule;
   bufferTime: number;
   breaks: any[];
+  retentionCycleDays: number;
   onScheduleChange: (schedule: Schedule) => void;
   onBufferChange: (val: number) => void;
   onBreaksChange: (breaks: any[]) => void;
+  onRetentionCycleDaysChange: (val: number) => void;
 }
 
 export function ScheduleDrawer({
@@ -28,9 +30,11 @@ export function ScheduleDrawer({
   schedule,
   bufferTime,
   breaks,
+  retentionCycleDays,
   onScheduleChange,
   onBufferChange,
-  onBreaksChange
+  onBreaksChange,
+  onRetentionCycleDaysChange,
 }: ScheduleDrawerProps) {
   
   const toggleDay = (day: DayKey) => {
@@ -134,6 +138,33 @@ export function ScheduleDrawer({
                       )}
                     >
                       {min === 0 ? "Без буферу" : `${min} хв`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Retention Cycle */}
+              <div className="p-6 rounded-3xl bg-accent/5 border border-accent/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <RefreshCw size={16} className="text-accent" />
+                  <h4 className="font-bold text-sm">Цикл повернення клієнта</h4>
+                </div>
+                <p className="text-xs text-muted-foreground/60 mb-4">
+                  Через скільки днів клієнт вважається "неактивним" і потребує нагадування
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[14, 21, 30, 45, 60, 90].map((days) => (
+                    <button
+                      key={days}
+                      onClick={() => onRetentionCycleDaysChange(days)}
+                      className={cn(
+                        'px-4 py-2 rounded-xl text-xs font-bold transition-all',
+                        retentionCycleDays === days
+                          ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                          : 'bg-white border border-border text-muted-foreground hover:border-accent/30',
+                      )}
+                    >
+                      {days} днів
                     </button>
                   ))}
                 </div>

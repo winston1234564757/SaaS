@@ -6,8 +6,15 @@ import { TrendingUp, TrendingDown, Users } from 'lucide-react';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { getNow } from '@/lib/utils/now';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
+
+function fmtClientName(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length < 2) return parts[0] ?? name;
+  return `${parts[0]} ${parts[1][0].toUpperCase()}.`;
+}
 
 function toISO(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -132,11 +139,11 @@ function TopClientCard({ onOpen }: { onOpen: (client: ClientRow) => void }) {
                 className="font-semibold text-sm truncate"
                 style={{ color: 'var(--text-primary)' }}
               >
-                {topClient.name}
+                {fmtClientName(topClient.name)}
               </p>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
                 {topClient.count}{' '}
-                {topClient.count === 1 ? 'візит' : topClient.count < 5 ? 'візити' : 'візитів'} цього тижня
+                {pluralUk(topClient.count, 'візит', 'візити', 'візитів')} цього тижня
               </p>
             </div>
           </div>

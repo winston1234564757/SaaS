@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Award, TrendingUp, Users, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Award, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { format, subMonths, addMonths } from 'date-fns';
 import { uk } from 'date-fns/locale';
@@ -34,33 +34,35 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
   };
 
   return (
-    <div className="widget-card p-6 h-full flex flex-col gap-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
-            <Award size={18} />
-          </div>
-          <div>
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute leading-none mb-1">Популярні послуги</h3>
-            <p className="text-[10px] font-bold text-accent uppercase tracking-tighter">ТОП запитів</p>
-          </div>
+    <div className="widget-card p-6 h-full flex flex-col gap-4">
+      {/* Title row */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-9 h-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20 shrink-0">
+          <Award size={18} />
         </div>
+        <div>
+          <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute leading-none mb-1">Популярні послуги</h3>
+          <p className="text-[10px] font-bold text-accent uppercase tracking-tighter">ТОП запитів</p>
+        </div>
+      </div>
 
-        <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-xl border border-white/60">
-          <button onClick={handlePrev} className="p-1 hover:bg-white rounded-lg transition-colors">
-            <ChevronLeft size={14} className="text-text-mute" />
-          </button>
-          <div className="px-2 flex items-center gap-1.5 min-w-[120px] justify-center whitespace-nowrap">
-            <Calendar size={12} className="text-accent shrink-0" />
-            <span className="text-[10px] font-bold uppercase tracking-tight text-text-primary">
-              {format(currentDate, 'LLLL yyyy', { locale: uk })}
-            </span>
-          </div>
-          <button onClick={handleNext} className="p-1 hover:bg-white rounded-lg transition-colors">
-            <ChevronRight size={14} className="text-text-mute" />
-          </button>
-        </div>
+      {/* Month navigation — full width, own row */}
+      <div className="flex items-center justify-between gap-2 bg-muted/20 rounded-2xl px-1 py-1 border border-white/60">
+        <button
+          onClick={handlePrev}
+          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
+        >
+          <ChevronLeft size={15} className="text-text-mute" />
+        </button>
+        <span className="text-[11px] font-bold text-text-primary capitalize">
+          {format(currentDate, 'LLLL yyyy', { locale: uk })}
+        </span>
+        <button
+          onClick={handleNext}
+          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
+        >
+          <ChevronRight size={15} className="text-text-mute" />
+        </button>
       </div>
 
       {/* Services List */}

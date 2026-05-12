@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, TrendingUp, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown, Target } from 'lucide-react';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { formatPrice } from '@/components/master/services/types';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import type { ClientRow } from './ClientsPage';
 import { RETENTION_CONFIG } from './ClientsPage';
 import { useMasterContext } from '@/lib/supabase/context';
+import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface ClientWidgetsProps {
@@ -20,6 +22,12 @@ interface ClientWidgetsProps {
 export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegment }: ClientWidgetsProps) {
   const { masterProfile } = useMasterContext();
   const [showCheckDetails, setShowCheckDetails] = useState(false);
+  const isPro = masterProfile?.subscription_tier === 'pro' || masterProfile?.subscription_tier === 'studio';
+  const now = new Date();
+  const { data: analytics } = useAnalytics(
+    { startDate: format(startOfMonth(now), 'yyyy-MM-dd'), endDate: format(endOfMonth(now), 'yyyy-MM-dd') },
+    isPro, 'month', 0,
+  );
   const [showReferralDetails, setShowReferralDetails] = useState(false);
   const [expandedAmbassadorId, setExpandedAmbassadorId] = useState<string | null>(null);
   const [widgetIndex, setWidgetIndex] = useState(0); // 0: Lost Treasures, 1: Top Referrers
@@ -44,11 +52,8 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   const totalRevenue = clients.reduce((s, c) => s + c.total_spent, 0);
   const avgCheck     = clients.length > 0 ? totalRevenue / clients.length : 0;
 
-  // 3. Smart Alerts
-  const sortedBySpend = [...clients].sort((a, b) => b.total_spent - a.total_spent);
-  const top20Count = Math.max(1, Math.floor(clients.length * 0.2));
-  const topClients = sortedBySpend.slice(0, top20Count);
-  const lostTreasures = topClients.filter(c => c.retention_status === 'at_risk' || c.retention_status === 'lost');
+  // 3. Smart Alerts — VIP під загрозою: тільки реальні VIP-клієнти з ризиком відтоку
+  const lostTreasures = clients.filter(c => c.is_vip && (c.retention_status === 'at_risk' || c.retention_status === 'lost'));
 
   // Newbies at Risk
   const newbiesAtRisk = clients.filter(c => c.total_visits === 1 && c.retention_status === 'at_risk');
@@ -241,8 +246,8 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                    Архівуйте їх, щоб бачити тільки актуальні дані.
                 </p>
              </div>
-             <button 
-                onClick={() => onSegmentSelect('lost')}
+             <button
+                onClick={() => onSegmentSelect('archive_cleanup')}
                 className="px-6 py-2.5 rounded-2xl bg-foreground text-background text-xs font-bold active:scale-95 transition-all shadow-lg shadow-black/5"
              >
                 Відкрити список
@@ -275,48 +280,8 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
        )}
 
        {/* Average Check Details Sheet */}
-       <BottomSheet isOpen={showCheckDetails} onClose={() => setShowCheckDetails(false)} title="Аналіз середнього чека">
-          <div className="flex flex-col gap-6">
-             <div className="flex items-center justify-between p-5 rounded-3xl bg-success/5 border border-success/10">
-                <div>
-                   <p className="text-xs font-bold text-success uppercase tracking-widest mb-1">Динаміка</p>
-                   <p className="text-3xl font-display font-bold text-foreground">+4.2%</p>
-                   <p className="text-[11px] text-muted-foreground/60 mt-1">порівняно з минулим місяцем</p>
-                </div>
-                <TrendingUp size={40} className="text-success opacity-20" />
-             </div>
-
-             <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                   <Sparkles size={18} className="text-warning" />
-                   <h4 className="text-sm font-bold text-foreground">AI Порада</h4>
-                </div>
-                
-                <div className="p-4 rounded-2xl bg-white/60 border border-white/80 space-y-3">
-                   <div className="flex gap-3">
-                      <div className="size-6 rounded-full bg-success/20 flex items-center justify-center text-[10px] font-bold text-success shrink-0">1</div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-          Ваш середній чек зріс на 4.2% завдяки популярності послуги "Складне фарбування". 
-          Рекомендуємо додати "Догляд за волоссям" як cross-sell позицію до цього запису — 
-          це потенційно додасть ще +15% до чека без залучення нових клієнтів.
-        </p>
-                   </div>
-                   <div className="flex gap-3">
-                      <div className="size-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">2</div>
-                      <p className="text-sm text-foreground/80 leading-relaxed">
-                         Клієнти сегменту <b>Potential VIP</b> мають середній чек на 15% вищий. Фокусуйтеся на їхньому утриманні.
-                      </p>
-                   </div>
-                </div>
-             </div>
-
-             <button 
-                onClick={() => setShowCheckDetails(false)}
-                className="w-full py-4 rounded-2xl bg-foreground text-background font-bold text-sm active:scale-95 transition-all"
-             >
-                Зрозумів
-             </button>
-          </div>
+       <BottomSheet isOpen={showCheckDetails} onClose={() => setShowCheckDetails(false)} title="Середній чек">
+          <AvgCheckModal clients={clients} analytics={analytics} isPro={isPro} onClose={() => setShowCheckDetails(false)} />
        </BottomSheet>
 
        {/* Referral Details Sheet */}
@@ -391,7 +356,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                 </div>
              </div>
 
-             <button 
+             <button
                 onClick={() => setShowReferralDetails(false)}
                 className="w-full py-4 rounded-2xl bg-foreground text-background font-bold text-sm active:scale-95 transition-all"
              >
@@ -399,6 +364,188 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
              </button>
           </div>
        </BottomSheet>
+    </div>
+  );
+}
+
+// ── AvgCheckModal ─────────────────────────────────────────────────────────────
+function AvgCheckModal({
+  clients, analytics, isPro, onClose,
+}: {
+  clients: ClientRow[];
+  analytics: ReturnType<typeof useAnalytics>['data'];
+  isPro: boolean;
+  onClose: () => void;
+}) {
+  // All-time stats from clients array (always available)
+  const allTimeAvg = clients.length > 0
+    ? Math.round(clients.reduce((s, c) => s + c.total_spent, 0) / clients.reduce((s, c) => s + c.total_visits, 0))
+    : 0;
+
+  const vipClients = clients.filter(c => c.is_vip);
+  const vipAvg = vipClients.length > 0
+    ? Math.round(vipClients.reduce((s, c) => s + c.total_spent, 0) / vipClients.reduce((s, c) => s + c.total_visits, 0))
+    : null;
+  const vipLift = vipAvg && allTimeAvg > 0 ? Math.round(((vipAvg - allTimeAvg) / allTimeAvg) * 100) : null;
+
+  const oneTimers = clients.filter(c => c.total_visits === 1);
+  const oneTimerPct = clients.length > 0 ? Math.round((oneTimers.length / clients.length) * 100) : 0;
+
+  const belowAvg = clients.filter(c => c.average_check < allTimeAvg * 0.8 && c.total_visits > 2);
+  const potentialRevenue = belowAvg.length > 0
+    ? Math.round(belowAvg.reduce((s, c) => s + (allTimeAvg * 0.8 - c.average_check) * c.total_visits * 0.1, 0))
+    : 0;
+
+  // Monthly analytics (Pro only)
+  const monthAvg = analytics?.bento?.avgCheck;
+  const topSvc = analytics?.topServices?.[0];
+
+  const deltaPositive = (monthAvg?.delta ?? 0) > 0;
+  const deltaNeutral  = monthAvg?.delta === 0 || monthAvg?.delta === null;
+
+  return (
+    <div className="flex flex-col gap-5 pb-4">
+
+      {/* Month comparison — Pro */}
+      {isPro && monthAvg ? (
+        <div className={`flex items-center justify-between p-5 rounded-3xl border ${
+          deltaPositive ? 'bg-success/5 border-success/10' :
+          deltaNeutral  ? 'bg-muted/20 border-muted/30' :
+                          'bg-error/5 border-error/10'
+        }`}>
+          <div>
+            <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${
+              deltaPositive ? 'text-success' : deltaNeutral ? 'text-muted-foreground' : 'text-error'
+            }`}>
+              {format(new Date(), 'LLLL yyyy')} vs попередній
+            </p>
+            <p className="text-3xl font-display font-bold text-foreground">
+              {formatPrice(monthAvg.current)}
+            </p>
+            {monthAvg.prev !== null && (
+              <p className={`text-[11px] mt-1 font-medium ${
+                deltaPositive ? 'text-success' : deltaNeutral ? 'text-muted-foreground/60' : 'text-error'
+              }`}>
+                {deltaPositive ? '+' : ''}{monthAvg.delta}% vs {formatPrice(monthAvg.prev)} (попередній)
+              </p>
+            )}
+          </div>
+          {deltaPositive ? <TrendingUp size={40} className="text-success opacity-20" /> :
+           deltaNeutral  ? <Minus size={40} className="text-muted-foreground opacity-20" /> :
+                           <TrendingDown size={40} className="text-error opacity-20" />}
+        </div>
+      ) : (
+        <div className="flex items-center justify-between p-5 rounded-3xl bg-accent/5 border border-accent/10">
+          <div>
+            <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1">Загальний</p>
+            <p className="text-3xl font-display font-bold text-foreground">{formatPrice(allTimeAvg)}</p>
+            <p className="text-[11px] text-muted-foreground/60 mt-1">середній чек за весь час</p>
+          </div>
+          <TrendingUp size={40} className="text-accent opacity-20" />
+        </div>
+      )}
+
+      {/* Insights grid */}
+      <div className="grid grid-cols-2 gap-3">
+
+        {/* VIP lift */}
+        {vipAvg !== null && vipLift !== null && (
+          <div className="p-4 rounded-2xl bg-white/60 border border-white/80">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Crown size={13} className="text-warning" />
+              <p className="text-[10px] font-bold text-warning uppercase tracking-widest">VIP-чек</p>
+            </div>
+            <p className="text-xl font-display font-bold text-foreground">{formatPrice(vipAvg)}</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+              {vipLift > 0 ? '+' : ''}{vipLift}% до середнього
+            </p>
+          </div>
+        )}
+
+        {/* One-time retention risk */}
+        <div className="p-4 rounded-2xl bg-white/60 border border-white/80">
+          <div className="flex items-center gap-1.5 mb-2">
+            <AlertCircle size={13} className={oneTimerPct > 40 ? 'text-error' : 'text-muted-foreground/60'} />
+            <p className={`text-[10px] font-bold uppercase tracking-widest ${oneTimerPct > 40 ? 'text-error' : 'text-muted-foreground/60'}`}>
+              Разові
+            </p>
+          </div>
+          <p className="text-xl font-display font-bold text-foreground">{oneTimerPct}%</p>
+          <p className="text-[10px] text-muted-foreground/60 mt-0.5">клієнтів прийшли лише раз</p>
+        </div>
+      </div>
+
+      {/* Dynamic recommendations */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Sparkles size={15} className="text-accent" />
+          <h4 className="text-sm font-bold text-foreground">Що робити далі</h4>
+        </div>
+        <div className="flex flex-col gap-2.5">
+
+          {/* Top service upsell (Pro) */}
+          {topSvc && (
+            <InsightRow index={1} color="success">
+              Топ-послуга <b>{topSvc.name}</b> — {topSvc.count} записів цього місяця.
+              {topSvc.count > 3 ? ' Пропонуйте доповнення до неї — це +15–20% до чека без залучення нових клієнтів.' : ' Просуйте її активніше через інстаграм.'}
+            </InsightRow>
+          )}
+
+          {/* VIP focus */}
+          {vipLift !== null && vipLift > 0 && (
+            <InsightRow index={topSvc ? 2 : 1} color="warning">
+              VIP-клієнти приносять на <b>{vipLift}% більше</b> за візит. У вас {vipClients.length} {pluralUk(vipClients.length, 'VIP-клієнт', 'VIP-клієнти', 'VIP-клієнтів')} — зосередьтесь на їхньому поверненні.
+            </InsightRow>
+          )}
+
+          {/* One-timer conversion */}
+          {oneTimerPct > 30 && (
+            <InsightRow index={(topSvc ? 1 : 0) + (vipLift && vipLift > 0 ? 1 : 0) + 1} color={oneTimerPct > 50 ? 'error' : 'primary'}>
+              {oneTimerPct}% клієнтів не повернулися після першого візиту ({oneTimers.length} осіб).
+              Автоматичне нагадування через 14 днів підвищує повернення на ~25%.
+            </InsightRow>
+          )}
+
+          {/* Below avg upsell */}
+          {belowAvg.length > 3 && potentialRevenue > 0 && (
+            <InsightRow index={(topSvc ? 1 : 0) + (vipLift && vipLift > 0 ? 1 : 0) + (oneTimerPct > 30 ? 1 : 0) + 1} color="primary">
+              {belowAvg.length} постійних клієнтів мають чек нижче {Math.round(allTimeAvg * 0.8)}₴.
+              Точкові пропозиції для них можуть додати ~{formatPrice(potentialRevenue)} на місяць.
+            </InsightRow>
+          )}
+
+          {/* Generic fallback if no specific insights */}
+          {!topSvc && vipClients.length === 0 && oneTimerPct <= 30 && (
+            <InsightRow index={1} color="primary">
+              Додайте перших VIP-клієнтів — це розблокує персоналізовані рекомендації для зростання чека.
+            </InsightRow>
+          )}
+        </div>
+      </div>
+
+      <button
+        onClick={onClose}
+        className="w-full py-4 rounded-2xl bg-foreground text-background font-bold text-sm active:scale-95 transition-all"
+      >
+        Зрозумів
+      </button>
+    </div>
+  );
+}
+
+function InsightRow({ index, color, children }: { index: number; color: string; children: React.ReactNode }) {
+  const colorMap: Record<string, string> = {
+    success: 'bg-success/15 text-success',
+    warning: 'bg-warning/15 text-warning',
+    error:   'bg-error/15 text-error',
+    primary: 'bg-accent/15 text-accent',
+  };
+  return (
+    <div className="flex gap-3 p-3.5 rounded-2xl bg-white/60 border border-white/80">
+      <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${colorMap[color] ?? colorMap.primary}`}>
+        {index}
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">{children}</p>
     </div>
   );
 }

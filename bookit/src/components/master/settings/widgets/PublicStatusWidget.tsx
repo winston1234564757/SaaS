@@ -88,7 +88,7 @@ export function PublicStatusWidget({
           )}
         >
           <motion.div
-            animate={{ x: isPublished ? 24 : 4 }}
+            animate={{ x: isPublished ? 20 : 4 }}
             className="absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-md"
           />
         </button>

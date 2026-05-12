@@ -1,7 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Clock, Calendar, ChevronRight, Moon, Sun, Coffee, Info } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, Calendar, ChevronDown, ChevronUp, Plus, Trash2, RefreshCw, Info } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { uk } from 'date-fns/locale';
@@ -11,137 +12,317 @@ import { DAYS_ORDER } from '../hooks/useSettingsForm';
 interface ScheduleWidgetProps {
   schedule: Schedule;
   bufferTime: number;
-  breaksCount: number;
-  onClick: () => void;
-  occupancyData?: number[]; // [sun, mon, tue, wed, thu, fri, sat] from analytics
+  breaks: any[];
+  retentionCycleDays: number;
+  occupancyData?: number[];
+  onScheduleChange: (schedule: Schedule) => void;
+  onBufferChange: (val: number) => void;
+  onBreaksChange: (breaks: any[]) => void;
+  onRetentionCycleDaysChange: (val: number) => void;
 }
 
 const DAYS_UA_SHORT: Record<DayKey, string> = {
-  mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Нд'
+  mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Нд',
+};
+const DAYS_UA_FULL: Record<DayKey, string> = {
+  mon: 'Понеділок', tue: 'Вівторок', wed: 'Середа', thu: 'Четвер', fri: "П'ятниця", sat: 'Субота', sun: 'Неділя',
 };
 
 export function ScheduleWidget({
   schedule,
   bufferTime,
-  breaksCount,
-  onClick,
-  occupancyData
+  breaks,
+  retentionCycleDays,
+  occupancyData,
+  onScheduleChange,
+  onBufferChange,
+  onBreaksChange,
+  onRetentionCycleDaysChange,
 }: ScheduleWidgetProps) {
+  const [expanded, setExpanded] = useState(false);
+
   const now = new Date();
-  const currentDayKey = format(now, 'eee', { locale: uk }).toLowerCase() as DayKey;
-  const currentTime = format(now, 'HH:mm');
-  
-  // Normalized day key check
-  const dayIndex = now.getDay(); // 0 is Sunday
+  const dayIndex = now.getDay();
   const normalizedDayKey = dayIndex === 0 ? 'sun' : DAYS_ORDER[dayIndex - 1];
-  
+  const currentTime = format(now, 'HH:mm');
   const todaySchedule = schedule[normalizedDayKey] || schedule['mon'];
   const isWorkingToday = todaySchedule.is_working;
-  const isWorkingNow = isWorkingToday && 
-    currentTime >= todaySchedule.start_time && 
+  const isWorkingNow = isWorkingToday &&
+    currentTime >= todaySchedule.start_time &&
     currentTime <= todaySchedule.end_time;
 
-  // Generate week dates
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-  const weekDates = DAYS_ORDER.map((_, i) => addDays(weekStart, i));
-
-  // Calculate max bookings for normalization if we have real data
   const maxBookings = occupancyData ? Math.max(...occupancyData, 1) : 1;
 
+  const toggleDay = (day: DayKey) =>
+    onScheduleChange({ ...schedule, [day]: { ...schedule[day], is_working: !schedule[day].is_working } });
+
+  const setDayTime = (day: DayKey, field: 'start_time' | 'end_time', val: string) =>
+    onScheduleChange({ ...schedule, [day]: { ...schedule[day], [field]: val } });
+
   return (
-    <div 
-      onClick={onClick}
-      className="widget-card p-6 h-full flex flex-col cursor-pointer active:scale-[0.98] transition-all group relative overflow-hidden"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className={cn(
-            "w-9 h-9 rounded-2xl flex items-center justify-center transition-all shadow-md",
-            isWorkingNow ? "bg-success text-white" : "bg-warning text-white"
-          )}>
-            <Clock size={18} />
+    <div className="widget-card overflow-hidden">
+      {/* ── Summary (always visible) ── */}
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2.5">
+            <div className={cn(
+              'w-9 h-9 rounded-2xl flex items-center justify-center shadow-md',
+              isWorkingNow ? 'bg-success text-white' : 'bg-warning text-white',
+            )}>
+              <Clock size={18} />
+            </div>
+            <div>
+              <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute leading-none mb-1">
+                Графік роботи
+              </h3>
+              <p className={cn('text-[10px] font-bold uppercase tracking-tighter', isWorkingNow ? 'text-success' : 'text-warning')}>
+                {isWorkingNow ? 'Зараз працюю' : 'Зараз перерва'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute leading-none mb-1">Графік роботи</h3>
-            <p className={cn("text-[10px] font-bold uppercase tracking-tighter", isWorkingNow ? "text-success" : "text-warning")}>
-              {isWorkingNow ? "Зараз працюю" : "Зараз перерва"}
-            </p>
-          </div>
+
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-white/80 text-[11px] font-bold text-muted-foreground hover:bg-accent/5 hover:text-accent hover:border-accent/20 active:scale-95 transition-all shadow-sm"
+          >
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {expanded ? 'Згорнути' : 'Налаштувати'}
+          </button>
         </div>
-        <div className="w-9 h-9 rounded-2xl bg-white border border-white/80 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all shadow-sm">
-          <ChevronRight size={16} />
+
+        {/* Today hours */}
+        <div className="flex items-center gap-3 mb-8">
+          <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+            {isWorkingToday ? todaySchedule.start_time : '—'}
+          </h2>
+          <div className="w-8 h-[2px] bg-muted/40 rounded-full" />
+          <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+            {isWorkingToday ? todaySchedule.end_time : '—'}
+          </h2>
+          <p className="text-[11px] font-bold text-text-mute uppercase tracking-widest flex items-center gap-1.5 ml-2">
+            <Calendar size={12} className="text-accent" />
+            {isWorkingToday ? 'Сьогодні' : 'Вихідний'}
+          </p>
+        </div>
+
+        {/* Week mini-visualization */}
+        <div className="grid grid-cols-7 gap-1.5 px-0.5">
+          {DAYS_ORDER.map((day, i) => {
+            const isWorking = schedule[day].is_working;
+            const isToday = day === normalizedDayKey;
+            const jsDayIndex = i === 6 ? 0 : i + 1;
+            const bookings = occupancyData ? occupancyData[jsDayIndex] : 0;
+            const occupancy = isWorking ? (occupancyData ? Math.round((bookings / maxBookings) * 100) : 10) : 0;
+            const fillLevel = `${Math.max(occupancy, isWorking ? 5 : 0)}%`;
+            const statusColor = occupancy > 80 ? 'bg-error' : occupancy > 50 ? 'bg-warning' : 'bg-success';
+            return (
+              <div key={day} className="flex flex-col items-center gap-1.5">
+                <span className={cn('text-[10px] font-black uppercase tracking-tighter', isToday ? 'text-accent' : 'text-text-mute/30')}>
+                  {DAYS_UA_SHORT[day]}
+                </span>
+                <div className={cn(
+                  'w-full aspect-[4/8] rounded-full flex flex-col items-end justify-end border transition-all shadow-inner-sm relative overflow-hidden',
+                  isWorking ? 'bg-white border-white/80' : 'bg-muted/10 border-transparent opacity-30',
+                  isToday && 'ring-2 ring-accent ring-offset-2 scale-110 z-10 shadow-lg shadow-accent/10',
+                )}>
+                  {isWorking && (
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: fillLevel }}
+                      className={cn('absolute bottom-0 inset-x-0 opacity-20', statusColor)}
+                    />
+                  )}
+                </div>
+                <span className={cn(
+                  'text-[9px] font-bold leading-none',
+                  isWorking ? (isToday ? 'text-accent' : 'text-text-mute/50') : 'text-transparent',
+                )}>
+                  {isWorking ? `${occupancy}%` : '0%'}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Main Status Area */}
-      <div className="flex-1 flex flex-col justify-center mb-8">
-        <div className="flex items-center gap-3">
-           <h2 className="text-3xl font-bold tracking-tight text-text-primary">
-             {isWorkingToday ? todaySchedule.start_time : '—'}
-           </h2>
-           <div className="w-8 h-[2px] bg-muted/40 rounded-full" />
-           <h2 className="text-3xl font-bold tracking-tight text-text-primary">
-             {isWorkingToday ? todaySchedule.end_time : '—'}
-           </h2>
-        </div>
-        <p className="text-[11px] font-bold text-text-mute uppercase tracking-widest mt-2 flex items-center gap-1.5">
-           <Calendar size={12} className="text-accent" />
-           {isWorkingToday ? "Робочий день" : "Сьогодні вихідний"}
-        </p>
-      </div>
+      {/* ── Inline editor (expandable) ── */}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="editor"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-muted/20 p-6 flex flex-col gap-6">
 
-      {/* Week Visualization */}
-      <div className="grid grid-cols-7 gap-1.5 px-0.5">
-        {DAYS_ORDER.map((day, i) => {
-          const isWorking = schedule[day].is_working;
-          const isToday = day === normalizedDayKey;
-          
-          // Map day string to JS day index (mon=1...sun=0)
-          const jsDayIndex = i === 6 ? 0 : i + 1;
-          const bookings = occupancyData ? occupancyData[jsDayIndex] : 0;
-          
-          // Normalized occupancy logic (relative to max in current month/period)
-          const occupancy = isWorking ? (occupancyData ? Math.round((bookings / maxBookings) * 100) : 10) : 0; 
-          const fillLevel = `${Math.max(occupancy, isWorking ? 5 : 0)}%`;
-          const statusColor = occupancy > 80 ? 'bg-error' : occupancy > 50 ? 'bg-warning' : 'bg-success';
-          
-          return (
-            <div key={day} className="flex-1 flex flex-col items-center gap-2">
-              <span className={cn(
-                "text-[10px] font-black uppercase tracking-tighter",
-                isToday ? "text-accent" : "text-text-mute/30"
-              )}>
-                {DAYS_UA_SHORT[day]}
-              </span>
-              <div className={cn(
-                "w-full aspect-[4/8] rounded-full flex flex-col items-end justify-end border transition-all shadow-inner-sm relative overflow-hidden",
-                isWorking 
-                  ? "bg-white border-white/80" 
-                  : "bg-muted/10 border-transparent opacity-30",
-                isToday && "ring-2 ring-accent ring-offset-2 scale-110 z-10 shadow-lg shadow-accent/10"
-              )}>
-                {isWorking && (
-                  <motion.div 
-                    initial={{ height: 0 }}
-                    animate={{ height: fillLevel }}
-                    className={cn("absolute bottom-0 inset-x-0 opacity-20", statusColor)}
-                  />
-                )}
-                {isWorking && occupancy > 0 && (
-                   <div className={cn("w-1.5 h-1.5 rounded-full mb-2 mr-1.5 relative z-10", statusColor)} />
+              {/* Weekly schedule rows */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-1">Дні та години</p>
+                {DAYS_ORDER.map((day) => (
+                  <div
+                    key={day}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2.5 rounded-2xl border transition-all',
+                      schedule[day].is_working ? 'bg-white border-white/60 shadow-sm' : 'bg-muted/10 border-transparent opacity-50',
+                    )}
+                  >
+                    {/* Toggle */}
+                    <button
+                      onClick={() => toggleDay(day)}
+                      className={cn(
+                        'relative rounded-full transition-colors shrink-0',
+                        schedule[day].is_working ? 'bg-accent' : 'bg-muted-foreground/25',
+                      )}
+                      style={{ height: '22px', width: '40px' }}
+                    >
+                      <motion.div
+                        animate={{ x: schedule[day].is_working ? 21 : 3 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                        className="absolute top-[3px] left-0 w-4 h-4 rounded-full bg-white shadow-sm"
+                      />
+                    </button>
+
+                    <span className="text-[11px] font-bold w-6 shrink-0">{DAYS_UA_SHORT[day]}</span>
+
+                    {schedule[day].is_working ? (
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <input
+                          type="time"
+                          value={schedule[day].start_time}
+                          onChange={(e) => setDayTime(day, 'start_time', e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-white focus:border-accent/30 outline-none text-xs font-medium text-center"
+                        />
+                        <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
+                        <input
+                          type="time"
+                          value={schedule[day].end_time}
+                          onChange={(e) => setDayTime(day, 'end_time', e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-white focus:border-accent/30 outline-none text-xs font-medium text-center"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground/50 flex-1">Вихідний</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Buffer time */}
+              <div className="p-5 rounded-2xl bg-accent/5 border border-accent/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock size={15} className="text-accent" />
+                  <h4 className="text-sm font-bold">Час між клієнтами</h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[0, 5, 10, 15, 20, 30, 45, 60].map((min) => (
+                    <button
+                      key={min}
+                      onClick={() => onBufferChange(min)}
+                      className={cn(
+                        'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95',
+                        bufferTime === min
+                          ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                          : 'bg-white border border-muted/30 text-muted-foreground hover:border-accent/30',
+                      )}
+                    >
+                      {min === 0 ? 'Без буферу' : `${min} хв`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Retention cycle */}
+              <div className="p-5 rounded-2xl bg-accent/5 border border-accent/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <RefreshCw size={15} className="text-accent" />
+                  <h4 className="text-sm font-bold">Цикл повернення клієнта</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground/60 mb-3">
+                  Через скільки днів клієнт вважається неактивним
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[14, 21, 30, 45, 60, 90].map((days) => (
+                    <button
+                      key={days}
+                      onClick={() => onRetentionCycleDaysChange(days)}
+                      className={cn(
+                        'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95',
+                        retentionCycleDays === days
+                          ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                          : 'bg-white border border-muted/30 text-muted-foreground hover:border-accent/30',
+                      )}
+                    >
+                      {days} днів
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Breaks */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Info size={14} className="text-muted-foreground/50" />
+                    <h4 className="text-sm font-bold">Перерви</h4>
+                  </div>
+                  <button
+                    onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-95 transition-all"
+                  >
+                    <Plus size={13} /> Додати
+                  </button>
+                </div>
+                {breaks.length === 0 ? (
+                  <div className="py-6 rounded-2xl border border-dashed border-muted/30 flex flex-col items-center justify-center text-muted-foreground/35 gap-1.5">
+                    <Clock size={20} strokeWidth={1.2} />
+                    <p className="text-[11px] font-medium">Перерв не додано</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {breaks.map((b, i) => (
+                      <div key={i} className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-white/60 shadow-sm">
+                        <input
+                          type="time"
+                          value={b.start}
+                          onChange={(e) => {
+                            const nb = [...breaks];
+                            nb[i] = { ...nb[i], start: e.target.value };
+                            onBreaksChange(nb);
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 outline-none text-sm font-medium"
+                        />
+                        <span className="text-muted-foreground/30">—</span>
+                        <input
+                          type="time"
+                          value={b.end}
+                          onChange={(e) => {
+                            const nb = [...breaks];
+                            nb[i] = { ...nb[i], end: e.target.value };
+                            onBreaksChange(nb);
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 outline-none text-sm font-medium"
+                        />
+                        <button
+                          onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
+                          className="w-9 h-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-90 transition-all shrink-0"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
-          );
-        })}
-      </div>
 
-      {/* Tooltip / Explain */}
-      <div className="mt-6 flex items-center gap-3 p-3 rounded-2xl bg-muted/20 text-[10px] text-text-mute font-medium leading-snug">
-        <Info size={14} className="shrink-0 text-accent/60" />
-        <p>Колір та рівень заповнення овалів вказують на вашу завантаженість за даними BookIT Analytics.</p>
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

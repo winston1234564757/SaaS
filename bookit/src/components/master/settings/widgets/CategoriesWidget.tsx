@@ -21,15 +21,19 @@ interface CategoriesWidgetProps {
   onChange: (val: string[]) => void;
 }
 
+const VALID_IDS = new Set(ALL_CATEGORIES.map(c => c.id));
+
 export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) {
+  const validCount = selected.filter(id => VALID_IDS.has(id)).length;
+
   const toggle = (id: string) => {
     if (selected.includes(id)) {
       onChange(selected.filter(x => x !== id));
-      } else {
-        if (selected.length >= 4) return;
-        onChange([...selected, id]);
-      }
-    };
+    } else {
+      if (validCount >= 4) return;
+      onChange([...selected, id]);
+    }
+  };
 
     return (
       <div className="widget-card p-6 h-full flex flex-col">
@@ -64,13 +68,13 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
         <div className="mt-auto pt-5">
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
             <span className="text-text-mute">Вибрано</span>
-            <span className={cn(selected.length === 4 ? "text-accent" : "text-text-mute")}>
-              {selected.length} / 4
+            <span className={cn(validCount === 4 ? "text-accent" : "text-text-mute")}>
+              {validCount} / 4
             </span>
           </div>
           <div className="w-full h-1 bg-muted/40 rounded-full mt-2 overflow-hidden">
-            <motion.div 
-              animate={{ width: `${(selected.length / 4) * 100}%` }}
+            <motion.div
+              animate={{ width: `${(validCount / 4) * 100}%` }}
               className="h-full bg-accent rounded-full"
             />
           </div>

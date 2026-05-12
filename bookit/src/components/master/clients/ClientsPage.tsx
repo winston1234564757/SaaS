@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram, 
+import {
+  Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram,
   LayoutGrid, List, ChevronDown, Send, MessageSquare, PenLine, AlertCircle, Heart, X, Sparkles,
-  CheckCircle2, Moon, AlertTriangle, UserX, Crown, Sparkle, Gem, Share2
+  CheckCircle2, Moon, AlertTriangle, UserX, Crown, Sparkle, Gem, Share2, Plus, Settings
 } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { ClientDetailSheet } from './ClientDetailSheet';
@@ -18,6 +18,9 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
+import { useMasterContext } from '@/lib/supabase/context';
+import { evaluateCustomSegment, getSegmentIcon } from './SegmentBuilder';
+import type { CustomSegment } from '@/lib/types/segments';
 
 export type { ClientRow };
 
@@ -47,7 +50,7 @@ export function getAutoTags(client: ClientRow): AutoTag[] {
 type SortKey = 'visits' | 'alpha' | 'check' | 'recent';
 type ViewMode = 'list' | 'grid';
 type RetentionFilter = 'all' | RetentionStatus;
-type SmartSegment = 'none' | 'lost_treasures' | 'newbie_danger' | 'potential_vip' | 'flash_hunters';
+type SmartSegment = 'none' | 'lost_treasures' | 'newbie_danger' | 'potential_vip' | 'flash_hunters' | 'archive_cleanup';
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'visits',  label: 'За візитами'   },
@@ -64,12 +67,12 @@ const RETENTION_FILTERS: { value: RetentionFilter; label: string }[] = [
   { value: 'lost',     label: 'Втрачені'     },
 ];
 
-const SMART_SEGMENTS: { value: SmartSegment; label: string }[] = [
-  { value: 'lost_treasures', label: 'Ризик втрати клієнта' },
-  { value: 'newbie_danger',  label: 'Ризик втрати новачка' },
-  { value: 'potential_vip',  label: 'Кандидати в VIP' },
-  { value: 'flash_hunters',   label: 'Чутливі до ціни' },
-];
+const RETENTION_ICON_MAP: Partial<Record<RetentionFilter, React.ReactElement>> = {
+  active:   <CheckCircle2 size={11} />,
+  sleeping: <Moon size={11} />,
+  at_risk:  <AlertTriangle size={11} />,
+  lost:     <UserX size={11} />,
+};
 
 function getSmartAction(client: ClientRow, segment: SmartSegment | 'none') {
   const name = client.client_name.split(' ')[0];
@@ -169,7 +172,10 @@ export function ClientsPage() {
   const searchParams = useSearchParams();
   const router       = useRouter();
   const { clients, isLoading } = useClients();
+  const { masterProfile } = useMasterContext();
   const { showToast } = useToast();
+
+  const customSegments: CustomSegment[] = (masterProfile?.segment_config as CustomSegment[]) ?? [];
 
   const sort    = (searchParams.get('sort') as SortKey) || 'visits';
   const view    = (searchParams.get('view') as ViewMode) || 'list';
@@ -195,6 +201,7 @@ export function ClientsPage() {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteValue, setNoteValue] = useState('');
   const [showFab, setShowFab] = useState(true);
+  const [customSegmentId, setCustomSegmentId] = useState<string | null>(null);
 
   const invalidateNote = useClientNoteInvalidate();
 
@@ -214,26 +221,41 @@ export function ClientsPage() {
     setSavingNoteId(null);
   }
 
+  // Same logic as ClientWidgets lostTreasures: is_vip + at_risk/lost
+  const lostTreasuresIds = new Set(
+    clients
+      .filter(c => c.is_vip && (c.retention_status === 'at_risk' || c.retention_status === 'lost'))
+      .map(c => c.id)
+  );
+  const cycle = masterProfile?.retention_cycle_days ?? 60;
+  const archiveDate = new Date();
+  archiveDate.setDate(archiveDate.getDate() - cycle * 2);
+
   const filtered = sortClients(
     clients.filter(c => {
       const matchesSearch =
         c.client_name.toLowerCase().includes(search.toLowerCase()) ||
         c.client_phone.includes(search);
-      
+
       const matchesRetention = retentionFilter === 'all' || c.retention_status === retentionFilter;
-      
+
       let matchesSegment = true;
       if (smartSegment === 'lost_treasures') {
-        matchesSegment = (c.retention_status === 'at_risk' || c.retention_status === 'lost') && c.total_spent > 1500;
+        matchesSegment = lostTreasuresIds.has(c.id);
       } else if (smartSegment === 'newbie_danger') {
         matchesSegment = c.total_visits === 1 && (c.retention_status === 'at_risk' || c.retention_status === 'lost');
       } else if (smartSegment === 'potential_vip') {
         matchesSegment = !c.is_vip && (c.total_visits >= 5 || c.total_spent >= 5000);
       } else if (smartSegment === 'flash_hunters') {
-        // We'll approximate this by checking if they have an average check significantly lower than total/visits? 
-        // Actually, without dynamic_pricing_label in useClients, this is hard.
-        // I'll keep it as a placeholder or filter by some other logic.
-        matchesSegment = c.total_visits > 2 && c.average_check < 800; // Placeholder logic
+        matchesSegment = c.total_visits > 2 && c.average_check < 800;
+      } else if (smartSegment === 'archive_cleanup') {
+        matchesSegment = !!c.last_visit_at && new Date(c.last_visit_at) < archiveDate;
+      }
+
+      // Custom segment
+      if (customSegmentId) {
+        const seg = customSegments.find(s => s.id === customSegmentId);
+        matchesSegment = seg ? evaluateCustomSegment(c, seg) : true;
       }
 
       return matchesSearch && matchesRetention && matchesSegment;
@@ -273,6 +295,7 @@ export function ClientsPage() {
           isLoading={isLoading} 
           activeSegment={smartSegment !== 'none' ? smartSegment : retentionFilter}
           onSegmentSelect={(id) => {
+            setCustomSegmentId(null);
             if (['active', 'sleeping', 'at_risk', 'lost', 'all'].includes(id)) {
               setRetentionFilter(id as RetentionFilter);
               setSmartSegment('none');
@@ -297,7 +320,7 @@ export function ClientsPage() {
               return (
                 <button
                   key={f.value}
-                  onClick={() => { setRetentionFilter(f.value); setSmartSegment('none'); }}
+                  onClick={() => { setRetentionFilter(f.value); setSmartSegment('none'); setCustomSegmentId(null); setShowFab(true); }}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer"
                   style={isActive && cfg
                     ? { background: cfg.bg, color: cfg.color, outline: `1.5px solid ${cfg.color}40` }
@@ -306,8 +329,8 @@ export function ClientsPage() {
                       : { background: 'var(--surface)', color: 'var(--text-secondary)', border: '0.5px solid var(--border-strong)' }
                   }
                 >
-                  {cfg && (
-                    <span className="size-1.5 rounded-full flex-shrink-0" style={{ background: cfg.dot }} />
+                  {RETENTION_ICON_MAP[f.value] && (
+                    <span className="flex-shrink-0">{RETENTION_ICON_MAP[f.value]}</span>
                   )}
                   {f.label}
                   <span className="opacity-60 font-normal ml-1">{count}</span>
@@ -316,32 +339,41 @@ export function ClientsPage() {
             })}
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
-             {SMART_SEGMENTS.map(s => {
-               const isActive = smartSegment === s.value;
-               return (
-                 <button
-                   key={s.value}
-                   onClick={() => { setSmartSegment(isActive ? 'none' : s.value); setRetentionFilter('all'); }}
-                   className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all border ${
-                     isActive 
-                       ? 'bg-foreground text-background border-foreground shadow-sm' 
-                       : 'bg-white/60 border-white/80 text-muted-foreground hover:bg-white hover:border-muted-foreground/20'
-                   }`}
-                   style={!isActive ? { 
-                     borderColor: s.value === 'lost_treasures' ? 'rgba(192, 91, 91, 0.2)' : 
-                                 s.value === 'newbie_danger' ? 'rgba(120, 154, 153, 0.2)' :
-                                 s.value === 'potential_vip' ? 'rgba(212, 147, 90, 0.2)' : 'rgba(120, 154, 153, 0.2)',
-                     background: s.value === 'lost_treasures' ? 'rgba(192, 91, 91, 0.05)' : 
-                                 s.value === 'newbie_danger' ? 'rgba(120, 154, 153, 0.05)' :
-                                 s.value === 'potential_vip' ? 'rgba(212, 147, 90, 0.05)' : 'rgba(120, 154, 153, 0.05)'
-                   } : {}}
-                 >
-                   {s.label}
-                 </button>
-               );
-             })}
-          </div>
+          {/* Custom segment chips */}
+          {customSegments.length > 0 ? (
+            <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
+              {customSegments.map(seg => {
+                const isActive = customSegmentId === seg.id;
+                return (
+                  <button
+                    key={seg.id}
+                    onClick={() => {
+                      setCustomSegmentId(isActive ? null : seg.id);
+                      setSmartSegment('none');
+                      setRetentionFilter('all');
+                      setShowFab(true);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all border active:scale-95"
+                    style={isActive
+                      ? { background: seg.color, color: '#fff', borderColor: seg.color }
+                      : { background: `${seg.color}0d`, color: seg.color, borderColor: `${seg.color}33` }
+                    }
+                  >
+                    <span className="flex-shrink-0">{getSegmentIcon(seg.icon, 11)}</span>
+                    {seg.name}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <button
+              onClick={() => router.push('/dashboard/settings#segments')}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap border border-dashed border-accent/30 text-accent/70 bg-accent/5 hover:bg-accent/10 transition-colors"
+            >
+              <Plus size={11} />
+              Створити власні сегменти
+            </button>
+          )}
         </div>
       )}
 
@@ -399,47 +431,51 @@ export function ClientsPage() {
         </div>
       </div>
 
-      {/* 4. Floating Pill for Segment Messaging (Top Option) */}
+      {/* 4. Broadcast FAB — same dimensions as follow-up block */}
       <AnimatePresence>
-        {showFab && (smartSegment !== 'none' || retentionFilter !== 'all') && filtered.length > 0 && (
+        {showFab && (smartSegment !== 'none' || retentionFilter !== 'all' || !!customSegmentId) && filtered.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -10 }}
-            className="flex justify-center w-full mt-2 mb-2"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="relative w-full mt-1 mb-1"
           >
-            <div className="relative w-[85%] max-w-[400px]">
-              <button
-                onClick={() => {
-                  router.push(`/dashboard/marketing?tab=broadcasts&segment=${smartSegment || retentionFilter}`);
-                }}
-                className="w-full flex items-center gap-4 px-5 py-3 rounded-full bg-white/10 backdrop-blur-3xl border border-white/20 text-foreground shadow-xl active:scale-95 transition-all hover:bg-white/15"
-              >
-                <div className="w-9 h-9 rounded-full bg-foreground flex items-center justify-center text-background shrink-0">
-                  <MessageSquare size={16} />
-                </div>
-                <div className="flex flex-col items-start min-w-0">
-                  <span className="font-bold text-sm tracking-tight truncate w-full">
-                    {smartSegment === 'lost_treasures' ? 'Повернути скарби' : 
-                     smartSegment === 'newbie_danger' ? 'Привітати новачків' :
-                     smartSegment === 'potential_vip' ? 'Заохотити VIP' :
-                     retentionFilter === 'at_risk' ? 'Нагадати про себе' :
-                     retentionFilter === 'lost' ? 'Почати реактивацію' :
-                     'Написати обраним'}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest leading-none">
-                    {filtered.length} контактів
-                  </span>
-                </div>
-              </button>
-              
-              <button 
-                onClick={(e) => { e.stopPropagation(); setShowFab(false); }}
-                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white border border-secondary shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-90 z-10"
-              >
-                <X size={12} />
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                router.push(`/dashboard/marketing?tab=broadcasts&segment=${smartSegment || retentionFilter}`);
+              }}
+              className="w-full bento-card p-4 flex items-center gap-4 transition-all cursor-pointer bg-accent/5 border-accent/20 active:scale-[0.99]"
+            >
+              <div className="p-3 rounded-2xl bg-accent/10 text-accent shrink-0">
+                <MessageSquare size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground truncate">
+                  {customSegmentId
+                    ? (customSegments.find(s => s.id === customSegmentId)?.name ?? 'Написати обраним')
+                    : smartSegment === 'lost_treasures' ? 'Повернути скарби'
+                    : smartSegment === 'newbie_danger' ? 'Привітати новачків'
+                    : smartSegment === 'potential_vip' ? 'Заохотити VIP'
+                    : smartSegment === 'archive_cleanup' ? 'Написати неактивним'
+                    : retentionFilter === 'at_risk' ? 'Нагадати про себе'
+                    : retentionFilter === 'lost' ? 'Почати реактивацію'
+                    : 'Написати обраним'}
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-tight">
+                  {filtered.length} контактів у вибірці
+                </p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-foreground text-background shrink-0">
+                <Send size={16} />
+              </div>
+            </button>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowFab(false); }}
+              className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-white border border-secondary shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-90 z-10"
+            >
+              <X size={12} />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -18,6 +18,8 @@ import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { getNow } from '@/lib/utils/now';
 import { parseError } from '@/lib/utils/errors';
+import { format, parseISO } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
 type ViewMode = 'today' | 'tomorrow' | 'week';
 type DisplayMode = 'list' | 'stats';
@@ -196,9 +198,6 @@ function BookingCard({
             </p>
             <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
               {b.client_name}
-              {view === 'week' && (
-                <span> · {UA_DAYS_SHORT[new Date(b.date).getDay()]} {new Date(b.date).getDate()}</span>
-              )}
             </p>
           </div>
 
@@ -587,6 +586,38 @@ export function TodaySchedule() {
                 <SkeletonCards />
               ) : filtered.length === 0 ? (
                 <EmptyState view={view} />
+              ) : view === 'week' ? (
+                /* Grouped by date with separators */
+                (() => {
+                  const groups: Record<string, typeof filtered> = {};
+                  filtered.forEach(b => { if (!groups[b.date]) groups[b.date] = []; groups[b.date].push(b); });
+                  let globalIdx = 0;
+                  return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)).map(([date, dayBookings]) => (
+                    <div key={date} className="flex flex-col gap-2.5">
+                      <div className="flex items-center gap-3 px-1 pt-1">
+                        <span className="text-xs font-medium text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
+                          {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
+                        </span>
+                        <div className="h-px flex-1 bg-muted-foreground/10" />
+                      </div>
+                      {dayBookings.map(b => {
+                        const idx = globalIdx++;
+                        return (
+                          <BookingCard
+                            key={b.id}
+                            b={b}
+                            index={idx}
+                            view={view}
+                            onComplete={handleQuickComplete}
+                            isCompleting={completingId === b.id}
+                            onOpen={openBooking}
+                            onSuccess={invalidateAll}
+                          />
+                        );
+                      })}
+                    </div>
+                  ));
+                })()
               ) : (
                 filtered.map((b, i) => (
                   <BookingCard

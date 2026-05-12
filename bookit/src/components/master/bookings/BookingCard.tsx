@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, X, Loader2, CheckCircle2, UserX } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { uk } from 'date-fns/locale';
 import { useToast } from '@/lib/toast/context';
 import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
@@ -23,19 +25,17 @@ interface BookingCardProps {
   index?: number;
   compact?: boolean;
   hideTime?: boolean;
-  selectionMode?: boolean;
-  isSelected?: boolean;
-  onSelect?: (id: string) => void;
+  hideActions?: boolean;
+  showDate?: boolean;
 }
 
-export function BookingCard({ 
-  booking, 
-  index = 0, 
-  compact = false, 
+export function BookingCard({
+  booking,
+  index = 0,
+  compact = false,
   hideTime = false,
-  selectionMode = false, 
-  isSelected = false, 
-  onSelect 
+  hideActions = false,
+  showDate = false,
 }: BookingCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,14 +43,10 @@ export function BookingCard({
   const { showToast } = useToast();
   const cfg = BOOKING_STATUS_CONFIG[booking.status];
   const serviceNames = booking.services.map(s => s.name).join(', ') || 'Без послуги';
-  const hasActions = booking.status === 'pending' || booking.status === 'confirmed';
+  const hasActions = !hideActions && (booking.status === 'pending' || booking.status === 'confirmed');
   const hasBadge = !!booking.dynamic_pricing_label;
 
   const openModal = () => {
-    if (selectionMode) {
-      onSelect?.(booking.id);
-      return;
-    }
     const params = new URLSearchParams(searchParams.toString());
     params.set('bookingId', booking.id);
     router.push(`?${params.toString()}`, { scroll: false });
@@ -122,9 +118,7 @@ export function BookingCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, type: 'spring', stiffness: 300, damping: 26 }}
-      className={`bento-card overflow-hidden transition-all ${
-        isSelected ? 'border-accent ring-2 ring-accent/20' : ''
-      }`}
+      className="bento-card overflow-hidden transition-all"
       style={{ borderLeft: `3px solid ${cfg.color}` }}
     >
       <div className="flex pl-1">
@@ -140,6 +134,11 @@ export function BookingCard({
             {/* Time */}
             {!hideTime && (
               <div className="shrink-0 w-[52px] text-center">
+                {showDate && (
+                  <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tabular-nums leading-none mb-0.5">
+                    {format(parseISO(booking.date), 'd MMM', { locale: uk })}
+                  </p>
+                )}
                 <p className="text-[15px] font-bold tabular-nums text-foreground leading-none">
                   {booking.start_time}
                 </p>
@@ -249,19 +248,6 @@ export function BookingCard({
             </div>
           )}
         </div>
-
-        {/* ── Selection Overlay ───────────────────── */}
-        {selectionMode && (
-          <div className="absolute inset-y-0 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-white/80 to-transparent z-20">
-            <div 
-              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                isSelected ? 'bg-accent border-accent' : 'border-white/40 bg-white/20'
-              }`}
-            >
-              {isSelected && <Check size={14} className="text-white" strokeWidth={3} />}
-            </div>
-          </div>
-        )}
 
         {/* Right padding */}
         <div className="w-3 shrink-0" />

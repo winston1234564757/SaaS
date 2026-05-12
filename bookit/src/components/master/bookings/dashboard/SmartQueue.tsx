@@ -5,15 +5,18 @@ import { type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { BookingCard } from '../BookingCard';
 import { AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import { useMemo } from 'react';
+import { format, parseISO } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
 interface Props {
   bookings: BookingWithServices[];
 }
 
 export function SmartQueue({ bookings }: Props) {
+  const todayStr = new Date().toISOString().split('T')[0];
+
   const groups = useMemo(() => {
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
     
     const needsAction = bookings.filter(b => b.status === 'pending');
     
@@ -75,7 +78,14 @@ export function SmartQueue({ bookings }: Props) {
             
             <div className="flex flex-col gap-3">
               {group.items.map((b, i) => (
-                <BookingCard key={b.id} booking={b} index={i} />
+                <div key={b.id} className="flex flex-col gap-0.5">
+                  {group.id === 'complete' && b.date !== todayStr && (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 px-3">
+                      {format(parseISO(b.date), 'd MMMM', { locale: uk })}
+                    </span>
+                  )}
+                  <BookingCard booking={b} index={i} showDate={false} />
+                </div>
               ))}
             </div>
           </motion.div>

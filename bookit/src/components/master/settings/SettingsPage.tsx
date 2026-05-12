@@ -12,8 +12,8 @@ import { TechnicalIsland } from './widgets/TechnicalIsland';
 import { LocationWidget } from './widgets/LocationWidget';
 import { CategoriesWidget } from './widgets/CategoriesWidget';
 import { ProductMixWidget } from './widgets/ProductMixWidget';
-import { ScheduleDrawer } from './widgets/ScheduleDrawer';
 import { VacationManager } from './VacationManager';
+import { SegmentConfigWidget } from './widgets/SegmentConfigWidget';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
@@ -28,7 +28,6 @@ export default function SettingsPage() {
   const { masterProfile } = useMasterContext();
   const queryClient = useQueryClient();
   const { state, actions } = useSettingsForm();
-  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [analyticsDate, setAnalyticsDate] = useState(new Date());
 
   const { data: analytics } = useAnalytics(
@@ -106,7 +105,7 @@ export default function SettingsPage() {
             <StatsPulseWidget
               rating={masterProfile.rating}
               ratingCount={masterProfile.rating_count}
-              viewsCount={Math.floor(Math.random() * 100) + 12} // Better mock or real count if implemented
+              viewsCount={0}
               bookingsCount={stats.monthCompleted}
             />
           </section>
@@ -116,9 +115,13 @@ export default function SettingsPage() {
             <ScheduleWidget
               schedule={state.schedule}
               bufferTime={state.bufferTime}
-              breaksCount={state.breaks.length}
-              occupancyData={analytics?.bento?.bestDayOfWeek?.bookings}
-              onClick={() => setIsScheduleOpen(true)}
+              breaks={state.breaks}
+              retentionCycleDays={state.retentionCycleDays}
+              occupancyData={stats.weekDayBookings}
+              onScheduleChange={actions.setSchedule}
+              onBufferChange={actions.setBufferTime}
+              onBreaksChange={actions.setBreaks}
+              onRetentionCycleDaysChange={actions.setRetentionCycleDays}
             />
           </section>
 
@@ -150,6 +153,14 @@ export default function SettingsPage() {
               onFloorChange={actions.setFloor}
               onCabinetChange={actions.setCabinet}
               onCoordsChange={actions.setCoords}
+            />
+          </section>
+
+          {/* Row 3.5: CRM Segments */}
+          <section id="segments" className="lg:col-span-2">
+            <SegmentConfigWidget
+              segments={state.segmentConfig}
+              onChange={actions.setSegmentConfig}
             />
           </section>
 
@@ -254,34 +265,23 @@ export default function SettingsPage() {
         </div>
       </main>
 
-      <ScheduleDrawer
-        isOpen={isScheduleOpen}
-        onClose={() => setIsScheduleOpen(false)}
-        schedule={state.schedule}
-        bufferTime={state.bufferTime}
-        breaks={state.breaks}
-        onScheduleChange={actions.setSchedule}
-        onBufferChange={actions.setBufferTime}
-        onBreaksChange={actions.setBreaks}
-      />
-
       <AnimatePresence>
         {state.isDirty && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] w-auto whitespace-nowrap"
+            className="fixed bottom-24 left-4 right-4 z-[60] flex justify-center pointer-events-none"
           >
-            <div className="bg-white/90 backdrop-blur-2xl border border-white p-2 rounded-full shadow-2xl flex items-center gap-2">
-              <div className="pl-6 pr-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-text-primary">Незбережені зміни</p>
+            <div className="bg-white/90 backdrop-blur-2xl border border-white p-2 rounded-full shadow-2xl flex items-center gap-2 pointer-events-auto">
+              <div className="pl-5 pr-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-text-primary whitespace-nowrap">Незбережені зміни</p>
               </div>
               <div className="flex gap-1">
                 <button
                   onClick={actions.handleCancel}
                   disabled={state.saving}
-                  className="px-6 py-3 rounded-full text-xs font-bold text-text-mute hover:bg-muted/10 transition-colors"
+                  className="px-5 py-3 rounded-full text-xs font-bold text-text-mute hover:bg-muted/10 transition-colors whitespace-nowrap"
                 >
                   Скасувати
                 </button>
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                   onClick={actions.handleSave}
                   disabled={state.saving || state.slugStatus === 'taken'}
                   className={cn(
-                    "px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all",
+                    "px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white shadow-lg transition-all whitespace-nowrap",
                     state.isDirty ? "bg-success shadow-success/20 hover:scale-105" : "bg-accent shadow-accent/20"
                   )}
                 >

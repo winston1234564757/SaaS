@@ -119,6 +119,7 @@ export interface MasterProfile {
   referred_by?: string | null;
   dynamic_pricing_extra_earned?: number | null;
   retention_cycle_days?: number | null;
+  segment_config?: any[] | null;
   c2c_enabled?: boolean;
   c2c_discount_pct?: number;
   ships_nova_poshta?: boolean;

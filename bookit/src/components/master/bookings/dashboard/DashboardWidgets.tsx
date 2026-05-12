@@ -78,22 +78,22 @@ function WidgetCard({ title, value, label, icon, delay, isLoading, color = 'prim
       transition={{ delay, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
       className="bento-card p-4 relative overflow-hidden group active:scale-95 transition-transform"
     >
-      <div className="flex justify-between items-start mb-2">
-        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</p>
-        <div className={`p-1.5 rounded-xl bg-white/50 border border-white/40 shadow-sm`}>
+      <div className="flex justify-between items-start mb-3">
+        <p className="flex-1 min-w-0 pr-2 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-widest leading-tight">{title}</p>
+        <div className="shrink-0 p-1.5 rounded-xl bg-white/50 border border-white/40 shadow-sm">
           {icon}
         </div>
       </div>
-      
+
       {isLoading ? (
         <div className="space-y-2">
-          <div className="h-7 w-20 bg-muted/20 animate-pulse rounded-lg" />
-          <div className="h-3 w-14 bg-muted/10 animate-pulse rounded-md" />
+          <div className="h-8 w-24 bg-muted/20 animate-pulse rounded-lg" />
+          <div className="h-3 w-16 bg-muted/10 animate-pulse rounded-md" />
         </div>
       ) : (
         <>
-          <h3 className="text-xl font-bold text-foreground leading-tight tracking-tight">{value}</h3>
-          <p className="text-[10px] text-muted-foreground/70 font-medium mt-0.5 line-clamp-1">{label}</p>
+          <h3 className="heading-serif text-2xl text-foreground leading-tight">{value}</h3>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 line-clamp-1">{label}</p>
         </>
       )}
 

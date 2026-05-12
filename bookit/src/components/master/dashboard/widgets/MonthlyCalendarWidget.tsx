@@ -92,9 +92,9 @@ function DayCard({ day, bookings, isCurrentMonth, isSelected, onClick }: DayCard
         </div>
       )}
 
-      {count >= 4 && (
+      {count > 0 && (
         <span
-          className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-1"
+          className="absolute -top-1 right-0 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-1"
           style={{ background: isSelected ? 'rgba(0,0,0,0.28)' : 'var(--accent)', color: 'white' }}
         >
           {count}

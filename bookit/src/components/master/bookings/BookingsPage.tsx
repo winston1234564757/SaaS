@@ -2,19 +2,15 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CalendarDays, 
-  ChevronLeft, 
-  ChevronRight, 
-  Search, 
-  Download, 
-  Plus, 
-  LayoutList, 
-  Clock, 
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Plus,
+  LayoutList,
+  Clock,
   Zap,
-  Filter,
-  CheckCircle2,
-  X
 } from 'lucide-react';
 
 import { useMasterContext } from '@/lib/supabase/context';
@@ -23,8 +19,8 @@ import { DashboardWidgets } from './dashboard/DashboardWidgets';
 import { VerticalTimeline } from './dashboard/VerticalTimeline';
 import { SmartQueue } from './dashboard/SmartQueue';
 import { BookingCard } from './BookingCard';
-import { BulkActionToolbar } from './dashboard/BulkActionToolbar';
 import { PeriodAnalyticsView } from './dashboard/PeriodAnalyticsView';
+import { MonthlyAnalyticsView } from './dashboard/MonthlyAnalyticsView';
 import { ManualBookingForm } from './ManualBookingForm';
 import { SharePageCard } from '@/components/master/dashboard/SharePageCard';
 import { OpportunityMenu } from './dashboard/OpportunityMenu';
@@ -43,7 +39,7 @@ import {
 } from 'date-fns';
 import { uk } from 'date-fns/locale';
 
-import { confirmBooking, cancelBooking, completeBooking } from '@/app/(master)/dashboard/bookings/actions';
+import { completeBooking } from '@/app/(master)/dashboard/bookings/actions';
 import { useToast } from '@/lib/toast/context';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -57,14 +53,14 @@ export function BookingsPage() {
   const { showToast } = useToast();
   const qc = useQueryClient();
 
+  const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+
   const [view, setView] = useState<ViewMode>('list');
   const [timeRange, setTimeRange] = useState<TimeRange>('day');
   const [anchor, setAnchor] = useState(new Date());
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [selectionMode, setSelectionMode] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [preselectedTime, setPreselectedTime] = useState<string | undefined>();
   
@@ -118,52 +114,6 @@ export function BookingsPage() {
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [filteredBookings]);
 
-  const toggleSelect = (id: string) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedIds(next);
-  };
-
-  const handleBulkConfirm = async () => {
-    const ids = Array.from(selectedIds);
-    let successCount = 0;
-    for (const id of ids) {
-      const { error } = await confirmBooking(id);
-      if (!error) successCount++;
-    }
-    showToast({ type: 'success', title: 'Оброблено', message: `Підтверджено ${successCount} записів` });
-    setSelectedIds(new Set());
-    setSelectionMode(false);
-    qc.invalidateQueries({ queryKey: ['bookings'] });
-  };
-
-  const handleBulkCancel = async () => {
-    const ids = Array.from(selectedIds);
-    let successCount = 0;
-    for (const id of ids) {
-      const { error } = await cancelBooking(id);
-      if (!error) successCount++;
-    }
-    showToast({ type: 'warning', title: 'Оброблено', message: `Скасовано ${successCount} записів` });
-    setSelectedIds(new Set());
-    setSelectionMode(false);
-    qc.invalidateQueries({ queryKey: ['bookings'] });
-  };
-
-  const handleBulkComplete = async () => {
-    const ids = Array.from(selectedIds);
-    let successCount = 0;
-    for (const id of ids) {
-      const { error } = await completeBooking(id);
-      if (!error) successCount++;
-    }
-    showToast({ type: 'success', title: 'Оброблено', message: `Завершено ${successCount} записів` });
-    setSelectedIds(new Set());
-    setSelectionMode(false);
-    qc.invalidateQueries({ queryKey: ['bookings'] });
-  };
-
   const handleOpportunityAction = (action: 'booking' | 'flash' | 'story') => {
     setOpportunityOpen(false);
     const dateStr = anchor.toISOString().split('T')[0];
@@ -216,13 +166,7 @@ export function BookingsPage() {
             <p className="text-xs text-muted-foreground/60 ml-12 mt-2">Керування розкладом та аналітика</p>
           </div>
           <div className="flex gap-2 mb-1">
-            <button 
-              onClick={() => { setSelectionMode(!selectionMode); setSelectedIds(new Set()); }}
-              className={`p-2.5 rounded-2xl border transition-all ${selectionMode ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-white/60 border-white/80 text-muted-foreground'}`}
-            >
-              <CheckCircle2 size={18} />
-            </button>
-            <button 
+            <button
               onClick={() => setFormOpen(true)}
               className="p-2.5 rounded-2xl bg-foreground text-background border border-foreground shadow-lg shadow-black/10 transition-all active:scale-95"
             >
@@ -334,20 +278,18 @@ export function BookingsPage() {
                   {groupedBookings.map(([date, dayBookings]) => (
                     <div key={date} className="flex flex-col gap-4">
                       <div className="flex items-center gap-4 px-1">
-                        <span className="text-xs font-black text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
+                        <span className="text-xs font-medium text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
                           {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
                         </span>
                         <div className="h-px w-full bg-muted-foreground/10" />
                       </div>
                       <div className="flex flex-col gap-3">
                         {dayBookings.map((b, i) => (
-                          <BookingCard 
-                            key={b.id} 
-                            booking={b} 
-                            index={i} 
-                            selectionMode={selectionMode}
-                            isSelected={selectedIds.has(b.id)}
-                            onSelect={toggleSelect}
+                          <BookingCard
+                            key={b.id}
+                            booking={b}
+                            index={i}
+                            showDate={timeRange !== 'day'}
                           />
                         ))}
                       </div>
@@ -358,16 +300,40 @@ export function BookingsPage() {
 
               {view === 'timeline' && (
                 timeRange === 'day' ? (
-                  <VerticalTimeline 
-                    bookings={bookings} 
-                    date={anchor.toISOString().split('T')[0]} 
+                  <VerticalTimeline
+                    bookings={bookings}
+                    date={anchor.toISOString().split('T')[0]}
+                    workStart={(() => {
+                      const wh = masterProfile?.working_hours as Record<string, { is_working: boolean; start_time: string; end_time: string }> | null;
+                      const key = DAY_KEYS[anchor.getDay()];
+                      return wh?.[key]?.is_working ? wh[key].start_time : '09:00';
+                    })()}
+                    workEnd={(() => {
+                      const wh = masterProfile?.working_hours as Record<string, { is_working: boolean; start_time: string; end_time: string }> | null;
+                      const key = DAY_KEYS[anchor.getDay()];
+                      return wh?.[key]?.is_working ? wh[key].end_time : '18:00';
+                    })()}
+                    isWorkingDay={(() => {
+                      const wh = masterProfile?.working_hours as Record<string, { is_working: boolean; start_time: string; end_time: string }> | null;
+                      const key = DAY_KEYS[anchor.getDay()];
+                      return wh?.[key]?.is_working ?? true;
+                    })()}
+                    bufferMinutes={(masterProfile?.working_hours as any)?.buffer_time_minutes ?? 0}
+                    breaks={(masterProfile?.working_hours as any)?.breaks ?? []}
                     onOpportunityClick={(time) => { setOpportunityTime(time); setOpportunityOpen(true); }}
                   />
-                ) : (
-                  <PeriodAnalyticsView 
-                    bookings={bookings} 
+                ) : timeRange === 'week' ? (
+                  <PeriodAnalyticsView
+                    bookings={bookings}
                     days={daysInRange}
                     onDayClick={(date) => { setAnchor(date); setTimeRange('day'); }}
+                  />
+                ) : (
+                  <MonthlyAnalyticsView
+                    bookings={bookings}
+                    month={anchor}
+                    onDayClick={(date) => { setAnchor(date); setTimeRange('day'); }}
+                    onWeekClick={(date) => { setAnchor(date); setTimeRange('week'); }}
                   />
                 )
               )}
@@ -381,14 +347,6 @@ export function BookingsPage() {
       </div>
 
       {/* 4. Overlays & Toolbars */}
-      <BulkActionToolbar 
-        selectedCount={selectedIds.size}
-        onConfirmAll={handleBulkConfirm}
-        onCompleteAll={handleBulkComplete}
-        onCancelAll={handleBulkCancel}
-        onClear={() => { setSelectedIds(new Set()); setSelectionMode(false); }}
-      />
-
       <ManualBookingForm
         isOpen={formOpen}
         onClose={() => { setFormOpen(false); setPreselectedTime(undefined); }}

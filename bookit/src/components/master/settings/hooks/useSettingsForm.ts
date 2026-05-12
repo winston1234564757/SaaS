@@ -9,6 +9,7 @@ import { e164ToInputPhone, normalizeToE164, toFullPhone } from '@/lib/utils/phon
 import { parseError } from '@/lib/utils/errors';
 import type { MoodThemeKey } from '@/lib/constants/themes';
 import type { BreakWindow } from '@/types/database';
+import type { CustomSegment } from '@/lib/types/segments';
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
@@ -54,6 +55,7 @@ export function useSettingsForm() {
   const [bufferTime, setBufferTime] = useState(0);
   const [breaks, setBreaks] = useState<BreakWindow[]>([]);
   const [retentionCycleDays, setRetentionCycleDays] = useState(30);
+  const [segmentConfig, setSegmentConfig] = useState<CustomSegment[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -90,7 +92,8 @@ export function useSettingsForm() {
     setThemeKey((masterProfile.mood_theme as MoodThemeKey) ?? 'default');
     setSelectedCategories(masterProfile.categories ?? []);
     setRetentionCycleDays(masterProfile.retention_cycle_days ?? 30);
-    
+    setSegmentConfig((masterProfile.segment_config as CustomSegment[]) ?? []);
+
     const wh = masterProfile.working_hours;
     setBufferTime(wh?.buffer_time_minutes ?? 0);
     setBreaks(wh?.breaks ?? []);
@@ -118,6 +121,7 @@ export function useSettingsForm() {
       breaks: wh?.breaks ?? [],
       categories: masterProfile.categories ?? [],
       retentionCycleDays: masterProfile.retention_cycle_days ?? 30,
+      segmentConfig: (masterProfile.segment_config as CustomSegment[]) ?? [],
     };
   }, [profile, masterProfile]);
 
@@ -188,11 +192,12 @@ export function useSettingsForm() {
       themeKey !== f.themeKey || avatarUrl !== f.avatarUrl ||
       bufferTime !== f.bufferTime ||
       JSON.stringify(breaks) !== JSON.stringify(f.breaks) ||
-      retentionCycleDays !== f.retentionCycleDays;
+      retentionCycleDays !== f.retentionCycleDays ||
+      JSON.stringify(segmentConfig) !== JSON.stringify(f.segmentConfig);
     const scheduleChanged =
       JSON.stringify(schedule) !== JSON.stringify(initialScheduleSnap.current);
     setIsDirty(formChanged || scheduleChanged);
-  }, [fullName, businessName, phone, bio, selectedCategories, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays, schedule]);
+  }, [fullName, businessName, phone, bio, selectedCategories, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, retentionCycleDays, segmentConfig, schedule]);
 
   const handleCancel = () => {
     const f = initialFormSnap.current;
@@ -219,6 +224,7 @@ export function useSettingsForm() {
     setBufferTime(f.bufferTime);
     setBreaks(f.breaks);
     setRetentionCycleDays(f.retentionCycleDays);
+    setSegmentConfig(f.segmentConfig ?? []);
     if (initialScheduleSnap.current) setSchedule(initialScheduleSnap.current);
     setIsDirty(false);
   };
@@ -249,6 +255,7 @@ export function useSettingsForm() {
           is_published: isPublished,
           mood_theme: themeKey,
           retention_cycle_days: retentionCycleDays,
+          segment_config: segmentConfig,
           working_hours: {
             buffer_time_minutes: bufferTime,
             breaks: breaks.filter(b => b.start && b.end),
@@ -272,7 +279,7 @@ export function useSettingsForm() {
       showToast({ type: 'success', title: 'Збережено', message: 'Ваші налаштування успішно оновлено' });
       
       setTimeout(() => setSaved(false), 2000);
-      initialFormSnap.current = { fullName, businessName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, categories: selectedCategories, retentionCycleDays };
+      initialFormSnap.current = { fullName, businessName, phone, bio, slug, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, avatar, themeKey, avatarUrl, bufferTime, breaks, categories: selectedCategories, retentionCycleDays, segmentConfig };
       initialScheduleSnap.current = { ...schedule };
       setIsDirty(false);
       refresh().catch(() => {});
@@ -285,11 +292,11 @@ export function useSettingsForm() {
 
   return {
     state: {
-      fullName, businessName, phone, bio, slug, avatar, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, themeKey, avatarUrl, selectedCategories, schedule, bufferTime, breaks, retentionCycleDays,
+      fullName, businessName, phone, bio, slug, avatar, city, address, lat, lng, floor, cabinet, instagram, telegram, telegramChatId, isPublished, themeKey, avatarUrl, selectedCategories, schedule, bufferTime, breaks, retentionCycleDays, segmentConfig,
       saving, saved, slugStatus, isDirty
     },
     actions: {
-      setFullName, setBusinessName, setPhone, setBio, setSlug, setAvatar, setCity, setAddress, setLat, setLng, setFloor, setCabinet, setInstagram, setTelegram, setTelegramChatId, setIsPublished, setThemeKey, setAvatarUrl, setSelectedCategories, setSchedule, setBufferTime, setBreaks, setRetentionCycleDays,
+      setFullName, setBusinessName, setPhone, setBio, setSlug, setAvatar, setCity, setAddress, setLat, setLng, setFloor, setCabinet, setInstagram, setTelegram, setTelegramChatId, setIsPublished, setThemeKey, setAvatarUrl, setSelectedCategories, setSchedule, setBufferTime, setBreaks, setRetentionCycleDays, setSegmentConfig,
       setCoords: (lat: number, lng: number) => { setLat(lat); setLng(lng); },
       handleSave, handleCancel
     }
