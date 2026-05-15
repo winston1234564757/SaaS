@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { createClient } from '../client';
 import type { TimeRange } from '@/lib/utils/smartSlots';
 
@@ -95,6 +95,7 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
       return { templates, exceptions, bookingsByDate } as ScheduleStore;
     },
     enabled: !!masterId,
+    placeholderData: keepPreviousData,
     staleTime: 0,                // always stale — background refetch on every wizard open
     gcTime:    1000 * 60 * 2,    // 2 min cache lifetime
     retry: 3,                    // Silent retries on flaky mobile networks

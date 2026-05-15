@@ -22,7 +22,17 @@
       "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; $result = npx tsc --noEmit --incremental false 2>&1 | Out-String; $lines = $result -split \"`n\"; $ours = $lines | Where-Object { $_ -match \"dashboard|QuickActions|WeeklyChart|MonthlyCalendar|TodaySchedule|DashboardGreeting|StatsMosaic\" }; if \\($ours\\) { $ours } else { \"Clean — no errors in changed files\" })",
       "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; $result = npx tsc --noEmit --incremental false 2>&1 | Out-String; $lines = $result -split \"`n\"; $ours = $lines | Where-Object { $_ -match \"dashboard|QuickActions|WeeklyChart|MonthlyCalendar|TodaySchedule|DashboardGreeting|StatsMosaic\" }; if \\($ours\\) { $ours -join \"`n\" } else { \"Clean\" })",
       "mcp__ide__getDiagnostics",
-      "PowerShell(git *)"
+      "PowerShell(git *)",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\\\\src\\\\app\\\\\\(master\\)\\\\dashboard\\\\inventory\")",
+      "PowerShell(Tee-Object *)",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"inventory|bookings/actions|marketing|ServiceRecipe|BottomSheet\" } | Select-Object -First 20)",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; $out = npx tsc --noEmit 2>&1; $relevant = $out | Where-Object { $_ -match \"inventory|bookings.actions|marketing.page|ServiceRecipe|useOracle|useRecipe|useInventory|database\\\\.ts\" }; if \\($relevant\\) { $relevant } else { \"No relevant errors found\" })",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; $out = npx tsc --noEmit 2>&1; $filtered = $out | Where-Object { $_ -notmatch \"dynamicPricing\\\\.test|e2e\" }; $filtered | Where-Object { $_ -match \"error TS\" } | Select-Object -First 20)",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; \\(npx tsc --noEmit 2>&1\\) -match \"error TS\" | Where-Object { $_ -notmatch \"test|spec|e2e\" } | Select-Object -First 15)",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; npx tsc --noEmit > \"$env:TEMP\\\\tsc2.txt\" 2>&1; Get-Content \"$env:TEMP\\\\tsc2.txt\" | Where-Object { $_ -match \"error\" -and $_ -notmatch \"test|spec|e2e\" } | Select-Object -First 15)",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "mcp__plugin_supabase_supabase__execute_sql",
+      "mcp__plugin_supabase_supabase__apply_migration"
     ]
   }
 }

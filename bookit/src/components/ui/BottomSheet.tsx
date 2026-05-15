@@ -28,7 +28,8 @@ export function BottomSheet({ isOpen, onClose, title, children, className, conte
         <Drawer.Content
           className={cn(
             'fixed bottom-0 left-0 right-0 z-[100] outline-none flex flex-col',
-            'bg-background rounded-t-[32px] shadow-[0_-8px_40px_rgba(0,0,0,0.12)]',
+            'bg-[rgba(255,255,255,0.68)] backdrop-blur-3xl saturate-150 rounded-t-[32px] shadow-[0_-8px_40px_rgba(0,0,0,0.12)]',
+            'border-t border-white/40',
             'max-h-[96vh] will-change-transform',
             className
           )}

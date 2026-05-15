@@ -52,12 +52,7 @@ export function FreeSlotsWidget() {
   const count     = allSlots.length;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.1 }}
-      className="bento-card overflow-hidden"
-    >
+    <div className="bento-card overflow-hidden">
       <div className="px-5 pt-5 pb-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
@@ -181,6 +176,6 @@ export function FreeSlotsWidget() {
           </p>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

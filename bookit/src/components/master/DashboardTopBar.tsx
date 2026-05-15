@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Users, Scissors,
   BarChart2, GalleryVerticalEnd, Bell, Settings, ChevronDown, User,
+  Sparkles, ShoppingBag, Wallet, MessageSquare, Rocket,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -14,13 +15,24 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useNotifications } from '@/lib/supabase/hooks/useNotifications';
 
-const NAV_ITEMS = [
+const PRIMARY_NAV = [
   { href: '/dashboard',            icon: LayoutDashboard,    label: 'Огляд'     },
   { href: '/dashboard/bookings',   icon: CalendarDays,       label: 'Записи'    },
-  { href: '/dashboard/clients',    icon: Users,              label: 'Клієнти'   },
-  { href: '/dashboard/services',   icon: Scissors,           label: 'Послуги'   },
   { href: '/dashboard/analytics',  icon: BarChart2,          label: 'Аналітика' },
+  { href: '/dashboard/clients',    icon: Users,              label: 'CRM'       },
+  { href: '/dashboard/services',   icon: Scissors,           label: 'Послуги'   },
+];
+
+const ACTIVITY = [
+  { href: '/dashboard/products',   icon: ShoppingBag,         label: 'Магазин'   },
   { href: '/dashboard/portfolio',  icon: GalleryVerticalEnd, label: 'Портфоліо' },
+];
+
+const GROWTH = [
+  { href: '/dashboard/marketing',  icon: Sparkles,           label: 'Маркетинг' },
+  { href: '/dashboard/revenue',    icon: Wallet,              label: 'Дохід'     },
+  { href: '/dashboard/growth',     icon: Rocket,              label: 'Ріст'      },
+  { href: '/dashboard/reviews',    icon: MessageSquare,       label: 'Відгуки'   },
 ];
 
 const TIER_LABELS: Record<string, string> = {
@@ -115,12 +127,91 @@ function ProfileMenu({ open, onClose }: { open: boolean; onClose: () => void }) 
   );
 }
 
+function NavGroup({ label, items, pathname, todayPending }: { 
+  label: string; items: any[]; pathname: string; todayPending: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const isActive = items.some(item => pathname.startsWith(item.href));
+
+  useEffect(() => {
+    if (!open) return;
+    const handle = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={cn(
+          "flex items-center gap-2 px-4 py-2 rounded-2xl text-[14px] font-semibold transition-all active:scale-95",
+          isActive ? "bg-[var(--accent)] text-white shadow-md" : "text-[var(--text-secondary)] hover:bg-white/60"
+        )}
+      >
+        <span>{label}</span>
+        <ChevronDown size={14} className={cn("transition-transform duration-300", open && "rotate-180")} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0,  scale: 1    }}
+            exit={{   opacity: 0, y: 8,  scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+            className="absolute left-0 top-full mt-3 w-56 z-[110] overflow-hidden p-1.5"
+            style={{
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(32px)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.12)',
+            }}
+          >
+            {items.map(({ href, icon: Icon, label }) => {
+              const active = pathname.startsWith(href);
+              const badge = href === '/dashboard/bookings' && todayPending > 0;
+              
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all active:scale-95",
+                    active ? "bg-[var(--accent-light)] text-[var(--accent)]" : "text-[var(--text-secondary)] hover:bg-white/60"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon size={16} strokeWidth={2} />
+                    {label}
+                  </div>
+                  {badge && (
+                    <span className="min-w-[18px] h-[18px] rounded-full bg-[var(--warning)] text-white text-[9px] flex items-center justify-center font-bold">
+                      {todayPending}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function DashboardTopBar() {
   const pathname  = usePathname();
   const { todayPending } = useDashboardStats();
   const { profile, masterProfile } = useMasterContext();
   const { unreadCount } = useNotifications();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const name  = masterProfile?.business_name || profile?.full_name || '';
   const hasEmoji = !!masterProfile?.avatar_emoji;
@@ -128,53 +219,57 @@ export function DashboardTopBar() {
   const src   = profile?.avatar_url ?? null;
 
   return (
-    <header className="dashboard-topbar w-full px-4 lg:px-8">
-      <div className="max-w-[1400px] mx-auto w-full flex items-center gap-4 h-full">
-
+    <header className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-7xl px-0 pointer-events-none">
+      <div 
+        className={cn(
+          "w-full flex items-center gap-2 h-16 px-6 rounded-[32px] transition-all duration-300 pointer-events-auto",
+          "bg-white/80 backdrop-blur-3xl border border-white/40 shadow-[0_12px_40px_rgba(0,0,0,0.12)]"
+        )}
+      >
         {/* Logo */}
-        <Link href="/dashboard" className="shrink-0 flex items-center gap-0.5 mr-2">
-          <span className="text-[18px] font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+        <Link href="/dashboard" className="shrink-0 flex items-center gap-1 mr-4">
+          <span className="text-[20px] font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             bookit
           </span>
-          <span className="text-[18px] font-bold" style={{ color: 'var(--accent)' }}>.</span>
+          <span className="text-[20px] font-bold" style={{ color: 'var(--accent)' }}>.</span>
         </Link>
 
         {/* Center nav */}
-        <nav className="hidden lg:flex items-center gap-0.5 flex-1">
-          {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-            const active = href === '/dashboard'
-              ? pathname === href
-              : pathname.startsWith(href);
-            const badge = href === '/dashboard/bookings' && todayPending > 0;
-
+        <nav className="hidden lg:flex items-center gap-2 flex-1 ml-4">
+          {PRIMARY_NAV.map(({ href, icon: Icon, label }) => {
+            const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200',
-                  active
-                    ? 'text-white'
-                    : 'hover:bg-[var(--background-deep)]'
+                  'flex items-center gap-2.5 px-4 py-2 rounded-2xl text-[14px] font-semibold transition-all active:scale-95 shrink-0',
+                  active ? 'bg-[var(--accent)] text-white shadow-md' : 'text-[var(--text-secondary)] hover:bg-white/60'
                 )}
-                style={active
-                  ? { background: 'var(--accent)', color: 'white' }
-                  : { color: 'var(--text-secondary)' }
-                }
               >
-                <Icon size={15} strokeWidth={active ? 2.5 : 2} />
-                {label}
-                {badge && !active && (
-                  <span
-                    className="min-w-[18px] h-[18px] rounded-full text-[9px] font-bold flex items-center justify-center px-1"
-                    style={{ background: 'var(--warning)', color: '#fff' }}
-                  >
-                    {todayPending}
-                  </span>
-                )}
+                <Icon size={16} />
+                <span>{label}</span>
               </Link>
             );
           })}
+
+          <div className="w-px h-6 bg-white/20 mx-1 shrink-0" />
+
+          {/* Group: Activity */}
+          <NavGroup 
+            label="Діяльність" 
+            items={ACTIVITY} 
+            pathname={pathname} 
+            todayPending={0} 
+          />
+
+          {/* Group: Growth */}
+          <NavGroup 
+            label="Розвиток" 
+            items={GROWTH} 
+            pathname={pathname} 
+            todayPending={0} 
+          />
         </nav>
 
         {/* Right */}
@@ -182,12 +277,10 @@ export function DashboardTopBar() {
           {/* Notifications */}
           <Link
             href="/dashboard"
-            className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
-            style={{ color: 'var(--text-tertiary)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--background-deep)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            className="relative w-11 h-11 rounded-2xl flex items-center justify-center transition-all active:scale-90 bg-white/60 border border-white/40 shadow-sm"
+            style={{ color: 'var(--text-primary)' }}
           >
-            <Bell size={17} strokeWidth={1.8} />
+            <Bell size={20} strokeWidth={2} />
             <AnimatePresence>
               {unreadCount > 0 && (
                 <motion.span
@@ -196,7 +289,7 @@ export function DashboardTopBar() {
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-                  className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-1"
+                  className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-1"
                   style={{ background: 'var(--accent)', color: 'white' }}
                 >
                   {unreadCount > 9 ? '9+' : unreadCount}
@@ -224,7 +317,7 @@ export function DashboardTopBar() {
                     : <User size={14} className="text-accent" />}
               </div>
               <span
-                className="hidden xl:block text-[13px] font-medium max-w-[96px] truncate"
+                className="hidden xl:block text-[14px] font-medium max-w-[180px] truncate"
                 style={{ color: 'var(--text-primary)' }}
               >
                 {name}

@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
-import { NotificationsBell } from './NotificationsBell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getNow } from '@/lib/utils/now';
 
@@ -164,7 +163,6 @@ export function DashboardGreeting() {
           <div className="flex items-center gap-1.5">
             <Skeleton className="h-6 w-44 rounded-full" />
           </div>
-          <NotificationsBell />
         </div>
         <Skeleton className="h-14 w-64 rounded-xl mb-3" />
         <Skeleton className="h-1.5 w-8 rounded-full" />
@@ -176,30 +174,46 @@ export function DashboardGreeting() {
 
   return (
     <div className="mb-5">
-      {/* Top row: single date+time pill + bell */}
-      <div className="flex items-center justify-between mb-3">
-        <MetaPill suppressHydrationWarning>
-          {fullDateLabel} · {timeStr}
-        </MetaPill>
-        <NotificationsBell />
-      </div>
+      <div className="mb-6 flex items-end justify-between gap-4 w-full">
+        <div className="flex-1">
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 180, damping: 34 }}
+            suppressHydrationWarning
+            style={{
+              fontFamily: 'var(--font-great-vibes, cursive)',
+              fontSize: 'clamp(3.5rem, 10vw, 5rem)',
+              fontWeight: 400,
+              lineHeight: 0.85,
+              color: 'var(--text-primary)',
+            }}
+          >
+            {greetingText}, {firstName}
+          </motion.h1>
+        </div>
 
-      {/* Greeting — Great Vibes dominant */}
-      <motion.h1
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 180, damping: 34 }}
-        suppressHydrationWarning
-        style={{
-          fontFamily: 'var(--font-great-vibes, cursive)',
-          fontSize: 'clamp(3rem, 12vw, 4rem)',
-          fontWeight: 400,
-          lineHeight: 1.15,
-          color: 'var(--text-primary)',
-        }}
-      >
-        {greetingText}, {firstName}
-      </motion.h1>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 25 }}
+          className="hidden lg:block shrink-0 mb-1"
+        >
+          <div 
+            className="px-6 py-2.5 rounded-[20px] flex items-center gap-3 backdrop-blur-3xl border border-white/50 shadow-[0_12px_40px_rgba(0,0,0,0.06)]"
+            style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+          >
+            <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
+            <span 
+              className="text-[15px] font-bold tracking-tight" 
+              style={{ color: 'var(--text-primary)' }}
+              suppressHydrationWarning
+            >
+              {fullDateLabel} <span className="mx-2 opacity-20">|</span> {timeStr}
+            </span>
+          </div>
+        </motion.div>
+      </div>
 
       {/* Accent line */}
       <div

@@ -15,6 +15,36 @@ import { cn } from '@/lib/utils/cn';
 
 const UPDATES = [
   {
+    title: 'Inventory & Financial Intelligence',
+    icon: Sparkles,
+    color: 'accent',
+    description: 'BookIT стає міні-ERP: облік витратних матеріалів (мл/г), собівартість COGS, чистий прибуток по запису та прогноз дефіциту на 14 днів.',
+    details: [
+      'inventory_items: переименовано products → ERP-таблиця з типами consumable / for_sale',
+      'Moving Weighted Average: автоматичний розрахунок ціни закупівлі при поповненні складу',
+      'Рецептури послуг: прив\'яжіть матеріали (мл фарби, г порошку) до кожної послуги',
+      'CFO-логіка: при завершенні запису — автоматичне списання COGS та розрахунок net_profit',
+      'Oracle Widget: попередження на дашборді якщо матеріалів не вистачить на 14 днів',
+      'Upsell PWA: клієнти бачать рекомендовані товари відповідно до заброньованої послуги',
+    ],
+    link: '/dashboard/inventory',
+    linkText: 'Перейти до інвентарю'
+  },
+  {
+    title: 'Desktop Premium Overhaul',
+    icon: LayoutGrid,
+    color: 'sage',
+    description: 'Масштабне оновлення інтерфейсу для великих екранів. BookIT тепер виглядає як справжній Premium SaaS.',
+    details: [
+      '4-Column Bento Grid: ідеальний розподіл інформації на десктопі',
+      'Mica Glassmorphism: глибоке розмиття та скляні ефекти для всіх модалок',
+      'Responsive TopBar: розумна навігація з More-дропдауном',
+      'Harmonized Widgets: всі віджети огляду адаптовані під нову сітку'
+    ],
+    link: '/dashboard',
+    linkText: 'Глянути новий огляд'
+  },
+  {
     title: 'Telegram Mini App Auth',
     icon: Rocket,
     color: 'sage',

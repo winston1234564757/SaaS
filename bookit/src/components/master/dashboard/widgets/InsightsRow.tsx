@@ -250,7 +250,7 @@ export function InsightsRow() {
 
   return (
     <>
-      <div className="flex gap-3">
+      <div className="grid grid-cols-1 gap-4 lg:gap-5">
         <TopClientCard onOpen={setSelectedClient} />
         <AvgCheckCard />
       </div>

@@ -19,6 +19,7 @@ import {
   completeBooking,
   updateBookingStatus,
 } from '@/app/(master)/dashboard/bookings/actions';
+import { cn } from '@/lib/utils/cn';
 
 interface BookingCardProps {
   booking: BookingWithServices;
@@ -27,6 +28,7 @@ interface BookingCardProps {
   hideTime?: boolean;
   hideActions?: boolean;
   showDate?: boolean;
+  className?: string;
 }
 
 export function BookingCard({
@@ -36,6 +38,7 @@ export function BookingCard({
   hideTime = false,
   hideActions = false,
   showDate = false,
+  className,
 }: BookingCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -117,19 +120,19 @@ export function BookingCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, type: 'spring', stiffness: 300, damping: 26 }}
-      className="bento-card overflow-hidden transition-all"
-      style={{ borderLeft: `3px solid ${cfg.color}` }}
+      transition={{ delay: index * 0.04, type: 'spring', stiffness: 260, damping: 28 }}
+      className={cn("bento-card overflow-hidden transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl hover:border-primary/20 group flex flex-col", className)}
+      style={{ borderLeft: `4px solid ${cfg.color}` }}
     >
-      <div className="flex pl-1">
+      <div className="flex pl-1 flex-1">
 
         {/* ── Card body ───────────────────────────── */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
 
           {/* Main clickable row */}
           <button
             onClick={openModal}
-            className="w-full flex items-center gap-3 px-3 py-3.5 text-left hover:bg-white/25 transition-colors rounded-xl active:scale-95 transition-all"
+            className="w-full flex-1 flex items-center gap-4 lg:gap-6 px-4 py-4 lg:px-8 lg:py-6 text-left hover:bg-white/30 transition-colors rounded-2xl active:scale-95 transition-all"
           >
             {/* Time */}
             {!hideTime && (
@@ -157,24 +160,24 @@ export function BookingCard({
 
             {/* Name + Service */}
             <div className="flex-1 min-w-0">
-              <p className="font-display text-sm text-foreground truncate font-medium">
+              <p className="font-display text-base lg:text-xl text-foreground truncate font-black group-hover:text-primary transition-colors">
                 {booking.client_name}
               </p>
-              <p className="text-xs text-muted-foreground/60 truncate mt-0.5">
+              <p className="text-xs lg:text-sm text-muted-foreground/60 truncate mt-1 font-medium">
                 {serviceNames}
               </p>
             </div>
 
             {/* Status pill + Price — isolated on the right, no badge here */}
             {!compact && (
-              <div className="shrink-0 flex flex-col items-end gap-1 ml-1">
+              <div className="shrink-0 flex flex-col items-end gap-2 ml-1">
                 <span
-                  className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+                  className="text-[10px] lg:text-[11px] font-black px-3 py-1 rounded-full whitespace-nowrap uppercase tracking-wider"
                   style={{ color: cfg.color, background: cfg.bg }}
                 >
                   {cfg.label}
                 </span>
-                <p className="text-sm font-bold text-foreground tabular-nums">
+                <p className="text-sm lg:text-lg font-black text-foreground tabular-nums">
                   {formatPrice(booking.total_price)}
                 </p>
               </div>

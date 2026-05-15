@@ -37,7 +37,7 @@ interface RecentBooking {
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
 
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 
 export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
@@ -152,14 +152,14 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
   };
 
   return (
-    <BottomSheet 
+    <PopUpModal 
       isOpen={!!client} 
       onClose={onClose}
       title={client?.client_name ?? 'Інформація про клієнта'}
     >
       <div className="flex flex-col gap-5">
         {/* Header/Identity Card */}
-        <div className="flex items-center gap-4 bg-white/40 p-4 rounded-3xl border border-white/60 relative overflow-hidden">
+        <div className="flex items-center gap-4 bg-white/60 p-4 rounded-3xl border border-white/60 relative overflow-hidden shadow-sm backdrop-blur-md">
           {isAmbassador && (
             <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-bl-2xl shadow-sm z-10">
               Ambassador
@@ -210,7 +210,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
             { icon: TrendingUp, label: 'Витрачено',    value: formatPrice(client?.total_spent ?? 0), color: '#5C9E7A' },
             { icon: Star,       label: 'Сер. чек',     value: formatPrice(client?.average_check ?? 0), color: '#D4935A' },
           ].map(s => (
-            <div key={s.label} className="bento-card p-3.5 text-center bg-white/40">
+            <div key={s.label} className="p-3.5 text-center bg-white/60 rounded-3xl border border-white/60 backdrop-blur-sm shadow-sm">
               <s.icon size={16} className="mx-auto mb-1.5 opacity-60" style={{ color: s.color }} />
               <p className="text-base font-bold text-foreground leading-tight">{s.value}</p>
               <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wider">{s.label}</p>
@@ -219,7 +219,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
         </div>
 
         {/* LTV & Insights */}
-        <div className="bg-gradient-to-br from-sage/10 to-primary/5 p-5 rounded-3xl border border-sage/20 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-sage/10 to-primary/5 p-5 rounded-3xl border border-white/60 relative overflow-hidden backdrop-blur-md shadow-sm">
            <div className="absolute top-0 right-0 p-4 opacity-5 rotate-12">
               <TrendingUp size={60} />
            </div>
@@ -239,7 +239,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
         </div>
 
         {/* Vibe Tags Section */}
-        <div className="bg-white/40 p-5 rounded-3xl border border-white/60">
+        <div className="bg-white/60 p-5 rounded-3xl border border-white/60 backdrop-blur-sm shadow-sm">
            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                  <Heart size={14} className="text-primary/60" />
@@ -338,7 +338,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
         </div>
 
         {/* Private notes */}
-        <div className="bg-white/40 p-5 rounded-3xl border border-white/60 relative overflow-hidden group">
+        <div className="bg-white/60 p-5 rounded-3xl border border-white/60 relative overflow-hidden group backdrop-blur-sm shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <PenLine size={14} className="text-muted-foreground/60" />
@@ -362,7 +362,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
         </div>
 
         {/* Recent bookings */}
-        <div className="bg-white/40 p-5 rounded-3xl border border-white/60">
+        <div className="bg-white/60 p-5 rounded-3xl border border-white/60 backdrop-blur-sm shadow-sm">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Останні записи</p>
           {loading ? (
             <div className="flex justify-center py-6">
@@ -377,7 +377,7 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
               {bookings.map(b => {
                 const cfg = BOOKING_STATUS_CONFIG[b.status as BookingStatus] ?? BOOKING_STATUS_CONFIG.pending;
                 return (
-                  <div key={b.id} className="flex items-center gap-4 py-3 px-4 rounded-2xl bg-white/60 border border-white/40 shadow-sm">
+                  <div key={b.id} className="flex items-center gap-4 py-3 px-4 rounded-2xl bg-white/70 border border-white/40 shadow-sm">
                     <div className="flex-shrink-0 w-12 text-center">
                       <p className="text-xs font-black text-foreground">{b.start_time}</p>
                       <p className="text-[9px] text-muted-foreground/60 font-bold uppercase mt-0.5">{formatDate(b.date)}</p>
@@ -406,6 +406,6 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
           )}
         </div>
       </div>
-    </BottomSheet>
+    </PopUpModal>
   );
 }

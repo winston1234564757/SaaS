@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 import { X, Bell, Send, Phone, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useBroadcastDeliveryResults } from '@/lib/supabase/hooks/useBroadcasts';
 
@@ -14,19 +14,7 @@ export function BroadcastDetailSheet({ broadcastId, broadcastTitle, onClose }: P
   const { data: results, isLoading } = useBroadcastDeliveryResults(broadcastId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <motion.div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        onClick={onClose}
-      />
-
-      <motion.div
-        className="relative w-full sm:max-w-lg max-h-[85dvh] overflow-hidden rounded-t-3xl sm:rounded-3xl flex flex-col"
-        style={{ background: 'rgba(255,232,220,0.98)', backdropFilter: 'blur(20px)' }}
-        initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 60, opacity: 0 }}
-      >
+    <PopUpModal isOpen={true} title="Результати розсилки" onClose={onClose}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-secondary shrink-0">
           <div>
@@ -93,8 +81,7 @@ export function BroadcastDetailSheet({ broadcastId, broadcastTitle, onClose }: P
             </div>
           </div>
         )}
-      </motion.div>
-    </div>
+    </PopUpModal>
   );
 }
 

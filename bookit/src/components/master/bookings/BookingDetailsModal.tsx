@@ -331,6 +331,8 @@ function ReschedulePanel({
 // ── Main Modal ────────────────────────────────────────────────────────────────
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
+import { MicaModal } from '@/components/ui/MicaModal';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 
 export function BookingDetailsModal() {
   const router = useRouter();
@@ -338,6 +340,7 @@ export function BookingDetailsModal() {
   const bookingId = searchParams.get('bookingId');
   const { masterProfile } = useMasterContext();
   const qc = useQueryClient();
+  const isDesktop = useIsDesktop();
 
   const {
     booking, isLoading,
@@ -411,8 +414,10 @@ export function BookingDetailsModal() {
   const canAct = displayBooking && ['pending', 'confirmed'].includes(displayBooking.status);
   const durationMinutes = displayBooking?.services.reduce((acc: number, s: any) => acc + s.duration, 0) || 0;
 
+  const ModalComponent = isDesktop ? MicaModal : BottomSheet;
+
   return (
-    <BottomSheet 
+    <ModalComponent 
       isOpen={isModalOpen} 
       onClose={handleClose}
       title="Деталі запису"
@@ -678,6 +683,6 @@ export function BookingDetailsModal() {
           )}
         </div>
       )}
-    </BottomSheet>
+    </ModalComponent>
   );
 }

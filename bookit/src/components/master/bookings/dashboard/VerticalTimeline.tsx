@@ -24,7 +24,7 @@ interface Props {
   onOpportunityClick?: (time: string) => void;
 }
 
-const HOUR_HEIGHT   = 100;
+const HOUR_HEIGHT   = 180;
 const DRAG_THRESHOLD = 18; // px — ignore accidental swipes below this
 
 const STATUS_COLORS: Record<string, string> = {
@@ -152,7 +152,7 @@ function DraggableBookingBlock({
         }}
       >
         <div className={cn('h-full py-1', (isDragging || !!pendingTime) && 'pointer-events-none')}>
-          <BookingCard booking={booking} compact={false} hideActions hideTime={false} />
+          <BookingCard booking={booking} compact={false} hideActions hideTime={false} className="h-full" />
         </div>
 
         {/* Drag time overlay — inside card, never clipped by timeline overflow:hidden */}

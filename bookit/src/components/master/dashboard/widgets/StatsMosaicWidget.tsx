@@ -11,7 +11,7 @@ import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
 import { useMasterContext } from '@/lib/supabase/context';
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import { getNow } from '@/lib/utils/now';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -74,11 +74,11 @@ function HeroCard({
             className="absolute right-3 -top-4 select-none pointer-events-none leading-none"
             style={{
               fontFamily: 'var(--font-cormorant, Georgia, serif)',
-              fontSize: '8rem',
+              fontSize: '10rem',
               fontWeight: 700,
               letterSpacing: '-0.04em',
               color: 'var(--text-primary)',
-              opacity: 0.04,
+              opacity: 0.06,
             }}
           >
             {!isLoading ? value : ''}
@@ -219,7 +219,7 @@ function RevenueModal({
   const completed = bookings.filter(b => b.status === 'completed');
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} title="Виручка сьогодні">
+    <PopUpModal isOpen={isOpen} onClose={onClose} title="Виручка сьогодні">
       <div className="px-4 pb-6">
         {completed.length === 0 ? (
           <p className="text-center text-sm py-8" style={{ color: 'var(--text-tertiary)' }}>
@@ -272,7 +272,7 @@ function RevenueModal({
           </>
         )}
       </div>
-    </BottomSheet>
+    </PopUpModal>
   );
 }
 
@@ -305,7 +305,7 @@ function ClientsModal({
 
   return (
     <>
-      <BottomSheet isOpen={isOpen} onClose={onClose} title="Клієнти тижня">
+      <PopUpModal isOpen={isOpen} onClose={onClose} title="Клієнти тижня">
         <div className="px-4 pb-6">
           {uniqueClients.length === 0 ? (
             <p className="text-center text-sm py-8" style={{ color: 'var(--text-tertiary)' }}>
@@ -376,7 +376,7 @@ function ClientsModal({
             </div>
           )}
         </div>
-      </BottomSheet>
+      </PopUpModal>
 
       <ClientDetailSheet
         client={selectedClient}

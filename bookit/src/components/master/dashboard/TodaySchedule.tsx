@@ -518,12 +518,7 @@ export function TodaySchedule() {
     .reduce((s, b) => s + b.total_price, 0);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.15, type: 'spring', stiffness: 180, damping: 34 }}
-      className="bento-card overflow-hidden"
-    >
+    <div className="bento-card overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex items-center gap-2.5">
@@ -533,14 +528,23 @@ export function TodaySchedule() {
           >
             Записи
           </h2>
-          {!isLoading && (
-            <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
-            >
-              {filtered.length}
-            </span>
-          )}
+          <div className="relative h-5 overflow-hidden">
+            <AnimatePresence mode="wait">
+              {!isLoading && (
+                <motion.span
+                  key={filtered.length}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -14 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+                  className="text-xs font-bold px-2 py-0.5 rounded-full inline-block"
+                  style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
+                >
+                  {filtered.length}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <DisplayToggle active={display} onChange={setDisplay} />
@@ -556,29 +560,39 @@ export function TodaySchedule() {
 
       {/* Date tabs — always visible */}
       <div className="flex gap-1.5 px-5 pb-3">
-        {DATE_TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setView(tab.id)}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
-            style={{
-              background: view === tab.id ? 'var(--accent)' : 'var(--background-deep)',
-              color: view === tab.id ? 'white' : 'var(--text-tertiary)',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {DATE_TABS.map(tab => {
+          const isActive = view === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setView(tab.id)}
+              className="relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300"
+              style={{
+                color: isActive ? 'white' : 'var(--text-tertiary)',
+              }}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="schedule-view-pill"
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: 'var(--accent)', zIndex: 0 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+                />
+              )}
+              <span className="relative z-1">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={`${display}-${view}`}
-          initial={{ opacity: 0, y: 5 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -5 }}
-          transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+          exit={{ opacity: 0, y: -14 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 28 }}
         >
           {display === 'list' ? (
             <div className="flex flex-col gap-2.5 px-4 pb-4">
@@ -649,17 +663,26 @@ export function TodaySchedule() {
         style={{ borderTop: '0.5px solid var(--border)', background: 'var(--background-deep)' }}
       >
         <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Виручка (завершені)</span>
-        <span
-          style={{
-            fontFamily: 'var(--font-cormorant, Georgia, serif)',
-            fontSize: '1.15rem',
-            fontWeight: 600,
-            color: 'var(--text-primary)',
-          }}
-        >
-          {formatPrice(totalRevenue)}
-        </span>
+        <div className="relative h-6 overflow-hidden flex items-center justify-end min-w-[80px]">
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={totalRevenue}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+              style={{
+                fontFamily: 'var(--font-cormorant, Georgia, serif)',
+                fontSize: '1.15rem',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+              }}
+            >
+              {formatPrice(totalRevenue)}
+            </motion.span>
+          </AnimatePresence>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -50,12 +50,13 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       {/* Desktop horizontal topbar */}
       <div className="hidden lg:block">
         <DashboardTopBar />
+        <div className="h-24" />
       </div>
 
       {/* Content */}
       <main className="flex-1 w-full">
         <div
-          className="max-w-[1400px] mx-auto px-4 py-5 lg:px-8 lg:py-6"
+          className="max-w-7xl mx-auto px-4 py-5 lg:px-8 lg:py-8"
           style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 1rem)' }}
         >
           {children}

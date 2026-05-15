@@ -76,6 +76,7 @@
 - `isPending` (v5) замість `isLoading` для mutation стану.
 - `isLoading` = `isPending && isFetching` — використовувати лише для "перше завантаження".
 - Skeleton guard: `isLoading: query.isLoading && !!entityId`.
+- **keepPreviousData**: ОБОВ'ЯЗКОВО використовуй `placeholderData: keepPreviousData` у хуках (напр. дата або фільтри), щоб уникнути "стрибання" екрану (layout shift) та порожніх станів під час фонового рефетчу при зміні параметрів.
 - **staleTime (стандарт)**:
   - Dashboard stats: 1m
   - Analytics: 5m

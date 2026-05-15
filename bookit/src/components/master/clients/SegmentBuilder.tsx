@@ -7,7 +7,7 @@ import {
   Star, Crown, Gem, Heart, Zap, Target, TrendingUp, TrendingDown,
   AlertTriangle, Clock, UserCheck, UserX, Flame, Shield, Gift, Info,
 } from 'lucide-react';
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 import { cn } from '@/lib/utils/cn';
 import type { ClientRow } from './ClientsPage';
 import type {
@@ -418,7 +418,7 @@ export function SegmentBuilder({
     );
 
   return (
-    <BottomSheet
+    <PopUpModal
       isOpen={isOpen}
       onClose={onClose}
       title={step === 'template' ? 'Оберіть шаблон або створіть свій' : (initial ? 'Редагувати сегмент' : 'Новий сегмент')}
@@ -636,6 +636,6 @@ export function SegmentBuilder({
         )}
 
       </AnimatePresence>
-    </BottomSheet>
+    </PopUpModal>
   );
 }

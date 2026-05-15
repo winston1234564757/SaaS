@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown, Target } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { formatPrice } from '@/components/master/services/types';
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 import type { ClientRow } from './ClientsPage';
 import { RETENTION_CONFIG } from './ClientsPage';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -280,12 +280,12 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
        )}
 
        {/* Average Check Details Sheet */}
-       <BottomSheet isOpen={showCheckDetails} onClose={() => setShowCheckDetails(false)} title="Середній чек">
+       <PopUpModal isOpen={showCheckDetails} onClose={() => setShowCheckDetails(false)} title="Середній чек">
           <AvgCheckModal clients={clients} analytics={analytics} isPro={isPro} onClose={() => setShowCheckDetails(false)} />
-       </BottomSheet>
+       </PopUpModal>
 
        {/* Referral Details Sheet */}
-       <BottomSheet isOpen={showReferralDetails} onClose={() => setShowReferralDetails(false)} title="Реферальна мережа">
+       <PopUpModal isOpen={showReferralDetails} onClose={() => setShowReferralDetails(false)} title="Реферальна мережа">
           <div className="flex flex-col gap-6">
              <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
@@ -363,7 +363,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                 Зрозумів
              </button>
           </div>
-       </BottomSheet>
+       </PopUpModal>
     </div>
   );
 }

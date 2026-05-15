@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram,
   LayoutGrid, List, ChevronDown, Send, MessageSquare, PenLine, AlertCircle, Heart, X, Sparkles,
-  CheckCircle2, Moon, AlertTriangle, UserX, Crown, Sparkle, Gem, Share2, Plus, Settings
+  CheckCircle2, Moon, AlertTriangle, UserX, Crown, Sparkle, Gem, Share2, Plus, Settings, Search
 } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { ClientDetailSheet } from './ClientDetailSheet';
@@ -14,7 +14,7 @@ import { ClientWidgets } from './ClientWidgets';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
 import { saveClientNote } from '@/app/(master)/dashboard/clients/actions';
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 import { useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
@@ -268,28 +268,60 @@ export function ClientsPage() {
   const atRiskCount  = clients.filter(c => c.retention_status === 'at_risk' || c.retention_status === 'lost').length;
 
   return (
-    <div className="flex flex-col gap-4 pb-8">
+    <div className="flex flex-col gap-6 lg:gap-10 pb-32">
       {/* 1. Header & Quick Switcher */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6 lg:gap-8">
         <div className="flex items-end justify-between">
           <div className="flex flex-col">
-            <h1 className="text-6xl text-foreground -mb-2" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+            <h1 
+              className="text-[60px] lg:text-[100px] text-foreground font-display transition-all duration-500"
+              style={{
+                fontFamily: 'var(--font-great-vibes, cursive)',
+                fontWeight: 400,
+                lineHeight: 0.85,
+              }}
+            >
               Клієнти
             </h1>
-            <p className="text-xs text-muted-foreground/60 ml-12 mt-2">Ваша база клієнтів та CRM</p>
+            <p className="text-xs lg:text-sm text-muted-foreground/60 ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">Ваша база клієнтів та CRM</p>
           </div>
-          <button
-            onClick={() => router.push('/dashboard/marketing?tab=broadcasts')}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-foreground text-background border border-foreground shadow-lg shadow-black/10 transition-all active:scale-95 mb-1"
-          >
-            <Send size={15} />
-            <span className="text-sm font-semibold">Розсилка</span>
-          </button>
+          
+          <div className="flex gap-3 mb-1">
+            <button
+              onClick={() => router.push('/dashboard/marketing?tab=broadcasts')}
+              className="group relative flex items-center gap-2 px-5 py-3 rounded-[20px] bg-foreground text-background font-bold text-sm shadow-xl shadow-black/10 transition-all hover:scale-105 active:scale-95 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              <Send size={18} className="relative z-10" />
+              <span className="relative z-10 hidden sm:inline">Розсилка</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 2. Analytical Mosaic */}
-      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+        
+        {/* Sidebar (Desktop) */}
+        <div className="hidden lg:flex lg:col-span-4 flex-col gap-6 sticky top-[104px]">
+          <ClientWidgets 
+            clients={clients} 
+            isLoading={isLoading} 
+            activeSegment={smartSegment !== 'none' ? smartSegment : retentionFilter}
+            onSegmentSelect={(id) => {
+              setCustomSegmentId(null);
+              if (['active', 'sleeping', 'at_risk', 'lost', 'all'].includes(id)) {
+                setRetentionFilter(id as RetentionFilter);
+                setSmartSegment('none');
+              } else {
+                setSmartSegment(id as SmartSegment);
+                setRetentionFilter('all');
+              }
+            }}
+          />
+        </div>
+
+        {/* Mobile Analytics */}
+        <div className="flex flex-col gap-4 lg:hidden">
         <ClientWidgets 
           clients={clients} 
           isLoading={isLoading} 
@@ -305,9 +337,10 @@ export function ClientsPage() {
             }
           }}
         />
-      </div>
+        </div>
 
-      {/* Retention filter chips */}
+        {/* Main Content */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
       {!isLoading && clients.length > 0 && (
         <div className="flex flex-col gap-3 mt-2">
           <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
@@ -377,57 +410,64 @@ export function ClientsPage() {
         </div>
       )}
 
-      {/* Search + Sort + View toggle */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Пошук за ім'ям або телефоном..."
-          className="flex-1 min-w-0 px-4 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-foreground placeholder-[#A8928D] outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-[#789A99]/20 transition-all"
-        />
-
-        {/* Sort dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setSortOpen(p => !p)}
-            className="h-full px-3 py-3 rounded-2xl bg-white/70 border border-white/80 text-sm text-muted-foreground hover:bg-white transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-          >
-            <span className="hidden sm:inline">{SORT_OPTIONS.find(o => o.value === sort)?.label}</span>
-            <ChevronDown size={14} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {sortOpen && (
-            <div className="absolute right-0 top-full mt-1.5 z-30 bg-white/95 backdrop-blur-sm rounded-2xl border border-white/80 shadow-lg overflow-hidden min-w-[160px]">
-              {SORT_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => { setParam('sort', opt.value); setSortOpen(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                    sort === opt.value
-                      ? 'bg-primary/12 text-primary/90 font-semibold'
-                      : 'text-muted-foreground hover:bg-secondary/60'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
+      {/* Search + Sort + View toggle Command Bar */}
+      <div className="widget-card p-4 lg:p-6 flex flex-col lg:flex-row items-center justify-between gap-4 relative z-50">
+        
         {/* View toggle */}
-        <div className="flex rounded-2xl bg-white/70 border border-white/80 overflow-hidden">
+        <div className="flex p-1.5 rounded-[20px] bg-secondary/30 border border-white/40 backdrop-blur-sm w-full lg:w-auto">
           {(['list', 'grid'] as const).map(v => (
             <button
               key={v}
               onClick={() => setParam('view', v)}
-              className={`px-3 py-3 transition-colors cursor-pointer ${
-                view === v ? 'bg-primary/15 text-primary/90' : 'text-muted-foreground/60 hover:text-muted-foreground'
+              className={`flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                view === v ? 'bg-white shadow-md text-primary scale-105' : 'text-muted-foreground/60 hover:text-muted-foreground'
               }`}
             >
               {v === 'list' ? <List size={16} /> : <LayoutGrid size={16} />}
+              <span className="hidden lg:inline">{v === 'list' ? 'Список' : 'Сітка'}</span>
             </button>
           ))}
+        </div>
+
+        <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
+          <div className="relative group flex-1 lg:flex-none lg:min-w-[240px]">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Пошук клієнта..."
+              className="w-full pl-11 pr-4 py-3 rounded-[20px] bg-white/60 border border-white/80 text-sm focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
+            />
+          </div>
+
+          {/* Sort dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setSortOpen(p => !p)}
+              className="h-full px-4 py-3 rounded-[20px] bg-white/60 border border-white/80 text-sm font-bold text-foreground hover:bg-white transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer shadow-sm"
+            >
+              <span className="hidden sm:inline">{SORT_OPTIONS.find(o => o.value === sort)?.label}</span>
+              <ChevronDown size={14} className={`text-muted-foreground/40 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 top-full mt-2 z-30 bg-white/95 backdrop-blur-sm rounded-2xl border border-white/80 shadow-lg overflow-hidden min-w-[180px]">
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setParam('sort', opt.value); setSortOpen(false); }}
+                    className={`w-full text-left px-4 py-3 text-sm transition-colors cursor-pointer ${
+                      sort === opt.value
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-muted-foreground hover:bg-secondary/60 font-medium'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -543,7 +583,7 @@ export function ClientsPage() {
         )
       ) : view === 'grid' ? (
         /* ── Grid view ── */
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 lg:gap-4">
           {filtered.map((client, i) => {
             const tags = getAutoTags(client);
             const ret = RETENTION_CONFIG[client.retention_status];
@@ -896,7 +936,7 @@ export function ClientsPage() {
         onVipChange={handleVipChange}
       />
 
-      <BottomSheet 
+      <PopUpModal 
         isOpen={!!showSmartAction} 
         onClose={() => setShowSmartAction(null)} 
         title="Smart-дія"
@@ -956,7 +996,9 @@ export function ClientsPage() {
             </p>
           </div>
         )}
-      </BottomSheet>
+      </PopUpModal>
+        </div> {/* close lg:col-span-8 */}
+      </div> {/* close lg:grid-cols-12 */}
     </div>
   );
 }

@@ -123,11 +123,11 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
     <div className="flex flex-col gap-4">
 
       {/* Summary + toggle */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex flex-col">
-          <span className="text-sm font-black text-foreground">{formatPrice(totalRevenue)}</span>
-          <span className="text-[10px] text-muted-foreground/60">
-            {totalBookings} {pluralUk(totalBookings, 'запис', 'записи', 'записів')} за місяць
+          <span className="text-xl lg:text-3xl font-black text-foreground heading-serif tracking-tight">{formatPrice(totalRevenue)}</span>
+          <span className="text-[10px] lg:text-[12px] font-bold text-muted-foreground/60 uppercase tracking-widest mt-1">
+            {totalBookings} {pluralUk(totalBookings, 'запис', 'записи', 'записів')}
           </span>
         </div>
 
@@ -318,11 +318,11 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                   key={week.weekStart.toISOString()}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: wi * 0.05 }}
+                  transition={{ delay: wi * 0.05, type: 'spring', stiffness: 260, damping: 28 }}
                   onClick={() => onWeekClick(week.weekStart)}
-                  className="bento-card p-4 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                  className="bento-card p-5 lg:p-7 flex flex-col gap-4 lg:gap-6 text-left active:scale-[0.98] transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl hover:border-primary/20"
                   style={{
-                    borderLeft: week.totalCount > 0 ? '3px solid var(--accent)' : undefined,
+                    borderLeft: week.totalCount > 0 ? '4px solid var(--accent)' : undefined,
                   }}
                 >
                   {/* Header: range + revenue */}

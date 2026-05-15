@@ -22,6 +22,9 @@ import { createBooking } from '@/lib/actions/createBooking';
 import { createPublicOrder } from '@/app/[slug]/actions';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { BottomSheet } from '@/components/ui/BottomSheet';
+import { MicaModal } from '@/components/ui/MicaModal';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
+import { cn } from '@/lib/utils/cn';
 import { getActivePhoneDiscount } from '@/app/(master)/dashboard/marketing/actions';
 import type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
 import { toISO, STEP_TITLE } from './wizard/helpers';
@@ -72,6 +75,8 @@ export function BookingWizard({
     c2cRefCode,
     c2cDiscountPct,
   });
+
+  const isDesktop = useIsDesktop();
 
   const isAtLimit = mode === 'client' && subscriptionTier === 'starter' && bookingsThisMonth >= 30;
 
@@ -162,29 +167,29 @@ export function BookingWizard({
 
     const result = await createBooking({
       masterId,
-      clientName:              watchName.trim(),
-      clientPhone:             watchPhone.trim(),
-      clientEmail:             mode === 'client' ? (clientEmail.trim().toLowerCase() || null) : null,
-      clientId:                mode === 'client' ? (clientUserId || null) : (selectedClientId || null),
-      date:                    toISO(selectedDate!),
-      startTime:               selectedTime!,
-      services:                selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
-      products:                cart.map(ci => ({ id: ci.product.id, name: ci.product.name, price: ci.product.price, quantity: ci.quantity })),
-      notes:                   clientNotes.trim() || null,
-      source:                  mode === 'client' ? 'online' : 'manual',
-      discountPercent:         mode === 'client' ? (loyaltyDiscount?.percent ?? 0) : discountPercent,
+      clientName: watchName.trim(),
+      clientPhone: watchPhone.trim(),
+      clientEmail: mode === 'client' ? (clientEmail.trim().toLowerCase() || null) : null,
+      clientId: mode === 'client' ? (clientUserId || null) : (selectedClientId || null),
+      date: toISO(selectedDate!),
+      startTime: selectedTime!,
+      services: selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
+      products: cart.map(ci => ({ id: ci.product.id, name: ci.product.name, price: ci.product.price, quantity: ci.quantity })),
+      notes: clientNotes.trim() || null,
+      source: mode === 'client' ? 'online' : 'manual',
+      discountPercent: mode === 'client' ? (loyaltyDiscount?.percent ?? 0) : discountPercent,
       durationOverrideMinutes: mode === 'master' ? (durationOverride ?? undefined) : undefined,
-      flashDealId:             mode === 'client' ? (flashDeal?.id ?? undefined) : undefined,
-      applyDynamicPricing:     mode === 'master' ? useDynamicPrice : true,
-      referral_code_used:      mode === 'client'
+      flashDealId: mode === 'client' ? (flashDeal?.id ?? undefined) : undefined,
+      applyDynamicPricing: mode === 'master' ? useDynamicPrice : true,
+      referral_code_used: mode === 'client'
         ? (c2cRefCode ?? (typeof window !== 'undefined' ? localStorage.getItem('bookit_ref') ?? null : null))
         : null,
-      c2c_discount_pct:        mode === 'client'
+      c2c_discount_pct: mode === 'client'
         ? (c2cRefCode
-            ? c2cDiscountPct
-            : (typeof window !== 'undefined' ? Number(localStorage.getItem('bookit_ref_pct')) || null : null))
+          ? c2cDiscountPct
+          : (typeof window !== 'undefined' ? Number(localStorage.getItem('bookit_ref_pct')) || null : null))
         : null,
-      c2c_bonus_to_use:        mode === 'client' && c2cBonusToUse > 0 ? c2cBonusToUse : null,
+      c2c_bonus_to_use: mode === 'client' && c2cBonusToUse > 0 ? c2cBonusToUse : null,
     });
     setSaving(false);
     if (result.error) {
@@ -220,192 +225,197 @@ export function BookingWizard({
 
   if (!isOpen) return null;
 
+  const ModalComponent = isDesktop ? MicaModal : BottomSheet;
+
   return (
     <>
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
-      title={step !== 'success' ? masterName : ''}
-      contentClassName="overflow-hidden pb-0"
-    >
-      <div className="flex flex-col h-[85vh] md:h-[600px] -mx-6 -mt-2">
-        {/* Progress header */}
-        {!isAtLimit && step !== 'success' && (
-          <div className="flex items-center justify-center py-3 bg-primary/5 border-b border-primary/10 flex-shrink-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Крок {stepNumber} з 4</p>
-          </div>
-        )}
-
-        <div className="flex-1 relative overflow-hidden">
-          {isAtLimit && step !== 'success' && (
-            <div className="flex flex-col items-center text-center py-10 px-5 gap-4">
-              <div className="w-16 h-16 rounded-3xl bg-warning/10 flex items-center justify-center text-3xl">🔒</div>
-              <p className="text-base font-bold text-foreground">Ліміт записів вичерпано</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Майстер досяг ліміту 30 записів на місяць.<br />
-                Нові записи будуть доступні з наступного місяця.
-              </p>
-              <button onClick={onClose}
-                className="mt-4 px-8 py-4 rounded-2xl bg-primary text-white text-sm font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20">
-                Зрозуміло
-              </button>
+      <ModalComponent
+        isOpen={isOpen}
+        onClose={onClose}
+        title={step !== 'success' ? (mode === 'master' ? 'Новий запис' : masterName) : ''}
+        maxWidth="xl"
+      >
+        <div className={cn(
+          "flex flex-col flex-shrink-0",
+          isDesktop ? "min-h-[500px]" : "h-[85vh] -mx-6 -mt-2"
+        )}>
+          {/* Progress header */}
+          {!isAtLimit && step !== 'success' && (
+            <div className="flex items-center justify-center py-3 bg-primary/5 border-b border-primary/10 flex-shrink-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Крок {stepNumber} з 4</p>
             </div>
           )}
 
-          {!isAtLimit && (
-            <AnimatePresence mode="wait" initial={false} custom={direction}>
-              {step === 'services' && (
-                <div key="services" className="h-full overflow-hidden px-5">
-                  <ServiceSelector
-                    services={services}
-                    selectedServices={selectedServices}
-                    onToggle={toggleService}
-                    mode={mode}
-                    partners={partners}
-                    direction={direction}
-                    durationOverride={durationOverride}
-                    totalDuration={totalDuration}
-                    effectiveDuration={effectiveDuration}
-                    totalServicesPrice={totalServicesPrice}
-                    hasProducts={hasProducts}
-                    c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
-                    onDurationOverrideChange={(v) => { setDurationOverride(v); setSelectedTime(null); }}
-                    onClearTime={() => setSelectedTime(null)}
-                    onContinue={() => go('datetime', 1)}
-                    onSkipToProducts={() => go('products', 1)}
-                  />
-                </div>
-              )}
+          <div className="flex-1 relative overflow-hidden">
+            {isAtLimit && step !== 'success' && (
+              <div className="flex flex-col items-center text-center py-10 px-5 gap-4">
+                <div className="w-16 h-16 rounded-3xl bg-warning/10 flex items-center justify-center text-3xl">🔒</div>
+                <p className="text-base font-bold text-foreground">Ліміт записів вичерпано</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Майстер досяг ліміту 30 записів на місяць.<br />
+                  Нові записи будуть доступні з наступного місяця.
+                </p>
+                <button onClick={onClose}
+                  className="mt-4 px-8 py-4 rounded-2xl bg-primary text-white text-sm font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20">
+                  Зрозуміло
+                </button>
+              </div>
+            )}
 
-              {step === 'datetime' && (
-                <div key="datetime" className="h-full overflow-hidden px-5">
-                  <DateTimePicker
-                    days={days}
-                    scheduleStore={scheduleStore}
-                    scheduleLoading={scheduleLoading}
-                    scheduleError={scheduleError}
-                    onRetry={() => refetchSchedule()}
-                    selectedDate={selectedDate}
-                    selectedTime={selectedTime}
-                    offDayDates={offDayDates}
-                    fullyBookedDates={fullyBookedDates}
-                    slots={slots}
-                    selectedDayBreaks={selectedDayBreaks}
-                    effectiveDuration={effectiveDuration}
-                    totalServicesPrice={totalServicesPrice}
-                    selectedServices={selectedServices}
-                    dynamicPricing={dynamicPricing}
-                    useDynamicPrice={useDynamicPrice}
-                    mode={mode}
-                    hasProducts={hasProducts}
-                    direction={direction}
-                    onDateSelect={(d) => { setSelectedDate(d); setSelectedTime(null); }}
-                    onTimeSelect={setSelectedTime}
-                    onToggleDynamicPrice={() => setUseDynamicPrice(v => !v)}
-                    onContinue={() => go(hasProducts ? 'products' : 'details', 1)}
-                  />
-                </div>
-              )}
+            {!isAtLimit && (
+              <AnimatePresence mode="wait" initial={false} custom={direction}>
+                {step === 'services' && (
+                  <div key="services" className="h-full overflow-hidden px-5">
+                    <ServiceSelector
+                      services={services}
+                      selectedServices={selectedServices}
+                      onToggle={toggleService}
+                      mode={mode}
+                      partners={partners}
+                      direction={direction}
+                      durationOverride={durationOverride}
+                      totalDuration={totalDuration}
+                      effectiveDuration={effectiveDuration}
+                      totalServicesPrice={totalServicesPrice}
+                      hasProducts={hasProducts}
+                      c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
+                      onDurationOverrideChange={(v) => { setDurationOverride(v); setSelectedTime(null); }}
+                      onClearTime={() => setSelectedTime(null)}
+                      onContinue={() => go('datetime', 1)}
+                      onSkipToProducts={() => go('products', 1)}
+                    />
+                  </div>
+                )}
 
-              {step === 'products' && (
-                <div key="products" className="h-full overflow-hidden px-5">
-                  <ProductCart
-                    availableProducts={availableProducts}
-                    suggestedProductIds={suggestedProductIds}
-                    cart={cart}
-                    totalProductsPrice={totalProductsPrice}
-                    direction={direction}
-                    onAdd={addToCart}
-                    onRemove={removeFromCart}
-                    cartQty={cartQty}
-                    onContinue={() => go('details', 1)}
-                  />
-                </div>
-              )}
+                {step === 'datetime' && (
+                  <div key="datetime" className="h-full overflow-hidden px-5">
+                    <DateTimePicker
+                      days={days}
+                      scheduleStore={scheduleStore}
+                      scheduleLoading={scheduleLoading}
+                      scheduleError={scheduleError}
+                      onRetry={() => refetchSchedule()}
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      offDayDates={offDayDates}
+                      fullyBookedDates={fullyBookedDates}
+                      slots={slots}
+                      selectedDayBreaks={selectedDayBreaks}
+                      effectiveDuration={effectiveDuration}
+                      totalServicesPrice={totalServicesPrice}
+                      selectedServices={selectedServices}
+                      dynamicPricing={dynamicPricing}
+                      useDynamicPrice={useDynamicPrice}
+                      mode={mode}
+                      hasProducts={hasProducts}
+                      direction={direction}
+                      onDateSelect={(d) => { setSelectedDate(d); setSelectedTime(null); }}
+                      onTimeSelect={setSelectedTime}
+                      onToggleDynamicPrice={() => setUseDynamicPrice(v => !v)}
+                      onContinue={() => go(hasProducts ? 'products' : 'details', 1)}
+                    />
+                  </div>
+                )}
 
-              {step === 'details' && (
-                <div key="details" className="h-full overflow-hidden px-5">
-                  <ClientDetails
-                    selectedDate={selectedDate}
-                    selectedTime={selectedTime}
-                    selectedServices={selectedServices}
-                    mode={mode}
-                    clientUserId={clientUserId}
-                    register={register}
-                    errors={errors}
-                    watchName={watchName}
-                    watchPhone={watchPhone}
-                    setValue={setValue}
-                    onClientSelect={mode === 'master'
-                      ? (c) => setSelectedClientId(c?.client_id ?? null)
-                      : undefined
-                    }
-                    clientNotes={clientNotes}
-                    setClientNotes={setClientNotes}
-                    discountPercent={discountPercent}
-                    setDiscountPercent={setDiscountPercent}
-                    masterDiscountAmount={masterDiscountAmount}
-                    dynamicPricing={dynamicPricing}
-                    useDynamicPrice={useDynamicPrice}
-                    loyaltyDiscount={loyaltyDiscount}
-                    loyaltyDiscountAmount={loyaltyDiscountAmount}
-                    flashDeal={flashDeal}
-                    flashDealAmount={flashDealAmount}
-                    barterDiscountAmount={barterDiscountAmount}
-                    totalServicesPrice={totalServicesPrice}
-                    totalProductsPrice={totalProductsPrice}
-                    finalTotal={finalTotal}
-                    canSubmit={canSubmit}
-                    saving={saving}
-                    saveError={saveError}
-                    onSubmit={handleSubmit}
-                    direction={direction}
-                    c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
-                    c2cFriendDiscountAmount={mode === 'client' && activeC2cDiscountPct ? Math.round((totalServicesPrice + totalProductsPrice) * activeC2cDiscountPct / 100) : 0}
-                    c2cAlreadyUsed={c2cAlreadyUsed}
-                    c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
-                    c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}
-                    setC2cBonusToUse={mode === 'client' ? setC2cBonusToUse : undefined}
-                    phoneDiscountPct={mode === 'client' ? phoneDiscountPct : 0}
-                    phoneDiscountAmount={mode === 'client' ? phoneDiscountAmount : 0}
-                  />
-                </div>
-              )}
+                {step === 'products' && (
+                  <div key="products" className="h-full overflow-hidden px-5">
+                    <ProductCart
+                      availableProducts={availableProducts}
+                      suggestedProductIds={suggestedProductIds}
+                      cart={cart}
+                      totalProductsPrice={totalProductsPrice}
+                      direction={direction}
+                      onAdd={addToCart}
+                      onRemove={removeFromCart}
+                      cartQty={cartQty}
+                      onContinue={() => go('details', 1)}
+                    />
+                  </div>
+                )}
 
-              {step === 'success' && (
-                <div key="success" className="h-full overflow-y-auto scrollbar-hide px-5">
-                  <BookingSuccess
-                    selectedServices={selectedServices}
-                    selectedDate={selectedDate}
-                    selectedTime={selectedTime}
-                    totalDuration={totalDuration}
-                    cart={cart}
-                    clientUserId={clientUserId}
-                    createdBookingId={createdBookingId}
-                    clientPhone={clientPhone}
-                    masterName={masterName}
-                    masterId={masterId}
-                    masterC2cEnabled={masterC2cEnabled}
-                    masterC2cDiscountPct={masterC2cDiscountPct}
-                    flashDeal={flashDeal}
-                    finalTotal={finalTotal}
-                    direction={direction}
-                    onClose={onClose}
-                  />
-                </div>
-              )}
-            </AnimatePresence>
-          )}
+                {step === 'details' && (
+                  <div key="details" className="h-full overflow-hidden px-5">
+                    <ClientDetails
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      selectedServices={selectedServices}
+                      mode={mode}
+                      clientUserId={clientUserId}
+                      register={register}
+                      errors={errors}
+                      watchName={watchName}
+                      watchPhone={watchPhone}
+                      setValue={setValue}
+                      onClientSelect={mode === 'master'
+                        ? (c) => setSelectedClientId(c?.client_id ?? null)
+                        : undefined
+                      }
+                      clientNotes={clientNotes}
+                      setClientNotes={setClientNotes}
+                      discountPercent={discountPercent}
+                      setDiscountPercent={setDiscountPercent}
+                      masterDiscountAmount={masterDiscountAmount}
+                      dynamicPricing={dynamicPricing}
+                      useDynamicPrice={useDynamicPrice}
+                      loyaltyDiscount={loyaltyDiscount}
+                      loyaltyDiscountAmount={loyaltyDiscountAmount}
+                      flashDeal={flashDeal}
+                      flashDealAmount={flashDealAmount}
+                      barterDiscountAmount={barterDiscountAmount}
+                      totalServicesPrice={totalServicesPrice}
+                      totalProductsPrice={totalProductsPrice}
+                      finalTotal={finalTotal}
+                      canSubmit={canSubmit}
+                      saving={saving}
+                      saveError={saveError}
+                      onSubmit={handleSubmit}
+                      direction={direction}
+                      c2cDiscountPct={mode === 'client' ? activeC2cDiscountPct : null}
+                      c2cFriendDiscountAmount={mode === 'client' && activeC2cDiscountPct ? Math.round((totalServicesPrice + totalProductsPrice) * activeC2cDiscountPct / 100) : 0}
+                      c2cAlreadyUsed={c2cAlreadyUsed}
+                      c2cReferrerBalance={mode === 'client' ? c2cReferrerBalance : 0}
+                      c2cBonusToUse={mode === 'client' ? c2cBonusToUse : 0}
+                      setC2cBonusToUse={mode === 'client' ? setC2cBonusToUse : undefined}
+                      phoneDiscountPct={mode === 'client' ? phoneDiscountPct : 0}
+                      phoneDiscountAmount={mode === 'client' ? phoneDiscountAmount : 0}
+                    />
+                  </div>
+                )}
+
+                {step === 'success' && (
+                  <div key="success" className="h-full overflow-y-auto scrollbar-hide px-5">
+                    <BookingSuccess
+                      selectedServices={selectedServices}
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      totalDuration={totalDuration}
+                      cart={cart}
+                      clientUserId={clientUserId}
+                      createdBookingId={createdBookingId}
+                      clientPhone={clientPhone}
+                      masterName={masterName}
+                      masterId={masterId}
+                      masterC2cEnabled={masterC2cEnabled}
+                      masterC2cDiscountPct={masterC2cDiscountPct}
+                      flashDeal={flashDeal}
+                      finalTotal={finalTotal}
+                      direction={direction}
+                      onClose={onClose}
+                    />
+                  </div>
+                )}
+              </AnimatePresence>
+            )}
+          </div>
         </div>
-      </div>
-    </BottomSheet>
+      </ModalComponent>
 
-    <UpgradePromptModal
-      isOpen={upgradePromptOpen}
-      onClose={() => setUpgradePromptOpen(false)}
-      feature="Безліміт записів"
-      description="На тарифі Starter — 30 записів на місяць. Перейдіть на Pro, щоб приймати необмежену кількість клієнтів."
-    />
+      <UpgradePromptModal
+        isOpen={upgradePromptOpen}
+        onClose={() => setUpgradePromptOpen(false)}
+        feature="Безліміт записів"
+        description="На тарифі Starter — 30 записів на місяць. Перейдіть на Pro, щоб приймати необмежену кількість клієнтів."
+      />
     </>
   );
 }

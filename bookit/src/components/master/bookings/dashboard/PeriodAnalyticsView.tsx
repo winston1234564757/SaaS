@@ -46,22 +46,22 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
   }, [bookings, days]);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
       {dayStats.map((stat, i) => (
         <motion.button
           key={stat.dateStr}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.03 }}
+          transition={{ delay: i * 0.03, type: 'spring', stiffness: 260, damping: 28 }}
           onClick={() => onDayClick(stat.date)}
-          className="bento-card p-4 flex flex-col gap-4 text-left group hover:border-primary/40 transition-all active:scale-[0.98]"
+          className="bento-card p-5 lg:p-7 flex flex-col gap-6 lg:gap-8 text-left group hover:border-primary/40 hover:translate-y-[-4px] hover:shadow-2xl transition-all active:scale-[0.98]"
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest">
+              <span className="text-[10px] lg:text-[11px] font-black uppercase text-muted-foreground/40 tracking-[0.2em] mb-1">
                 {format(stat.date, 'EEEE', { locale: uk })}
               </span>
-              <span className="text-lg font-black text-foreground">
+              <span className="text-lg lg:text-xl font-black text-foreground group-hover:text-primary transition-colors">
                 {format(stat.date, 'd MMMM', { locale: uk })}
               </span>
             </div>

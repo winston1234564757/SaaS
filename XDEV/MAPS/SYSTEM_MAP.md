@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-08 · Джерело: живий код (v6.5 "Command Center Analytics")
+> Оновлено: 2026-05-13 · Джерело: живий код (v6.5 "Bento Analytics & CRM Polish")
 
 ---
 
@@ -32,7 +32,8 @@
 | `/dashboard/marketing` | Marketing Hub: Story Generator + Broadcast розсилки (in-app/Push/Telegram/SMS) | `marketing/page.tsx` | `marketing/actions.ts` | `master/marketing/StoryGenerator.tsx`, `BroadcastEditor.tsx`, `BroadcastDetailSheet.tsx`, `BroadcastHistory.tsx` |
 | `/dashboard/growth` | Growth tools | `growth/page.tsx` | — | `master/growth/GrowthPage.tsx` |
 | `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (drag-reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemEditor.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` |
-| `/dashboard/products` | Товари: CRUD, стоки, замовлення | `products/page.tsx` | `products/actions.ts` | `master/products/ProductsPage.tsx` |
+| `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення | `products/page.tsx` | `products/actions.ts` | `master/products/ProductsPage.tsx` |
+
 | `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |
 | `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
 | `/dashboard/more` | Додаткові посилання: юридика, акаунт | `more/page.tsx` | — | `master/more/MorePage.tsx` |

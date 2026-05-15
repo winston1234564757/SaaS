@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pencil, Trash2, Star, ChevronUp, ChevronDown } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { cn } from '@/lib/utils/cn';
 import { type Service, formatPrice, formatDuration } from './types';
 
 interface ServiceCardProps {
@@ -25,7 +26,11 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
-      className={`bento-card p-4 transition-opacity ${!service.active ? 'opacity-55' : ''}`}
+      className={cn(
+        "bento-card p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-pointer",
+        !service.active && "opacity-55"
+      )}
+      onClick={() => onEdit(service)}
     >
       <div className="flex items-center gap-3">
         {/* Thumbnail or Emoji */}
@@ -65,14 +70,14 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
           {/* Reorder */}
           <div className="flex flex-col gap-0.5 mr-1">
             <button
-              onClick={onMoveUp}
+              onClick={(e) => { e.stopPropagation(); onMoveUp?.(); }}
               disabled={!onMoveUp}
               className="w-6 h-5 flex items-center justify-center rounded-md text-muted-foreground/60 hover:text-primary hover:bg-white/70 disabled:opacity-25 disabled:cursor-default transition-colors active:scale-95 transition-all"
             >
               <ChevronUp size={12} />
             </button>
             <button
-              onClick={onMoveDown}
+              onClick={(e) => { e.stopPropagation(); onMoveDown?.(); }}
               disabled={!onMoveDown}
               className="w-6 h-5 flex items-center justify-center rounded-md text-muted-foreground/60 hover:text-primary hover:bg-white/70 disabled:opacity-25 disabled:cursor-default transition-colors active:scale-95 transition-all"
             >
@@ -82,7 +87,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
 
           <Tooltip content={<p className="text-xs text-foreground">Редагувати послугу</p>} position="top">
             <button
-              onClick={() => onEdit(service)}
+              onClick={(e) => { e.stopPropagation(); onEdit(service); }}
               className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-white hover:text-primary transition-colors"
             >
               <Pencil size={14} />
@@ -100,13 +105,13 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
               >
                 <span className="text-xs text-destructive font-medium whitespace-nowrap ml-1">Видалити?</span>
                 <button
-                  onClick={() => onDelete(service.id)}
+                  onClick={(e) => { e.stopPropagation(); onDelete(service.id); }}
                   className="px-2.5 h-7 rounded-lg bg-destructive text-white text-xs font-semibold hover:bg-destructive/90 transition-colors"
                 >
                   Так
                 </button>
                 <button
-                  onClick={() => setConfirmDelete(false)}
+                  onClick={(e) => { e.stopPropagation(); setConfirmDelete(false); }}
                   className="px-2.5 h-7 rounded-lg bg-white/70 border border-white/80 text-xs font-medium text-muted-foreground hover:bg-white transition-colors"
                 >
                   Ні
@@ -115,7 +120,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
             ) : (
               <Tooltip key="btn" content={<p className="text-xs text-foreground">Видалити послугу</p>} position="top">
                 <button
-                  onClick={() => setConfirmDelete(true)}
+                  onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
                   className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/70 border border-white/80 text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                 >
                   <Trash2 size={14} />
@@ -128,7 +133,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onMoveUp, onM
         {/* Toggle */}
         <Tooltip content={<p className="text-xs text-foreground">{service.active ? 'Деактивувати послугу' : 'Активувати послугу'}</p>} position="top">
           <button
-            onClick={() => onToggle(service.id)}
+            onClick={(e) => { e.stopPropagation(); onToggle(service.id); }}
             className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
               service.active ? 'bg-primary' : 'bg-secondary/80'
             }`}

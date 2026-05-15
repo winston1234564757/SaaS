@@ -12,7 +12,7 @@ interface Props {
 
 export function DashboardWidgets({ stats, isLoading }: Props) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
       {/* 1. Occupancy % */}
       <WidgetCard
         title="Завантаженість"
@@ -72,35 +72,36 @@ interface WidgetCardProps {
 
 function WidgetCard({ title, value, label, icon, delay, isLoading, color = 'primary' }: WidgetCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="bento-card p-4 relative overflow-hidden group active:scale-95 transition-transform"
+    <div
+      className="bento-card p-5 lg:p-7 relative overflow-hidden group transition-all"
     >
-      <div className="flex justify-between items-start mb-3">
-        <p className="flex-1 min-w-0 pr-2 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-widest leading-tight">{title}</p>
-        <div className="shrink-0 p-1.5 rounded-xl bg-white/50 border border-white/40 shadow-sm">
+      <div className="flex justify-between items-start mb-4 lg:mb-6">
+        <p className="flex-1 min-w-0 pr-2 text-[10px] lg:text-[11px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-tight">{title}</p>
+        <div className="shrink-0 p-2 lg:p-3 rounded-2xl bg-white/60 border border-white/40 shadow-sm group-hover:scale-110 transition-transform duration-500">
           {icon}
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-2">
-          <div className="h-8 w-24 bg-muted/20 animate-pulse rounded-lg" />
-          <div className="h-3 w-16 bg-muted/10 animate-pulse rounded-md" />
-        </div>
-      ) : (
-        <>
-          <h3 className="heading-serif text-2xl text-foreground leading-tight">{value}</h3>
-          <p className="text-[11px] text-muted-foreground/50 mt-1 line-clamp-1">{label}</p>
-        </>
-      )}
+      <div className="min-h-[58px] lg:min-h-[66px] flex flex-col justify-end">
+        {isLoading ? (
+          <div className="space-y-1.5 lg:space-y-2">
+            <div className="h-9 lg:h-10 w-24 bg-muted/20 animate-pulse rounded-lg" />
+            <div className="h-4 w-16 bg-muted/10 animate-pulse rounded-md" />
+          </div>
+        ) : (
+          <>
+            <h3 className="heading-serif text-3xl lg:text-4xl text-foreground leading-tight font-black transition-all">
+              {value}
+            </h3>
+            <p className="text-[11px] lg:text-[13px] text-muted-foreground/50 mt-1.5 lg:mt-2 font-medium line-clamp-1">{label}</p>
+          </>
+        )}
+      </div>
 
       {/* Subtle Background Glow */}
-      <div className={`absolute -right-4 -bottom-4 w-16 h-16 rounded-full blur-2xl opacity-10 transition-opacity group-hover:opacity-20
+      <div className={`absolute -right-4 -bottom-4 w-16 h-16 rounded-full blur-2xl opacity-10
         ${color === 'primary' ? 'bg-primary' : color === 'success' ? 'bg-success' : color === 'warning' ? 'bg-warning' : 'bg-sage'}
       `} />
-    </motion.div>
+    </div>
   );
 }

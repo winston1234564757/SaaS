@@ -185,7 +185,7 @@ function ViewToggle({
 export function MonthlyCalendarWidget() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const router      = useRouter();
   const searchParams = useSearchParams();
 
@@ -259,8 +259,8 @@ export function MonthlyCalendarWidget() {
   useEffect(() => {
     if (!gridRef.current || isLoading) return;
     const h = gridRef.current.scrollHeight;
-    if (h > 0) setCalHeight(h);
-  }, [allDays.length, isLoading]);
+    if (h > 0) setCalHeight(h + 20); // Add a bit of padding safety
+  }, [allDays.length, isLoading, isExpanded]);
 
   /* ── Content crossfade on key change ─────────────────── */
   const [gridVisible, setGridVisible] = useState(true);
@@ -283,7 +283,7 @@ export function MonthlyCalendarWidget() {
   };
 
   return (
-    <div className="bento-card overflow-hidden flex flex-col">
+    <div className="widget-card w-full overflow-hidden flex flex-col bg-white/70 backdrop-blur-2xl">
 
       {/* ── Header row: title + toggle ──────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">

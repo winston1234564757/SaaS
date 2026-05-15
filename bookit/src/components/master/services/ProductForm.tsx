@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Infinity as InfinityIcon, Hash, Link2 } from 'lucide-react';
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { PopUpModal } from '@/components/ui/PopUpModal';
 import { type Product, type Service, EMOJI_PRESETS } from './types';
 import { ImageUploader } from './ImageUploader';
 import { type ProductLink } from '@/lib/supabase/hooks/useProductLinks';
@@ -108,7 +108,7 @@ export function ProductForm({
   }
 
   return (
-    <BottomSheet
+    <PopUpModal
       isOpen={isOpen}
       onClose={onClose}
       title={initial ? 'Редагувати товар' : 'Новий товар'}
@@ -307,6 +307,6 @@ export function ProductForm({
           {initial ? 'Зберегти зміни' : 'Додати товар'}
         </button>
       </div>
-    </BottomSheet>
+    </PopUpModal>
   );
 }

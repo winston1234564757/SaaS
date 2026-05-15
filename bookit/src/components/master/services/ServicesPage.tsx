@@ -1,20 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { AlertTriangle, Plus, Scissors, Loader2 } from 'lucide-react';
 import { type Service } from './types';
 import { ServiceCard } from './ServiceCard';
-import { ServiceForm } from './ServiceForm';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useMasterContext } from '@/lib/supabase/context';
 
 export function ServicesPage() {
+  const router = useRouter();
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id ?? '';
-
-  const [serviceFormOpen, setServiceFormOpen] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
 
   const _s = useServices();
   const services: Service[] = _s.services;
@@ -27,43 +24,38 @@ export function ServicesPage() {
     reorderServices(next);
   }
 
-  function handleSaveService(data: Omit<Service, 'id'>) {
-    if (editingService) {
-      editService(editingService.id, data);
-    } else {
-      addService(data);
-    }
-  }
-
   function openEditService(s: Service) {
-    setEditingService(s);
-    setServiceFormOpen(true);
-  }
-
-  function closeServiceForm() {
-    setServiceFormOpen(false);
-    setEditingService(null);
+    router.push(`/dashboard/services/${s.id}`);
   }
 
   const activeServices = services.filter(s => s.active).length;
 
   return (
     <div className="flex flex-col gap-4 pb-24">
-      {/* Header */}
-      <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-foreground mb-0.5">Послуги</h1>
-        <p className="text-sm text-muted-foreground/60">
-          {activeServices > 0
-            ? `${activeServices} активних послуг`
-            : 'Додайте послуги для публічної сторінки'}
-        </p>
+      {/* Command Bar (Desktop) & Header (Mobile) */}
+      <div className="widget-card p-4 md:p-5 flex items-center justify-between z-40 sticky top-[72px] lg:top-4">
+        <div>
+          <h1 className="heading-serif text-xl text-foreground mb-0.5">Послуги</h1>
+          <p className="text-sm text-muted-foreground/60">
+            {activeServices > 0
+              ? `${activeServices} активних послуг`
+              : 'Додайте послуги для публічної сторінки'}
+          </p>
+        </div>
+        <button
+          onClick={() => router.push('/dashboard/services/new')}
+          className="hidden md:flex items-center gap-2 px-5 h-11 rounded-2xl bg-primary text-white font-semibold hover:bg-[#6B8C8B] active:scale-95 transition-all shadow-sm"
+        >
+          <Plus size={18} strokeWidth={2.5} />
+          Додати послугу
+        </button>
       </div>
 
       {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-8"
       >
         {sError && (
           <ErrorBanner
@@ -79,42 +71,60 @@ export function ServicesPage() {
             sub="Вона з'явиться на вашій публічній сторінці"
           />
         ) : (
-          services.map((s, i) => (
-            <ServiceCard
-              key={s.id}
-              service={s}
-              index={i}
-              onEdit={openEditService}
-              onDelete={deleteService}
-              onToggle={id => toggleService(id, s.active)}
-              onMoveUp={i > 0 ? () => handleMoveService(i, 'up') : undefined}
-              onMoveDown={i < services.length - 1 ? () => handleMoveService(i, 'down') : undefined}
-            />
-          ))
+          <div className="flex flex-col gap-10">
+            {Object.entries(
+              services.reduce((acc, s) => {
+                if (!acc[s.category]) acc[s.category] = [];
+                acc[s.category].push(s);
+                return acc;
+              }, {} as Record<string, Service[]>)
+            )
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([category, categoryServices]) => (
+              <div key={category} className="flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-1">{category}</h2>
+                  <div className="h-px bg-secondary flex-1" />
+                  <span className="text-xs font-medium text-muted-foreground/50 pr-1">{categoryServices.length}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categoryServices.map((s) => {
+                    const originalIndex = services.findIndex(x => x.id === s.id);
+                    return (
+                      <ServiceCard
+                        key={s.id}
+                        service={s}
+                        index={originalIndex}
+                        onEdit={openEditService}
+                        onDelete={deleteService}
+                        onToggle={id => toggleService(id, s.active)}
+                        onMoveUp={originalIndex > 0 ? () => handleMoveService(originalIndex, 'up') : undefined}
+                        onMoveDown={originalIndex < services.length - 1 ? () => handleMoveService(originalIndex, 'down') : undefined}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </motion.div>
 
-      {/* FAB */}
+      {/* Mobile FAB */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.3, type: 'spring', stiffness: 400, damping: 22 }}
         whileTap={{ scale: 0.94 }}
         id="tour-services-add"
-        onClick={() => setServiceFormOpen(true)}
-        className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
+        onClick={() => router.push('/dashboard/services/new')}
+        className="md:hidden fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
         style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
       >
         <Plus size={24} />
       </motion.button>
 
-      <ServiceForm
-        isOpen={serviceFormOpen}
-        onClose={closeServiceForm}
-        onSave={handleSaveService}
-        initial={editingService}
-        masterId={masterId}
-      />
+
     </div>
   );
 }
