@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, CheckCircle2, X } from 'lucide-react';
 import { useClients, type ClientRow } from '@/lib/supabase/hooks/useClients';
 import type { FieldErrors } from 'react-hook-form';
 import type { BookingClientData } from '@/lib/validations/booking';
@@ -9,19 +9,22 @@ import type { BookingClientData } from '@/lib/validations/booking';
 interface ClientComboboxProps {
   errors: FieldErrors<BookingClientData>;
   watchName: string;
+  watchPhone: string;
   setValue: (field: keyof BookingClientData, value: string, opts?: { shouldValidate?: boolean }) => void;
   onClientSelect: (client: ClientRow | null) => void;
 }
 
-export function ClientCombobox({ errors, watchName, setValue, onClientSelect }: ClientComboboxProps) {
+export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClientSelect }: ClientComboboxProps) {
   const { clients, isLoading } = useClients();
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(watchName); // ← init від watchName, не від ''
+  const [isPreSelected, setIsPreSelected] = useState(!!watchName); // ← true якщо prefill
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sync query when form resets
+  // Синхронізуємо query з watchName при кожній зміні (важливо для prefill через resetForm)
   useEffect(() => {
-    if (!watchName) setQuery('');
+    setQuery(watchName);
+    setIsPreSelected(!!watchName);
   }, [watchName]);
 
   const filtered = query.trim().length >= 1
@@ -35,7 +38,16 @@ export function ClientCombobox({ errors, watchName, setValue, onClientSelect }: 
 
   function handleChange(val: string) {
     setQuery(val);
+    setIsPreSelected(false);
     setValue('clientName', val, { shouldValidate: true });
+    onClientSelect(null);
+  }
+
+  function clearPreSelected() {
+    setIsPreSelected(false);
+    setQuery('');
+    setValue('clientName', '', { shouldValidate: false });
+    setValue('clientPhone', '', { shouldValidate: false });
     onClientSelect(null);
   }
 
@@ -50,6 +62,7 @@ export function ClientCombobox({ errors, watchName, setValue, onClientSelect }: 
 
   function handleSelect(c: ClientRow) {
     setQuery(c.client_name);
+    setIsPreSelected(true);
     setValue('clientName', c.client_name, { shouldValidate: true });
     setValue('clientPhone', normalizePhone(c.client_phone), { shouldValidate: true });
     onClientSelect(c);
@@ -68,23 +81,45 @@ export function ClientCombobox({ errors, watchName, setValue, onClientSelect }: 
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="relative">
-        <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
-        <input
-          data-testid="wizard-name-input"
-          type="text"
-          value={query}
-          autoComplete="off"
-          onChange={e => handleChange(e.target.value)}
-          onFocus={() => setOpen(true)}
-          placeholder="Олена Петрова або +380..."
-          className={`w-full h-12 pl-9 pr-4 rounded-xl bg-white/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
-            errors.clientName
-              ? 'border-destructive focus:ring-[#C05B5B]/20'
-              : 'border-white/80 focus:border-primary focus:ring-2 focus:ring-[#789A99]/20'
-          }`}
-        />
-      </div>
+      {isPreSelected ? (
+        /* ── Клієнт вже обраний — показуємо чіп ── */
+        <div className="flex items-center gap-3 h-12 px-3 rounded-xl bg-success/8 border border-success/25">
+          <CheckCircle2 size={16} className="text-success shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">{watchName}</p>
+            {watchPhone && (
+              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">{watchPhone}</p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={clearPreSelected}
+            className="p-1 rounded-lg hover:bg-black/6 text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+            title="Змінити клієнта"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      ) : (
+        /* ── Search input ── */
+        <div className="relative">
+          <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+          <input
+            data-testid="wizard-name-input"
+            type="text"
+            value={query}
+            autoComplete="off"
+            onChange={e => handleChange(e.target.value)}
+            onFocus={() => setOpen(true)}
+            placeholder="Олена Петрова або +380..."
+            className={`w-full h-12 pl-9 pr-4 rounded-xl bg-white/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
+              errors.clientName
+                ? 'border-destructive focus:ring-[#C05B5B]/20'
+                : 'border-white/80 focus:border-primary focus:ring-2 focus:ring-[#789A99]/20'
+            }`}
+          />
+        </div>
+      )}
       {errors.clientName && (
         <p className="text-destructive text-[10px] mt-1 ml-1">{errors.clientName.message}</p>
       )}

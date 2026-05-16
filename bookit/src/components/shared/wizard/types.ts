@@ -50,6 +50,10 @@ export interface BookingWizardProps {
   initialStep?: WizardStep;
   initialDate?: string;
   initialTime?: string;
+  /** Pre-select a client in master mode (used by booking:create URL action or CRM "Записати") */
+  initialClientId?: string;
+  initialClientName?: string;
+  initialClientPhone?: string;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;

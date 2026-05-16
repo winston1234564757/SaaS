@@ -24,6 +24,10 @@ interface UseBookingWizardStateParams {
   initialDate?: string;  // YYYY-MM-DD — flash deal locked date
   initialTime?: string;  // HH:MM — flash deal locked time
   isFlashFastTrack?: boolean;
+  /** Pre-select client in master mode (from booking:create URL action or CRM "Записати") */
+  initialClientId?: string;
+  initialClientName?: string;
+  initialClientPhone?: string;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
 }
@@ -39,6 +43,9 @@ export function useBookingWizardState({
   initialDate,
   initialTime,
   isFlashFastTrack = false,
+  initialClientId,
+  initialClientName,
+  initialClientPhone,
   c2cRefCode = null,
   c2cDiscountPct = null,
 }: UseBookingWizardStateParams) {
@@ -73,7 +80,7 @@ export function useBookingWizardState({
 
   // ── Client-mode extras ────────────────────────────────────────────────────────
   const [clientUserId, setClientUserId]             = useState<string | null>(null);
-  const [selectedClientId, setSelectedClientId]     = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId]     = useState<string | null>(initialClientId ?? null);
   const [createdBookingId, setCreatedBookingId]     = useState<string | null>(null);
   const [clientHistoryTimes, setClientHistoryTimes] = useState<string[]>([]);
   const [loyaltyDiscount, setLoyaltyDiscount]       = useState<{ name: string; percent: number } | null>(null);
@@ -192,7 +199,7 @@ export function useBookingWizardState({
       setDurationOverride(null);
       setUseDynamicPrice(true);
       setClientUserId(null);
-      setSelectedClientId(null);
+      setSelectedClientId(initialClientId ?? null);
       setCreatedBookingId(null);
       setClientHistoryTimes([]);
       setLoyaltyDiscount(null);
@@ -203,10 +210,14 @@ export function useBookingWizardState({
       c2cCheckRef.current = '';
       setSuggestedProductIds(new Set());
       setSaveError('');
-      resetForm({
-        clientName: '',
-        clientPhone: '',
-      });
+      resetForm({ clientName: '', clientPhone: '' });
+      if (initialClientName) {
+        setValue('clientName', initialClientName, { shouldValidate: true });
+      }
+      if (initialClientPhone) {
+        const e164 = normalizeToE164(initialClientPhone);
+        setValue('clientPhone', e164 ? `+${e164}` : initialClientPhone, { shouldValidate: true });
+      }
     }
 
     if (mode === 'client' && masterId) {
@@ -331,7 +342,9 @@ export function useBookingWizardState({
 
   function toggleService(sv: WizardService) {
     setSelectedServices(prev => prev.some(s => s.id === sv.id) ? prev.filter(s => s.id !== sv.id) : [...prev, sv]);
-    setSelectedTime(null);
+    // Не очищаємо час якщо він прийшов як initialTime (вільне вікно з таймлайну).
+    // Сервер все одно валідує доступність слоту при бронюванні.
+    if (!initialTime) setSelectedTime(null);
   }
 
   return {

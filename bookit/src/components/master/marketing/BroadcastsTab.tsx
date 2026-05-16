@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { Plus, Send, Zap } from 'lucide-react';
 import { BroadcastEditor } from './BroadcastEditor';
 import { BroadcastHistory } from './BroadcastHistory';
@@ -18,6 +19,15 @@ interface Props {
 export function BroadcastsTab({ broadcastsUsed, isStarter, isPro, products }: Props) {
   const [editorOpen, setEditorOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [prefillClientIds, setPrefillClientIds] = useState<string[] | undefined>();
+  const [prefillTemplateId, setPrefillTemplateId] = useState<string | undefined>();
+
+  useUrlActionBus('marketing:broadcast', ({ clientIds, templateId }) => {
+    const ids = clientIds?.split(',').filter(Boolean);
+    setPrefillClientIds(ids?.length ? ids : undefined);
+    setPrefillTemplateId(templateId);
+    setEditorOpen(true);
+  });
 
   const handleSent = () => {
     setEditorOpen(false);
@@ -93,11 +103,13 @@ export function BroadcastsTab({ broadcastsUsed, isStarter, isPro, products }: Pr
       <AnimatePresence>
         {editorOpen && (
           <BroadcastEditor
-            onClose={() => setEditorOpen(false)}
+            onClose={() => { setEditorOpen(false); setPrefillClientIds(undefined); setPrefillTemplateId(undefined); }}
             onSent={handleSent}
             products={products}
             broadcastsUsed={broadcastsUsed}
             isStarter={isStarter}
+            prefillClientIds={prefillClientIds}
+            prefillTemplateId={prefillTemplateId}
           />
         )}
       </AnimatePresence>

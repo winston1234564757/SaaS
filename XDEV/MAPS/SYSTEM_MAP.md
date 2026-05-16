@@ -217,6 +217,14 @@
 | `pricing.test.ts` | Vitest suite (27 тестів, no floating-point помилок) |
 | `billing.test.ts` | Ed25519 webhook verification (6 тестів) |
 
+### URL Action Bus (`src/lib/actions/UrlActionBus.ts`)
+- Pattern: Command Bus via Search Params — будь-яке посилання (ззовні чи всередині) відкриває складний UI-flow
+- Параметри: `?_action=<type>` + індивідуальні payload params (без base64)
+- `useUrlActionBus<T>(actionType, handler)` — hook для consumer-компонентів; Zod-валідація + авто-cleanup URL через `window.history.replaceState`
+- `buildActionUrl<T>(path, action, payload)` — helper для генерації deep-link URLs
+- Registered actions: `booking:create`, `booking:reschedule`, `client:open`, `marketing:broadcast`, `ui:open_drawer`, `flash:create`, `product:edit`
+- Active consumers: `PublicMasterPage` (`booking:create`), `BroadcastsTab` (`marketing:broadcast`)
+
 ### Routing Guard
 - `src/proxy.ts` — `export async function proxy(request: NextRequest)` — замінює `middleware.ts` (Next.js 16)
 - Правила: `/dashboard` → master only; `/my` → auth; `/login|/register` → guest only

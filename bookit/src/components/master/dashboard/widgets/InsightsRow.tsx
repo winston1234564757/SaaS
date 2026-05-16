@@ -258,7 +258,6 @@ export function InsightsRow() {
       <ClientDetailSheet
         client={selectedClient}
         onClose={() => setSelectedClient(null)}
-        onVipChange={() => {}}
       />
     </>
   );

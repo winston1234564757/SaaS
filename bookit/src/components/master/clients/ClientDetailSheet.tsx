@@ -21,7 +21,6 @@ import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
 interface ClientDetailSheetProps {
   client: ClientRow | null;
   onClose: () => void;
-  onVipChange: (id: string, isVip: boolean) => void;
 }
 
 interface RecentBooking {
@@ -39,7 +38,7 @@ import { parseError } from '@/lib/utils/errors';
 
 import { PopUpModal } from '@/components/ui/PopUpModal';
 
-export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetailSheetProps) {
+export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -121,9 +120,9 @@ export function ClientDetailSheet({ client, onClose, onVipChange }: ClientDetail
       if (error) {
         showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
-        onVipChange(c.id, newVip);
-        showToast({ 
-          type: 'success', 
+        await queryClient.invalidateQueries({ queryKey: ['clients'] });
+        showToast({
+          type: 'success',
           title: newVip ? 'VIP статус надано' : 'VIP статус знято',
           message: newVip ? 'Клієнт тепер має особливі привілеї' : 'VIP статус успішно знято'
         });

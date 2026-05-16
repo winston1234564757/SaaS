@@ -381,7 +381,6 @@ function ClientsModal({
       <ClientDetailSheet
         client={selectedClient}
         onClose={() => setSelectedClient(null)}
-        onVipChange={() => {}}
       />
     </>
   );

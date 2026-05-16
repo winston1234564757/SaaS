@@ -13,9 +13,12 @@ interface ManualBookingFormProps {
   onSuccess?: () => void;
   initialDate?: string;
   initialTime?: string;
+  initialClientId?: string;
+  initialClientName?: string;
+  initialClientPhone?: string;
 }
 
-export function ManualBookingForm({ isOpen, onClose, onSuccess, initialDate, initialTime }: ManualBookingFormProps) {
+export function ManualBookingForm({ isOpen, onClose, onSuccess, initialDate, initialTime, initialClientId, initialClientName, initialClientPhone }: ManualBookingFormProps) {
   const { masterProfile } = useMasterContext();
   const { services } = useServices();
   const { products: allProducts } = useProducts();
@@ -59,6 +62,9 @@ export function ManualBookingForm({ isOpen, onClose, onSuccess, initialDate, ini
       onSuccess={handleSuccess}
       initialDate={initialDate}
       initialTime={initialTime}
+      initialClientId={initialClientId}
+      initialClientName={initialClientName}
+      initialClientPhone={initialClientPhone}
     />
   );
 }

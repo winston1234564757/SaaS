@@ -147,6 +147,7 @@ export function ClientDetails({
               <ClientCombobox
                 errors={errors}
                 watchName={watchName}
+                watchPhone={watchPhone}
                 setValue={setValue}
                 onClientSelect={onClientSelect}
               />

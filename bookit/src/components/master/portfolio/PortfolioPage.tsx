@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Sparkles, Plus, ExternalLink, Images, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePortfolioItems, useInvalidatePortfolio } from '@/lib/supabase/hooks/usePortfolioItems';
@@ -45,18 +45,36 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
   const { masterProfile, profile } = useMasterContext();
   const { data: items = initialItems } = usePortfolioItems(initialItems);
   const invalidate = useInvalidatePortfolio();
+  const router       = useRouter();
+  const searchParams = useSearchParams();
 
-  const [editingItem, setEditingItem] = useState<PortfolioItemFull | null | undefined>(undefined);
-  const [isStoryOpen, setIsStoryOpen] = useState(false);
+  // Terminal URL state
+  const portfolioId  = searchParams.get('portfolioId');  // 'new' | uuid | null
+  const drawerParam  = searchParams.get('drawer');
+  const isStoryOpen  = drawerParam === 'story_generator';
+
+  // editingItem: null = create, PortfolioItemFull = edit, undefined = closed
+  const editingItem: PortfolioItemFull | null | undefined = portfolioId === null
+    ? undefined
+    : portfolioId === 'new'
+      ? null
+      : (items.find(i => i.id === portfolioId) ?? undefined);
   const isEditorOpen = editingItem !== undefined;
 
   const isStarter = tier === 'starter';
   const publishedCount = items.filter(i => i.is_published).length;
   const atLimit = isStarter && publishedCount >= STARTER_LIMIT;
 
+  function setParam(key: string, value: string | null) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === null) params.delete(key);
+    else params.set(key, value);
+    router.replace(`/dashboard/portfolio?${params.toString()}`, { scroll: false });
+  }
+
   const handleCreate = () => {
     if (atLimit) return;
-    setEditingItem(null);
+    setParam('portfolioId', 'new');
   };
 
   return (
@@ -72,7 +90,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsStoryOpen(true)}
+            onClick={() => setParam('drawer', 'story_generator')}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all active:scale-95"
           >
             <Sparkles size={14} /> Сторіз
@@ -163,7 +181,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
             >
               <PortfolioItemCard
                 item={item}
-                onClick={() => setEditingItem(item)}
+                onClick={() => setParam('portfolioId', item.id)}
               />
             </motion.div>
           ))}
@@ -191,15 +209,15 @@ export function PortfolioPage({ initialItems, tier, masterSlug, masterId, servic
           services={services}
           reviews={reviews}
           clients={clients}
-          onClose={() => setEditingItem(undefined)}
-          onSaved={() => { invalidate(); setEditingItem(undefined); }}
+          onClose={() => setParam('portfolioId', null)}
+          onSaved={() => { invalidate(); setParam('portfolioId', null); }}
         />
       )}
 
       {/* Story Generator */}
       <StoryGenerator
         isOpen={isStoryOpen}
-        onClose={() => setIsStoryOpen(false)}
+        onClose={() => setParam('drawer', null)}
         items={items}
         masterName={profile?.full_name || masterProfile?.business_name || 'Майстер'} 
         masterSlug={masterSlug}

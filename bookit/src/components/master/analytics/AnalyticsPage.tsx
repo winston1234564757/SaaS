@@ -257,7 +257,6 @@ function ClientSheetById({ clientId, masterId, clientName, onClose }: {
     <ClientDetailSheet
       client={row}
       onClose={onClose}
-      onVipChange={(_, v) => setRow(r => r ? { ...r, is_vip: v } : null)}
     />
   );
 }

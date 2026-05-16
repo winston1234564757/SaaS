@@ -28,6 +28,10 @@ interface Props {
   products: Product[];
   broadcastsUsed: number;
   isStarter: boolean;
+  /** Pre-select specific clients (from URL Action Bus marketing:broadcast) */
+  prefillClientIds?: string[];
+  /** Pre-fill message template by TEMPLATES key */
+  prefillTemplateId?: string;
 }
 
 interface ClientPreviewItem {
@@ -79,9 +83,9 @@ const TEMPLATES: Record<string, string> = {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isStarter }: Props) {
+export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isStarter, prefillClientIds, prefillTemplateId }: Props) {
   const [title, setTitle]               = useState('');
-  const [message, setMessage]           = useState('');
+  const [message, setMessage]           = useState(() => prefillTemplateId ? (TEMPLATES[prefillTemplateId] ?? '') : '');
   const [channels, setChannels]         = useState<BroadcastChannel[]>(['push', 'telegram', 'sms']);
   const [discountPct, setDiscountPct]   = useState<number | ''>('');
   const [discountServiceId, setDiscountServiceId] = useState('');
@@ -95,19 +99,23 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
   const [resolvedClientIds, setResolvedClientIds] = useState<string[]>([]);
   const [resolving, setResolving]       = useState(false);
 
-  // Audience mode
-  const [targetMode, setTargetMode] = useState<'tags' | 'clients'>('tags');
+  // Audience mode — switch to 'clients' when prefillClientIds is provided
+  const [targetMode, setTargetMode] = useState<'tags' | 'clients'>(() =>
+    prefillClientIds && prefillClientIds.length > 0 ? 'clients' : 'tags',
+  );
 
   // Tags mode
   const [tags, setTags]             = useState<BroadcastTagFilter[]>([]);
   const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
   const [tagPage, setTagPage]       = useState(0);
 
-  // Clients mode
+  // Clients mode — pre-select client IDs from URL action payload
   const [search, setSearch]         = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [clientPage, setClientPage] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(prefillClientIds ?? []),
+  );
   const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const { create, send } = useBroadcastMutations();

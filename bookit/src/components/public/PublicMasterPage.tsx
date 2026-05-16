@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap, Gift, ShoppingBag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -327,6 +328,8 @@ export function PublicMasterPage({
   const [bookingOpen, setBookingOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [activeFlashDeal, setActiveFlashDeal] = useState<FlashDeal | null>(null);
+  const [actionDate, setActionDate] = useState<string | undefined>();
+  const [actionTime, setActionTime] = useState<string | undefined>();
   // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
   const [todayDow, setTodayDow] = useState('');
   const [c2cReferrerBalance, setC2cReferrerBalance] = useState<number>(0);
@@ -370,6 +373,19 @@ export function PublicMasterPage({
   useEffect(() => {
     setTodayDow(['sun','mon','tue','wed','thu','fri','sat'][getNow().getDay()]);
   }, []);
+
+  // URL Action Bus — _action=booking:create (richer programmatic deep-link)
+  useUrlActionBus('booking:create', ({ serviceId, date, startTime }) => {
+    if (didAutoOpen.current) return;
+    didAutoOpen.current = true;
+    const service = serviceId ? (master.services.find(s => s.id === serviceId) ?? null) : null;
+    setRepeatServices(null);
+    setSelectedService(service);
+    setActiveFlashDeal(null);
+    setActionDate(date);
+    setActionTime(startTime);
+    setBookingOpen(true);
+  });
 
   // Auto-open BookingFlow with pre-selected services from ?services= or ?serviceId= query param
   useEffect(() => {
@@ -1053,7 +1069,7 @@ export function PublicMasterPage({
 
       <BookingFlow
         isOpen={bookingOpen}
-        onClose={() => { setBookingOpen(false); setRepeatServices(null); setActiveFlashDeal(null); }}
+        onClose={() => { setBookingOpen(false); setRepeatServices(null); setActiveFlashDeal(null); setActionDate(undefined); setActionTime(undefined); }}
         services={master.services}
         products={master.products ?? []}
         initialService={selectedService}
@@ -1065,6 +1081,8 @@ export function PublicMasterPage({
         pricingRules={master.pricingRules}
         workingHours={master.workingHours as import('@/types/database').WorkingHoursConfig | null}
         flashDeal={activeFlashDeal}
+        initialDate={actionDate}
+        initialTime={actionTime}
         c2cRefCode={c2cRefCode}
         c2cDiscountPct={c2cDiscountPct}
         masterC2cEnabled={masterC2cEnabled}

@@ -28,6 +28,8 @@ interface BookingFlowProps {
   pricingRules?: Record<string, unknown>;
   workingHours?: WorkingHoursConfig | null;
   flashDeal?: FlashDeal | null;
+  initialDate?: string;
+  initialTime?: string;
   c2cRefCode?: string | null;
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;
@@ -40,6 +42,7 @@ export function BookingFlow({
   masterName, masterId,
   bookingsThisMonth, subscriptionTier,
   pricingRules, workingHours, flashDeal,
+  initialDate, initialTime,
   c2cRefCode, c2cDiscountPct,
   masterC2cEnabled, masterC2cDiscountPct,
 }: BookingFlowProps) {
@@ -68,6 +71,8 @@ export function BookingFlow({
       products={products as WizardProduct[]}
       initialServices={initial}
       initialStep={initialStep}
+      initialDate={initialDate}
+      initialTime={initialTime}
       mode="client"
       bookingsThisMonth={bookingsThisMonth}
       subscriptionTier={subscriptionTier}

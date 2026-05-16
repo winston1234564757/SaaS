@@ -26,6 +26,7 @@ import { SharePageCard } from '@/components/master/dashboard/SharePageCard';
 import { OpportunityMenu } from './dashboard/OpportunityMenu';
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { 
   format, 
   isPast, 
@@ -70,8 +71,22 @@ export function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   
   const [formOpen, setFormOpen] = useState(false);
-  const [preselectedTime, setPreselectedTime] = useState<string | undefined>();
-  
+  const [preselectedTime, setPreselectedTime]       = useState<string | undefined>();
+  const [preselectedDate, setPreselectedDate]       = useState<string | undefined>();
+  const [preselectedClientId, setPreselectedClientId]   = useState<string | undefined>();
+  const [preselectedClientName, setPreselectedClientName] = useState<string | undefined>();
+  const [preselectedClientPhone, setPreselectedClientPhone] = useState<string | undefined>();
+
+  useUrlActionBus('booking:create', ({ clientId, date, startTime }) => {
+    setPreselectedClientId(clientId);
+    setPreselectedDate(date);
+    setPreselectedTime(startTime);
+    if (date) {
+      try { setAnchor(new Date(date)); } catch { /* invalid date — ignore */ }
+    }
+    setFormOpen(true);
+  });
+
   const [opportunityOpen, setOpportunityOpen] = useState(false);
   const [opportunityTime, setOpportunityTime] = useState('');
 
@@ -127,6 +142,7 @@ export function BookingsPage() {
     const dateStr = anchor.toISOString().split('T')[0];
 
     if (action === 'booking') {
+      setPreselectedDate(dateStr);
       setPreselectedTime(opportunityTime);
       setFormOpen(true);
     } else if (action === 'flash') {
@@ -500,9 +516,19 @@ export function BookingsPage() {
           Let's see if we need to wrap it here or inside ManualBookingForm. */}
       <ManualBookingForm
         isOpen={formOpen}
-        onClose={() => { setFormOpen(false); setPreselectedTime(undefined); }}
+        onClose={() => {
+          setFormOpen(false);
+          setPreselectedTime(undefined);
+          setPreselectedDate(undefined);
+          setPreselectedClientId(undefined);
+          setPreselectedClientName(undefined);
+          setPreselectedClientPhone(undefined);
+        }}
         initialTime={preselectedTime}
-        initialDate={anchor.toISOString().split('T')[0]}
+        initialDate={preselectedDate ?? anchor.toISOString().split('T')[0]}
+        initialClientId={preselectedClientId}
+        initialClientName={preselectedClientName}
+        initialClientPhone={preselectedClientPhone}
       />
 
       <OpportunityMenu 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Package, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { useProducts } from '@/lib/supabase/hooks/useProducts';
@@ -11,18 +12,36 @@ import { ProductFormDrawer } from './ProductFormDrawer';
 import { RestockDrawer } from './RestockDrawer';
 import { OrderCard } from './OrderCard';
 import type { Product, OrderStatus } from '@/types/database';
+import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 
 type Tab = 'products' | 'orders';
 
 export function ProductsPage() {
-  const [tab, setTab]               = useState<Tab>('products');
-  const [formOpen, setFormOpen]     = useState(false);
-  const [editTarget, setEditTarget] = useState<Product | null>(null);
-  const [restockTarget, setRestockTarget] = useState<Product | null>(null);
+  const router       = useRouter();
+  const searchParams = useSearchParams();
   const [orderFilter, setOrderFilter] = useState<OrderStatus | undefined>(undefined);
+
+  // Terminal URL state
+  const tab        = (searchParams.get('tab') as Tab) || 'products';
+  const productId  = searchParams.get('productId');  // 'new' | uuid | null
+  const restockId  = searchParams.get('restockId');
 
   const { products, isLoading: pLoading, toggleActive } = useProducts();
   const { orders, isLoading: oLoading, updateStatus } = useOrders(orderFilter);
+
+  // Action Bus: product:edit → open drawer via URL
+  useUrlActionBus('product:edit', ({ productId: id }) => {
+    setParam('productId', id);
+  });
+
+  // Derive drawer state from URL
+  const formOpen     = !!productId;
+  const editTarget   = productId && productId !== 'new'
+    ? (products.find(p => p.id === productId) ?? null)
+    : null;
+  const restockTarget = restockId
+    ? (products.find(p => p.id === restockId) ?? null)
+    : null;
 
   const activeCount  = products.filter(p => p.is_active).length;
   const lowStock     = products.filter(p => p.is_active && p.stock_qty <= 3).length;
@@ -36,15 +55,17 @@ export function ProductsPage() {
     .filter(o => o.status !== 'cancelled')
     .reduce((sum, o) => sum + (o.total_kopecks / 100), 0);
 
-  function openEdit(p: Product) {
-    setEditTarget(p);
-    setFormOpen(true);
+  function setParam(key: string, value: string | null) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === null) params.delete(key);
+    else params.set(key, value);
+    router.replace(`/dashboard/products?${params.toString()}`, { scroll: false });
   }
 
-  function closeForm() {
-    setFormOpen(false);
-    setEditTarget(null);
-  }
+  function openEdit(p: Product) { setParam('productId', p.id); }
+  function closeForm() { setParam('productId', null); }
+  function openRestock(p: Product) { setParam('restockId', p.id); }
+  function closeRestock() { setParam('restockId', null); }
 
   const ORDER_FILTERS: { label: string; value: OrderStatus | undefined }[] = [
     { label: 'Всі',        value: undefined    },
@@ -93,10 +114,10 @@ export function ProductsPage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mt-4">
-          <TabBtn active={tab === 'products'} onClick={() => setTab('products')}>
+          <TabBtn active={tab === 'products'} onClick={() => setParam('tab', 'products')}>
             <Package size={14} /> Товари
           </TabBtn>
-          <TabBtn active={tab === 'orders'} onClick={() => setTab('orders')}>
+          <TabBtn active={tab === 'orders'} onClick={() => setParam('tab', 'orders')}>
             <ShoppingBag size={14} />
             Замовлення
             {newOrders > 0 && (
@@ -122,14 +143,14 @@ export function ProductsPage() {
             {pLoading ? (
               <SkeletonList />
             ) : products.length === 0 ? (
-              <EmptyProducts onAdd={() => setFormOpen(true)} />
+              <EmptyProducts onAdd={() => setParam('productId', 'new')} />
             ) : (
               products.map(p => (
                 <ProductCard
                   key={p.id}
                   product={p}
                   onEdit={() => openEdit(p)}
-                  onRestock={() => setRestockTarget(p)}
+                  onRestock={() => openRestock(p)}
                   onToggle={() => toggleActive(p.id, p.is_active)}
                 />
               ))
@@ -185,7 +206,7 @@ export function ProductsPage() {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 22 }}
           whileTap={{ scale: 0.94 }}
-          onClick={() => setFormOpen(true)}
+          onClick={() => setParam('productId', 'new')}
           className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-[#6B8C8B] transition-colors"
           style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
         >
@@ -203,7 +224,7 @@ export function ProductsPage() {
         <RestockDrawer
           product={restockTarget}
           open={!!restockTarget}
-          onClose={() => setRestockTarget(null)}
+          onClose={closeRestock}
         />
       )}
     </div>

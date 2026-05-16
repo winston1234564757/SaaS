@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { BookImage, Send } from 'lucide-react';
 import { StoryGenerator } from './StoryGenerator';
 import { BroadcastsTab } from './BroadcastsTab';
@@ -22,7 +22,15 @@ const TABS = [
 ];
 
 export function MarketingTabs({ initialTab, initialMode, isStarter, isPro, broadcastsUsed, products }: Props) {
-  const [tab, setTab] = useState<'stories' | 'broadcasts'>(initialTab);
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const tab = (searchParams.get('tab') as 'stories' | 'broadcasts') || initialTab;
+
+  function switchTab(id: 'stories' | 'broadcasts') {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', id);
+    router.replace(`/dashboard/marketing?${params.toString()}`, { scroll: false });
+  }
 
   return (
     <div>
@@ -34,7 +42,7 @@ export function MarketingTabs({ initialTab, initialMode, isStarter, isPro, broad
           return (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => switchTab(t.id)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-sm font-medium transition-all"
               style={
                 active

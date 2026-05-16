@@ -9,6 +9,7 @@ import { MonthlyCalendarWidget } from './widgets/MonthlyCalendarWidget';
 import { QuickActionsWidget } from './widgets/QuickActionsWidget';
 import { FreeSlotsWidget } from './widgets/FreeSlotsWidget';
 import { InsightsRow } from './widgets/InsightsRow';
+import { ChannelHealthWidget } from './widgets/ChannelHealthWidget';
 import { DashboardDrawers } from './DashboardDrawers';
 
 export function DashboardView() {
@@ -54,6 +55,7 @@ export function DashboardView() {
           className="hidden lg:flex flex-col gap-4 lg:gap-5 sticky top-[104px] self-start h-fit pb-10"
         >
           <FreeSlotsWidget />
+          <ChannelHealthWidget />
           <InsightsRow />
           <QuickActionsWidget />
         </motion.aside>

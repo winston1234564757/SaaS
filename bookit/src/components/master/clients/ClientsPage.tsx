@@ -21,6 +21,8 @@ import { parseError } from '@/lib/utils/errors';
 import { useMasterContext } from '@/lib/supabase/context';
 import { evaluateCustomSegment, getSegmentIcon } from './SegmentBuilder';
 import type { CustomSegment } from '@/lib/types/segments';
+import { ManualBookingForm } from '@/components/master/bookings/ManualBookingForm';
+import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 
 export type { ClientRow };
 
@@ -184,8 +186,13 @@ export function ClientsPage() {
   const [smartSegment, setSmartSegment] = useState<SmartSegment | 'none'>('none');
   const [showSmartAction, setShowSmartAction] = useState<ClientRow | null>(null);
   const [smartMessage, setSmartMessage] = useState('');
-  const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
   const [sortOpen, setSortOpen] = useState(false);
+
+  // Terminal: clientPhone in URL is source of truth for open sheet
+  const clientPhone = searchParams.get('clientPhone');
+  const selectedClient = clientPhone
+    ? (clients.find(c => c.client_phone === clientPhone) ?? null)
+    : null;
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -193,8 +200,22 @@ export function ClientsPage() {
     router.replace(`?${params.toString()}`, { scroll: false });
   }
 
-  function handleVipChange(id: string, isVip: boolean) {
-    setSelectedClient(prev => prev?.id === id ? { ...prev, is_vip: isVip } : prev);
+  function openClientSheet(client: ClientRow) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('clientPhone', client.client_phone);
+    router.push(`/dashboard/clients?${params.toString()}`);
+  }
+
+  // Action Bus: client:open → resolve clientId → navigate to ?clientPhone=xxx
+  useUrlActionBus('client:open', ({ clientId }) => {
+    const target = clients.find(c => c.client_id === clientId);
+    if (target) openClientSheet(target);
+  });
+
+  function closeClientSheet() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('clientPhone');
+    router.replace(`/dashboard/clients?${params.toString()}`, { scroll: false });
   }
 
   const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
@@ -202,6 +223,15 @@ export function ClientsPage() {
   const [noteValue, setNoteValue] = useState('');
   const [showFab, setShowFab] = useState(true);
   const [customSegmentId, setCustomSegmentId] = useState<string | null>(null);
+
+  // Booking wizard state — opens locally without navigation
+  const [bookingFormOpen, setBookingFormOpen] = useState(false);
+  const [bookingClient, setBookingClient] = useState<ClientRow | null>(null);
+
+  function openBookingForClient(client: ClientRow) {
+    setBookingClient(client);
+    setBookingFormOpen(true);
+  }
 
   const invalidateNote = useClientNoteInvalidate();
 
@@ -594,7 +624,7 @@ export function ClientsPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
                 className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow flex flex-col gap-3 relative"
-                onClick={() => setSelectedClient(client)}
+                onClick={() => openClientSheet(client)}
                 style={{ borderLeft: `3px solid ${ret.color}` }}
               >
                 <div className="flex flex-col h-full">
@@ -740,7 +770,7 @@ export function ClientsPage() {
                            </button>
                          </div>
                          <button 
-                           onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/bookings?clientId=${client.id}`); }}
+                           onClick={(e) => { e.stopPropagation(); openBookingForClient(client); }}
                            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-foreground text-background text-xs font-bold transition-all active:scale-95 shadow-lg shadow-black/5"
                          >
                            <Calendar size={14} />
@@ -767,7 +797,7 @@ export function ClientsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
                 className="bento-card p-4 cursor-pointer hover:shadow-md transition-shadow group relative"
-                onClick={() => setSelectedClient(client)}
+                onClick={() => openClientSheet(client)}
                 style={{ borderLeft: `3px solid ${ret.color}` }}
               >
                 {/* List Info */}
@@ -847,7 +877,7 @@ export function ClientsPage() {
                         <Phone size={14} />
                       </button>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/bookings?clientId=${client.id}`); }}
+                        onClick={(e) => { e.stopPropagation(); openBookingForClient(client); }}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-foreground text-background text-[10px] font-bold transition-all active:scale-95 ml-1"
                       >
                         <Calendar size={12} />
@@ -917,7 +947,7 @@ export function ClientsPage() {
                       </button>
                    </div>
                    <button 
-                      onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/bookings?clientId=${client.id}`); }}
+                      onClick={(e) => { e.stopPropagation(); openBookingForClient(client); }}
                       className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-foreground text-background text-[10px] font-bold"
                     >
                       <Calendar size={12} />
@@ -932,8 +962,7 @@ export function ClientsPage() {
 
       <ClientDetailSheet
         client={selectedClient}
-        onClose={() => setSelectedClient(null)}
-        onVipChange={handleVipChange}
+        onClose={closeClientSheet}
       />
 
       <PopUpModal 
@@ -999,6 +1028,15 @@ export function ClientsPage() {
       </PopUpModal>
         </div> {/* close lg:col-span-8 */}
       </div> {/* close lg:grid-cols-12 */}
+
+      {/* Booking wizard — opens directly from CRM without navigation */}
+      <ManualBookingForm
+        isOpen={bookingFormOpen}
+        onClose={() => { setBookingFormOpen(false); setBookingClient(null); }}
+        initialClientId={bookingClient?.client_id ?? undefined}
+        initialClientName={bookingClient?.client_name}
+        initialClientPhone={bookingClient?.client_phone}
+      />
     </div>
   );
 }

@@ -29,6 +29,7 @@ import { getActivePhoneDiscount } from '@/app/(master)/dashboard/marketing/actio
 import type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
 import { toISO, STEP_TITLE } from './wizard/helpers';
 import { StepProgress } from './wizard/StepProgress';
+import { SafetyAlert } from '@/components/shared/SafetyAlert';
 
 // ── Re-exports (backward compat for consumers that import from BookingWizard) ─
 export type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
@@ -40,7 +41,7 @@ export function BookingWizard({
   services, products = [], initialServices,
   mode, bookingsThisMonth = 0, subscriptionTier = 'starter', pricingRules,
   onSuccess, flashDeal, initialStep,
-  initialDate, initialTime,
+  initialDate, initialTime, initialClientId, initialClientName, initialClientPhone,
   c2cRefCode = null, c2cDiscountPct = null,
   masterC2cEnabled = false, masterC2cDiscountPct = null,
 }: BookingWizardProps) {
@@ -72,6 +73,9 @@ export function BookingWizard({
     initialDate: initialDate ?? flashDeal?.slotDate,
     initialTime: initialTime ?? flashDeal?.slotTime,
     isFlashFastTrack,
+    initialClientId,
+    initialClientName,
+    initialClientPhone,
     c2cRefCode,
     c2cDiscountPct,
   });
@@ -244,6 +248,11 @@ export function BookingWizard({
             <div className="flex items-center justify-center py-3 bg-primary/5 border-b border-primary/10 flex-shrink-0">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Крок {stepNumber} з 4</p>
             </div>
+          )}
+
+          {/* Safety alert — shown in master mode when a client with health/medical notes is selected */}
+          {mode === 'master' && (
+            <SafetyAlert masterId={masterId} clientId={selectedClientId} />
           )}
 
           <div className="flex-1 relative overflow-hidden">
