@@ -32,7 +32,14 @@
       "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; npx tsc --noEmit > \"$env:TEMP\\\\tsc2.txt\" 2>&1; Get-Content \"$env:TEMP\\\\tsc2.txt\" | Where-Object { $_ -match \"error\" -and $_ -notmatch \"test|spec|e2e\" } | Select-Object -First 15)",
       "mcp__plugin_supabase_supabase__list_projects",
       "mcp__plugin_supabase_supabase__execute_sql",
-      "mcp__plugin_supabase_supabase__apply_migration"
+      "mcp__plugin_supabase_supabase__apply_migration",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"src/lib/notifications|src/app/api/cron|src/app/\\\\\\(master\\\\\\)/dashboard/portfolio\" })",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; npx tsc --noEmit 2>&1 | Select-String \"notifications|cron/reminders|cron/check|portfolio/actions\" | ForEach-Object { $_.Line })",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; npx tsc --noEmit 2>&1 | Out-String | Select-String -Pattern \"notification|reminders|check-uncompleted|portfolio.actions\" -AllMatches | Select-Object -ExpandProperty Matches | ForEach-Object Line)",
+      "PowerShell(Out-File *)",
+      "PowerShell(cd \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\bookit\"; node_modules/.bin/tsc --noEmit 2>&1 | Where-Object { $_ -match \"products/actions|billing/mono|expire-sub|reset-monthly|notifications\" })",
+      "PowerShell(cmd /c \"dir /a C:\\\\Users\\\\Vitossik\\\\SaaS\\\\XDEV\")",
+      "PowerShell(cmd /c \"dir /a C:\\\\Users\\\\Vitossik\\\\SaaS\\\\XDEV\\\\MAPS\")"
     ]
   }
 }

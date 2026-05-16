@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { ProductCategory, OrderStatus } from '@/types/database';
+import { notifyMasterNewOrder, notifyMasterStockAlert, notifyClientOrderStatus } from '@/lib/notifications';
 
 // ── Shared auth helper ────────────────────────────────────────────────────────
 
@@ -326,9 +327,11 @@ export async function createOrder(
 
     for (const item of payload.items) {
       const p = productMap.get(item.product_id)!;
+      const newStock = p.stock_qty - item.qty;
+
       await admin
         .from('products')
-        .update({ stock_qty: p.stock_qty - item.qty })
+        .update({ stock_qty: newStock })
         .eq('id', item.product_id)
         .gte('stock_qty', item.qty);
 
@@ -340,7 +343,28 @@ export async function createOrder(
           qty_delta:  -item.qty,
           order_id:   order.id,
         });
+
+      // Stock alert — fetch threshold and compare
+      const { data: product } = await admin
+        .from('products')
+        .select('name, stock_alert_threshold')
+        .eq('id', item.product_id)
+        .single();
+
+      const threshold = (product?.stock_alert_threshold as number | null) ?? 3;
+      if (newStock <= threshold && newStock >= 0) {
+        void notifyMasterStockAlert(payload.master_id, product?.name ?? p.name as string, newStock);
+      }
     }
+
+    // Notify master about new order (fire-and-forget)
+    const orderItemsText = payload.items
+      .map(i => {
+        const p = productMap.get(i.product_id);
+        return `${p?.name ?? 'Товар'} × ${i.qty}`;
+      })
+      .join(', ');
+    void notifyMasterNewOrder({ masterId: payload.master_id, orderId: order.id, orderItems: orderItemsText });
 
     revalidatePath('/dashboard/products');
     return { id: order.id, error: null };
@@ -401,7 +425,7 @@ export async function updateOrderStatus(
 
     const { data: order, error: fetchErr } = await admin
       .from('orders')
-      .select('id, status')
+      .select('id, status, client_id')
       .eq('id', orderId)
       .eq('master_id', masterId)
       .single();
@@ -442,9 +466,14 @@ export async function updateOrderStatus(
 
     if (error) throw error;
 
+    // Notify client on shipped/completed
+    if ((status === 'shipped' || status === 'completed') && order.client_id) {
+      void notifyClientOrderStatus(order.client_id as string, masterId, status, orderId);
+    }
+
     revalidatePath('/dashboard/products');
     return { error: null };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[updateOrderStatus] error:', err);
     return { error: 'Не вдалося оновити статус замовлення.' };
   }

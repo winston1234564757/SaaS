@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createVerify } from 'node:crypto';
 import { flatUidToUuid } from '@/lib/utils/uuid';
 import { syncReferralAndBounty } from '@/lib/billing/syncReferralAndBounty';
+import { notifyMasterBilling } from '@/lib/notifications';
 
 export const runtime = 'nodejs';
 
@@ -232,6 +233,10 @@ export async function POST(req: NextRequest) {
       if (tokErr) console.error('[mono-webhook] master_subscriptions upsert ERROR:', tokErr.message, '| details:', tokErr.details);
       else console.log('[mono-webhook] master_subscriptions upsert OK');
     }
+
+    // Notify master about successful payment
+    const expiresFormatted = new Date(expiresAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+    void notifyMasterBilling(userId, 'subscription_paid', tier === 'pro' ? 'Pro' : 'Studio', expiresFormatted);
 
     console.log('[mono-webhook] completed OK');
     return NextResponse.json({ status: 'ok' });

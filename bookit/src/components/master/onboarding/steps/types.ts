@@ -6,6 +6,7 @@ export type Step =
   | 'SERVICES_FORM'
   | 'PROFIT_PREDICTOR'
   | 'PROFILE_PREVIEW'
+  | 'CHANNELS'
   | 'SUCCESS';
 
 export const STEP_ORDER: Step[] = [
@@ -16,6 +17,7 @@ export const STEP_ORDER: Step[] = [
   'SERVICES_FORM',
   'PROFIT_PREDICTOR',
   'PROFILE_PREVIEW',
+  'CHANNELS',
   'SUCCESS',
 ];
 

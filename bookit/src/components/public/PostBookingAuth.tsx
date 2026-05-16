@@ -25,7 +25,7 @@ interface Props {
   masterC2cDiscountPct?: number | null;
 }
 
-type Step = 'choose' | 'phone' | 'otp';
+type Step = 'choose' | 'phone' | 'otp' | 'channels';
 
 export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, masterC2cEnabled, masterC2cDiscountPct }: Props) {
   const router = useRouter();
@@ -45,6 +45,9 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [pushState, setPushState] = useState<'idle' | 'loading' | 'done' | 'unsupported'>('idle');
+  const [tgOpened, setTgOpened] = useState(false);
 
   const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -148,8 +151,11 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
       }
     }
 
-    router.refresh();
-    router.push('/my/bookings');
+    // Fetch user ID for TG deep-link and go to channels step
+    const { data: { user: u } } = await supabase.auth.getUser();
+    setUserId(u?.id ?? null);
+    setLoading(false);
+    setStep('channels');
   }
 
   // ── OTP box handlers ─────────────────────────────────────────────────────
@@ -203,6 +209,33 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
     if (res.ok) startCooldown();
     else { const d = await res.json(); setError(d.error || 'Помилка'); }
   }
+
+  async function handleSubscribePush() {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      setPushState('unsupported');
+      return;
+    }
+    setPushState('loading');
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') { setPushState('idle'); return; }
+      const reg = await navigator.serviceWorker.ready;
+      const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!key) { setPushState('done'); return; }
+      const pad = '='.repeat((4 - key.length % 4) % 4);
+      const b64 = (key + pad).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(b64);
+      const buf = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: buf });
+      await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sub) });
+      setPushState('done');
+    } catch {
+      setPushState('idle');
+    }
+  }
+
+  const botName = (process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || '').replace('@', '').trim();
 
   return (
     <div className="w-full">
@@ -509,6 +542,111 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                 {resendCooldown > 0 ? `Через ${resendCooldown}с` : 'Надіслати знову'}
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {/* ── Channels — TG + Push ────────────────────────────────────── */}
+        {step === 'channels' && (
+          <motion.div
+            key="channels"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.28 }}
+            className="flex flex-col"
+          >
+            <div className="text-center mb-5">
+              <div className="w-14 h-14 rounded-2xl bg-primary/12 flex items-center justify-center mx-auto mb-3">
+                <span className="text-3xl">🔔</span>
+              </div>
+              <h2 className="heading-serif text-xl text-foreground leading-snug mb-1">
+                Підключи сповіщення
+              </h2>
+              <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                Отримуй підтвердження записів та нагадування — де тобі зручно
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 mb-5">
+              {/* Telegram */}
+              {botName ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className="rounded-2xl p-4 flex items-center gap-3"
+                  style={{ background: tgOpened ? 'rgba(120,154,153,0.08)' : 'rgba(255,255,255,0.8)', border: tgOpened ? '1px solid rgba(120,154,153,0.3)' : '1px solid rgba(232,208,200,1)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
+                >
+                  <div className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center" style={{ background: '#229ED9' }}>
+                    <span className="text-lg">✈️</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">Telegram-бот</p>
+                    <p className="text-[11px] text-muted-foreground/60 leading-tight mt-0.5">
+                      {tgOpened ? 'Відкрито — натисни START у боті' : 'Підтвердження та нагадування у Telegram'}
+                    </p>
+                  </div>
+                  <a
+                    href={userId ? `https://t.me/${botName}?start=${userId}` : `https://t.me/${botName}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setTgOpened(true)}
+                    className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95"
+                    style={{ background: tgOpened ? 'rgba(120,154,153,0.15)' : '#229ED9', color: tgOpened ? '#789A99' : '#fff' }}
+                  >
+                    {tgOpened ? 'Відкрито ✓' : 'Відкрити'}
+                  </a>
+                </motion.div>
+              ) : null}
+
+              {/* Push */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="rounded-2xl p-4 flex items-center gap-3"
+                style={{ background: pushState === 'done' ? 'rgba(120,154,153,0.08)' : 'rgba(255,255,255,0.8)', border: pushState === 'done' ? '1px solid rgba(120,154,153,0.3)' : '1px solid rgba(232,208,200,1)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/15 shrink-0 flex items-center justify-center">
+                  <span className="text-lg">{pushState === 'done' ? '✅' : '🔔'}</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">Push-сповіщення</p>
+                  <p className="text-[11px] text-muted-foreground/60 leading-tight mt-0.5">
+                    {pushState === 'done' ? 'Підключено — все готово!' : 'Миттєві сповіщення прямо у браузері'}
+                  </p>
+                </div>
+                {pushState !== 'done' && pushState !== 'unsupported' && (
+                  <button
+                    type="button"
+                    onClick={handleSubscribePush}
+                    disabled={pushState === 'loading'}
+                    className="shrink-0 px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-semibold active:scale-95 transition-all disabled:opacity-60"
+                  >
+                    {pushState === 'loading' ? '...' : 'Увімкнути'}
+                  </button>
+                )}
+                {(pushState === 'done' || pushState === 'unsupported') && (
+                  <span className="shrink-0 text-xs text-primary font-semibold">{pushState === 'done' ? '✓' : '—'}</span>
+                )}
+              </motion.div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => { router.refresh(); router.push('/my/bookings'); }}
+              className="flex items-center justify-center w-full py-4 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-[#6a8988] active:scale-[0.98] transition-all shadow-lg shadow-[#789A99]/25 mb-2"
+            >
+              {tgOpened || pushState === 'done' ? 'Продовжити →' : 'Налаштую пізніше →'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { router.refresh(); router.push('/my/bookings'); }}
+              className="text-[11px] text-muted-foreground/40 text-center py-1 hover:text-muted-foreground/60 transition-colors"
+            >
+              пропустити
+            </button>
           </motion.div>
         )}
 

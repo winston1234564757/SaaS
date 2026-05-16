@@ -409,6 +409,7 @@ export async function tagClientOnPortfolioItem(itemId: string, clientId: string)
 
   await notifyClientPortfolioConsent({
     clientId,
+    masterId: user.id,
     masterName,
     masterSlug,
     portfolioItemId: itemId,

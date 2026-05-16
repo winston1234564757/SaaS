@@ -31,6 +31,7 @@ import { StepServicesPrompt } from './steps/StepServicesPrompt';
 import { StepServicesForm } from './steps/StepServicesForm';
 import { StepProfitPredictor } from './steps/StepProfitPredictor';
 import { StepProfilePreview } from './steps/StepProfilePreview';
+import { StepChannels } from './steps/StepChannels';
 import { StepSuccess } from './steps/StepSuccess';
 import { parseError } from '@/lib/utils/errors';
 
@@ -42,6 +43,7 @@ interface OnboardingWizardProps {
 function getProgressStep(s: Step): number {
   if (s === 'BASIC') return 1;
   if (s === 'SCHEDULE_PROMPT' || s === 'SCHEDULE_FORM') return 2;
+  if (s === 'CHANNELS' || s === 'SUCCESS') return 4;
   return 3;
 }
 
@@ -256,6 +258,18 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
     try {
       const { error } = await saveOnboardingBusinessName(businessName);
       if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
+      await saveOnboardingProgress('CHANNELS', buildSnapshot());
+      goTo('CHANNELS');
+    } catch (err: unknown) {
+      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleChannelsComplete() {
+    setSaving(true);
+    try {
       await saveOnboardingProgress('SUCCESS', buildSnapshot());
       goTo('SUCCESS');
     } catch (err: unknown) {
@@ -310,7 +324,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
 
         {showProgress && (
           <div className="flex items-center gap-1.5 mb-6">
-            {[1, 2, 3].map(n => (
+            {[1, 2, 3, 4].map(n => (
               <div
                 key={n}
                 className="flex-1 h-1.5 rounded-full transition-all duration-500"
@@ -414,6 +428,14 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
               onBusinessNameChange={setBusinessName}
               onSave={handleSaveProfilePreview}
               onBack={() => { persistProgress('PROFIT_PREDICTOR'); goTo('PROFIT_PREDICTOR'); }}
+            />
+          )}
+          {step === 'CHANNELS' && (
+            <StepChannels
+              key="CHANNELS"
+              direction={direction} slideVariants={slideVariants} transition={transition}
+              saving={saving}
+              onComplete={handleChannelsComplete}
             />
           )}
           {step === 'SUCCESS' && (

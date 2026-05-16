@@ -1,13 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { sendPush } from '@/lib/push';
-import { sendTurboSMS } from '@/lib/turbosms';
+import { NotificationOrchestrator } from '@/lib/notifications/NotificationOrchestrator';
 
 /**
- * Vercel Cron: щодня о 9:00 Kyiv (7:00 UTC)
- * Нагадування клієнтам про завтрашній запис.
- * Канали: Web Push (основний) → TurboSMS (резерв якщо немає підписки або пуш протух).
+ * Vercel Cron: щогодини.
+ * Надсилає нагадування клієнтам і майстрам у 3 строгих часових вікнах:
+ *   - 24 год до сесії  → клієнт (NO SMS — non-critical)
+ *   -  2 год до сесії  → клієнт (SMS allowed — critical) + майстер (NO SMS)
+ *   - 30 хв до сесії  → клієнт (NO SMS — non-critical)
+ *
+ * Ранковий огляд (master_day_briefing) надсилається майстру о 8:00 за Kyiv.
  */
+
+const KYIV_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+function kyivHour(): number {
+  return new Date(Date.now() + KYIV_OFFSET_MS).getUTCHours();
+}
+
+type ReminderWindow = {
+  label: string;
+  minutesFromNow: number;
+  toleranceMs: number;
+  clientEvent: 'reminder_24h' | 'reminder_2h' | 'reminder_30m';
+  notifyMaster: boolean;
+};
+
+const WINDOWS: ReminderWindow[] = [
+  { label: '24h',  minutesFromNow: 24 * 60, toleranceMs: 29 * 60 * 1000, clientEvent: 'reminder_24h', notifyMaster: false },
+  { label: '2h',   minutesFromNow: 2 * 60,  toleranceMs: 29 * 60 * 1000, clientEvent: 'reminder_2h',  notifyMaster: true  },
+  { label: '30m',  minutesFromNow: 30,       toleranceMs: 14 * 60 * 1000, clientEvent: 'reminder_30m', notifyMaster: false },
+];
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const authHeader = req.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -15,112 +39,171 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   const admin = createAdminClient();
+  const now = new Date();
+  const results: Record<string, { client: number; master: number; failed: number }> = {};
 
-  const tomorrow = new Date();
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+  // ── Morning master briefing (08:00 Kyiv) ─────────────────────────────────
+  if (kyivHour() === 8) {
+    await sendMorningBriefings(admin, now);
+  }
+
+  // ── Time-window reminders ─────────────────────────────────────────────────
+  for (const window of WINDOWS) {
+    const windowResult = await processWindow(admin, now, window);
+    results[window.label] = windowResult;
+  }
+
+  console.log('[cron/reminders]', JSON.stringify({ now: now.toISOString(), results }));
+  return NextResponse.json({ now: now.toISOString(), results });
+}
+
+async function processWindow(
+  admin: ReturnType<typeof createAdminClient>,
+  now: Date,
+  window: ReminderWindow,
+): Promise<{ client: number; master: number; failed: number }> {
+  const targetTime = new Date(now.getTime() + window.minutesFromNow * 60 * 1000);
+  const windowStart = new Date(targetTime.getTime() - window.toleranceMs);
+  const windowEnd = new Date(targetTime.getTime() + window.toleranceMs);
+
+  // Only look at bookings on the dates covered by this window
+  const minDate = windowStart.toISOString().slice(0, 10);
+  const maxDate = windowEnd.toISOString().slice(0, 10);
 
   const { data: bookings, error } = await admin
     .from('bookings')
     .select(`
-      id, client_id, client_name, client_phone, date, start_time, end_time,
+      id, client_id, client_name, client_phone, date, start_time,
+      master_id,
       booking_services ( service_name ),
-      master_profiles!inner ( profiles!inner ( full_name ) )
+      master_profiles!inner ( profiles!inner ( full_name ), business_name )
     `)
-    .eq('date', tomorrowStr)
     .in('status', ['pending', 'confirmed'])
-    .not('client_phone', 'is', null);
+    .gte('date', minDate)
+    .lte('date', maxDate);
 
   if (error) {
-    console.error('[cron/reminders] DB error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error(`[cron/reminders/${window.label}] DB error:`, error.message);
+    return { client: 0, master: 0, failed: 0 };
   }
 
-  const rows = bookings ?? [];
+  // Filter by exact time window
+  const due = (bookings ?? []).filter(b => {
+    const [h, m] = ((b.start_time as string) ?? '00:00').split(':').map(Number);
+    const startDt = new Date(b.date + 'T00:00:00');
+    startDt.setHours(h, m, 0, 0);
+    return startDt >= windowStart && startDt <= windowEnd;
+  });
 
-  // Один запит для всіх push-підписок (тільки для авторизованих клієнтів)
-  const clientIds = [...new Set(rows.map((b: any) => b.client_id).filter(Boolean))];
+  if (due.length === 0) return { client: 0, master: 0, failed: 0 };
 
-  const pushSubsMap = new Map<string, { endpoint: string; keys: { p256dh: string; auth: string } }[]>();
-
-  if (clientIds.length > 0) {
-    const { data: subs } = await admin
-      .from('push_subscriptions')
-      .select('user_id, subscription')
-      .in('user_id', clientIds);
-
-    for (const row of subs ?? []) {
-      const arr = pushSubsMap.get(row.user_id) ?? [];
-      arr.push(row.subscription);
-      pushSubsMap.set(row.user_id, arr);
-    }
-  }
-
-  let pushSent = 0;
-  let smsSent = 0;
+  let clientSent = 0;
+  let masterSent = 0;
   let failed = 0;
 
-  const BATCH_SIZE = 50;
-  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+  const BATCH = 30;
+  for (let i = 0; i < due.length; i += BATCH) {
     await Promise.allSettled(
-    rows.slice(i, i + BATCH_SIZE).map(async (b: any) => {
-      const mp = b.master_profiles;
-      const masterName: string = (mp?.profiles as any)?.full_name ?? 'Майстер';
-      const startTime: string = (b.start_time as string | null)?.slice(0, 5) ?? '';
-      const services: string = ((b.booking_services as any[]) ?? [])
-        .map((s: any) => s.service_name as string)
-        .join(', ') || 'Послуга';
+      due.slice(i, i + BATCH).map(async b => {
+        const mp = b.master_profiles as unknown as { profiles: { full_name: string }; business_name: string | null } | null;
+        const masterName = mp?.business_name ?? mp?.profiles?.full_name ?? 'Майстер';
+        const services = ((b.booking_services as { service_name: string }[]) ?? [])
+          .map(s => s.service_name)
+          .join(', ') || 'Послуга';
+        const startTime = (b.start_time as string | null)?.slice(0, 5) ?? '';
 
-      const messageText = `Нагадування: завтра о ${startTime} візит до ${masterName} (${services})`;
+        const sharedData = {
+          bookingId: b.id as string,
+          masterName,
+          date: b.date as string,
+          startTime,
+          services,
+        };
 
-      // ── Спроба 1: Web Push ───────────────────────────────────────────────
-      const subs = b.client_id ? (pushSubsMap.get(b.client_id) ?? []) : [];
-      if (subs.length > 0) {
-        const results = await Promise.allSettled(
-          subs.map(sub => sendPush(sub, { title: 'BookIt 🗓️', body: messageText, url: `/my/bookings?bookingId=${b.id}` }))
-        );
-        
-        const expiredEndpoints: string[] = [];
-        let anyOk = false;
-        results.forEach((r, i) => {
-          if (r.status === 'fulfilled') {
-            if (r.value.ok) anyOk = true;
-            if (r.value.gone) expiredEndpoints.push(subs[i].endpoint);
+        // ── Client reminder ─────────────────────────────────────────────────
+        if (b.client_id) {
+          try {
+            await NotificationOrchestrator.send({
+              eventType: window.clientEvent,
+              recipientId: b.client_id as string,
+              recipientRole: 'client',
+              masterId: b.master_id as string,
+              relatedBookingId: b.id as string,
+              data: sharedData,
+            });
+            clientSent++;
+          } catch {
+            failed++;
           }
-        });
-        
-        if (expiredEndpoints.length > 0) {
-          // Fire and forget deletion
-          admin.from('push_subscriptions').delete().in('endpoint', expiredEndpoints).then();
         }
 
-        if (anyOk) {
-          pushSent++;
-          return;
+        // ── Master reminder (2h window only) ────────────────────────────────
+        if (window.notifyMaster) {
+          try {
+            await NotificationOrchestrator.send({
+              eventType: 'reminder_2h',
+              recipientId: b.master_id as string,
+              recipientRole: 'master',
+              masterId: b.master_id as string,
+              relatedBookingId: b.id as string,
+              data: {
+                ...sharedData,
+                clientName: b.client_name as string,
+                masterName: undefined,
+              },
+            });
+            masterSent++;
+          } catch {
+            failed++;
+          }
         }
-      }
-
-      // ── Спроба 2: TurboSMS fallback ──────────────────────────────────────
-      const phone = b.client_phone as string;
-      if (!phone) { failed++; return; }
-
-      try {
-        const { ok, code } = await sendTurboSMS(phone, messageText);
-        if (ok) {
-          smsSent++;
-        } else {
-          console.error('[cron/reminders] TurboSMS error for', phone, code);
-          failed++;
-        }
-      } catch (e) {
-        console.error('[cron/reminders] SMS fetch error for', phone, e);
-        failed++;
-      }
-    })
+      })
     );
   }
 
-  console.log(`[cron/reminders] date=${tomorrowStr} total=${rows.length} pushSent=${pushSent} smsSent=${smsSent} failed=${failed}`);
+  return { client: clientSent, master: masterSent, failed };
+}
 
-  return NextResponse.json({ date: tomorrowStr, total: rows.length, pushSent, smsSent, failed });
+async function sendMorningBriefings(
+  admin: ReturnType<typeof createAdminClient>,
+  now: Date,
+): Promise<void> {
+  const todayStr = now.toISOString().slice(0, 10);
+
+  const { data: bookings } = await admin
+    .from('bookings')
+    .select('master_id, start_time, client_name, booking_services(service_name)')
+    .eq('date', todayStr)
+    .in('status', ['pending', 'confirmed'])
+    .order('start_time', { ascending: true });
+
+  if (!bookings || bookings.length === 0) return;
+
+  const byMaster = new Map<string, typeof bookings>();
+  for (const b of bookings) {
+    const arr = byMaster.get(b.master_id as string) ?? [];
+    arr.push(b);
+    byMaster.set(b.master_id as string, arr);
+  }
+
+  await Promise.allSettled(
+    [...byMaster.entries()].map(async ([masterId, items]) => {
+      const bookingItems = items
+        .map(b => {
+          const svc = ((b.booking_services as { service_name: string }[]) ?? [])
+            .map(s => s.service_name).join(', ') || 'Послуга';
+          const time = (b.start_time as string | null)?.slice(0, 5) ?? '';
+          return `  • ${time} — <b>${b.client_name}</b> (${svc})`;
+        })
+        .join('\n');
+
+      await NotificationOrchestrator.send({
+        eventType: 'master_day_briefing',
+        recipientId: masterId,
+        recipientRole: 'master',
+        masterId,
+        data: { count: items.length, bookingItems },
+      });
+    })
+  );
 }

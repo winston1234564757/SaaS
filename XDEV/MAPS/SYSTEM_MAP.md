@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-13 · Джерело: живий код (v6.5 "Bento Analytics & CRM Polish")
+> Оновлено: 2026-05-16 · Джерело: живий код (v7.0 "NotificationOrchestrator + Adoption Mechanics")
 
 ---
 
@@ -49,7 +49,9 @@
 ### Onboarding Wizard
 - Route: `src/app/onboarding/` (окремий layout, не в master)
 - `src/app/onboarding/page.tsx` — async SC: читає `onboarding_step` + `onboarding_data` з DB
-- Кроки: `BASIC → SCHEDULE → SERVICES_FORM → PROFIT_PREDICTOR → PROFILE_PREVIEW → SUCCESS`
+- Кроки: `BASIC → SCHEDULE_PROMPT → SCHEDULE_FORM → SERVICES_PROMPT → SERVICES_FORM → PROFIT_PREDICTOR → PROFILE_PREVIEW → CHANNELS → SUCCESS`
+- **CHANNELS** (новий, Фаза 4): TG deep-link через `generateTelegramConnectToken()` + Push subscribe; перед SUCCESS
+- Прогрес-бар: 4 кроки (було 3)
 - Persistence: `saveOnboardingProgress()` server action → `profiles.onboarding_step` + `profiles.onboarding_data`
 
 ---
@@ -73,7 +75,7 @@
 - Кроки: послуги → товари → дата → слот → підтвердження → SMS OTP (guest)
 - Server Action: `src/lib/actions/createBooking.ts`
 - Ціноутворення: `src/lib/actions/computeBookingPrice.ts`
-- Auth після букінгу: `src/components/public/PostBookingAuth.tsx` — отримує `masterId`, `masterC2cEnabled`, `masterC2cDiscountPct`; динамічно фетчить `loyalty_programs` для майстра (Supabase browser client, RLS публічний SELECT); рендерить loyalty card / C2C teaser / BookIT fallback
+- Auth після букінгу: `src/components/public/PostBookingAuth.tsx` — кроки: `choose → phone → otp → channels`; **channels** (Фаза 4): TG deep-link + Push subscribe до редиректу в `/my/bookings`; отримує `masterId`, `masterC2cEnabled`, `masterC2cDiscountPct`; рендерить loyalty card / C2C teaser / BookIT fallback
 - Phone discount lookup: `getActivePhoneDiscount` (debounced, 400ms) → показується в ClientDetails до підтвердження
 
 ### Short Link Redirect
@@ -89,7 +91,8 @@
 - Component: `src/components/public/ExplorePage.tsx` (~16KB)
 
 ### Client Area `/my/`
-- Layout: `src/app/my/layout.tsx` — client layout + `MyBottomNav`
+- Layout: `src/app/my/layout.tsx` — fetches `profiles.telegram_chat_id` + `push_subscriptions` count; рендерить `ChannelBanner` якщо хоч один канал відсутній (Фаза 4)
+- `src/components/client/ChannelBanner.tsx` — persistent top-banner: TG deep-link + Push; закривається X (сесійно); зникає server-side коли обидва канали підключені
 - `src/app/my/bookings/` → `MyBookingsPage.tsx` + `my/bookings/actions.ts`
 - `src/app/my/profile/` → профіль клієнта
 - `src/app/my/masters/` → мої майстри
@@ -179,21 +182,31 @@
 - `src/lib/actions/computeBookingPrice.ts` — фінальний розрахунок ціни бронювання
 - `src/lib/actions/createBooking.ts` — повна логіка створення запису (26KB)
 
-### Notifications (Deep Linked)
-- Всі канали підтримують глибокі посилання (Deep Linking) на конкретні елементи системи.
-- `src/lib/notifications.ts` — orchestrator:
-  - `notifyMasterNewBooking` — Push (з deep link) → Telegram (з Inline кнопкою) → SMS
-  - `notifyClientBroadcast` — in-app + Push + Telegram + SMS
-  - `notifyClientPortfolioConsent` — in-app + Push + Telegram (з кнопками) + SMS
-- Фоновий Cron: `/api/cron/check-uncompleted` та `/api/cron/rebooking` надсилають Telegram з Inline кнопками.
-- `src/lib/push.ts` — `sendPush`, `broadcastPush` (з підтримкою `url` payload).
-- `src/lib/telegram.ts` — `sendTelegramMessage` (підтримує `replyMarkup` для кнопок).
-- `src/lib/turbosms.ts` — SMS fallback (TurboSMS API).
-- In-app:
-  - `notifications` таблиця має поле `related_booking_id`.
-  - Клієнтські та майстерські In-App сповіщення (Toast / Bell) клікабельні та ведуть на конкретний запис чи відгук.
-  - Наповнюється як DB-тригерами (new_booking, booking_cancelled), так і вручну (review, broadcast).
-- `notifications.type` values: `new_booking`, `booking_cancelled`, `new_review`, `unhandled_booking`, `portfolio_consent_request`, `broadcast`, `rebooking_reminder`
+### Notifications — NotificationOrchestrator (v7.0)
+> Детальна карта: `XDEV/MAPS/NOTIFICATION_MAP.md`
+
+**Архітектура (Фази 1–4 завершено):**
+- `src/lib/notifications/NotificationOrchestrator.ts` — **єдина точка відправки** всіх сповіщень; ніхто не відправляє канали напряму
+- `src/lib/notifications/constants/notifMap.ts` — реєстр 21 типу подій; шаблони UA; `isCritical` + `sms: null` захист від небажаних SMS
+- `src/lib/notifications.ts` — тонкий фасад, зворотньосумісний; `notifyMasterBilling`, `notifyMasterStockAlert`, `notifyClientOrderStatus` — нові функції
+
+**Каскад:** `In-App + Push (паралельно) → Telegram → SMS (тільки critical)`
+
+**Критичні події** (SMS дозволений): `booking_created`, `booking_confirmed`, `booking_cancelled`, `reminder_2h`, `subscription_failed`
+
+**Некритичні** (SMS фізично заблоковано через `sms: null`): всі нагадування, shop, stock, billing paid/expiring/downgraded
+
+**Канальні драйвери:**
+- `src/lib/push.ts` — `sendPush`, `broadcastPush`; авто-cleanup 410/404 підписок
+- `src/lib/telegram.ts` — `sendTelegramMessage` (підтримує `replyMarkup`)
+- `src/lib/turbosms.ts` — SMS fallback (TurboSMS)
+
+**Логування:** `notification_logs` таблиця — event_type, channel, status (success/failed/skipped), error_text; RLS: майстер читає свої
+
+**Adoption Mechanics (Фаза 4):**
+- `PostBookingAuth.tsx` — крок `channels` після SMS OTP (TG + Push до редиректу)
+- `ChannelBanner.tsx` — persistent banner у `/my/` поки немає обох каналів
+- `StepChannels.tsx` — крок CHANNELS в онбордингу майстра (TG token + Push)
 
 ### Billing (`src/lib/billing/`)
 | Файл | Відповідальність |
@@ -233,11 +246,11 @@
 | `/api/billing/mono-webhook` | POST | Monobank Ed25519 verify → extend subscription + upsert recToken | Ed25519 |
 | `/api/billing/test-charge` | POST | 5 UAH тестова оплата → checkout URL | Master auth |
 | `/api/billing/paid` | POST | Redirect після оплати | Public |
-| `/api/cron/reminders` | GET | Push+SMS нагадування на завтра (`0 7 * * *`) | CRON_SECRET |
+| `/api/cron/reminders` | GET | 3 суворих вікна (24h/2h/30m) + morning briefing 08:00 Kyiv → Orchestrator (`0 * * * *`) | CRON_SECRET |
 | `/api/cron/rebooking` | GET | Smart rebooking push клієнтам (`0 10 * * *`) | CRON_SECRET |
-| `/api/cron/reset-monthly` | GET | Скидання лічильників + downgrade прострочених (`5 0 1 * *`) | CRON_SECRET |
-| `/api/cron/expire-subscriptions` | GET | Dunning cron: charge recurrent + dunning flow (`0 2 * * *`) | CRON_SECRET |
-| `/api/cron/check-uncompleted` | GET | Нагадування майстру про незавершені записи (`0 * * * *`) | CRON_SECRET |
+| `/api/cron/reset-monthly` | GET | Downgrade прострочених + попередження за 2–4 дні → `notifyMasterBilling` (`5 0 1 * *`) | CRON_SECRET |
+| `/api/cron/expire-subscriptions` | GET | Dunning: charge recurrent, free month, dunning → `notifyMasterBilling` (`0 2 * * *`) | CRON_SECRET |
+| `/api/cron/check-uncompleted` | GET | Per-master buffer_minutes, ідемпотентність 55 хв → Orchestrator (`0 * * * *`) | CRON_SECRET |
 | `/api/push/subscribe` | POST/DELETE | CRUD Web Push підписок | Auth |
 | `/api/notify` | — | (порожня директорія) | — |
 | `/api/telegram` | — | Telegram webhook (внутрішній) | — |
@@ -260,7 +273,7 @@
 |---|---|
 | `services` | Послуги: `duration` (хв), `price` (копійки), `category`, `position`, `is_active` |
 | `service_categories` | Кастомні категорії послуг |
-| `products` | Товари: `price`, `stock`, `is_active` |
+| `products` | Товари: `price`, `stock`, `is_active`, `stock_alert_threshold INT DEFAULT 3` (міграція 136) |
 | `product_service_links` | Рекомендовані товари до послуги |
 
 ### Schedule
@@ -317,8 +330,9 @@
 ### Notifications
 | Таблиця | Призначення |
 |---|---|
-| `notifications` | In-app: `type`, `is_read`, `related_booking_id` — заповнюється DB-тригером |
-| `push_subscriptions` | VAPID Web Push підписки |
+| `notifications` | In-app: `type`, `is_read`, `related_booking_id` — DB-тригер або Orchestrator INSERT |
+| `push_subscriptions` | VAPID Web Push підписки; `user_id` FK |
+| `notification_logs` | Лог відправок: `event_type`, `channel`, `status` (success/failed/skipped), `error_text`, `recipient_id`, `master_id` — міграція 136 |
 
 ### Security
 | Таблиця | Призначення |
@@ -344,9 +358,12 @@
 | `get_retention_status` | Retention dashboard — міграція 076 |
 
 ### Міграції
-119+ міграцій. Актуальна схема: міграції **116–119** (broadcasts, broadcast_recipients, broadcast_links, phone_discounts).
+136+ міграцій застосовано в продакшн.
 Місце: `supabase/migrations/*.sql`
 
 Останні ключові:
 - `114_portfolio_items.sql` — `portfolio_items`, `portfolio_item_photos`, `portfolio_item_reviews` + RLS
 - `115_recreate_portfolios_bucket.sql` — bucket `portfolios` (10MB, public) + storage policies
+- `116–119` — broadcasts, broadcast_recipients, broadcast_links, phone_discounts
+- `126_segment_config.sql` — `segment_config jsonb` на `master_profiles` (Custom CRM Segments)
+- `136_notification_logs.sql` — `notification_logs` таблиця + `products.stock_alert_threshold INT DEFAULT 3`
