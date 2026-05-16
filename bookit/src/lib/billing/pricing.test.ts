@@ -133,6 +133,60 @@ describe('computeLifetimeDiscount', () => {
   it('negative → 0%', () => expect(computeLifetimeDiscount(-1)).toBe(0));
 });
 
+// ── calculateBillingDecision — lifetime checkpoint ────────────
+// Fix: stored lifetime_discount (checkpoint) overrides computed when higher
+
+describe('calculateBillingDecision — lifetime checkpoint', () => {
+  it('uses stored checkpoint when refs churn to 0', () => {
+    // Master had 5 refs (5% checkpoint), now 0 active — billing must respect checkpoint
+    const d = calculateBillingDecision({
+      activeRefsCount:  0,
+      discountReserve:  0,
+      lifetimeDiscount: 0.05,
+    });
+    expect(d.statusDiscount).toBe(0.05);
+    expect(d.finalKopecks).toBe(66_500); // 700 * 0.95 = 665 UAH
+  });
+
+  it('uses computed when higher than stored checkpoint', () => {
+    // Master grew from 5 → 10 refs, stored=0.05, computed=0.10
+    const d = calculateBillingDecision({
+      activeRefsCount:  10,
+      discountReserve:  0,
+      lifetimeDiscount: 0.05,
+    });
+    expect(d.statusDiscount).toBe(0.10);
+  });
+
+  it('stored checkpoint + bounty reserve stacks correctly', () => {
+    // checkpoint 5% + bounty 10% → 15% total → 700 * 0.85 = 595 UAH
+    const d = calculateBillingDecision({
+      activeRefsCount:  0,
+      discountReserve:  0.10,
+      lifetimeDiscount: 0.05,
+    });
+    expect(d.statusDiscount).toBe(0.05);
+    expect(d.totalDiscount).toBe(0.15);
+    expect(d.finalKopecks).toBe(59_500);
+  });
+
+  it('checkpoint 50% + reserve 60% → free month with remainder 0.10', () => {
+    const d = calculateBillingDecision({
+      activeRefsCount:  0,    // all refs churned
+      discountReserve:  0.60,
+      lifetimeDiscount: 0.50, // but checkpoint earned
+    });
+    expect(d.statusDiscount).toBe(0.50);
+    expect(d.shouldGrantFree).toBe(true);
+    expect(d.newReserve).toBe(0.10);
+  });
+
+  it('omitting lifetimeDiscount is backward-compatible (defaults to 0)', () => {
+    const d = calculateBillingDecision({ activeRefsCount: 5, discountReserve: 0 });
+    expect(d.statusDiscount).toBe(0.05);
+  });
+});
+
 // ── getLifetimeTierProgress ────────────────────────────────────
 
 describe('getLifetimeTierProgress', () => {

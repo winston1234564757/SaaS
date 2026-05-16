@@ -99,8 +99,9 @@ export async function GET(req: NextRequest) {
 
       const state = stateRows?.[0];
       const decision = calculateBillingDecision({
-        activeRefsCount: state?.active_refs_count ?? 0,
-        discountReserve: state?.discount_reserve  ?? 0,
+        activeRefsCount:  state?.active_refs_count  ?? 0,
+        discountReserve:  state?.discount_reserve   ?? 0,
+        lifetimeDiscount: state?.lifetime_discount  ?? 0,
       });
 
       // ── Branch A: total >= 100% → grant free month ────────

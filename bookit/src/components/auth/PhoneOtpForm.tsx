@@ -11,7 +11,6 @@ import { Card } from '@/components/ui/Card';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { claimMasterRole } from '@/app/(auth)/register/actions';
-import { processRegistrationReferral } from '@/lib/actions/referrals';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
 import Cookies from 'js-cookie';
 

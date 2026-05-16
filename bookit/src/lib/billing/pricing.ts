@@ -30,8 +30,9 @@ export const LIFETIME_TIERS: Array<{ refs: number; discount: number }> = [
 ];
 
 export interface BillingInput {
-  activeRefsCount:  number;
-  discountReserve:  number; // banks both bounties (+10% per first payment) AND carryover
+  activeRefsCount:   number;
+  discountReserve:   number; // banks both bounties (+10% per first payment) AND carryover
+  lifetimeDiscount?: number; // stored checkpoint — never decreases; takes max(stored, computed)
   basePriceKopecks?: number;
 }
 
@@ -56,9 +57,12 @@ export interface BillingDecision {
 export function calculateBillingDecision({
   activeRefsCount,
   discountReserve,
+  lifetimeDiscount: storedLifetimeDiscount,
   basePriceKopecks = BASE_PRICE_KOPECKS,
 }: BillingInput): BillingDecision {
-  const statusDiscount = r2(computeLifetimeDiscount(activeRefsCount));
+  // Checkpoint: use max(stored, computed) so the discount never drops below earned tier
+  const computed       = r2(computeLifetimeDiscount(activeRefsCount));
+  const statusDiscount = r2(Math.max(computed, storedLifetimeDiscount ?? 0));
   const carryover      = r2(Math.max(0, discountReserve));
   const totalDiscount  = r2(statusDiscount + carryover);
 
