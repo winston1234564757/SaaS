@@ -2,11 +2,11 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { sendPush } from '@/lib/push';
-import { sendTelegramMessage } from '@/lib/telegram';
-import { sendTurboSMS } from '@/lib/turbosms';
-
 import { revalidatePath } from 'next/cache';
+import { 
+  notifyClientOnStatusChange, 
+  notifyClientOnReschedule 
+} from '@/lib/notifications';
 
 export async function confirmBooking(bookingId: string): Promise<{ error: string | null }> {
   try {
@@ -38,9 +38,28 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
-    notifyClientOnStatusChange(bookingId, 'confirmed').catch(err => 
-      console.error('[confirmBooking] Notification failed:', err)
-    );
+    // Notifications handled by centralized Orchestrator
+    const { data: b } = await admin
+      .from('bookings')
+      .select('client_id, master_id, date, start_time, master_profiles(profiles(full_name)), booking_services(service_name)')
+      .eq('id', bookingId)
+      .single();
+
+    if (b && b.client_id) {
+      const services = (b.booking_services as any[]).map(s => s.service_name).join(', ');
+      const masterName = (b.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+
+      notifyClientOnStatusChange({
+        clientId: b.client_id,
+        masterId: b.master_id,
+        masterName,
+        bookingId,
+        date: b.date,
+        startTime: b.start_time,
+        services,
+        status: 'confirmed'
+      }).catch(err => console.error('[confirmBooking] Notification failed:', err));
+    }
 
     return { error: null };
   } catch (err: any) {
@@ -79,9 +98,28 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
     
-    notifyClientOnStatusChange(bookingId, 'cancelled').catch(err => 
-      console.error('[cancelBooking] Notification failed:', err)
-    );
+    // Notifications handled by centralized Orchestrator
+    const { data: b } = await admin
+      .from('bookings')
+      .select('client_id, master_id, date, start_time, master_profiles(profiles(full_name)), booking_services(service_name)')
+      .eq('id', bookingId)
+      .single();
+
+    if (b && b.client_id) {
+      const services = (b.booking_services as any[]).map(s => s.service_name).join(', ');
+      const masterName = (b.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+
+      notifyClientOnStatusChange({
+        clientId: b.client_id,
+        masterId: b.master_id,
+        masterName,
+        bookingId,
+        date: b.date,
+        startTime: b.start_time,
+        services,
+        status: 'cancelled'
+      }).catch(err => console.error('[cancelBooking] Notification failed:', err));
+    }
 
     return { error: null };
   } catch (err: any) {
@@ -127,6 +165,28 @@ export async function rescheduleBooking(
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
+    // Notifications handled by centralized Orchestrator
+    const { data: b } = await admin
+      .from('bookings')
+      .select('client_id, master_id, master_profiles(profiles(full_name)), booking_services(service_name)')
+      .eq('id', bookingId)
+      .single();
+
+    if (b && b.client_id) {
+      const services = (b.booking_services as any[]).map(s => s.service_name).join(', ');
+      const masterName = (b.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+
+      notifyClientOnReschedule({
+        clientId: b.client_id,
+        masterId: b.master_id,
+        masterName,
+        bookingId,
+        date,
+        startTime,
+        services,
+      }).catch(err => console.error('[rescheduleBooking] Notification failed:', err));
+    }
+
     return { error: null };
   } catch (err: any) {
     console.error('[rescheduleBooking] error:', err);
@@ -168,9 +228,28 @@ export async function updateBookingStatus(
     revalidatePath('/my/bookings');
     
     if (status === 'confirmed' || status === 'cancelled') {
-        notifyClientOnStatusChange(bookingId, status).catch(err => 
-          console.error('[updateBookingStatus] Notification failed:', err)
-        );
+        // Notifications handled by centralized Orchestrator
+        const { data: b } = await admin
+          .from('bookings')
+          .select('client_id, master_id, date, start_time, master_profiles(profiles(full_name)), booking_services(service_name)')
+          .eq('id', bookingId)
+          .single();
+
+        if (b && b.client_id) {
+          const services = (b.booking_services as any[]).map(s => s.service_name).join(', ');
+          const masterName = (b.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+
+          notifyClientOnStatusChange({
+            clientId: b.client_id,
+            masterId: b.master_id,
+            masterName,
+            bookingId,
+            date: b.date,
+            startTime: b.start_time,
+            services,
+            status: status as any
+          }).catch(err => console.error('[updateBookingStatus] Notification failed:', err));
+        }
     }
 
     return { error: null };
@@ -211,9 +290,24 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
     revalidatePath('/my/bookings');
 
     if (booking.client_id) {
-      notifyClientReviewNudge(bookingId, booking.client_id).catch(err => 
-        console.error('[completeBooking] Review nudge failed:', err)
-      );
+      const { data: b } = await admin
+        .from('bookings')
+        .select('master_id, master_profiles(profiles(full_name))')
+        .eq('id', bookingId)
+        .single();
+        
+      const masterName = (b?.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+
+      notifyClientOnStatusChange({
+        clientId: booking.client_id,
+        masterId: booking.master_id,
+        masterName,
+        bookingId,
+        date: '', 
+        startTime: '', 
+        services: '',
+        status: 'completed'
+      }).catch(err => console.error('[completeBooking] Notification failed:', err));
     }
 
     return { error: null };

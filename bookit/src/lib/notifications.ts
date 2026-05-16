@@ -88,6 +88,37 @@ export async function notifyClientOnStatusChange(params: ClientStatusNotifParams
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CLIENT: Перенесення запису
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface RescheduleNotifParams {
+  clientId: string;
+  masterId: string;
+  masterName: string;
+  bookingId: string;
+  date: string;
+  startTime: string;
+  services: string;
+}
+
+export async function notifyClientOnReschedule(params: RescheduleNotifParams): Promise<void> {
+  await NotificationOrchestrator.send({
+    eventType: 'booking_rescheduled',
+    recipientId: params.clientId,
+    recipientRole: 'client',
+    masterId: params.masterId,
+    relatedBookingId: params.bookingId,
+    data: {
+      bookingId: params.bookingId,
+      masterName: params.masterName,
+      date: params.date,
+      startTime: params.startTime,
+      services: params.services,
+    },
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MASTER: Скасування клієнтом
 // ─────────────────────────────────────────────────────────────────────────────
 

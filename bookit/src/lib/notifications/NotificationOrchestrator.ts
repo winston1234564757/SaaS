@@ -151,9 +151,9 @@ export class NotificationOrchestrator {
       log('sms', 'skipped');
     }
 
-    // ── 4. Persist delivery logs (fire-and-forget) ───────────────────────────
+    // ── 4. Persist delivery logs ─────────────────────────────────────────────
     if (logs.length > 0) {
-      void admin.from('notification_logs').insert(logs);
+      await admin.from('notification_logs').insert(logs);
     }
 
     return result;

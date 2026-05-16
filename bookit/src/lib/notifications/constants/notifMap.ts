@@ -61,6 +61,7 @@ export type NotifEventType =
   | 'booking_created'
   | 'booking_confirmed'
   | 'booking_cancelled'
+  | 'booking_rescheduled'
   | 'booking_completed'
   | 'unhandled_booking'
   | 'reminder_24h'
@@ -153,6 +154,32 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
     }),
     sms: (d) =>
       `BookIT: Запис ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)} скасовано.`,
+  },
+
+  // ── BOOKING_RESCHEDULED (master changed time → client) ────────────────────────
+  booking_rescheduled: {
+    isCritical: true,
+    inApp: (d) => ({
+      title: 'Час запису змінено',
+      body: `Новий час: ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)} — ${d.services}`,
+    }),
+    push: (d) => ({
+      title: '🗓 Час запису змінено',
+      body: `Новий час: ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}`,
+      url: d.bookingId ? `/my/bookings?bookingId=${d.bookingId}` : '/my/bookings',
+    }),
+    telegram: (d) => ({
+      text:
+        `🗓 <b>Час запису змінено</b>\n\n` +
+        `Майстер <b>${escHtml(d.masterName ?? '')}</b> переніс ваш запис.\n\n` +
+        `📅 <b>Коли:</b> ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}\n` +
+        `💅 <b>Послуги:</b> ${escHtml(d.services ?? '')}`,
+      buttons: d.bookingId
+        ? [[{ text: 'Деталі запису', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        : undefined,
+    }),
+    sms: (d) =>
+      `BookIT: Час запису змінено. Новий час: ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}, ${d.services}.`,
   },
 
   // ── BOOKING_COMPLETED (master marks done → client: review nudge) ─────────────
