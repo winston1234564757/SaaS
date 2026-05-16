@@ -6,7 +6,7 @@ import { BentoCard } from '@/components/ui/BentoCard';
 import { HubDrawer } from '@/components/shared/HubDrawer';
 import { Rocket, Gift, Share2, Users } from 'lucide-react';
 import { LoyaltyPage } from '@/components/master/loyalty/LoyaltyPage';
-import { ReferralPage } from '@/components/master/referral/ReferralPage';
+import { ReferralPage, type ReferralHistoryItem } from '@/components/master/referral/ReferralPage';
 import { PartnersPage } from '@/components/master/partners/PartnersPage';
 
 interface GrowthHubClientProps {
@@ -23,6 +23,7 @@ interface GrowthHubClientProps {
     discountReserve:  number;
     tier: string;
     expiresAt: string | null;
+    history: ReferralHistoryItem[];
   };
   partnersData: {
     partners: any[];
@@ -63,6 +64,7 @@ function GrowthDrawers({ loyaltyData, referralData, partnersData }: GrowthHubCli
             discountReserve={referralData.discountReserve}
             subscriptionTier={referralData.tier}
             subscriptionExpiresAt={referralData.expiresAt}
+            history={referralData.history}
             isDrawer={true}
           />
         </Suspense>

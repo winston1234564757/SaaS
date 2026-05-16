@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ReferralPage } from '@/components/master/referral/ReferralPage';
 
 export const metadata: Metadata = { title: 'Реферальна програма — Bookit' };
@@ -8,6 +9,10 @@ export default async function Referral() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+
+  // Use admin client for referral queries: RLS on master_profiles only allows
+  // is_published=true, which would hide unpublished referees from counts/history.
+  const admin = createAdminClient();
 
   const { data: mp } = await supabase
     .from('master_profiles')
@@ -20,39 +25,36 @@ export default async function Referral() {
     { count: activeCount },
     { data: historyData },
   ] = await Promise.all([
-    supabase
+    admin
       .from('master_profiles')
       .select('id', { count: 'exact', head: true })
       .eq('referred_by', mp?.referral_code ?? ''),
-    supabase
+    admin
       .from('master_referrals')
       .select('id', { count: 'exact', head: true })
       .eq('referrer_id', user.id)
       .eq('status', 'active'),
-    supabase
+    admin
       .from('master_referrals')
-      .select(`
-        referee_id,
-        is_first_payment_made,
-        created_at,
-        referee:master_profiles!master_referrals_referee_id_fkey (
-          profiles ( full_name )
-        )
-      `)
+      .select('referee_id, is_first_payment_made, created_at')
       .eq('referrer_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50),
   ]);
 
-  const history = (historyData ?? []).map((r: any) => {
-    const profile = Array.isArray(r.referee?.profiles) ? r.referee?.profiles[0] : r.referee?.profiles;
-    return {
-      refereeId:          r.referee_id,
-      refereeName:        profile?.full_name ?? 'Майстер',
-      joinedAt:           r.created_at,
-      isFirstPaymentMade: r.is_first_payment_made ?? false,
-    };
-  });
+  // Fetch names separately to avoid RLS blocking unpublished referee profiles
+  const refereeIds = (historyData ?? []).map((r: any) => r.referee_id as string);
+  const { data: profilesData } = refereeIds.length > 0
+    ? await admin.from('profiles').select('id, full_name').in('id', refereeIds)
+    : { data: [] };
+  const nameMap = Object.fromEntries((profilesData ?? []).map((p: any) => [p.id, p.full_name]));
+
+  const history = (historyData ?? []).map((r: any) => ({
+    refereeId:          r.referee_id,
+    refereeName:        nameMap[r.referee_id] ?? 'Майстер',
+    joinedAt:           r.created_at,
+    isFirstPaymentMade: r.is_first_payment_made ?? false,
+  }));
 
   return (
     <ReferralPage

@@ -481,7 +481,7 @@ export function ReferralPage({
                 <p className="text-xs text-muted-foreground">
                   Pro trial: залишилось{' '}
                   <span className="font-semibold text-foreground">
-                    {pluralUk(trialLeft, 'день', 'дні', 'днів')}
+                    {trialLeft} {pluralUk(trialLeft, 'день', 'дні', 'днів')}
                   </span>
                 </p>
               </div>

@@ -32,7 +32,7 @@ export async function checkPhoneExists(
 export async function claimMasterRole(
   phone: string,
   referredBy?: string | null,
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; needsOnboarding?: boolean }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
@@ -51,14 +51,21 @@ export async function claimMasterRole(
     return { error: profileError.message };
   }
 
+  // Перевіряємо чи майстер вже пройшов онбординг (is_published = true)
+  const { data: existingMp } = await admin
+    .from('master_profiles')
+    .select('id, is_published')
+    .eq('id', user.id)
+    .maybeSingle();
+  const needsOnboarding = !existingMp || !existingMp.is_published;
+
   const slug = generatePlaceholderSlug();
   const masterReferralCode = generateSecureToken(6);
 
-  const bonus = referredBy
-    ? await applyReferralRewards(user.id, referredBy)
-    : { subscriptionTier: 'starter' as const, subscriptionExpiresAt: null, finalReferredBy: null };
-
-  const { error: masterError } = await admin
+  // Phase 1: Гарантуємо наявність master_profiles до виклику referral-логіки.
+  // master_alliances та master_referrals мають FK -> master_profiles(id),
+  // тому рядок має існувати ДО fire-and-forget insertів у applyReferralRewards.
+  const { error: masterInitError } = await admin
     .from('master_profiles')
     .upsert(
       {
@@ -66,16 +73,36 @@ export async function claimMasterRole(
         slug,
         is_published: false,
         referral_code: masterReferralCode,
-        referred_by: bonus.finalReferredBy,
-        subscription_tier: bonus.subscriptionTier,
-        subscription_expires_at: bonus.subscriptionExpiresAt,
+        subscription_tier: 'starter',
       },
-      { onConflict: 'id' },
+      { onConflict: 'id', ignoreDuplicates: true }, // зберігаємо існуючий slug/code при retry
     );
 
-  if (masterError) {
-    console.error('[register] master_profiles upsert failed:', masterError.message);
-    return { error: `master_profiles error: ${masterError.message}` };
+  if (masterInitError) {
+    console.error('[register] master_profiles init failed:', masterInitError.message);
+    return { error: masterInitError.message };
+  }
+
+  // Phase 2: Нараховуємо реферальний бонус (master_profiles вже існує → FK ок)
+  const bonus = referredBy
+    ? await applyReferralRewards(user.id, referredBy)
+    : { subscriptionTier: 'starter' as const, subscriptionExpiresAt: null, finalReferredBy: null };
+
+  // Phase 3: Застосовуємо бонус якщо реферал знайдено
+  if (bonus.finalReferredBy) {
+    const { error: masterError } = await admin
+      .from('master_profiles')
+      .update({
+        subscription_tier: bonus.subscriptionTier,
+        subscription_expires_at: bonus.subscriptionExpiresAt,
+        referred_by: bonus.finalReferredBy,
+      })
+      .eq('id', user.id);
+
+    if (masterError) {
+      console.error('[register] referral bonus apply failed:', masterError.message);
+      // Не блокуємо реєстрацію — майстер зареєструється зі Starter
+    }
   }
 
   try {
@@ -90,7 +117,7 @@ export async function claimMasterRole(
   }
 
   revalidatePath('/dashboard', 'layout');
-  return { error: null };
+  return { error: null, needsOnboarding };
 }
 
 export async function createMasterProfileAfterSignup(params: {
@@ -132,11 +159,29 @@ export async function createMasterProfileAfterSignup(params: {
     referralCode = generateSecureToken(8);
   }
 
+  // Phase 1: Гарантуємо наявність master_profiles до referral-логіки (FK safety)
+  const { error: masterInitError } = await admin
+    .from('master_profiles')
+    .upsert(
+      {
+        id: params.userId,
+        slug: params.slug,
+        categories: params.categories,
+        referral_code: referralCode,
+        subscription_tier: 'starter',
+        is_published: false,
+      },
+      { onConflict: 'id', ignoreDuplicates: true },
+    );
+
+  if (masterInitError) return { error: 'Помилка створення профілю. Спробуйте ще раз.' };
+
+  // Phase 2: Нараховуємо реферальний бонус (master_profiles вже існує → FK ок)
   const bonus = params.referredBy
     ? await applyReferralRewards(params.userId, params.referredBy)
     : { subscriptionTier: 'starter' as const, subscriptionExpiresAt: null, finalReferredBy: null };
 
-  // PRIMARY TX
+  // Phase 3: Повний upsert з усіма полями + бонус
   const masterData: Record<string, unknown> = {
     id: params.userId,
     slug: params.slug,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createVerify } from 'node:crypto';
 import { flatUidToUuid } from '@/lib/utils/uuid';
+import { syncReferralAndBounty } from '@/lib/billing/syncReferralAndBounty';
 
 export const runtime = 'nodejs';
 
@@ -204,6 +205,8 @@ export async function POST(req: NextRequest) {
       console.error('[mono-webhook] master_profiles update ERROR:', upErr.message, '| details:', upErr.details);
     } else {
       console.log('[mono-webhook] master_profiles update OK');
+      // Sync referral status + bounty for this master's referrer (first payment detection)
+      await syncReferralAndBounty(userId);
     }
 
     // ── Upsert cardToken + next_charge_at ─────────────────────────────────────

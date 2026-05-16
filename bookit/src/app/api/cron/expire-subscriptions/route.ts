@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { MonoProvider } from '@/lib/billing/MonoProvider';
 import type { PaymentProvider } from '@/lib/billing/PaymentProvider';
-import { calculateBillingDecision, computeLifetimeDiscount } from '@/lib/billing/pricing';
+import { calculateBillingDecision } from '@/lib/billing/pricing';
+import { syncReferralAndBounty as sharedSyncReferralAndBounty } from '@/lib/billing/syncReferralAndBounty';
 import { sendTelegramMessage } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
@@ -165,7 +166,7 @@ export async function GET(req: NextRequest) {
           await admin.rpc('commit_paid_month', { p_master_id: sub.master_id });
 
           // Sync referral status + bounty for this master's referrer
-          await syncReferralAndBounty({ admin, masterId: sub.master_id, now });
+          await sharedSyncReferralAndBounty(sub.master_id);
 
           await admin.from('billing_events').insert({
             payment_id:  invoiceId ?? orderId,
@@ -289,46 +290,3 @@ async function chargeAndCommit({
   return { subId: sub.id, succeeded, free: isFree };
 }
 
-async function syncReferralAndBounty({
-  admin, masterId, now,
-}: {
-  admin: ReturnType<typeof import('@/lib/supabase/admin').createAdminClient>;
-  masterId: string;
-  now: Date;
-}) {
-  const { data: ref } = await admin
-    .from('master_referrals')
-    .select('referrer_id, is_first_payment_made')
-    .eq('referee_id', masterId)
-    .maybeSingle();
-
-  if (!ref) return;
-
-  const updates: PromiseLike<unknown>[] = [
-    admin.from('master_referrals')
-      .update({ status: 'active', updated_at: now.toISOString() })
-      .eq('referee_id', masterId),
-  ];
-
-  if (!ref.is_first_payment_made) {
-    // Bounty (+10%) goes directly into discount_reserve (not referral_bounties_pending)
-    updates.push(
-      admin.from('master_referrals').update({ is_first_payment_made: true }).eq('referee_id', masterId),
-      admin.rpc('increment_discount_reserve', { p_master_id: ref.referrer_id, p_amount: 0.10 }),
-    );
-  }
-
-  const { count } = await admin
-    .from('master_referrals')
-    .select('id', { count: 'exact', head: true })
-    .eq('referrer_id', ref.referrer_id)
-    .eq('status', 'active');
-
-  updates.push(
-    admin.from('master_profiles')
-      .update({ lifetime_discount: computeLifetimeDiscount(count ?? 0) })
-      .eq('id', ref.referrer_id),
-  );
-
-  await Promise.all(updates);
-}

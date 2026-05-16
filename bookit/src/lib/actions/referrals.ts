@@ -132,20 +132,85 @@ export async function applyReferralRewards(
 
   const admin = createAdminClient();
 
-  // ── Idempotency check: якщо бонус вже нараховувався для цього майстра → пропускаємо ──
+  // ── Idempotency check: якщо бонус вже нараховувався для цього майстра ──
+  // ВАЖЛИВО: повертаємо pro-бонус (не starter), щоб retry реєстрації не скидав тариф
   const { data: existingGrant, error: grantCheckError } = await admin
     .from('referral_grants')
-    .select('id')
+    .select('id, ref_code, granted_at')
     .eq('referee_id', newMasterId)
     .maybeSingle();
 
   if (grantCheckError) {
-    // Fallback: якщо перевірка не вдалась — логуємо, але не блокуємо реєстрацію
     console.error('[referrals] grant check failed, continuing without idempotency:', grantCheckError.message);
   } else if (existingGrant) {
-    // Бонус вже було нараховано раніше — повертаємо заглушку
-    console.warn('[referrals] duplicate applyReferralRewards call for masterId:', newMasterId, '— skipping');
-    return { subscriptionTier: 'starter', subscriptionExpiresAt: null, finalReferredBy: null };
+    // Гранту вже є — визначаємо тип (M2M vs C2B) та повертаємо бонус.
+    // Важливо: НЕ нараховуємо повторно (+30д рефереру), але відновлюємо
+    // відсутні relationship-рядки (master_referrals, master_alliances, client_promocodes).
+    console.warn('[referrals] idempotent path for masterId:', newMasterId);
+
+    const [masterRefRes, clientRefRes] = await Promise.all([
+      admin.from('master_profiles').select('id').eq('referral_code', existingGrant.ref_code).maybeSingle(),
+      admin.from('client_profiles').select('id').eq('referral_code', existingGrant.ref_code).maybeSingle(),
+    ]);
+
+    const isMasterRef = !!masterRefRes.data;
+    const trialDays = isMasterRef ? 14 : 30;
+    const expiresAt = new Date(existingGrant.granted_at);
+    expiresAt.setDate(expiresAt.getDate() + trialDays);
+
+    if (isMasterRef && masterRefRes.data) {
+      // M2M: відновлюємо master_referrals / master_alliances якщо відсутні
+      const [mrCheck, maCheck] = await Promise.all([
+        admin.from('master_referrals').select('id')
+          .eq('referrer_id', masterRefRes.data.id).eq('referee_id', newMasterId).maybeSingle(),
+        admin.from('master_alliances').select('id')
+          .eq('inviter_id', masterRefRes.data.id).eq('invitee_id', newMasterId).maybeSingle(),
+      ]);
+
+      if (!mrCheck.data) {
+        const ins = await admin.from('master_referrals').insert({
+          referrer_id: masterRefRes.data.id,
+          referee_id: newMasterId,
+          status: 'trial',
+        });
+        if (ins.error && ins.error.code !== '23505')
+          console.error('[referrals] idempotent M2M referral insert failed:', ins.error.message);
+      }
+
+      if (!maCheck.data) {
+        const ins = await admin.from('master_alliances').insert({
+          inviter_id: masterRefRes.data.id,
+          invitee_id: newMasterId,
+        });
+        if (ins.error && ins.error.code !== '23505')
+          console.error('[referrals] idempotent M2M alliance insert failed:', ins.error.message);
+      }
+    } else if (!isMasterRef && clientRefRes.data) {
+      // C2B: відновлюємо client_promocodes якщо відсутній
+      const { data: existingPromo } = await admin
+        .from('client_promocodes')
+        .select('id')
+        .eq('client_id', clientRefRes.data.id)
+        .eq('master_id', newMasterId)
+        .maybeSingle();
+
+      if (!existingPromo) {
+        // Increment НЕ повторюємо: міг вже виконатись в попередній спробі.
+        const promoRes = await admin.from('client_promocodes').insert({
+          client_id: clientRefRes.data.id,
+          master_id: newMasterId,
+          discount_percentage: 50,
+        });
+        if (promoRes.error && promoRes.error.code !== '23505')
+          console.error('[referrals] C2B idempotent re-apply promo failed:', promoRes.error.message);
+      }
+    }
+
+    return {
+      subscriptionTier: 'pro',
+      subscriptionExpiresAt: expiresAt.toISOString(),
+      finalReferredBy: existingGrant.ref_code,
+    };
   }
 
   const [masterRes, clientRes] = await Promise.all([
@@ -176,19 +241,19 @@ export async function applyReferralRewards(
     const refStart = baseDate > new Date() ? baseDate : new Date();
     refStart.setDate(refStart.getDate() + 30);
 
-    Promise.all([
+    // M2M нагороди — awaited (не fire-and-forget), бо serverless вбиває lambda після відповіді.
+    // Помилки логуються але НЕ кидаються — реєстрація не блокується.
+    const [profileRes, allianceRes, referralRes, grantRes] = await Promise.all([
       admin.from('master_profiles').update({
         subscription_tier: 'pro',
         subscription_expires_at: refStart.toISOString(),
       }).eq('id', mReferrer.id),
 
-      // Professional Alliance network record (immutable social graph)
       admin.from('master_alliances').insert({
         inviter_id: mReferrer.id,
         invitee_id: newMasterId,
       }),
 
-      // Billing-tracked referral pair — starts as 'trial' until first payment
       admin.from('master_referrals').insert({
         referrer_id: mReferrer.id,
         referee_id:  newMasterId,
@@ -200,13 +265,12 @@ export async function applyReferralRewards(
         referee_id:  newMasterId,
         ref_code:    refCode,
       }),
-    ]).then((results) => {
-      const [profileRes, allianceRes, referralRes, grantRes] = results;
-      if (profileRes.error) console.error('[referrals] master referrer reward failed:', profileRes.error.message);
-      if (allianceRes.error && allianceRes.error.code !== '23505') console.error('[referrals] alliance insert failed:', allianceRes.error.message);
-      if (referralRes.error && referralRes.error.code !== '23505') console.error('[referrals] master_referrals insert failed:', referralRes.error.message);
-      if (grantRes.error && grantRes.error.code !== '23505') console.error('[referrals] grant insert failed (M2M):', grantRes.error.message);
-    });
+    ]);
+
+    if (profileRes.error) console.error('[referrals] M2M referrer +30d failed:', profileRes.error.message);
+    if (allianceRes.error && allianceRes.error.code !== '23505') console.error('[referrals] M2M alliance insert failed:', allianceRes.error.message);
+    if (referralRes.error && referralRes.error.code !== '23505') console.error('[referrals] M2M master_referrals insert failed:', referralRes.error.message);
+    if (grantRes.error && grantRes.error.code !== '23505') console.error('[referrals] M2M grant insert failed:', grantRes.error.message);
   } else if (cReferrer) {
     bonus.finalReferredBy = refCode;
     bonus.subscriptionTier = 'pro';
@@ -214,31 +278,29 @@ export async function applyReferralRewards(
     expires.setDate(expires.getDate() + 30);
     bonus.subscriptionExpiresAt = expires.toISOString();
 
-    Promise.all([
+    // C2B нагороди клієнту — awaited (не fire-and-forget),
+    // бо serverless може вбити lambda до завершення fire-and-forget.
+    // Помилки логуються але НЕ кидаються — реєстрація не блокується.
+    const [promoRes, incrRes, grantRes] = await Promise.all([
       admin.from('client_promocodes').insert({
         client_id: cReferrer.id,
         master_id: newMasterId,
         discount_percentage: 50,
       }),
       admin.rpc('increment_client_master_invite_count', { p_client_id: cReferrer.id }),
-    ]).then(results => {
-      for (const r of results) {
-        if ('error' in r && r.error) {
-          console.error('[referrals] client referrer reward failed:', r.error.message);
-        }
-      }
-    });
+      admin.from('referral_grants').insert({
+        referrer_id: cReferrer.id,
+        referee_id:  newMasterId,
+        ref_code:    refCode,
+      }),
+    ]);
 
-    // Фіксуємо факт нарахування бонусу (fire-and-forget, 23505 = duplicate key → ігнорується)
-    admin.from('referral_grants').insert({
-      referrer_id: cReferrer.id,
-      referee_id: newMasterId,
-      ref_code: refCode,
-    }).then(({ error }) => {
-      if (error && error.code !== '23505') {
-        console.error('[referrals] grant insert failed (C2B):', error.message);
-      }
-    });
+    if (promoRes.error && promoRes.error.code !== '23505')
+      console.error('[referrals] C2B client_promocodes failed:', promoRes.error.message);
+    if ('error' in incrRes && incrRes.error)
+      console.error('[referrals] C2B increment_client_master_invite_count failed:', (incrRes.error as any).message);
+    if (grantRes.error && grantRes.error.code !== '23505')
+      console.error('[referrals] C2B grant insert failed:', grantRes.error.message);
   }
 
   return bonus;

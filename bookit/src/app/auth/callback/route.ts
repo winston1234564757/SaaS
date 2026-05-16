@@ -115,24 +115,50 @@ export async function GET(request: NextRequest) {
 
       const refCodeFromCookie = cookieStore.get('bookit_ref')?.value || null;
 
-      const bonus = (isNewMaster && refCodeFromCookie)
-        ? await applyReferralRewards(user.id, refCodeFromCookie)
-        : { subscriptionTier: 'starter' as const, subscriptionExpiresAt: null, finalReferredBy: null };
+      // Phase 1: Гарантуємо наявність master_profiles до referral-логіки (FK safety)
+      if (isNewMaster) {
+        await admin.from('master_profiles').upsert(
+          {
+            id: user.id,
+            slug,
+            referral_code: referralCode,
+            subscription_tier: 'starter',
+          },
+          { onConflict: 'id', ignoreDuplicates: true },
+        );
+      }
 
-      await admin.from('master_profiles').upsert(
-        {
-          id: user.id,
-          slug,
-          referral_code: referralCode,
-          referred_by: bonus.finalReferredBy,
+      // Phase 2: Нараховуємо реферальний бонус.
+      // Умова: новий майстер (isNewMaster) АБО вже є referral_grant (retry після краша).
+      // Це безпечно: applyReferralRewards має idempotency через referral_grants —
+      // не нарахує повторно рефереру, але відновить master_referrals/alliances якщо відсутні.
+      // Існуючий майстер без гранту та без refCode → звичайний login, не чіпаємо.
+      let bonus: { subscriptionTier: 'starter' | 'pro'; subscriptionExpiresAt: string | null; finalReferredBy: string | null } =
+        { subscriptionTier: 'starter', subscriptionExpiresAt: null, finalReferredBy: null };
+
+      if (refCodeFromCookie) {
+        // Перевіряємо чи вже є grant для цього майстра (ознака retry реєстрації)
+        const { data: existingGrant } = await admin
+          .from('referral_grants')
+          .select('id')
+          .eq('referee_id', user.id)
+          .maybeSingle();
+
+        if (isNewMaster || existingGrant) {
+          bonus = await applyReferralRewards(user.id, refCodeFromCookie);
+        }
+      }
+
+      // Phase 3: Застосовуємо бонус (update якщо є реферал, або upsert для нового майстра)
+      if (bonus.finalReferredBy) {
+        await admin.from('master_profiles').update({
           subscription_tier: bonus.subscriptionTier,
           subscription_expires_at: bonus.subscriptionExpiresAt,
-        },
-        { onConflict: 'id', ignoreDuplicates: true },
-      );
-
-      if (bonus.finalReferredBy) {
+          referred_by: bonus.finalReferredBy,
+        }).eq('id', user.id);
         cookieStore.set('bookit_ref', '', { path: '/', maxAge: 0 });
+      } else if (isNewMaster) {
+        // Вже вставлено в Phase 1 — нічого додаткового не потрібно
       }
 
       // V-06: Explicit ownership check before claiming booking.

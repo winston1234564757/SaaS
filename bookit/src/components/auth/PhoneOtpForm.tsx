@@ -163,9 +163,10 @@ export function PhoneOtpForm() {
       userId = userData.user?.id;
     }
 
+    let needsOnboarding = false;
     if (selectedRole === 'master') {
       const refCodeFromCookie = Cookies.get('bookit_ref') || null;
-      const { error: roleError } = await claimMasterRole(getCleanPhone(), refCodeFromCookie);
+      const { error: roleError, needsOnboarding: onb } = await claimMasterRole(getCleanPhone(), refCodeFromCookie);
 
       if (roleError) {
         setLoading(false);
@@ -173,13 +174,14 @@ export function PhoneOtpForm() {
         return;
       }
 
+      needsOnboarding = onb ?? false;
       if (refCodeFromCookie) {
         Cookies.remove('bookit_ref');
       }
     }
 
     setLoading(false);
-    
+
     router.refresh();
 
     if (selectedRole === 'master') {
@@ -188,8 +190,8 @@ export function PhoneOtpForm() {
 
       if (intendedPlan === 'pro' || intendedPlan === 'studio') {
         router.push(`/dashboard/billing?plan=${intendedPlan}`);
-      } else if (data.isNew) {
-        // nextParam has priority even over initial onboarding if the user specifically wanted another link
+      } else if (needsOnboarding) {
+        // is_published=false → майстер ще не пройшов онбординг
         router.push(getSafeRedirect('/dashboard/onboarding'));
       } else {
         router.push(getSafeRedirect('/dashboard'));

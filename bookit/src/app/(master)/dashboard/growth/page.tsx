@@ -11,19 +11,22 @@ export default async function GrowthHubPage() {
   const admin = createAdminClient();
 
   // Fetch data for all three Growth sections in parallel
+  const { data: mp } = await admin
+    .from('master_profiles')
+    .select('referral_code, subscription_tier, subscription_expires_at, lifetime_discount, referral_bounties_pending, discount_reserve')
+    .eq('id', user.id)
+    .single();
+
+  const referralCode = mp?.referral_code ?? '___NONE___';
+
   const [
-    { data: mp },
     { count: loyaltyCount },
     { count: referralCount },
     { count: activeReferralCount },
+    { data: historyData },
     { data: partnersData },
     { data: alliancesData },
   ] = await Promise.all([
-    admin
-      .from('master_profiles')
-      .select('referral_code, subscription_tier, subscription_expires_at, lifetime_discount, referral_bounties_pending, discount_reserve')
-      .eq('id', user.id)
-      .single(),
     admin
       .from('loyalty_programs')
       .select('id', { count: 'exact', head: true })
@@ -31,12 +34,18 @@ export default async function GrowthHubPage() {
     admin
       .from('master_profiles')
       .select('id', { count: 'exact', head: true })
-      .eq('referred_by', (await admin.from('master_profiles').select('referral_code').eq('id', user.id).single()).data?.referral_code ?? '___NONE___'),
+      .eq('referred_by', referralCode),
     admin
       .from('master_referrals')
       .select('id', { count: 'exact', head: true })
       .eq('referrer_id', user.id)
       .eq('status', 'active'),
+    admin
+      .from('master_referrals')
+      .select('referee_id, is_first_payment_made, created_at')
+      .eq('referrer_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(50),
     admin
       .from('master_partners')
       .select(`
@@ -63,6 +72,20 @@ export default async function GrowthHubPage() {
       `)
       .or(`inviter_id.eq.${user.id},invitee_id.eq.${user.id}`),
   ]);
+
+  // Fetch names separately — admin bypasses RLS on unpublished referee profiles
+  const refereeIds = (historyData ?? []).map((r: any) => r.referee_id as string);
+  const { data: profilesData } = refereeIds.length > 0
+    ? await admin.from('profiles').select('id, full_name').in('id', refereeIds)
+    : { data: [] };
+  const nameMap = Object.fromEntries((profilesData ?? []).map((p: any) => [p.id, p.full_name]));
+
+  const referralHistory = (historyData ?? []).map((r: any) => ({
+    refereeId:          r.referee_id,
+    refereeName:        nameMap[r.referee_id] ?? 'Майстер',
+    joinedAt:           r.created_at,
+    isFirstPaymentMade: r.is_first_payment_made ?? false,
+  }));
 
   // Transform partners data
   const partners = (partnersData ?? []).map((p: any) => {
@@ -95,6 +118,7 @@ export default async function GrowthHubPage() {
     discountReserve:  mp?.discount_reserve ?? 0,
     tier: mp?.subscription_tier ?? 'starter',
     expiresAt: mp?.subscription_expires_at ?? null,
+    history: referralHistory,
   };
 
   // Build alliance list — pick the "other" side of each row
