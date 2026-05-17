@@ -7,7 +7,6 @@ import {
   ChevronRight, Loader2, AlertCircle, CheckCircle2,
   BarChart2, List, TrendingUp, Trophy,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -42,8 +41,6 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Скасовано',    variant: 'error'    as const, color: 'var(--error)' },
   no_show:   { label: 'Не прийшов',   variant: 'error'    as const, color: 'var(--error)' },
 };
-
-const UA_DAYS_SHORT = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
 
 function toISO(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -84,24 +81,28 @@ function isCurrentlyActive(b: BookingWithServices): boolean {
   return nowMins >= sh * 60 + sm && nowMins < eh * 60 + em;
 }
 
-/* ── Skeleton ─────────────────────────────────────────────── */
-function SkeletonCards() {
+/* ── Skeleton (editorial rows) ────────────────────────────── */
+function SkeletonRows() {
   return (
-    <div className="flex flex-col gap-2.5 px-4 pb-4">
-      {[80, 65, 90].map((w, i) => (
+    <div className="flex flex-col">
+      {[62, 78, 50].map((w, i) => (
         <div
           key={i}
-          className="rounded-2xl p-4"
-          style={{ background: 'var(--background-deep)', border: '0.5px solid var(--border)' }}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '44px 1fr auto',
+            gap: '12px',
+            padding: '14px 20px',
+            borderBottom: '0.5px solid var(--border)',
+            alignItems: 'center',
+          }}
         >
-          <div className="flex gap-3 items-center">
-            <div className="skeleton-shimmer rounded-lg shrink-0" style={{ width: 42, height: 36 }} />
-            <div className="flex-1 flex flex-col gap-1.5">
-              <div className="skeleton-shimmer rounded-md" style={{ height: 13, width: `${w}%` }} />
-              <div className="skeleton-shimmer rounded-md" style={{ height: 10, width: `${w * 0.55}%` }} />
-            </div>
-            <div className="skeleton-shimmer rounded-md shrink-0" style={{ width: 52, height: 28 }} />
+          <div className="skeleton-shimmer rounded" style={{ height: 14, width: 36 }} />
+          <div className="flex flex-col gap-1.5">
+            <div className="skeleton-shimmer rounded" style={{ height: 14, width: `${w}%` }} />
+            <div className="skeleton-shimmer rounded" style={{ height: 10, width: `${Math.round(w * 0.55)}%` }} />
           </div>
+          <div className="skeleton-shimmer rounded" style={{ height: 14, width: 52 }} />
         </div>
       ))}
     </div>
@@ -111,19 +112,19 @@ function SkeletonCards() {
 /* ── Empty state ──────────────────────────────────────────── */
 function EmptyState({ view }: { view: ViewMode }) {
   return (
-    <div className="flex flex-col items-center py-8 gap-2 px-5">
+    <div className="flex flex-col items-center py-10 gap-2 px-5">
       <div
-        className="w-12 h-12 rounded-2xl flex items-center justify-center mb-1"
+        className="w-11 h-11 rounded-full flex items-center justify-center mb-1"
         style={{ background: 'var(--background-deep)' }}
       >
         <span style={{ color: 'var(--text-tertiary)' }}>
-          <BarChart2 size={20} strokeWidth={1.5} />
+          <BarChart2 size={18} strokeWidth={1.5} />
         </span>
       </div>
       <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-        {view === 'today' ? 'Записів на сьогодні немає'
-          : view === 'tomorrow' ? 'Завтра вільно'
-          : 'На тиждень записів немає'}
+        {view === 'today'    ? 'Записів на сьогодні немає'
+        : view === 'tomorrow' ? 'Завтра вільно'
+        : 'На тиждень записів немає'}
       </p>
       <p className="text-xs text-center" style={{ color: 'var(--text-tertiary)' }}>
         Поділіться сторінкою з клієнтами
@@ -132,13 +133,12 @@ function EmptyState({ view }: { view: ViewMode }) {
   );
 }
 
-/* ── Booking card ─────────────────────────────────────────── */
-function BookingCard({
-  b, index, view, onComplete, isCompleting, onOpen, onSuccess,
+/* ── Booking row (editorial grid) ─────────────────────────── */
+function BookingRow({
+  b, index, onComplete, isCompleting, onOpen, onSuccess,
 }: {
   b: BookingWithServices;
   index: number;
-  view: ViewMode;
   onComplete: (id: string) => void;
   isCompleting: boolean;
   onOpen: (id: string) => void;
@@ -147,86 +147,113 @@ function BookingCard({
   const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
   const svcName = b.services[0]?.name ?? 'Послуга';
   const pastDue = isPastDue(b);
-  const active = isCurrentlyActive(b);
-
-  const cardBg = active
-    ? `color-mix(in srgb, ${cfg.color} 6%, var(--surface))`
-    : 'var(--surface)';
+  const active  = isCurrentlyActive(b);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 32, delay: index * 0.07 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 32, delay: index * 0.06 }}
     >
       <div
-        className="relative rounded-2xl overflow-hidden cursor-pointer"
+        className="cursor-pointer transition-colors duration-150"
         style={{
-          background: cardBg,
-          border: `0.5px solid ${active ? cfg.color + '44' : 'var(--border-strong)'}`,
-          borderLeft: `3px solid ${cfg.color}`,
-          opacity: b.status === 'completed' ? 0.55 : 1,
+          background: active
+            ? `color-mix(in srgb, ${cfg.color} 7%, transparent)`
+            : 'transparent',
+          opacity: b.status === 'completed' ? 0.52 : 1,
+          borderBottom: '0.5px solid var(--border)',
         }}
         onClick={() => onOpen(b.id)}
       >
-        <div className="flex items-center gap-3 pl-5 pr-3 py-3.5">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '44px 1fr auto',
+            gap: '12px',
+            padding: '12px 20px',
+            alignItems: 'center',
+          }}
+        >
           {/* Time */}
-          <div className="shrink-0 text-right" style={{ minWidth: 44 }}>
-            <p
-              style={{
-                fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                fontSize: '1.05rem',
-                fontWeight: 600,
-                letterSpacing: '-0.01em',
-                color: pastDue ? 'var(--warning)' : active ? cfg.color : 'var(--text-secondary)',
-                lineHeight: 1,
-              }}
-            >
-              {b.start_time}
-            </p>
-            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-              {b.end_time}
-            </p>
-          </div>
-
-          <div className="self-stretch w-px shrink-0" style={{ background: 'var(--border)' }} />
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold truncate" style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
-              {svcName}
-            </p>
-            <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-              {b.client_name}
-            </p>
-          </div>
-
-          {/* Price + badge */}
-          <div className="flex flex-col items-end gap-1 shrink-0">
+          <div>
             <p
               style={{
                 fontFamily: 'var(--font-cormorant, Georgia, serif)',
                 fontSize: '1rem',
-                fontWeight: 600,
+                fontWeight: 500,
+                lineHeight: 1,
+                color: pastDue
+                  ? 'var(--warning)'
+                  : active
+                  ? cfg.color
+                  : 'var(--text-secondary)',
+              }}
+            >
+              {b.start_time}
+            </p>
+            {active && (
+              <p
+                className="mt-0.5 uppercase tracking-[0.08em]"
+                style={{ fontSize: '9px', fontWeight: 600, color: cfg.color }}
+              >
+                зараз
+              </p>
+            )}
+          </div>
+
+          {/* Service + client */}
+          <div className="min-w-0">
+            <p
+              className="truncate"
+              style={{
+                fontFamily: 'var(--font-cormorant, Georgia, serif)',
+                fontSize: '1.05rem',
+                fontWeight: 400,
+                lineHeight: 1.2,
+                color: 'var(--text-primary)',
+              }}
+            >
+              {svcName}
+            </p>
+            <p
+              className="text-[11px] mt-0.5 truncate"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
+              {b.client_name}
+            </p>
+          </div>
+
+          {/* Status dot + price + actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div
+              className="w-[7px] h-[7px] rounded-full shrink-0"
+              style={{ background: cfg.color }}
+            />
+            <p
+              style={{
+                fontFamily: 'var(--font-cormorant, Georgia, serif)',
+                fontSize: '1rem',
+                fontWeight: 500,
+                whiteSpace: 'nowrap',
                 color: 'var(--text-primary)',
               }}
             >
               {formatPrice(b.total_price)}
             </p>
-            <div className="flex items-center gap-1">
-              <Badge variant={cfg.variant}>{cfg.label}</Badge>
+            <div onClick={e => e.stopPropagation()}>
               <BookingActionsDropdown booking={b} onSuccess={onSuccess} />
             </div>
           </div>
         </div>
 
-        {/* Past-due strip */}
+        {/* Past-due inline banner */}
         {pastDue && (
           <div
             className="flex items-center justify-between px-5 py-2"
             style={{
-              background: 'rgba(200,120,64,0.08)',
-              borderTop: '0.5px solid rgba(200,120,64,0.2)',
+              background: 'rgba(200,120,64,0.07)',
+              borderTop: '0.5px solid rgba(200,120,64,0.15)',
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -237,7 +264,7 @@ function BookingCard({
             <button
               onClick={() => onComplete(b.id)}
               disabled={isCompleting}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold disabled:opacity-50 transition-opacity"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold disabled:opacity-50 transition-opacity"
               style={{ background: 'rgba(74,148,96,0.14)', color: 'var(--success)' }}
             >
               {isCompleting
@@ -248,16 +275,6 @@ function BookingCard({
           </div>
         )}
       </div>
-
-      {active && (
-        <div className="flex items-center gap-2 px-1 py-1">
-          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--accent)' }} />
-          <div className="flex-1 h-px" style={{ background: 'var(--accent)', opacity: 0.35 }} />
-          <span className="text-[10px] font-semibold shrink-0" style={{ color: 'var(--accent)' }}>
-            зараз
-          </span>
-        </div>
-      )}
     </motion.div>
   );
 }
@@ -277,7 +294,6 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
 
   const viewLabel = view === 'today' ? 'сьогодні' : view === 'tomorrow' ? 'завтра' : 'за тиждень';
 
-  /* Top service for weekly view */
   const topService = useMemo(() => {
     if (view !== 'week' || bookings.length === 0) return null;
     const counts = new Map<string, number>();
@@ -308,16 +324,18 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
 
   return (
     <div className="px-4 pb-4 flex flex-col gap-3">
-      {/* Conversion highlight */}
       {bookings.length > 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
-          style={{ background: 'var(--background-deep)', border: '0.5px solid var(--border)' }}
+          className="flex items-center gap-4 px-4 py-3.5"
+          style={{
+            background: 'var(--background-deep)',
+            border: '0.5px solid var(--border)',
+            borderRadius: 'var(--card-radius)',
+          }}
         >
-          {/* SVG donut */}
           <div className="relative shrink-0" style={{ width: 52, height: 52 }}>
             <svg viewBox="0 0 52 52" style={{ width: 52, height: 52 }}>
               <circle cx="26" cy="26" r="21" fill="none" stroke="var(--border)" strokeWidth="5" />
@@ -357,14 +375,17 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
         </motion.div>
       )}
 
-      {/* Top service — weekly only */}
       {topService && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="px-4 py-3 rounded-2xl flex items-center justify-between"
-          style={{ background: 'var(--accent-light)', border: '0.5px solid var(--border)' }}
+          className="px-4 py-3 flex items-center justify-between"
+          style={{
+            background: 'var(--accent-light)',
+            border: '0.5px solid var(--border)',
+            borderRadius: 'var(--card-radius)',
+          }}
         >
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--accent)' }}>
@@ -388,7 +409,6 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
         </motion.div>
       )}
 
-      {/* Stats grid — 2×3 for readability */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
         {stats.map((s, i) => (
           <motion.div
@@ -396,8 +416,13 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: i * 0.05 }}
-            className="rounded-2xl px-4 py-4 flex flex-col justify-between"
-            style={{ background: 'var(--background-deep)', border: '0.5px solid var(--border)', minHeight: 76 }}
+            className="px-4 py-4 flex flex-col justify-between"
+            style={{
+              background: 'var(--background-deep)',
+              border: '0.5px solid var(--border)',
+              borderRadius: 'var(--card-radius)',
+              minHeight: 76,
+            }}
           >
             <p
               style={{
@@ -424,7 +449,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
 function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m: DisplayMode) => void }) {
   return (
     <div
-      className="flex rounded-xl p-0.5 gap-0.5 relative"
+      className="flex rounded-full p-0.5 gap-0.5 relative"
       style={{ background: 'var(--background-deep)' }}
     >
       {DISPLAY_TABS.map(tab => {
@@ -433,13 +458,13 @@ function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
-            className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-[10px] font-semibold"
+            className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold"
             style={{ color: isActive ? 'white' : 'var(--text-tertiary)' }}
           >
             {isActive && (
               <motion.div
                 layoutId="schedule-display-pill"
-                className="absolute inset-0 rounded-[10px]"
+                className="absolute inset-0 rounded-full"
                 style={{ background: 'var(--accent)', zIndex: 0 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               />
@@ -455,18 +480,18 @@ function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m
 
 /* ── Main export ─────────────────────────────────────────── */
 export function TodaySchedule() {
-  const [view, setView] = useState<ViewMode>('today');
+  const [view, setView]       = useState<ViewMode>('today');
   const [display, setDisplay] = useState<DisplayMode>('list');
-  const range = getDateRange(view);
+  const range                 = getDateRange(view);
   const { bookings, isLoading } = useBookings(range.from, range.to);
-  const queryClient = useQueryClient();
-  const { masterProfile } = useMasterContext();
-  const masterId = masterProfile?.id;
-  const { showToast } = useToast();
+  const queryClient           = useQueryClient();
+  const { masterProfile }     = useMasterContext();
+  const masterId              = masterProfile?.id;
+  const { showToast }         = useToast();
   const [completingId, setCompletingId] = useState<string | null>(null);
-  const [, startComplete] = useTransition();
+  const [, startComplete]     = useTransition();
 
-  const router = useRouter();
+  const router       = useRouter();
   const searchParams = useSearchParams();
 
   const openBooking = (id: string) => {
@@ -558,7 +583,7 @@ export function TodaySchedule() {
         </div>
       </div>
 
-      {/* Date tabs — always visible */}
+      {/* Date tabs */}
       <div className="flex gap-1.5 px-5 pb-3">
         {DATE_TABS.map(tab => {
           const isActive = view === tab.id;
@@ -566,20 +591,18 @@ export function TodaySchedule() {
             <button
               key={tab.id}
               onClick={() => setView(tab.id)}
-              className="relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300"
-              style={{
-                color: isActive ? 'white' : 'var(--text-tertiary)',
-              }}
+              className="relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300"
+              style={{ color: isActive ? 'white' : 'var(--text-tertiary)' }}
             >
               {isActive && (
                 <motion.div
                   layoutId="schedule-view-pill"
-                  className="absolute inset-0 rounded-xl"
+                  className="absolute inset-0 rounded-full"
                   style={{ background: 'var(--accent)', zIndex: 0 }}
                   transition={{ type: 'spring', stiffness: 260, damping: 28 }}
                 />
               )}
-              <span className="relative z-1">{tab.label}</span>
+              <span className="relative" style={{ zIndex: 1 }}>{tab.label}</span>
             </button>
           );
         })}
@@ -595,61 +618,69 @@ export function TodaySchedule() {
           transition={{ type: 'spring', stiffness: 260, damping: 28 }}
         >
           {display === 'list' ? (
-            <div className="flex flex-col gap-2.5 px-4 pb-4">
-              {isLoading ? (
-                <SkeletonCards />
-              ) : filtered.length === 0 ? (
-                <EmptyState view={view} />
-              ) : view === 'week' ? (
-                /* Grouped by date with separators */
-                (() => {
-                  const groups: Record<string, typeof filtered> = {};
-                  filtered.forEach(b => { if (!groups[b.date]) groups[b.date] = []; groups[b.date].push(b); });
-                  let globalIdx = 0;
-                  return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)).map(([date, dayBookings]) => (
-                    <div key={date} className="flex flex-col gap-2.5">
-                      <div className="flex items-center gap-3 px-1 pt-1">
-                        <span className="text-xs font-medium text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
-                          {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
-                        </span>
-                        <div className="h-px flex-1 bg-muted-foreground/10" />
-                      </div>
-                      {dayBookings.map(b => {
-                        const idx = globalIdx++;
-                        return (
-                          <BookingCard
-                            key={b.id}
-                            b={b}
-                            index={idx}
-                            view={view}
-                            onComplete={handleQuickComplete}
-                            isCompleting={completingId === b.id}
-                            onOpen={openBooking}
-                            onSuccess={invalidateAll}
-                          />
-                        );
-                      })}
-                    </div>
-                  ));
-                })()
-              ) : (
-                filtered.map((b, i) => (
-                  <BookingCard
+            isLoading ? (
+              <SkeletonRows />
+            ) : filtered.length === 0 ? (
+              <EmptyState view={view} />
+            ) : view === 'week' ? (
+              (() => {
+                const groups: Record<string, typeof filtered> = {};
+                filtered.forEach(b => { if (!groups[b.date]) groups[b.date] = []; groups[b.date].push(b); });
+                let globalIdx = 0;
+                return (
+                  <div className="flex flex-col">
+                    {Object.entries(groups)
+                      .sort(([a], [b]) => a.localeCompare(b))
+                      .map(([date, dayBookings]) => (
+                        <div key={date}>
+                          <div
+                            className="flex items-center gap-3 px-5 pt-3 pb-1"
+                          >
+                            <span
+                              className="text-[10px] font-semibold uppercase tracking-[0.12em] whitespace-nowrap"
+                              style={{ color: 'var(--text-tertiary)' }}
+                            >
+                              {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
+                            </span>
+                            <div className="h-px flex-1" style={{ background: 'var(--border)' }} />
+                          </div>
+                          {dayBookings.map(b => {
+                            const idx = globalIdx++;
+                            return (
+                              <BookingRow
+                                key={b.id}
+                                b={b}
+                                index={idx}
+                                onComplete={handleQuickComplete}
+                                isCompleting={completingId === b.id}
+                                onOpen={openBooking}
+                                onSuccess={invalidateAll}
+                              />
+                            );
+                          })}
+                        </div>
+                      ))}
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="flex flex-col">
+                {filtered.map((b, i) => (
+                  <BookingRow
                     key={b.id}
                     b={b}
                     index={i}
-                    view={view}
                     onComplete={handleQuickComplete}
                     isCompleting={completingId === b.id}
                     onOpen={openBooking}
                     onSuccess={invalidateAll}
                   />
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )
           ) : (
             isLoading ? (
-              <SkeletonCards />
+              <SkeletonRows />
             ) : (
               <StatsView bookings={filtered} view={view} />
             )

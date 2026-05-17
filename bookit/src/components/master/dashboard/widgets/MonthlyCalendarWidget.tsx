@@ -30,7 +30,7 @@ function SkeletonCalendar() {
   return (
     <div className="grid grid-cols-7 gap-1 px-4 pb-4">
       {Array.from({ length: 14 }).map((_, i) => (
-        <div key={i} className="skeleton-shimmer rounded-xl" style={{ height: 44 }} />
+        <div key={i} className="skeleton-shimmer rounded-full" style={{ height: 44 }} />
       ))}
     </div>
   );
@@ -59,7 +59,7 @@ function DayCard({ day, bookings, isCurrentMonth, isSelected, onClick }: DayCard
       whileTap={isCurrentMonth ? { scale: 0.88 } : {}}
       animate={{ scale: isSelected ? 1.06 : 1 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex flex-col items-center gap-1 py-2.5 px-1 rounded-2xl"
+      className="relative flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl"
       style={{
         background: isSelected ? 'var(--accent)' : today ? 'var(--accent-light)' : 'transparent',
         opacity: isCurrentMonth ? 1 : 0.25,
@@ -116,20 +116,34 @@ function BookingRow({
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1], delay: index * 0.055 }}
-      className="flex items-center gap-3 py-3 px-4 cursor-pointer"
-      style={{ borderBottom: '0.5px solid var(--border)' }}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '8px 1fr auto',
+        gap: '10px',
+        padding: '11px 16px',
+        alignItems: 'center',
+        borderBottom: '0.5px solid var(--border)',
+        cursor: 'pointer',
+      }}
       onClick={() => onOpen(b.id)}
       onMouseEnter={e => (e.currentTarget.style.background = 'var(--background-deep)')}
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
-      <div className="w-1 h-10 rounded-full shrink-0" style={{ background: dotColor }} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{svc}</p>
-        <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }}>{b.client_name}</p>
+      <div className="w-2 h-2 rounded-full shrink-0 mt-0.5 self-start" style={{ background: dotColor }} />
+      <div className="min-w-0">
+        <p className="text-[13px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>{svc}</p>
+        <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{b.client_name}</p>
       </div>
       <div className="text-right shrink-0">
-        <p className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{b.start_time}</p>
-        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{formatPrice(b.total_price)}</p>
+        <p className="text-[11px] font-semibold" style={{ color: 'var(--text-secondary)' }}>{b.start_time}</p>
+        <p
+          style={{
+            fontFamily: 'var(--font-cormorant, Georgia, serif)',
+            fontSize: '0.95rem',
+            fontWeight: 500,
+            color: 'var(--text-primary)',
+          }}
+        >{formatPrice(b.total_price)}</p>
       </div>
     </motion.div>
   );
@@ -146,7 +160,7 @@ function ViewToggle({
 
   return (
     <div
-      className="flex gap-0.5 p-0.5 rounded-xl"
+      className="flex gap-0.5 p-0.5 rounded-full"
       style={{
         background: 'var(--background-deep)',
         border: '0.5px solid var(--border-strong)',
@@ -158,13 +172,13 @@ function ViewToggle({
           <button
             key={String(opt.value)}
             onClick={() => onChange(opt.value)}
-            className="relative px-3 py-1.5 rounded-[10px] text-[11px] font-semibold"
+            className="relative px-3 py-1.5 rounded-full text-[11px] font-semibold"
             style={{ color: active ? 'var(--text-primary)' : 'var(--text-tertiary)', zIndex: 1 }}
           >
             {active && (
               <motion.div
                 layoutId="cal-view-pill"
-                className="absolute inset-0 rounded-[10px]"
+                className="absolute inset-0 rounded-full"
                 style={{
                   background: 'var(--surface)',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
@@ -283,7 +297,7 @@ export function MonthlyCalendarWidget() {
   };
 
   return (
-    <div className="widget-card w-full overflow-hidden flex flex-col bg-white/70 backdrop-blur-2xl">
+    <div className="bento-card w-full overflow-hidden flex flex-col">
 
       {/* ── Header row: title + toggle ──────────────────── */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
@@ -319,7 +333,7 @@ export function MonthlyCalendarWidget() {
                   setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; });
                   setSelectedDay(null);
                 }}
-                className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors"
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
                 style={{ color: 'var(--text-tertiary)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--background-deep)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -339,7 +353,7 @@ export function MonthlyCalendarWidget() {
                   setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; });
                   setSelectedDay(null);
                 }}
-                className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors"
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
                 style={{ color: 'var(--text-tertiary)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--background-deep)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -436,7 +450,7 @@ export function MonthlyCalendarWidget() {
               </div>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors"
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
                 style={{ color: 'var(--text-tertiary)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--border)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}

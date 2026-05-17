@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { DashboardGreeting } from './DashboardGreeting';
 import { StatsMosaicWidget } from './widgets/StatsMosaicWidget';
 import { ScheduleWidget } from './widgets/ScheduleWidget';
@@ -10,61 +9,80 @@ import { QuickActionsWidget } from './widgets/QuickActionsWidget';
 import { FreeSlotsWidget } from './widgets/FreeSlotsWidget';
 import { InsightsRow } from './widgets/InsightsRow';
 import { ChannelHealthWidget } from './widgets/ChannelHealthWidget';
+import { TopServicesWidget } from './widgets/TopServicesWidget';
+import { NextFreeDaysWidget } from './widgets/NextFreeDaysWidget';
 import { DashboardDrawers } from './DashboardDrawers';
+
+/* Editorial section label — Monocle-style small caps divider */
+function Section({ label, children }: { label?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-4">
+      {label && (
+        <p
+          className="text-[9px] font-bold uppercase tracking-[0.26em] px-1"
+          style={{ color: 'var(--text-tertiary)', opacity: 0.7 }}
+        >
+          {label}
+        </p>
+      )}
+      {children}
+    </div>
+  );
+}
+
+/* Sidebar content — reused on mobile and desktop */
+function SidebarContent() {
+  return (
+    <>
+      <FreeSlotsWidget />
+      <NextFreeDaysWidget />
+      <TopServicesWidget />
+      <ChannelHealthWidget />
+      <InsightsRow />
+      <QuickActionsWidget />
+    </>
+  );
+}
 
 export function DashboardView() {
   return (
     <>
-      <motion.div 
-        layout
-        transition={{ layout: { type: 'spring', stiffness: 300, damping: 30 } }}
-        className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 auto-rows-auto items-start"
-      >
-        {/* Main Content Column (3/4) */}
-        <motion.div 
-          layout 
-          transition={{ layout: { type: 'spring', stiffness: 300, damping: 30 } }}
-          className="lg:col-span-3 flex flex-col gap-4 lg:gap-5"
-        >
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_284px] gap-5 items-start">
+
+        {/* ── Main column ── */}
+        <div className="flex flex-col gap-6 min-w-0">
+          {/* Zone 1 — Greeting (no section label, it speaks for itself) */}
           <DashboardGreeting />
 
-          <motion.div 
-            layout 
-            transition={{ layout: { type: 'spring', stiffness: 300, damping: 30 } }}
-            className="flex flex-col gap-4 lg:gap-5"
-          >
-            <StatsMosaicWidget />
-            <WeeklyChartWidget />
+          {/* Zone 2+3 — Today stats block */}
+          <StatsMosaicWidget />
+
+          {/* Zone 4 — Schedule */}
+          <Section label="Розклад">
             <ScheduleWidget />
-          </motion.div>
+          </Section>
 
-          {/* Monthly Calendar — Now inside main flow but still wide enough */}
-          <motion.div 
-            layout 
-            transition={{ layout: { type: 'spring', stiffness: 300, damping: 30 } }}
-            className="mt-2"
-          >
+          {/* Zone 5 — Weekly chart */}
+          <Section label="Тиждень">
+            <WeeklyChartWidget />
+          </Section>
+
+          {/* Zone 6 — Calendar */}
+          <Section label="Місяць">
             <MonthlyCalendarWidget />
-          </motion.div>
-        </motion.div>
-
-        {/* Sidebar Column (1/4) — STICKY */}
-        <motion.aside 
-          layout
-          transition={{ layout: { type: 'spring', stiffness: 300, damping: 30 } }}
-          className="hidden lg:flex flex-col gap-4 lg:gap-5 sticky top-[104px] self-start h-fit pb-10"
-        >
-          <FreeSlotsWidget />
-          <ChannelHealthWidget />
-          <InsightsRow />
-          <QuickActionsWidget />
-        </motion.aside>
-
-        {/* Mobile-only Quick Actions */}
-        <div className="lg:hidden">
-          <QuickActionsWidget />
+          </Section>
         </div>
-      </motion.div>
+
+        {/* ── Sidebar (md+, sticky) ── */}
+        <aside className="hidden md:flex flex-col gap-4 sticky top-[88px] h-fit pb-16">
+          <SidebarContent />
+        </aside>
+      </div>
+
+      {/* ── Mobile sidebar (below main content) ── */}
+      <div className="md:hidden flex flex-col gap-5 mt-6">
+        <SidebarContent />
+      </div>
 
       <DashboardDrawers />
     </>

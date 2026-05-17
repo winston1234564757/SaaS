@@ -8,7 +8,7 @@ import { formatPrice } from '@/components/master/services/types';
 import { getNow } from '@/lib/utils/now';
 
 const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
-const BAR_MAX_H = 80;
+const BAR_MAX_H = 104;
 
 function getTodayIdx(): number {
   return (new Date().getDay() + 6) % 7;
@@ -91,8 +91,9 @@ function BarTooltip({ dayLabel, date, bookings, revenue }: BarTooltipProps) {
         transition={{ type: 'spring', stiffness: 260, damping: 24 }}
       >
         <div
-          className="rounded-2xl px-4 py-3 flex flex-col gap-1.5"
+          className="px-4 py-3 flex flex-col gap-1.5"
           style={{
+            borderRadius: 'var(--card-radius)',
             background: 'var(--text-primary)',
             boxShadow: '0 12px 32px rgba(0,0,0,0.22)',
             minWidth: 124,
@@ -184,15 +185,8 @@ export function WeeklyChartWidget() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-4">
         <div>
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.18em]"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            Тиждень
-          </p>
-
           {/* Animated total + WoW delta */}
-          <div style={{ height: '2.6rem', overflow: 'hidden' }}>
+          <div style={{ height: '3rem', overflow: 'hidden' }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={mode}
@@ -206,7 +200,7 @@ export function WeeklyChartWidget() {
                   className="leading-none"
                   style={{
                     fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                    fontSize: '1.6rem',
+                    fontSize: '2rem',
                     fontWeight: 600,
                     letterSpacing: '-0.02em',
                     color: 'var(--text-primary)',
@@ -234,14 +228,14 @@ export function WeeklyChartWidget() {
 
         {/* Mode toggle */}
         <div
-          className="flex rounded-xl p-1 gap-0.5"
+          className="flex rounded-full p-1 gap-0.5"
           style={{ background: 'var(--background-deep)' }}
         >
           {(['bookings', 'revenue'] as const).map(m => (
             <button
               key={m}
               onClick={() => { setMode(m); setActiveBar(null); }}
-              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-300"
+              className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-300"
               style={{
                 background: mode === m ? 'var(--accent)' : 'transparent',
                 color: mode === m ? 'white' : 'var(--text-tertiary)',
@@ -311,7 +305,7 @@ export function WeeklyChartWidget() {
                 {/* Bar */}
                 <motion.div
                   key={`${mode}-${i}`}
-                  className="w-full rounded-[6px]"
+                  className="w-full rounded-full"
                   initial={{ scaleY: 0, opacity: 0 }}
                   animate={{ scaleY: 1, opacity: 1 }}
                   transition={{

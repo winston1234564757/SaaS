@@ -131,7 +131,7 @@ export function ChannelHealthWidget() {
           <Link href="/dashboard/clients">
             <motion.div
               whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer"
+              className="flex items-center justify-between px-3 py-2.5 rounded-full cursor-pointer"
               style={{
                 background: 'var(--background-deep)',
                 border: '0.5px solid var(--border-strong)',

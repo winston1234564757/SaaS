@@ -82,7 +82,7 @@ export function FreeSlotsWidget() {
             <Link href="/dashboard/marketing?mode=free_slots">
               <motion.div
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full cursor-pointer"
                 style={{
                   background: 'var(--background-deep)',
                   border: '0.5px solid var(--border-strong)',
@@ -99,7 +99,7 @@ export function FreeSlotsWidget() {
               <Link href="/dashboard/flash">
                 <motion.div
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full cursor-pointer"
                   style={{
                     background: 'var(--accent)',
                     color: 'var(--accent-on)',

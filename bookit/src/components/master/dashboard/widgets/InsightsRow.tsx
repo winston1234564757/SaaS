@@ -90,6 +90,8 @@ function TopClientCard({ onOpen }: { onOpen: (client: ClientRow) => void }) {
       is_vip:           false,
       relation_id:      null,
       retention_status: 'active',
+      health_notes:     null,
+      medical_notes:    null,
     };
     onOpen(client);
   };
@@ -99,10 +101,10 @@ function TopClientCard({ onOpen }: { onOpen: (client: ClientRow) => void }) {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 180, damping: 34 }}
-      className="bento-card flex-1 overflow-hidden"
+      className="bento-card overflow-hidden"
     >
       <div
-        className="px-4 pt-4 pb-4 flex flex-col gap-3 h-full"
+        className="px-4 pt-4 pb-4 flex flex-col gap-3"
         onClick={topClient ? handleOpen : undefined}
         style={{ cursor: topClient ? 'pointer' : 'default' }}
       >
@@ -186,7 +188,7 @@ function AvgCheckCard() {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.07 }}
-      className="bento-card flex-1 overflow-hidden"
+      className="bento-card overflow-hidden"
     >
       <div className="px-4 pt-4 pb-4 flex flex-col gap-1">
         <p
