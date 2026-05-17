@@ -32,33 +32,44 @@ function NextBookingRow({ booking, todayStr }: { booking: BookingWithServices; t
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.22 }}
-      className="mt-4"
+      transition={{ type: 'spring', stiffness: 200, damping: 32, delay: 0.28 }}
+      className="mt-5"
     >
-      <p
-        className="text-[9px] font-bold uppercase tracking-[0.22em] mb-2"
-        style={{ color: 'var(--text-tertiary)' }}
-      >
-        Найближчий запис
-      </p>
-      <Link href={`/dashboard/bookings?bookingId=${booking.id}`} className="block">
+      <p className="dash-eyebrow mb-2.5">Найближчий запис</p>
+      <Link href={`/dashboard/bookings?bookingId=${booking.id}`} className="block group">
         <div
-          className="flex items-center justify-between gap-3 py-3 active:opacity-60 transition-opacity"
+          className="flex items-center justify-between gap-3 py-3.5 active:opacity-60 transition-opacity"
           style={{ borderTop: '0.5px solid var(--border-strong)' }}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-[7px] h-[7px] rounded-full shrink-0" style={{ background: dotColor }} />
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Animated status dot */}
+            <motion.div
+              animate={{ scale: [1, 1.18, 1] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '999px',
+                background: dotColor,
+                flexShrink: 0,
+              }}
+            />
             <div className="min-w-0">
               <p
-                className="text-[13px] font-semibold leading-tight truncate"
-                style={{ color: 'var(--text-primary)' }}
+                className="truncate font-service"
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  lineHeight: 1.25,
+                  color: 'var(--text-primary)',
+                }}
               >
                 {serviceName}
               </p>
               <p
-                className="text-[11px] leading-tight mt-0.5 truncate"
+                className="text-[11px] mt-0.5 truncate"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 {booking.client_name}
@@ -116,10 +127,10 @@ export function DashboardGreeting() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 pb-1">
-        <div className="skeleton-shimmer rounded-full" style={{ height: 10, width: 120 }} />
-        <div className="skeleton-shimmer rounded-md" style={{ height: 52, width: 200 }} />
-        <div className="skeleton-shimmer rounded-full" style={{ height: 2, width: 36 }} />
+      <div className="space-y-4 pb-1">
+        <div className="skeleton-shimmer rounded-full" style={{ height: 9, width: 140 }} />
+        <div className="skeleton-shimmer" style={{ height: 64, width: 220, borderRadius: 8 }} />
+        <div className="skeleton-shimmer rounded-full" style={{ height: 2, width: 40 }} />
       </div>
     );
   }
@@ -128,26 +139,25 @@ export function DashboardGreeting() {
 
   return (
     <div>
-      {/* Date + time eyebrow */}
+      {/* Eyebrow — date · time */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.04 }}
         suppressHydrationWarning
-        className="text-[9px] font-bold uppercase tracking-[0.26em] mb-3"
-        style={{ color: 'var(--text-tertiary)' }}
+        className="dash-eyebrow mb-3.5"
       >
-        {dateLabel} · {timeStr}
+        {dateLabel}&nbsp;·&nbsp;{timeStr}
       </motion.p>
 
-      {/* Greeting — two lines */}
+      {/* Script greeting */}
       <motion.h1
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.06 }}
+        transition={{ type: 'spring', stiffness: 160, damping: 28, delay: 0.07 }}
         suppressHydrationWarning
         className="greeting-script"
-        style={{ fontSize: 'clamp(3rem, 10vw, 4.5rem)', lineHeight: 1.08 }}
+        style={{ fontSize: 'clamp(3.2rem, 10vw, 4.8rem)', lineHeight: 1.06 }}
       >
         {greetingText},<br />{firstName}
       </motion.h1>
@@ -156,19 +166,18 @@ export function DashboardGreeting() {
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+        transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
         style={{
-          marginTop: '14px',
+          marginTop: 16,
           height: '1.5px',
           width: '2.5rem',
           background: 'var(--accent)',
           borderRadius: '999px',
           transformOrigin: 'left',
-          opacity: 0.7,
+          opacity: 0.65,
         }}
       />
 
-      {/* Next booking — editorial row */}
       {nextBooking && <NextBookingRow booking={nextBooking} todayStr={todayStr} />}
     </div>
   );

@@ -81,28 +81,22 @@ function isCurrentlyActive(b: BookingWithServices): boolean {
   return nowMins >= sh * 60 + sm && nowMins < eh * 60 + em;
 }
 
-/* ── Skeleton (editorial rows) ────────────────────────────── */
+/* ── Skeleton ─────────────────────────────────────────────── */
 function SkeletonRows() {
   return (
     <div className="flex flex-col">
-      {[62, 78, 50].map((w, i) => (
+      {[72, 80, 55].map((w, i) => (
         <div
           key={i}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '44px 1fr auto',
-            gap: '12px',
-            padding: '14px 20px',
-            borderBottom: '0.5px solid var(--border)',
-            alignItems: 'center',
-          }}
+          className="booking-row"
+          style={{ borderLeft: '3px solid var(--border)', opacity: 0.6 }}
         >
-          <div className="skeleton-shimmer rounded" style={{ height: 14, width: 36 }} />
+          <div className="skeleton-shimmer rounded" style={{ height: 13, width: 36 }} />
           <div className="flex flex-col gap-1.5">
             <div className="skeleton-shimmer rounded" style={{ height: 14, width: `${w}%` }} />
             <div className="skeleton-shimmer rounded" style={{ height: 10, width: `${Math.round(w * 0.55)}%` }} />
           </div>
-          <div className="skeleton-shimmer rounded" style={{ height: 14, width: 52 }} />
+          <div className="skeleton-shimmer rounded" style={{ height: 13, width: 52 }} />
         </div>
       ))}
     </div>
@@ -114,17 +108,17 @@ function EmptyState({ view }: { view: ViewMode }) {
   return (
     <div className="flex flex-col items-center py-10 gap-2 px-5">
       <div
-        className="w-11 h-11 rounded-full flex items-center justify-center mb-1"
+        className="w-10 h-10 rounded-full flex items-center justify-center mb-1"
         style={{ background: 'var(--background-deep)' }}
       >
-        <span style={{ color: 'var(--text-tertiary)' }}>
-          <BarChart2 size={18} strokeWidth={1.5} />
-        </span>
+        <BarChart2 size={17} strokeWidth={1.5} style={{ color: 'var(--text-tertiary)' }} />
       </div>
       <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-        {view === 'today'    ? 'Записів на сьогодні немає'
-        : view === 'tomorrow' ? 'Завтра вільно'
-        : 'На тиждень записів немає'}
+        {view === 'today'
+          ? 'Записів на сьогодні немає'
+          : view === 'tomorrow'
+          ? 'Завтра вільно'
+          : 'На тиждень записів немає'}
       </p>
       <p className="text-xs text-center" style={{ color: 'var(--text-tertiary)' }}>
         Поділіться сторінкою з клієнтами
@@ -133,7 +127,7 @@ function EmptyState({ view }: { view: ViewMode }) {
   );
 }
 
-/* ── Booking row (editorial grid) ─────────────────────────── */
+/* ── Booking row — editorial with side-stripe status ──────── */
 function BookingRow({
   b, index, onComplete, isCompleting, onOpen, onSuccess,
 }: {
@@ -144,43 +138,45 @@ function BookingRow({
   onOpen: (id: string) => void;
   onSuccess: () => Promise<void>;
 }) {
-  const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
+  const cfg     = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
   const svcName = b.services[0]?.name ?? 'Послуга';
   const pastDue = isPastDue(b);
   const active  = isCurrentlyActive(b);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 32, delay: index * 0.06 }}
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: 'spring', stiffness: 220, damping: 32, delay: index * 0.055 }}
     >
       <div
-        className="cursor-pointer transition-colors duration-150"
+        className={`booking-status-${b.status}`}
         style={{
           background: active
-            ? `color-mix(in srgb, ${cfg.color} 7%, transparent)`
+            ? `color-mix(in srgb, ${cfg.color} 6%, transparent)`
             : 'transparent',
-          opacity: b.status === 'completed' ? 0.52 : 1,
+          opacity: b.status === 'completed' ? 0.50 : 1,
           borderBottom: '0.5px solid var(--border)',
+          cursor: 'pointer',
+          transition: 'background 0.15s ease',
         }}
         onClick={() => onOpen(b.id)}
       >
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '44px 1fr auto',
+            gridTemplateColumns: '48px 1fr auto',
             gap: '12px',
-            padding: '12px 20px',
+            padding: '13px 20px 13px 14px',
             alignItems: 'center',
           }}
         >
-          {/* Time */}
+          {/* Time column */}
           <div>
             <p
               style={{
                 fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                fontSize: '1rem',
+                fontSize: '1.05rem',
                 fontWeight: 500,
                 lineHeight: 1,
                 color: pastDue
@@ -194,8 +190,14 @@ function BookingRow({
             </p>
             {active && (
               <p
-                className="mt-0.5 uppercase tracking-[0.08em]"
-                style={{ fontSize: '9px', fontWeight: 600, color: cfg.color }}
+                style={{
+                  fontSize: '8px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: cfg.color,
+                  marginTop: 2,
+                }}
               >
                 зараз
               </p>
@@ -205,10 +207,9 @@ function BookingRow({
           {/* Service + client */}
           <div className="min-w-0">
             <p
-              className="truncate"
+              className="font-service truncate"
               style={{
-                fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                fontSize: '1.05rem',
+                fontSize: '1.02rem',
                 fontWeight: 400,
                 lineHeight: 1.2,
                 color: 'var(--text-primary)',
@@ -217,19 +218,21 @@ function BookingRow({
               {svcName}
             </p>
             <p
-              className="text-[11px] mt-0.5 truncate"
-              style={{ color: 'var(--text-tertiary)' }}
+              style={{
+                fontSize: '11px',
+                marginTop: 2,
+                color: 'var(--text-tertiary)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
             >
               {b.client_name}
             </p>
           </div>
 
-          {/* Status dot + price + actions */}
+          {/* Price + actions */}
           <div className="flex items-center gap-2 shrink-0">
-            <div
-              className="w-[7px] h-[7px] rounded-full shrink-0"
-              style={{ background: cfg.color }}
-            />
             <p
               style={{
                 fontFamily: 'var(--font-cormorant, Georgia, serif)',
@@ -252,20 +255,25 @@ function BookingRow({
           <div
             className="flex items-center justify-between px-5 py-2"
             style={{
-              background: 'rgba(200,120,64,0.07)',
-              borderTop: '0.5px solid rgba(200,120,64,0.15)',
+              background: 'rgba(200,120,64,0.06)',
+              borderTop: '0.5px solid rgba(200,120,64,0.14)',
             }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center gap-1.5" style={{ color: 'var(--warning)' }}>
               <AlertCircle size={11} />
-              <span className="text-[11px] font-semibold">Очікує завершення</span>
+              <span style={{ fontSize: '11px', fontWeight: 600 }}>Очікує завершення</span>
             </div>
             <button
               onClick={() => onComplete(b.id)}
               disabled={isCompleting}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold disabled:opacity-50 transition-opacity"
-              style={{ background: 'rgba(74,148,96,0.14)', color: 'var(--success)' }}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full disabled:opacity-50 transition-opacity"
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                background: 'rgba(74,148,96,0.13)',
+                color: 'var(--success)',
+              }}
             >
               {isCompleting
                 ? <Loader2 size={10} className="animate-spin" />
@@ -326,9 +334,9 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
     <div className="px-4 pb-4 flex flex-col gap-3">
       {bookings.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="flex items-center gap-4 px-4 py-3.5"
           style={{
             background: 'var(--background-deep)',
@@ -388,7 +396,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
           }}
         >
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--accent)' }}>
+            <p className="dash-eyebrow mb-1" style={{ color: 'var(--accent)', opacity: 1 }}>
               Топ послуга
             </p>
             <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -398,7 +406,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
           <p
             style={{
               fontFamily: 'var(--font-cormorant, Georgia, serif)',
-              fontSize: '1.6rem',
+              fontSize: '1.65rem',
               fontWeight: 700,
               color: 'var(--accent)',
               lineHeight: 1,
@@ -415,7 +423,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
             key={s.label}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1], delay: i * 0.05 }}
+            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1], delay: i * 0.05 }}
             className="px-4 py-4 flex flex-col justify-between"
             style={{
               background: 'var(--background-deep)',
@@ -426,8 +434,8 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
           >
             <p
               style={{
-                fontFamily: typeof s.value !== 'string' ? 'inherit' : 'var(--font-cormorant, Georgia, serif)',
-                fontSize: typeof s.value !== 'string' ? '1.5rem' : '1.75rem',
+                fontFamily: 'var(--font-cormorant, Georgia, serif)',
+                fontSize: typeof s.value !== 'string' ? '1.5rem' : '1.8rem',
                 fontWeight: 700,
                 color: s.color,
                 lineHeight: 1,
@@ -435,7 +443,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
             >
               {s.value}
             </p>
-            <p className="text-[11px] font-medium mt-2" style={{ color: 'var(--text-secondary)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 500, marginTop: 8, color: 'var(--text-secondary)' }}>
               {s.label === 'Потенційно' && allFullyCompleted ? 'Все завершено!' : s.label}
             </p>
           </motion.div>
@@ -448,25 +456,21 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
 /* ── Display toggle ───────────────────────────────────────── */
 function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m: DisplayMode) => void }) {
   return (
-    <div
-      className="flex rounded-full p-0.5 gap-0.5 relative"
-      style={{ background: 'var(--background-deep)' }}
-    >
+    <div className="pill-tabs">
       {DISPLAY_TABS.map(tab => {
         const isActive = tab.id === active;
         return (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
-            className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold"
-            style={{ color: isActive ? 'white' : 'var(--text-tertiary)' }}
+            className={`pill-tab ${isActive ? 'pill-tab-active' : 'pill-tab-inactive'}`}
           >
             {isActive && (
               <motion.div
                 layoutId="schedule-display-pill"
                 className="absolute inset-0 rounded-full"
                 style={{ background: 'var(--accent)', zIndex: 0 }}
-                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               />
             )}
             <span style={{ position: 'relative', zIndex: 1 }}><tab.Icon size={10} /></span>
@@ -558,11 +562,11 @@ export function TodaySchedule() {
               {!isLoading && (
                 <motion.span
                   key={filtered.length}
-                  initial={{ opacity: 0, y: 14 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-                  className="text-xs font-bold px-2 py-0.5 rounded-full inline-block"
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+                  className="inline-block text-xs font-bold px-2 py-0.5 rounded-full"
                   style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
                 >
                   {filtered.length}
@@ -591,7 +595,7 @@ export function TodaySchedule() {
             <button
               key={tab.id}
               onClick={() => setView(tab.id)}
-              className="relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300"
+              className="relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-250 cursor-pointer"
               style={{ color: isActive ? 'white' : 'var(--text-tertiary)' }}
             >
               {isActive && (
@@ -599,7 +603,7 @@ export function TodaySchedule() {
                   layoutId="schedule-view-pill"
                   className="absolute inset-0 rounded-full"
                   style={{ background: 'var(--accent)', zIndex: 0 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
               <span className="relative" style={{ zIndex: 1 }}>{tab.label}</span>
@@ -612,10 +616,10 @@ export function TodaySchedule() {
       <AnimatePresence mode="wait">
         <motion.div
           key={`${display}-${view}`}
-          initial={{ opacity: 0, y: 14 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -14 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 30 }}
         >
           {display === 'list' ? (
             isLoading ? (
@@ -633,12 +637,16 @@ export function TodaySchedule() {
                       .sort(([a], [b]) => a.localeCompare(b))
                       .map(([date, dayBookings]) => (
                         <div key={date}>
-                          <div
-                            className="flex items-center gap-3 px-5 pt-3 pb-1"
-                          >
+                          <div className="schedule-date-header">
                             <span
-                              className="text-[10px] font-semibold uppercase tracking-[0.12em] whitespace-nowrap"
-                              style={{ color: 'var(--text-tertiary)' }}
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.14em',
+                                color: 'var(--text-tertiary)',
+                                whiteSpace: 'nowrap',
+                              }}
                             >
                               {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
                             </span>
@@ -693,15 +701,15 @@ export function TodaySchedule() {
         className="flex items-center justify-between px-5 py-3.5"
         style={{ borderTop: '0.5px solid var(--border)', background: 'var(--background-deep)' }}
       >
-        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Виручка (завершені)</span>
-        <div className="relative h-6 overflow-hidden flex items-center justify-end min-w-[80px]">
+        <span className="dash-eyebrow" style={{ opacity: 0.55 }}>Виручка (завершені)</span>
+        <div className="relative h-6 overflow-hidden flex items-center justify-end" style={{ minWidth: 80 }}>
           <AnimatePresence mode="wait">
             <motion.span
               key={totalRevenue}
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -14 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 28 }}
               style={{
                 fontFamily: 'var(--font-cormorant, Georgia, serif)',
                 fontSize: '1.15rem',

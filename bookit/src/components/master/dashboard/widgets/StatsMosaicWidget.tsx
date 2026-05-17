@@ -22,69 +22,65 @@ function fmt(n: number) {
 
 function Sk({ style }: { style?: React.CSSProperties }) {
   return (
-    <div
-      className="skeleton-shimmer rounded-md"
-      style={style}
-    />
+    <div className="skeleton-shimmer rounded-md" style={style} />
   );
 }
 
 function TrendChip({ value, positive }: { value: string; positive: boolean | null }) {
   if (positive === null || value === '—') {
     return (
-      <span className="inline-flex items-center" style={{ color: 'var(--text-tertiary)', opacity: 0.4 }}>
-        <Minus size={9} strokeWidth={2} />
+      <span className="trend-chip trend-chip-nil">
+        <Minus size={9} strokeWidth={2.5} />
       </span>
     );
   }
   return (
-    <span
-      className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-      style={{
-        background: positive ? 'rgba(74,148,96,0.12)' : 'rgba(176,56,80,0.10)',
-        color: positive ? 'var(--success)' : 'var(--error)',
-      }}
-    >
+    <span className={`trend-chip ${positive ? 'trend-chip-up' : 'trend-chip-down'}`}>
       {positive ? <ArrowUp size={8} strokeWidth={2.5} /> : <ArrowDown size={8} strokeWidth={2.5} />}
       {value}
     </span>
   );
 }
 
-/* ─── Hero Strip — full-bleed on mobile, card on desktop ────── */
+/* ─── Hero Strip — full-bleed dark card ─────────────────────── */
 function HeroStrip({
-  value, statusLine, cancelledCount, isLoading, href,
+  value, todayPending, todayConfirmed, todayCompleted,
+  cancelledCount, isLoading, href,
 }: {
-  value: string; statusLine: string | null;
+  value: string;
+  todayPending: number; todayConfirmed: number; todayCompleted: number;
   cancelledCount: number; isLoading: boolean; href: string;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 180, damping: 34 }}
     >
-      <Link href={href} className="block">
+      <Link href={href} className="block active:opacity-90 transition-opacity">
         <div
-          className="relative overflow-hidden -mx-4 md:mx-0 rounded-none md:rounded-xl active:opacity-90 transition-opacity"
+          className="relative overflow-hidden -mx-4 md:mx-0 md:rounded-[var(--card-radius)]"
           style={{
             background: 'var(--hero-card-bg)',
             boxShadow: 'var(--hero-card-shadow)',
-            padding: '24px 24px 22px',
+            padding: '28px 24px 24px',
           }}
         >
-          {/* Watermark */}
+          {/* Ghost watermark */}
           {!isLoading && (
             <div
               aria-hidden
-              className="absolute right-3 -top-4 select-none pointer-events-none leading-none"
+              className="absolute select-none pointer-events-none"
               style={{
+                right: '-4px',
+                bottom: '-24px',
                 fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                fontSize: 'clamp(7rem, 24vw, 11rem)',
+                fontSize: 'clamp(9rem, 30vw, 14rem)',
                 fontWeight: 700,
                 color: 'var(--accent-on)',
-                opacity: 0.05,
-                letterSpacing: '-0.04em',
+                opacity: 0.04,
+                letterSpacing: '-0.06em',
+                lineHeight: 1,
               }}
             >
               {value}
@@ -93,46 +89,62 @@ function HeroStrip({
 
           {/* Eyebrow */}
           <p
-            className="text-[9px] font-bold uppercase tracking-[0.26em] leading-none mb-3"
-            style={{ color: 'var(--accent-on)', opacity: 0.5 }}
+            className="dash-eyebrow"
+            style={{ color: 'var(--accent-on)', opacity: 0.42, marginBottom: 14 }}
           >
             Записів сьогодні
           </p>
 
-          {/* Number */}
+          {/* Hero number */}
           {isLoading ? (
-            <div
-              className="rounded-lg mb-3"
-              style={{ height: '4rem', width: '3rem', background: 'rgba(255,255,255,0.08)' }}
-            />
+            <div className="rounded-xl mb-4" style={{ height: '6rem', width: '4rem', background: 'rgba(255,255,255,0.07)' }} />
           ) : (
-            <p
-              className="leading-none mb-3"
-              style={{
-                fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                fontSize: 'clamp(4.5rem, 16vw, 7rem)',
-                fontWeight: 600,
-                letterSpacing: '-0.03em',
-                color: 'var(--accent-on)',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
+            <p className="hero-digit" style={{ marginBottom: 14 }}>
               {value}
             </p>
           )}
 
-          {/* Status */}
-          {isLoading ? (
-            <div className="rounded-md" style={{ height: 10, width: 160, background: 'rgba(255,255,255,0.08)' }} />
-          ) : (
-            <div className="min-h-[14px]">
-              {statusLine && (
-                <p className="text-[10px] leading-tight" style={{ color: 'var(--accent-on)', opacity: 0.55 }}>
-                  {statusLine}
-                  {cancelledCount > 0 && <span style={{ opacity: 0.6 }}> · {cancelledCount} скасовано</span>}
-                </p>
+          {/* Status dots row */}
+          {!isLoading && (
+            <div className="flex items-center gap-4 flex-wrap">
+              {todayPending > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <div style={{ width: 6, height: 6, borderRadius: '999px', background: 'var(--warning)', flexShrink: 0 }} />
+                  <span style={{ fontSize: '11px', color: 'var(--accent-on)', opacity: 0.58 }}>
+                    {todayPending} {pluralUk(todayPending, 'очікує', 'очікують', 'очікують')}
+                  </span>
+                </div>
+              )}
+              {todayConfirmed > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <div style={{ width: 6, height: 6, borderRadius: '999px', background: 'var(--success)', flexShrink: 0 }} />
+                  <span style={{ fontSize: '11px', color: 'var(--accent-on)', opacity: 0.58 }}>
+                    {todayConfirmed} підтверджено
+                  </span>
+                </div>
+              )}
+              {todayCompleted > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <div style={{ width: 6, height: 6, borderRadius: '999px', background: 'rgba(255,255,255,0.30)', flexShrink: 0 }} />
+                  <span style={{ fontSize: '11px', color: 'var(--accent-on)', opacity: 0.45 }}>
+                    {todayCompleted} завершено
+                  </span>
+                </div>
+              )}
+              {cancelledCount > 0 && (
+                <span style={{ fontSize: '10px', color: 'var(--accent-on)', opacity: 0.28 }}>
+                  · {cancelledCount} скасовано
+                </span>
+              )}
+              {todayPending === 0 && todayConfirmed === 0 && todayCompleted === 0 && (
+                <span style={{ fontSize: '11px', color: 'var(--accent-on)', opacity: 0.38 }}>
+                  Ще немає записів
+                </span>
               )}
             </div>
+          )}
+          {isLoading && (
+            <div className="rounded-md" style={{ height: 10, width: 160, background: 'rgba(255,255,255,0.07)' }} />
           )}
         </div>
       </Link>
@@ -140,7 +152,7 @@ function HeroStrip({
   );
 }
 
-/* ─── Float Stats — no container, typography on background ─── */
+/* ─── Float Stats — two columns on background ────────────────── */
 function FloatStats({
   todayRevenue, todayCompleted, revTrend,
   weekClients, weekNewClients,
@@ -157,46 +169,31 @@ function FloatStats({
   return (
     <motion.div
       className="grid grid-cols-2"
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.08 }}
+      transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.1 }}
     >
       {/* Revenue */}
       <button
         type="button"
         onClick={onRevenueClick}
-        className="py-5 text-left active:opacity-60 transition-opacity"
-        style={{ paddingRight: '16px', borderRight: '0.5px solid var(--border)' }}
+        className="text-left active:opacity-60 transition-opacity cursor-pointer"
+        style={{ padding: '22px 18px 22px 0', borderRight: '0.5px solid var(--border)' }}
       >
-        <p
-          className="text-[9px] font-bold uppercase tracking-[0.20em] leading-none mb-2"
-          style={{ color: 'var(--text-tertiary)' }}
-        >
-          Виручка
-        </p>
+        <p className="dash-eyebrow" style={{ marginBottom: 10 }}>Виручка</p>
         {isLoading ? (
-          <Sk style={{ height: '2.1rem', width: '5.5rem', marginBottom: 6 }} />
+          <Sk style={{ height: '2.2rem', width: '5.5rem', marginBottom: 8 }} />
         ) : (
-          <p
-            className="leading-none mb-1.5"
-            style={{
-              fontFamily: 'var(--font-cormorant, Georgia, serif)',
-              fontSize: '2.1rem',
-              fontWeight: 600,
-              letterSpacing: '-0.02em',
-              fontVariantNumeric: 'tabular-nums',
-              color: 'var(--text-primary)',
-            }}
-          >
+          <p className="float-stat-value" style={{ marginBottom: 8 }}>
             {fmt(todayRevenue)}
           </p>
         )}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <TrendChip value={revTrend.value} positive={revTrend.positive} />
           {!isLoading && (
-            <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
+            <span style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>
               {todayCompleted > 0 ? `${todayCompleted} завершених` : 'ще немає'}
-            </p>
+            </span>
           )}
         </div>
       </button>
@@ -205,41 +202,26 @@ function FloatStats({
       <button
         type="button"
         onClick={onClientsClick}
-        className="py-5 text-left active:opacity-60 transition-opacity"
-        style={{ paddingLeft: '16px' }}
+        className="text-left active:opacity-60 transition-opacity cursor-pointer"
+        style={{ padding: '22px 0 22px 18px' }}
       >
-        <p
-          className="text-[9px] font-bold uppercase tracking-[0.20em] leading-none mb-2"
-          style={{ color: 'var(--text-tertiary)' }}
-        >
-          Клієнти тижня
-        </p>
+        <p className="dash-eyebrow" style={{ marginBottom: 10 }}>Клієнти тижня</p>
         {isLoading ? (
-          <Sk style={{ height: '2.1rem', width: '3rem', marginBottom: 6 }} />
+          <Sk style={{ height: '2.2rem', width: '3rem', marginBottom: 8 }} />
         ) : (
-          <p
-            className="leading-none mb-1.5"
-            style={{
-              fontFamily: 'var(--font-cormorant, Georgia, serif)',
-              fontSize: '2.1rem',
-              fontWeight: 600,
-              letterSpacing: '-0.02em',
-              fontVariantNumeric: 'tabular-nums',
-              color: 'var(--text-primary)',
-            }}
-          >
+          <p className="float-stat-value" style={{ marginBottom: 8 }}>
             {weekClients}
           </p>
         )}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <TrendChip
             value={weekNewClients > 0 ? `+${weekNewClients}` : '—'}
             positive={weekNewClients > 0 ? true : null}
           />
           {!isLoading && (
-            <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
+            <span style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>
               {weekNewClients > 0 ? 'нових' : 'цього тижня'}
-            </p>
+            </span>
           )}
         </div>
       </button>
@@ -266,31 +248,27 @@ function WeekRevenueBar({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.14 }}
-      style={{ borderTop: '0.5px solid var(--border)', paddingTop: '20px', paddingBottom: '4px' }}
+      transition={{ type: 'spring', stiffness: 180, damping: 34, delay: 0.18 }}
+      style={{ borderTop: '0.5px solid var(--border)', paddingTop: 22, paddingBottom: 6 }}
     >
-      <div className="flex items-start justify-between mb-2">
-        <p
-          className="text-[9px] font-bold uppercase tracking-[0.20em]"
-          style={{ color: 'var(--text-tertiary)' }}
-        >
-          Виручка за тиждень
-        </p>
+      <div className="flex items-center justify-between mb-2.5">
+        <p className="dash-eyebrow">Виручка за тиждень</p>
         <TrendChip value={trend.value} positive={trend.positive} />
       </div>
 
       {isLoading ? (
-        <Sk style={{ height: '1.75rem', width: '8rem', marginBottom: 12 }} />
+        <Sk style={{ height: '1.8rem', width: '7rem', marginBottom: 12 }} />
       ) : (
         <p
-          className="leading-none mb-3"
           style={{
             fontFamily: 'var(--font-cormorant, Georgia, serif)',
-            fontSize: '1.7rem',
+            fontSize: '1.85rem',
             fontWeight: 600,
-            letterSpacing: '-0.02em',
+            letterSpacing: '-0.025em',
             fontVariantNumeric: 'tabular-nums',
             color: 'var(--text-primary)',
+            lineHeight: 1,
+            marginBottom: 12,
           }}
         >
           {fmt(weekRevenue)}
@@ -299,20 +277,20 @@ function WeekRevenueBar({
 
       {!isLoading && (
         <>
-          <div
-            className="rounded-full overflow-hidden"
-            style={{ height: '1.5px', background: 'var(--border)' }}
-          >
+          <div className="progress-line">
             <motion.div
-              className="h-full rounded-full"
-              style={{ background: trend.positive !== false ? 'var(--success)' : 'var(--error)' }}
+              style={{
+                height: '100%',
+                borderRadius: '999px',
+                background: trend.positive !== false ? 'var(--success)' : 'var(--error)',
+              }}
               initial={{ width: 0 }}
               animate={{ width: `${barPct}%` }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
             />
           </div>
           {prevWeekRevenue > 0 && (
-            <p className="text-[9px] mt-1.5" style={{ color: 'var(--text-tertiary)' }}>
+            <p className="text-[10px] mt-1.5" style={{ color: 'var(--text-tertiary)' }}>
               Минулий тиждень: {fmt(prevWeekRevenue)}
             </p>
           )}
@@ -508,14 +486,6 @@ export function StatsMosaicWidget() {
 
   const activeCount = s.todayCount - s.todayCancelled;
 
-  const heroStatusLine = (() => {
-    const parts: string[] = [];
-    if (s.todayPending > 0)   parts.push(`${s.todayPending} ${pluralUk(s.todayPending, 'очікує', 'очікують', 'очікують')}`);
-    if (s.todayConfirmed > 0) parts.push(`${s.todayConfirmed} підтверджено`);
-    if (s.todayCompleted > 0) parts.push(`${s.todayCompleted} завершено`);
-    return parts.length > 0 ? parts.join(' · ') : null;
-  })();
-
   const revTrend = (() => {
     if (s.prevDayRevenue === 0 && s.todayRevenue === 0) return { value: '—', positive: null as null };
     if (s.prevDayRevenue === 0) return { value: 'новий', positive: true };
@@ -524,17 +494,19 @@ export function StatsMosaicWidget() {
   })();
 
   return (
-    <div>
+    <div className="flex flex-col">
       {/* Zone 2 — Hero Strip */}
       <HeroStrip
         value={String(activeCount)}
-        statusLine={heroStatusLine}
+        todayPending={s.todayPending}
+        todayConfirmed={s.todayConfirmed}
+        todayCompleted={s.todayCompleted}
         cancelledCount={s.todayCancelled}
         isLoading={s.isLoading}
         href="/dashboard/bookings"
       />
 
-      {/* Zone 3 — Float Stats + Week Revenue (no container) */}
+      {/* Zone 3 — Float Stats + Week Revenue */}
       <div className="px-1">
         <FloatStats
           todayRevenue={s.todayRevenue}

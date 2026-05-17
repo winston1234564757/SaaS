@@ -8,7 +8,7 @@ import { formatPrice } from '@/components/master/services/types';
 import { getNow } from '@/lib/utils/now';
 
 const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
-const BAR_MAX_H = 104;
+const BAR_MAX_H = 96;
 
 function getTodayIdx(): number {
   return (new Date().getDay() + 6) % 7;
@@ -50,11 +50,11 @@ function formatDelta(curr: number, prev: number): { label: string; positive: boo
 function SkeletonBars() {
   const heights = [50, 80, 35, 100, 72, 28, 60];
   return (
-    <div className="flex items-end gap-2 px-5" style={{ height: BAR_MAX_H + 24 }}>
+    <div className="flex items-end gap-2 px-5" style={{ height: BAR_MAX_H + 28 }}>
       {heights.map((h, i) => (
         <div
           key={i}
-          className="flex-1 skeleton-shimmer rounded-lg"
+          className="flex-1 skeleton-shimmer rounded-xl"
           style={{ height: Math.round((h / 100) * BAR_MAX_H) }}
         />
       ))}
@@ -69,14 +69,12 @@ interface BarTooltipProps {
   revenue: number;
 }
 
-/* Tooltip: outer div handles CSS centering, inner motion.div handles animation.
-   Mixing CSS transform with Framer Motion transforms causes offset — keep them separate. */
 function BarTooltip({ dayLabel, date, bookings, revenue }: BarTooltipProps) {
   return (
     <div
       style={{
         position: 'absolute',
-        bottom: 'calc(100% + 12px)',
+        bottom: 'calc(100% + 10px)',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 30,
@@ -85,30 +83,30 @@ function BarTooltip({ dayLabel, date, bookings, revenue }: BarTooltipProps) {
       }}
     >
       <motion.div
-        initial={{ opacity: 0, y: 6, scale: 0.88 }}
+        initial={{ opacity: 0, y: 6, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 6, scale: 0.88 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+        exit={{ opacity: 0, y: 4, scale: 0.92 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 28 }}
       >
         <div
           className="px-4 py-3 flex flex-col gap-1.5"
           style={{
-            borderRadius: 'var(--card-radius)',
+            borderRadius: 16,
             background: 'var(--text-primary)',
-            boxShadow: '0 12px 32px rgba(0,0,0,0.22)',
-            minWidth: 124,
+            boxShadow: '0 8px 28px rgba(0,0,0,0.20)',
+            minWidth: 116,
           }}
         >
           <p
-            className="text-[11px] font-bold uppercase tracking-wider text-center"
-            style={{ color: 'rgba(255,255,255,0.50)' }}
+            className="text-center uppercase tracking-wider"
+            style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.42)' }}
           >
-            {dayLabel} · {date}
+            {dayLabel}&nbsp;·&nbsp;{date}
           </p>
           <div className="h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between gap-4">
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>Записи</span>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.42)' }}>Записи</span>
               <span
                 style={{
                   fontFamily: 'var(--font-cormorant, Georgia, serif)',
@@ -121,7 +119,7 @@ function BarTooltip({ dayLabel, date, bookings, revenue }: BarTooltipProps) {
               </span>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>Дохід</span>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.42)' }}>Дохід</span>
               <span
                 style={{
                   fontFamily: 'var(--font-cormorant, Georgia, serif)',
@@ -135,15 +133,14 @@ function BarTooltip({ dayLabel, date, bookings, revenue }: BarTooltipProps) {
             </div>
           </div>
         </div>
-        {/* Arrow */}
         <div
           style={{
             position: 'absolute',
             bottom: -4,
             left: '50%',
             transform: 'translateX(-50%) rotate(45deg)',
-            width: 9,
-            height: 9,
+            width: 8,
+            height: 8,
             background: 'var(--text-primary)',
           }}
         />
@@ -181,37 +178,39 @@ export function WeeklyChartWidget() {
   }, [mode, totalBookings, totalRevenue, prevTotalBookings, prevTotalRevenue]);
 
   return (
-    <div className="bento-card flex flex-col">
+    <div className="bento-card overflow-visible flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-4">
+      <div className="flex items-start justify-between px-5 pt-5 pb-4">
         <div>
-          {/* Animated total + WoW delta */}
-          <div style={{ height: '3rem', overflow: 'hidden' }}>
+          <p className="dash-eyebrow mb-2">
+            {mode === 'bookings' ? 'Записи за тиждень' : 'Дохід за тиждень'}
+          </p>
+          <div style={{ height: '2.8rem', overflow: 'hidden' }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={mode}
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -14 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-                className="flex items-baseline gap-2 mt-1"
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+                className="flex items-baseline gap-2.5"
               >
                 <p
-                  className="leading-none"
                   style={{
                     fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                    fontSize: '2rem',
+                    fontSize: '2.1rem',
                     fontWeight: 600,
-                    letterSpacing: '-0.02em',
+                    letterSpacing: '-0.025em',
                     color: 'var(--text-primary)',
+                    lineHeight: 1,
                   }}
                 >
                   {displayValue}
                 </p>
                 {delta && (
                   <span
-                    className="text-[11px] font-bold leading-none"
-                    style={{ color: delta.positive ? 'var(--success)' : 'var(--error)' }}
+                    className={`trend-chip ${delta.positive ? 'trend-chip-up' : 'trend-chip-down'}`}
+                    style={{ fontSize: '10px', marginBottom: 2 }}
                   >
                     {delta.label}
                   </span>
@@ -220,51 +219,58 @@ export function WeeklyChartWidget() {
             </AnimatePresence>
           </div>
           {delta && (
-            <p className="text-[9px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+            <p style={{ fontSize: '10px', color: 'var(--text-tertiary)', marginTop: 2 }}>
               vs минулий тиждень
             </p>
           )}
         </div>
 
         {/* Mode toggle */}
-        <div
-          className="flex rounded-full p-1 gap-0.5"
-          style={{ background: 'var(--background-deep)' }}
-        >
+        <div className="pill-tabs flex-shrink-0">
           {(['bookings', 'revenue'] as const).map(m => (
             <button
               key={m}
               onClick={() => { setMode(m); setActiveBar(null); }}
-              className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-300"
-              style={{
-                background: mode === m ? 'var(--accent)' : 'transparent',
-                color: mode === m ? 'white' : 'var(--text-tertiary)',
-              }}
+              className={`pill-tab ${mode === m ? 'pill-tab-active' : 'pill-tab-inactive'}`}
             >
-              {m === 'bookings' ? 'Записи' : 'Дохід'}
+              {mode === m && (
+                <motion.div
+                  layoutId="weekly-mode-pill"
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: 'var(--accent)', zIndex: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span style={{ position: 'relative', zIndex: 1 }}>
+                {m === 'bookings' ? 'Записи' : 'Дохід'}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Bars — key={mode} forces re-animation when switching */}
+      {/* Bars */}
       {isLoading ? (
         <SkeletonBars />
       ) : (
         <div
-          className="flex items-end gap-2 px-5"
-          style={{ height: BAR_MAX_H + 32, overflow: 'visible', position: 'relative' }}
+          className="flex items-end gap-1.5 px-5"
+          style={{ height: BAR_MAX_H + 28, overflow: 'visible', position: 'relative' }}
         >
           {values.map((val, i) => {
             const barH = val === 0
-              ? 3
-              : Math.max(Math.round((val / maxVal) * BAR_MAX_H), 6);
+              ? 4
+              : Math.max(Math.round((val / maxVal) * BAR_MAX_H), 8);
             const isToday  = i === today;
             const isActive = activeBar === i;
             const d = weekDates[i];
             const dateStr = d
               ? `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`
               : '';
+
+            const barBg = (isActive || isToday)
+              ? 'var(--accent)'
+              : 'var(--accent-light)';
 
             return (
               <div
@@ -273,7 +279,6 @@ export function WeeklyChartWidget() {
                 style={{ position: 'relative' }}
                 onClick={() => setActiveBar(prev => prev === i ? null : i)}
               >
-                {/* Tooltip — positioned via wrapper div, animated via inner motion */}
                 <AnimatePresence>
                   {isActive && (
                     <BarTooltip
@@ -285,13 +290,13 @@ export function WeeklyChartWidget() {
                   )}
                 </AnimatePresence>
 
-                {/* Value label — hidden when tooltip is open */}
                 {val > 0 && !isActive && (
                   <span
-                    className="text-[9px] font-bold tabular-nums leading-none"
                     style={{
+                      fontSize: '9px',
+                      fontWeight: 700,
                       color: isToday ? 'var(--accent)' : 'var(--text-tertiary)',
-                      opacity: isToday ? 1 : 0.7,
+                      opacity: isToday ? 1 : 0.6,
                     }}
                   >
                     {mode === 'bookings'
@@ -302,30 +307,25 @@ export function WeeklyChartWidget() {
                   </span>
                 )}
 
-                {/* Bar */}
                 <motion.div
                   key={`${mode}-${i}`}
-                  className="w-full rounded-full"
+                  className="w-full rounded-xl"
                   initial={{ scaleY: 0, opacity: 0 }}
                   animate={{ scaleY: 1, opacity: 1 }}
                   transition={{
                     type: 'spring',
-                    stiffness: 200,
-                    damping: 28,
-                    delay: i * 0.05,
+                    stiffness: 220,
+                    damping: 26,
+                    delay: i * 0.04,
                   }}
                   style={{
                     height: barH,
-                    background: isActive
-                      ? 'var(--accent)'
-                      : isToday
-                      ? 'var(--accent)'
-                      : 'var(--accent-light)',
+                    background: barBg,
                     transformOrigin: 'bottom',
+                    transition: 'background 0.25s ease',
                     boxShadow: (isActive || isToday)
-                      ? '0 2px 10px rgba(194,73,106,0.28)'
+                      ? '0 2px 12px rgba(168,137,106,0.30)'
                       : 'none',
-                    transition: 'background 0.3s ease, box-shadow 0.3s ease',
                   }}
                 />
               </div>
@@ -335,12 +335,13 @@ export function WeeklyChartWidget() {
       )}
 
       {/* Day labels */}
-      <div className="flex gap-2 px-5 pt-1.5 pb-4">
+      <div className="flex gap-1.5 px-5 pt-2 pb-5">
         {DAYS.map((d, i) => (
           <div key={d} className="flex-1 text-center">
             <span
-              className="text-[10px] font-semibold"
               style={{
+                fontSize: '10px',
+                fontWeight: i === today ? 700 : 500,
                 color: i === today ? 'var(--accent)' : 'var(--text-tertiary)',
                 opacity: i === today ? 1 : 0.55,
               }}

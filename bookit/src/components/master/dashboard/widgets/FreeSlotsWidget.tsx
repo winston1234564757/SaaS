@@ -53,32 +53,26 @@ export function FreeSlotsWidget() {
 
   return (
     <div className="bento-card overflow-hidden">
-      <div className="px-5 pt-5 pb-4">
+      <div className="px-5 pt-5 pb-5">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-start justify-between mb-4">
           <div>
+            <p className="dash-eyebrow mb-2">Вільно сьогодні</p>
             <p
-              className="text-[10px] font-bold uppercase tracking-[0.18em]"
-              style={{ color: 'var(--text-tertiary)' }}
-            >
-              Вільно сьогодні
-            </p>
-            <p
-              className="mt-0.5 leading-none"
               style={{
                 fontFamily: 'var(--font-cormorant, Georgia, serif)',
-                fontSize: '1.5rem',
-                fontWeight: 700,
-                color: count > 0 ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                fontSize: '1.65rem',
+                fontWeight: 600,
                 letterSpacing: '-0.02em',
+                lineHeight: 1,
+                color: count > 0 ? 'var(--text-primary)' : 'var(--text-tertiary)',
               }}
             >
               {isLoading ? '—' : count > 0 ? `${count} слотів` : 'Немає слотів'}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Stories redirect — auto-selects 'Вікна' mode */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Link href="/dashboard/marketing?mode=free_slots">
               <motion.div
                 whileTap={{ scale: 0.95 }}
@@ -89,24 +83,20 @@ export function FreeSlotsWidget() {
                   color: 'var(--text-secondary)',
                 }}
               >
-                <span><Sparkles size={12} /></span>
-                <span className="text-[11px] font-semibold">Сторіс</span>
+                <Sparkles size={12} />
+                <span style={{ fontSize: '11px', fontWeight: 600 }}>Сторіс</span>
               </motion.div>
             </Link>
 
-            {/* Flash deal */}
             {count > 0 && (
               <Link href="/dashboard/flash">
                 <motion.div
                   whileTap={{ scale: 0.95 }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-full cursor-pointer"
-                  style={{
-                    background: 'var(--accent)',
-                    color: 'var(--accent-on)',
-                  }}
+                  style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
                 >
-                  <span><Zap size={13} /></span>
-                  <span className="text-[11px] font-bold">Flash</span>
+                  <Zap size={13} />
+                  <span style={{ fontSize: '11px', fontWeight: 700 }}>Flash</span>
                 </motion.div>
               </Link>
             )}
@@ -115,15 +105,17 @@ export function FreeSlotsWidget() {
 
         {/* Service selector pills */}
         {!servicesLoading && activeServices.length > 1 && (
-          <div className="flex gap-1.5 flex-wrap mb-3">
+          <div className="flex gap-1.5 flex-wrap mb-3.5">
             {activeServices.map((svc: Service) => {
               const isActive = (selectedService?.id ?? activeServices[0]?.id) === svc.id;
               return (
                 <button
                   key={svc.id}
                   onClick={() => setSelectedServiceId(svc.id)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full transition-all cursor-pointer"
                   style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
                     background: isActive ? 'var(--accent)' : 'var(--background-deep)',
                     color: isActive ? 'var(--accent-on)' : 'var(--text-tertiary)',
                     border: isActive ? 'none' : '0.5px solid var(--border-strong)',
@@ -131,7 +123,7 @@ export function FreeSlotsWidget() {
                 >
                   {svc.emoji && <span>{svc.emoji}</span>}
                   <span>{svc.name}</span>
-                  <span style={{ opacity: 0.7 }}>· {svc.duration}хв</span>
+                  <span style={{ opacity: 0.65 }}>· {svc.duration}хв</span>
                 </button>
               );
             })}
@@ -154,9 +146,11 @@ export function FreeSlotsWidget() {
                   key={t}
                   initial={{ opacity: 0, scale: 0.85 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1], delay: i * 0.04 }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                  transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1], delay: i * 0.035 }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full"
                   style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
                     background: 'var(--background-deep)',
                     border: '0.5px solid var(--border-strong)',
                     color: 'var(--text-secondary)',
@@ -171,7 +165,7 @@ export function FreeSlotsWidget() {
         )}
 
         {!isLoading && count === 0 && (
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
             Розклад заповнено — чудова робота
           </p>
         )}

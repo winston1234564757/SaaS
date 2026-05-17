@@ -452,6 +452,147 @@ body {
 .fade-out-0.zoom-out-95 { animation-name: fade-out, zoom-out; }
 
 /* ═══════════════════════════════════════════════════════════
+   DASHBOARD — DESIGN TOKENS & UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Section eyebrow — editorial small-caps divider */
+.dash-eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  line-height: 1;
+  opacity: 0.72;
+}
+
+/* Hero display digit — massive Cormorant number */
+.hero-digit {
+  font-family: var(--font-cormorant, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(5rem, 18vw, 7.5rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-on);
+}
+
+/* Float stat value — serif metric number */
+.float-stat-value {
+  font-family: var(--font-cormorant, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(1.9rem, 6vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+/* Trend chip — inline delta badge */
+.trend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  line-height: 1.4;
+}
+.trend-chip-up   { background: rgba(78,152,112,0.13); color: var(--success); }
+.trend-chip-down { background: rgba(192,64,96,0.10);  color: var(--error);   }
+.trend-chip-nil  { background: transparent;           color: var(--text-tertiary); opacity: 0.45; }
+
+/* Status stripe — side indicator on booking rows */
+.booking-status-confirmed { border-left: 3px solid var(--success); }
+.booking-status-pending   { border-left: 3px solid var(--warning); }
+.booking-status-completed { border-left: 3px solid var(--border-strong); }
+.booking-status-cancelled { border-left: 3px solid var(--error); }
+.booking-status-no_show   { border-left: 3px solid var(--error); }
+
+/* Booking row base */
+.booking-row {
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 0.5px solid var(--border);
+  transition: background 0.15s ease;
+}
+.booking-row:hover { background: rgba(255,255,255,0.08); }
+[data-theme="studio"] .booking-row:hover { background: rgba(255,255,255,0.04); }
+
+/* Schedule date-group header */
+.schedule-date-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 8px;
+}
+
+/* Weekly chart bar */
+.chart-bar-track {
+  border-radius: 999px;
+  overflow: hidden;
+  width: 100%;
+  transition: background 0.3s ease;
+}
+
+/* Pill tab group */
+.pill-tabs {
+  display: flex;
+  padding: 3px;
+  border-radius: 999px;
+  gap: 2px;
+  background: var(--background-deep);
+}
+.pill-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  transition: color 0.25s ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+.pill-tab-active { color: white; }
+.pill-tab-inactive { color: var(--text-tertiary); }
+
+/* Progress line — thin animated accent bar */
+.progress-line {
+  height: 2px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+/* Sidebar widget compact */
+.sidebar-rank-number {
+  font-family: var(--font-cormorant, 'Cormorant Garamond', Georgia, serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Health bar track */
+.health-bar-track {
+  position: relative;
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════
    MISC UTILITIES
    ═══════════════════════════════════════════════════════════ */
 @keyframes pulse-confirmed {
