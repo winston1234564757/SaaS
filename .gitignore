@@ -1,0 +1,27 @@
+.vercel
+.env*.local
+.worktrees/
+/graphify-out/
+/_DEPRECATED/
+OpenCode Desktop Installer.exe
+*.exe
+*.canvas
+.obsidian/
+
+# Added rules to fix repository bloating and credential leaks
+node_modules/
+.env
+.env.local
+.env.*.local
+package-lock.json
+.next/
+*.log
+
+# Playwright visual test outputs
+pw-public-visual/
+pw-visual/
+playwright-visual/
+pw-visual-auth/
+pw-dashboard-visual/
+pw-visual-audit/
+

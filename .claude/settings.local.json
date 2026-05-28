@@ -1,0 +1,77 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Agent(*)",
+      "Skill(*)",
+      "PowerShell(*)",
+
+      "TaskCreate",
+      "TaskUpdate",
+      "TaskGet",
+      "TaskList",
+      "TaskStop",
+      "TaskOutput",
+
+      "mcp__ide__getDiagnostics",
+      "mcp__ide__executeCode",
+
+      "mcp__plugin_supabase_supabase__list_projects",
+      "mcp__plugin_supabase_supabase__execute_sql",
+      "mcp__plugin_supabase_supabase__apply_migration",
+
+      "mcp__a11y__get-color-contrast",
+      "mcp__a11y__are-colors-accessible",
+      "mcp__a11y__use-light-or-dark",
+
+      "mcp__tailwind__convert_css_to_tailwind",
+      "mcp__tailwind__generate_color_palette",
+      "mcp__tailwind__generate_component_template",
+      "mcp__tailwind__get_tailwind_colors",
+      "mcp__tailwind__get_tailwind_config_guide",
+      "mcp__tailwind__get_tailwind_utilities",
+      "mcp__tailwind__install_tailwind",
+      "mcp__tailwind__search_tailwind_docs",
+
+      "mcp__universal-icons__get_icon",
+      "mcp__universal-icons__health_check",
+      "mcp__universal-icons__search_icons",
+
+      "mcp__mempalace__mempalace_status",
+      "mcp__mempalace__mempalace_search",
+      "mcp__mempalace__mempalace_add_drawer",
+      "mcp__mempalace__mempalace_get_drawer",
+      "mcp__mempalace__mempalace_list_drawers",
+      "mcp__mempalace__mempalace_list_rooms",
+      "mcp__mempalace__mempalace_list_wings",
+      "mcp__mempalace__mempalace_list_tunnels",
+      "mcp__mempalace__mempalace_find_tunnels",
+      "mcp__mempalace__mempalace_follow_tunnels",
+      "mcp__mempalace__mempalace_create_tunnel",
+      "mcp__mempalace__mempalace_traverse",
+      "mcp__mempalace__mempalace_reconnect",
+      "mcp__mempalace__mempalace_sync",
+      "mcp__mempalace__mempalace_hook_settings",
+      "mcp__mempalace__mempalace_get_taxonomy",
+      "mcp__mempalace__mempalace_get_aaak_spec",
+      "mcp__mempalace__mempalace_graph_stats",
+      "mcp__mempalace__mempalace_memories_filed_away",
+      "mcp__mempalace__mempalace_check_duplicate",
+      "mcp__mempalace__mempalace_diary_read",
+      "mcp__mempalace__mempalace_diary_write",
+      "mcp__mempalace__mempalace_kg_query",
+      "mcp__mempalace__mempalace_kg_add",
+      "mcp__mempalace__mempalace_kg_stats",
+      "mcp__mempalace__mempalace_kg_timeline",
+      "mcp__mempalace__mempalace_update_drawer"
+    ],
+    "defaultMode": "acceptEdits"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit)",
+      "mcp__mempalace__mempalace_search",
+      "mcp__mempalace__mempalace_status",
+      "mcp__mempalace__mempalace_get_drawer",
+      "mcp__mempalace__mempalace_list_drawers",
+      "mcp__mempalace__mempalace_list_rooms",
+      "mcp__mempalace__mempalace_list_wings",
+      "mcp__mempalace__mempalace_list_tunnels",
+      "mcp__mempalace__mempalace_find_tunnels",
+      "mcp__mempalace__mempalace_follow_tunnels",
+      "mcp__mempalace__mempalace_traverse",
+      "mcp__mempalace__mempalace_kg_query",
+      "mcp__mempalace__mempalace_kg_stats",
+      "mcp__mempalace__mempalace_kg_timeline",
+      "mcp__mempalace__mempalace_diary_read",
+      "mcp__mempalace__mempalace_get_taxonomy",
+      "mcp__mempalace__mempalace_graph_stats",
+      "mcp__mempalace__mempalace_get_aaak_spec",
+      "mcp__mempalace__mempalace_memories_filed_away",
+      "mcp__ide__getDiagnostics",
+      "mcp__a11y__get-color-contrast",
+      "mcp__a11y__are-colors-accessible",
+      "mcp__a11y__use-light-or-dark",
+      "WebFetch"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/session_start_hook.py"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/dev_rules_hook.py"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Glob|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/graphify_hook.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/edit_rules_hook.py"
+          },
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/humanizer_guard_hook.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/post_edit_hook.py"
+          },
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/a11y_hook.py",
+            "statusMessage": "Checking a11y colors..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_guard_hook.py",
+            "statusMessage": "Checking skill invocation..."
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": false,
+    "frontend-design@claude-plugins-official": true
+  }
+}

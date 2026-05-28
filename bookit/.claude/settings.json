@@ -1,0 +1,570 @@
+{
+  "description": "Bookit Master Configuration — 30+ Skills, XDEV Protocol, Iron Rules (v8.2.2)",
+  "version": "8.2.2",
+  "lastUpdated": "2026-05-26",
+  "modelPreferences": {
+    "default": "haiku",
+    "forDesign": "opus",
+    "forCodeReview": "opus",
+    "forBackend": "sonnet",
+    "forSecurityReview": "opus"
+  },
+  "ironRules": {
+    "rule_minus_1": "MemPalace mandatory: status → search before decisions",
+    "rule_0": "Encoding check on Cyrillic Edit/Write (b'\\xd0\\xa0\\xc2' in raw)",
+    "rule_0_5": "All UI text through /humanizer (except aria-label, data-testid, dates)",
+    "rule_1": "QA-GATE: clarify → plan → approve → code (no code without alignment)",
+    "rule_2": "XDEV protocol: read SKILL_PROTOCOL.md, AI_DEVELOPER.md before work",
+    "rule_3": "Skills Decision Tree: clarify 3-5 Q → select skill → launch with context",
+    "rule_4": "No-Emoji Policy: only Lucide React icons in UI",
+    "rule_5": "Full production-grade: never lite, always premium"
+  },
+  "skillSelection": {
+    "tier1_critical": {
+      "humanizer": {
+        "primary": "humanizer",
+        "description": "Humanize all text (buttons, labels, messages)",
+        "triggerKeywords": ["text", "copy", "write", "humanize", "button", "label", "message"],
+        "priority": 1,
+        "mandatory": true
+      },
+      "codeReview": {
+        "primary": "code-reviewer",
+        "description": "Code quality, security, best practices, OWASP audit",
+        "triggerKeywords": ["review", "refactor", "security", "quality", "best practice", "audit code"],
+        "priority": 1,
+        "mandatory": true
+      },
+      "designAudit": {
+        "primary": "impeccable",
+        "description": "Design audit, anti-pattern detection, 27-rule quality gate",
+        "triggerKeywords": ["audit", "polish", "critique", "redesign", "anti-pattern", "quality"],
+        "priority": 1,
+        "mandatory": true
+      }
+    },
+    "tier2_design": {
+      "designGenerate": {
+        "primary": "design-taste-frontend",
+        "description": "Generate premium UI code (PRIMARY UI generator)",
+        "triggerKeywords": ["build", "create", "component", "design", "ui", "interface", "dashboard"],
+        "priority": 2,
+        "chain": "→ emil-design-eng → impeccable → humanizer"
+      },
+      "designAnimation": {
+        "primary": "emil-design-eng",
+        "description": "Framer Motion animations, micro-interactions, polish",
+        "triggerKeywords": ["animation", "motion", "micro-interaction", "transition", "polish", "feel"],
+        "priority": 2
+      },
+      "redesignExisting": {
+        "primary": "redesign-existing-projects",
+        "description": "Upgrade existing UI (respects current structure)",
+        "triggerKeywords": ["redesign", "upgrade", "improve", "existing"],
+        "priority": 2
+      },
+      "imageGenWeb": {
+        "primary": "imagegen-frontend-web",
+        "description": "Web UI mockup generation (no code)",
+        "triggerKeywords": ["mockup", "screenshot", "web design"],
+        "priority": 2
+      },
+      "imageGenMobile": {
+        "primary": "imagegen-frontend-mobile",
+        "description": "Mobile app screen design (iOS/Android mockups)",
+        "triggerKeywords": ["mobile", "ios", "android", "screen design"],
+        "priority": 2
+      },
+      "imageToCode": {
+        "primary": "image-to-code",
+        "description": "Screenshot/mockup to production code",
+        "triggerKeywords": ["screenshot", "convert", "image to code"],
+        "priority": 2
+      },
+      "highEndDesign": {
+        "primary": "high-end-visual-design",
+        "description": "Premium agency-grade UI (fonts, shadows, animations)",
+        "triggerKeywords": ["premium", "expensive", "agency", "high-end"],
+        "priority": 3
+      },
+      "minimalistUI": {
+        "primary": "minimalist-ui",
+        "description": "Clean editorial style (warm monochrome, typography)",
+        "triggerKeywords": ["minimal", "editorial", "monochrome"],
+        "priority": 3
+      }
+    },
+    "tier3_code": {
+      "seniorFrontend": {
+        "primary": "senior-frontend",
+        "description": "React/Next.js/TypeScript components, state, performance",
+        "triggerKeywords": ["frontend", "react", "nextjs", "component", "performance"],
+        "priority": 2
+      },
+      "seniorBackend": {
+        "primary": "senior-backend",
+        "description": "API, database, Server Actions, Supabase RPC",
+        "triggerKeywords": ["backend", "api", "database", "rpc", "server action"],
+        "priority": 2
+      },
+      "nextjsBestPractices": {
+        "primary": "nextjs-best-practices",
+        "description": "Next.js routing, SSR, ISR, caching, App Router",
+        "triggerKeywords": ["nextjs", "routing", "ssg", "ssr", "caching"],
+        "priority": 2
+      },
+      "claudeAPI": {
+        "primary": "claude-api",
+        "description": "Claude API, Anthropic SDK, prompt caching, agents",
+        "triggerKeywords": ["claude api", "anthropic sdk", "prompt cache", "agents"],
+        "priority": 2
+      }
+    },
+    "tier3_security": {
+      "securityReview": {
+        "primary": "security-review",
+        "description": "Security audit (RLS, webhooks, API, OWASP)",
+        "triggerKeywords": ["security", "rls", "webhook", "owasp", "xss", "injection"],
+        "priority": 1
+      }
+    },
+    "tier4_infrastructure": {
+      "updateConfig": {
+        "primary": "update-config",
+        "description": "Configure settings.json, hooks, env, permissions",
+        "triggerKeywords": ["setup", "configure", "config", "settings", "hooks", "env"],
+        "priority": 2
+      },
+      "schedule": {
+        "primary": "schedule",
+        "description": "Cron jobs, scheduled agents, recurring tasks",
+        "triggerKeywords": ["schedule", "cron", "recurring", "daily", "weekly"],
+        "priority": 2
+      },
+      "loop": {
+        "primary": "loop",
+        "description": "Self-paced recurring loop (poll, check status)",
+        "triggerKeywords": ["loop", "repeat", "watch", "monitor", "poll"],
+        "priority": 2
+      }
+    },
+    "tier4_verification": {
+      "run": {
+        "primary": "run",
+        "description": "Launch app (dev server, verify changes)",
+        "triggerKeywords": ["run", "start", "launch", "dev server"],
+        "priority": 2
+      },
+      "verify": {
+        "primary": "verify",
+        "description": "Manual verification (run in browser, observe)",
+        "triggerKeywords": ["verify", "test", "check", "confirm"],
+        "priority": 2
+      },
+      "review": {
+        "primary": "review",
+        "description": "Pull request review",
+        "triggerKeywords": ["review pr", "code review", "pr"],
+        "priority": 2
+      }
+    }
+  },
+  "mcpServers": {
+    "mempalace": {
+      "description": "MemPalace — 18K+ drawer knowledge base (palace memory)",
+      "functions": ["mempalace_status", "mempalace_search", "mempalace_add_drawer", "mempalace_kg_query", "mempalace_kg_add"],
+      "priority": 1,
+      "usagePattern": "MANDATORY: mempalace_status on wake-up, mempalace_search before decisions, mempalace_add_drawer after important fixes"
+    },
+    "supabase": {
+      "description": "Supabase database operations (execute_sql, apply_migration)",
+      "functions": ["execute_sql", "list_tables", "apply_migration"],
+      "priority": 1,
+      "usagePattern": "Direct DB access for migrations, RLS checks, RPC functions"
+    },
+    "tailwind": {
+      "description": "Tailwind CSS v4 utilities, color generation, config",
+      "functions": ["convert_css_to_tailwind", "generate_color_palette", "get_tailwind_utilities", "install_tailwind", "search_tailwind_docs"],
+      "priority": 1,
+      "usagePattern": "CSS → Tailwind conversion, color palette generation, utility lookup"
+    },
+    "a11y": {
+      "description": "Accessibility color contrast checks (WCAG AA/AAA)",
+      "functions": ["are_colors_accessible", "get_color_contrast", "use_light_or_dark"],
+      "priority": 1,
+      "usagePattern": "MANDATORY after color selection: check contrast, find light/dark pair"
+    },
+    "universal-icons": {
+      "description": "Icon search (10+ collections: Lucide, Material, Heroicons, Phosphor, FontAwesome)",
+      "functions": ["search_icons", "get_icon"],
+      "priority": 2,
+      "usagePattern": "Find icons from any collection; prefer Lucide for BookIT"
+    }
+  },
+  "clarificationFramework": {
+    "enabled": true,
+    "mandatory": true,
+    "description": "SMART SKILL SELECTION: Ask 3-5 clarifying questions BEFORE launching skill",
+    "protocol": "clarify → plan → approve → skill selection → launch → QA",
+    "workflow": [
+      "1. User gives prompt",
+      "2. Detect task type from keywords (design/copy/code/animation/infra)",
+      "3. Ask 3-5 clarification questions via AskUserQuestion (per CLARIFICATION_FRAMEWORK.md)",
+      "4. User answers",
+      "5. Analyze answers + XDEV context (AI_DEVELOPER.md, SYSTEM_MAP.md)",
+      "6. Select precise skill + parameters from Decision Tree",
+      "7. Confirm: 'Launching [skill] because [reason]. Context: [summary]'",
+      "8. Launch skill with full context",
+      "9. QA gate with user (mandatory for design/copy)"
+    ],
+    "taskCategories": {
+      "design": {
+        "keywords": ["build", "create", "design", "component", "page", "interface", "dashboard", "ui", "theme", "redesign", "widget"],
+        "questionCount": 5,
+        "questions": [
+          "1. Scope: new component, page section, full page, or dashboard widget?",
+          "2. Aesthetic: premium minimalist, harsh brutalist, warm editorial?",
+          "3. Colors: which theme (Blossom/Studio/Frost) or custom palette?",
+          "4. Motion: animations/transitions needed? (yes/no/maybe)",
+          "5. Priority: is this high-impact or low-priority polish?"
+        ],
+        "skills": ["design-taste-frontend", "emil-design-eng", "impeccable"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#design-tasks"
+      },
+      "copy": {
+        "keywords": ["text", "copy", "write", "humanize", "landing", "pricing", "button", "label", "message"],
+        "questionCount": 5,
+        "questions": [
+          "1. Type: button label, feature description, landing copy, or error message?",
+          "2. Tone: professional, playful, urgent, friendly, premium?",
+          "3. Audience: beauty professionals, clients, or both?",
+          "4. Constraints: max length, avoid certain words, SEO priority?",
+          "5. Context: is this for UI, marketing, or notification?"
+        ],
+        "skills": ["humanizer"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#copy-humanizer-tasks"
+      },
+      "code": {
+        "keywords": ["review", "refactor", "security", "quality", "best practice", "audit", "fix", "implement"],
+        "questionCount": 5,
+        "questions": [
+          "1. Focus: performance, security, architecture, or general quality?",
+          "2. Scope: single file, entire component, feature, or full system?",
+          "3. Context: what's the issue or desired outcome?",
+          "4. Severity: critical production bug, tech debt, or improvement?",
+          "5. Output: code fix, audit report, or refactor plan?"
+        ],
+        "skills": ["code-reviewer", "security-review", "senior-frontend"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#code-review-tasks"
+      },
+      "animation": {
+        "keywords": ["animate", "motion", "transition", "micro-interaction", "polish", "feel", "smooth", "stutter"],
+        "questionCount": 5,
+        "questions": [
+          "1. Type: entrance, exit, state change, or scroll-triggered?",
+          "2. Feel: snappy, bouncy, smooth, or elegant?",
+          "3. Scope: single element or complex multi-element sequence?",
+          "4. Devices: desktop, mobile, or both?",
+          "5. Performance: is this smooth on low-end devices?"
+        ],
+        "skills": ["emil-design-eng"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#animationmotion-tasks"
+      },
+      "infrastructure": {
+        "keywords": ["setup", "config", "hooks", "env", "cron", "schedule", "deploy"],
+        "questionCount": 3,
+        "questions": [
+          "1. What system: settings.json, hooks, cron, or env vars?",
+          "2. Scope: setup new, debug existing, or migrate config?",
+          "3. Impact: local only, dev server, or production?"
+        ],
+        "skills": ["update-config", "schedule", "loop"],
+        "questionsFile": ".claude/CLARIFICATION_FRAMEWORK.md#infrastructure-tasks"
+      }
+    },
+    "skipClarificationWhen": [
+      "Simple fixes (typo, variable name, single-line change)",
+      "Explicit spec provided (exact screenshot, detailed design doc, code snippet)",
+      "Follow-up to already-answered questions (user is responding to your Q1-Q5)",
+      "Explicitly requested (user says 'skip questions' or 'just do it')",
+      "Technical lookup (grep, read code, verify something)"
+    ]
+  },
+
+  "graphifyConfig": {
+    "enabled": true,
+    "mode": "auto-track-silent",
+    "description": "Auto-track code changes & maintain architecture graph index",
+    "system": {
+      "type": "JSON-based index with Obsidian fallback",
+      "primaryIndex": "graphify-out/graph-index.json (machine-readable)",
+      "fallbackReport": "graphify-out/GRAPH_REPORT.md (human-readable wiki)",
+      "changeLog": "graphify-out/.graph-changes.json (internal)"
+    },
+    "autoCalls": {
+      "onGlobGrep": {
+        "enabled": true,
+        "trigger": "Glob or Grep tool use (PreToolUse hook)",
+        "action": "graphify_hook.py → auto-log accessed files → update graph-index.json",
+        "silent": true,
+        "impact": "Low (JSON append-only, no CI overhead)"
+      },
+      "onEditWrite": {
+        "enabled": true,
+        "trigger": "Edit or Write tool use (PostToolUse hook)",
+        "action": "post_edit_hook.py → auto-log modified files + encoding check → update graph-index.json",
+        "silent": true,
+        "impact": "Low (JSON append-only)"
+      },
+      "onGitCommit": {
+        "enabled": false,
+        "trigger": "Git commit on main branch",
+        "action": "Could run graphify-cli to regenerate GRAPH_REPORT.md (future enhancement)",
+        "note": "Requires graphify-cli installation; currently disabled"
+      },
+      "onDemand": {
+        "trigger": "User request or scheduled job",
+        "action": "Run graphify-cli manually or via cron",
+        "command": "graphify-cli . --format json --output graphify-out/graph-index.json",
+        "note": "Not automated; requires explicit invocation"
+      }
+    },
+    "navigation": {
+      "recommendation": "Use MemPalace + SYSTEM_MAP.md for project navigation",
+      "reason": "Graphify is Obsidian-indexed; better for context preservation",
+      "graphIndex": "graphify-out/graph-index.json for programmatic access",
+      "graphReport": "graphify-out/GRAPH_REPORT.md for manual browsing"
+    },
+    "trackingDetails": {
+      "whatIsTracked": [
+        "Files accessed via Glob/Grep (read operations)",
+        "Files modified via Edit/Write (write operations)",
+        "Encoding validation on Cyrillic files",
+        "Timestamp + change type for each operation"
+      ],
+      "storageFormat": "JSON array in graph-index.json",
+      "privacy": "All tracking local to project; no external calls"
+    }
+  },
+  "recommendedWorkflows": {
+    "designComplete": {
+      "name": "Complete Design Workflow (Comprehensive)",
+      "steps": [
+        "1. Detect: design task (keywords)",
+        "2. Ask 5 Q via AskUserQuestion (scope, aesthetic, colors, motion, priority)",
+        "3. User answers",
+        "4. MemPalace search for similar patterns",
+        "5. Read XDEV/SKILL_PROTOCOL.md Decision Tree",
+        "6. Launch /design-taste-frontend with { theme, palette, scope, animation }",
+        "7. If motion='yes': /emil-design-eng for polish",
+        "8. /impeccable audit (anti-pattern check)",
+        "9. /mcp__a11y__are_colors_accessible for contrast",
+        "10. /humanizer for all text labels",
+        "11. User QA approval",
+        "12. /run to verify in browser",
+        "13. MemPalace: save key design decisions"
+      ]
+    },
+    "copywriting": {
+      "name": "Copy/Text Humanization Workflow",
+      "steps": [
+        "1. Detect: humanizer task",
+        "2. Ask 5 Q: type, tone, audience, constraints, length",
+        "3. User answers",
+        "4. /humanizer with context: { type, tone, audience, constraints }",
+        "5. Review output",
+        "6. User approves",
+        "7. Apply to UI file",
+        "8. MemPalace: save tone/voice guide"
+      ]
+    },
+    "codeReview": {
+      "name": "Code Review & Security Audit Workflow",
+      "steps": [
+        "1. Detect: code task (review/refactor/security/fix)",
+        "2. Ask 5 Q: focus, scope, context, severity, output",
+        "3. User answers",
+        "4. /code-reviewer OR /security-review (choose by severity)",
+        "5. Generate audit report or fix code",
+        "6. If fixes: /run → npm run build → npm run test:e2e",
+        "7. User approves",
+        "8. MemPalace + Graphify update post-commit"
+      ]
+    },
+    "animation": {
+      "name": "Animation & Motion Polish Workflow",
+      "steps": [
+        "1. Detect: animation task",
+        "2. Ask 5 Q: type, feel, scope, devices, performance",
+        "3. User answers",
+        "4. /emil-design-eng with context",
+        "5. /run → browser test (Chrome DevTools animation inspector)",
+        "6. /verify manual testing on mobile",
+        "7. User approval",
+        "8. MemPalace: motion patterns library"
+      ]
+    },
+    "infrastructure": {
+      "name": "Setup & Configuration Workflow",
+      "steps": [
+        "1. Detect: infrastructure task",
+        "2. Ask 3 Q: system, scope, impact",
+        "3. User answers",
+        "4. /update-config OR /schedule (select by need)",
+        "5. User approves changes",
+        "6. Verify hooks/cron working"
+      ]
+    }
+  },
+  "guidelines": {
+    "alwaysUse": [
+      "🎯 ASK CLARIFICATIONS FIRST — 3-5 questions before skill launch (MANDATORY)",
+      "🧠 MemPalace MANDATORY: status on wake-up, search before decisions, drawer after fixes",
+      "📝 humanizer for ALL text (buttons, labels, messages, copy — except aria-label, dates, console)",
+      "🎨 design-taste-frontend for new UI (PRIMARY generator)",
+      "✨ emil-design-eng for animations (spring bounce 0–0.12, mode='popLayout')",
+      "🔍 impeccable for design audit (27-rule anti-pattern check)",
+      "♿ a11y for contrast validation (WCAG AA/AAA)",
+      "🎯 tailwind for CSS optimization (convert, generate colors, validate)",
+      "🔒 code-reviewer for all code pre-commit",
+      "🔐 security-review for API/RLS/webhooks audit",
+      "🔧 TypeScript strict mode MANDATORY (no 'any')",
+      "📦 Full production-grade: never lite, always premium"
+    ],
+    "designPhilosophy": [
+      "Blossom (Light Taupe): warm, elegant, Editorial (Kinfolk aesthetic)",
+      "Studio (Dark Teal): harsh, expensive, Brutal aesthetic (Aesop aesthetic)",
+      "Frost (Ice Lavender): cool, premium, modern (Monocle aesthetic)",
+      "Three themes consistent: same layout, different colors via CSS vars",
+      "Framer Motion v12.35.1 mandatory for all animations",
+      "Mobile-first Tailwind v4 (@import 'tailwindcss' in globals.css, no tailwind.config.ts)",
+      "Server Components by default, 'use client' only for interactivity",
+      "Lucide React icons ONLY (wrap in span for style prop, never use emoji)"
+    ],
+    "codePhilosophy": [
+      "Next.js 16 App Router + TypeScript strict",
+      "Server Components default, proper 'use client' boundary",
+      "Supabase RLS on every table (security first)",
+      "pluralUk() for Ukrainian plurals (never ad-hoc ternary)",
+      "TanStack Query v5 with staleTime per hook type",
+      "Server Actions for mutations + revalidatePath/revalidateTag",
+      "Vaul BottomSheet for mobile drawers (NEVER bare framer-motion)",
+      "no-emoji in UI code: use Lucide icons + style props",
+      "RLS + RPC for complex queries with aggregates",
+      "Service role operations ONLY via createAdminClient() from @/lib/supabase/admin"
+    ],
+    "postChangeChecklist": [
+      "1. npx tsc --noEmit (TypeScript strict validation)",
+      "2. npm run build (Next.js build verification)",
+      "3. npm run test:e2e (Playwright E2E tests)",
+      "4. mempalace_add_drawer (save key technical decisions)",
+      "5. Update XDEV/SYSTEM_MAP.md + XDEV/BOOKIT.md + changelog/page.tsx (sync docs)",
+      "6. Graphify check (optional: run graphify-cli for graph refresh)",
+      "7. Git commit with Co-Authored-By: Claude Haiku 4.5"
+    ]
+  },
+  "permissions": {
+    "globalAllowList": [
+      "npm run dev",
+      "npm run build",
+      "npm run lint",
+      "npm test",
+      "npm run test:e2e",
+      "npx tsc --noEmit",
+      "git status",
+      "git diff",
+      "git log",
+      "git add",
+      "git commit",
+      "npx supabase db push",
+      "npx supabase migration new [name]"
+    ],
+    "allowedRead": ["*"],
+    "allowedWrite": [
+      "src/**",
+      "app/**",
+      ".claude/**",
+      "bookit/src/**",
+      "bookit/app/**",
+      "XDEV/**",
+      "memory/**",
+      "graphify-out/**"
+    ],
+    "blockWrite": [
+      ".env*",
+      ".env.local*",
+      "secrets*",
+      "credentials*",
+      "private_key*",
+      "*.key",
+      ".git/*"
+    ],
+    "requireConfirmation": [
+      "git push",
+      "git reset --hard",
+      "git rebase",
+      "delete files",
+      "breaking changes to API",
+      "database schema changes (migrations)"
+    ]
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": false,
+    "frontend-design@claude-plugins-official": true,
+    "modern-web-guidance-plugin": true
+  },
+  "projectMetadata": {
+    "name": "BookIT",
+    "version": "8.2.2",
+    "type": "NextJS SaaS (Beauty Booking)",
+    "root": "C:\\Users\\Vitossik\\SaaS\\bookit",
+    "xdevRoot": "C:\\Users\\Vitossik\\SaaS\\XDEV",
+    "memoryRoot": "C:\\Users\\Vitossik\\.claude\\projects\\C--Users-Vitossik-SaaS\\memory",
+    "architectureFiles": [
+      "XDEV/SYSTEM_MAP.md",
+      "XDEV/BOOKIT.md",
+      "XDEV/AI_DEVELOPER.md",
+      "XDEV/SKILL_PROTOCOL.md"
+    ],
+    "keyDocuments": [
+      "CLAUDE.md — main project instructions",
+      ".claude/SKILLS_REFERENCE.md — all 30+ skills catalog",
+      ".claude/CLARIFICATION_FRAMEWORK.md — 3-5 question templates",
+      "bookit/.claude/settings.json — this file"
+    ]
+  },
+  "quickStartChecklist": {
+    "onSessionStart": [
+      "✅ 1. Read CLAUDE.md (main instructions)",
+      "✅ 2. Call mempalace_status (palace overview)",
+      "✅ 3. Read XDEV/SKILL_PROTOCOL.md (Decision Tree)",
+      "✅ 4. If task = code, read XDEV/AI_DEVELOPER.md (8 iron rules)",
+      "✅ 5. If task = design, read XDEV/UX_STANDARDS.md (3 themes, rules)",
+      "✅ 6. Clarify with user (3-5 questions per framework)",
+      "✅ 7. Select skill from Decision Tree",
+      "✅ 8. Execute (build → test → verify → document)"
+    ],
+    "beforeEachCode": [
+      "✅ Grep/read relevant files (token efficiency)",
+      "✅ Clarify with user (scope, approach, risks)",
+      "✅ mempalace_search (check prior patterns, decisions)",
+      "✅ Code with strict TypeScript",
+      "✅ Test locally (npm run build, npm test)",
+      "✅ code-reviewer audit",
+      "✅ Update docs (SYSTEM_MAP, BOOKIT, changelog)",
+      "✅ mempalace_add_drawer (save decision)"
+    ],
+    "beforeEachDesign": [
+      "✅ Ask 5 clarification questions",
+      "✅ Analyze answers + XDEV context",
+      "✅ mempalace_search (precedents)",
+      "✅ design-taste-frontend build",
+      "✅ emil-design-eng (if motion)",
+      "✅ impeccable audit",
+      "✅ a11y contrast check",
+      "✅ humanizer for all text",
+      "✅ run in browser verification",
+      "✅ User QA approval"
+    ]
+  }
+}

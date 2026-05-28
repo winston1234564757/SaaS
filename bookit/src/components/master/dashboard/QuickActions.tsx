@@ -1,0 +1,190 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { Plus, BarChart2, Settings, Scissors, Users, CalendarDays, Zap, TrendingUp, Sparkles } from 'lucide-react';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { ManualBookingForm } from '@/components/master/bookings/ManualBookingForm';
+
+export function QuickActions() {
+  const [, startTransition] = useTransition();
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const openDrawer = (id: string) => {
+    startTransition(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('drawer', id);
+      window.history.pushState(null, '', url.pathname + url.search);
+    });
+  };
+
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.42, type: 'spring', stiffness: 280, damping: 24 }}
+        className="bento-card p-4"
+      >
+        <h2 className="heading-serif text-base text-foreground mb-3">Швидкі дії</h2>
+
+        {/* ── Маркетинг ── */}
+        <div className="mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">
+            Маркетинг
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            <Tooltip
+              content={<p className="text-[11px] text-foreground">Запустити знижку на вільний слот</p>}
+              position="top"
+              delay={400}
+            >
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.94 }}
+                onClick={() => openDrawer('flash_deals')}
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer"
+              >
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-warning shadow-lg">
+                  <Zap size={18} className="text-white" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+                  Флеш-акція
+                </span>
+              </motion.button>
+            </Tooltip>
+
+            <Tooltip
+              content={<p className="text-[11px] text-foreground">Пікові години, тихий час, рання бронь</p>}
+              position="top"
+              delay={400}
+            >
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.94 }}
+                onClick={() => openDrawer('dynamic_pricing')}
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer"
+              >
+<div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary shadow-lg shadow-primary/30">
+                  <TrendingUp size={18} className="text-white" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+                  Ціноутворення
+                </span>
+              </motion.button>
+            </Tooltip>
+
+            <Tooltip
+              content={<p className="text-[11px] text-foreground">Сторіс, розсилки та просування</p>}
+              position="top"
+              delay={400}
+            >
+              <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+                <Link href="/dashboard/marketing"
+                  className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-text-main shadow-lg shadow-text-main/20">
+                    <Sparkles size={18} className="text-peach" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+                    Маркетинг
+                  </span>
+                </Link>
+              </motion.div>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* ── Дільник ── */}
+        <div className="border-t border-border mb-3" />
+
+        <div className="grid grid-cols-3 gap-2">
+
+          {/* Новий запис */}
+          <Tooltip content={<p className="text-[11px] text-foreground">Створити запис вручну для клієнта</p>} position="top" delay={400}>
+            <motion.button
+              whileTap={{ scale: 0.94 }}
+              onClick={() => setBookingOpen(true)}
+              className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer"
+            >
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
+                <Plus size={18} className="text-white" />
+              </div>
+              <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Новий запис</span>
+            </motion.button>
+          </Tooltip>
+
+          {/* Аналітика */}
+          <Tooltip content={<p className="text-[11px] text-foreground">Звіти, виручка та статистика</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/analytics"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                  <BarChart2 size={18} className="text-muted-foreground" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Аналітика</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+
+          {/* Налаштування */}
+          <Tooltip content={<p className="text-[11px] text-foreground">Профіль, послуги та тема оформлення</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/settings"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                  <Settings size={18} className="text-muted-foreground" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Налаштування</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+
+          {/* Послуги */}
+          <Tooltip content={<p className="text-[11px] text-foreground">Керувати списком послуг та цінами</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/services"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                  <Scissors size={18} className="text-muted-foreground" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Послуги</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+
+          {/* Клієнти */}
+          <Tooltip content={<p className="text-[11px] text-foreground">CRM: база клієнтів та VIP</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/clients"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                  <Users size={18} className="text-muted-foreground" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Клієнти</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+
+          {/* Записи */}
+          <Tooltip content={<p className="text-[11px] text-foreground">Усі записи: пошук, статуси, CSV</p>} position="top" delay={400}>
+            <motion.div whileTap={{ scale: 0.94 }} className="w-full">
+              <Link href="/dashboard/bookings"
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                  <CalendarDays size={18} className="text-muted-foreground" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Записи</span>
+              </Link>
+            </motion.div>
+          </Tooltip>
+        </div>
+      </motion.div>
+
+      <ManualBookingForm
+        isOpen={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+      />
+    </>
+  );
+}

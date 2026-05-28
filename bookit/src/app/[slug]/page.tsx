@@ -1,0 +1,423 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { cookies, headers } from 'next/headers';
+import { toZonedTime } from 'date-fns-tz';
+import { getNow } from '@/lib/utils/now';
+import { PublicMasterPage } from '@/components/public/PublicMasterPage';
+import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
+import { ALL_STEPS } from '@/components/shared/wizard/helpers';
+import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
+import { getMaster } from './data';
+import { computeOccupancy } from '@/lib/utils/occupancy';
+
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from('master_profiles')
+    .select('slug')
+    .eq('is_published', true)
+    .order('rating', { ascending: false })
+    .limit(50);
+  return (data ?? []).map(({ slug }) => ({ slug }));
+}
+
+// getMaster moved to data.ts for sharing with OG image generator
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const master = await getMaster(slug);
+  if (!master) return { title: 'Майстер не знайдений' };
+
+  const profile = master.profiles as unknown as { full_name: string; avatar_url: string | null };
+  const displayName = master.business_name || profile.full_name;
+  
+  // SEO Engine: Specialty + City + Brand
+  const specialties = (master.categories as string[] ?? [])
+    .map(val => CATEGORY_TEMPLATES[val]?.label || val)
+    .slice(0, 2);
+  const mainSpecialty = specialties[0] || "Б'юті-майстер";
+  const location = master.city ? `у м. ${master.city}` : '';
+  
+  const seoTitle = `${mainSpecialty} ${location} | ${displayName}`;
+  const seoDescription = master.bio 
+    ? (master.bio.length > 160 ? master.bio.slice(0, 157) + '...' : master.bio)
+    : `Онлайн-запис до ${displayName}. ${specialties.join(', ')}. Бронюйте зручний час онлайн на Bookit.`;
+
+  return {
+    title: seoTitle,
+    description: seoDescription,
+    alternates: {
+      canonical: `/${slug}`,
+    },
+    openGraph: {
+      title: seoTitle,
+      description: seoDescription,
+      url: `/${slug}`,
+      siteName: 'Bookit',
+      locale: 'uk_UA',
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDescription,
+    },
+    keywords: [...(master.categories as string[] ?? []), master.city, displayName, 'онлайн запис', 'bookit'].filter(Boolean),
+  };
+}
+
+export default async function MasterPublicPage(
+  { params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | undefined>> }
+) {
+  const [{ slug }, sp] = await Promise.all([params, searchParams]);
+  const refCode = sp?.ref ?? null;
+  const data = await getMaster(slug);
+  if (!data) notFound();
+
+  // Server-side UA detection для native map deep links (no client JS needed)
+  const headersList = await headers();
+  const ua = headersList.get('user-agent') ?? '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+
+  const locationQuery = data.address && data.city && data.address.toLowerCase().includes(data.city.toLowerCase())
+    ? data.address
+    : [data.city, data.address].filter(Boolean).join(', ');
+  const lat = (data as any).latitude as number | null;
+  const lng = (data as any).longitude as number | null;
+  const hasCoords = typeof lat === 'number' && typeof lng === 'number';
+
+  // Prefer precise lat/lng deep links over text search
+  const mapUrl = hasCoords
+    ? isIOS
+      ? `maps://maps.apple.com/?ll=${lat},${lng}&q=${encodeURIComponent(locationQuery || 'Майстер')}`
+      : isAndroid
+        ? `comgooglemaps://?center=${lat},${lng}&q=${lat},${lng}`
+        : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+    : locationQuery
+      ? isIOS
+        ? `maps://maps.apple.com/?q=${encodeURIComponent(locationQuery)}`
+        : isAndroid
+          ? `comgooglemaps://?q=${encodeURIComponent(locationQuery)}`
+          : `https://maps.google.com/?q=${encodeURIComponent(locationQuery)}`
+      : null;
+
+  const supabase = await createClient();
+  const cookieStore = await cookies();
+  const debugNow = cookieStore.get('next-public-debug-now')?.value;
+  const now = debugNow ? new Date(decodeURIComponent(debugNow)) : getNow();
+
+  // Поточний юзер (null якщо не залогінений)
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Validate C2C ref param — resolve referrer client id and discount %
+  let c2cRefCode: string | null = null;
+  let c2cDiscountPct: number | null = null;
+  const masterC2cEnabled = (data as any).c2c_enabled as boolean | null;
+  if (refCode && masterC2cEnabled) {
+    const adminC = createAdminClient();
+    const { data: referrerProfile } = await adminC
+      .from('client_profiles')
+      .select('id')
+      .eq('referral_code', refCode)
+      .maybeSingle();
+    if (referrerProfile) {
+      // Don't apply if the visitor is the referrer themselves
+      const isSelf = user && user.id === referrerProfile.id;
+      if (!isSelf) {
+        c2cRefCode = refCode;
+        c2cDiscountPct = (data as any).c2c_discount_pct as number ?? 10;
+      }
+    }
+  }
+
+  // Межа місячного ліміту — рахуємо динамічно з bookings (не з лічильника bookings_this_month)
+  const masterTimezone = (data as any).timezone || 'Europe/Kyiv';
+  const nowInMasterTZ = toZonedTime(getNow(), masterTimezone);
+  const monthStartDate = new Date(nowInMasterTZ.getFullYear(), nowInMasterTZ.getMonth(), 1);
+  const monthEndDate   = new Date(nowInMasterTZ.getFullYear(), nowInMasterTZ.getMonth() + 1, 0);
+  const monthStart = monthStartDate.toISOString();
+  const monthEnd   = monthEndDate.toISOString().slice(0, 10);
+
+  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty, alliance partners, portfolio, occupancy bookings
+  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, allianceRes, portfolioRes, occupancyBookingsRes] = await Promise.all([
+    supabase
+      .from('products')
+      .select('id, name, price_kopecks, description, photos, stock_qty, category, icon_name, recommend_always, product_service_links(service_id)')
+      .eq('master_id', data.id)
+      .eq('is_active', true)
+      .gt('stock_qty', 0)
+      .order('sort_order')
+      .limit(20),
+    supabase
+      .from('reviews')
+      .select('id, rating, comment, client_name, created_at')
+      .eq('master_id', data.id)
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('schedule_templates')
+      .select('day_of_week, start_time, end_time, is_working')
+      .eq('master_id', data.id),
+    supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('master_id', data.id)
+      .gte('created_at', monthStart)
+      .neq('status', 'cancelled'),
+    supabase
+      .from('flash_deals')
+      .select('id, service_id, service_name, slot_date, slot_time, original_price, discount_pct, expires_at')
+      .eq('master_id', data.id)
+      .eq('status', 'active')
+      .gt('expires_at', getNow().toISOString())
+      .order('expires_at', { ascending: true })
+      .limit(5),
+    supabase
+      .from('loyalty_programs')
+      .select('target_visits, reward_type, reward_value')
+      .eq('master_id', data.id)
+      .eq('is_active', true)
+      .order('target_visits', { ascending: true }),
+    user
+      ? supabase
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
+          .eq('master_id', data.id)
+          .eq('client_id', user.id)
+          .eq('status', 'completed')
+      : Promise.resolve({ count: null, error: null }),
+    // Visible alliance partners (both directions)
+    supabase
+      .from('master_alliances')
+      .select(`
+        inviter_id, invitee_id,
+        inviter:master_profiles!master_alliances_inviter_id_fkey (
+          id, slug, avatar_emoji, categories,
+          profiles ( full_name )
+        ),
+        invitee:master_profiles!master_alliances_invitee_id_fkey (
+          id, slug, avatar_emoji, categories,
+          profiles ( full_name )
+        )
+      `)
+      .or(`inviter_id.eq.${data.id},invitee_id.eq.${data.id}`)
+      .eq('is_visible', true),
+    // Portfolio items (published, with first photo)
+    supabase
+      .from('portfolio_items')
+      .select(`
+        id, title, description, service_id, display_order,
+        portfolio_item_photos ( url, display_order ),
+        portfolio_item_reviews ( review_id ),
+        services ( name )
+      `)
+      .eq('master_id', data.id)
+      .eq('is_published', true)
+      .order('display_order', { ascending: true })
+      .limit(8),
+    // Occupancy: admin client bypasses RLS so data is consistent for all visitors
+    createAdminClient()
+      .from('bookings')
+      .select('start_time, end_time, status')
+      .eq('master_id', data.id)
+      .gte('date', monthStartDate.toISOString().slice(0, 10))
+      .lte('date', monthEnd)
+      .limit(300),
+  ]);
+
+  const profile = data.profiles as unknown as { full_name: string; avatar_url: string | null };
+
+  const services = (data.services as any[])
+    .filter(s => s.is_active)
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map(s => ({
+      id: s.id as string,
+      name: s.name as string,
+      icon_name: (s.icon_name as string) ?? 'sparkles',
+      category: (s.category as string) ?? 'Інше',
+      price: Number(s.price),
+      duration: s.duration_minutes as number,
+      popular: s.is_popular as boolean,
+      description: (s.description as string) || null,
+    }));
+
+  const products = (productsRes.data ?? []).map((p: any) => ({
+    id:               p.id as string,
+    name:             p.name as string,
+    price:            Math.round(Number(p.price_kopecks) / 100),
+    description:      (p.description as string) || null,
+    icon_name:        (p.icon_name as string) ?? 'package',
+    inStock:          (p.stock_qty as number) > 0,
+    stock:            p.stock_qty as number,
+    recommendAlways:  p.recommend_always as boolean,
+    linkedServiceIds: ((p.product_service_links ?? []) as { service_id: string }[]).map(l => l.service_id),
+  }));
+
+  const reviews = (reviewsRes.data ?? []).map((r: any) => ({
+    id: r.id as string,
+    rating: r.rating as number,
+    comment: (r.comment as string) || null,
+    clientName: (r.client_name as string) || 'Клієнт',
+    createdAt: r.created_at as string,
+  }));
+
+  const schedule = (scheduleRes.data ?? []).map((s: any) => ({
+    day: s.day_of_week as string,
+    isWorking: s.is_working as boolean,
+    startTime: (s.start_time as string | null)?.slice(0, 5) ?? '09:00',
+    endTime: (s.end_time as string | null)?.slice(0, 5) ?? '18:00',
+  }));
+
+  const occupancyRate = computeOccupancy(
+    (scheduleRes.data ?? []) as { day_of_week: string; start_time: string | null; end_time: string | null; is_working: boolean }[],
+    (occupancyBookingsRes.data ?? []) as { start_time: string; end_time: string; status: string }[],
+    monthStartDate,
+    monthEndDate,
+  );
+
+  const loyaltyTiers = (loyaltyRes.data ?? []).map((p: any) => ({
+    targetVisits: p.target_visits as number,
+    rewardType: p.reward_type as string,
+    rewardValue: p.reward_value as number,
+  }));
+  const currentVisits = relationRes.count ?? 0;
+  const loyalty = loyaltyTiers.length > 0
+    ? { tiers: loyaltyTiers, currentVisits, isAuth: !!user }
+    : null;
+
+  // Build trusted partners list — pick the "other" side of each alliance row
+  const trustedPartners: TrustedPartner[] = [];
+  const seenIds = new Set<string>();
+  for (const row of (allianceRes.data ?? []) as any[]) {
+    const other = row.inviter_id === data.id ? row.invitee : row.inviter;
+    if (!other || seenIds.has(other.id)) continue;
+    seenIds.add(other.id);
+    const profile = Array.isArray(other.profiles) ? other.profiles[0] : other.profiles;
+    const name = profile?.full_name ?? 'Майстер';
+    trustedPartners.push({
+      id:          other.id,
+      slug:        other.slug,
+      name,
+      avatarEmoji: other.avatar_emoji ?? '💅',
+      avatarUrl:   profile?.avatar_url ?? null,
+      specialty:   ((other.categories as string[]) ?? []).join(', ') || 'Майстер краси',
+    });
+  }
+
+  const flashDeals = (flashDealsRes.data ?? []).map((d: any) => ({
+    id: d.id as string,
+    serviceId: (d.service_id as string) || undefined,
+    serviceName: d.service_name as string,
+    slotDate: d.slot_date as string,
+    slotTime: (d.slot_time as string).slice(0, 5),
+    originalPrice: Math.round(Number(d.original_price) / 100),
+    discountPct: d.discount_pct as number,
+    expiresAt: d.expires_at as string,
+  }));
+
+  const master = {
+    id: data.id,
+    slug: data.slug,
+    name: data.business_name || profile.full_name,
+    specialty: (data.categories as string[] ?? [])
+      .map(val => CATEGORY_TEMPLATES[val]?.label || val)
+      .join(', ') || 'Майстер краси',
+    location: locationQuery || 'Україна',
+    mapUrl,
+    lat: lat ?? null,
+    lng: lng ?? null,
+    floor: ((data as any).floor as string | null) ?? null,
+    cabinet: ((data as any).cabinet as string | null) ?? null,
+    emoji: '💅',
+    rating: Number(data.rating) || 0,
+    reviewsCount: data.rating_count || 0,
+    isVerified: true,
+    tier: data.subscription_tier as 'starter' | 'pro' | 'studio',
+    bio: data.bio ?? '',
+    services,
+    products,
+    reviews,
+    instagram: data.instagram_url ?? null,
+    telegram: data.telegram_url ?? null,
+    themeKey: (data.mood_theme as string) || 'default',
+    avatarEmoji: (data.avatar_emoji as string) || '💅',
+    avatarUrl: profile.avatar_url ?? null,
+    schedule,
+    bookingsThisMonth: monthlyCountRes.count ?? 0,
+    occupancyRate,
+    pricingRules: (data.pricing_rules as Record<string, any>) ?? {},
+    workingHours: (data.working_hours as Record<string, unknown>) ?? null,
+    flashDeals,
+    loyalty,
+    trustedPartners,
+    portfolio: (portfolioRes.data ?? []).map((item: any) => {
+      const photos = [...(item.portfolio_item_photos ?? [])].sort((a: any, b: any) => a.display_order - b.display_order);
+      return {
+        id: item.id as string,
+        title: item.title as string,
+        description: (item.description as string) || null,
+        cover_url: (photos[0]?.url as string) || null,
+        photo_count: photos.length,
+        service_name: (item.services as any)?.name ?? null,
+        review_count: (item.portfolio_item_reviews ?? []).length,
+      };
+    }),
+  };
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: master.name,
+    description: master.bio,
+    image: master.avatarUrl || undefined,
+    url: `https://bookit.com.ua/${master.slug}`,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: data.city,
+      streetAddress: data.address,
+    },
+    geo: lat && lng ? {
+      '@type': 'GeoCoordinates',
+      latitude: lat,
+      longitude: lng,
+    } : undefined,
+    aggregateRating: master.rating > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: master.rating,
+      reviewCount: master.reviewsCount,
+      bestRating: '5',
+      worstRating: '1',
+    } : undefined,
+    priceRange: '₴₴',
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div id="e2e-debug-now" style={{ display: 'none' }} data-now={now.toISOString()}>
+        {now.toISOString()}
+      </div>
+      <PublicMasterPage
+        master={master}
+        c2cRefCode={c2cRefCode}
+        c2cDiscountPct={c2cDiscountPct}
+        masterC2cEnabled={masterC2cEnabled === true}
+        masterC2cDiscountPct={masterC2cEnabled ? ((data as any).c2c_discount_pct as number ?? 10) : null}
+      />
+    </>
+  );
+}
+
+
+

@@ -1,0 +1,11 @@
+node_modules
+.next
+playwright-report
+test-results
+pw-visual
+pw-visual-audit
+pw-visual-auth
+XDEV
+*.md
+.git
+.vscode
