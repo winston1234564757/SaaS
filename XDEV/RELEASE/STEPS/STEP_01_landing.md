@@ -1,10 +1,11 @@
 # STEP 01 — Головний Лендинг (`/`)
 
 > **Створено:** 2026-05-27
-> **Модель:** 🟢 **Sonnet 4.6 high** (лінійна робота: емодзі-заміна, animation polish, aria-label)
-> **Статус:** ⏳ **In progress** (waiting first chat)
-> **Estimated effort:** 2-4 години
-> **Source of truth (scope):** [../../MAPS/PAGE_RELEASE_ROADMAP.md#1-головний-лендинг](../../MAPS/PAGE_RELEASE_ROADMAP.md)
+> **Оновлено:** 2026-05-28
+> **Модель:** 🟢 **Sonnet 4.6 high**
+> **Статус:** ⏳ **In progress**
+> **Estimated effort:** залишається ~2-3 год (emoji → a11y → tests)
+> **Source of truth (scope):** [../../MAPS/PAGE_RELEASE_ROADMAP.md](../../MAPS/PAGE_RELEASE_ROADMAP.md)
 
 ---
 
@@ -12,26 +13,47 @@
 
 ### Pages / routes
 - `/` — публічна головна сторінка (Server Component)
-- `/register`, `/login` — переходи з CTA
+- `/register`, `/login` — переходи з CTA кнопок
 
-### Key files (очікувані, перевірити Glob)
-- `src/app/page.tsx` (root page)
-- `src/components/landing/` — компоненти лендінгу
-- `src/components/landing/Hero/`
-- `src/components/landing/DemoMockup/`
-- `src/components/landing/Header.tsx`
-- `src/components/landing/SocialProof.tsx`
-- `src/components/landing/ProfitCalculator/` (калькулятор прибутку)
-- `src/components/landing/Footer.tsx`
+### Actual key files (verified 2026-05-28)
+
+**Entry points:**
+- `src/app/page.tsx` — root Server Component
+- `src/components/landing/RootPageClient.tsx` — TMA guard + session redirect
+- `src/components/landing/LandingPageContent.tsx` — orchestrator: GSAP setup + SECTIONS map
+
+**Pre-stack sections (normal flow):**
+- `src/components/landing/LandingHero.tsx` — 3D Frost mockup hero
+- `src/components/landing/LandingTrustBar.tsx` — 5 stats bar
+- `src/components/landing/LandingMarquee.tsx` — infinite ticker
+
+**GSAP Card-Rise Stack (`overlap: true`):**
+- `src/components/landing/LandingAgitation.tsx` — 4× PainItem (01–04)
+- `src/components/landing/LandingMagic.tsx` — 3× FeatureCard
+- `src/components/landing/LandingBentoFeatures.tsx` — Smart Slots grid + CountUp
+- `src/components/landing/LandingIntegrations.tsx` — TG/Push/SMS mockups
+- `src/components/landing/LandingClientFlow.tsx` — 3× StepCard
+- `src/components/landing/LandingComparison.tsx` — before/after table
+- `src/components/landing/LandingEconomy.tsx` — ROI calculator (3 sliders)
+- `src/components/landing/LandingPricing.tsx` — Starter/Pro/Studio cards
+- `src/components/landing/LandingFooterCTA.tsx` — dark CTA section
+
+**Excluded from overlap (transparent bg):**
+- `src/components/landing/LandingProcess.tsx` — sticky left 3 steps
+- `src/components/landing/LandingFAQ.tsx` — accordion
+
+**Pending integration (file exists, NOT in page yet):**
+- `src/components/landing/LandingTestimonials.tsx` — planned between Economy and Pricing
+
+**Shared utilities:**
+- `src/components/landing/LandingScrollProgress.tsx` — thin fixed progress bar
+- `src/components/landing/LandingSplitHeading.tsx` — word-by-word animated headings
 
 ### Server Actions
-- *Лендінг — статичний, server actions малоймовірні*
+- Лендінг статичний, server actions не використовуються
 
-### DB tables / RPCs
-- *Не змінюємо БД на цьому кроці*
-
-### TanStack Query hooks
-- `useSession` (для `RootPageClient` redirect авторизованих)
+### DB tables
+- Не змінюємо БД на цьому кроці
 
 ---
 
@@ -39,123 +61,115 @@
 
 ### 1. Aesthetics & Themes
 
-#### Перевірки з PAGE_RELEASE_ROADMAP:
-- [ ] `.ambient-blob-1/2/3` + grain overlay сумісні з Blossom темою
-- [ ] Видалити hardcoded кольори (`#FFE8DC`, `#D4935A` у `DemoMockup`) → замінити на `var(--background)`, `var(--accent)`, `var(--success)`
-- [ ] Усі картки `border-radius: 24px` (`rounded-3xl` або `rounded-xl`)
-- [ ] Адаптивність `Header` + `DemoMockup` на mobile
+#### Status: ⏳ Частково зроблено
 
-#### Розширені перевірки:
-- [ ] Перевірити Studio темy (dark teal) — ambient blobs не "пересвічують"
-- [ ] Перевірити Frost темy (ice lavender) — текст має достатній контраст на світлому фоні
-- [ ] Body font: Geist Sans (НЕ Inter); Display: Cormorant Garamond (НЕ Playfair)
-- [ ] Жодних inline `rgba(255,255,255,N)` — замінити на `color-mix(in srgb, var(--accent-on) N%, transparent)`
+- [x] `--l-*` CSS tokens у globals.css — Frost palette встановлено (2026-05-27)
+- [x] `--l-indigo: #4338CA` — eyebrows + accents; `--l-indigo-glow: #6366F1` — decorative
+- [x] WCAG AAA 7.08:1 контраст для основних текстів (підтверджено mcp__a11y)
+- [x] `--l-muted: #475569` — AA 6.79:1
+- [x] `border-radius: 1.5rem` на wrapper-ах rising-секцій (card-rise)
+- [ ] Адаптивність — mobile 375px перевірка всіх секцій
+- [ ] Dark sections (BentoFeatures, FooterCTA): перевірити contrast на dark bg
+- [ ] Body font: Geist Sans (НЕ Inter); Display: Cormorant Garamond — перевірити скрізь
 
 ### 2. No-Emoji Policy
 
-#### Перевірки з PAGE_RELEASE_ROADMAP:
-- [ ] Social proof chip (`['💅', '✂️', '👁️', '💄']`) → Lucide іконки або міні-аватари
-- [ ] DemoMockup аватар майстра `💅` → Lucide іконка (e.g., `<Sparkles>`)
-- [ ] DemoMockup бонуси `🎁` → Lucide іконка (e.g., `<Gift>`)
+#### Status: ⏳ Не перевірено
 
-#### Розширені:
 - [ ] Grep `[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]` у `src/components/landing/**`
-- [ ] Якщо у JSON/string є emoji — видалити або винести у DB як `icon_name`
+- [ ] Footer `🇺🇦` — допустимо (прапор України як культурний символ, не UI-emoji)
+- [ ] Будь-які emoji в тексті секцій → Lucide або прибрати
 
 ### 3. Motion & Transitions
 
-#### Перевірки з PAGE_RELEASE_ROADMAP:
-- [ ] Spring-ефект появи Hero елементів (`bounce: 0-0.12`, ≤ 300ms)
-- [ ] `active:scale-[0.97] transition-transform` на "Спробувати безкоштовно" CTA
-- [ ] `active:scale-[0.97]` на "Записатися" в DemoMockup
+#### Status: ✅ Основне завершено (2026-05-28)
 
-#### Розширені:
-- [ ] Якщо є AnimatePresence — `mode="popLayout"` (RULE 4)
-- [ ] Variants ПОЗА компонентом, `as const` у `type: 'spring'`
-- [ ] Перевірити hover-стани на CTA (НЕ `opacity-80` — це виглядає як disabled)
+- [x] **GSAP ScrollTrigger card-rise** — `LandingPageContent.tsx`; 30vh overlap; scrub:1; cleanup via `ctx.revert()`
+- [x] **Per-item `useInView`** — всі нумеровані блоки: PainItem (Agitation), StepItem (Process), StepCard (ClientFlow), FeatureCard (Magic)
+- [x] **Word-by-word mask reveal** — `overflow:hidden` + `motion.span y:'110%'→0`, stagger `wi*0.065`
+- [x] **Sentence-by-sentence body** — `splitSentences()` + `y:'115%', opacity:0→1`, stagger `si*0.16`
+- [x] **Simultaneous title+body** — обидва стартують одночасно з `delay:0.08`
+- [x] **CountUp fix** — `useState` + `useMotionValueEvent` (was invisible on mobile)
+- [x] **Horizontal scroll fix** — `overflowX:'clip'` на `<main>` (doesn't create scroll container)
+- [x] **clip-path on GSAP rise** — rising wrappers: `borderRadius+'overflow:clip'` без scroll container issue
+- [x] **spring** `{ type:'spring', stiffness:240, damping:26 } as const` у всіх FM секціях
+- [ ] `active:scale-[0.97]` на CTA кнопках (тактильний feedback)
 - [ ] `@media (hover: hover)` guard для hover-only animations
+- [ ] `LandingTestimonials.tsx` — інтегрувати між Economy і Pricing
+- [ ] `prefers-reduced-motion` — GSAP `ScrollTrigger` + FM animations: graceful fallback
+  > NOTE: поточний `MotionConfig reducedMotion="never"` — потребує розгляду
 
 ### 4. Errors & Validation
 
-#### Перевірки з PAGE_RELEASE_ROADMAP:
-- [ ] CTA "Спробувати безкоштовно" → коректний redirect на `/register`
-- [ ] CTA "Увійти" → коректний redirect на `/login`
+#### Status: ⏳ Не перевірено
 
-#### Розширені:
-- [ ] Калькулятор прибутку: валідація input (мінімум 1 клієнт/день, не більше N)
-- [ ] Невалідні значення — graceful fallback (показуємо 0 або останнє валідне)
+- [ ] CTA "Спробувати безкоштовно" → `/register` redirect
+- [ ] CTA "Увійти" → `/login` redirect
+- [ ] ROI Calculator (LandingEconomy): мінімальні/максимальні значення слайдерів
+- [ ] ROI Calculator: форматування через `formatCurrency` (не ручний `.toLocaleString`)
+- [ ] Невалідні значення слайдерів — graceful fallback
 
 ### 5. A11y & Performance
 
-#### Перевірки з PAGE_RELEASE_ROADMAP:
-- [ ] `aria-label` для іконок зірочок (`Star`) у блоці рейтингу
-- [ ] Loader (`RootPageClient`) має ту саму висоту що головна сторінка (нуль CLS)
+#### Status: ⏳ Частково
 
-#### Розширені:
-- [ ] Semantic HTML: `<main>`, `<section>`, `<nav>`, `<button>` (не `<div onClick>`)
-- [ ] WCAG AA contrast: CTA текст vs фон → `mcp__a11y__get-color-contrast`
-- [ ] `<h1>` тільки один на сторінці (SEO + a11y)
-- [ ] `alt` атрибути на всіх `<img>` / `<Image>`
-- [ ] `prefers-reduced-motion` respect для animations
+- [x] `<main>` семантичний wrapper (in LandingPageContent.tsx)
+- [x] `overflowX:'clip'` — нуль CLS від горизонтального скролу
+- [x] `aria-label="Приклад розкладу Smart Slots"` на BentoFeatures grid (вже є)
+- [ ] `<h1>` тільки один на сторінці — перевірити LandingSplitHeading `as` prop
+- [ ] `alt` атрибути на всіх зображеннях
+- [ ] WCAG AA contrast: темні секції (Bento `#0F172A`, FooterCTA `#0F172A`)
+- [ ] `aria-label` / `aria-hidden` на Lucide іконках
+- [ ] Lighthouse Performance > 90 (GSAP bundle size check)
 
 ### 6. Core Features
 
-#### Калькулятор прибутку майстра:
-- [ ] Слайдер "кількість клієнтів на день" — диапазон 1-N
-- [ ] Слайдер "середня вартість послуги" — диапазон у грн
-- [ ] Прогнозований дохід / місяць та рік — миттєвий перерахунок
-- [ ] Форматування валюти: `formatCurrency` з `src/lib/utils/currency.ts`
-- [ ] Перерахунок без CLS (значення міняються, layout стабільний)
+#### Status: ⏳ Не перевірено
 
-#### Кнопки та переходи:
-- [ ] Header navigation (всі links працюють)
-- [ ] Demo widget відкривається коректно
-- [ ] Footer links відкриваються (legal сторінки)
+- [ ] ROI Calculator — всі 3 слайдери рахують коректно
+- [ ] ROI Calculator — перерахунок без CLS
+- [ ] Header navigation (всі links)
+- [ ] Footer legal links
+- [ ] Mobile: TrustBar stats не обрізаються
+- [ ] Mobile: Marquee ticker коректний overflow
+- [ ] `LandingScrollProgress` — коректно відображає прогрес (0→100%)
 
 ### 7. Tests Verification
 
-#### E2E (Playwright):
-- [ ] `e2e/tests/smoke.spec.ts` — Landing page рендериться
-- [ ] `e2e/tests/14-client-journey.spec.ts` — client clicks "Записатися"
+#### Status: ⏳ Не запущено
 
-#### Manual:
-- [ ] Blossom theme — desktop 1440px + mobile 375px
-- [ ] Studio theme — desktop 1440px + mobile 375px
-- [ ] Frost theme — desktop 1440px + mobile 375px
+- [ ] `npx playwright test e2e/tests/smoke.spec.ts` — landing рендериться
+- [ ] `npx playwright test e2e/tests/14-client-journey.spec.ts` — client journey
+- [ ] Manual: desktop 1440px + mobile 375px (landing тільки один стиль — Frost)
 - [ ] Lighthouse: Performance > 90, A11y > 95, SEO > 95
 
 ---
 
-## ❓ QA-GATE Questions (для початку чату)
+## ❓ QA-GATE Questions (для наступного чату)
 
-1. **Scope:** Працюємо над усією сторінкою одразу, чи поетапно (Hero → Calculator → Footer)?
-2. **Themes priority:** Полірувати всі 3 теми одночасно, чи спершу Blossom (default), потім перевірити Studio/Frost?
-3. **Емодзі заміна:** На які Lucide іконки замінювати — за категоріями послуг (`Sparkles`, `Scissors`, `Eye`, `Brush`) чи однорідні аватари?
-4. **Калькулятор:** Він уже існує і працює (тільки косметика), чи треба переробити з нуля?
-5. **Tests:** Запускати E2E локально після кожної зміни чи накопичити і запустити в кінці?
+1. **Scope:** Завершуємо лендінг повністю (emoji → a11y → tests) чи є пріоритет?
+2. **Testimonials:** Інтегрувати `LandingTestimonials.tsx` між Economy і Pricing?
+3. **reducedMotion:** `MotionConfig reducedMotion="never"` замінити на `"user"` + GSAP fallback?
+4. **Lighthouse:** Запустити зараз і зафіксувати baseline before final polish?
 
 ---
 
-## 🛠️ Skills Chain (для цього кроку)
+## 🛠️ Skills Chain
 
 ```
-clarify (5 Q вище)
+clarify (4 Q вище)
   ↓
-mempalace_search "landing page hero calculator emoji replacement"
+mempalace_search "landing emoji a11y testimonials"
   ↓
-senior-frontend (component-level changes)   [PRIMARY]
+senior-frontend (emoji → Lucide, a11y attrs)   [PRIMARY]
   ↓
-emil-design-eng                              [if motion polish needed]
+mcp__universal-icons__search_icons              [Lucide replacements]
   ↓
-impeccable (audit після генерації)
+mcp__a11y__get-color-contrast                   [dark section contrast]
   ↓
-mcp__universal-icons__search_icons           [для пошуку Lucide замін]
+humanizer (весь видимий текст)
   ↓
-mcp__a11y__get-color-contrast                [CTA + Star контраст]
-  ↓
-humanizer (для всього видимого тексту)
-  ↓
-run + verify (3 теми × 2 viewports)
+run + verify (desktop + mobile)
   ↓
 code-reviewer (pre-commit)
   ↓
@@ -166,20 +180,14 @@ mempalace_add_drawer
 
 ## 📋 Pre-Coding Checklist
 
-- [ ] SESSION_START completed (`STARTUP OK: Palace N drawers | SYSTEM_MAP current | Active Step: 01 | Model: Sonnet 4.6 high`)
-- [ ] mempalace_search "landing emoji lucide replacement BookIT" done
-- [ ] 5 QA questions asked + answered (user)
-- [ ] Skill declared: `SKILL: senior-frontend` (або `design-taste-frontend` залежно від scope)
-- [ ] Humanizer list compiled:
-  - Hero headline
-  - Subheadline
-  - CTA "Спробувати безкоштовно"
-  - CTA "Увійти"
-  - Social proof labels
-  - Calculator labels (клієнтів на день, середня ціна, дохід/місяць, дохід/рік)
-  - Footer links texts
-- [ ] User explicit approval received
-- [ ] GATE OK reply written
+- [x] SESSION_START completed
+- [x] GSAP scroll stack ✅
+- [x] Per-item animations ✅
+- [ ] Emoji policy checked
+- [ ] A11y attributes added
+- [ ] CTA tactile feedback (active:scale)
+- [ ] Tests green
+- [ ] Documentation updated
 
 ---
 
@@ -188,16 +196,18 @@ mempalace_add_drawer
 ```bash
 cd bookit
 
-# Smoke test
+# Smoke
 npx playwright test e2e/tests/smoke.spec.ts --reporter=list
 
 # Client journey
 npx playwright test e2e/tests/14-client-journey.spec.ts --reporter=list
 
-# Manual verify
+# Type + build check
+npx tsc --noEmit && npm run build
+
+# Dev server
 npm run dev
-# Open http://localhost:3000 in 3 themes (toggle via /dashboard/settings → master)
-# Public landing → toggle theme via... (note: landing зазвичай показується у Blossom default)
+# http://localhost:3000 — landing у Frost стилі
 ```
 
 ---
@@ -208,27 +218,10 @@ npm run dev
 
 - [ ] **STATUS.md** — Step 01 статус → ✅, дата ready, drawer ID, commit hash
 - [ ] **CHANGELOG.md** — entry за шаблоном
-- [ ] **../../MAPS/SYSTEM_MAP.md** — оновити якщо додано нові утиліти/компоненти
+- [ ] **../../MAPS/SYSTEM_MAP.md** — ✅ оновлено (2026-05-28)
 - [ ] **../../MAPS/PAGE_RELEASE_ROADMAP.md** — статус Кроку 1 → ✅
-- [ ] **bookit/src/app/(master)/dashboard/changelog/page.tsx** — *Не релевантно: landing — B2C-зміна*
-- [ ] **MemPalace drawer** — `mempalace_add_drawer` з:
-  - title: "Landing Quality Gate Complete — 2026-MM-DD"
-  - wing: "bookit"
-  - room: "architecture"
-  - content: список Lucide replacements (emoji map), token migrations, animation tuning, тести green
-- [ ] **Git commit:**
-  ```bash
-  git commit -m "feat(landing): quality gate complete — emoji→Lucide, theme tokens, a11y
-
-  - Replaced 6 emoji with Lucide icons (Sparkles, Gift, Star, ...)
-  - Migrated hardcoded colors to CSS theme tokens
-  - Added aria-label to rating stars
-  - Tactile feedback (active:scale-[0.97]) on CTAs
-  - Calculator works smoothly without CLS in 3 themes
-  - E2E smoke + client-journey green
-
-  Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
-  ```
+- [ ] **MemPalace drawer** — `mempalace_add_drawer` з landing quality gate summary
+- [ ] **Git commit**
 
 ---
 
@@ -236,23 +229,22 @@ npm run dev
 
 *Заповнюється при close-out:*
 
-- **Prior step closed:** YYYY-MM-DD
+- **Prior step closed:** TBD
 - **Commit hash:** TBD
 - **Drawer:** TBD
-- **Open issues from STEP 01:** [TBD]
-- **Carry-over to STEP 02:** Очікувано — нічого. STEP 02 (Auth) — окрема feature.
-- **Next chat focus:** STEP 02 — Auth Flow (`/login`, `/register`, `/callback`) — SMS OTP rate-limit + virtual email + parseError локалізація. **Модель: Opus 4.7 max** (security-critical).
+- **Open issues:** LandingTestimonials.tsx pending (може carry-over до STEP 02 або окремий MR)
+- **Carry-over to STEP 02:** нічого критичного
+- **Next chat focus:** STEP 02 — Auth Flow. **Модель: Opus 4.7 max** (security-critical)
 
 ---
 
-## 📚 Контекстні файли (швидкі посилання)
+## 📚 Контекстні файли
 
-- [PAGE_RELEASE_ROADMAP.md — Step 1 section](../../MAPS/PAGE_RELEASE_ROADMAP.md)
-- [SYSTEM_MAP.md — Landing routes](../../MAPS/SYSTEM_MAP.md)
-- [UX_STANDARDS.md — No-Emoji Policy](../../UX_STANDARDS.md)
-- [AI_DEVELOPER.md — 3 theme palette](../../AI_DEVELOPER.md)
-- [globals.css](../../../bookit/src/app/globals.css) — джерело правди CSS токенів
+- [PAGE_RELEASE_ROADMAP.md](../../MAPS/PAGE_RELEASE_ROADMAP.md)
+- [SYSTEM_MAP.md — Landing section](../../MAPS/SYSTEM_MAP.md)
+- [UX_STANDARDS.md](../../UX_STANDARDS.md)
+- [globals.css](../../../bookit/src/app/globals.css)
 
 ---
 
-*Створено: 2026-05-27 · Версія: 1.0*
+*Створено: 2026-05-27 · Оновлено: 2026-05-28 · Версія: 2.0*

@@ -333,7 +333,7 @@ const item = { visible: { transition: { type: 'spring' } } }; // без as const
 ## 💰 Monetization Tiers
 | Тариф | Ціна | Ключові ліміти |
 |---|---|---|
-| **Starter** | 0₴ | 50 записів/місяць, 5 flash-акцій/місяць, 10 фото, вотермарка, dynamic pricing trial до 1000 UAH |
+| **Starter** | 0₴ | 40 записів/місяць, 5 flash-акцій/місяць, 10 фото, вотермарка, dynamic pricing trial до 1000 UAH |
 | **Pro** | 700₴/місяць | Unlimited записів, повна аналітика, CRM, CSV, Telegram, без вотермарки |
 | **Studio** | 299₴/майстер/місяць | All Pro + team management |
 

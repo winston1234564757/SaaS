@@ -66,7 +66,7 @@ export interface CreateBookingResult {
   error: string | null;
   /** Server-recomputed final total — use this for display, not the client guess */
   finalTotal?: number;
-  /** True when the master's Starter booking limit (30/month) is exceeded */
+  /** True when the master's Starter booking limit (40/month) is exceeded */
   upgradeRequired?: boolean;
 }
 
@@ -80,7 +80,7 @@ export interface CreateBookingResult {
  * - Service and product prices are fetched from DB — client-supplied prices
  *   are validated against the canonical DB values and never used directly.
  * - Stock availability is verified before insertion and decremented atomically.
- * - Booking-per-month limit (Starter: 30) is enforced server-side.
+ * - Booking-per-month limit (Starter: 40) is enforced server-side.
  * - Manual bookings require the caller to be the master themselves.
  */
 export async function createBooking(
@@ -173,7 +173,7 @@ export async function createBooking(
   // Bug 4 Fix: Pass master's timezone (fallback to Kyiv)
   const masterTimezone = (mp as any).timezone || 'Europe/Kyiv';
 
-  // 4. Starter booking limit (30/month)
+  // 4. Starter booking limit (40/month)
   if (mp.subscription_tier === 'starter') {
     const nowInTZ = toZonedTime(getNow(), masterTimezone);
     const monthStart = new Date(nowInTZ.getFullYear(), nowInTZ.getMonth(), 1).toISOString();

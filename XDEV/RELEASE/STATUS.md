@@ -1,9 +1,9 @@
 # 📊 STATUS.md — Live Release Tracker
 
 > Оновлюється після кожного значущого зрушення. Live джерело правди про прогрес.
-> **Updated:** 2026-05-27
+> **Updated:** 2026-05-28
 > **Active step:** STEP 01 (`/` Landing)
-> **Progress:** 0 / 13 complete
+> **Progress:** 0 / 13 complete (STEP 01 in progress, Motion ✅)
 > **Model in use:** 🟢 Sonnet 4.6 high
 
 ---
@@ -49,19 +49,20 @@ Steps 02-13: 🔒 Blocked (sequential)
 - **Playbook:** [STEPS/STEP_01_landing.md](./STEPS/STEP_01_landing.md)
 - **Модель:** 🟢 Sonnet 4.6 high
 - **Статус:** ⏳ In progress
-- **Scope summary:** Повний редизайн лендингу
-- **Estimated effort:** TBD
+- **Scope summary:** Повний редизайн лендингу — 11 секцій (Hero → FooterCTA), Frost palette
+- **Estimated effort:** залишається ~2-3 год (emoji → a11y → tests)
+- **Key milestone (2026-05-28):** GSAP ScrollTrigger card-rise stack інтегровано в усі 11 секцій; per-item `useInView` animations; CountUp fix; word-by-word + sentence-by-sentence reveals; `overflowX:'clip'` CLS fix; `overflow:'clip'` borderRadius on rising wrappers
 
 #### 7 Quality Gate progress
 | Вимір | Стан |
 |---|---|
-| 1. Aesthetics & Themes | ⏳ Не почато |
-| 2. No-Emoji Policy | ⏳ Не почато |
-| 3. Motion & Transitions | ⏳ Не почато |
-| 4. Errors & Validation | ⏳ Не почато |
-| 5. A11y & Performance | ⏳ Не почато |
-| 6. Core Features | ⏳ Не почато |
-| 7. Tests Verification | ⏳ Не почато |
+| 1. Aesthetics & Themes | ⏳ Частково (`--l-*` CSS tokens ✓, Frost palette ✓; mobile + dark sections перевірити) |
+| 2. No-Emoji Policy | ⏳ Не перевірено |
+| 3. Motion & Transitions | ✅ Завершено (2026-05-28) — GSAP stack, per-item, CountUp, spring |
+| 4. Errors & Validation | ⏳ Не перевірено |
+| 5. A11y & Performance | ⏳ Частково (`<main>` ✓, `aria-label` на Bento ✓; Lighthouse pending) |
+| 6. Core Features | ⏳ Не перевірено |
+| 7. Tests Verification | ⏳ Не запущено |
 
 #### HANDOFF for STEP 02
 *Буде заповнено при close-out STEP 01*
@@ -112,4 +113,4 @@ Steps 02-13: 🔒 Blocked (sequential)
 
 ---
 
-*Останнє оновлення цього файлу: 2026-05-27 (створення)*
+*Останнє оновлення цього файлу: 2026-05-28 — Motion ✅, GSAP card-rise stack*

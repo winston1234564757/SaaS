@@ -219,7 +219,7 @@ Portfolio gallery section. Cover images with lightbox.
 4-step: services → datetime → products → details → success.
 - `mode="client"` enables C2C, loyalty, flash, phone broadcast discounts
 - Calls `createBooking()` server action
-- Starter plan limit: 30 bookings/month
+- Starter plan limit: 40 bookings/month
 
 ### `src/components/shared/wizard/ServiceSelector.tsx`
 Service picker with dynamic pricing labels, flash deal indicators.

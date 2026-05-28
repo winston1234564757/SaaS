@@ -7,7 +7,7 @@ import { notifyMasterBilling } from '@/lib/notifications';
  * 1. Downgrade до 'starter' якщо subscription_expires_at < now
  * 2. Очищення старих IP-логів (sms_ip_logs > 25h)
  *
- * NOTE: Ліміт 30 записів/місяць більше НЕ залежить від bookings_this_month.
+ * NOTE: Ліміт 40 записів/місяць більше НЕ залежить від bookings_this_month.
  * Він розраховується динамічно з таблиці bookings (gte created_at = початок місяця).
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {

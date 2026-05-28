@@ -14,7 +14,7 @@
 | Помилкова знахідка | Реальність |
 |---|---|
 | "C2C Settings UI відсутній" | ✅ Є в `/dashboard/growth?drawer=loyalty` (LoyaltyPage.tsx 406–500) |
-| "Booking Limit не реалізований" | ✅ Є в `createBooking.ts` рядок 186: `if ((count ?? 0) >= 30)` |
+| "Booking Limit не реалізований" | ✅ Є в `createBooking.ts` рядок 186: `if ((count ?? 0) >= 40)` |
 
 ---
 
@@ -120,10 +120,10 @@ Billing реалізовано лише для Pro (700₴/місяць). Studio
 **Файл:** `TECH_DEBT/studio-dashboard-waitlist-placeholder.md`  
 Studio join-flow є (майстер може приєднатись), але management UI — тільки заглушка.
 
-### 🟡 #2 — BOOKIT.md: 50 vs Код: 30 (Booking Limit)
+### 🟢 #2 — BOOKIT.md vs Код: 40 [ВИРІШЕНО]
 
 **Файл:** `TECH_DEBT/booking-limit-not-enforced.md`  
-Код = 30. `BOOKIT.md` = 50. Тільки doc-борг.
+Код = 40. `BOOKIT.md` = 40. Синхронізовано.
 
 ### 🟡 #3 — "Кешбек" назва vs Tier-знижкова система
 
@@ -150,7 +150,7 @@ Starter ліміт flash deals — перевірити синхронізаці
 2. **Лендінг:** Замінити "Кешбек = бали" на правду про tier-знижки
 3. **Лендінг:** Додати блок "Automation" — 5 cron jobs що працюють без майстра
 4. **Лендінг:** Додати "Запроси колегу — отримай місяць Pro" (B2B Referral)
-5. **BOOKIT.md:** Виправити 50 → 30 (booking limit)
+5. **BOOKIT.md:** Синхронізовано ліміт до 40 записів/місяць
 
 ### 🛠️ Код (середньострокові)
 
@@ -160,7 +160,7 @@ Starter ліміт flash deals — перевірити синхронізаці
 
 ### 📊 Бізнес-аналіз
 
-9. **Booking Limit:** 30 чи змінити? Unit economics аналіз  
+9. **Booking Limit:** Уніфіковано до 40 записів/місяць  
 10. **Studio:** Приховати з pricing чи додати в найближчий спринт?
 
 ---

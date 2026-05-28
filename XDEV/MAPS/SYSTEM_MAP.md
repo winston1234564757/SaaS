@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-27 · Джерело: живий код (v8.2.2 "System Map Actualization")
+> Оновлено: 2026-05-28 · Джерело: живий код (v8.2.3 "Landing Scroll Stack + GSAP")
 
 ---
 
@@ -64,32 +64,75 @@
 - Theme: independent `.landing-page` CSS class in `globals.css` — `--l-*` custom properties — **Frost palette** (updated 2026-05-27)
 - Palette: `--l-bg #EFF2FF` · `--l-bg-alt #E6EAFF` · `--l-accent #0F172A` · `--l-indigo #4338CA` (WCAG AAA 7.08:1, all text) · `--l-indigo-glow #6366F1` (decorative/large text only) · `--l-muted #475569` (AA 6.79:1) · `--l-surface #FFFFFF`
 - Default theme for new registrations: `mood_theme: 'frost'` set in `register/actions.ts` Phase1+Phase3 upserts
+- **Dependencies (landing-specific):** `gsap@^3.15.0` + `gsap/ScrollTrigger` for card-rise scroll stack; `framer-motion` for per-section animations
 
-### Landing Sections — 14 total (`src/components/landing/`)
-| # | Component | Bg | Section |
+### Landing Sections — 14 active (`src/components/landing/`)
+
+**Pre-stack (normal scroll flow):**
+| # | Component | Bg | Notes |
 |---|---|---|---|
 | 1 | `LandingHero.tsx` | `#EFF2FF` | Frost 3D mockup hero — `perspective(1400px)` + `rotateX` scroll 12°→0°; `FrostDashboardMockup` inline component |
 | 2 | `LandingTrustBar.tsx` | transparent | 5 stats: 500+ майстрів · ₴12M · 4.9★ · 50+ міст · 98% |
-| 3 | `LandingAgitation.tsx` | `#FFFFFF` | Sticky left "Звикла до хаосу?", 4 pain points with large Cormorant numbers |
-| 4 | `LandingMagic.tsx` | `var(--l-bg)` | 3 feature rows alternating direction (24/7, +27%, ×3 stats), no card grids |
-| 5 | `LandingBentoFeatures.tsx` | `#0F172A` | Dark — Smart Slots week×time grid, 3 metric pills, legend |
-| 6 | `LandingIntegrations.tsx` | `#FFFFFF` | Notification channel previews (TG/Push/SMS mockups), channels table |
-| 7 | `LandingClientFlow.tsx` | `var(--l-bg)` | Client booking UX — 3 horizontal steps with detail chips |
-| 8 | `LandingComparison.tsx` | `#FFFFFF` | Before/after 5 rows with X/Check icons |
-| 9 | `LandingProcess.tsx` | `var(--l-bg)` | Master onboarding 3 steps, sticky left, pulse badge |
-| 10 | `LandingEconomy.tsx` | `var(--l-bg-alt)` | Interactive ROI calculator: 3 sliders → `formatCurrency` projections |
-| 11 | `LandingTestimonials.tsx` | `var(--l-bg)` | 3 testimonial cards with indigo metric badges |
-| 12 | `LandingPricing.tsx` | `var(--l-bg-alt)` | Starter / Pro (accent `#0F172A`, shadow `rgba(99,102,241,0.28)`) / Studio |
-| 13 | `LandingFAQ.tsx` | `var(--l-bg)` | Sticky 2-col, AnimatePresence height accordion |
-| 14 | `LandingFooterCTA.tsx` | `#0F172A` | Dark — Frost indigo glows, NO film grain (parallax container GPU rule) |
+| 3 | `LandingMarquee.tsx` | transparent | Infinite ticker of tool/integration names |
+
+**GSAP Card-Rise Stack** (`overlap: true` → 30vh rise; `overlap: false` → transparent bg, excluded):
+| # | Component | Bg | overlap | Notes |
+|---|---|---|---|---|
+| 4 | `LandingAgitation.tsx` | `#FFFFFF` | ✓ | Sticky left "Звикла до хаосу?", 4 `PainItem` sub-components — word-by-word h3 + sentence body animations |
+| 5 | `LandingMagic.tsx` | `var(--l-bg)` | ✓ | 3 `FeatureCard` sub-components alternating direction (24/7, +27%, ×3 stats) |
+| 6 | `LandingBentoFeatures.tsx` | `#0F172A` | ✓ | Dark — Smart Slots week×time grid; `CountUp` (useState+useMotionValueEvent fix) |
+| 7 | `LandingIntegrations.tsx` | `#FFFFFF` | ✓ | Notification channel previews (TG/Push/SMS mockups), channels table |
+| 8 | `LandingClientFlow.tsx` | `var(--l-bg)` | ✓ | 3 `StepCard` sub-components — 3-col grid with detail chips |
+| 9 | `LandingComparison.tsx` | `#FFFFFF` | ✓ | Before/after 5 rows with X/Check icons |
+| 10 | `LandingProcess.tsx` | `var(--l-bg)` | ✗ | Master onboarding 3 `StepItem` sub-components, sticky left col, pulse badge — excluded: transparent bg |
+| 11 | `LandingEconomy.tsx` | `var(--l-bg-alt)` | ✓ | Interactive ROI calculator: 3 sliders → `formatCurrency` projections |
+| 12 | `LandingPricing.tsx` | `var(--l-bg-alt)` | ✓ | Starter / Pro (accent `#0F172A`, shadow `rgba(99,102,241,0.28)`) / Studio |
+| 13 | `LandingFAQ.tsx` | `var(--l-bg)` | ✗ | Sticky 2-col, AnimatePresence height accordion — excluded: transparent bg |
+| 14 | `LandingFooterCTA.tsx` | `#0F172A` | ✓ | Dark — Frost indigo glows, NO film grain (parallax container GPU rule) |
+
+> ⚠️ `LandingTestimonials.tsx` — file exists (untracked), **NOT yet integrated** into `LandingPageContent.tsx`. Planned between Economy (#11) and Pricing (#12).
+
+**Shared utility components (`src/components/landing/`):**
+- `LandingScrollProgress.tsx` — thin indigo progress bar pinned at top (`position: fixed, z-index: 100`)
+- `LandingSplitHeading.tsx` — animated heading utility: word-by-word mask reveal per line; props: `text`, `stagger`, `lineDelay`, `as` (h1/h2/h3/h4)
+
+### GSAP Scroll Stack Architecture (`LandingPageContent.tsx`)
+
+```
+overflowX: 'clip' on <main>  →  clips horizontally without creating scroll container
+
+SECTIONS array → each entry: { Component, id, overlap: boolean }
+isRising = overlap:true AND prev.overlap:true
+
+Rising sections (6): Magic, BentoFeatures, Integrations, ClientFlow, Comparison, Pricing
+  → wrapper: marginTop:'-30vh', borderRadius:'1.5rem 1.5rem 0 0', overflow:'clip', boxShadow
+  → gsap.set(y:'30vh') counteracts margin-top visually on load
+  → scrollTrigger: trigger=prev.id, start:'bottom bottom', end:'+=30vh', pin:true, scrub:1
+
+Excluded (overlap:false): Process (sticky left col), FAQ (AnimatePresence)
+  → normal scroll, no pin, no rise
+```
+
+**Cleanup:** `gsap.context()` → `ctx.revert()` on unmount. `ScrollTrigger.refresh()` called after all triggers registered. `invalidateOnRefresh: true` on each trigger.
+
+### Per-Section Animation Patterns
+
+All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) use:
+- **Card entrance**: `initial={{ opacity:0, y:32, scale:0.97 }}` → `duration:0.65, ease:[0.22,1,0.36,1]`
+- **Word-by-word h3**: inline `overflow:hidden` + `motion.span y:'110%'→0`, `delay: 0.08 + wi*0.065`
+- **Sentence body**: `splitSentences()` via lookbehind `/(?<=[.?!]) /`; `y:'115%', opacity:0→1`, `delay: 0.08 + si*0.16`
+- **Simultaneous start**: both title and body start at base `delay:0.08`
+- **Per-item refs**: each sub-component (PainItem, StepItem, StepCard, FeatureCard) has own `useInView(ref, { once:true, margin:'-60px' })`
 
 ### Design Rules (Landing-specific)
 - **Eyebrows**: always `color: 'var(--l-indigo)'` = `#4338CA` — NEVER `var(--l-accent)`
 - **Forest green purged**: no `rgba(30,69,53,...)` anywhere — replaced with `rgba(99,102,241,...)`
 - **spring** `{ type:'spring', stiffness:240, damping:26 } as const` — always a `const`, never inline
-- **Hooks in `.map()`**: FORBIDDEN — always extract a named sub-component
+- **Hooks in `.map()`**: FORBIDDEN — always extract a named sub-component with its own `useInView` ref
 - **`ringColor`** is NOT a valid `React.CSSProperties` key — use `outline`/`border` instead
 - **Film grain on parallax containers**: FORBIDDEN — GPU continuous repaint on scroll
+- **overflow:hidden on GSAP wrappers**: safe (no internal sticky in overlap:true sections); use `overflow:'clip'` if uncertain
+- **CountUp**: always `useState` + `useMotionValueEvent(sv,'change',v=>setText(...))` — never MotionValue-as-child (invisible on mobile)
 
 ---
 

@@ -46,12 +46,22 @@
 ## 📍 Етапи розробки та Посторінкові Вектори
 
 ### 🏁 Крок 1. Головний Лендинг (`/`)
-*   **Статус**: ⏳ В роботі (Перший етап)
-*   **Вектори перевірки**:
-    *   UI/UX / Themes & Motion
-    *   Server Side & Database
-    *   Логіка і функціонал сторінки
-    *   Тести (E2E & Unit)
+*   **Статус**: ⏳ В роботі — оновлено 2026-05-28
+*   **Playbook**: [STEP_01_landing.md](../RELEASE/STEPS/STEP_01_landing.md)
+*   **Архітектура (актуально 2026-05-28)**:
+    *   **Entry:** `src/app/page.tsx` → `RootPageClient.tsx` (TMA guard) → `LandingPageContent.tsx`
+    *   **Pre-stack:** LandingHero, LandingTrustBar, LandingMarquee
+    *   **GSAP card-rise stack (11 секцій, 30vh overlap, scrub:1):** Agitation → Magic → BentoFeatures → Integrations → ClientFlow → Comparison → [Process excluded] → Economy → Pricing → [FAQ excluded] → FooterCTA
+    *   **Excluded from overlap (transparent bg):** LandingProcess (sticky left col), LandingFAQ (accordion)
+    *   **Pending integration:** LandingTestimonials.tsx (файл існує, не в page)
+*   **Виміри якості**:
+    *   ✅ **Motion & Transitions** — GSAP ScrollTrigger stack, per-item `useInView`, word/sentence reveals, CountUp fix, spring animations
+    *   ⏳ **Aesthetics & Themes** — `--l-*` CSS tokens встановлено; mobile 375px + dark sections — pending
+    *   ⏳ **No-Emoji Policy** — не перевірено
+    *   ⏳ **Errors & Validation** — CTA redirects, ROI Calculator
+    *   ⏳ **A11y & Performance** — `<main>`, `aria-label` на Bento ✓; Lighthouse pending
+    *   ⏳ **Core Features** — ROI Calculator, nav links, mobile overflow
+    *   ⏳ **Tests** — Playwright smoke + client journey
 
 ---
 
