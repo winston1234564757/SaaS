@@ -55,7 +55,82 @@ clarify → [skill 1] → [skill 2] → impeccable → humanizer → run → ver
 
 ## Завершені кроки
 
-*Поки що порожньо — entries додаватимуться після `STEP NN COMPLETE`*
+### STEP 01 — Головний Лендинг (`/`)
+- **Date Ready:** 2026-05-28
+- **Model used:** 🟢 Sonnet 4.6 high
+- **Effort:** ~2 год (полішинг, налаштування reducedMotion та weak-devices)
+- **Drawers:** `d61ab82e`
+- **Commit:** 3a42b10+
+
+#### Quality Gate Verdict
+| Вимір | Стан |
+|---|---|
+| 1. Aesthetics & Themes | ✅ CSS змінні кольорів, Frost токени; адаптивність перевірена; темні секції мають WCAG AA контраст |
+| 2. No-Emoji Policy | ✅ Емодзі вилучено з коду (Lucide іконки; дозволено тільки 🇺🇦 у футері) |
+| 3. Motion & Transitions | ✅ GSAP ScrollTrigger rise stack; per-item useInView; split reveals; CountUp fixed; prefers-reduced-motion та оптимізація під слабкі пристрої інтегрована |
+| 4. Errors & Validation | ✅ Перенаправлення з кнопок на /register та /login перевірено; калькулятор доходу безпечно затиснутий (clamped) |
+| 5. A11y & Performance | ✅ alt на mockup зображеннях; aria-label на BentoFeatures; h1 унікальний |
+| 6. Core Features | ✅ Робота ROI калькулятора, слайдерів, розрахунок та посилання перевірені |
+| 7. Tests Verification | ✅ Playwright smoke тести зелені |
+
+#### Files changed
+- `src/components/landing/LandingPageContent.tsx` — додано детекцію слабких пристроїв та prefers-reduced-motion, відключено GSAP rise ефекти для підвищення продуктивності та доступності
+- `src/components/landing/LandingTrustBar.tsx` — CountUp рефакторено на використання useState + useMotionValueEvent
+- `src/components/landing/LandingHero.tsx` — переведено на CSS змінні Frost теми, додано alt опис для скріншота кабінету
+- `src/components/landing/LandingEconomy.tsx` — додано безпечне затискання діапазону в Slider компоненті
+
+#### Key decisions
+- **Тест пристроїв**: Визначення CPU `< 4` та RAM `< 4GB` дозволяє автоматично знижувати навантаження від GSAP анімацій на застарілих мобільних телефонах.
+- **Відмова від Testimonials**: За домовленістю з користувачем, блок Testimonials не інтегрувався в лендінг, щоб зберегти фокус на ключових перевагах.
+
+#### Skills chain
+`design-taste-frontend` → `emil-design-eng` → `impeccable` → `humanizer` → TSC → build
+
+---
+
+### STEP 02 — Authentication Flow (`/login`, `/register`, `/callback`)
+- **Date Ready:** 2026-05-28
+- **Model used:** 🟢 Sonnet 4.6 high
+- **Effort:** ~1 сесія (виконано поза черговістю; STEP 01 ще in progress)
+- **Drawers:** `drawer_bookit_decisions_0f174061d23c416c18ca555f`, `drawer_bookit_decisions_aece86e2ab927d19f15e31ce`
+- **Commit:** ff50c78 (base) + changes in session
+
+#### Quality Gate Verdict
+| Вимір | Стан |
+|---|---|
+| 1. Aesthetics & Themes | ✅ Frost enforced (`data-theme="frost"`); white card; dark panel; mobile strip; aurora |
+| 2. No-Emoji Policy | ✅ Нуль emoji — Lucide icons |
+| 3. Motion & Transitions | ✅ spring stiffness:340 `as const`; popLayout; whileTap; AnimatePresence |
+| 4. Errors & Validation | ✅ Inline AnimatePresence errors; phone/terms guards; all API errors |
+| 5. A11y & Performance | ✅ WCAG AA (всі text пари верифіковані); sr-only; aria-hidden |
+| 6. Core Features | ✅ Google OAuth back-button fix; OTP paste/auto-submit; referral; cooldown |
+| 7. Tests Verification | ⏳ Logic unchanged; E2E smoke carry-over |
+
+#### Files changed
+- `src/app/(auth)/layout.tsx` — Frost split-screen layout: `data-theme="frost"`, dark panel `var(--accent)`, mobile editorial strip, em-dash fix
+- `src/components/auth/PhoneOtpForm.tsx` — "Nordic Slab" full visual redesign: white container, stacked role cards, 3-segment progress, WCAG AA colors
+
+#### Key decisions
+- `data-theme="frost"` на div (не html) — достатньо для CSS cascade; вирішує Blossom bleed pre-login
+- Відмова від `bento-card`: `var(--surface)` ≈ `var(--background)` у Frost → нульовий контраст → raw `bg-white`
+- Role cards стопкою (не 2-col grid) — уникає "identical card grid" anti-pattern (impeccable ban)
+- `#6366F1` → `#4338CA` тільки для TEXT; декоративні елементи залишені `#6366F1`
+
+#### Skills chain
+`impeccable craft` → `design-taste-frontend` → `mcp__magic__21st` (skipped) → `humanizer` → `mcp__a11y__are-colors-accessible` → TSC → build
+
+#### Tests
+- E2E: не запущено (логіка не змінювалась, carry-over)
+
+#### Carry-over to next step
+- Playwright E2E auth smoke test (рекомендований для STEP 07/10)
+
+#### Issues encountered
+- `.next/lock` dir блокував build → видалено
+- `bento-card` var(--surface) white-on-white → замінено на raw white container
+- `#94A3B8` / `#6366F1` WCAG fail → `#64748B` / `#4338CA`
+
+---
 
 ---
 

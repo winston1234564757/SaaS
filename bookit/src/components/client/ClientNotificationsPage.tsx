@@ -162,11 +162,13 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                   onClick={() => {
                     if (isBroadcast && broadcast?.url) {
                       window.location.href = broadcast.url;
-                    } else if (notif.relatedBookingId || notif.type === 'new_booking' || notif.type === 'booking_cancelled' || notif.type === 'reminder') {
+                    } else if (notif.type === 'support_user_reply') {
+                      router.push('/my/support/chat');
+                    } else if (notif.relatedBookingId || notif.type === 'new_booking' || notif.type === 'booking_cancelled' || notif.type === 'reminder' || notif.type === 'booking_created' || notif.type === 'booking_confirmed' || notif.type === 'booking_rescheduled' || notif.type === 'booking_completed') {
                       router.push('/my/bookings');
                     }
                   }}
-                  className={`rounded-xl p-4 flex items-start gap-3 ${notif.isRead ? 'bg-secondary/55' : 'bg-secondary/80'} ${isBroadcast ? 'border border-accent/25' : 'border border-border'} ${(isBroadcast && broadcast?.url) || notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'reminder'].includes(notif.type) ? 'cursor-pointer hover:opacity-90 active:scale-[0.95] transition-all duration-100' : ''}`}
+                  className={`rounded-xl p-4 flex items-start gap-3 ${notif.isRead ? 'bg-secondary/55' : 'bg-secondary/80'} ${isBroadcast ? 'border border-accent/25' : 'border border-border'} ${(isBroadcast && broadcast?.url) || notif.type === 'support_user_reply' || notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type) ? 'cursor-pointer hover:opacity-90 active:scale-[0.95] transition-all duration-100' : ''}`}
                 >
                   <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/40 text-muted-foreground'}`}

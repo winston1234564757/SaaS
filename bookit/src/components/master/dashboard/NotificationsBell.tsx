@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, X, CalendarDays, XCircle, Star, AlertCircle } from 'lucide-react';
+import { Bell, X, CalendarDays, XCircle, Star, AlertCircle, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications, type MasterNotification } from '@/lib/supabase/hooks/useNotifications';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { timeAgo } from '@/lib/utils/dates';
 
 const TYPE_CONFIG: Record<string, { Icon: React.ElementType; color: string; bg: string }> = {
-  new_booking:        { Icon: CalendarDays, color: 'var(--sage)', bg: 'color-mix(in srgb, var(--sage) 15%, transparent)' },
-  booking_cancelled:  { Icon: XCircle,      color: 'var(--destructive)', bg: 'color-mix(in srgb, var(--destructive) 12%, transparent)'   },
-  new_review:         { Icon: Star,         color: 'var(--accent)', bg: 'color-mix(in srgb, var(--accent) 12%, transparent)'   },
-  unhandled_booking:  { Icon: AlertCircle,  color: 'var(--accent)', bg: 'color-mix(in srgb, var(--accent) 12%, transparent)'   },
+  new_booking:        { Icon: CalendarDays,   color: 'var(--sage)',        bg: 'color-mix(in srgb, var(--sage) 15%, transparent)'        },
+  booking_created:    { Icon: CalendarDays,   color: 'var(--sage)',        bg: 'color-mix(in srgb, var(--sage) 15%, transparent)'        },
+  booking_cancelled:  { Icon: XCircle,        color: 'var(--destructive)', bg: 'color-mix(in srgb, var(--destructive) 12%, transparent)' },
+  new_review:         { Icon: Star,           color: 'var(--accent)',      bg: 'color-mix(in srgb, var(--accent) 12%, transparent)'      },
+  unhandled_booking:  { Icon: AlertCircle,    color: 'var(--accent)',      bg: 'color-mix(in srgb, var(--accent) 12%, transparent)'      },
+  support_user_reply: { Icon: MessageCircle,  color: 'var(--sage)',        bg: 'color-mix(in srgb, var(--sage) 15%, transparent)'        },
 };
 const DEFAULT_TYPE = TYPE_CONFIG.new_booking;
 
@@ -29,6 +31,10 @@ export function NotificationsBell() {
 
   function handleClick(n: MasterNotification) {
     setOpen(false);
+    if (n.type === 'support_user_reply') {
+      router.push('/dashboard/support/chat');
+      return;
+    }
     if (n.type === 'new_review') {
       router.push('/dashboard/reviews');
       return;

@@ -5,9 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Loader2, Phone, MessageSquare,
-  UserRound, Scissors, CheckCircle2,
+  UserRound, Scissors,
 } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { claimMasterRole } from '@/app/(auth)/register/actions';
@@ -18,26 +17,20 @@ type Step = 'role_select' | 'phone' | 'otp';
 type Role = 'client' | 'master';
 
 const STEPS_ORDER: Step[] = ['role_select', 'phone', 'otp'];
+const SPRING = { type: 'spring', stiffness: 340, damping: 30 } as const;
 
-const STEP_SPRING = { type: 'spring', stiffness: 320, damping: 28 } as const;
-
-const ROLES: {
-  id: Role;
-  label: string;
-  description: string;
-  icon: React.ReactNode;
-}[] = [
+const ROLES: { id: Role; label: string; description: string; icon: React.ReactNode }[] = [
   {
     id: 'client',
     label: 'Я Клієнт',
     description: 'Записуюсь до майстрів онлайн',
-    icon: <UserRound size={30} strokeWidth={1.5} />,
+    icon: <UserRound size={22} strokeWidth={1.5} />,
   },
   {
     id: 'master',
     label: 'Я Майстер',
     description: 'Керую записами, клієнтами та доходом',
-    icon: <Scissors size={30} strokeWidth={1.5} />,
+    icon: <Scissors size={22} strokeWidth={1.5} />,
   },
 ];
 
@@ -48,7 +41,6 @@ export function PhoneOtpForm() {
 
   const nextParam = searchParams.get('next');
 
-  // Extract pathname only — guards against /%2F%2F and other encoded open-redirects
   const getSafeRedirect = (defaultPath: string) => {
     if (!nextParam) return defaultPath;
     try {
@@ -72,7 +64,6 @@ export function PhoneOtpForm() {
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const oauthRedirectingRef = useRef(false);
 
-  // Cleanup cooldown on unmount
   useEffect(() => () => {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
   }, []);
@@ -95,7 +86,6 @@ export function PhoneOtpForm() {
     return toFullPhone(phone);
   }
 
-  // Крок 1: Відправка SMS
   async function handleSendSms() {
     if (phone.length < 9) {
       setError('Введіть повний номер телефону');
@@ -122,11 +112,10 @@ export function PhoneOtpForm() {
     startResendCooldown();
   }
 
-  // Крок 2: Верифікація OTP
   // Fix: приймає otpOverride щоб уникнути stale state в auto-submit
   async function handleVerifyOtp(otpOverride?: string) {
     const otp = otpOverride ?? digits.join('');
-    if (otp.length < 6) return; // silent guard
+    if (otp.length < 6) return;
     setLoading(true);
     setError('');
 
@@ -183,8 +172,8 @@ export function PhoneOtpForm() {
       }
     }
 
+    void userId;
     setLoading(false);
-    router.refresh();
 
     if (selectedRole === 'master') {
       const intendedPlan = Cookies.get('intended_plan') ?? null;
@@ -193,7 +182,6 @@ export function PhoneOtpForm() {
       if (intendedPlan === 'pro' || intendedPlan === 'studio') {
         router.push(`/dashboard/billing?plan=${intendedPlan}`);
       } else if (needsOnboarding) {
-        // is_published=false → майстер ще не пройшов онбординг
         router.push(getSafeRedirect('/dashboard/onboarding'));
       } else {
         router.push(getSafeRedirect('/dashboard'));
@@ -203,7 +191,6 @@ export function PhoneOtpForm() {
     }
   }
 
-  // OTP Input handlers
   function handleDigitChange(index: number, val: string) {
     const char = val.replace(/\D/g, '').slice(-1);
     const next = [...digits];
@@ -232,13 +219,11 @@ export function PhoneOtpForm() {
     setDigits(next);
     const lastFilled = Math.min(pasted.length, 5);
     digitRefs.current[lastFilled]?.focus();
-    // Auto-submit якщо вставили повний код
     if (pasted.length === 6) {
       setTimeout(() => handleVerifyOtp(pasted), 80);
     }
   }
 
-  // Cooldown
   function startResendCooldown() {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
     setResendCooldown(60);
@@ -270,9 +255,8 @@ export function PhoneOtpForm() {
     }
   }
 
-  // Google OAuth
+  // Fix: guard від дублікатів
   async function handleGoogleLogin() {
-    // Fix: guard від дублікатів
     if (isGoogleLoading) return;
     setIsGoogleLoading(true);
     setError('');
@@ -304,12 +288,12 @@ export function PhoneOtpForm() {
           queryParams: { prompt: 'select_account' },
         },
       });
-      // Fix: якщо помилка — скидаємо loading і показуємо error
       if (error) {
         setIsGoogleLoading(false);
         setError(error.message || 'Помилка входу через Google');
       } else {
-        oauthRedirectingRef.current = true; // redirect initiated — don't reset loading on focus
+        // Fix: redirect initiated — не скидаємо loading при поверненні фокусу
+        oauthRedirectingRef.current = true;
       }
     } catch {
       setIsGoogleLoading(false);
@@ -322,343 +306,481 @@ export function PhoneOtpForm() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 320, damping: 26 } as const}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={SPRING}
+      className="w-full"
     >
-      <Card padding="none" className="p-8">
-
-        {/* Step progress indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8" aria-hidden="true">
+      {/* ── White architectural container ───────────────────────────────── */}
+      <div
+        className="bg-white rounded-[28px] overflow-hidden"
+        style={{
+          boxShadow: [
+            '0 0 0 1px rgba(99,102,241,0.07)',
+            '0 4px 8px rgba(99,102,241,0.06)',
+            '0 16px 48px rgba(99,102,241,0.08)',
+          ].join(', '),
+        }}
+      >
+        {/* ── Progress — 3 thin segments ──────────────────────────────── */}
+        <div className="flex gap-1.5 px-7 pt-6 pb-0">
           {STEPS_ORDER.map((s, i) => (
-            <motion.div
+            <div
               key={s}
-              initial={false}
-              animate={{
-                width: stepIndex === i ? 22 : 6,
-                opacity: i <= stepIndex ? 1 : 0.2,
-              }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 } as const}
-              style={{
-                height: 6,
-                borderRadius: 100,
-                backgroundColor: i <= stepIndex ? 'var(--accent)' : 'var(--border)',
-              }}
-            />
+              className="h-[3px] flex-1 rounded-full overflow-hidden"
+              style={{ background: 'rgba(99,102,241,0.10)' }}
+            >
+              <motion.div
+                className="h-full w-full rounded-full"
+                style={{ background: '#0F172A', transformOrigin: 'left' }}
+                initial={false}
+                animate={{ scaleX: i <= stepIndex ? 1 : 0 }}
+                transition={{ ...SPRING, delay: i <= stepIndex ? 0 : 0 }}
+              />
+            </div>
           ))}
         </div>
 
-        <AnimatePresence mode="popLayout">
+        <div className="px-7 pb-7 pt-6">
+          <AnimatePresence mode="popLayout">
 
-          {/* ══ Step: role_select ════════════════════════════════════════════ */}
-          {step === 'role_select' && (
-            <motion.div
-              key="role_select"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14, scale: 0.98 }}
-              transition={STEP_SPRING}
-            >
-              {/* Header */}
-              <div className="text-center mb-7">
-                <h1 className="heading-serif text-2xl text-foreground mb-2">
-                  Ласкаво просимо
-                </h1>
-                <p className="text-sm text-muted-foreground/60">
-                  Як будете використовувати Bookit?
-                </p>
-              </div>
+            {/* ══ Step: role_select ══════════════════════════════════════ */}
+            {step === 'role_select' && (
+              <motion.div
+                key="role_select"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={SPRING}
+              >
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <h1 className="heading-serif text-[1.85rem] leading-tight text-[#0F172A] mb-1.5">
+                    Ласкаво просимо
+                  </h1>
+                  <p className="text-sm text-[#64748B]">
+                    Як будете використовувати Bookit?
+                  </p>
+                </div>
 
-              {/* Role cards */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {ROLES.map(role => {
-                  const isSelected = selectedRole === role.id;
-                  return (
-                    <button
-                      key={role.id}
-                      type="button"
-                      onClick={() => setSelectedRole(role.id)}
-                      className={`
-                        relative flex flex-col items-center text-center gap-3
-                        p-5 rounded-2xl border-2 transition-all duration-150 active:scale-[0.97]
-                        ${isSelected
-                          ? 'border-primary bg-primary/8 text-foreground'
-                          : 'border-border bg-secondary/70 text-muted-foreground hover:border-border/60 hover:bg-secondary'
-                        }
-                      `}
+                {/* Role cards — stacked rows, NOT identical 2-col grid */}
+                <div className="flex flex-col gap-2.5 mb-5">
+                  {ROLES.map(role => {
+                    const isSelected = selectedRole === role.id;
+                    return (
+                      <motion.button
+                        key={role.id}
+                        type="button"
+                        onClick={() => setSelectedRole(role.id)}
+                        whileTap={{ scale: 0.985 }}
+                        className="relative w-full flex items-center gap-3.5 p-4 rounded-2xl text-left"
+                        style={{
+                          background: isSelected ? '#0F172A' : '#FFFFFF',
+                          border: isSelected
+                            ? '1.5px solid #0F172A'
+                            : '1.5px dashed rgba(99,102,241,0.28)',
+                          boxShadow: isSelected
+                            ? '0 4px 20px rgba(15,23,42,0.16), inset 0 1px 0 rgba(255,255,255,0.06)'
+                            : 'none',
+                          transition: 'background 180ms ease, border-color 180ms ease, box-shadow 180ms ease',
+                        }}
+                      >
+                        {/* Icon */}
+                        <div
+                          className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: isSelected
+                              ? 'rgba(255,255,255,0.10)'
+                              : 'rgba(99,102,241,0.08)',
+                          }}
+                        >
+                          <span style={{ color: isSelected ? '#FFFFFF' : '#6366F1' }}>
+                            {role.icon}
+                          </span>
+                        </div>
+
+                        {/* Text */}
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className="text-sm font-semibold leading-tight"
+                            style={{ color: isSelected ? '#FFFFFF' : '#0F172A' }}
+                          >
+                            {role.label}
+                          </p>
+                          <p
+                            className="text-xs mt-0.5 leading-snug"
+                            style={{ color: isSelected ? 'rgba(255,255,255,0.72)' : '#64748B' }}
+                          >
+                            {role.description}
+                          </p>
+                        </div>
+
+                        {/* Radio dot */}
+                        <div
+                          className="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                          style={{
+                            borderColor: isSelected
+                              ? 'rgba(255,255,255,0.45)'
+                              : 'rgba(99,102,241,0.25)',
+                          }}
+                        >
+                          <motion.div
+                            animate={{ scale: isSelected ? 1 : 0, opacity: isSelected ? 1 : 0 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 28 } as const}
+                            className="w-2.5 h-2.5 rounded-full bg-white"
+                          />
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Terms */}
+                <label className="flex items-start gap-3 cursor-pointer mb-5 select-none">
+                  <div className="relative mt-[1px] shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={termsAccepted}
+                      onChange={e => setTermsAccepted(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div
+                      className="w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center transition-colors duration-150"
+                      style={{
+                        background: termsAccepted ? '#0F172A' : '#FFFFFF',
+                        borderColor: termsAccepted ? '#0F172A' : 'rgba(99,102,241,0.28)',
+                      }}
                     >
-                      {isSelected && (
-                        <span className="absolute top-2.5 right-2.5 text-primary">
-                          <CheckCircle2 size={16} strokeWidth={2} />
-                        </span>
-                      )}
-                      <span className={isSelected ? 'text-primary' : 'text-muted-foreground/55'}>
-                        {role.icon}
-                      </span>
-                      <div>
-                        <p className="font-semibold text-sm leading-tight mb-1">
-                          {role.label}
-                        </p>
-                        <p className="text-xs text-muted-foreground/55 leading-snug">
-                          {role.description}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Terms checkbox */}
-              <label className="flex items-start gap-3 cursor-pointer mb-5 group">
-                <div className="relative mt-0.5 shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={termsAccepted}
-                    onChange={e => setTermsAccepted(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-5 h-5 rounded-md border-2 border-border bg-secondary peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
-                    {termsAccepted && (
-                      <svg width="11" height="8" viewBox="0 0 11 8" fill="none" aria-hidden="true">
-                        <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
+                      <AnimatePresence>
+                        {termsAccepted && (
+                          <motion.svg
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 600, damping: 28 } as const}
+                            width="10" height="7" viewBox="0 0 10 7"
+                            fill="none" aria-hidden="true"
+                          >
+                            <path
+                              d="M1 3.5L3.5 6L9 1"
+                              stroke="white"
+                              strokeWidth="1.75"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </motion.svg>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
-                </div>
-                <span className="text-xs text-muted-foreground leading-relaxed">
-                  Я ознайомлений(а) та погоджуюсь з{' '}
-                  <a
-                    href="/legal/terms-of-service"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    className="text-primary underline underline-offset-2 hover:text-primary/90 transition-colors"
-                  >
-                    Умовами надання послуг
-                  </a>
-                  ,{' '}
-                  <a
-                    href="/legal/public-offer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    className="text-primary underline underline-offset-2 hover:text-primary/90 transition-colors"
-                  >
-                    Публічною офертою
-                  </a>{' '}
-                  та{' '}
-                  <a
-                    href="/legal/privacy-policy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    className="text-primary underline underline-offset-2 hover:text-primary/90 transition-colors"
-                  >
-                    Політикою конфіденційності
-                  </a>
-                </span>
-              </label>
-
-              {/* CTA */}
-              <button
-                type="button"
-                onClick={() => setStep('phone')}
-                disabled={!termsAccepted}
-                className="flex items-center justify-center w-full py-[14px] rounded-full bg-primary text-white text-sm font-semibold tracking-wide hover:opacity-90 active:scale-[0.97] transition-all shadow-lg shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100"
-              >
-                Продовжити
-              </button>
-            </motion.div>
-          )}
-
-          {/* ══ Step: phone ══════════════════════════════════════════════════ */}
-          {step === 'phone' && (
-            <motion.div
-              key="phone"
-              initial={{ opacity: 0, x: 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -18, scale: 0.99 }}
-              transition={STEP_SPRING}
-            >
-              {/* Role badge — клік повертає до вибору ролі */}
-              <button
-                type="button"
-                onClick={() => { setStep('role_select'); setError(''); }}
-                className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/8 rounded-full px-3 py-1.5 mb-6 hover:bg-primary/14 transition-colors active:scale-[0.97]"
-              >
-                <ArrowLeft size={13} />
-                {roleLabel}
-              </button>
-
-              {/* Header */}
-              <div className="mb-7 text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
-                  <Phone size={22} className="text-primary" />
-                </div>
-                <h1 className="heading-serif text-2xl text-foreground mb-1.5">
-                  Вхід у Bookit
-                </h1>
-                <p className="text-sm text-muted-foreground/60">
-                  Введіть номер — надішлемо код
-                </p>
-              </div>
-
-              {/* Google OAuth */}
-              <button
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={isGoogleLoading}
-                className="flex items-center justify-center gap-2.5 w-full py-[13px] px-6 rounded-full bg-secondary text-foreground text-sm font-semibold border border-border hover:border-border/60 hover:shadow-md active:scale-[0.97] transition-all shadow-sm mb-5 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isGoogleLoading ? <Loader2 size={17} className="animate-spin" /> : <GoogleIcon />}
-                Продовжити з Google
-              </button>
-
-              {/* Divider */}
-              <div className="relative mb-5">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-[11px] uppercase">
-                  <span className="bg-secondary/80 px-3 text-muted-foreground/50 tracking-wide">
-                    або через SMS
+                  <span className="text-xs text-[#64748B] leading-relaxed">
+                    Я ознайомлений(а) та погоджуюсь з{' '}
+                    <a
+                      href="/legal/terms-of-service"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="text-[#4338CA] underline underline-offset-2"
+                    >
+                      Умовами надання послуг
+                    </a>
+                    ,{' '}
+                    <a
+                      href="/legal/public-offer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="text-[#4338CA] underline underline-offset-2"
+                    >
+                      Публічною офертою
+                    </a>{' '}
+                    та{' '}
+                    <a
+                      href="/legal/privacy-policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="text-[#4338CA] underline underline-offset-2"
+                    >
+                      Політикою конфіденційності
+                    </a>
                   </span>
-                </div>
-              </div>
+                </label>
 
-              {/* Phone field */}
-              <div className="mb-4">
-                <div className="flex items-center rounded-full border border-border bg-secondary overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 transition-all">
-                  <span className="pl-5 pr-2 text-muted-foreground font-medium text-sm select-none shrink-0">
-                    +38
-                  </span>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder="0XX XXX XX XX"
-                    value={formatPhoneDisplay(phone)}
-                    onChange={e => handlePhoneChange(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSendSms()}
-                    className="flex-1 py-[14px] pr-5 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/50"
-                    autoFocus
-                    autoComplete="tel-national"
-                  />
-                </div>
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="mt-2 text-sm text-destructive pl-2"
-                  >
-                    {error}
-                  </motion.p>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSendSms}
-                disabled={loading || phone.length < 9}
-                className="flex items-center justify-center gap-2 w-full py-[14px] rounded-full bg-primary text-white text-sm font-semibold tracking-wide hover:opacity-90 active:scale-[0.97] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                {loading ? 'Надсилаємо...' : 'Отримати код'}
-              </button>
-            </motion.div>
-          )}
-
-          {/* ══ Step: otp ════════════════════════════════════════════════════ */}
-          {step === 'otp' && (
-            <motion.div
-              key="otp"
-              initial={{ opacity: 0, x: 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -18, scale: 0.99 }}
-              transition={STEP_SPRING}
-            >
-              {/* Header */}
-              <div className="mb-7 text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
-                  <MessageSquare size={22} className="text-primary" />
-                </div>
-                <h1 className="heading-serif text-2xl text-foreground mb-1.5">
-                  Введіть код
-                </h1>
-                <p className="text-sm text-muted-foreground/60">
-                  Код надіслано на +38 {formatPhoneDisplay(phone)}
-                </p>
-              </div>
-
-              {/* 6-digit boxes */}
-              <div className="flex justify-center gap-2 mb-5">
-                {digits.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={el => { digitRefs.current[i] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={d}
-                    onChange={e => handleDigitChange(i, e.target.value)}
-                    onKeyDown={e => handleDigitKeyDown(i, e)}
-                    onPaste={i === 0 ? handleDigitPaste : undefined}
-                    autoFocus={i === 0}
-                    className="w-11 h-[60px] text-center text-xl font-bold text-foreground rounded-xl border-2 border-border bg-secondary outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all caret-primary"
-                  />
-                ))}
-              </div>
-
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="mb-4 text-sm text-destructive text-center"
-                >
-                  {error}
-                </motion.p>
-              )}
-
-              <button
-                type="button"
-                onClick={() => handleVerifyOtp()}
-                disabled={loading || digits.some(d => !d)}
-                className="flex items-center justify-center gap-2 w-full py-[14px] rounded-full bg-primary text-white text-sm font-semibold tracking-wide hover:opacity-90 active:scale-[0.97] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                {loading ? 'Перевіряємо...' : 'Підтвердити'}
-              </button>
-
-              {/* Back + resend */}
-              <div className="flex items-center justify-between mt-5">
+                {/* CTA */}
                 <button
                   type="button"
-                  onClick={() => {
-                    setStep('phone');
-                    setDigits(['', '', '', '', '', '']);
-                    setError('');
+                  onClick={() => setStep('phone')}
+                  disabled={!termsAccepted}
+                  className="w-full py-[14px] rounded-full text-sm font-semibold text-white tracking-wide active:scale-[0.97] transition-all duration-150 disabled:cursor-not-allowed"
+                  style={{
+                    background: termsAccepted ? '#0F172A' : 'rgba(15,23,42,0.28)',
+                    boxShadow: termsAccepted
+                      ? '0 4px 24px rgba(15,23,42,0.22)'
+                      : 'none',
                   }}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors active:scale-[0.97]"
                 >
-                  <ArrowLeft size={14} />
-                  Змінити номер
+                  Продовжити
                 </button>
+              </motion.div>
+            )}
 
+            {/* ══ Step: phone ════════════════════════════════════════════ */}
+            {step === 'phone' && (
+              <motion.div
+                key="phone"
+                initial={{ opacity: 0, x: 22 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -22, scale: 0.99 }}
+                transition={SPRING}
+              >
+                {/* Back badge */}
                 <button
                   type="button"
-                  onClick={handleResend}
-                  disabled={resendCooldown > 0}
-                  className="text-sm text-primary font-medium disabled:text-muted-foreground/50 disabled:cursor-default hover:underline transition-colors"
+                  onClick={() => { setStep('role_select'); setError(''); }}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium mb-6 transition-opacity hover:opacity-70 active:scale-[0.97]"
+                  style={{
+                    color: '#4338CA',
+                    background: 'rgba(99,102,241,0.08)',
+                    borderRadius: 100,
+                    padding: '5px 12px 5px 10px',
+                  }}
                 >
-                  {resendCooldown > 0 ? `Знову через ${resendCooldown} с` : 'Надіслати знову'}
+                  <ArrowLeft size={12} strokeWidth={2} />
+                  {roleLabel}
                 </button>
-              </div>
-            </motion.div>
-          )}
 
-        </AnimatePresence>
-      </Card>
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <div
+                    className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
+                    style={{ background: 'rgba(99,102,241,0.08)' }}
+                  >
+                    <Phone size={20} strokeWidth={1.5} style={{ color: '#6366F1' }} />
+                  </div>
+                  <h1 className="heading-serif text-[1.65rem] leading-tight text-[#0F172A] mb-1">
+                    Вхід у Bookit
+                  </h1>
+                  <p className="text-sm text-[#64748B]">
+                    Введіть номер. Надішлемо код.
+                  </p>
+                </div>
+
+                {/* Google */}
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={isGoogleLoading}
+                  className="flex items-center justify-center gap-2.5 w-full py-[13px] rounded-full text-sm font-semibold transition-all active:scale-[0.97] mb-4 disabled:opacity-55 disabled:cursor-not-allowed"
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1.5px solid rgba(15,23,42,0.12)',
+                    color: '#0F172A',
+                    boxShadow: '0 1px 4px rgba(15,23,42,0.06)',
+                  }}
+                >
+                  {isGoogleLoading
+                    ? <Loader2 size={16} className="animate-spin" />
+                    : <GoogleIcon />
+                  }
+                  Продовжити з Google
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1 h-px" style={{ background: 'rgba(99,102,241,0.10)' }} />
+                  <span
+                    className="text-[11px] uppercase tracking-wider"
+                    style={{ color: '#64748B' }}
+                  >
+                    або SMS
+                  </span>
+                  <div className="flex-1 h-px" style={{ background: 'rgba(99,102,241,0.10)' }} />
+                </div>
+
+                {/* Phone input */}
+                <div className="mb-4">
+                  <div
+                    className="flex items-center rounded-2xl overflow-hidden transition-all duration-150 focus-within:ring-2 focus-within:ring-[rgba(99,102,241,0.14)]"
+                    style={{
+                      background: '#F8F9FF',
+                      border: '1.5px solid rgba(99,102,241,0.16)',
+                    }}
+                  >
+                    <span
+                      className="pl-5 pr-2 text-sm select-none shrink-0 font-medium"
+                      style={{ color: '#64748B' }}
+                    >
+                      +38
+                    </span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="0XX XXX XX XX"
+                      value={formatPhoneDisplay(phone)}
+                      onChange={e => handlePhoneChange(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSendSms()}
+                      className="flex-1 py-[13px] pr-5 text-sm bg-transparent outline-none"
+                      style={{
+                        color: '#0F172A',
+                      }}
+                      autoFocus
+                      autoComplete="tel-national"
+                    />
+                  </div>
+
+                  <AnimatePresence>
+                    {error && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.14 }}
+                        className="mt-2 text-xs pl-1"
+                        style={{ color: '#EF4444' }}
+                      >
+                        {error}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* CTA */}
+                <button
+                  type="button"
+                  onClick={handleSendSms}
+                  disabled={loading || phone.length < 9}
+                  className="flex items-center justify-center gap-2 w-full py-[14px] rounded-full text-sm font-semibold text-white tracking-wide transition-all duration-150 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{
+                    background: '#0F172A',
+                    boxShadow: (loading || phone.length < 9)
+                      ? 'none'
+                      : '0 4px 24px rgba(15,23,42,0.22)',
+                  }}
+                >
+                  {loading && <Loader2 size={15} className="animate-spin" />}
+                  {loading ? 'Надсилаємо...' : 'Отримати код'}
+                </button>
+              </motion.div>
+            )}
+
+            {/* ══ Step: otp ══════════════════════════════════════════════ */}
+            {step === 'otp' && (
+              <motion.div
+                key="otp"
+                initial={{ opacity: 0, x: 22 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -22, scale: 0.99 }}
+                transition={SPRING}
+              >
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <div
+                    className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
+                    style={{ background: 'rgba(99,102,241,0.08)' }}
+                  >
+                    <MessageSquare size={20} strokeWidth={1.5} style={{ color: '#6366F1' }} />
+                  </div>
+                  <h1 className="heading-serif text-[1.65rem] leading-tight text-[#0F172A] mb-1">
+                    Введіть код
+                  </h1>
+                  <p className="text-sm text-[#64748B]">
+                    Надіслано на +38 {formatPhoneDisplay(phone)}
+                  </p>
+                </div>
+
+                {/* OTP digits */}
+                <div className="flex justify-center gap-2 mb-4">
+                  {digits.map((d, i) => (
+                    <input
+                      key={i}
+                      ref={el => { digitRefs.current[i] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={d}
+                      onChange={e => handleDigitChange(i, e.target.value)}
+                      onKeyDown={e => handleDigitKeyDown(i, e)}
+                      onPaste={i === 0 ? handleDigitPaste : undefined}
+                      autoFocus={i === 0}
+                      className={[
+                        'w-11 h-[58px] text-center text-xl font-bold rounded-2xl outline-none',
+                        'transition-all duration-150 caret-[#6366F1]',
+                        d
+                          ? 'bg-[rgba(15,23,42,0.04)] border-2 border-[#0F172A] text-[#0F172A]'
+                          : 'bg-[#F8F9FF] border-2 border-[rgba(99,102,241,0.18)] text-[#0F172A] focus:border-[#6366F1] focus:ring-2 focus:ring-[rgba(99,102,241,0.12)]',
+                      ].join(' ')}
+                    />
+                  ))}
+                </div>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.14 }}
+                      className="mb-3 text-xs text-center"
+                      style={{ color: '#EF4444' }}
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+
+                {/* CTA */}
+                <button
+                  type="button"
+                  onClick={() => handleVerifyOtp()}
+                  disabled={loading || digits.some(d => !d)}
+                  className="flex items-center justify-center gap-2 w-full py-[14px] rounded-full text-sm font-semibold text-white tracking-wide mb-5 transition-all duration-150 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{
+                    background: '#0F172A',
+                    boxShadow: (loading || digits.some(d => !d))
+                      ? 'none'
+                      : '0 4px 24px rgba(15,23,42,0.22)',
+                  }}
+                >
+                  {loading && <Loader2 size={15} className="animate-spin" />}
+                  {loading ? 'Перевіряємо...' : 'Підтвердити'}
+                </button>
+
+                {/* Back + resend */}
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep('phone');
+                      setDigits(['', '', '', '', '', '']);
+                      setError('');
+                    }}
+                    className="flex items-center gap-1.5 text-sm transition-opacity hover:opacity-60 active:scale-[0.97]"
+                    style={{ color: '#64748B' }}
+                  >
+                    <ArrowLeft size={13} strokeWidth={2} />
+                    Змінити номер
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resendCooldown > 0}
+                    className="text-sm font-medium transition-colors disabled:cursor-default"
+                    style={{ color: resendCooldown > 0 ? '#64748B' : '#4338CA' }}
+                  >
+                    {resendCooldown > 0
+                      ? `Повторити через ${resendCooldown} с`
+                      : 'Надіслати знову'
+                    }
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+      </div>
     </motion.div>
   );
 }

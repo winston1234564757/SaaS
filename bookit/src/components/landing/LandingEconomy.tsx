@@ -215,7 +215,8 @@ function Slider({
   format: (v: number) => string;
   onChange: (v: number) => void;
 }) {
-  const pct = ((value - min) / (max - min)) * 100;
+  const clampedValue = Math.min(Math.max(value, min), max);
+  const pct = max > min ? ((clampedValue - min) / (max - min)) * 100 : 0;
 
   return (
     <div>
@@ -227,7 +228,7 @@ function Slider({
           className="font-[family-name:var(--font-cormorant)] text-xl font-semibold"
           style={{ color: 'var(--l-accent)' }}
         >
-          {format(value)}
+          {format(clampedValue)}
         </span>
       </div>
       <div className="relative flex items-center" style={{ height: 40 }}>
@@ -255,12 +256,12 @@ function Slider({
         />
         <input
           type="range"
-          min={min} max={max} step={step} value={value}
+          min={min} max={max} step={step} value={clampedValue}
           onChange={(e) => onChange(Number(e.target.value))}
           className="absolute inset-0 w-full opacity-0 cursor-pointer"
           style={{ height: '100%' }}
           aria-label={label}
-          aria-valuenow={value}
+          aria-valuenow={clampedValue}
           aria-valuemin={min}
           aria-valuemax={max}
         />

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import Cookies from 'js-cookie';
 import { createClient } from './client';
 import type { Profile, MasterProfile, MasterSubscription } from '@/types/database';
 
@@ -12,6 +13,8 @@ interface MasterContextValue {
   subscription: MasterSubscription | null;
   isLoading: boolean;
   refresh: () => Promise<void>;
+  isImpersonating?: boolean;
+  realAdminProfile?: Profile | null;
 }
 
 const MasterContext = createContext<MasterContextValue>({
@@ -43,6 +46,8 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   const [profile, setProfile] = useState<Profile | null>(initialProfile ?? null);
   const [masterProfile, setMasterProfile] = useState<MasterProfile | null>(initialMasterProfile ?? null);
   const [subscription, setSubscription] = useState<MasterSubscription | null>(null);
+  const [realAdminProfile, setRealAdminProfile] = useState<Profile | null>(null);
+  const [isImpersonating, setIsImpersonating] = useState(false);
   // isLoading=false одразу якщо сервер передав дані — хуки запускаються без затримки
   const [isLoading, setIsLoading] = useState(!initialUser);
 
@@ -52,23 +57,45 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   const hasInitialData = useRef(!!initialUser);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const [{ data: p, error: pErr }, { data: mp, error: mpErr }, { data: sub, error: subErr }] = await Promise.all([
-      supabase.from('profiles').select('id, role, full_name, phone, email, avatar_url, telegram_chat_id, created_at, updated_at').eq('id', userId).single(),
-      supabase.from('master_profiles').select('id, slug, business_name, bio, categories, mood_theme, accent_color, subscription_tier, subscription_expires_at, commission_rate, rating, rating_count, is_published, address, city, latitude, longitude, floor, cabinet, instagram_url, telegram_url, telegram_chat_id, avatar_emoji, has_seen_tour, seen_tours, pricing_rules, working_hours, timezone, referral_code, referred_by, retention_cycle_days, dynamic_pricing_extra_earned, c2c_enabled, c2c_discount_pct, segment_config, created_at, updated_at').eq('id', userId).single(),
-      supabase.rpc('get_my_subscription').maybeSingle(),
-    ]);
+    const impersonatedId = Cookies.get('impersonate_master_id');
+    const role = Cookies.get('user_role');
+    const activeImpersonating = role === 'admin' && !!impersonatedId;
+    setIsImpersonating(activeImpersonating);
+
+    const targetUserId = activeImpersonating ? impersonatedId : userId;
+
+    const promises: [Promise<any>, Promise<any>, Promise<any>, Promise<any>?] = [
+      supabase.from('profiles').select('id, role, full_name, phone, email, avatar_url, telegram_chat_id, created_at, updated_at').eq('id', targetUserId).single(),
+      supabase.from('master_profiles').select('id, slug, business_name, bio, categories, mood_theme, accent_color, subscription_tier, subscription_expires_at, commission_rate, rating, rating_count, is_published, address, city, latitude, longitude, floor, cabinet, instagram_url, telegram_url, telegram_chat_id, avatar_emoji, has_seen_tour, seen_tours, pricing_rules, working_hours, timezone, referral_code, referred_by, retention_cycle_days, dynamic_pricing_extra_earned, c2c_enabled, c2c_discount_pct, segment_config, created_at, updated_at').eq('id', targetUserId).single(),
+      activeImpersonating
+        ? supabase.from('master_subscriptions').select('*').eq('master_id', targetUserId).maybeSingle()
+        : supabase.rpc('get_my_subscription').maybeSingle()
+    ];
+
+    if (activeImpersonating) {
+      promises.push(
+        supabase.from('profiles').select('id, role, full_name, phone, email, avatar_url, telegram_chat_id, created_at, updated_at').eq('id', userId).single()
+      );
+    }
+
+    const [pRes, mpRes, subRes, adminRes] = await Promise.all(promises);
 
     if (!mountedRef.current) return;
 
-    if (pErr || mpErr) {
+    if (pRes.error || mpRes.error) {
       console.warn('[MasterContext] fetchProfile error (keeping existing state):',
-        pErr?.message ?? mpErr?.message);
+        pRes.error?.message ?? mpRes.error?.message);
       return;
     }
 
-    setProfile(p ?? null);
-    setMasterProfile(mp ?? null);
-    setSubscription(sub as MasterSubscription ?? null);
+    setProfile(pRes.data ?? null);
+    setMasterProfile(mpRes.data ?? null);
+    setSubscription(subRes.data as MasterSubscription ?? null);
+    if (activeImpersonating && adminRes) {
+      setRealAdminProfile(adminRes.data ?? null);
+    } else {
+      setRealAdminProfile(null);
+    }
   }, [supabase]);
 
   const refresh = useCallback(async () => {
@@ -152,8 +179,8 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   }, [supabase, fetchProfile]);
 
   const contextValue = useMemo(
-    () => ({ user, profile, masterProfile, subscription, isLoading, refresh }),
-    [user, profile, masterProfile, subscription, isLoading, refresh]
+    () => ({ user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile }),
+    [user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile]
   );
 
   return (

@@ -25,7 +25,7 @@ export function LandingHero() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden"
-      style={{ minHeight: '100dvh', background: '#EFF2FF' }}
+      style={{ minHeight: '100dvh', background: 'var(--l-bg)' }}
     >
       {/* Frost gradient blobs */}
       <div
@@ -52,12 +52,12 @@ export function LandingHero() {
           style={{
             background: 'rgba(99,102,241,0.10)',
             border: '1px solid rgba(99,102,241,0.20)',
-            color: '#4338CA',
+            color: 'var(--l-indigo)',
           }}
         >
           <span
             className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: '#6366F1' }}
+            style={{ background: 'var(--l-indigo-glow)' }}
             aria-hidden="true"
           />
           для майстрів краси
@@ -68,11 +68,11 @@ export function LandingHero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spring, delay: 0.16 }}
           className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.9] tracking-tight text-balance"
-          style={{ fontSize: 'clamp(3.4rem, 9.5vw, 7.5rem)', color: '#0F172A' }}
+          style={{ fontSize: 'clamp(3.4rem, 9.5vw, 7.5rem)', color: 'var(--l-accent)' }}
         >
           Більше записів.
           <br />
-          <em className="not-italic" style={{ color: '#6366F1' }}>Жодної метушні.</em>
+          <em className="not-italic" style={{ color: 'var(--l-indigo-glow)' }}>Жодної метушні.</em>
         </motion.h1>
 
         <motion.p
@@ -80,7 +80,7 @@ export function LandingHero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spring, delay: 0.26 }}
           className="mt-6 text-base sm:text-lg leading-relaxed max-w-md"
-          style={{ color: '#475569' }}
+          style={{ color: 'var(--l-muted)' }}
         >
           Один лінк — і клієнти записуються самі, поки ти займаєшся роботою.
         </motion.p>
@@ -95,8 +95,8 @@ export function LandingHero() {
             href="/register"
             className="group flex items-center gap-2 text-sm font-semibold pl-6 pr-2.5 py-3 rounded-full transition-all active:scale-[0.97]"
             style={{
-              background: '#0F172A',
-              color: '#F8FAFC',
+              background: 'var(--l-accent)',
+              color: 'var(--l-accent-on)',
               boxShadow: '0 4px 24px rgba(15,23,42,0.30), 0 1px 4px rgba(15,23,42,0.12)',
             }}
           >
@@ -111,7 +111,7 @@ export function LandingHero() {
           <Link
             href="/login"
             className="text-sm font-medium transition-opacity hover:opacity-60"
-            style={{ color: '#475569' }}
+            style={{ color: 'var(--l-muted)' }}
           >
             Вже є акаунт
           </Link>
@@ -137,7 +137,7 @@ export function LandingHero() {
             {/* Browser chrome */}
             <div
               style={{
-                background: '#1E293B',
+                background: 'var(--l-accent-mid)',
                 borderRadius: '14px 14px 0 0',
                 padding: '10px 14px',
                 display: 'flex',
@@ -169,7 +169,7 @@ export function LandingHero() {
             >
               <Image
                 src="/landing/dashboard.png"
-                alt=""
+                alt="Інтерфейс особистого кабінету майстра в BookIT"
                 fill
                 style={{ objectFit: 'cover', objectPosition: 'top' }}
                 priority

@@ -30,7 +30,12 @@ export async function middleware(request: NextRequest) {
   const hasSession = request.cookies.getAll().some(c => c.name.includes('-auth-token'));
 
   if (!hasSession) {
-    if (pathname.startsWith('/dashboard') || pathname.startsWith('/my') || pathname === '/onboarding') {
+    if (
+      pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/my') ||
+      pathname.startsWith('/admin') ||
+      pathname === '/onboarding'
+    ) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     supabaseResponse.headers.set('x-is-auth', 'false');
@@ -114,9 +119,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Admin-only zone protection
+  if (pathname.startsWith('/admin') && role !== 'admin') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // Role-based redirection
-  if (pathname.startsWith('/dashboard') && role !== null && role !== 'master') {
-    return NextResponse.redirect(new URL('/my/bookings', request.url));
+  if (pathname.startsWith('/dashboard')) {
+    const isImpersonating = role === 'admin' && request.cookies.has('impersonate_master_id');
+    if (role !== 'master' && !isImpersonating) {
+      return NextResponse.redirect(new URL('/my/bookings', request.url));
+    }
   }
 
   if (pathname.startsWith('/my') && role === 'master') {

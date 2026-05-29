@@ -44,6 +44,9 @@ export interface NotifData {
   // Billing
   tier?: string;
   expiresAt?: string;
+  // Support
+  ticketId?: string;
+  userRole?: 'master' | 'client';
   // Misc
   count?: number;
   bookingItems?: string; // formatted bullet list for unhandled_booking
@@ -78,7 +81,9 @@ export type NotifEventType =
   | 'subscription_paid'
   | 'subscription_expiring'
   | 'subscription_failed'
-  | 'subscription_downgraded';
+  | 'subscription_downgraded'
+  | 'support_admin_alert'
+  | 'support_user_reply';
 
 export const notifMap: Record<NotifEventType, NotifTemplate> = {
 
@@ -550,6 +555,44 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `📉 <b>Акаунт переведено на Starter</b>\n\n` +
         `Pro-функції тимчасово недоступні. Поновіть підписку для відновлення доступу.`,
       buttons: [[{ text: 'Поновити', url: `${SITE_URL}/dashboard/billing` }]],
+    }),
+    sms: null,
+  },
+
+  // ── SUPPORT_ADMIN_ALERT (user messages admin → admin) ─────────────────────────
+  support_admin_alert: {
+    isCritical: false,
+    inApp: null,
+    push: null,
+    telegram: (d) => ({
+      text:
+        `🎧 <b>Нове повідомлення в підтримку</b>\n\n` +
+        `👤 Від: <b>${escHtml(d.clientName ?? 'Користувач')}</b>\n` +
+        `💬 Повідомлення: <i>${escHtml(d.comment ?? '')}</i>`,
+      buttons: d.ticketId
+        ? [[{ text: 'Відкрити чат', url: `${SITE_URL}/admin/support?ticketId=${d.ticketId}` }]]
+        : [[{ text: 'Всі звернення', url: `${SITE_URL}/admin/support` }]],
+    }),
+    sms: null,
+  },
+
+  // ── SUPPORT_USER_REPLY (admin replies user → client/master) ───────────────────
+  support_user_reply: {
+    isCritical: false,
+    inApp: (d) => ({
+      title: 'Відповідь від підтримки BookIT',
+      body: d.comment ?? 'Нове повідомлення',
+    }),
+    push: (d) => ({
+      title: '🎧 Відповідь підтримки BookIT',
+      body: d.comment ?? 'Нове повідомлення',
+      url: d.userRole === 'client' ? '/my/support/chat' : '/dashboard/support/chat',
+    }),
+    telegram: (d) => ({
+      text:
+        `🎧 <b>Відповідь від підтримки BookIT</b>\n\n` +
+        `💬 <i>${escHtml(d.comment ?? '')}</i>`,
+      buttons: [[{ text: 'Відкрити чат', url: `${SITE_URL}${d.userRole === 'client' ? '/my/support/chat' : '/dashboard/support/chat'}` }]],
     }),
     sms: null,
   },

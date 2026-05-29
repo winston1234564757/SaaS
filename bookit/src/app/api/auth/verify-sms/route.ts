@@ -180,16 +180,16 @@ export async function POST(req: NextRequest) {
   // STEP 1: Синхронізація IDENTITY (Auth Metadata + Profiles Table).
   let assignedRole = role === 'master' ? 'master' : 'client';
 
-  if (currentUser) {
-    const { data: existingProfile } = await supabaseAdmin
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .maybeSingle();
+  const { data: existingProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('full_name, role')
+    .eq('id', userId)
+    .maybeSingle();
 
-    if (existingProfile?.role === 'master') {
-      assignedRole = 'master'; // don't downgrade a master
-    }
+  if (existingProfile?.role === 'admin') {
+    assignedRole = 'admin'; // Запобігаємо пониженню адміна
+  } else if (existingProfile?.role === 'master') {
+    assignedRole = 'master'; // Запобігаємо пониженню майстра
   }
 
   // 1a. Оновлюємо Auth Metadata (джерело правди для сесій)
@@ -206,12 +206,6 @@ export async function POST(req: NextRequest) {
   }
 
   // STEP 1: Ensure Profile Identity exists
-  const { data: existingProfile } = await supabaseAdmin
-    .from('profiles')
-    .select('full_name, role')
-    .eq('id', userId)
-    .maybeSingle();
-
   const fallbackName = existingProfile?.full_name 
     || currentUser?.user_metadata?.full_name
     || currentUser?.user_metadata?.name

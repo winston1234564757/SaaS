@@ -1,0 +1,449 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useLiveChat } from '@/lib/hooks/useLiveChat';
+import { sendSupportMessageAction, resolveSupportTicketAction } from '@/lib/actions/support';
+import {
+  MessageSquare,
+  CheckCircle2,
+  Paperclip,
+  Send,
+  Loader2,
+  X,
+  Search,
+  User,
+  Image as ImageIcon
+} from 'lucide-react';
+
+interface TicketRecord {
+  id: string;
+  user_id: string;
+  type: 'feedback' | 'bug' | 'idea' | 'chat';
+  status: 'open' | 'active' | 'resolved';
+  created_at: string;
+  updated_at: string;
+  profiles: {
+    full_name: string;
+    phone: string | null;
+    role: string;
+  } | null;
+}
+
+export function AdminSupportConsole() {
+  const [tickets, setTickets] = useState<TicketRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'active' | 'resolved'>('all');
+  const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
+
+  // Chat message send states
+  const [messageText, setMessageText] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { messages, loading: chatLoading } = useLiveChat(activeTicketId);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const supabase = createClient();
+
+  const fetchTickets = async () => {
+    try {
+      const { data, error: fetchErr } = await supabase
+        .from('support_tickets')
+        .select(`
+          id, user_id, type, status, created_at, updated_at,
+          profiles:user_id ( full_name, phone, role )
+        `)
+        .order('updated_at', { ascending: false });
+
+      if (fetchErr) throw fetchErr;
+      setTickets((data as any) || []);
+    } catch (err) {
+      console.error('[AdminSupport] Fetch tickets error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+
+    // Subscribe to support ticket inserts/updates in real-time
+    const channel = supabase
+      .channel('support_tickets_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'support_tickets' },
+        () => {
+          fetchTickets();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, activeTicketId]);
+
+  // Clean file preview url
+  useEffect(() => {
+    return () => {
+      if (filePreview) URL.revokeObjectURL(filePreview);
+    };
+  }, [filePreview]);
+
+  const activeTicket = tickets.find(t => t.id === activeTicketId) || null;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Розмір файлу не повинен перевищувати 10 МБ');
+        return;
+      }
+      setSelectedFile(file);
+      setFilePreview(URL.createObjectURL(file));
+      setError(null);
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    if (filePreview) URL.revokeObjectURL(filePreview);
+    setFilePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const uploadFile = async (ticketId: string): Promise<string | null> => {
+    if (!selectedFile) return null;
+    const fileExt = selectedFile.name.split('.').pop();
+    const randomName = `${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const path = `${ticketId}/${randomName}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('support_attachments')
+      .upload(path, selectedFile, { cacheControl: '3600', upsert: true });
+
+    if (uploadError) {
+      console.error('[SupportAdmin] Upload error:', uploadError.message);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from('support_attachments')
+      .getPublicUrl(path);
+
+    return data?.publicUrl || null;
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageText.trim() && !selectedFile) return;
+    if (!activeTicketId) return;
+
+    setSending(true);
+    setError(null);
+    const currentMsg = messageText;
+    setMessageText('');
+
+    try {
+      let fileUrl: string | null = null;
+      if (selectedFile) {
+        fileUrl = await uploadFile(activeTicketId);
+        removeFile();
+      }
+
+      if (currentMsg.trim() || fileUrl) {
+        const { error: sendErr } = await sendSupportMessageAction(
+          activeTicketId,
+          currentMsg.trim() || 'Зображення прикріплено',
+          fileUrl
+        );
+        if (sendErr) throw new Error(sendErr);
+      }
+    } catch (err: any) {
+      setError(err.message);
+      setMessageText(currentMsg);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleResolveTicket = async () => {
+    if (!activeTicketId) return;
+    setSending(true);
+    try {
+      const { error: resolveErr } = await resolveSupportTicketAction(activeTicketId);
+      if (resolveErr) throw new Error(resolveErr);
+      await fetchTickets();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const filteredTickets = tickets.filter(t => {
+    const nameMatch = (t.profiles?.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (t.profiles?.phone || '').includes(search);
+      
+    const statusMatch = statusFilter === 'all' || t.status === statusFilter;
+    
+    return nameMatch && statusMatch;
+  });
+
+  return (
+    <div className="flex-1 flex gap-6 overflow-hidden rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md shadow-sm h-[72vh]">
+      
+      {/* Left pane: Ticket list */}
+      <div className="w-[320px] shrink-0 border-r border-slate-200/60 flex flex-col overflow-hidden">
+        {/* Search */}
+        <div className="p-4 border-b border-slate-100 space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Пошук користувача..."
+              className="w-full rounded-full border border-slate-200 bg-white pl-9 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 transition"
+            />
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide py-1">
+            {['all', 'open', 'active', 'resolved'].map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s as any)}
+                className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition cursor-pointer shrink-0 ${
+                  statusFilter === s
+                    ? 'bg-slate-900 text-slate-50'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {s === 'all' ? 'всі' : s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tickets Scroll list */}
+        <div className="flex-1 overflow-y-auto divide-y divide-slate-100 scrollbar-hide">
+          {loading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+            </div>
+          ) : filteredTickets.length === 0 ? (
+            <div className="p-6 text-center text-slate-400 text-xs">
+              Тікетів не знайдено
+            </div>
+          ) : (
+            filteredTickets.map((t) => {
+              const isActive = t.id === activeTicketId;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => {
+                    setActiveTicketId(t.id);
+                    setError(null);
+                  }}
+                  className={`w-full text-left p-4 hover:bg-slate-50/50 transition cursor-pointer flex justify-between items-start gap-2 ${
+                    isActive ? 'bg-slate-100/60 border-r-2 border-slate-900' : ''
+                  }`}
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-slate-900 text-xs truncate max-w-[120px]">
+                        {t.profiles?.full_name || 'Користувач'}
+                      </span>
+                      <span className={`text-[9px] font-bold uppercase px-1 rounded border ${
+                        t.profiles?.role === 'master'
+                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                          : 'bg-slate-50 border-slate-200 text-slate-500'
+                      }`}>
+                        {t.profiles?.role}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono">
+                      тип: {t.type}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide border ${
+                      t.status === 'open'
+                        ? 'bg-red-50 text-red-700 border-red-200'
+                        : t.status === 'active'
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                        : 'bg-slate-100 text-slate-500 border-slate-200'
+                    }`}>
+                      {t.status}
+                    </span>
+                    <span className="text-[9px] text-slate-400">
+                      {new Date(t.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Right pane: Chat Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {activeTicket ? (
+          <>
+            {/* Header info */}
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-900 text-sm">
+                    {activeTicket.profiles?.full_name || 'Підтримка'}
+                  </h3>
+                  <span className="text-xs text-slate-500">• {activeTicket.profiles?.phone || ''}</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Тікет ID: {activeTicket.id}
+                </p>
+              </div>
+
+              {activeTicket.status !== 'resolved' && (
+                <button
+                  onClick={handleResolveTicket}
+                  disabled={sending}
+                  className="flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-slate-50 hover:bg-slate-800 transition active:scale-[0.95] cursor-pointer"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Вирішено
+                </button>
+              )}
+            </div>
+
+            {error && (
+              <div className="mx-6 mt-4 rounded-xl bg-red-50 p-3 text-xs text-red-600 border border-red-100 shrink-0">
+                {error}
+              </div>
+            )}
+
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
+              {chatLoading && messages.length === 0 ? (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                </div>
+              ) : (
+                messages.map((msg) => {
+                  const isOwn = msg.sender_id === activeTicket.user_id; // користувач
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex w-full ${!isOwn ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-xs shadow-sm ${
+                          !isOwn
+                            ? 'bg-slate-900 text-slate-50 rounded-br-none'
+                            : 'bg-white text-slate-900 rounded-bl-none border border-slate-150'
+                        }`}
+                      >
+                        <p>{msg.message}</p>
+                        {msg.attachment_url && (
+                          <div className="mt-2 overflow-hidden rounded-lg border border-slate-100">
+                            <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
+                              <img
+                                src={msg.attachment_url}
+                                alt="Attachment"
+                                className="max-h-48 w-full object-cover transition hover:scale-102 cursor-zoom-in"
+                              />
+                            </a>
+                          </div>
+                        )}
+                        <div className="text-[8px] text-right mt-1 text-slate-400">
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Chat Send Form */}
+            {activeTicket.status !== 'resolved' ? (
+              <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-100 shrink-0 space-y-2">
+                {filePreview && (
+                  <div className="relative flex items-center gap-2 rounded-2xl bg-slate-50 border border-slate-200 p-2 pr-8">
+                    <img src={filePreview} alt="Preview" className="h-8 w-8 rounded object-cover" />
+                    <span className="text-xs font-semibold text-slate-700 truncate max-w-[200px]">
+                      {selectedFile?.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="absolute right-2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 active:scale-[0.90] cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-100 active:scale-[0.90] cursor-pointer border border-slate-200"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </button>
+
+                  <input
+                    type="text"
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Напишіть відповідь підтримки..."
+                    className="flex-1 text-xs bg-transparent outline-none text-slate-900 placeholder-slate-400"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={sending || (!messageText.trim() && !selectedFile)}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-slate-50 transition hover:bg-slate-800 active:scale-[0.90] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                  >
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="p-6 text-center border-t border-slate-100 bg-slate-50/30 text-xs text-slate-400 shrink-0 font-medium">
+                Цей тікет вирішено та закрито.
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-2">
+            <MessageSquare className="h-10 w-10 text-slate-350" />
+            <p className="text-xs">Оберіть тікет підтримки зі списку ліворуч, щоб почати чат</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

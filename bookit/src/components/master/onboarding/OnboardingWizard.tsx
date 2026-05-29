@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
@@ -12,86 +12,118 @@ import {
   saveOnboardingSchedule,
   saveOnboardingServices,
   saveOnboardingProgress,
-  saveOnboardingBusinessName,
 } from '@/app/(master)/dashboard/onboarding/actions';
 import { e164ToInputPhone, toFullPhone } from '@/lib/utils/phone';
 import { generateSecureToken } from '@/lib/utils/token';
-import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
-import { serviceCategories } from '@/lib/constants/categories';
 import type { OnboardingData } from '@/types/onboarding';
 import type { BreakWindow } from '@/types/database';
 import {
   type Step, type DayKey, type DaySchedule,
-  STEP_ORDER, DEFAULT_SCHEDULE, TEMPLATE_SCHEDULE,
+  STEP_ORDER, DEFAULT_SCHEDULE,
 } from './steps/types';
-import { StepBasic } from './steps/StepBasic';
-import { StepSchedulePrompt } from './steps/StepSchedulePrompt';
-import { StepScheduleForm } from './steps/StepScheduleForm';
-import { StepServicesPrompt } from './steps/StepServicesPrompt';
-import { StepServicesForm } from './steps/StepServicesForm';
-import { StepProfitPredictor } from './steps/StepProfitPredictor';
-import { StepProfilePreview } from './steps/StepProfilePreview';
-import { StepChannels } from './steps/StepChannels';
+import { OnboardingProgress } from './OnboardingProgress';
+import { StepProfile } from './steps/StepProfile';
+import { StepServices, type SavedService } from './steps/StepServices';
+import { StepSchedule } from './steps/StepSchedule';
+import { StepPreview } from './steps/StepPreview';
 import { StepSuccess } from './steps/StepSuccess';
 import { parseError } from '@/lib/utils/errors';
 
+const VALID_STEPS = new Set<Step>(STEP_ORDER);
+const LEGACY_STEP_MAP: Record<string, Step> = {
+  BASIC: 'PROFILE',
+  SCHEDULE_PROMPT: 'SCHEDULE',
+  SCHEDULE_FORM: 'SCHEDULE',
+  SERVICES_PROMPT: 'SERVICES',
+  SERVICES_FORM: 'SERVICES',
+  PROFIT_PREDICTOR: 'PREVIEW',
+  PROFILE_PREVIEW: 'PREVIEW',
+  CHANNELS: 'SUCCESS',
+};
+
+function normalizeStep(raw: string): Step {
+  if (VALID_STEPS.has(raw as Step)) return raw as Step;
+  return LEGACY_STEP_MAP[raw] ?? 'PROFILE';
+}
+
 interface OnboardingWizardProps {
-  initialStep: Step;
+  initialStep: string;
   initialData: OnboardingData;
 }
 
-function getProgressStep(s: Step): number {
-  if (s === 'BASIC') return 1;
-  if (s === 'SCHEDULE_PROMPT' || s === 'SCHEDULE_FORM') return 2;
-  if (s === 'CHANNELS' || s === 'SUCCESS') return 4;
-  return 3;
-}
-
 export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardProps) {
-  const { profile, masterProfile, refresh } = useMasterContext();
+  const { profile, refresh } = useMasterContext();
   const { showToast } = useToast();
   const router = useRouter();
   const supabase = createClient();
 
-  const isPro = (masterProfile?.subscription_tier ?? 'starter') !== 'starter';
+  useEffect(() => {
+    const prevTheme = document.documentElement.getAttribute('data-theme');
+    const prevBodyBg = document.body.style.backgroundColor;
+    const prevHtmlBg = document.documentElement.style.backgroundColor;
+    document.documentElement.setAttribute('data-theme', 'frost');
+    // Lock scroll + force Frost background so rubber-band overscroll
+    // on iOS never reveals the Blossom body background behind the wizard.
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+    document.body.style.backgroundColor = '#EFF2FF';
+    document.documentElement.style.backgroundColor = '#EFF2FF';
+    return () => {
+      if (prevTheme) document.documentElement.setAttribute('data-theme', prevTheme);
+      else document.documentElement.removeAttribute('data-theme');
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.overscrollBehavior = '';
+      document.body.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+      document.body.style.backgroundColor = prevBodyBg;
+      document.documentElement.style.backgroundColor = prevHtmlBg;
+    };
+  }, []);
 
-  const [step, setStep] = useState<Step>(initialStep);
+  const [step, setStep] = useState<Step>(normalizeStep(initialStep));
   const [direction, setDirection] = useState<1 | -1>(1);
   const [saving, setSaving] = useState(false);
-  const [savedSlug, setSavedSlug] = useState(initialData.slug ?? '');
-  const [copied, setCopied] = useState(false);
 
-  // BASIC
+  // PROFILE state
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState(initialData.avatarUrl ?? '');
   const [avatarCdnUrl, setAvatarCdnUrl] = useState(initialData.avatarUrl ?? '');
   const [fullName, setFullName] = useState(initialData.fullName ?? profile?.full_name ?? '');
   const [phone, setPhone] = useState(initialData.phone ?? e164ToInputPhone(profile?.phone));
   const hasPhone = !!profile?.phone;
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialData.categories ?? masterProfile?.categories ?? []);
-  const [specialization] = useState(initialData.specialization ?? '💅');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    initialData.categories ?? []
+  );
 
-  // SCHEDULE_FORM
+  // SERVICES state — per-category
+  const [categoryPrices, setCategoryPrices] = useState<Record<string, string>>(
+    initialData.categoryPrices ?? {}
+  );
+  const [categoryServiceTypes, setCategoryServiceTypes] = useState<Record<string, Record<string, boolean>>>(
+    initialData.categoryServiceTypes ?? {}
+  );
+
+  // SCHEDULE state
   const [schedule, setSchedule] = useState<Record<DayKey, DaySchedule>>(
     initialData.schedule ?? DEFAULT_SCHEDULE
   );
-  const [bufferTime, setBufferTime] = useState(initialData.bufferTime ?? 0);
-  const [breaks, setBreaks] = useState<BreakWindow[]>(initialData.breaks ?? []);
+  const [bufferTime] = useState(initialData.bufferTime ?? 0);
+  const [breaks] = useState<BreakWindow[]>(initialData.breaks ?? []);
 
-  // SERVICES_FORM
-  const [serviceCategoryId, setServiceCategoryId] = useState(initialData.serviceCategoryId || '');
-  const [serviceBasePrice, setServiceBasePrice] = useState(initialData.serviceBasePrice || '');
-  const [selectedServiceTypes, setSelectedServiceTypes] = useState<Record<string, boolean>>(
-    initialData.selectedServiceTypes || { express: true, standard: true, premium: true }
-  );
+  // Slug (set after profile save)
+  const [savedSlug, setSavedSlug] = useState(initialData.slug ?? '');
+  const [copied, setCopied] = useState(false);
 
-  // PROFIT_PREDICTOR
-  const [emptySlots, setEmptySlots] = useState(initialData.emptySlots ?? 4);
-  const [flashDealsEnabled, setFlashDealsEnabled] = useState(initialData.flashDealsEnabled ?? true);
+  // ── Persist step to DB (non-blocking, errors logged) ────────────────────────
+  function persistStep(step: Step, snapshot: OnboardingData) {
+    saveOnboardingProgress(step, snapshot)
+      .then(({ error }) => { if (error) console.error('[onboarding] step persist error:', step, error); })
+      .catch(err => console.error('[onboarding] step persist network error:', step, err));
+  }
 
-  // PROFILE_PREVIEW
-  const [businessName, setBusinessName] = useState(initialData.businessName ?? '');
-
+  // ── Navigation ──────────────────────────────────────────────────────────────
   function goTo(next: Step) {
     const currentIdx = STEP_ORDER.indexOf(step);
     const nextIdx = STEP_ORDER.indexOf(next);
@@ -101,30 +133,20 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
 
   function buildSnapshot(): OnboardingData {
     return {
-      fullName: (fullName || '').trim() || fullName,
-      specialization,
+      fullName: fullName.trim() || fullName,
       phone,
       avatarUrl: avatarCdnUrl || undefined,
       slug: savedSlug || undefined,
+      categories: selectedCategories,
+      categoryPrices,
+      categoryServiceTypes,
       schedule,
       bufferTime,
       breaks,
-      serviceCategoryId,
-      serviceBasePrice,
-      selectedServiceTypes,
-      emptySlots,
-      flashDealsEnabled,
-      businessName,
-      categories: selectedCategories,
     };
   }
 
-  function persistProgress(nextStep: Step) {
-    saveOnboardingProgress(nextStep, buildSnapshot()).catch(err =>
-      console.error('[onboarding] progress save failed:', err)
-    );
-  }
-
+  // ── Step 1: Profile ─────────────────────────────────────────────────────────
   async function handleSaveProfile() {
     if (!fullName.trim()) return;
     setSaving(true);
@@ -137,27 +159,25 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       if (avatarFile) {
         const ext = avatarFile.name.split('.').pop() ?? 'jpg';
         const path = `avatars/${uid}/${uid}.${ext}`;
-        let uploadTimeoutId: ReturnType<typeof setTimeout> | undefined;
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
         try {
           const { data: up, error: upError } = await Promise.race([
             supabase.storage.from('images').upload(path, avatarFile, { upsert: true }),
             new Promise<never>((_, reject) => {
-              uploadTimeoutId = setTimeout(() => reject(new Error('Timeout завантаження аватара')), 10_000);
+              timeoutId = setTimeout(() => reject(new Error('Timeout')), 10_000);
             }),
           ]);
-          clearTimeout(uploadTimeoutId);
+          clearTimeout(timeoutId);
           if (up) {
             const { data: urlData } = supabase.storage.from('images').getPublicUrl(path);
             avatarUrl = urlData.publicUrl;
             setAvatarCdnUrl(urlData.publicUrl);
           } else if (upError) {
-            console.error('[onboarding] avatar upload error:', upError.message);
-            showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше в налаштуваннях' });
+            showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше' });
           }
-        } catch (uploadErr) {
-          clearTimeout(uploadTimeoutId);
-          console.error('[onboarding] avatar upload failed:', uploadErr);
-          showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше в налаштуваннях' });
+        } catch {
+          clearTimeout(timeoutId);
+          showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше' });
         }
       }
 
@@ -175,110 +195,72 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
         fullName: fullName.trim(),
         phone: phone.trim() ? toFullPhone(phone) : null,
         avatarUrl,
-        avatarEmoji: specialization,
+        avatarEmoji: '',
         slug: finalSlug,
         referralCode,
         categories: selectedCategories,
       });
 
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) });
+        return;
+      }
 
       setSavedSlug(finalSlug);
-      saveOnboardingProgress('SCHEDULE_PROMPT', { ...buildSnapshot(), slug: finalSlug }).catch(err =>
-        console.error('[onboarding] progress save failed:', err)
-      );
-      goTo('SCHEDULE_PROMPT');
-    } catch (err: unknown) {
+      persistStep('SERVICES', { ...buildSnapshot(), slug: finalSlug });
+      goTo('SERVICES');
+    } catch (err) {
       showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
     } finally {
       setSaving(false);
     }
   }
 
+  // ── Step 2: Services ────────────────────────────────────────────────────────
+  async function handleSaveService(services: SavedService[]) {
+    setSaving(true);
+    try {
+      if (services.length > 0) {
+        const { error } = await saveOnboardingServices(services);
+        if (error) {
+          showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) });
+          return;
+        }
+      }
+      persistStep('SCHEDULE', buildSnapshot());
+      goTo('SCHEDULE');
+    } catch (err) {
+      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ── Step 3: Schedule ────────────────────────────────────────────────────────
   async function handleSaveSchedule() {
     setSaving(true);
     try {
       const { error } = await saveOnboardingSchedule({ schedule, bufferTime, breaks });
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
-      persistProgress('SERVICES_PROMPT');
-      goTo('SERVICES_PROMPT');
-    } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleSaveService() {
-    if (!serviceCategoryId || !serviceBasePrice) {
-      persistProgress('PROFIT_PREDICTOR');
-      goTo('PROFIT_PREDICTOR');
-      return;
-    }
-    setSaving(true);
-    try {
-      const template = CATEGORY_TEMPLATES[serviceCategoryId];
-      const basePriceNum = parseFloat(serviceBasePrice);
-      const servicesToSave: Array<{ name: string; emoji: string; price: number; durationMinutes: number }> = [];
-      if (template && !isNaN(basePriceNum)) {
-        (['express', 'standard', 'premium'] as const)
-          .filter(t => selectedServiceTypes?.[t])
-          .forEach(t => servicesToSave.push({
-            name: template[t].name,
-            emoji: template.emoji,
-            price: Math.round(basePriceNum * template[t].priceMult),
-            durationMinutes: template[t].time,
-          }));
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) });
+        return;
       }
-      const { error } = await saveOnboardingServices(servicesToSave);
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
-      persistProgress('PROFIT_PREDICTOR');
-      goTo('PROFIT_PREDICTOR');
-    } catch (err: unknown) {
+      persistStep('PREVIEW', buildSnapshot());
+      goTo('PREVIEW');
+    } catch (err) {
       showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleSaveProfitPredictor() {
-    setSaving(true);
-    try {
-      await saveOnboardingProgress('PROFILE_PREVIEW', buildSnapshot());
-      goTo('PROFILE_PREVIEW');
-    } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
-    } finally {
-      setSaving(false);
-    }
+  // ── Step 4: Preview ─────────────────────────────────────────────────────────
+  async function handleSavePreview() {
+    persistStep('SUCCESS', buildSnapshot());
+    goTo('SUCCESS');
   }
 
-  async function handleSaveProfilePreview() {
-    setSaving(true);
-    try {
-      const { error } = await saveOnboardingBusinessName(businessName);
-      if (error) { showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) }); return; }
-      await saveOnboardingProgress('CHANNELS', buildSnapshot());
-      goTo('CHANNELS');
-    } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleChannelsComplete() {
-    setSaving(true);
-    try {
-      await saveOnboardingProgress('SUCCESS', buildSnapshot());
-      goTo('SUCCESS');
-    } catch (err: unknown) {
-      showToast({ type: 'error', title: 'Помилка', message: parseError(err) });
-    } finally {
-      setSaving(false);
-    }
-  }
-
+  // ── Step 5: Success + Complete ──────────────────────────────────────────────
   async function handleComplete() {
     if (saving) return;
     setSaving(true);
@@ -300,149 +282,108 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
     setTimeout(() => setCopied(false), 2200);
   }
 
+  // ── Slide animation ─────────────────────────────────────────────────────────
   const slideVariants = {
     enter: (dir: number) => ({ opacity: 0, x: dir * 44, scale: 0.97 }),
     center: { opacity: 1, x: 0, scale: 1 },
     exit: (dir: number) => ({ opacity: 0, x: dir * -44, scale: 0.97 }),
   };
   const transition = { type: 'spring' as const, stiffness: 320, damping: 28 };
-  const progressStep = getProgressStep(step);
-  const showProgress = step !== 'SUCCESS';
-
-  // Derive basePrice for predictor: use serviceBasePrice if set, else 500
-  const predictorBasePrice = parseFloat(serviceBasePrice) || 500;
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-start px-4 py-8">
       <div className="w-full max-w-sm">
 
+        {/* Logo */}
         <p className="text-center mb-7">
           <span className="font-serif text-2xl font-semibold text-foreground">
             Bookit<span className="text-primary">.</span>
           </span>
         </p>
 
-        {showProgress && (
-          <div className="flex items-center gap-1.5 mb-6">
-            {[1, 2, 3, 4].map(n => (
-              <div
-                key={n}
-                className="flex-1 h-1.5 rounded-full transition-all duration-500"
-                style={{ background: progressStep >= n ? 'var(--color-sage)' : 'var(--color-peach)' }}
-              />
-            ))}
+        {/* Progress */}
+        {step !== 'SUCCESS' && (
+          <div className="mb-6">
+            <OnboardingProgress step={step} />
           </div>
         )}
 
         <AnimatePresence mode="popLayout" custom={direction}>
-          {step === 'BASIC' && (
-            <StepBasic
-              key="BASIC"
+          {step === 'PROFILE' && (
+            <StepProfile
+              key="PROFILE"
               direction={direction} slideVariants={slideVariants} transition={transition}
               avatarPreview={avatarPreview}
-              fullName={fullName} phone={phone} hasPhone={hasPhone} saving={saving}
-              onAvatarChange={e => { const f = e.target.files?.[0]; if (f) { setAvatarFile(f); setAvatarPreview(URL.createObjectURL(f)); } }}
+              fullName={fullName}
+              phone={phone}
+              hasPhone={hasPhone}
+              saving={saving}
+              selectedCategories={selectedCategories}
+              onAvatarChange={e => {
+                const f = e.target.files?.[0];
+                if (f) { setAvatarFile(f); setAvatarPreview(URL.createObjectURL(f)); }
+              }}
               onFullNameChange={setFullName}
               onPhoneChange={setPhone}
-              selectedCategories={selectedCategories}
               onCategoriesChange={setSelectedCategories}
               onSave={handleSaveProfile}
             />
           )}
-          {step === 'SCHEDULE_PROMPT' && (
-            <StepSchedulePrompt
-              key="SCHEDULE_PROMPT"
+
+          {step === 'SERVICES' && (
+            <StepServices
+              key="SERVICES"
               direction={direction} slideVariants={slideVariants} transition={transition}
-              onSetupSchedule={() => { persistProgress('SCHEDULE_FORM'); goTo('SCHEDULE_FORM'); }}
-              onSkip={() => { persistProgress('SERVICES_PROMPT'); goTo('SERVICES_PROMPT'); }}
+              selectedCategories={selectedCategories}
+              categoryPrices={categoryPrices}
+              categoryServiceTypes={categoryServiceTypes}
+              saving={saving}
+              onCategoryPricesChange={setCategoryPrices}
+              onCategoryServiceTypesChange={setCategoryServiceTypes}
+              onSave={handleSaveService}
+              onSkip={() => {
+                persistStep('SCHEDULE', buildSnapshot());
+                goTo('SCHEDULE');
+              }}
             />
           )}
-          {step === 'SCHEDULE_FORM' && (
-            <StepScheduleForm
-              key="SCHEDULE_FORM"
+
+          {step === 'SCHEDULE' && (
+            <StepSchedule
+              key="SCHEDULE"
               direction={direction} slideVariants={slideVariants} transition={transition}
-              schedule={schedule} bufferTime={bufferTime} breaks={breaks} saving={saving}
-              onToggleDay={day => setSchedule(s => ({ ...s, [day]: { ...s[day], is_working: !s[day].is_working } }))}
-              onScheduleTimeChange={(day, field, val) => setSchedule(s => ({ ...s, [day]: { ...s[day], [field]: val } }))}
-              onBufferChange={setBufferTime}
-              onAddBreak={() => setBreaks(prev => [...prev, { start: '13:00', end: '14:00' }])}
-              onRemoveBreak={i => setBreaks(prev => prev.filter((_, idx) => idx !== i))}
-              onBreakFieldChange={(i, field, val) => setBreaks(prev => prev.map((b, idx) => idx === i ? { ...b, [field]: val } : b))}
-              onApplyTemplate={() => setSchedule(TEMPLATE_SCHEDULE)}
-              onBack={() => { persistProgress('SCHEDULE_PROMPT'); goTo('SCHEDULE_PROMPT'); }}
+              schedule={schedule}
+              saving={saving}
+              onScheduleChange={setSchedule}
               onSave={handleSaveSchedule}
             />
           )}
-          {step === 'SERVICES_PROMPT' && (
-            <StepServicesPrompt
-              key="SERVICES_PROMPT"
-              direction={direction} slideVariants={slideVariants} transition={transition}
-              onAddService={() => { persistProgress('SERVICES_FORM'); goTo('SERVICES_FORM'); }}
-              onSkip={() => { persistProgress('PROFIT_PREDICTOR'); goTo('PROFIT_PREDICTOR'); }}
-            />
-          )}
-          {step === 'SERVICES_FORM' && (
-            <StepServicesForm
-              key="SERVICES_FORM"
-              direction={direction} slideVariants={slideVariants} transition={transition}
-              serviceCategoryId={serviceCategoryId}
-              serviceBasePrice={serviceBasePrice}
-              selectedServiceTypes={selectedServiceTypes}
-              saving={saving}
-              onServiceCategoryIdChange={setServiceCategoryId}
-              onServiceBasePriceChange={setServiceBasePrice}
-              onSelectedServiceTypesChange={setSelectedServiceTypes}
-              onSave={handleSaveService}
-              onBack={() => { persistProgress('SERVICES_PROMPT'); goTo('SERVICES_PROMPT'); }}
-            />
-          )}
-          {step === 'PROFIT_PREDICTOR' && (
-            <StepProfitPredictor
-              key="PROFIT_PREDICTOR"
-              direction={direction} slideVariants={slideVariants} transition={transition}
-              basePrice={predictorBasePrice}
-              emptySlots={emptySlots}
-              flashDealsEnabled={flashDealsEnabled}
-              isPro={isPro}
-              saving={saving}
-              onEmptySlotsChange={setEmptySlots}
-              onFlashDealsEnabledChange={setFlashDealsEnabled}
-              onSave={handleSaveProfitPredictor}
-              onBack={() => { persistProgress('SERVICES_FORM'); goTo('SERVICES_FORM'); }}
-            />
-          )}
-          {step === 'PROFILE_PREVIEW' && (
-            <StepProfilePreview
-              key="PROFILE_PREVIEW"
+
+          {step === 'PREVIEW' && (
+            <StepPreview
+              key="PREVIEW"
               direction={direction} slideVariants={slideVariants} transition={transition}
               fullName={fullName}
-              avatarPreview={avatarPreview}
-              businessName={businessName}
+              avatarUrl={avatarCdnUrl || avatarPreview || undefined}
+              selectedCategories={selectedCategories}
+              categoryPrices={categoryPrices}
+              categoryServiceTypes={categoryServiceTypes}
+              schedule={schedule}
               slug={savedSlug}
-              serviceCategoryId={serviceCategoryId}
-              serviceBasePrice={serviceBasePrice}
-              selectedServiceTypes={selectedServiceTypes}
-              flashDealsEnabled={flashDealsEnabled}
-              isPro={isPro}
-              saving={saving}
-              onBusinessNameChange={setBusinessName}
-              onSave={handleSaveProfilePreview}
-              onBack={() => { persistProgress('PROFIT_PREDICTOR'); goTo('PROFIT_PREDICTOR'); }}
+              onNext={handleSavePreview}
+              onSlugChange={(newSlug) => {
+                setSavedSlug(newSlug);
+                persistStep('PREVIEW', { ...buildSnapshot(), slug: newSlug });
+              }}
             />
           )}
-          {step === 'CHANNELS' && (
-            <StepChannels
-              key="CHANNELS"
-              direction={direction} slideVariants={slideVariants} transition={transition}
-              saving={saving}
-              onComplete={handleChannelsComplete}
-            />
-          )}
+
           {step === 'SUCCESS' && (
             <StepSuccess
               key="SUCCESS"
               direction={direction} slideVariants={slideVariants} transition={transition}
-              savedSlug={savedSlug} copied={copied}
+              savedSlug={savedSlug}
+              copied={copied}
               onCopyLink={handleCopyLink}
               onComplete={handleComplete}
             />

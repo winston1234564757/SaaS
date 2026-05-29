@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   motion,
   useInView,
   useMotionValue,
+  useMotionValueEvent,
   useSpring,
   useTransform,
   useScroll,
@@ -18,7 +19,11 @@ function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
   const inView = useInView(nodeRef, { once: true, margin: '-60px' });
   const mv = useMotionValue(0);
   const sv = useSpring(mv, { stiffness: 70, damping: 15 });
-  const display = useTransform(sv, (v) => `${Math.round(v)}${suffix}`);
+  const [text, setText] = useState(`0${suffix}`);
+
+  useMotionValueEvent(sv, 'change', (v) => {
+    setText(`${Math.round(v)}${suffix}`);
+  });
 
   useEffect(() => {
     if (inView) mv.set(to);
@@ -31,7 +36,7 @@ function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
       animate={inView ? { opacity: 1 } : {}}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      {display}
+      {text}
     </motion.span>
   );
 }

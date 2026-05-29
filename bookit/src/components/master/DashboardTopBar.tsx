@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Users, Scissors,
-  BarChart2, GalleryVerticalEnd, Bell, Settings, ChevronDown, User,
+  BarChart2, GalleryVerticalEnd, Settings, ChevronDown, User,
   Sparkles, ShoppingBag, Wallet, MessageSquare, Rocket, ArrowLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,7 @@ import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
-import { useNotifications } from '@/lib/supabase/hooks/useNotifications';
+import { NotificationsBell } from '@/components/master/dashboard/NotificationsBell';
 
 const PRIMARY_NAV = [
   { href: '/dashboard',            icon: LayoutDashboard,    label: 'Огляд'     },
@@ -132,7 +132,6 @@ export function DashboardTopBar() {
   const pathname  = usePathname();
   const { todayPending } = useDashboardStats();
   const { profile, masterProfile } = useMasterContext();
-  const { unreadCount } = useNotifications();
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeGroup, setActiveGroup] = useState<'none' | 'activity' | 'growth'>('none');
   const topbarRef = useRef<HTMLDivElement>(null);
@@ -292,28 +291,7 @@ export function DashboardTopBar() {
         {/* Right */}
         <div className="flex items-center gap-1.5 ml-auto">
           {/* Notifications */}
-          <Link
-            href="/dashboard"
-            className="relative w-11 h-11 rounded-2xl flex items-center justify-center transition-all active:scale-90 bg-secondary/60 border border-border shadow-sm"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            <Bell size={20} strokeWidth={2} />
-            <AnimatePresence>
-              {unreadCount > 0 && (
-                <motion.span
-                  key="badge"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-                  className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-1"
-                  style={{ background: 'var(--accent)', color: 'white' }}
-                >
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </Link>
+          <NotificationsBell />
 
           {/* Profile */}
           <div className="relative">

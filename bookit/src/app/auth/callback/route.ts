@@ -74,14 +74,20 @@ export async function GET(request: NextRequest) {
       'Користувач';
 
     const isSmsUser = user.email?.endsWith('@bookit.app') ?? false;
-    const assignedRole = (!isSmsUser && role === 'master') ? 'master' : 'client';
+    let assignedRole = (!isSmsUser && role === 'master') ? 'master' : 'client';
 
     // 1. Sync base profile
     const { data: existingProfile } = await admin
       .from('profiles')
-      .select('full_name')
+      .select('full_name, role')
       .eq('id', user.id)
       .maybeSingle();
+
+    if (existingProfile?.role === 'admin') {
+      assignedRole = 'admin'; // Запобігаємо пониженню адміна
+    } else if (existingProfile?.role === 'master') {
+      assignedRole = 'master'; // Запобігаємо пониженню майстра
+    }
 
     await admin.from('profiles').upsert(
       { 
@@ -92,6 +98,11 @@ export async function GET(request: NextRequest) {
       },
       { onConflict: 'id' }
     );
+
+    // Sync auth metadata to keep it consistent
+    await admin.auth.admin.updateUserById(user.id, {
+      user_metadata: { role: assignedRole }
+    });
 
     if (assignedRole === 'master') {
       const { data: existingMaster } = await admin

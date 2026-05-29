@@ -3,12 +3,13 @@ import { Quote } from 'lucide-react';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-[100dvh] flex">
+    // data-theme="frost" тут — все що всередині резолвить Frost CSS vars
+    <div className="min-h-[100dvh] flex" data-theme="frost">
 
       {/* ── Left brand panel (lg+) ─────────────────────────────────────────── */}
       <aside
         className="hidden lg:flex flex-col justify-between w-[45%] relative overflow-hidden p-10 xl:p-14"
-        style={{ background: '#0F172A' }}
+        style={{ background: 'var(--accent)' }}
       >
         {/* Aurora blobs */}
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
@@ -60,7 +61,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               className="text-base leading-relaxed max-w-[32ch]"
               style={{ color: 'rgba(255,255,255,0.45)' }}
             >
-              Розклад, клієнти й дохід — в одному місці.
+              Розклад, клієнти й дохід. В одному місці.
             </p>
           </div>
 
@@ -117,7 +118,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div
         className="flex-1 relative flex flex-col"
         style={{
-          background: '#EFF2FF',
+          background: 'var(--background)',
           backgroundImage: [
             'radial-gradient(ellipse 90% 55% at 50% -10%, rgba(99,102,241,0.18) 0%, transparent 65%)',
             'radial-gradient(ellipse 55% 45% at 88% 8%, rgba(139,92,246,0.11) 0%, transparent 55%)',
@@ -125,14 +126,33 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           ].join(', '),
         }}
       >
-        {/* Mobile nav */}
-        <header className="relative z-10 p-5 lg:hidden">
-          <Link href="/" className="heading-serif text-xl text-foreground">
-            Bookit<span className="text-primary">.</span>
+        {/* Mobile brand strip — dark editorial header (lg:hidden) */}
+        <div
+          className="relative overflow-hidden px-5 pt-6 pb-5 lg:hidden"
+          style={{ background: 'var(--accent)' }}
+        >
+          <div aria-hidden="true" style={{
+            position: 'absolute', top: '-50%', right: '-10%',
+            width: '60%', height: '250%',
+            background: 'radial-gradient(ellipse, rgba(99,102,241,0.35) 0%, transparent 70%)',
+            filter: 'blur(30px)',
+          }} />
+          <Link
+            href="/"
+            className="relative heading-serif text-[1.35rem] block"
+            style={{ color: '#FFFFFF' }}
+          >
+            Bookit<span style={{ color: '#6366F1' }}>.</span>
           </Link>
-        </header>
+          <p
+            className="relative text-[10.5px] uppercase tracking-[0.18em] mt-1.5"
+            style={{ color: 'rgba(255,255,255,0.38)' }}
+          >
+            Для тих, хто перетворив красу на роботу
+          </p>
+        </div>
 
-        <main className="relative z-10 flex-1 flex items-center justify-center px-5 py-10">
+        <main className="relative z-10 flex-1 flex items-center justify-center px-5 py-8">
           <div className="w-full max-w-sm">
             {children}
           </div>

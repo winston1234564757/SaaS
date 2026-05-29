@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-28 · Джерело: живий код (v8.2.3 "Landing Scroll Stack + GSAP")
+> Оновлено: 2026-05-29 · Джерело: живий код (v8.2.4 "Onboarding v2 — per-category services + slug edit")
 
 ---
 
@@ -48,13 +48,41 @@
 | `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
 | `/dashboard/more` | Додаткові посилання: юридика, акаунт | `more/page.tsx` | — | `master/more/MorePage.tsx` |
 
-### Onboarding Wizard
-- Route: `src/app/onboarding/` (окремий layout, не в master)
-- `src/app/onboarding/page.tsx` — async SC: читає `onboarding_step` + `onboarding_data` з DB
-- Кроки: `BASIC → SCHEDULE_PROMPT → SCHEDULE_FORM → SERVICES_PROMPT → SERVICES_FORM → PROFIT_PREDICTOR → PROFILE_PREVIEW → CHANNELS → SUCCESS`
-- **CHANNELS** (новий, Фаза 4): TG deep-link через `generateTelegramConnectToken()` + Push subscribe; перед SUCCESS
-- Прогрес-бар: 4 кроки (було 3)
-- Persistence: `saveOnboardingProgress()` server action → `profiles.onboarding_step` + `profiles.onboarding_data`
+### Onboarding Wizard (v2 — 5-step, 2026-05-29)
+- **Primary route**: `src/app/(master)/dashboard/onboarding/` — всередині master layout з `isOnboarding` guard; чистий Frost environment (без nav/sidebar)
+- **Legacy route**: `src/app/onboarding/page.tsx` — окремий layout; тепер `data-theme="frost"` wrapper (BlobBackground видалено 2026-05-29)
+- `(master)/layout.tsx` → `isOnboarding = pathname.startsWith('/dashboard/onboarding')` → повертає чистий div `data-theme="frost"` без DashboardLayout і без SupportWidget
+- **Нові кроки (v2)**: `PROFILE → SERVICES → SCHEDULE → PREVIEW → SUCCESS`
+- **Legacy step mapping** (всередині `OnboardingWizard`): BASIC→PROFILE, SCHEDULE_PROMPT/FORM→SCHEDULE, SERVICES_PROMPT/FORM→SERVICES, PROFIT_PREDICTOR/PROFILE_PREVIEW→PREVIEW, CHANNELS→SUCCESS
+- `OnboardingProgress.tsx` — 5-dot named progress bar (animated connectors, active dot scales 1.25×)
+- **Step components**: `StepProfile.tsx` (1), `StepServices.tsx` (2, per-category), `StepSchedule.tsx` (3, per-day rows), `StepPreview.tsx` (4, glassmorphism card + slug edit), `StepSuccess.tsx` (5)
+- `StepSchedule`: one-tap "Пн–Сб 10–19" chip → save+advance; "Свій графік" → per-day rows з часом + "до всіх"
+- **Frost theme at SSR level (2026-05-29)**: `src/app/layout.tsx` reads `x-pathname` header → if path starts with `/dashboard/onboarding` or `/onboarding` → forces `theme='frost'` on `<html data-theme>` server-side → inline `beforeInteractive` script sets `body.bg='#EFF2FF'` before JS loads. Fixes Blossom background visible during hydration gap on PC.
+- **Scroll/theme isolation (2026-05-29)**: `OnboardingWizard` useEffect → `html/body overflow:hidden`, `overscrollBehavior:none`, `backgroundColor:#EFF2FF` — запобігає iOS rubber-band overscroll з Blossom тлом
+- **Race condition fix (2026-05-29)**: Видалено `router.refresh()` перед `router.push()` у PhoneOtpForm.tsx — запобігає рейс між refresh RSC і push navigation
+- **Persistence (2026-05-29)**: `saveOnboardingProgress()` тепер використовує `createAdminClient()` (bypass RLS) після верифікації через `getUser()`. Supabase RLS silent failure: anon-client UPDATE повертає `{error:null}` з 0 рядків при блокуванні — крок ніколи не зберігався. Admin client гарантує запис. Import: `@/lib/supabase/admin`.
+- `persistStep()` helper (з error logging) → `saveOnboardingProgress()` server action → `profiles.onboarding_step` + `profiles.onboarding_data`
+- `checkAndUpdateSlug(slug)` server action → uniqueness check + `master_profiles.slug` update (StepPreview inline editing)
+- **OnboardingData v2**: `categoryPrices: Record<catId, string>` + `categoryServiceTypes: Record<catId, Record<tier, bool>>` (per-category)
+- a11y: CTA button text `#0f172a` on `#789A99` accent = 5.85:1 (WCAG AA pass)
+---
+
+## [Platform Admin Zone] — `admin/...`
+
+### Layout & Theme Guard
+- `src/app/admin/layout.tsx` — Server Component; перевіряє адміністративну роль (`role === 'admin'`); ініціює `AdminThemeApplier` для форсування теми **Frost (Ice Lavender)**
+- `src/components/admin/AdminThemeApplier.tsx` — клієнтський компонент для накладання CSS змінних теми Frost
+
+### Routes → Компоненти → Server Actions
+
+| Route | Відповідальність | Page | Actions | Key Component |
+|---|---|---|---|---|
+| `/admin` | Панель огляду: фінансові та операційні метрики BookIT, Bento Grid метрик та Recharts графіки | `admin/page.tsx` | — | `AdminOverviewCharts.tsx` |
+| `/admin/masters` | CRM майстрів: пошук, фільтрація, зміна тарифних планів та тригер "Увійти як майстер" (impersonation) | `admin/masters/page.tsx` | — | `MastersDirectory.tsx` |
+| `/admin/alliances` | B2B Альянси: візуальний граф партнерських мереж на Framer Motion та списки рефералів | `admin/alliances/page.tsx` | — | `AllianceMap.tsx` |
+| `/admin/moderation` | Модераційний хаб: перевірка скарг на контент (відгуки, портфоліо), блокування та налаштування лімітів | `admin/moderation/page.tsx` | — | `ModerationHub.tsx` |
+| `/admin/support` | Пульт техпідтримки: спліт-скрін реального часу з чатами користувачів, чергою тікетів та Realtime оновленнями | `admin/support/page.tsx` | `support.ts` | `AdminSupportConsole.tsx` |
+| `/admin/logs` | Системні логи: діагностика статусів сповіщень, лог помилок каналів та активних SMS OTP | `admin/logs/page.tsx` | — | `SystemLogsViewer.tsx` |
 
 ---
 
@@ -194,6 +222,8 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/components/public/portfolio/PortfolioBookingButton.tsx` — client component: кнопка + inline BookingFlow з pre-selected послугою
 
 ### Auth Flow
+- `src/app/(auth)/layout.tsx` — split-screen Frost layout: 45% dark brand panel (#0F172A + aurora blobs) + 55% form panel; mobile single-column (updated 2026-05-28)
+- `src/components/auth/PhoneOtpForm.tsx` — 3-step flow (role_select→phone→otp); "Nordic Slab" redesign: white container on lavender, stacked role cards (dark slab selected / dashed outline unselected), 3-segment progress line, spring stiffness:340; WCAG AA compliant; no bento-card (updated 2026-05-28)
 - `src/app/(auth)/` — login/register
 - `src/app/auth/callback/` — OAuth callback
 - SMS OTP: `src/app/api/auth/send-sms/`, `verify-sms/`, `link-booking/`
@@ -256,6 +286,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `useSessionWakeup.ts` — visibility change → `resetFetchController` → `invalidateQueries` (усуває нескінченні скелетони після переключення вкладок)
 - `useDeepSleepWakeup.ts` — JS freeze detection → `onlineManager` + `invalidateQueries`
 - `useTour.ts` — онбординг-тур (has_seen_tour)
+- `useLiveChat.ts` — real-time чат підтримки через Supabase Realtime з можливістю надсилання тексту та медіа-вкладень
 - Provider: `src/lib/providers/QueryProvider.tsx`
 
 ### Slot Engine
@@ -437,6 +468,14 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `notifications` | In-app: `type`, `is_read`, `related_booking_id` — DB-тригер або Orchestrator INSERT |
 | `push_subscriptions` | VAPID Web Push підписки; `user_id` FK |
 | `notification_logs` | Лог відправок: `event_type`, `channel`, `status` (success/failed/skipped), `error_text`, `recipient_id`, `master_id` — міграція 136 |
+
+### Platform Admin & Support
+| Таблиця / Bucket | Призначення |
+|---|---|
+| `support_tickets` | Тікети підтримки: `user_id` FK, `type` (feedback/bug/idea/chat), `status` (open/active/resolved), `created_at`, `updated_at` |
+| `support_messages` | Повідомлення підтримки: `ticket_id` FK, `sender_id` FK, `message`, `attachment_url` (скріншоти) |
+| `content_reports` | Скарги на контент: `reporter_id` FK, `target_type` (review/portfolio_item), `target_id` UUID, `reason`, `status` (pending/resolved) |
+| `support_attachments` | Storage Bucket для скріншотів техпідтримки (max 10MB, mime: image/*) |
 
 ### Security
 | Таблиця | Призначення |

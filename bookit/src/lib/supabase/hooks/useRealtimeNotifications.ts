@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast, type ToastType } from '@/lib/toast/context';
 import { createClient } from '../client';
@@ -15,6 +15,7 @@ export function useRealtimeNotifications() {
   const { showToast } = useToast();
   const qc = useQueryClient();
   const router = useRouter();
+  const pathname = usePathname();
   const masterId = masterProfile?.id;
 
   const invalidateAll = useCallback((id: string) => {
@@ -81,6 +82,11 @@ export function useRealtimeNotifications() {
 
           qc.invalidateQueries({ queryKey: ['notifications', masterId] });
 
+          if (n.type === 'support_user_reply' && (pathname === '/dashboard/support/chat' || pathname === '/my/support/chat')) {
+            console.log('[Realtime] Suppressing support notification toast because user is on support chat page.');
+            return;
+          }
+
           const targetUrl = resolveUrl(n.type, n.related_booking_id);
           const actionLabel = n.type === 'new_review' ? 'Переглянути відгук' : 'Переглянути запис';
 
@@ -105,7 +111,7 @@ export function useRealtimeNotifications() {
       supabase.removeChannel(bookingChannel);
       supabase.removeChannel(notifChannel);
     };
-  }, [masterId, invalidateAll, markReadAndNavigate, qc, showToast]);
+  }, [masterId, invalidateAll, markReadAndNavigate, qc, showToast, pathname]);
 
   return null;
 }

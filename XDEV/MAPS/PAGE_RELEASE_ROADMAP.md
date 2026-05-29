@@ -12,9 +12,9 @@
 
 | # | Сторінка | Модель | Статус | Playbook |
 |---|---|---|---|---|
-| 1 | `/` Landing | 🟢 Sonnet 4.6 high | ⏳ In progress | [STEP_01_landing.md](../RELEASE/STEPS/STEP_01_landing.md) |
-| 2 | Auth | 🔴 Opus 4.7 max | 🔒 Blocked | — |
-| 3 | Onboarding | 🔴 Opus 4.7 max | 🔒 Blocked | — |
+| 1 | `/` Landing | 🟢 Sonnet 4.6 high | ✅ Complete | [STEP_01_landing.md](../RELEASE/STEPS/STEP_01_landing.md) |
+| 2 | Auth | 🟢 Sonnet 4.6 high | ✅ Complete | [STEP_02_auth.md](../RELEASE/STEPS/STEP_02_auth.md) |
+| 3 | Onboarding | 🔴 Opus 4.7 max | ⏳ In progress | [STEP_03_onboarding.md](../RELEASE/STEPS/STEP_03_onboarding.md) |
 | 4 | Dashboard Home | 🔴 Opus 4.7 max | 🔒 Blocked | — |
 | 5 | Bookings | 🔴 Opus 4.7 max | 🔒 Blocked | — |
 | 6 | CRM Clients | 🟡 Mixed | 🔒 Blocked | — |
@@ -46,32 +46,39 @@
 ## 📍 Етапи розробки та Посторінкові Вектори
 
 ### 🏁 Крок 1. Головний Лендинг (`/`)
-*   **Статус**: ⏳ В роботі — оновлено 2026-05-28
+*   **Статус**: ✅ Завершено — 2026-05-28
 *   **Playbook**: [STEP_01_landing.md](../RELEASE/STEPS/STEP_01_landing.md)
 *   **Архітектура (актуально 2026-05-28)**:
     *   **Entry:** `src/app/page.tsx` → `RootPageClient.tsx` (TMA guard) → `LandingPageContent.tsx`
     *   **Pre-stack:** LandingHero, LandingTrustBar, LandingMarquee
     *   **GSAP card-rise stack (11 секцій, 30vh overlap, scrub:1):** Agitation → Magic → BentoFeatures → Integrations → ClientFlow → Comparison → [Process excluded] → Economy → Pricing → [FAQ excluded] → FooterCTA
     *   **Excluded from overlap (transparent bg):** LandingProcess (sticky left col), LandingFAQ (accordion)
-    *   **Pending integration:** LandingTestimonials.tsx (файл існує, не в page)
+    *   **Pending integration:** LandingTestimonials.tsx (файл існує, не в page; за згодою з користувачем не інтегровано)
 *   **Виміри якості**:
-    *   ✅ **Motion & Transitions** — GSAP ScrollTrigger stack, per-item `useInView`, word/sentence reveals, CountUp fix, spring animations
-    *   ⏳ **Aesthetics & Themes** — `--l-*` CSS tokens встановлено; mobile 375px + dark sections — pending
-    *   ⏳ **No-Emoji Policy** — не перевірено
-    *   ⏳ **Errors & Validation** — CTA redirects, ROI Calculator
-    *   ⏳ **A11y & Performance** — `<main>`, `aria-label` на Bento ✓; Lighthouse pending
-    *   ⏳ **Core Features** — ROI Calculator, nav links, mobile overflow
-    *   ⏳ **Tests** — Playwright smoke + client journey
+    *   ✅ **Motion & Transitions** — GSAP ScrollTrigger stack, per-item `useInView` animations, word/sentence reveals, CountUp fix, spring animations, prefers-reduced-motion & weak device optimizations
+    *   ✅ **Aesthetics & Themes** — `--l-*` CSS tokens встановлено; mobile 375px + dark sections verified; CSS theme variables integrated
+    *   ✅ **No-Emoji Policy** — пройшов аудит; нуль emoji (крім 🇺🇦 у футері)
+    *   ✅ **Errors & Validation** — CTA redirects verified, ROI Calculator safety clamping added
+    *   ✅ **A11y & Performance** — `<main>`, `aria-label` on Bento, alt attributes on mockup images, WCAG AA contrast checked
+    *   ✅ **Core Features** — ROI Calculator, navigation links, mobile overflow verified
+    *   ✅ **Tests** — Playwright smoke green
 
 ---
 
-### 🔑 Крок 2. Authentication Flow (`/auth/login`, `/auth/register`, `/auth/callback`)
-*   **Статус**: 🔒 Заблоковано
-*   **Вектори перевірки**:
-    *   UI/UX / Themes & Motion
-    *   Server Side & Database
-    *   Логіка і функціонал сторінки
-    *   Тести (E2E & Unit)
+### 🔑 Крок 2. Authentication Flow (`/login`, `/register`, `/auth/callback`)
+*   **Статус**: ✅ Завершено — 2026-05-28 (out-of-order)
+*   **Playbook**: [STEP_02_auth.md](../RELEASE/STEPS/STEP_02_auth.md)
+*   **Key files:**
+    *   `src/app/(auth)/layout.tsx` — Frost split-screen; `data-theme="frost"` fix; dark brand panel; mobile strip
+    *   `src/components/auth/PhoneOtpForm.tsx` — "Nordic Slab": white container, stacked role cards, 3-segment progress, WCAG AA
+*   **Виміри якості**:
+    *   ✅ **Aesthetics & Themes** — Frost enforced; white card на `#EFF2FF`; aurora blobs; mobile editorial strip
+    *   ✅ **No-Emoji Policy** — нуль emoji; Lucide icons
+    *   ✅ **Motion & Transitions** — spring `as const`; `mode="popLayout"`; whileTap; scaleX progress
+    *   ✅ **Errors & Validation** — AnimatePresence inline errors; phone/terms guards; all API errors
+    *   ✅ **A11y & Performance** — WCAG AA verified (`#64748B`, `#4338CA`); sr-only; aria-hidden
+    *   ✅ **Core Features** — Google OAuth back-button fix; OTP paste/auto-submit; referral; cooldown
+    *   ⏳ **Tests** — carry-over (logic unchanged)
 
 ---
 

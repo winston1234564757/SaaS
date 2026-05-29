@@ -1,7 +1,7 @@
 'use server';
 
-
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { normalizeToE164 } from '@/lib/utils/phone';
 import type { OnboardingData, Step } from '@/types/onboarding';
@@ -67,7 +67,6 @@ export async function saveOnboardingProfile(params: {
 
   if (masterError) return { error: masterError.message };
 
-  revalidatePath('/dashboard');
   return { error: null };
 }
 
@@ -159,16 +158,41 @@ export async function saveOnboardingBusinessName(
   return { error: null };
 }
 
+export async function checkAndUpdateSlug(slug: string): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
+  const { data: existing } = await supabase
+    .from('master_profiles')
+    .select('id')
+    .eq('slug', slug)
+    .neq('id', user.id)
+    .maybeSingle();
+
+  if (existing) return { error: 'Цей нік вже зайнятий' };
+
+  const { error } = await supabase
+    .from('master_profiles')
+    .update({ slug })
+    .eq('id', user.id);
+
+  return { error: error?.message ?? null };
+}
+
 export async function saveOnboardingProgress(
   step: Step,
   data: OnboardingData,
 ): Promise<{ error: string | null }> {
+  // Verify identity with user client, then bypass RLS with admin client.
+  // supabase.update() on profiles silently returns error:null with 0 rows
+  // when RLS blocks the write — admin client guarantees the write lands.
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
-  const { error } = await supabase
+  const admin = createAdminClient();
+  const { error } = await admin
     .from('profiles')
     .update({ onboarding_step: step, onboarding_data: data })
     .eq('id', user.id);

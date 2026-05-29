@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { MasterProvider } from '@/lib/supabase/context';
+import { SupportWidget } from '@/components/shared/support/SupportWidget';
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -24,6 +25,7 @@ export default async function OnboardingLayout({ children }: { children: React.R
       initialMasterProfile={masterProfile}
     >
       {children}
+      <SupportWidget />
     </MasterProvider>
   );
 }

@@ -1,25 +1,6 @@
-export type Step =
-  | 'BASIC'
-  | 'SCHEDULE_PROMPT'
-  | 'SCHEDULE_FORM'
-  | 'SERVICES_PROMPT'
-  | 'SERVICES_FORM'
-  | 'PROFIT_PREDICTOR'
-  | 'PROFILE_PREVIEW'
-  | 'CHANNELS'
-  | 'SUCCESS';
+export type Step = 'PROFILE' | 'SERVICES' | 'SCHEDULE' | 'PREVIEW' | 'SUCCESS';
 
-export const STEP_ORDER: Step[] = [
-  'BASIC',
-  'SCHEDULE_PROMPT',
-  'SCHEDULE_FORM',
-  'SERVICES_PROMPT',
-  'SERVICES_FORM',
-  'PROFIT_PREDICTOR',
-  'PROFILE_PREVIEW',
-  'CHANNELS',
-  'SUCCESS',
-];
+export const STEP_ORDER: Step[] = ['PROFILE', 'SERVICES', 'SCHEDULE', 'PREVIEW', 'SUCCESS'];
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 export type DaySchedule = { is_working: boolean; start_time: string; end_time: string };
@@ -85,8 +66,9 @@ export const DEFAULT_SCHEDULE = Object.fromEntries(
   DAYS_ORDER.map(d => [d, { is_working: !['sat', 'sun'].includes(d), start_time: '09:00', end_time: '18:00' }])
 ) as Record<DayKey, DaySchedule>;
 
+// Standard schedule shown as the one-tap default in onboarding (Mon-Sat, 10:00-19:00)
 export const TEMPLATE_SCHEDULE = Object.fromEntries(
-  DAYS_ORDER.map(d => [d, { is_working: !['sat', 'sun'].includes(d), start_time: '10:00', end_time: '19:00' }])
+  DAYS_ORDER.map(d => [d, { is_working: d !== 'sun', start_time: '10:00', end_time: '19:00' }])
 ) as Record<DayKey, DaySchedule>;
 
 export const inputCls = 'w-full px-4 py-3 rounded-lg bg-secondary/70 border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:bg-secondary focus:border-sage focus:ring-2 focus:ring-sage/20 transition-all';

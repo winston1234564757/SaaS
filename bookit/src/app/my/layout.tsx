@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { BlobBackground } from '@/components/shared/BlobBackground';
@@ -8,6 +8,7 @@ import { ChannelBanner } from '@/components/client/ChannelBanner';
 import { B2CRouteGuard } from '@/components/client/B2CRouteGuard';
 import { PublicNavbar } from '@/components/public/PublicNavbar';
 import { SmartBackButton } from '@/components/shared/SmartBackButton';
+import { SupportWidget } from '@/components/shared/support/SupportWidget';
 
 export default async function MyLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -64,6 +65,21 @@ export default async function MyLayout({ children }: { children: React.ReactNode
   // Check if this is a master visiting in client mode
   const isMasterInClientMode = viewMode === 'client' && profile?.role === 'master';
 
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') ?? '';
+  const isChatRoute = pathname === '/my/support/chat';
+
+  if (isChatRoute) {
+    return (
+      <div className="min-h-dvh pt-[env(safe-area-inset-top)]">
+        <BlobBackground />
+        <B2CRouteGuard phone={profile?.phone || null}>
+          {children}
+        </B2CRouteGuard>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-dvh pt-[env(safe-area-inset-top)] md:pt-20">
       <PublicNavbar />
@@ -83,6 +99,7 @@ export default async function MyLayout({ children }: { children: React.ReactNode
           {children}
         </B2CRouteGuard>
       </div>
+      <SupportWidget />
     </div>
   );
 }

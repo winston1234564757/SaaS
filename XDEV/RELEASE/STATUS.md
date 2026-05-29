@@ -2,19 +2,21 @@
 
 > Оновлюється після кожного значущого зрушення. Live джерело правди про прогрес.
 > **Updated:** 2026-05-28
-> **Active step:** STEP 01 (`/` Landing)
-> **Progress:** 0 / 13 complete (STEP 01 in progress, Motion ✅)
-> **Model in use:** 🟢 Sonnet 4.6 high
+> **Active step:** STEP 03 (Onboarding)
+> **Progress:** 2 / 13 complete (STEP 01 ✅; STEP 02 ✅)
+> **Model in use:** 🔴 Opus 4.7 max
 
 ---
 
 ## 🗺️ Загальний прогрес
 
 ```
-[░░░░░░░░░░░░░] 0% (0/13)
+[██░░░░░░░░░░] ~15% (2/13)
 
-Step 01: ⏳ In progress
-Steps 02-13: 🔒 Blocked (sequential)
+Step 01: ✅ Complete (2026-05-28)
+Step 02: ✅ Complete (2026-05-28)
+Step 03: ⏳ In progress
+Steps 04-13: 🔒 Blocked (sequential)
 ```
 
 ---
@@ -23,9 +25,9 @@ Steps 02-13: 🔒 Blocked (sequential)
 
 | # | Сторінка | Модель | Статус | Started | Ready | Drawer ID | Commit |
 |---|---|---|---|---|---|---|---|
-| 01 | `/` Landing | 🟢 Sonnet 4.6 high | ⏳ **In progress** | 2026-05-27 | — | — | — |
-| 02 | Auth (`/login`, `/register`, `/callback`) | 🔴 Opus 4.7 max | 🔒 Blocked | — | — | — | — |
-| 03 | Onboarding (`/onboarding`) | 🔴 Opus 4.7 max | 🔒 Blocked | — | — | — | — |
+| 01 | `/` Landing | 🟢 Sonnet 4.6 high | ✅ **Complete** | 2026-05-27 | 2026-05-28 | `d61ab82e` | 3a42b10+ |
+| 02 | Auth (`/login`, `/register`, `/callback`) | 🟢 Sonnet 4.6 high | ✅ **Complete** | 2026-05-28 | 2026-05-28 | `0f174061` / `aece86e2` | ff50c78+ |
+| 03 | Onboarding (`/onboarding`) | 🔴 Opus 4.7 max | ⏳ **In progress** | 2026-05-28 | — | — | — |
 | 04 | Dashboard Home (`/dashboard`) | 🔴 Opus 4.7 max | 🔒 Blocked | — | — | — | — |
 | 05 | Bookings (`/dashboard/bookings`) | 🔴 Opus 4.7 max | 🔒 Blocked | — | — | — | — |
 | 06 | CRM Clients (`/dashboard/clients`) | 🟡 Mixed | 🔒 Blocked | — | — | — | — |
@@ -45,27 +47,37 @@ Steps 02-13: 🔒 Blocked (sequential)
 
 ## 🎯 ACTIVE STEP — детальний стан
 
-### STEP 01 — Головний Лендинг (`/`)
-- **Playbook:** [STEPS/STEP_01_landing.md](./STEPS/STEP_01_landing.md)
-- **Модель:** 🟢 Sonnet 4.6 high
-- **Статус:** ⏳ In progress
-- **Scope summary:** Повний редизайн лендингу — 11 секцій (Hero → FooterCTA), Frost palette
-- **Estimated effort:** залишається ~2-3 год (emoji → a11y → tests)
-- **Key milestone (2026-05-28):** GSAP ScrollTrigger card-rise stack інтегровано в усі 11 секцій; per-item `useInView` animations; CountUp fix; word-by-word + sentence-by-sentence reveals; `overflowX:'clip'` CLS fix; `overflow:'clip'` borderRadius on rising wrappers
+### STEP 03 — Onboarding Wizard (`/onboarding`)
+- **Playbook:** [STEPS/STEP_03_onboarding.md](./STEPS/STEP_03_onboarding.md)
+- **Модель:** 🟢 Sonnet 4.6 (чат 3)
+- **Статус:** ⏳ In progress — Задачі 1/2/3 з HANDOFF виконані
+- **Scope summary:** 5-step wizard v2 (PROFILE→SERVICES→SCHEDULE→PREVIEW→SUCCESS)
 
-#### 7 Quality Gate progress
+#### Зроблено в чаті 3 (2026-05-29)
+| Задача | Статус | Файли |
+|---|---|---|
+| 1. Баг: multi-category services (per-cat state) | ✅ Done | `OnboardingWizard.tsx`, `StepServices.tsx`, `types/onboarding.ts` |
+| 2. Preview redesign (schedule + Lucide icons) | ✅ Done | `StepPreview.tsx` |
+| 3. Slug editing в StepPreview | ✅ Done | `StepPreview.tsx`, `onboarding/actions.ts` |
+
+#### 7 Quality Gate progress (for STEP 03)
 | Вимір | Стан |
 |---|---|
-| 1. Aesthetics & Themes | ⏳ Частково (`--l-*` CSS tokens ✓, Frost palette ✓; mobile + dark sections перевірити) |
-| 2. No-Emoji Policy | ⏳ Не перевірено |
-| 3. Motion & Transitions | ✅ Завершено (2026-05-28) — GSAP stack, per-item, CountUp, spring |
-| 4. Errors & Validation | ⏳ Не перевірено |
-| 5. A11y & Performance | ⏳ Частково (`<main>` ✓, `aria-label` на Bento ✓; Lighthouse pending) |
-| 6. Core Features | ⏳ Не перевірено |
-| 7. Tests Verification | ⏳ Не запущено |
+| 1. Aesthetics & Themes | ✅ Frost theme, glassmorphism card, round avatar |
+| 2. No-Emoji Policy | ✅ Lucide icons скрізь, emoji відсутні |
+| 3. Motion & Transitions | ✅ popLayout + spring as const |
+| 4. Errors & Validation | ✅ slug regex + server error states |
+| 5. A11y & Performance | ✅ TSC 0 errors, Build success |
+| 6. Core Features | ✅ Per-category save, slug edit, schedule preview |
+| 7. Tests Verification | ⏳ Не запустилися |
 
-#### HANDOFF for STEP 02
-*Буде заповнено при close-out STEP 01*
+#### HANDOFF for STEP 03
+- **Prior step closed:** STEP 01 — Landing Page (`/`)
+- **Commit hash:** 3a42b10+
+- **Drawer:** `d61ab82e`
+- **Open issues:** Testimonials not integrated by user choice
+- **Carry-over to STEP 03:** none
+- **Next chat focus:** STEP 03 — Onboarding Wizard (`/onboarding`). Model: **Opus 4.7 max** (9-step wizard state machine, draft persistence, profit calculator, TMA link)
 
 ---
 

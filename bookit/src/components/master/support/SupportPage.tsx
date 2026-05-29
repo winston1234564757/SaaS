@@ -1,7 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, MessageCircle, BookOpen, Zap, CreditCard, Settings, HelpCircle, TrendingUp, Bell, Shield } from 'lucide-react';
+import { 
+  ChevronDown, 
+  MessageCircle, 
+  BookOpen, 
+  Zap, 
+  CreditCard, 
+  Settings, 
+  HelpCircle, 
+  TrendingUp, 
+  Bell, 
+  Shield, 
+  MessageSquare
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const FAQ_ITEMS = [
   {
@@ -190,58 +203,91 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 export function SupportPage() {
+  const router = useRouter();
+
+  const handleGoToChat = () => {
+    router.push('/dashboard/support/chat');
+  };
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Підтримка</h1>
-        <p className="text-sm text-muted-foreground mt-1">Відповіді на часті питання та зв&apos;язок з командою</p>
+    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      {/* Title Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Підтримка</h1>
+          <p className="text-sm text-muted-foreground mt-1">Зв&apos;язок з командою BookIT та відповіді на питання</p>
+        </div>
+
+        {/* Premium Tab Switcher / Redirect Button */}
+        <div className="flex rounded-full bg-secondary/50 p-1 border border-border shrink-0 self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 px-4.5 py-1.5 rounded-full text-xs font-bold bg-primary text-white shadow-sm">
+            <BookOpen size={14} />
+            Довідка та FAQ
+          </div>
+          <button
+            onClick={handleGoToChat}
+            className="flex items-center gap-1.5 px-4.5 py-1.5 rounded-full text-xs font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer relative"
+          >
+            <MessageSquare size={14} />
+            Чат підтримки
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+          </button>
+        </div>
       </div>
 
-      <div className="bento-card p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <MessageCircle size={20} className="text-primary" />
+      <div className="space-y-6">
+        <div className="bento-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="size-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <MessageCircle size={22} className="text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Потрібна термінова відповідь?</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Почніть діалог у нашому онлайн-чаті або зв&apos;яжіться через Telegram</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground">Написати підтримці</p>
-            <p className="text-xs text-muted-foreground">Відповідаємо протягом 2 годин</p>
-          </div>
-        </div>
-        <a
-          href="https://t.me/bookit_support"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-2xl hover:bg-[#6a8a89] transition-colors"
-        >
-          Telegram
-        </a>
-      </div>
-
-      {FAQ_ITEMS.map(({ category, icon: Icon, questions }) => (
-        <div key={category} className="bento-card p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Icon size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">{category}</h2>
-          </div>
-          <div>
-            {questions.map((item) => (
-              <FAQItem key={item.q} q={item.q} a={item.a} />
-            ))}
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <button
+              onClick={handleGoToChat}
+              className="flex-1 sm:flex-none px-4.5 py-2 bg-primary text-white text-sm font-bold rounded-2xl hover:bg-[#6a8a89] active:scale-[0.96] transition-all cursor-pointer text-center"
+            >
+              Почати чат
+            </button>
+            <a
+              href="https://t.me/bookit_support"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 sm:flex-none px-4.5 py-2 bg-secondary text-foreground border border-border text-sm font-medium rounded-2xl hover:bg-secondary/80 active:scale-[0.96] transition-all text-center"
+            >
+              Telegram
+            </a>
           </div>
         </div>
-      ))}
 
-      <div className="text-center py-4">
-        <HelpCircle size={24} className="text-muted-foreground/60 mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">Не знайшли відповідь?</p>
-        <a
-          href="https://t.me/bookit_support"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-primary underline underline-offset-2"
-        >
-          Напишіть нам
-        </a>
+        {FAQ_ITEMS.map(({ category, icon: Icon, questions }) => (
+          <div key={category} className="bento-card p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon size={16} className="text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">{category}</h2>
+            </div>
+            <div>
+              {questions.map((item) => (
+                <FAQItem key={item.q} q={item.q} a={item.a} />
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="text-center py-4">
+          <HelpCircle size={24} className="text-muted-foreground/60 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Не знайшли відповідь?</p>
+          <button
+            onClick={handleGoToChat}
+            className="text-sm text-primary underline underline-offset-2 font-semibold cursor-pointer"
+          >
+            Напишіть нам у чат
+          </button>
+        </div>
       </div>
     </div>
   );

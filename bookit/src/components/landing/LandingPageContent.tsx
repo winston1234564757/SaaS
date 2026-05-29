@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MotionConfig } from 'framer-motion';
@@ -48,7 +48,56 @@ const SECTIONS: SectionDef[] = [
 ];
 
 export function LandingPageContent() {
+  const [prefersReduced, setPrefersReduced] = useState(false);
+
   useEffect(() => {
+    // 1. Check system reduced motion
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let isReduced = mediaQuery.matches;
+
+    // 2. Check hardware constraints for weak devices
+    if (typeof navigator !== 'undefined') {
+      const concurrency = navigator.hardwareConcurrency;
+      const memory = (navigator as any).deviceMemory;
+      if ((concurrency && concurrency < 4) || (memory && memory < 4)) {
+        isReduced = true;
+      }
+    }
+
+    setPrefersReduced(isReduced);
+
+    const listener = (e: MediaQueryListEvent) => {
+      let currentReduced = e.matches;
+      if (typeof navigator !== 'undefined') {
+        const concurrency = navigator.hardwareConcurrency;
+        const memory = (navigator as any).deviceMemory;
+        if ((concurrency && concurrency < 4) || (memory && memory < 4)) {
+          currentReduced = true;
+        }
+      }
+      setPrefersReduced(currentReduced);
+    };
+
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
+
+  useEffect(() => {
+    // Check prefers-reduced-motion / weak devices check inside GSAP setup too
+    const systemReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let isReducedDevice = systemReduced;
+    if (typeof navigator !== 'undefined') {
+      const concurrency = navigator.hardwareConcurrency;
+      const memory = (navigator as any).deviceMemory;
+      if ((concurrency && concurrency < 4) || (memory && memory < 4)) {
+        isReducedDevice = true;
+      }
+    }
+
+    if (isReducedDevice) {
+      return; // Do not register heavy GSAP scroll animations
+    }
+
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
@@ -88,7 +137,7 @@ export function LandingPageContent() {
   }, []);
 
   return (
-    <MotionConfig reducedMotion="never">
+    <MotionConfig reducedMotion={prefersReduced ? 'always' : 'user'}>
       <div className="landing-page relative min-h-dvh" style={{ background: 'var(--l-bg)' }}>
         <LandingScrollProgress />
         <LandingNav />
@@ -102,7 +151,7 @@ export function LandingPageContent() {
             const { Component, id, overlap } = sec;
             const prev = SECTIONS[i - 1];
             // isRising: this section rises up over the previous one
-            const isRising = overlap && prev?.overlap === true;
+            const isRising = overlap && prev?.overlap === true && !prefersReduced;
 
             return (
               <div

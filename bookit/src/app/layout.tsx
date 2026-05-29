@@ -65,8 +65,13 @@ import { headers, cookies } from 'next/headers';
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const initialIsAuth = headersList.get('x-is-auth') === 'true';
+  const pathname = headersList.get('x-pathname') ?? '';
   const cookieStore = await cookies();
-  const theme = cookieStore.get('client_theme')?.value || '';
+  const rawTheme = cookieStore.get('client_theme')?.value || '';
+  // Force Frost on onboarding routes so the inline beforeInteractive script
+  // immediately sets body.backgroundColor = '#EFF2FF' — no JS hydration gap.
+  const isOnboardingPath = pathname.startsWith('/dashboard/onboarding') || pathname.startsWith('/onboarding');
+  const theme = isOnboardingPath ? 'frost' : rawTheme;
 
   return (
     <html lang="uk" className={`${geist.variable} ${greatVibes.variable} ${cormorant.variable}`} data-theme={theme || undefined}>

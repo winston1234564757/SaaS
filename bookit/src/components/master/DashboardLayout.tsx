@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { MasterProvider, useMasterContext } from '@/lib/supabase/context';
 import { useRealtimeNotifications } from '@/lib/supabase/hooks/useRealtimeNotifications';
@@ -9,6 +9,8 @@ import { BookingDetailsModal } from '@/components/master/bookings/BookingDetails
 import { DashboardTopBar } from '@/components/master/DashboardTopBar';
 import { MobileHub } from '@/components/shared/MobileHub';
 import { InstallBanner } from '@/components/shared/InstallBanner';
+import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
+import { SupportWidget } from '@/components/shared/support/SupportWidget';
 import type { Profile, MasterProfile } from '@/types/database';
 
 function ThemeApplier() {
@@ -46,6 +48,8 @@ function ThemeApplier() {
 function DashboardInner({ children }: { children: React.ReactNode }) {
   useRealtimeNotifications();
   const router = useRouter();
+  const pathname = usePathname();
+  const isChatRoute = pathname === '/dashboard/support/chat';
 
   useEffect(() => {
     if (!navigator.serviceWorker) return;
@@ -58,8 +62,21 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     return () => navigator.serviceWorker.removeEventListener('message', handler);
   }, [router]);
 
+  if (isChatRoute) {
+    return (
+      <div className="min-h-dvh flex flex-col" style={{ background: 'transparent' }}>
+        <ImpersonationBanner />
+        <ThemeApplier />
+        <main className="flex-1 w-full h-dvh overflow-hidden">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-dvh flex flex-col" style={{ background: 'transparent' }}>
+      <ImpersonationBanner />
       <ThemeApplier />
 
       {/* Desktop horizontal topbar */}
@@ -83,6 +100,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         <InstallBanner />
         <MobileHub />
       </div>
+
+      <SupportWidget />
 
       <Suspense>
         <BookingDetailsModal />
