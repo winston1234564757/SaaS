@@ -1,10 +1,11 @@
 # 📊 STATUS.md — Live Release Tracker
 
 > Оновлюється після кожного значущого зрушення. Live джерело правди про прогрес.
-> **Updated:** 2026-05-28
-> **Active step:** STEP 03 (Onboarding)
+> **Updated:** 2026-05-29
+> **Active step:** STEP 03 (Onboarding) — rendering bugs resolved, in QA
 > **Progress:** 2 / 13 complete (STEP 01 ✅; STEP 02 ✅)
-> **Model in use:** 🔴 Opus 4.7 max
+> **Model in use:** 🟢 Sonnet 4.6 high
+> **Last commit:** `967bf06` — pushed to GitHub → Vercel deploy triggered
 
 ---
 
@@ -27,7 +28,7 @@ Steps 04-13: 🔒 Blocked (sequential)
 |---|---|---|---|---|---|---|---|
 | 01 | `/` Landing | 🟢 Sonnet 4.6 high | ✅ **Complete** | 2026-05-27 | 2026-05-28 | `d61ab82e` | 3a42b10+ |
 | 02 | Auth (`/login`, `/register`, `/callback`) | 🟢 Sonnet 4.6 high | ✅ **Complete** | 2026-05-28 | 2026-05-28 | `0f174061` / `aece86e2` | ff50c78+ |
-| 03 | Onboarding (`/onboarding`) | 🔴 Opus 4.7 max | ⏳ **In progress** | 2026-05-28 | — | — | — |
+| 03 | Onboarding (`/dashboard/onboarding`) | 🟢 Sonnet 4.6 high | 🔄 **In QA** | 2026-05-28 | — | `9014576630a5` | `967bf06` |
 | 04 | Dashboard Home (`/dashboard`) | 🔴 Opus 4.7 max | 🔒 Blocked | — | — | — | — |
 | 05 | Bookings (`/dashboard/bookings`) | 🔴 Opus 4.7 max | 🔒 Blocked | — | — | — | — |
 | 06 | CRM Clients (`/dashboard/clients`) | 🟡 Mixed | 🔒 Blocked | — | — | — | — |
@@ -47,29 +48,36 @@ Steps 04-13: 🔒 Blocked (sequential)
 
 ## 🎯 ACTIVE STEP — детальний стан
 
-### STEP 03 — Onboarding Wizard (`/onboarding`)
-- **Playbook:** [STEPS/STEP_03_onboarding.md](./STEPS/STEP_03_onboarding.md)
-- **Модель:** 🟢 Sonnet 4.6 (чат 3)
-- **Статус:** ⏳ In progress — Задачі 1/2/3 з HANDOFF виконані
+### STEP 03 — Onboarding Wizard (`/dashboard/onboarding`)
+- **Playbook:** [STEPS/STEP_03_HANDOFF.md](./STEPS/STEP_03_HANDOFF.md)
+- **Модель:** 🟢 Sonnet 4.6 high
+- **Статус:** 🔄 In QA — всі баги виправлені, задеплоєно на Vercel
 - **Scope summary:** 5-step wizard v2 (PROFILE→SERVICES→SCHEDULE→PREVIEW→SUCCESS)
 
 #### Зроблено в чаті 3 (2026-05-29)
 | Задача | Статус | Файли |
 |---|---|---|
 | 1. Баг: multi-category services (per-cat state) | ✅ Done | `OnboardingWizard.tsx`, `StepServices.tsx`, `types/onboarding.ts` |
-| 2. Preview redesign (schedule + Lucide icons) | ✅ Done | `StepPreview.tsx` |
+| 2. Preview redesign (glassmorphism card, slug edit) | ✅ Done | `StepPreview.tsx`, `onboarding/actions.ts` |
 | 3. Slug editing в StepPreview | ✅ Done | `StepPreview.tsx`, `onboarding/actions.ts` |
+| 4. **Rendering fix: Blossom bleed** → root layout x-pathname forces Frost | ✅ Done | `src/app/layout.tsx` |
+| 5. **Rendering fix: CSS style tag** → `html,body{bg:#EFF2FF!important}` | ✅ Done | `src/app/(master)/layout.tsx` |
+| 6. **Rendering fix: streaming gap** → `loading.tsx` Frost skeleton | ✅ Done | `dashboard/onboarding/loading.tsx` |
+| 7. **Persistence fix: RLS silent failure** → admin client in actions | ✅ Done | `dashboard/onboarding/actions.ts` |
+| 8. **Race condition fix** → removed `router.refresh()` in PhoneOtpForm | ✅ Done | `PhoneOtpForm.tsx` |
+| 9. **Sterile env** → BlobBackground removed, SupportWidget removed | ✅ Done | `onboarding/page.tsx`, `(master)/layout.tsx` |
+| 10. Commit 967bf06 → pushed → Vercel deploy | ✅ Done | 64 files changed |
 
 #### 7 Quality Gate progress (for STEP 03)
 | Вимір | Стан |
 |---|---|
-| 1. Aesthetics & Themes | ✅ Frost theme, glassmorphism card, round avatar |
+| 1. Aesthetics & Themes | ✅ Frost enforced at SSR level (x-pathname + style tag + hardcoded #EFF2FF); loading skeleton matches wizard colors |
 | 2. No-Emoji Policy | ✅ Lucide icons скрізь, emoji відсутні |
-| 3. Motion & Transitions | ✅ popLayout + spring as const |
-| 4. Errors & Validation | ✅ slug regex + server error states |
-| 5. A11y & Performance | ✅ TSC 0 errors, Build success |
-| 6. Core Features | ✅ Per-category save, slug edit, schedule preview |
-| 7. Tests Verification | ⏳ Не запустилися |
+| 3. Motion & Transitions | ✅ popLayout + spring as const; Framer AnimatePresence wizard transitions |
+| 4. Errors & Validation | ✅ slug regex + server error states; persistStep logs errors |
+| 5. A11y & Performance | ✅ TSC 0 errors, Build clean (967bf06); admin client bypass for guaranteed DB writes |
+| 6. Core Features | ✅ Per-category save, slug edit, schedule preview; step persistence via admin client |
+| 7. Tests Verification | ⏳ Очікується QA на Vercel після deploy |
 
 #### HANDOFF for STEP 03
 - **Prior step closed:** STEP 01 — Landing Page (`/`)
@@ -98,10 +106,16 @@ Steps 04-13: 🔒 Blocked (sequential)
 
 | # | Issue | Виявлено в кроці | Блокує | Status |
 |---|---|---|---|---|
-| — | Vercel Pro upgrade pending — впливає на cron `check-uncompleted` | (з MEMORY.md) | STEP 04, STEP 05 | 🔒 External |
-| — | Studio WeeklyChart: BarTooltip click → day detail | Theme Polish Sprint (closed) | STEP 04 (carry-over) | ⏳ Pending |
-| — | Frost WeeklyChart: tooltip rounded-[4px] | Theme Polish Sprint (closed) | STEP 04 (carry-over) | ⏳ Pending |
-| — | Blossom: global font/contrast widget headers | Theme Polish Sprint (closed) | STEP 04 (carry-over) | ⏳ Pending |
+| 1 | Vercel Pro upgrade pending — впливає на cron `check-uncompleted` | (з MEMORY.md) | STEP 04, STEP 05 | 🔒 External |
+| 2 | Studio WeeklyChart: BarTooltip click → day detail | Theme Polish Sprint (closed) | STEP 04 (carry-over) | ⏳ Pending |
+| 3 | Frost WeeklyChart: tooltip `rounded-[4px]` | Theme Polish Sprint (closed) | STEP 04 (carry-over) | ⏳ Pending |
+| 4 | Blossom: global font/contrast widget headers | Theme Polish Sprint (closed) | STEP 04 (carry-over) | ⏳ Pending |
+| 5 | `/impeccable audit` → health score check (baseline 22/40) | STEP 03 | STEP 04 | ⏳ Pending |
+
+### Key architectural decisions (2026-05-29)
+- **Admin client for onboarding writes**: `saveOnboardingProgress` uses `createAdminClient()` to bypass RLS. Supabase anon client `.update()` returns `{error:null}` with 0 rows when RLS blocks — silent failure. Pattern to apply to ALL critical user-facing writes.
+- **Frost enforcement 3-layer strategy**: (1) root layout `x-pathname` → SSR html data-theme; (2) master layout `<style>!important` → CSS beats JS inline style; (3) wizard useEffect → iOS rubber-band fallback. Belt-suspenders-belt.
+- **loading.tsx for streaming**: Any route with slow Server Component data fetches should have a matching `loading.tsx` with correct theme colors to prevent blank page flicker.
 
 ---
 
@@ -125,4 +139,4 @@ Steps 04-13: 🔒 Blocked (sequential)
 
 ---
 
-*Останнє оновлення цього файлу: 2026-05-28 — Motion ✅, GSAP card-rise stack*
+*Останнє оновлення цього файлу: 2026-05-29 — Onboarding rendering fixes deployed (967bf06)*

@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-29 · Джерело: живий код (v8.2.4 "Onboarding v2 — per-category services + slug edit")
+> Оновлено: 2026-05-29 · Джерело: живий код (v8.2.5 "Onboarding v2 — Frost rendering fixed, RLS bypass, streaming gap") · Commit: `967bf06`
 
 ---
 
@@ -15,8 +15,9 @@
 ## [B2B / Master Zone] — `(master)/dashboard/...`
 
 ### Layout & Auth Guard
-- `src/app/(master)/layout.tsx` — Server Component, server-side auth check; ініціює `MasterProvider`
-- `src/components/master/DashboardLayout.tsx` — shell: sidebar nav + `BentoBottomNav` (Mosaic Command Center)
+- `src/app/(master)/layout.tsx` — Server Component, server-side auth check; ініціює `MasterProvider`; **isOnboarding branch (2026-05-29)**: `<style>html,body{bg:#EFF2FF!important}</style>` + clean Frost div (no DashboardLayout chrome); MasterProvider wraps children
+- `src/app/layout.tsx` — Root layout; reads `x-pathname` header → forces `data-theme="frost"` on `<html>` for `/dashboard/onboarding` and `/onboarding` paths → inline `beforeInteractive` script sets `body.bg=#EFF2FF` server-side
+- `src/components/master/DashboardLayout.tsx` — shell: sidebar nav + `BentoBottomNav` (Mosaic Command Center); `ThemeApplier` client component sets `data-theme` per `mood_theme`
 
 ### Routes → Компоненти → Server Actions
 
