@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | 1 | `/` Landing | 🟢 Sonnet 4.6 high | ✅ Complete | [STEP_01_landing.md](../RELEASE/STEPS/STEP_01_landing.md) |
 | 2 | Auth | 🟢 Sonnet 4.6 high | ✅ Complete | [STEP_02_auth.md](../RELEASE/STEPS/STEP_02_auth.md) |
-| 3 | Onboarding | 🔴 Opus 4.7 max | ⏳ In progress | [STEP_03_onboarding.md](../RELEASE/STEPS/STEP_03_onboarding.md) |
+| 3 | Onboarding | 🟢 Sonnet 4.6 high | 🔄 In QA | [STEP_03_HANDOFF.md](../RELEASE/STEPS/STEP_03_HANDOFF.md) |
 | 4 | Dashboard Home | 🔴 Opus 4.7 max | 🔒 Blocked | — |
 | 5 | Bookings | 🔴 Opus 4.7 max | 🔒 Blocked | — |
 | 6 | CRM Clients | 🟡 Mixed | 🔒 Blocked | — |
@@ -82,13 +82,30 @@
 
 ---
 
-### 📦 Крок 3. Onboarding Wizard (`/onboarding`)
-*   **Статус**: 🔒 Заблоковано
-*   **Вектори перевірки**:
-    *   UI/UX / Themes & Motion
-    *   Server Side & Database
-    *   Логіка і функціонал сторінки
-    *   Тести (E2E & Unit)
+### 📦 Крок 3. Onboarding Wizard (`/dashboard/onboarding`)
+*   **Статус**: 🔄 In QA — задеплоєно Vercel (`967bf06`, 2026-05-29)
+*   **Playbook**: [STEP_03_HANDOFF.md](../RELEASE/STEPS/STEP_03_HANDOFF.md)
+*   **Архітектура (актуально 2026-05-29)**:
+    *   **Primary route**: `src/app/(master)/dashboard/onboarding/` — у master layout з `isOnboarding` guard; clean Frost environment (без nav/sidebar)
+    *   **Legacy route**: `src/app/onboarding/` — окремий layout; `data-theme="frost"` wrapper (BlobBackground видалено)
+    *   **5 кроки**: `PROFILE → SERVICES → SCHEDULE → PREVIEW → SUCCESS`
+    *   **Persistence**: `saveOnboardingProgress()` → admin client (bypass RLS) → `profiles.onboarding_step` + `profiles.onboarding_data`
+    *   **Streaming**: `loading.tsx` — Frost skeleton під час DB fetch
+    *   **Theme**: 3-layer enforcement (root layout x-pathname + master layout `<style>!important` + wizard useEffect)
+*   **Key files**:
+    *   `src/app/(master)/dashboard/onboarding/page.tsx` — force-dynamic, Frost wrapper
+    *   `src/app/(master)/dashboard/onboarding/loading.tsx` — **NEW** Frost skeleton
+    *   `src/app/(master)/dashboard/onboarding/actions.ts` — admin client для step persistence
+    *   `src/components/master/onboarding/OnboardingWizard.tsx` — 5-step state machine, persistStep helper
+    *   `src/components/master/onboarding/steps/` — StepProfile, StepServices, StepSchedule, StepPreview, StepSuccess
+*   **Виміри якості**:
+    *   ✅ **Aesthetics & Themes** — Frost 3-layer enforcement; glassmorphism StepPreview card; Frost skeleton в loading
+    *   ✅ **No-Emoji Policy** — нуль emoji; Lucide icons скрізь
+    *   ✅ **Motion & Transitions** — `mode="popLayout"`; `spring as const`; slide variants (x:44, scale:0.97)
+    *   ✅ **Errors & Validation** — persistStep() з error logging; slug regex; server error toasts; admin client гарантує запис
+    *   ✅ **A11y & Performance** — TSC 0 errors; build clean; WCAG AA (hexLuminance для avatar text)
+    *   ✅ **Core Features** — per-category services; slug editing; schedule v2; step persistence
+    *   🔄 **Tests** — QA на Vercel після deploy (тести carry-over)
 
 ---
 
