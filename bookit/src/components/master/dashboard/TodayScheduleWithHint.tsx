@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils/cn';
 
 export function TodayScheduleWithHint() {
   const { tourStep, handleNextStep, closeTour } = useTourStep();
-  const isActive = tourStep === 1;
+  // Step 2 in tour v2 = Schedule (was step 1 in legacy 3-step tour)
+  const isActive = tourStep === 2;
 
   return (
     <div className={cn(

@@ -14,6 +14,7 @@ import { TopServicesWidget } from './widgets/studio/TopServicesWidget';
 import { NextFreeDaysWidget } from './widgets/studio/NextFreeDaysWidget';
 import { PeakHoursWidget } from './widgets/studio/PeakHoursWidget';
 import { CancellationRateWidget } from './widgets/studio/CancellationRateWidget';
+import { AdaptiveContextStrip } from './widgets/AdaptiveContextStrip';
 
 const item = {
   hidden:  { opacity: 0, y: 14 },
@@ -78,6 +79,10 @@ function StudioMain() {
         {/* Stats — architectural numbers, no extra wrapper */}
         <motion.div variants={item} className="py-6">
           <StudioStatsWidget />
+        </motion.div>
+
+        <motion.div variants={item} className="py-5">
+          <AdaptiveContextStrip />
         </motion.div>
 
         <Divider />

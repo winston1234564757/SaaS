@@ -48,6 +48,7 @@
 | `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |
 | `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
 | `/dashboard/more` | Додаткові посилання: юридика, акаунт | `more/page.tsx` | — | `master/more/MorePage.tsx` |
+| `/dashboard/academy` | BookIT Академія: покрокові інструкції по кожній фічі (прогресивна — секції додаються з кожним кроком) | `academy/page.tsx` | — | `master/academy/AcademyPage.tsx` |
 
 ### Onboarding Wizard (v2 — 5-step, 2026-05-29)
 - **Primary route**: `src/app/(master)/dashboard/onboarding/` — всередині master layout з `isOnboarding` guard; чистий Frost environment (без nav/sidebar)

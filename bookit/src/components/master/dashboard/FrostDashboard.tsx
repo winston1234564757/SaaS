@@ -16,6 +16,10 @@ import { TopServicesWidget } from './widgets/frost/TopServicesWidget';
 import { NextFreeDaysWidget } from './widgets/frost/NextFreeDaysWidget';
 import { PeakHoursWidget } from './widgets/frost/PeakHoursWidget';
 import { CancellationRateWidget } from './widgets/frost/CancellationRateWidget';
+import { AdaptiveContextStrip } from './widgets/AdaptiveContextStrip';
+import { ReferralBoostWidget } from './widgets/ReferralBoostWidget';
+import { EarningsPulseWidget } from './widgets/EarningsPulseWidget';
+import { ClientAlertsWidget } from './widgets/ClientAlertsWidget';
 
 const rise = {
   hidden:  { opacity: 0, y: 16 },
@@ -75,47 +79,59 @@ function FrostMobile() {
       </motion.div>
 
       <motion.div custom={2} variants={rise} initial="hidden" animate="visible">
-        <QuickActionsWidget />
+        <AdaptiveContextStrip />
       </motion.div>
 
       <motion.div custom={3} variants={rise} initial="hidden" animate="visible">
-        <FreeSlotsWidget />
+        <QuickActionsWidget />
       </motion.div>
 
       <motion.div custom={4} variants={rise} initial="hidden" animate="visible">
-        <ScheduleWidget />
+        <FreeSlotsWidget />
       </motion.div>
 
       <motion.div custom={5} variants={rise} initial="hidden" animate="visible">
-        <WeeklyChartWidget />
+        <ScheduleWidget />
       </motion.div>
 
       <motion.div custom={6} variants={rise} initial="hidden" animate="visible">
-        <PeakHoursWidget />
+        <WeeklyChartWidget />
       </motion.div>
 
       <motion.div custom={7} variants={rise} initial="hidden" animate="visible">
-        <MonthlyCalendarWidget />
+        <PeakHoursWidget />
       </motion.div>
 
       <motion.div custom={8} variants={rise} initial="hidden" animate="visible">
-        <InsightsRow />
+        <MonthlyCalendarWidget />
       </motion.div>
 
       <motion.div custom={9} variants={rise} initial="hidden" animate="visible">
-        <CancellationRateWidget />
+        <InsightsRow />
       </motion.div>
 
       <motion.div custom={10} variants={rise} initial="hidden" animate="visible">
-        <TopServicesWidget />
+        <CancellationRateWidget />
       </motion.div>
 
       <motion.div custom={11} variants={rise} initial="hidden" animate="visible">
-        <NextFreeDaysWidget />
+        <TopServicesWidget />
       </motion.div>
 
       <motion.div custom={12} variants={rise} initial="hidden" animate="visible">
+        <NextFreeDaysWidget />
+      </motion.div>
+
+      <motion.div custom={13} variants={rise} initial="hidden" animate="visible">
         <ChannelHealthWidget />
+      </motion.div>
+
+      <motion.div custom={14} variants={rise} initial="hidden" animate="visible">
+        <ClientAlertsWidget />
+      </motion.div>
+
+      <motion.div custom={15} variants={rise} initial="hidden" animate="visible">
+        <ReferralBoostWidget />
       </motion.div>
     </div>
   );
@@ -134,13 +150,20 @@ function FrostDesktop() {
         <FrostMetricsStrip />
       </motion.div>
 
-      <motion.div custom={2} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={2} variants={rise} initial="hidden" animate="visible" className="mb-4">
+        <div className="grid gap-4 items-start" style={{ gridTemplateColumns: '3fr 2fr' }}>
+          <AdaptiveContextStrip />
+          <EarningsPulseWidget />
+        </div>
+      </motion.div>
+
+      <motion.div custom={3} variants={rise} initial="hidden" animate="visible">
         <FrostActionsBar />
       </motion.div>
 
       <FrostDivider />
 
-      <motion.div custom={3} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={4} variants={rise} initial="hidden" animate="visible">
         <div className="grid gap-4 items-start" style={{ gridTemplateColumns: '3fr 2fr' }}>
           <ScheduleWidget />
           <FreeSlotsWidget />
@@ -149,7 +172,7 @@ function FrostDesktop() {
 
       <FrostDivider />
 
-      <motion.div custom={4} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={5} variants={rise} initial="hidden" animate="visible">
         <div className="grid gap-4 items-start" style={{ gridTemplateColumns: '55fr 45fr' }}>
           <WeeklyChartWidget />
           <PeakHoursWidget />
@@ -158,13 +181,13 @@ function FrostDesktop() {
 
       <FrostDivider />
 
-      <motion.div custom={5} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={6} variants={rise} initial="hidden" animate="visible">
         <MonthlyCalendarWidget />
       </motion.div>
 
       <FrostDivider />
 
-      <motion.div custom={6} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={7} variants={rise} initial="hidden" animate="visible">
         <div className="grid grid-cols-2 gap-4 items-start">
           <TopServicesWidget />
           <CancellationRateWidget />
@@ -173,12 +196,24 @@ function FrostDesktop() {
 
       <FrostDivider />
 
-      <motion.div custom={7} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={8} variants={rise} initial="hidden" animate="visible">
         <div className="grid grid-cols-3 gap-4 items-start">
           <InsightsRow />
           <NextFreeDaysWidget />
           <ChannelHealthWidget />
         </div>
+      </motion.div>
+
+      <FrostDivider />
+
+      <motion.div custom={9} variants={rise} initial="hidden" animate="visible">
+        <ClientAlertsWidget />
+      </motion.div>
+
+      <FrostDivider />
+
+      <motion.div custom={10} variants={rise} initial="hidden" animate="visible">
+        <ReferralBoostWidget />
       </motion.div>
 
     </div>

@@ -174,6 +174,7 @@ export default function SettingsPage() {
               telegram={state.telegram}
               telegramChatId={state.telegramChatId}
               themeKey={state.themeKey}
+              tier={masterProfile.subscription_tier ?? 'starter'}
               onInstagramChange={actions.setInstagram}
               onTelegramChange={actions.setTelegram}
               onTelegramChatIdChange={actions.setTelegramChatId}

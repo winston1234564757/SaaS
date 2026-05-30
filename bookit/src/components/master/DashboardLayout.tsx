@@ -11,17 +11,23 @@ import { MobileHub } from '@/components/shared/MobileHub';
 import { InstallBanner } from '@/components/shared/InstallBanner';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
+import { DashboardTourProvider } from '@/components/master/dashboard/DashboardTourContext';
+import { DashboardTourBanner } from '@/components/master/dashboard/DashboardTourBanner';
 import type { Profile, MasterProfile } from '@/types/database';
 
 function ThemeApplier() {
   const { masterProfile } = useMasterContext();
-  const moodTheme = masterProfile?.mood_theme ?? '';
+  const rawTheme = masterProfile?.mood_theme ?? '';
+  const tier = masterProfile?.subscription_tier ?? 'starter';
+  // Starter tier is locked to Frost regardless of stored mood_theme
+  const canChangeTheme = tier === 'pro' || tier === 'studio';
+  const effectiveTheme = canChangeTheme ? rawTheme : 'frost';
 
   useEffect(() => {
-    const isStudio = moodTheme === 'dark' || moodTheme === 'studio';
-    const isFrost  = moodTheme === 'frost';
+    const isStudio = effectiveTheme === 'dark' || effectiveTheme === 'studio';
+    const isFrost  = effectiveTheme === 'frost';
     const activeTheme = isStudio ? 'studio' : isFrost ? 'frost' : '';
-    
+
     if (isStudio) {
       document.documentElement.setAttribute('data-theme', 'studio');
     } else if (isFrost) {
@@ -40,7 +46,7 @@ function ThemeApplier() {
     return () => {
       document.documentElement.removeAttribute('data-theme');
     };
-  }, [moodTheme]);
+  }, [effectiveTheme]);
 
   return null;
 }
@@ -75,38 +81,41 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: 'transparent' }}>
-      <ImpersonationBanner />
-      <ThemeApplier />
+    <DashboardTourProvider>
+      <div className="min-h-dvh flex flex-col" style={{ background: 'transparent' }}>
+        <ImpersonationBanner />
+        <ThemeApplier />
 
-      {/* Desktop horizontal topbar */}
-      <div className="hidden lg:block">
-        <DashboardTopBar />
-        <div className="h-24" />
-      </div>
-
-      {/* Content */}
-      <main className="flex-1 w-full pt-[env(safe-area-inset-top)] lg:pt-0">
-        <div
-          className="max-w-7xl mx-auto px-4 py-5 lg:px-8 lg:py-8"
-          style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 1rem)' }}
-        >
-          {children}
+        {/* Desktop horizontal topbar */}
+        <div className="hidden lg:block">
+          <DashboardTopBar />
+          <div className="h-24" />
         </div>
-      </main>
 
-      {/* Mobile nav */}
-      <div className="lg:hidden">
-        <InstallBanner />
-        <MobileHub />
+        {/* Content */}
+        <main className="flex-1 w-full pt-[env(safe-area-inset-top)] lg:pt-0">
+          <div
+            className="max-w-7xl mx-auto px-4 py-5 lg:px-8 lg:py-8"
+            style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 1rem)' }}
+          >
+            {children}
+          </div>
+        </main>
+
+        {/* Mobile nav */}
+        <div className="lg:hidden">
+          <InstallBanner />
+          <MobileHub />
+        </div>
+
+        <SupportWidget />
+        <DashboardTourBanner />
+
+        <Suspense>
+          <BookingDetailsModal />
+        </Suspense>
       </div>
-
-      <SupportWidget />
-
-      <Suspense>
-        <BookingDetailsModal />
-      </Suspense>
-    </div>
+    </DashboardTourProvider>
   );
 }
 

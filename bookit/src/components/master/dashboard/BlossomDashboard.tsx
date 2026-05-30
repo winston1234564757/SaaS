@@ -14,6 +14,7 @@ import { TopServicesWidget } from './widgets/blossom/TopServicesWidget';
 import { NextFreeDaysWidget } from './widgets/blossom/NextFreeDaysWidget';
 import { PeakHoursWidget } from './widgets/blossom/PeakHoursWidget';
 import { CancellationRateWidget } from './widgets/blossom/CancellationRateWidget';
+import { AdaptiveContextStrip } from './widgets/AdaptiveContextStrip';
 
 const item = {
   hidden:  { opacity: 0, y: 18 },
@@ -91,6 +92,10 @@ function MainCol() {
       >
         <motion.div variants={item}>
           <BlossomStatsWidget />
+        </motion.div>
+
+        <motion.div variants={item}>
+          <AdaptiveContextStrip />
         </motion.div>
 
         {/* QuickActions — mobile: inline here / lg+: in sidebar / xl: in left col */}

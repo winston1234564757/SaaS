@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Instagram, Send, MessageSquare, Palette, CreditCard, 
-  ChevronRight, ExternalLink, Bot, Check, AlertCircle, Loader2
+import {
+  Instagram, Send, MessageSquare, Palette, CreditCard,
+  ChevronRight, ExternalLink, Bot, Check, AlertCircle, Loader2, Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
@@ -16,16 +16,17 @@ interface TechnicalIslandProps {
   telegram: string;
   telegramChatId: string;
   themeKey: MoodThemeKey;
+  tier: string;
   onInstagramChange: (val: string) => void;
   onTelegramChange: (val: string) => void;
   onTelegramChatIdChange: (val: string) => void;
   onThemeChange: (key: MoodThemeKey) => void;
 }
 
-const THEMES: { key: MoodThemeKey; label: string; color: string }[] = [
-  { key: 'default', label: 'Blossom', color: '#DDD5C6' },
-  { key: 'studio',  label: 'Studio',  color: '#0E1D21' },
-  { key: 'frost',   label: 'Frost',   color: '#A5B4FC' },
+const THEMES: { key: MoodThemeKey; label: string; color: string; requiresPro: boolean }[] = [
+  { key: 'default', label: 'Blossom', color: '#DDD5C6', requiresPro: true },
+  { key: 'studio',  label: 'Studio',  color: '#0E1D21', requiresPro: true },
+  { key: 'frost',   label: 'Frost',   color: '#A5B4FC', requiresPro: false },
 ];
 
 export function TechnicalIsland({
@@ -33,6 +34,7 @@ export function TechnicalIsland({
   telegram,
   telegramChatId,
   themeKey,
+  tier,
   onInstagramChange,
   onTelegramChange,
   onTelegramChatIdChange,
@@ -40,6 +42,10 @@ export function TechnicalIsland({
 }: TechnicalIslandProps) {
   const { showToast } = useToast();
   const [connectingBot, setConnectingBot] = useState(false);
+
+  const canChangeTheme = tier === 'pro' || tier === 'studio';
+  // If Starter has a non-frost theme stored, show frost as selected
+  const effectiveThemeKey = canChangeTheme ? themeKey : 'frost';
 
   const handleConnectTelegram = async () => {
     setConnectingBot(true);
@@ -103,13 +109,13 @@ export function TechnicalIsland({
             <div>
               <p className="text-sm font-bold">Telegram Бот</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {telegramChatId 
-                  ? "Сповіщення про нові записи підключено." 
+                {telegramChatId
+                  ? "Сповіщення про нові записи підключено."
                   : "Підключіть бота, щоб миттєво отримувати повідомлення про нові записи."}
               </p>
             </div>
           </div>
-          
+
           {!telegramChatId && (
             <button
               onClick={handleConnectTelegram}
@@ -128,33 +134,59 @@ export function TechnicalIsland({
           <Palette size={12} /> Оформлення
         </h4>
         <div className="flex gap-3">
-          {THEMES.map((theme) => (
-            <button
-              key={theme.key}
-              onClick={() => onThemeChange(theme.key)}
-              className={cn(
-                "flex-1 p-3 rounded-2xl border transition-all text-left group cursor-pointer active:scale-[0.95]",
-                themeKey === theme.key 
-                  ? "bg-surface border-accent shadow-sm" 
-                  : "bg-secondary/40 border-border grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60"
-              )}
-            >
-              <div 
-                className="w-full h-12 rounded-xl mb-3 shadow-inner" 
-                style={{ backgroundColor: theme.color }}
-              />
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold">{theme.label}</span>
-                {themeKey === theme.key && <Check size={14} className="text-accent" />}
-              </div>
-            </button>
-          ))}
+          {THEMES.map((theme) => {
+            const isLocked = theme.requiresPro && !canChangeTheme;
+            const isActive = effectiveThemeKey === theme.key;
+
+            return (
+              <button
+                key={theme.key}
+                onClick={() => {
+                  if (isLocked) {
+                    showToast({ type: 'info', title: 'Тільки Pro', message: 'Ця тема відкривається на Pro' });
+                    return;
+                  }
+                  onThemeChange(theme.key);
+                }}
+                className={cn(
+                  "flex-1 p-3 rounded-2xl border transition-all text-left group",
+                  isLocked
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer active:scale-[0.95]",
+                  isActive && !isLocked
+                    ? "bg-surface border-accent shadow-sm"
+                    : "bg-secondary/40 border-border grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60"
+                )}
+              >
+                <div
+                  className="w-full h-12 rounded-xl mb-3 shadow-inner relative overflow-hidden"
+                  style={{ backgroundColor: theme.color }}
+                >
+                  {isLocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
+                      <Lock size={14} className="text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold">{theme.label}</span>
+                  {isLocked ? (
+                    <span className="text-[9px] font-bold text-accent bg-accent/10 px-1.5 py-0.5 rounded-full leading-none">
+                      Pro
+                    </span>
+                  ) : (
+                    isActive && <Check size={14} className="text-accent" />
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Billing Link */}
       <div className="pt-4 border-t border-border">
-        <a 
+        <a
           href="/dashboard/billing"
           className="flex items-center justify-between p-4 rounded-2xl bg-secondary/40 border border-border hover:bg-secondary/80 transition-all group cursor-pointer active:scale-[0.95]"
         >
