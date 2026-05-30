@@ -90,8 +90,9 @@ function DayCell({ day, bookings, isCurrentMonth, isSelected, onClick }: DayProp
 
 function BookingRow({ b, onOpen }: { b: BookingWithServices; onOpen: (id: string) => void }) {
   return (
-    <div
-      className="flex items-center gap-3 py-2 cursor-pointer active:opacity-70 transition-opacity"
+    <button
+      type="button"
+      className="flex items-center gap-3 py-2 w-full text-left cursor-pointer active:opacity-70 transition-opacity bg-transparent border-0"
       style={{ borderBottom: '1px solid color-mix(in srgb, var(--accent) 8%, transparent)' }}
       onClick={() => onOpen(b.id)}
     >
@@ -109,7 +110,7 @@ function BookingRow({ b, onOpen }: { b: BookingWithServices; onOpen: (id: string
       <span className="metric-value text-[12px] font-bold flex-shrink-0" style={{ color: 'var(--accent-on)' }}>
         {formatPrice(b.total_price)}
       </span>
-    </div>
+    </button>
   );
 }
 

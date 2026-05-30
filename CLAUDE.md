@@ -100,6 +100,26 @@ npx supabase db push # Застосувати локальні міграції 
 
 ---
 
+## ⚡ BULK EDIT PROTOCOL — Масові зміни (3+ файлів)
+
+**Проблема:** Без Read перед Edit — відступи неправильні → edit fails → повторне читання → 3× токенів.
+
+**Правило:**
+```
+1. Read ВСІ файли ПАРАЛЕЛЬНО    ← один round, нуль припущень
+2. Write/Edit ВСІ ПАРАЛЕЛЬНО    ← один round, з верифікованими рядками
+3. npx tsc --noEmit + build      ← один round
+```
+
+**Коли Write замість Edit:**
+- Зміна торкається 3+ місць у файлі → Write повну нову версію
+- 5+ однотипних файлів → Write кожен паралельно
+- Edit тільки для ≤ 3 рядків з верифікованим рядком після Read
+
+**Формула мінімуму токенів:** `rounds = 3` (Read all → Write all → Verify). Будь-яке відхилення збільшує вартість.
+
+---
+
 ## ❓ Q&A Workflow (before any skill invocation)
 
 Дотримуйся шаблону з [CLARIFICATION_FRAMEWORK.md](file:///C:/Users/Vitossik/SaaS/bookit/.claude/CLARIFICATION_FRAMEWORK.md):
@@ -109,4 +129,37 @@ npx supabase db push # Застосувати локальні міграції 
 4. Проведи аудит результату перед коммітом за допомогою скілів-аудиторів (`impeccable`, `code-reviewer`, `humanizer`).
 
 ---
-*Останнє оновлення: 2026-05-24 · Версія: 8.2.1*
+## ⛔ ACCESSIBILITY RULES (IRON — div→button = P1 блокер)
+
+### Правило 1: div → button
+Ніколи `onClick` на `<div>`, `<span>`, `<p>`. Тільки `<button type="button">` або `<Link>`.
+`cursor-pointer` на `<div>` = red flag — виправляти одразу.
+
+**Обов'язкові атрибути на `<button>`:**
+- `type="button"` — завжди (без нього submit у формах)
+- `aria-label="..."` — якщо всередині немає видимого тексту (chart bar, heatmap cell, icon-only)
+- `aria-pressed={bool}` — для toggle-кнопок (tabs, chart bars, heatmap cells)
+
+### Правило 2: Touch Targets ≥ 44px
+Усі клікабельні елементи на mobile: висота ≥ 44px.
+- Compact pills/chips: `py-2` мінімум — не `py-1` / `py-0.5`
+- Slot chips: `py-2.5` мінімум
+- Перевіряти при кожному новому компоненті з `onClick`
+
+### Правило 3: Chart / Heatmap ARIA
+- Chart bars: `aria-label={\`${dayName}: ${value}\`}` + `aria-pressed={isActive}`
+- Heatmap cells: `aria-label={\`${day} ${hour}:00\`}` + `aria-pressed={isActive}`
+- Tab toggles: `aria-pressed={isActive}` або `role="tab"` у tab-group
+
+### Заборонені конструкції
+```tsx
+// WRONG — screen readers пропустять, клавіатура не дістане
+<div onClick={fn} className="cursor-pointer">...</div>
+
+// CORRECT
+<button type="button" onClick={fn} aria-label="...">...</button>
+```
+
+---
+
+*Останнє оновлення: 2026-05-30 · Версія: 8.3.0*

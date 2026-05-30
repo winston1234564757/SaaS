@@ -25,7 +25,7 @@ function NextBookingRow({ booking, todayStr }: { booking: BookingWithServices; t
 
   const dotClass =
     booking.status === 'confirmed'
-      ? 'bg-[var(--success)] shadow-[0_0_6px_rgba(78,152,112,0.5)]'
+      ? 'bg-[var(--success)] shadow-[0_0_6px_color-mix(in_srgb,var(--success)_50%,transparent)]'
       : booking.status === 'pending'
       ? 'bg-[var(--warning)]'
       : 'opacity-30';

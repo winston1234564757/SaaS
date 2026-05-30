@@ -84,7 +84,7 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
           </div>
         </div>
       ) : topClient ? (
-        <div className="flex flex-col flex-1 cursor-pointer" onClick={handleOpen}>
+        <button type="button" className="flex flex-col flex-1 text-left w-full bg-transparent border-0 p-0 cursor-pointer" onClick={handleOpen}>
           {/* Avatar */}
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-bold mb-3 flex-shrink-0"
@@ -121,7 +121,7 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
             </span>
             <ChevronRight size={12} strokeWidth={2} style={{ color: 'var(--accent)' }} />
           </div>
-        </div>
+        </button>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center">
           <div

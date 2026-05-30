@@ -100,6 +100,7 @@ export function WeeklyChartWidget() {
           {(['bookings', 'revenue'] as const).map(m => (
             <button
               key={m}
+              type="button"
               onClick={() => { setMode(m); setActiveBar(null); }}
               className="relative px-2.5 py-[4px] rounded-full text-[11px] font-bold active:scale-[0.95] transition-transform duration-100"
               style={{ color: mode === m ? 'var(--accent-on)' : 'var(--text-tertiary)' }}
@@ -128,12 +129,16 @@ export function WeeklyChartWidget() {
               const barH     = val === 0 ? 2 : Math.max(Math.round((val / maxVal) * BAR_MAX), 5);
               const isToday  = i === today;
               const isActive = activeBar === i;
+              const ariaLabel = `${DAYS[i]}: ${val === 0 ? 'немає записів' : mode === 'bookings' ? `${val} записів` : formatPrice(val)}`;
 
               return (
-                <div
+                <button
                   key={i}
-                  className="relative flex flex-col items-center justify-end flex-1 cursor-pointer"
+                  type="button"
+                  className="relative flex flex-col items-center justify-end flex-1 cursor-pointer bg-transparent border-0 p-0"
                   onClick={() => setActiveBar(prev => prev === i ? null : i)}
+                  aria-label={ariaLabel}
+                  aria-pressed={isActive}
                 >
                   {isActive && (
                     <BarTooltip
@@ -163,7 +168,7 @@ export function WeeklyChartWidget() {
                     animate={{ scaleY: 1, opacity: 1 }}
                     transition={{ type: 'spring' as const, duration: 0.6, bounce: 0.06, delay: i * 0.05 }}
                   />
-                </div>
+                </button>
               );
             })}
           </div>

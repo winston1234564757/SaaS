@@ -97,7 +97,7 @@ export function FreeSlotsWidget() {
                 <button
                   key={svc.id}
                   onClick={() => setSelectedServiceId(svc.id)}
-                  className="flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-[0.04em] transition-all duration-150 cursor-pointer whitespace-nowrap"
+                  className="flex-shrink-0 px-2.5 py-2 rounded-full text-[11px] font-bold tracking-[0.04em] transition-all duration-150 cursor-pointer whitespace-nowrap"
                   style={{
                     background: isActive ? 'var(--accent)' : 'var(--border)',
                     color:      isActive ? 'var(--accent-on)' : 'var(--text-tertiary)',
@@ -127,7 +127,7 @@ export function FreeSlotsWidget() {
                 {group.slots.map(t => (
                   <span
                     key={t}
-                    className="flex items-center justify-center py-1.5 text-[11px] font-bold tabular-nums"
+                    className="flex items-center justify-center py-2.5 text-[11px] font-bold tabular-nums"
                     style={{
                       borderRadius: '6px',
                       border:       '1px solid color-mix(in srgb, var(--accent) 12%, transparent)',

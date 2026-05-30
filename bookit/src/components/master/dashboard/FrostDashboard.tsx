@@ -49,7 +49,7 @@ function FrostActionsBar() {
           <Link
             key={href}
             href={href}
-            className="flex-1 flex items-center justify-center gap-2.5 py-4 transition-colors duration-150 active:scale-[0.97] active:transition-none cursor-pointer hover:bg-[rgba(15,23,42,0.04)]"
+            className="flex-1 flex items-center justify-center gap-2.5 py-4 transition-colors duration-150 active:scale-[0.97] active:transition-none cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
             style={{ borderLeft: idx > 0 ? '1px solid var(--border)' : 'none' }}
           >
             <span style={{ color: 'var(--accent)', opacity: 0.7, display: 'flex' }}>

@@ -21,7 +21,7 @@ export function PeakHoursWidget() {
   const to   = toISO(now);
   const { bookings, isLoading } = useBookings(from, to);
   const [activeCell, setActiveCell] = useState<ActiveCell | null>(null);
-  const cellRefs = useRef<(HTMLDivElement | null)[][]>(
+  const cellRefs = useRef<(HTMLButtonElement | null)[][]>(
     Array.from({ length: 7 }, () => Array(HOURS.length).fill(null))
   );
 
@@ -136,10 +136,13 @@ export function PeakHoursWidget() {
                   const intensity = max > 0 ? grid[dIdx][hIdx] / max : 0;
                   const isActive  = activeCell?.dIdx === dIdx && activeCell?.hIdx === hIdx;
                   return (
-                    <div
+                    <button
                       key={hIdx}
+                      type="button"
                       ref={el => { cellRefs.current[dIdx][hIdx] = el; }}
-                      className="flex-1 cursor-pointer min-h-[10px]"
+                      className="flex-1 cursor-pointer min-h-[10px] w-full bg-transparent border-0 p-0"
+                      aria-label={`${DAYS[dIdx]} ${HOURS[hIdx]}:00`}
+                      aria-pressed={isActive}
                       style={{
                         borderRadius: '3px',
                         background:   'var(--accent)',
