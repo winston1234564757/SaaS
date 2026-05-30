@@ -71,7 +71,7 @@ export function WeeklyChartWidget() {
   }, [mode, totalBookings, totalRevenue, prevTotalBookings, prevTotalRevenue]);
 
   return (
-    <div className="bento-card overflow-hidden">
+    <div className="bento-card overflow-hidden flex flex-col flex-1">
       {/* Header */}
       <div className="px-4 pt-4 pb-0 flex items-start justify-between gap-3">
         <div>

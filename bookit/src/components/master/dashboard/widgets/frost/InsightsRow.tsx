@@ -5,7 +5,7 @@ import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { getNow } from '@/lib/utils/now';
 import { pluralUk } from '@/lib/utils/pluralUk';
-import { TrendingUp, TrendingDown, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, ChevronRight } from 'lucide-react';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
 
@@ -76,29 +76,63 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
       </p>
 
       {isLoading ? (
-        <div className="space-y-2">
-          <div className="skeleton-shimmer h-9 w-9 rounded-full" />
-          <div className="skeleton-shimmer h-3 w-20 rounded-full" />
+        <div className="flex flex-col flex-1 gap-3">
+          <div className="skeleton-shimmer h-11 w-11 rounded-full" />
+          <div className="space-y-2">
+            <div className="skeleton-shimmer h-3.5 w-24 rounded-full" />
+            <div className="skeleton-shimmer h-3 w-16 rounded-full" />
+          </div>
         </div>
       ) : topClient ? (
-        <div className="cursor-pointer" onClick={handleOpen}>
+        <div className="flex flex-col flex-1 cursor-pointer" onClick={handleOpen}>
+          {/* Avatar */}
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold mb-2"
+            className="w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-bold mb-3 flex-shrink-0"
             style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
           >
             {initials}
           </div>
-          <p className="font-bold text-[14px]" style={{ color: 'var(--text-primary)' }}>
+
+          {/* Name + stats */}
+          <p className="font-bold text-[15px] leading-tight" style={{ color: 'var(--text-primary)' }}>
             {fmtClientName(topClient.name)}
           </p>
-          <p className="text-[12px] mt-0.5 text-[var(--text-tertiary)]">
-            {topClient.count} {pluralUk(topClient.count, 'візит', 'візити', 'візитів')}
+          <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+            {topClient.count} {pluralUk(topClient.count, 'візит', 'візити', 'візитів')} цього тижня
           </p>
+
+          {/* Total spent */}
+          {topClient.totalSpent > 0 && (
+            <p className="metric-value text-[1.25rem] font-bold mt-2 leading-none" style={{ color: 'var(--text-primary)' }}>
+              {formatPrice(topClient.totalSpent)}
+            </p>
+          )}
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* CTA footer */}
+          <div
+            className="flex items-center justify-between pt-3 mt-3"
+            style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}
+          >
+            <span className="text-[11px] font-semibold" style={{ color: 'var(--accent)' }}>
+              Профіль клієнта
+            </span>
+            <ChevronRight size={12} strokeWidth={2} style={{ color: 'var(--accent)' }} />
+          </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2" style={{ color: 'var(--text-tertiary)' }}>
-          <Users size={14} strokeWidth={1.5} />
-          <span className="text-[12px]">Записів ще немає</span>
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center">
+          <div
+            className="w-10 h-10 rounded-2xl flex items-center justify-center"
+            style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)' }}
+          >
+            <Users size={18} strokeWidth={1.4} style={{ color: 'var(--accent)', opacity: 0.6 }} />
+          </div>
+          <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+            Записів ще немає
+          </p>
         </div>
       )}
     </div>
@@ -125,6 +159,7 @@ function AvgCheckCard() {
 
   const deltaPct   = prevAvg > 0 ? Math.round(((thisAvg - prevAvg) / prevAvg) * 100) : null;
   const isPositive = deltaPct !== null && deltaPct >= 0;
+  const maxVal     = Math.max(thisAvg, prevAvg, 1);
 
   return (
     <div className="bento-card p-4 flex flex-col">
@@ -133,27 +168,73 @@ function AvgCheckCard() {
       </p>
 
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="flex flex-col flex-1 gap-3">
           <div className="skeleton-shimmer h-8 w-20 rounded-xl" />
           <div className="skeleton-shimmer h-3 w-14 rounded-full" />
+          <div className="mt-auto space-y-3">
+            <div className="skeleton-shimmer h-3 w-full rounded-full" />
+            <div className="skeleton-shimmer h-3 w-full rounded-full" />
+          </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col justify-end">
-          <p className="metric-value text-[1.4rem] font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
+        <div className="flex flex-col flex-1">
+          {/* Main metric */}
+          <p className="metric-value text-[1.6rem] font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
             {thisAvg > 0 ? formatPrice(thisAvg) : '—'}
           </p>
+
+          {/* Delta badge */}
           {deltaPct !== null && (
             <div
-              className="flex items-center gap-1 mt-2 text-[11px] font-bold"
+              className="flex items-center gap-1 mt-1.5 text-[11px] font-bold"
               style={{ color: isPositive ? 'var(--success)' : 'var(--error)' }}
             >
-              {isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+              {isPositive ? <TrendingUp size={10} strokeWidth={2} /> : <TrendingDown size={10} strokeWidth={2} />}
               <span>{deltaPct > 0 ? '+' : ''}{deltaPct}%</span>
-              <span className="font-normal text-[var(--text-tertiary)]">vs минулий</span>
+              <span className="font-normal" style={{ color: 'var(--text-tertiary)' }}>vs минулий</span>
             </div>
           )}
-          {thisAvg === 0 && (
-            <p className="text-[12px] mt-1 text-[var(--text-tertiary)]">Нема завершених</p>
+
+          {/* Comparison bars pinned to bottom */}
+          {(thisAvg > 0 || prevAvg > 0) ? (
+            <div
+              className="mt-auto pt-3 space-y-2.5"
+              style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}
+            >
+              {[
+                { label: 'Цей тиждень', value: thisAvg, primary: true },
+                { label: 'Минулий',     value: prevAvg, primary: false },
+              ].map(({ label, value, primary }) => (
+                <div key={label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+                      {label}
+                    </span>
+                    <span
+                      className="metric-value text-[11px] font-bold tabular-nums"
+                      style={{ color: primary ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
+                    >
+                      {value > 0 ? formatPrice(value) : '—'}
+                    </span>
+                  </div>
+                  <div className="h-[3px] rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width:      `${Math.round((value / maxVal) * 100)}%`,
+                        background: primary ? 'var(--accent)' : 'var(--border-strong)',
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-auto pt-3" style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
+              <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                Завершених записів ще немає
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -166,7 +247,7 @@ export function InsightsRow() {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 flex-1">
         <TopClientCard onOpen={setSelectedClient} />
         <AvgCheckCard />
       </div>

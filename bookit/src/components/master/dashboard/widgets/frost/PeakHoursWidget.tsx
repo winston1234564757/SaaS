@@ -72,15 +72,15 @@ export function PeakHoursWidget() {
 
   if (isLoading) {
     return (
-      <div className="bento-card p-4">
+      <div className="bento-card p-4 flex flex-col flex-1">
         <div className="skeleton-shimmer h-4 w-24 rounded-full mb-3" />
-        <div className="skeleton-shimmer rounded-xl" style={{ height: 180 }} />
+        <div className="skeleton-shimmer rounded-xl flex-1" style={{ minHeight: 160 }} />
       </div>
     );
   }
 
   return (
-    <>
+    <div className="flex flex-col flex-1">
       <AnimatePresence>
         {tooltipInfo && (
           <motion.div
@@ -108,15 +108,16 @@ export function PeakHoursWidget() {
         )}
       </AnimatePresence>
 
-      <div className="bento-card p-4" style={{ overflow: 'visible' }}>
+      <div className="bento-card p-4 flex flex-col flex-1" style={{ overflow: 'visible' }}>
         <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)] mb-3">
           Пікові години
         </p>
 
-        <div className="flex gap-[3px]" onMouseLeave={() => setActiveCell(null)}>
+        <div className="flex gap-[3px] flex-1" onMouseLeave={() => setActiveCell(null)}>
+          {/* Hour labels column */}
           <div className="flex flex-col gap-[3px] pt-[18px] pr-1 shrink-0">
             {HOURS.map(h => (
-              <div key={h} className="h-[13px] flex items-center">
+              <div key={h} className="flex-1 flex items-center min-h-[10px]">
                 <span className="font-mono text-[8px] font-bold tabular-nums text-[var(--text-tertiary)] opacity-45 w-5 text-right">
                   {h}
                 </span>
@@ -124,6 +125,7 @@ export function PeakHoursWidget() {
             ))}
           </div>
 
+          {/* Heatmap grid — cells grow to fill available height */}
           <div className="flex gap-[3px] flex-1">
             {DAYS.map((day, dIdx) => (
               <div key={day} className="flex flex-col gap-[3px] flex-1 min-w-0">
@@ -137,7 +139,7 @@ export function PeakHoursWidget() {
                     <div
                       key={hIdx}
                       ref={el => { cellRefs.current[dIdx][hIdx] = el; }}
-                      className="h-[13px] cursor-pointer"
+                      className="flex-1 cursor-pointer min-h-[10px]"
                       style={{
                         borderRadius: '3px',
                         background:   'var(--accent)',
@@ -163,6 +165,6 @@ export function PeakHoursWidget() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

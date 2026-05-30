@@ -83,7 +83,7 @@ export function CancellationRateWidget() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 pt-3 mt-3" style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
+      <div className="grid grid-cols-2 gap-2 pt-3 mt-auto" style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
         {CANCEL_ACTIONS.map(({ href, label, Icon, primary }) => (
           <Link
             key={href}

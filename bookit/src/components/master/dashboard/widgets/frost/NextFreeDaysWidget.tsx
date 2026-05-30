@@ -47,7 +47,7 @@ export function NextFreeDaysWidget() {
   if (!isLoading && freeDays.length === 0) return null;
 
   return (
-    <div className="bento-card p-4">
+    <div className="bento-card p-4 flex flex-col">
       <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)] mb-3">
         Вільні дні
       </p>
@@ -57,11 +57,11 @@ export function NextFreeDaysWidget() {
           {[0, 1, 2, 3].map(i => <div key={i} className="skeleton-shimmer h-12 w-12 rounded-lg flex-shrink-0" />)}
         </div>
       ) : (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex gap-2">
           {freeDays.map(({ iso, dayLabel, dateLabel }) => (
             <span
               key={iso}
-              className="flex flex-col items-center px-2.5 py-2 gap-[2px]"
+              className="flex-1 flex flex-col items-center py-2.5 gap-[2px]"
               style={{
                 borderRadius: '8px',
                 border:       '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
@@ -82,7 +82,7 @@ export function NextFreeDaysWidget() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2 pt-3 mt-3" style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
+      <div className="grid grid-cols-2 gap-2 pt-3 mt-auto" style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
         {DAY_ACTIONS.map(({ href, label, Icon, primary }) => (
           <Link
             key={href}

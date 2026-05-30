@@ -50,6 +50,20 @@
 | `/dashboard/more` | Додаткові посилання: юридика, акаунт | `more/page.tsx` | — | `master/more/MorePage.tsx` |
 | `/dashboard/academy` | BookIT Академія: 2 tabs (Функції/Цілі), 6+4 sections, 26 articles accordion, Emil springs, deep links, "Пройти тур знову" | `academy/page.tsx` | — | `master/academy/AcademyPage.tsx` (hardcode content, AnimatePresence mode="wait", layoutId tab pill, SPRING_* consts) |
 
+### Frost Dashboard Grid Architecture (updated 2026-05-30)
+- **File**: `src/components/master/dashboard/FrostDashboard.tsx` — `FrostDesktop` + `FrostMobile`
+- **Grid pattern**: CSS Grid rows with `align-items: stretch` (default) — NO `items-start`. All rows equal height per pair.
+- **Widget fill chain**: tour-step wrapper `flex flex-col` → widget root `bento-card flex flex-col flex-1` → footer `mt-auto`
+- **PeakHoursWidget**: heatmap cells `flex-1 min-h-[10px]` — dynamically scales to fill card height (matches WeeklyChart row)
+- **ChannelHealthWidget**: empty state (0 clients) → icon + title + subtitle + CTA `/dashboard/clients`
+- **Row layout (desktop)**:
+  - `3fr 2fr`: AdaptiveContextStrip + EarningsPulseWidget
+  - `3fr 2fr`: ScheduleWidget + FreeSlotsWidget
+  - `55fr 45fr`: WeeklyChartWidget + PeakHoursWidget
+  - Full: MonthlyCalendarWidget
+  - `1/2 1/2`: TopServicesWidget + CancellationRateWidget
+  - `1/3 1/3 1/3`: InsightsRow + NextFreeDaysWidget + ChannelHealthWidget
+
 ### Onboarding Wizard (v2 — 5-step, 2026-05-29)
 - **Primary route**: `src/app/(master)/dashboard/onboarding/` — всередині master layout з `isOnboarding` guard; чистий Frost environment (без nav/sidebar)
 - **Legacy route**: `src/app/onboarding/page.tsx` — окремий layout; тепер `data-theme="frost"` wrapper (BlobBackground видалено 2026-05-29)

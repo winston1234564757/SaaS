@@ -44,7 +44,7 @@ export function TopServicesWidget() {
   const maxCount = top[0]?.count ?? 1;
 
   return (
-    <div className="bento-card p-4">
+    <div className="bento-card p-4 flex flex-col">
       <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)] mb-3">
         Топ послуги · {monthLabel}
       </p>
@@ -97,7 +97,7 @@ export function TopServicesWidget() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-2 pt-3 mt-3" style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
+      <div className="grid grid-cols-3 gap-2 pt-3 mt-auto" style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}>
         {SVC_ACTIONS.map(({ href, label, Icon, primary }) => (
           <Link
             key={href}
