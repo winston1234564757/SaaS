@@ -225,7 +225,11 @@ export function BookingWizard({
   const canSubmit = (watchName?.trim()?.length ?? 0) >= 2 && (watchPhone?.length ?? 0) >= 13
     && (selectedServices.length > 0 || cart.length > 0);
 
-  const stepNumber = { services: 1, datetime: 2, products: 3, details: 4, success: 4 }[step];
+  const totalSteps = hasProducts ? 4 : 3;
+  const stepNumber = (hasProducts
+    ? { services: 1, datetime: 2, products: 3, details: 4, success: 4 }
+    : { services: 1, datetime: 2, details: 3, success: 3 }
+  )[step];
 
   if (!isOpen) return null;
 
@@ -240,13 +244,13 @@ export function BookingWizard({
         maxWidth="xl"
       >
         <div className={cn(
-          "flex flex-col flex-shrink-0",
-          isDesktop ? "min-h-[500px]" : "h-[85vh] -mx-6 -mt-2"
+          "flex flex-col",
+          !isDesktop && "-mx-6 -mt-2"
         )}>
           {/* Progress header */}
           {!isAtLimit && step !== 'success' && (
             <div className="flex items-center justify-center py-3 bg-primary/5 border-b border-primary/10 flex-shrink-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Крок {stepNumber} з 4</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Крок {stepNumber} з {totalSteps}</p>
             </div>
           )}
 
@@ -255,7 +259,7 @@ export function BookingWizard({
             <SafetyAlert masterId={masterId} clientId={selectedClientId} />
           )}
 
-          <div className="flex-1 relative overflow-hidden">
+          <div className="relative">
             {isAtLimit && step !== 'success' && (
               <div className="flex flex-col items-center text-center py-10 px-5 gap-4">
                 <div className="w-16 h-16 rounded-xl bg-warning/10 flex items-center justify-center"><Lock size={28} className="text-warning" /></div>
@@ -274,7 +278,7 @@ export function BookingWizard({
             {!isAtLimit && (
               <AnimatePresence mode="popLayout" initial={false} custom={direction}>
                 {step === 'services' && (
-                  <div key="services" className="h-full overflow-hidden px-5">
+                  <div key="services" className="px-5">
                     <ServiceSelector
                       services={services}
                       selectedServices={selectedServices}
@@ -297,7 +301,7 @@ export function BookingWizard({
                 )}
 
                 {step === 'datetime' && (
-                  <div key="datetime" className="h-full overflow-hidden px-5">
+                  <div key="datetime" className="px-5">
                     <DateTimePicker
                       days={days}
                       scheduleStore={scheduleStore}
@@ -327,7 +331,7 @@ export function BookingWizard({
                 )}
 
                 {step === 'products' && (
-                  <div key="products" className="h-full overflow-hidden px-5">
+                  <div key="products" className="px-5">
                     <ProductCart
                       availableProducts={availableProducts}
                       suggestedProductIds={suggestedProductIds}
@@ -337,13 +341,14 @@ export function BookingWizard({
                       onAdd={addToCart}
                       onRemove={removeFromCart}
                       cartQty={cartQty}
+                      onBack={() => go('datetime', -1)}
                       onContinue={() => go('details', 1)}
                     />
                   </div>
                 )}
 
                 {step === 'details' && (
-                  <div key="details" className="h-full overflow-hidden px-5">
+                  <div key="details" className="px-5">
                     <ClientDetails
                       selectedDate={selectedDate}
                       selectedTime={selectedTime}
@@ -392,7 +397,7 @@ export function BookingWizard({
                 )}
 
                 {step === 'success' && (
-                  <div key="success" className="h-full overflow-y-auto scrollbar-hide px-5">
+                  <div key="success" className="px-5">
                     <BookingSuccess
                       selectedServices={selectedServices}
                       selectedDate={selectedDate}

@@ -55,11 +55,6 @@ export function useBookingWizardState({
   const [step, setStep]           = useState<WizardStep>('services');
   const [direction, setDirection] = useState(1);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      console.log(`[Wizard] Step initialized/changed to: ${step}`);
-    }
-  }, [step]);
 
   // ── Booking state ────────────────────────────────────────────────────────────
   const [selectedServices, setSelectedServices] = useState<WizardService[]>([]);
@@ -148,9 +143,6 @@ export function useBookingWizardState({
   );
 
   function go(next: WizardStep, dir: 1 | -1 = 1) {
-    if (typeof window !== 'undefined') {
-      console.log(`[Wizard] Transitioning from ${step} to ${next} (dir: ${dir})`);
-    }
     setDirection(dir); setStep(next);
   }
   function goBack() {
@@ -269,7 +261,7 @@ export function useBookingWizardState({
               return {
                 id: mp?.id,
                 slug: mp?.slug,
-                emoji: mp?.avatar_emoji || '💅',
+                emoji: mp?.avatar_emoji || '',
                 name: profile?.full_name || 'Майстер',
                 category: mp?.categories?.[0] || 'Beauty',
               };

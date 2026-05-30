@@ -69,7 +69,7 @@ export function MicaModal({
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className={cn(
-              'relative w-full overflow-hidden bg-secondary backdrop-blur-3xl border border-border shadow-2xl rounded-xl flex flex-col',
+              'relative w-full overflow-hidden bg-secondary backdrop-blur-3xl border border-border shadow-2xl rounded-xl flex flex-col max-h-[calc(100dvh-2rem)]',
               maxWidthClasses[maxWidth],
               className
             )}

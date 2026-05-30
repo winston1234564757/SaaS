@@ -86,10 +86,10 @@ export function DateTimePicker({
     <motion.div key="datetime" custom={direction} variants={slide}
       id="datetime-picker-mounted"
       initial="enter" animate="center" exit="exit"
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="flex flex-col h-full"
+      transition={{ type: 'spring' as const, duration: 0.28, bounce: 0 }}
+      className="flex flex-col"
     >
-      <div className="flex-1 overflow-y-auto scrollbar-hide pb-4">
+      <div className="pb-4">
         {/* Services recap chip */}
         <button onClick={onContinue}
           className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/25 mb-5 w-full text-left active:scale-[0.95] transition-all cursor-pointer">
@@ -329,8 +329,9 @@ export function DateTimePicker({
       </div>
 
       {/* Continue CTA */}
-      <div className="mt-auto pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10">
+      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10">
         <button
+          type="button"
           disabled={!canProceedDatetime}
           onClick={onContinue}
           data-testid="wizard-next-btn"

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // src/components/shared/wizard/ServiceSelector.tsx
 import { useMemo } from 'react';
 import Link from 'next/link';
@@ -52,10 +52,10 @@ export function ServiceSelector({
   return (
     <motion.div key="services" custom={direction} variants={slide}
       initial="enter" animate="center" exit="exit"
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="flex flex-col h-full min-h-[400px]"
+      transition={{ type: 'spring' as const, duration: 0.28, bounce: 0 }}
+      className="flex flex-col min-h-[400px]"
     >
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div>
         {categories.map(cat => (
           <div key={cat} className="mb-5">
             <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-2">{cat}</p>
@@ -192,7 +192,7 @@ export function ServiceSelector({
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
                   <Clock size={11} className="text-primary" />
                   Нестандартна тривалість, хв
-                  <span className="font-normal text-muted-foreground/60">(необов’язково)</span>
+                  <span className="font-normal text-muted-foreground/60">(необов'язково)</span>
                 </label>
                 <div className="flex items-center gap-3">
                   <input

@@ -41,10 +41,8 @@ interface ClientDetailsProps {
   saveError?: string;
   onSubmit: () => void;
   direction: number;
-  // C2C: friend booking discount (friend side)
   c2cDiscountPct?: number | null;
   c2cFriendDiscountAmount?: number;
-  // C2C: referrer bonus selector (referrer side)
   c2cReferrerBalance?: number;
   c2cBonusToUse?: number;
   setC2cBonusToUse?: (v: number) => void;
@@ -98,10 +96,10 @@ export function ClientDetails({
   return (
     <motion.div key="details" custom={direction} variants={slide}
       initial="enter" animate="center" exit="exit"
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="flex flex-col h-full min-h-[500px]"
+      transition={{ type: 'spring' as const, duration: 0.28, bounce: 0 }}
+      className="flex flex-col min-h-[500px]"
     >
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div>
         {/* Recap badge */}
         <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10 border border-primary/20 mb-4">
           <span className="flex items-center justify-center text-primary flex-shrink-0">
@@ -143,7 +141,7 @@ export function ClientDetails({
 
         <div className="flex flex-col gap-4 mb-5">
           <div>
-            <label className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
+            <label htmlFor="wizard-name" className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
               <User size={13} className="text-muted-foreground/60" />
               {mode === 'master' ? "Ім'я клієнта" : "Ім'я"}
             </label>
@@ -158,6 +156,7 @@ export function ClientDetails({
             ) : (
               <>
                 <input
+                  id="wizard-name"
                   data-testid="wizard-name-input"
                   type="text"
                   placeholder="Твоє імʼя та прізвище"
@@ -171,11 +170,12 @@ export function ClientDetails({
             )}
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
+            <label htmlFor="wizard-phone" className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
               <Phone size={13} className="text-muted-foreground/60" /> Телефон
             </label>
             <div className="relative">
               <input
+                id="wizard-phone"
                 data-testid="wizard-phone-input"
                 type="tel"
                 placeholder="+380 XX XXX XX XX"
@@ -202,12 +202,13 @@ export function ClientDetails({
             )}
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
+            <label htmlFor="wizard-notes" className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
               <MessageSquare size={13} className="text-muted-foreground/60" />
               {mode === 'master' ? 'Нотатки' : 'Побажання'}
               <span className="text-xs text-muted-foreground/60 font-normal">(необов'язково)</span>
             </label>
             <textarea
+              id="wizard-notes"
               placeholder={mode === 'master' ? 'Нотатки для себе...' : 'Алергія, особливості, побажання...'}
               value={clientNotes} onChange={e => setClientNotes(e.target.value)} rows={2}
               className="w-full px-4 py-3 rounded-md bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
@@ -216,9 +217,11 @@ export function ClientDetails({
 
           {mode === 'master' && (
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Знижка майстра, %</label>
+              <label htmlFor="wizard-discount" className="text-sm font-medium text-foreground mb-1.5 block">Знижка майстра, %</label>
               <div className="flex items-center gap-3">
-                <input type="number" min={0} max={100} step={5}
+                <input
+                  id="wizard-discount"
+                  type="number" min={0} max={100} step={5}
                   value={discountPercent || ''} onChange={e => {
                     const v = parseInt(e.target.value, 10);
                     setDiscountPercent(isNaN(v) ? 0 : Math.min(100, Math.max(0, v)));
@@ -272,12 +275,12 @@ export function ClientDetails({
           )}
           {flashDeal && flashDealAmount > 0 && (
             <div className="flex justify-between text-xs">
-              <span className="text-amber-600 flex items-center gap-1">
-                <Zap size={12} className="text-amber-600 flex-shrink-0" />
+              <span className="text-[var(--warning)] flex items-center gap-1">
+                <Zap size={12} className="text-[var(--warning)] flex-shrink-0" />
                 Флеш-акція
                 <span className="text-[10px] font-bold">-{flashDeal.discountPct}%</span>
               </span>
-              <span className="font-semibold text-amber-600">−{fmt(flashDealAmount)}</span>
+              <span className="font-semibold text-[var(--warning)]">−{fmt(flashDealAmount)}</span>
             </div>
           )}
           {mode === 'client' && phoneDiscountPct > 0 && !barterDiscountAmount && (
@@ -382,8 +385,9 @@ export function ClientDetails({
         </AnimatePresence>
       </div>
 
-      <div className="mt-auto pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10">
+      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10">
         <button
+          type="button"
           data-testid="wizard-submit-btn"
           disabled={!canSubmit || saving}
           onClick={onSubmit}

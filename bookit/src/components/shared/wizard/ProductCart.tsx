@@ -16,6 +16,7 @@ interface ProductCartProps {
   onAdd: (p: WizardProduct) => void;
   onRemove: (id: string) => void;
   cartQty: (id: string) => number;
+  onBack: () => void;
   onContinue: () => void;
 }
 
@@ -28,6 +29,7 @@ export function ProductCart({
   onAdd,
   onRemove,
   cartQty,
+  onBack,
   onContinue,
 }: ProductCartProps) {
   const sortedProducts = useMemo(() => {
@@ -41,10 +43,10 @@ export function ProductCart({
   return (
     <motion.div key="products" custom={direction} variants={slide}
       initial="enter" animate="center" exit="exit"
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="flex flex-col h-full min-h-[400px]"
+      transition={{ type: 'spring' as const, duration: 0.28, bounce: 0 }}
+      className="flex flex-col min-h-[400px]"
     >
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div>
         <div className="flex items-center gap-2 mb-1">
           <ShoppingBag size={16} className="text-primary" />
           <p className="text-sm font-semibold text-foreground">Додати до візиту?</p>
@@ -59,9 +61,8 @@ export function ProductCart({
             return (
               <div
                 key={p.id}
-                onClick={() => { if (qty === 0) onAdd(p); }}
-                className={`flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
-                  qty > 0 ? 'bg-primary/10 border-primary/40 shadow-sm' : 'bg-secondary border-border hover:bg-secondary/90 active:scale-[0.95]'
+                className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                  qty > 0 ? 'bg-primary/10 border-primary/40 shadow-sm' : 'bg-secondary border-border'
                 }`}
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10 border border-primary/20">
@@ -75,19 +76,32 @@ export function ProductCart({
                   </p>
                 </div>
                 {qty === 0 ? (
-                  <div className="w-11 h-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center shrink-0 pointer-events-none">
+                  <button
+                    type="button"
+                    aria-label={`Додати ${p.name}`}
+                    onClick={() => onAdd(p)}
+                    className="w-11 h-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center shrink-0 hover:opacity-90 active:scale-[0.88] transition-all cursor-pointer"
+                  >
                     <Plus size={15} />
-                  </div>
+                  </button>
                 ) : (
-                  <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => onRemove(p.id)}
-                      className="w-11 h-11 rounded-full bg-secondary text-muted-foreground flex items-center justify-center border border-border/40 hover:bg-secondary/80 active:scale-[0.88] transition-all cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label={`Прибрати ${p.name}`}
+                      onClick={() => onRemove(p.id)}
+                      className="w-11 h-11 rounded-full bg-secondary text-muted-foreground flex items-center justify-center border border-border/40 hover:bg-secondary/80 active:scale-[0.88] transition-all cursor-pointer"
+                    >
                       <Minus size={14} />
                     </button>
                     <span className="text-sm font-bold text-foreground w-4 text-center">{qty}</span>
-                    <button onClick={() => onAdd(p)}
+                    <button
+                      type="button"
+                      aria-label={`Додати ще ${p.name}`}
+                      onClick={() => onAdd(p)}
                       disabled={atMax}
-                      className="w-11 h-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center hover:opacity-90 active:scale-[0.88] transition-all cursor-pointer disabled:opacity-40">
+                      className="w-11 h-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center hover:opacity-90 active:scale-[0.88] transition-all cursor-pointer disabled:opacity-40"
+                    >
                       <Plus size={14} />
                     </button>
                   </div>
@@ -105,15 +119,21 @@ export function ProductCart({
         )}
       </div>
 
-      <div className="mt-auto pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10 flex gap-3">
-        <button onClick={onContinue}
+      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10 flex gap-3">
+        <button
+          type="button"
+          onClick={cart.length > 0 ? onBack : onContinue}
           data-testid="wizard-skip-products-btn"
-          className="flex-1 py-4 rounded-lg border-2 border-primary/20 bg-secondary/40 text-[11px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 active:scale-[0.95] transition-all cursor-pointer">
+          className="flex-1 py-4 rounded-lg border-2 border-primary/20 bg-secondary/40 text-[11px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 active:scale-[0.95] transition-all cursor-pointer"
+        >
           {cart.length > 0 ? 'Назад' : 'Пропустити'}
         </button>
-        <button onClick={onContinue}
+        <button
+          type="button"
+          onClick={onContinue}
           data-testid="wizard-next-btn"
-          className="flex-[2] py-4 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.95] transition-all shadow-lg cursor-pointer">
+          className="flex-[2] py-4 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.95] transition-all shadow-lg cursor-pointer"
+        >
           {cart.length > 0 ? `Далі · ${fmt(totalProductsPrice)}` : 'Далі'}
         </button>
       </div>
