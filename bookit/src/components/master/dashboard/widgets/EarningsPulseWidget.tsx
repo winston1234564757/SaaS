@@ -47,8 +47,8 @@ function TrendBadge({ today, prev }: { today: number; prev: number }) {
 export function EarningsPulseWidget() {
   const stats = useDashboardStats();
 
-  const todayUah = stats.todayRevenue / 100;
-  const prevUah  = stats.prevDayRevenue / 100;
+  const todayUah = stats.todayRevenue;
+  const prevUah  = stats.prevDayRevenue;
   const count    = stats.todayCount;
   const completed = stats.todayCompleted;
 

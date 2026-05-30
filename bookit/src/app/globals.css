@@ -274,6 +274,20 @@
   --l-border:       rgba(99, 102, 241, 0.14);
   --l-border-2:     rgba(99, 102, 241, 0.24);
   --l-overlay:      rgba(15, 23, 42, 0.05);
+
+  /* Dark-section tokens — used on accent-bg sections (BentoFeatures, FooterCTA) */
+  --l-bg-dark:      var(--l-accent);
+  --l-text-on-dark: var(--l-accent-on);
+  --l-muted-on-dark:      rgba(248, 250, 252, 0.55);
+  --l-muted-2-on-dark:    rgba(248, 250, 252, 0.35);
+  --l-surface-on-dark:    rgba(248, 250, 252, 0.06);
+  --l-border-on-dark:     rgba(248, 250, 252, 0.08);
+  --l-border-2-on-dark:   rgba(248, 250, 252, 0.10);
+
+  /* Shadow tokens */
+  --l-shadow-sm:  0 2px 20px rgba(15, 23, 42, 0.04);
+  --l-shadow-card: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --l-shadow-xl:  0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 /* Landing page: fix html/body overscroll bg showing theme color */
@@ -508,6 +522,19 @@ body::before {
 .widget-card:active {
   transform: translateY(0) scale(0.99);
   transition-duration: 100ms;
+}
+
+/* Dashboard Tour — highlight ring */
+.tour-active {
+  position: relative;
+  z-index: 45;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--card-radius, 20px);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 0 24px color-mix(in srgb, var(--accent) 12%, transparent);
+  transition: outline 200ms ease, box-shadow 200ms ease;
 }
 
 [data-theme="studio"] .bento-card,
@@ -1021,5 +1048,23 @@ body.app-loading .app-suspended-curtain {
 
 @media (prefers-reduced-motion: reduce) {
   .lm-track { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LANDING DECORATIVE BLOBS — CSS (off main thread)
+   ═══════════════════════════════════════════════════════════ */
+.l-blob-float  { animation: l-blob-float  13s ease-in-out infinite; will-change: transform; }
+.l-blob-float-2 { animation: l-blob-float-2 14s ease-in-out infinite; will-change: transform; }
+
+@keyframes l-blob-float {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(20px, -14px); }
+}
+@keyframes l-blob-float-2 {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(-18px, -22px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .l-blob-float, .l-blob-float-2 { animation: none; }
 }
 

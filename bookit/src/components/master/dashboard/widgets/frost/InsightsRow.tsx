@@ -70,7 +70,7 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
   };
 
   return (
-    <div className="bento-card p-4 flex flex-col min-h-[108px]">
+    <div className="bento-card p-4 flex flex-col">
       <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)] mb-3">
         Топ клієнт тижня
       </p>
@@ -81,7 +81,7 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
           <div className="skeleton-shimmer h-3 w-20 rounded-full" />
         </div>
       ) : topClient ? (
-        <div className="flex-1 cursor-pointer" onClick={handleOpen}>
+        <div className="cursor-pointer" onClick={handleOpen}>
           <div
             className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold mb-2"
             style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
@@ -96,9 +96,9 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
           </p>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
-          <span style={{ color: 'var(--text-tertiary)' }}><Users size={18} strokeWidth={1.5} /></span>
-          <p className="text-[12px] text-[var(--text-tertiary)] text-center">Записів ще немає</p>
+        <div className="flex items-center gap-2" style={{ color: 'var(--text-tertiary)' }}>
+          <Users size={14} strokeWidth={1.5} />
+          <span className="text-[12px]">Записів ще немає</span>
         </div>
       )}
     </div>
@@ -127,7 +127,7 @@ function AvgCheckCard() {
   const isPositive = deltaPct !== null && deltaPct >= 0;
 
   return (
-    <div className="bento-card p-4 flex flex-col min-h-[108px]">
+    <div className="bento-card p-4 flex flex-col">
       <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)] mb-3">
         Середній чек
       </p>

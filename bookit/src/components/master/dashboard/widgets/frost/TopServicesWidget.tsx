@@ -54,7 +54,10 @@ export function TopServicesWidget() {
           {[0, 1, 2].map(i => <div key={i} className="skeleton-shimmer h-8 rounded-lg" />)}
         </div>
       ) : top.length === 0 ? (
-        <p className="text-[13px] text-[var(--text-tertiary)]">Немає даних</p>
+        <div className="flex items-center gap-2 py-1" style={{ color: 'var(--text-tertiary)' }}>
+          <Scissors size={14} strokeWidth={1.6} />
+          <span className="text-[12px]">Немає даних цього місяця</span>
+        </div>
       ) : (
         <div className="flex flex-col gap-2">
           {top.map((svc, i) => {

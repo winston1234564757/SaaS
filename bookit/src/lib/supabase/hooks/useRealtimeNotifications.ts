@@ -22,6 +22,7 @@ export function useRealtimeNotifications() {
     qc.invalidateQueries({ queryKey: ['bookings', id] });
     qc.invalidateQueries({ queryKey: ['wizard-schedule', id] });
     qc.invalidateQueries({ queryKey: ['dashboard-stats', id] });
+    qc.invalidateQueries({ queryKey: ['busyness', id] });
     qc.invalidateQueries({ queryKey: ['weekly-overview', id] });
     qc.invalidateQueries({ queryKey: ['notifications', id] });
     qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });

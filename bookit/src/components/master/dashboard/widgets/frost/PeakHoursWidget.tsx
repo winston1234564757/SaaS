@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { getNow } from '@/lib/utils/now';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { Clock } from 'lucide-react';
 
 const DAYS  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
@@ -156,9 +157,10 @@ export function PeakHoursWidget() {
         </div>
 
         {max === 0 && (
-          <p className="text-[11px] text-[var(--text-tertiary)] mt-3 text-center">
-            Немає даних за 30 днів
-          </p>
+          <div className="flex items-center gap-2 py-2 mt-3" style={{ color: 'var(--text-tertiary)' }}>
+            <Clock size={14} strokeWidth={1.6} />
+            <span className="text-[12px]">Немає даних за 30 днів</span>
+          </div>
         )}
       </div>
     </>

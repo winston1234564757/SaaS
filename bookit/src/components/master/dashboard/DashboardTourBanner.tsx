@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
@@ -10,6 +11,46 @@ export function DashboardTourBanner() {
 
   const isVisible = tourStep >= 0 && !!currentStepData;
   const isLast = tourStep === totalSteps - 1;
+
+  useEffect(() => {
+    const prev = document.querySelector('[data-tour-overlay]');
+    if (prev) prev.remove();
+
+    if (tourStep < 0) return;
+
+    const el = document.querySelector(`[data-tour-step="${tourStep}"]`) as HTMLElement | null;
+    if (!el) return;
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-tour-overlay', 'true');
+    overlay.style.cssText = [
+      'position:fixed',
+      'border-radius:var(--card-radius,20px)',
+      'border:2px solid var(--accent)',
+      'box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 15%,transparent),0 0 24px color-mix(in srgb,var(--accent) 10%,transparent)',
+      'pointer-events:none',
+      'z-index:48',
+      'opacity:0',
+      'transition:opacity 200ms ease',
+    ].join(';');
+    document.body.appendChild(overlay);
+
+    const timer = setTimeout(() => {
+      const rect = el.getBoundingClientRect();
+      overlay.style.top    = `${rect.top - 6}px`;
+      overlay.style.left   = `${rect.left - 6}px`;
+      overlay.style.width  = `${rect.width + 12}px`;
+      overlay.style.height = `${rect.height + 12}px`;
+      overlay.style.opacity = '1';
+    }, 350);
+
+    return () => {
+      clearTimeout(timer);
+      overlay.remove();
+    };
+  }, [tourStep]);
 
   return (
     <AnimatePresence mode="popLayout">
@@ -46,10 +87,7 @@ export function DashboardTourBanner() {
                   }}
                 />
               ))}
-              <span
-                className="ml-auto text-[10px] font-semibold"
-                style={{ color: 'var(--text-tertiary)' }}
-              >
+              <span className="ml-auto text-[10px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
                 {tourStep + 1} / {totalSteps}
               </span>
             </div>
@@ -58,9 +96,15 @@ export function DashboardTourBanner() {
             <p className="text-[14px] font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
               {currentStepData.title}
             </p>
-            <p className="text-[12px] leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {currentStepData.text}
             </p>
+            {currentStepData.emptyHint && (
+              <p className="text-[11px] leading-relaxed mt-1.5 mb-3" style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                {currentStepData.emptyHint}
+              </p>
+            )}
+            {!currentStepData.emptyHint && <div className="mb-3" />}
 
             {/* Actions */}
             <div className="flex items-center gap-2">

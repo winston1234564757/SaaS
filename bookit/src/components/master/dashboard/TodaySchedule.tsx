@@ -90,16 +90,13 @@ function isCurrentlyActive(b: BookingWithServices): boolean {
 
 function EmptyState({ view }: { view: ViewMode }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 gap-3 text-[var(--text-tertiary)]">
-      <BarChart2 size={22} strokeWidth={1.5} />
-      <div className="text-center">
-        <p className="text-sm font-medium text-[var(--text-secondary)]">
-          {view === 'today'    ? 'Записів на сьогодні немає'
-          : view === 'tomorrow' ? 'Завтра вільно'
-          : 'На тиждень записів немає'}
-        </p>
-        <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Поділіться сторінкою з клієнтами</p>
-      </div>
+    <div className="flex items-center gap-2 px-4 py-5" style={{ color: 'var(--text-tertiary)' }}>
+      <BarChart2 size={14} strokeWidth={1.6} />
+      <span className="text-[12px]">
+        {view === 'today'    ? 'Записів на сьогодні немає'
+        : view === 'tomorrow' ? 'Завтра вільно'
+        : 'На тиждень записів немає'}
+      </span>
     </div>
   );
 }

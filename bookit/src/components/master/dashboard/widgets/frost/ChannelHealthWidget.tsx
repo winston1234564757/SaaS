@@ -43,7 +43,10 @@ export function ChannelHealthWidget() {
       )}
 
       {data && data.total === 0 && (
-        <p className="text-[13px] text-[var(--text-tertiary)]">Немає записів за 90 днів</p>
+        <div className="flex items-center gap-2 py-1" style={{ color: 'var(--text-tertiary)' }}>
+          <Send size={14} strokeWidth={1.6} />
+          <span className="text-[12px]">Немає клієнтів за 90 днів</span>
+        </div>
       )}
 
       {data && data.total > 0 && (

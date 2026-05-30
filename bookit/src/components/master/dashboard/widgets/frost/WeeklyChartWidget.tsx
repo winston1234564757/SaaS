@@ -6,6 +6,7 @@ import { useWeeklyOverview } from '@/lib/supabase/hooks/useWeeklyOverview';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { getNow } from '@/lib/utils/now';
+import { BarChart2 } from 'lucide-react';
 
 const DAYS    = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const BAR_MAX = 96;
@@ -181,6 +182,13 @@ export function WeeklyChartWidget() {
           </div>
         ))}
       </div>
+
+      {!isLoading && totalBookings === 0 && (
+        <div className="flex items-center gap-2 px-4 pb-3" style={{ color: 'var(--text-tertiary)' }}>
+          <BarChart2 size={14} strokeWidth={1.6} />
+          <span className="text-[12px]">Записів за тиждень ще немає</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -142,7 +142,7 @@ export function AdaptiveContextStrip() {
         title: 'Запусти флеш-акцію',
         subtitle: `${free} вільних годин — ідеально для знижки`,
         cta: 'Створити',
-        onCta: () => router.push('/dashboard/flash'),
+        onCta: () => router.push('/dashboard/revenue?drawer=flash_deals'),
       },
     ],
     moderate: [
@@ -174,7 +174,7 @@ export function AdaptiveContextStrip() {
         title: 'Є вільне місце?',
         subtitle: 'Флеш-акція заповнить останній слот за хвилини',
         cta: 'Запустити',
-        onCta: () => router.push('/dashboard/flash'),
+        onCta: () => router.push('/dashboard/revenue?drawer=flash_deals'),
       },
     ],
   };

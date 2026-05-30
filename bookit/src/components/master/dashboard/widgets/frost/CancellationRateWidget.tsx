@@ -6,7 +6,7 @@ import { ArrowUp, ArrowDown, Minus, Send, Zap } from 'lucide-react';
 
 const CANCEL_ACTIONS = [
   { href: '/dashboard/marketing', label: 'Розсилка',   Icon: Send, primary: false },
-  { href: '/dashboard/flash',     label: 'Пропозиція', Icon: Zap,  primary: true  },
+  { href: '/dashboard/revenue?drawer=flash_deals', label: 'Пропозиція', Icon: Zap, primary: true },
 ] as const;
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { getNow } from '@/lib/utils/now';

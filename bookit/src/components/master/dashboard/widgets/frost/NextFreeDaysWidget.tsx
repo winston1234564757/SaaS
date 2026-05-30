@@ -6,7 +6,7 @@ import { Zap, Sparkles, FileText, Send } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
 const DAY_ACTIONS = [
-  { href: '/dashboard/flash',                      label: 'Flash',    Icon: Zap,      primary: true  },
+  { href: '/dashboard/revenue?drawer=flash_deals', label: 'Flash',    Icon: Zap,      primary: true  },
   { href: '/dashboard/marketing?mode=free_slots',  label: 'Сторіс',   Icon: Sparkles, primary: true  },
   { href: '/dashboard/marketing?mode=templates',   label: 'Шаблони',  Icon: FileText, primary: false },
   { href: '/dashboard/marketing',                  label: 'Розсилки', Icon: Send,     primary: false },

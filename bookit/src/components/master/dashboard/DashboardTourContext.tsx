@@ -9,6 +9,7 @@ import { markTourSeen } from '@/app/(master)/dashboard/actions';
 export interface TourStep {
   title: string;
   text: string;
+  emptyHint?: string;
 }
 
 // v2 — 8 steps covering the full dashboard
@@ -24,10 +25,12 @@ export const TOUR_STEPS: TourStep[] = [
   {
     title: 'Розклад',
     text: 'Записи на сьогодні у хронологічному порядку. Натисни на запис, щоб підтвердити, перенести або скасувати.',
+    emptyHint: 'Поки що тут пусто — щойно з\'явиться перший запис, він буде саме тут.',
   },
   {
     title: 'Тижневий графік',
     text: 'Де є піки, а де вільно — все видно одразу. Використовуй це, щоб запланувати флеш-акції.',
+    emptyHint: 'Графік заповниться після перших записів — тоді буде видно завантаженість по днях тижня.',
   },
   {
     title: 'Швидкі дії',
@@ -40,6 +43,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     title: 'Клієнтські інсайти',
     text: 'Тут — хто приходив частіше за всіх і який середній чек за тиждень. Оновлюється щодня.',
+    emptyHint: 'Після перших записів тут з\'явиться топ клієнт та середній чек.',
   },
   {
     title: 'BookIT Академія',
@@ -56,6 +60,7 @@ interface TourContextValue {
   currentStepData: TourStep | null;
   handleNextStep: () => void;
   closeTour: () => void;
+  startTour: () => void;
 }
 
 const TourContext = createContext<TourContextValue>({
@@ -64,6 +69,7 @@ const TourContext = createContext<TourContextValue>({
   currentStepData: null,
   handleNextStep: () => {},
   closeTour: () => {},
+  startTour: () => {},
 });
 
 export function useTourStep() {
@@ -81,7 +87,6 @@ export function DashboardTourProvider({ children }: { children: React.ReactNode 
     setEvaluated(true);
 
     const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-    // Check both v2 (new) and legacy dashboard tour
     const hasSeen = seenTours?.[TOUR_NAME] ?? seenTours?.dashboard ?? masterProfile?.has_seen_tour ?? false;
     if (hasSeen) return;
 
@@ -115,10 +120,15 @@ export function DashboardTourProvider({ children }: { children: React.ReactNode 
     completeTour();
   }
 
+  function startTour() {
+    setEvaluated(true);
+    setTourStep(0);
+  }
+
   const currentStepData = tourStep >= 0 && tourStep < TOTAL ? TOUR_STEPS[tourStep] : null;
 
   return (
-    <TourContext.Provider value={{ tourStep, totalSteps: TOTAL, currentStepData, handleNextStep, closeTour }}>
+    <TourContext.Provider value={{ tourStep, totalSteps: TOTAL, currentStepData, handleNextStep, closeTour, startTour }}>
       {children}
     </TourContext.Provider>
   );
