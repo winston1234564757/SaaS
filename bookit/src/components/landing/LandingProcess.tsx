@@ -2,6 +2,7 @@
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -157,13 +158,16 @@ export function LandingProcess() {
     target: ref,
     offset: ['start end', 'end start'],
   });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-8%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-2%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section ref={ref} className="py-20 sm:py-36 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
       {/* Ambient blob */}
-      <motion.div
-        className="pointer-events-none absolute rounded-full"
+      <div
+        className="pointer-events-none absolute rounded-full l-blob-float-2"
         style={{
           width: 420,
           height: 420,
@@ -171,8 +175,6 @@ export function LandingProcess() {
           bottom: '0%',
           right: '-6%',
         }}
-        animate={{ x: [0, -18, 0], y: [0, -22, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
         aria-hidden="true"
       />
 
@@ -183,8 +185,8 @@ export function LandingProcess() {
           <div className="lg:sticky lg:top-32">
             <motion.div style={{ y: headingY }}>
               <motion.span
-                initial={{ opacity: 0, y: 12 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+                animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
                 transition={{ ...spring, delay: 0.05 }}
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
                 style={{ color: 'var(--l-indigo)' }}
@@ -228,8 +230,8 @@ export function LandingProcess() {
               transition={{ ...spring, delay: 0.58 }}
               className="mt-4 inline-flex items-center gap-3 px-5 py-3 rounded-full self-start"
               style={{
-                background: 'rgba(99,102,241,0.08)',
-                border: '1px solid rgba(99,102,241,0.15)',
+                background: 'color-mix(in srgb, var(--l-indigo-glow) 8%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--l-indigo-glow) 15%, transparent)',
               }}
             >
               <span

@@ -247,6 +247,7 @@ export default async function MasterPublicPage(
       duration: s.duration_minutes as number,
       popular: s.is_popular as boolean,
       description: (s.description as string) || null,
+      image_url: (s.image_url as string) || null,
     }));
 
   const products = (productsRes.data ?? []).map((p: any) => ({

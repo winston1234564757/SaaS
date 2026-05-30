@@ -119,7 +119,7 @@ export function ProductCart({
         )}
       </div>
 
-      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10 flex gap-3">
+      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-secondary via-secondary/90 to-transparent z-10 flex gap-3">
         <button
           type="button"
           onClick={cart.length > 0 ? onBack : onContinue}

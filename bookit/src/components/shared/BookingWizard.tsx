@@ -247,11 +247,9 @@ export function BookingWizard({
           "flex flex-col",
           !isDesktop && "-mx-6 -mt-2"
         )}>
-          {/* Progress header */}
+          {/* Step dots */}
           {!isAtLimit && step !== 'success' && (
-            <div className="flex items-center justify-center py-3 bg-primary/5 border-b border-primary/10 flex-shrink-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Крок {stepNumber} з {totalSteps}</p>
-            </div>
+            <StepProgress step={step} hasProducts={hasProducts} />
           )}
 
           {/* Safety alert — shown in master mode when a client with health/medical notes is selected */}
@@ -325,6 +323,7 @@ export function BookingWizard({
                       onDateSelect={(d) => { setSelectedDate(d); setSelectedTime(null); }}
                       onTimeSelect={setSelectedTime}
                       onToggleDynamicPrice={() => setUseDynamicPrice(v => !v)}
+                      onBack={() => go('services', -1)}
                       onContinue={() => go(hasProducts ? 'products' : 'details', 1)}
                     />
                   </div>

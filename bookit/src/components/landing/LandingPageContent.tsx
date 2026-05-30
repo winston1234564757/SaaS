@@ -24,7 +24,7 @@ import { LegalFooterLinks } from '@/components/shared/LegalFooterLinks';
 
 // How far the rising section overlaps the pinned one.
 // 30vh = less aggressive, sections stay visually distinct.
-const OVERLAP = '30vh';
+const OVERLAP = '22vh';
 
 type SectionDef = {
   Component: React.ComponentType;
@@ -49,37 +49,22 @@ const SECTIONS: SectionDef[] = [
 
 export function LandingPageContent() {
   const [prefersReduced, setPrefersReduced] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    // 1. Check system reduced motion
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let isReduced = mediaQuery.matches;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReduced(mq.matches);
+    const listener = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
+    mq.addEventListener('change', listener);
+    return () => mq.removeEventListener('change', listener);
+  }, []);
 
-    // 2. Check hardware constraints for weak devices
-    if (typeof navigator !== 'undefined') {
-      const concurrency = navigator.hardwareConcurrency;
-      const memory = (navigator as any).deviceMemory;
-      if ((concurrency && concurrency < 4) || (memory && memory < 4)) {
-        isReduced = true;
-      }
-    }
-
-    setPrefersReduced(isReduced);
-
-    const listener = (e: MediaQueryListEvent) => {
-      let currentReduced = e.matches;
-      if (typeof navigator !== 'undefined') {
-        const concurrency = navigator.hardwareConcurrency;
-        const memory = (navigator as any).deviceMemory;
-        if ((concurrency && concurrency < 4) || (memory && memory < 4)) {
-          currentReduced = true;
-        }
-      }
-      setPrefersReduced(currentReduced);
-    };
-
-    mediaQuery.addEventListener('change', listener);
-    return () => mediaQuery.removeEventListener('change', listener);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
   }, []);
 
   useEffect(() => {
@@ -96,6 +81,10 @@ export function LandingPageContent() {
 
     if (isReducedDevice) {
       return; // Do not register heavy GSAP scroll animations
+    }
+
+    if (window.innerWidth < 1024) {
+      return; // card-rise disabled on mobile/tablet — touch scroll handles it natively
     }
 
     gsap.registerPlugin(ScrollTrigger);
@@ -123,8 +112,9 @@ export function LandingPageContent() {
             start: 'bottom bottom',   // pins when prev bottom touches viewport bottom
             end: `+=${OVERLAP}`,      // 30vh of scroll = full rise = pin releases
             pin: true,
+            pinType: 'transform',     // keeps element in DOM flow — no position:fixed jump
             anticipatePin: 1,         // prevents the pop on fast scroll
-            scrub: 1,                 // 1s smoothing lag — weight-y, physical feel
+            scrub: true,              // perfect 1:1 with scroll — zero lag
             invalidateOnRefresh: true,
           },
         });
@@ -151,7 +141,7 @@ export function LandingPageContent() {
             const { Component, id, overlap } = sec;
             const prev = SECTIONS[i - 1];
             // isRising: this section rises up over the previous one
-            const isRising = overlap && prev?.overlap === true && !prefersReduced;
+            const isRising = overlap && prev?.overlap === true && !prefersReduced && isDesktop;
 
             return (
               <div
@@ -182,7 +172,7 @@ export function LandingPageContent() {
           className="py-10 px-4 flex flex-col items-center gap-3 text-sm"
           style={{ color: 'var(--l-muted)', borderTop: '1px solid var(--l-border)' }}
         >
-          <p>© 2026 Bookit — зроблено в Україні 🇺🇦</p>
+          <p>© 2026 Bookit — зроблено в Україні</p>
           <LegalFooterLinks />
         </footer>
       </div>

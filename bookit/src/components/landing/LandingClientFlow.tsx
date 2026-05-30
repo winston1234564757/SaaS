@@ -2,6 +2,7 @@
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -69,9 +70,9 @@ function StepCard({ item }: { item: typeof STEPS[0] }) {
           transition={{ ...spring, delay: 0.08 }}
           className="text-sm font-semibold px-4 py-2 rounded-full"
           style={{
-            background: 'rgba(99,102,241,0.10)',
+            background: 'color-mix(in srgb, var(--l-indigo-glow) 10%, transparent)',
             color: 'var(--l-indigo)',
-            border: '1px solid rgba(99,102,241,0.18)',
+            border: '1px solid color-mix(in srgb, var(--l-indigo-glow) 18%, transparent)',
           }}
         >
           {item.detail}
@@ -132,12 +133,15 @@ export function LandingClientFlow() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section
       ref={ref}
-      className="py-20 sm:py-36 px-4 sm:px-6 lg:px-12"
+      className="pt-20 sm:pt-36 pb-40 sm:pb-64 px-4 sm:px-6 lg:px-12"
       style={{ background: 'var(--l-bg)' }}
     >
       <div className="max-w-7xl mx-auto">
@@ -145,8 +149,8 @@ export function LandingClientFlow() {
         {/* Header */}
         <motion.div className="mb-14 max-w-xl" style={{ y: headingY }}>
           <motion.span
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+            animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
             transition={{ ...spring, delay: 0.05 }}
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
             style={{ color: 'var(--l-indigo)' }}

@@ -5,7 +5,7 @@
 > **Active step:** STEP 04 (Dashboard Home) — In Progress (Session 4 complete)
 > **Progress:** 3 / 13 complete + STEP 04 in progress
 > **Model in use:** 🟢 Sonnet 4.6 (STEP 04 session 4)
-> **Last commit:** `65acf29` — fix(step04): tour overlay, academy tab jump, empty states, deep links (session 4 uncommitted)
+> **Last commit:** `00895f1` — feat(step04): Frost dashboard grid refactor — stretch layout, enriched widgets
 
 ---
 
@@ -67,16 +67,15 @@ Steps 05-13: 🔒 Blocked (sequential)
 | F | Academy: повний rewrite (tabs+accordion+Emil springs+26 articles) | ✅ Done | `65acf29` |
 | F2 | Deep links: services/new, revenue?drawer=flash_deals | ✅ Done | `65acf29` |
 | B2 | Academy tab: mode="popLayout" → mode="wait" (layout jump fix) | ✅ Done | `65acf29` |
-| G | Frost Grid: `items-start` → `align-items:stretch`; wrapper divs `flex flex-col`; all widget roots `flex flex-col` | ✅ Done | pending |
-| G2 | PeakHoursWidget: Fragment → `div.flex.flex-col`; heatmap cells `flex-1 min-h-[10px]` (dynamic scaling) | ✅ Done | pending |
-| G3 | ChannelHealthWidget: actionable empty state (icon + CTA → /dashboard/clients) | ✅ Done | pending |
-| G4 | FreeSlotsWidget, NextFreeDaysWidget, TopServicesWidget, CancellationRateWidget: `mt-auto` footer pin | ✅ Done | pending |
-| G5 | InsightsRow: TopClientCard + totalSpent + "Профіль клієнта" footer; AvgCheckCard + comparison bars | ✅ Done | pending |
-| G6 | NextFreeDaysWidget: chips `flex-1` — заповнюють всю ширину блока | ✅ Done | pending |
+| G | Frost Grid: `items-start` → `align-items:stretch`; wrapper divs `flex flex-col`; all widget roots `flex flex-col` | ✅ Done | `00895f1` |
+| G2 | PeakHoursWidget: Fragment → `div.flex.flex-col`; heatmap cells `flex-1 min-h-[10px]` (dynamic scaling) | ✅ Done | `00895f1` |
+| G3 | ChannelHealthWidget: actionable empty state (icon + CTA → /dashboard/clients) | ✅ Done | `00895f1` |
+| G4 | FreeSlotsWidget, NextFreeDaysWidget, TopServicesWidget, CancellationRateWidget: `mt-auto` footer pin | ✅ Done | `00895f1` |
+| G5 | InsightsRow: TopClientCard + totalSpent + "Профіль клієнта" footer; AvgCheckCard + comparison bars | ✅ Done | `00895f1` |
+| G6 | NextFreeDaysWidget: chips `flex-1` — заповнюють всю ширину блока | ✅ Done | `00895f1` |
 
 #### Залишилось до STEP 04 Complete
-- [ ] `git commit + push` → Vercel deploy (session 4 changes uncommitted)
-- [ ] QA на живому: grid висоти, heatmap scaling, InsightsRow контент, FreeDays chips
+- [x] `git commit + push` → Vercel deploy (`00895f1` pushed)
 - [ ] `/impeccable audit` → health score (baseline 22/40 → target 34+)
 - [ ] Підтвердження від користувача: STEP 04 QA пройдено
 

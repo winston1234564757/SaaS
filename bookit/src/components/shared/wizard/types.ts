@@ -12,6 +12,7 @@ export interface WizardService {
   icon_name: ServiceIconName;
   category: string;
   description?: string | null;
+  image_url?: string | null;
 }
 
 export interface WizardProduct {

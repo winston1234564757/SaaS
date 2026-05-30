@@ -50,6 +50,7 @@ interface Service {
   popular: boolean;
   icon_name: string;
   category: string;
+  image_url?: string | null;
 }
 
 interface Product {
@@ -893,12 +894,20 @@ export function PublicMasterPage({
                         </div>
                       )}
                       <div className="flex items-center gap-4">
-                        <div
-                          className="w-12 h-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110"
-                          style={{ background: serviceEmojiCircleBg, border: '1px solid rgba(255,255,255,0.4)' }}
-                        >
-                          <ServiceIcon name={service.icon_name} size={18} />
-                        </div>
+                        {service.image_url ? (
+                          <img
+                            src={service.image_url}
+                            alt={service.name}
+                            className="w-12 h-12 rounded-lg flex-shrink-0 object-cover transition-transform group-hover:scale-110"
+                          />
+                        ) : (
+                          <div
+                            className="w-12 h-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110"
+                            style={{ background: serviceEmojiCircleBg, border: '1px solid rgba(255,255,255,0.4)' }}
+                          >
+                            <ServiceIcon name={service.icon_name} size={18} />
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0 pr-12">
                           <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{service.name}</p>
                           <p className="text-[11px] mt-0.5 font-medium opacity-70" style={{ color: textSecondary }}>

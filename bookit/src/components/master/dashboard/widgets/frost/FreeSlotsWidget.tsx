@@ -8,6 +8,7 @@ import type { Service } from '@/components/master/services/types';
 import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
 import { useSlotsFromStore } from '@/lib/supabase/hooks/useSlotsFromStore';
 import { useMasterContext } from '@/lib/supabase/context';
+import { useToast } from '@/lib/toast/context';
 import type { WorkingHoursConfig } from '@/types/database';
 import { getNow } from '@/lib/utils/now';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -29,13 +30,18 @@ function toISO(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function FreeSlotsWidget() {
+interface FreeSlotsWidgetProps {
+  onSlotClick?: (time: string, serviceId: string) => void;
+}
+
+export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
   const now       = getNow();
   const todayStr  = toISO(now);
   const future    = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   const futureStr = toISO(future);
   const { profile, masterProfile } = useMasterContext();
   const masterId  = masterProfile?.id ?? profile?.id;
+  const { showToast } = useToast();
   const { services, isLoading: servicesLoading } = useServices();
   const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(masterId, todayStr, futureStr);
   const wh        = (masterProfile?.working_hours as Partial<WorkingHoursConfig> | null) ?? {};
@@ -68,6 +74,14 @@ export function FreeSlotsWidget() {
       .filter(g => g.slots.length > 0);
   }, [allSlots]);
 
+  function handleSlotClick(time: string) {
+    if (!selectedService) {
+      showToast({ type: 'error', title: 'Послугу не обрано', message: 'Оберіть послугу перед записом' });
+      return;
+    }
+    onSlotClick?.(time, selectedService.id);
+  }
+
   return (
     <div className="bento-card overflow-hidden flex flex-col">
       <div className="px-4 pt-4 pb-0">
@@ -96,6 +110,7 @@ export function FreeSlotsWidget() {
               return (
                 <button
                   key={svc.id}
+                  type="button"
                   onClick={() => setSelectedServiceId(svc.id)}
                   className="flex-shrink-0 px-2.5 py-2 rounded-full text-[11px] font-bold tracking-[0.04em] transition-all duration-150 cursor-pointer whitespace-nowrap"
                   style={{
@@ -125,9 +140,12 @@ export function FreeSlotsWidget() {
               </p>
               <div className="grid grid-cols-4 gap-[3px]">
                 {group.slots.map(t => (
-                  <span
+                  <button
                     key={t}
-                    className="flex items-center justify-center py-2.5 text-[11px] font-bold tabular-nums"
+                    type="button"
+                    onClick={() => handleSlotClick(t)}
+                    aria-label={`Вільний час ${t}`}
+                    className="flex items-center justify-center py-2.5 text-[11px] font-bold tabular-nums cursor-pointer transition-all duration-150 active:scale-[0.93] hover:opacity-70"
                     style={{
                       borderRadius: '6px',
                       border:       '1px solid color-mix(in srgb, var(--accent) 12%, transparent)',
@@ -136,7 +154,7 @@ export function FreeSlotsWidget() {
                     }}
                   >
                     {t}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>

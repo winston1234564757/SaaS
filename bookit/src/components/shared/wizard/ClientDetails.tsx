@@ -385,7 +385,7 @@ export function ClientDetails({
         </AnimatePresence>
       </div>
 
-      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10">
+      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-secondary via-secondary/90 to-transparent z-10">
         <button
           type="button"
           data-testid="wizard-submit-btn"
@@ -394,7 +394,7 @@ export function ClientDetails({
           className={`w-full py-4 rounded-lg font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
             canSubmit && !saving
               ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]'
-              : 'bg-secondary/80 text-muted-foreground/40 cursor-not-allowed shadow-none opacity-50'
+              : 'bg-secondary/60 border border-border text-muted-foreground/60 cursor-not-allowed shadow-none'
           }`}
         >
           {saving

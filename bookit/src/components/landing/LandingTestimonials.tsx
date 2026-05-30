@@ -72,7 +72,7 @@ export function LandingTestimonials() {
               {/* Double-Bezel */}
               <div
                 className="p-1.5 rounded-[1.75rem] h-full"
-                style={{ background: 'rgba(26,23,16,0.03)', border: '1px solid var(--l-border)' }}
+                style={{ background: 'color-mix(in srgb, var(--l-accent) 3%, transparent)', border: '1px solid var(--l-border)' }}
               >
                 <div
                   className="rounded-[calc(1.75rem-0.375rem)] p-8 h-full flex flex-col gap-6"
@@ -104,9 +104,9 @@ export function LandingTestimonials() {
                   <div
                     className="px-3 py-2 rounded-xl text-sm font-semibold self-start"
                     style={{
-                      background: 'rgba(99,102,241,0.08)',
+                      background: 'color-mix(in srgb, var(--l-indigo-glow) 8%, transparent)',
                       color: 'var(--l-indigo)',
-                      border: '1px solid rgba(99,102,241,0.14)',
+                      border: '1px solid color-mix(in srgb, var(--l-indigo-glow) 14%, transparent)',
                     }}
                   >
                     {t.metric}

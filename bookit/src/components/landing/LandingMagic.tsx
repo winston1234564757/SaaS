@@ -2,6 +2,7 @@
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
@@ -140,7 +141,10 @@ export function LandingMagic() {
     target: ref,
     offset: ['start end', 'end start'],
   });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section ref={ref} className="px-4 sm:px-6 lg:px-12" style={{ background: 'var(--l-bg)' }}>
@@ -149,8 +153,8 @@ export function LandingMagic() {
         {/* Section header */}
         <motion.div className="pt-20 sm:pt-36 pb-14 max-w-2xl" style={{ y: headingY }}>
           <motion.span
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+            animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
             transition={{ ...spring, delay: 0.05 }}
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
@@ -199,7 +203,7 @@ export function LandingMagic() {
             Спробувати безкоштовно
             <span
               className="w-7 h-7 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              style={{ background: 'rgba(248,250,252,0.12)' }}
+              style={{ background: 'color-mix(in srgb, var(--l-accent-on) 12%, transparent)' }}
             >
               <ArrowUpRight size={13} aria-hidden="true" />
             </span>

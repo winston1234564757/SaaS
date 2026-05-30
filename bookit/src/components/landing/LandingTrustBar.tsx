@@ -11,7 +11,7 @@ import {
   useScroll,
 } from 'framer-motion';
 
-const easeOut: [number, number, number, number] = [0.23, 1, 0.32, 1];
+const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 /* ─── Counter that springs from 0 → to ─── */
 function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {

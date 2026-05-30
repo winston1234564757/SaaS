@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useProducts } from '@/lib/supabase/hooks/useProducts';
@@ -13,31 +14,54 @@ interface ManualBookingFormProps {
   onSuccess?: () => void;
   initialDate?: string;
   initialTime?: string;
+  initialServiceId?: string;
   initialClientId?: string;
   initialClientName?: string;
   initialClientPhone?: string;
 }
 
-export function ManualBookingForm({ isOpen, onClose, onSuccess, initialDate, initialTime, initialClientId, initialClientName, initialClientPhone }: ManualBookingFormProps) {
+export function ManualBookingForm({
+  isOpen, onClose, onSuccess,
+  initialDate, initialTime, initialServiceId,
+  initialClientId, initialClientName, initialClientPhone,
+}: ManualBookingFormProps) {
   const { masterProfile } = useMasterContext();
   const { services } = useServices();
   const { products: allProducts } = useProducts();
   const qc = useQueryClient();
 
-  const activeServices = services.filter(s => s.active) as WizardService[];
+  const activeServices: WizardService[] = services
+    .filter(s => s.active)
+    .map(s => ({
+      id:          s.id,
+      name:        s.name,
+      icon_name:   s.icon_name,
+      category:    s.category,
+      price:       s.price,
+      duration:    s.duration,
+      popular:     s.popular,
+      description: s.description || null,
+      image_url:   (s as any).imageUrl || null,
+    }));
   const availableProducts: WizardProduct[] = allProducts
     .filter(p => p.is_active && p.stock_qty > 0)
     .map(p => ({
-      id:                p.id,
-      name:              p.name,
-      price:             p.price_kopecks / 100,
-      description:       p.description,
-      icon_name:         p.icon_name,
-      inStock:           p.stock_qty > 0,
-      stock:             p.stock_qty,
-      recommendAlways:   p.recommend_always,
-      linkedServiceIds:  (p.product_service_links ?? []).map(l => l.service_id),
+      id:               p.id,
+      name:             p.name,
+      price:            p.price_kopecks / 100,
+      description:      p.description,
+      icon_name:        p.icon_name,
+      inStock:          p.stock_qty > 0,
+      stock:            p.stock_qty,
+      recommendAlways:  p.recommend_always,
+      linkedServiceIds: (p.product_service_links ?? []).map(l => l.service_id),
     }));
+
+  const initialServices = useMemo(
+    () => initialServiceId ? activeServices.filter(s => s.id === initialServiceId) : undefined,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [initialServiceId],
+  );
 
   function handleSuccess() {
     qc.invalidateQueries({ queryKey: ['bookings'] });
@@ -62,10 +86,10 @@ export function ManualBookingForm({ isOpen, onClose, onSuccess, initialDate, ini
       onSuccess={handleSuccess}
       initialDate={initialDate}
       initialTime={initialTime}
+      initialServices={initialServices}
       initialClientId={initialClientId}
       initialClientName={initialClientName}
       initialClientPhone={initialClientPhone}
     />
   );
 }
-

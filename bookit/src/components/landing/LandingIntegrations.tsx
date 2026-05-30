@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import Image from 'next/image';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
@@ -59,13 +60,16 @@ export function LandingIntegrations() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section
       ref={ref}
       className="py-20 sm:py-36 px-4 sm:px-6 lg:px-12"
-      style={{ background: '#FFFFFF' }}
+      style={{ background: 'var(--l-surface)' }}
     >
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
@@ -73,8 +77,8 @@ export function LandingIntegrations() {
           {/* Left: header */}
           <motion.div style={{ y: headingY }}>
             <motion.span
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
+              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+              animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
               transition={{ ...spring, delay: 0.05 }}
               className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
               style={{ color: 'var(--l-indigo)' }}

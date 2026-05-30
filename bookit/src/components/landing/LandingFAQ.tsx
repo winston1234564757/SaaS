@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { motion, useInView, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { Plus } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
@@ -54,15 +55,17 @@ function FAQItem({ item, index, inView }: { item: typeof FAQS[0]; index: number;
           {item.q}
         </span>
         <span
-          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-transform"
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{
             background: open ? 'var(--l-accent)' : 'var(--l-surface-2)',
             border: '1px solid var(--l-border)',
             transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
+            color: open ? '#FDFAF5' : 'var(--l-ink)',
+            transition: 'transform 220ms ease-out, background 220ms ease-out, color 220ms ease-out',
           }}
           aria-hidden="true"
         >
-          <Plus size={14} style={{ color: open ? '#FDFAF5' : 'var(--l-ink)' }} />
+          <Plus size={14} />
         </span>
       </button>
 
@@ -91,7 +94,10 @@ export function LandingFAQ() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-8%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-2%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section id="faq" ref={ref} className="py-20 sm:py-36 px-4 sm:px-6 lg:px-12">
@@ -101,8 +107,8 @@ export function LandingFAQ() {
           <div className="lg:sticky lg:top-32 self-start">
             <motion.div style={{ y: headingY }}>
               <motion.span
-                initial={{ opacity: 0, y: 12 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+                animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
                 transition={{ ...spring, delay: 0.05 }}
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
                 style={{ color: 'var(--l-indigo)' }}

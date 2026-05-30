@@ -1,9 +1,9 @@
 'use client';
 // src/components/shared/wizard/DateTimePicker.tsx
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Coffee, Calendar, Utensils, Sparkles, Star } from 'lucide-react';
-import { addDays, parse as parseFns, format as formatFns, addMinutes } from 'date-fns';
+import { addDays } from 'date-fns';
 import {
   buildSlotRenderItems,
   toMins as slotToMins, fromMins as slotFromMins,
@@ -16,6 +16,10 @@ import type { ScheduleStore } from '@/lib/supabase/hooks/useWizardSchedule';
 import { DAY_S, MONTH_S, toISO, fmt, slide } from './helpers';
 import type { WizardService } from './types';
 import { getNow } from '@/lib/utils/now';
+
+// ── Spring constants ──────────────────────────────────────────────────────────
+const slotSpring = { type: 'spring' as const, stiffness: 260, damping: 26 };
+const barSpring  = { type: 'spring' as const, stiffness: 90,  damping: 18 };
 
 interface DateTimePickerProps {
   days: Date[];
@@ -40,6 +44,7 @@ interface DateTimePickerProps {
   onDateSelect: (d: Date) => void;
   onTimeSelect: (t: string) => void;
   onToggleDynamicPrice: () => void;
+  onBack: () => void;
   onContinue: () => void;
 }
 
@@ -65,15 +70,18 @@ export function DateTimePicker({
   onDateSelect,
   onTimeSelect,
   onToggleDynamicPrice,
+  onBack,
   onContinue,
 }: DateTimePickerProps) {
   const [mounted, setMounted] = useState(false);
+  const prefersReduced = useReducedMotion();
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const canProceedDatetime = !!selectedDate && !!selectedTime;
-  
+
   if (!mounted) {
     return (
       <div className="flex justify-center py-10" id="hydration-waiting">
@@ -90,15 +98,21 @@ export function DateTimePicker({
       className="flex flex-col"
     >
       <div className="pb-4">
-        {/* Services recap chip */}
-        <button onClick={onContinue}
-          className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/25 mb-5 w-full text-left active:scale-[0.95] transition-all cursor-pointer">
+        {/* Services recap chip — click to go back */}
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Повернутись до вибору послуг"
+          className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/25 mb-5 w-full text-left active:scale-[0.95] transition-all cursor-pointer"
+        >
           <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 flex-shrink-0">
             <Sparkles size={14} className="text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground truncate">
-              {selectedServices.length === 1 ? selectedServices[0].name : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
+              {selectedServices.length === 1
+                ? selectedServices[0].name
+                : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
             </p>
             <p className="text-xs text-muted-foreground/60">{formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
           </div>
@@ -109,8 +123,8 @@ export function DateTimePicker({
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Дата</p>
 
         <div className="flex items-center gap-2 mb-5">
-          {/* Prev day */}
           <button
+            type="button"
             disabled={scheduleLoading}
             onClick={() => {
               const base = selectedDate ?? days[0];
@@ -122,7 +136,6 @@ export function DateTimePicker({
             <ChevronLeft size={14} />
           </button>
 
-          {/* Scrollable date strip */}
           <div
             className="flex gap-2 overflow-x-auto scrollbar-hide flex-1"
             style={{ WebkitOverflowScrolling: 'touch' }}
@@ -137,11 +150,10 @@ export function DateTimePicker({
               return (
                 <button
                   key={i}
+                  type="button"
                   id={`day-${dateStr}`}
                   disabled={isDisabled}
-                  onClick={() => {
-                    if (!isDisabled) onDateSelect(d);
-                  }}
+                  onClick={() => { if (!isDisabled) onDateSelect(d); }}
                   className={`flex flex-col items-center gap-1 py-2.5 px-3 rounded-xl flex-shrink-0 min-w-[54px] transition-all cursor-pointer active:scale-[0.95] ${
                     isOff
                       ? 'bg-secondary/30 border border-dashed border-border cursor-not-allowed opacity-40'
@@ -178,8 +190,8 @@ export function DateTimePicker({
             })}
           </div>
 
-          {/* Next day */}
           <button
+            type="button"
             disabled={scheduleLoading}
             onClick={() => {
               const base = selectedDate ?? days[0];
@@ -196,6 +208,7 @@ export function DateTimePicker({
           <div className="flex flex-col items-center gap-3 py-6 mb-4">
             <p className="text-sm text-destructive">Не вдалося завантажити розклад</p>
             <button
+              type="button"
               onClick={onRetry}
               className="px-4 py-2 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold active:scale-[0.95] transition-all cursor-pointer"
             >
@@ -208,128 +221,158 @@ export function DateTimePicker({
           </div>
         ) : (
           <>
-            {/* Time grid moved to a fragment */}
+            {/* ── Time grid ── */}
+            {selectedDate && (
+              <>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Час</p>
 
-        {/* ── Time grid ── */}
-        {selectedDate && (
-          <>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Час</p>
-
-            {offDayDates.has(toISO(selectedDate)) ? (
-              <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
-                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
-                  <Coffee size={28} />
-                </div>
-                <p className="text-sm font-semibold text-foreground">Вихідний день</p>
-                <p className="text-xs text-muted-foreground">Оберіть інший день</p>
-              </div>
-            ) : (() => {
-              const renderItems = buildSlotRenderItems(slots, selectedDayBreaks);
-              const hasAvail = renderItems.some(i => i.kind === 'slot');
-
-              if (!hasAvail) return (
-                <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
-                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
-                    <Calendar size={28} />
+                {offDayDates.has(toISO(selectedDate)) ? (
+                  <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
+                    <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
+                      <Coffee size={28} />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">Вихідний день</p>
+                    <p className="text-xs text-muted-foreground">Оберіть інший день</p>
                   </div>
-                  <p className="text-sm font-semibold text-foreground">Немає вільних слотів</p>
-                  <p className="text-xs text-muted-foreground">Всі вікна зайняті</p>
-                </div>
-              );
+                ) : (() => {
+                  const renderItems = buildSlotRenderItems(slots, selectedDayBreaks);
+                  const hasAvail = renderItems.some(i => i.kind === 'slot');
 
-              return (
-                <div className="grid grid-cols-3 gap-3 mb-4" data-testid="slots-grid">
-                  {renderItems.map((item, idx) =>
-                    item.kind === 'break' ? (
-                      /* Break separator spans all 3 columns */
-                      <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
-                        <div className="flex-1 h-px bg-border" />
-                        <span className="text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1.5 font-medium">
-                          <Utensils size={11} strokeWidth={2.5} />
-                          {item.label} · {item.start}–{item.end}
-                        </span>
-                        <div className="flex-1 h-px bg-border" />
+                  if (!hasAvail) return (
+                    <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
+                      <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
+                        <Calendar size={28} />
                       </div>
-                    ) : (
-                      <motion.button
-                        key={item.slot.time}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => onTimeSelect(item.slot.time)}
-                        data-testid="time-slot"
-                        className={`relative rounded-xl py-3 text-center text-sm font-medium transition-all cursor-pointer ${
-                          selectedTime === item.slot.time
-                            ? 'bg-primary text-[var(--accent-on)] shadow-md ring-2 ring-primary/30 border-transparent'
-                            : item.slot.isSuggested
-                            ? 'bg-primary/8 border border-primary/30 text-foreground'
-                            : 'bg-secondary/60 text-foreground border border-border hover:bg-secondary hover:border-primary/30'
-                        }`}
-                      >
-                        {item.slot.isSuggested && selectedTime !== item.slot.time && (
-                          <span className="absolute -top-1.5 -right-1 bg-primary text-[var(--accent-on)] rounded-full p-1 shadow-sm flex items-center justify-center">
-                            <Star size={8} className="fill-current text-[var(--accent-on)]" />
-                          </span>
-                        )}
-                        <span className="block font-semibold">{item.slot.time}</span>
-                        <span className={`block text-[11px] font-normal mt-0.5 ${
-                          selectedTime === item.slot.time ? 'text-[var(--accent-on)]/70' : 'text-muted-foreground'
-                        }`}>
-                          {slotFromMins(slotToMins(item.slot.time) + effectiveDuration)}
-                        </span>
-                      </motion.button>
-                    )
-                  )}
-                </div>
-              );
-            })()}
+                      <p className="text-sm font-semibold text-foreground">Немає вільних слотів</p>
+                      <p className="text-xs text-muted-foreground">Всі вікна зайняті</p>
+                    </div>
+                  );
 
-            {/* Dynamic pricing badge — для клієнта: інфо-бейдж */}
-            {dynamicPricing?.label && mode === 'client' && (
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium mb-3 ${
-                dynamicPricing.modifier > 0
-                  ? 'bg-destructive/10 text-destructive border border-destructive/25'
-                  : 'bg-primary/10 text-primary border border-primary/25'
-              }`}>
-                {dynamicPricing.label}
-                <span className="ml-auto font-bold">{fmt(dynamicPricing.adjustedPrice)}</span>
-              </div>
-            )}
+                  return (
+                    <div className="grid grid-cols-3 gap-3 mb-4" data-testid="slots-grid">
+                      {renderItems.map((item, idx) =>
+                        item.kind === 'break' ? (
+                          <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
+                            <div className="flex-1 h-px bg-border" />
+                            <span className="text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1.5 font-medium">
+                              <Utensils size={11} strokeWidth={2.5} />
+                              {item.label} · {item.start}–{item.end}
+                            </span>
+                            <div className="flex-1 h-px bg-border" />
+                          </div>
+                        ) : (() => {
+                          const isSel  = selectedTime === item.slot.time;
+                          const endTime = slotFromMins(slotToMins(item.slot.time) + effectiveDuration);
+                          return (
+                            <motion.button
+                              key={item.slot.time}
+                              layout={!prefersReduced}
+                              animate={{
+                                opacity: selectedTime && !isSel ? 0.55 : 1,
+                              }}
+                              transition={{
+                                opacity: { duration: 0.15 },
+                                layout: slotSpring,
+                              }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => onTimeSelect(item.slot.time)}
+                              data-testid="time-slot"
+                              aria-label={`${item.slot.time}–${endTime}`}
+                              aria-pressed={isSel}
+                              className={`relative rounded-xl text-center text-sm font-medium cursor-pointer overflow-hidden transition-colors ${
+                                isSel
+                                  ? 'bg-primary text-[var(--accent-on)] shadow-md ring-2 ring-primary/30 border-transparent py-4'
+                                  : item.slot.isSuggested
+                                  ? 'bg-primary/8 border border-primary/30 text-foreground py-3'
+                                  : 'bg-secondary/60 text-foreground border border-border hover:bg-secondary hover:border-primary/30 py-3'
+                              }`}
+                            >
+                              {isSel ? (
+                                /* ─── Expanded selected state: 09:00 ──── 10:00 ─── */
+                                <div className="flex items-center gap-2 px-2.5">
+                                  <span className="text-sm font-bold leading-none flex-shrink-0">{item.slot.time}</span>
+                                  <div className="flex-1 h-[2px] rounded-full bg-[var(--accent-on)]/20 overflow-hidden min-w-0">
+                                    {!prefersReduced && (
+                                      <motion.div
+                                        initial={{ scaleX: 0 }}
+                                        animate={{ scaleX: 1 }}
+                                        transition={barSpring}
+                                        className="h-full bg-[var(--accent-on)]/60 rounded-full origin-left"
+                                      />
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] font-medium leading-none text-[var(--accent-on)]/75 flex-shrink-0">{endTime}</span>
+                                </div>
+                              ) : (
+                                /* ─── Default / suggested state ─── */
+                                <>
+                                  {item.slot.isSuggested && (
+                                    <span className="absolute -top-1.5 -right-1 bg-primary text-[var(--accent-on)] rounded-full p-1 shadow-sm flex items-center justify-center">
+                                      <Star size={8} className="fill-current text-[var(--accent-on)]" />
+                                    </span>
+                                  )}
+                                  <span className="block font-semibold">{item.slot.time}</span>
+                                  <span className="block text-[11px] font-normal mt-0.5 text-muted-foreground">
+                                    {endTime}
+                                  </span>
+                                </>
+                              )}
+                            </motion.button>
+                          );
+                        })()
+                      )}
+                    </div>
+                  );
+                })()}
 
-            {/* Dynamic pricing toggle — тільки для майстра, якщо правило спрацювало */}
-            {mode === 'master' && dynamicPricing && dynamicPricing.adjustedPrice !== totalServicesPrice && selectedTime && (
-              <button
-                type="button"
-                onClick={onToggleDynamicPrice}
-                className={`flex items-center justify-between w-full px-4 py-3 rounded-xl border transition-all mb-3 ${
-                  useDynamicPrice
-                    ? 'bg-primary/10 border-primary/30'
-                    : 'bg-secondary/70 border-border hover:bg-secondary'
-                } active:scale-[0.95] cursor-pointer`}
-              >
-                <div className="text-left">
-                  <p className="text-sm font-medium text-foreground">Застосувати динамічну ціну</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">
-                    {dynamicPricing.label} → {fmt(dynamicPricing.adjustedPrice)}
-                  </p>
-                </div>
-                <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ml-3 ${
-                  useDynamicPrice ? 'bg-primary' : 'bg-secondary/80'
-                }`}>
-                  <motion.div
-                    animate={{ x: useDynamicPrice ? 20 : 2 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    className="absolute top-1 w-4 h-4 rounded-full bg-accent-on shadow-sm"
-                  />
-                </div>
-              </button>
+                {/* Dynamic pricing badge */}
+                {dynamicPricing?.label && mode === 'client' && (
+                  <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium mb-3 ${
+                    dynamicPricing.modifier > 0
+                      ? 'bg-destructive/10 text-destructive border border-destructive/25'
+                      : 'bg-primary/10 text-primary border border-primary/25'
+                  }`}>
+                    {dynamicPricing.label}
+                    <span className="ml-auto font-bold">{fmt(dynamicPricing.adjustedPrice)}</span>
+                  </div>
+                )}
+
+                {/* Dynamic pricing toggle (master only) */}
+                {mode === 'master' && dynamicPricing && dynamicPricing.adjustedPrice !== totalServicesPrice && selectedTime && (
+                  <button
+                    type="button"
+                    onClick={onToggleDynamicPrice}
+                    className={`flex items-center justify-between w-full px-4 py-3 rounded-xl border transition-all mb-3 ${
+                      useDynamicPrice
+                        ? 'bg-primary/10 border-primary/30'
+                        : 'bg-secondary/70 border-border hover:bg-secondary'
+                    } active:scale-[0.95] cursor-pointer`}
+                  >
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-foreground">Застосувати динамічну ціну</p>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5">
+                        {dynamicPricing.label} → {fmt(dynamicPricing.adjustedPrice)}
+                      </p>
+                    </div>
+                    <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ml-3 ${
+                      useDynamicPrice ? 'bg-primary' : 'bg-secondary/80'
+                    }`}>
+                      <motion.div
+                        animate={{ x: useDynamicPrice ? 20 : 2 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        className="absolute top-1 w-4 h-4 rounded-full bg-accent-on shadow-sm"
+                      />
+                    </div>
+                  </button>
+                )}
+              </>
             )}
-            </>
-          )}
-        </>
-      )}
+          </>
+        )}
       </div>
 
       {/* Continue CTA */}
-      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-background via-background/90 to-transparent z-10">
+      <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-secondary via-secondary/90 to-transparent z-10">
         <button
           type="button"
           disabled={!canProceedDatetime}

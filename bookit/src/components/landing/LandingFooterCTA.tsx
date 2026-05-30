@@ -14,7 +14,7 @@ export function LandingFooterCTA() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%']);
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '6%']);
 
   return (
     <section
@@ -28,7 +28,7 @@ export function LandingFooterCTA() {
         className="absolute inset-[-10%]"
         aria-hidden="true"
       >
-        <div className="w-full h-full" style={{ background: '#0F172A' }} />
+        <div className="w-full h-full" style={{ background: 'var(--l-bg-dark)' }} />
         <div
           className="absolute inset-0"
           style={{
@@ -43,11 +43,11 @@ export function LandingFooterCTA() {
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-28">
         <motion.span
-          initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+          animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
           transition={{ ...spring, delay: 0.05 }}
           className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-8"
-          style={{ color: 'rgba(99,102,241,0.70)' }}
+          style={{ color: 'color-mix(in srgb, var(--l-indigo-glow) 70%, transparent)' }}
         >
           Починай сьогодні
         </motion.span>
@@ -55,7 +55,7 @@ export function LandingFooterCTA() {
         <LandingSplitHeading
           text={"Перший запис\nвже сьогодні."}
           className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight text-balance"
-          style={{ fontSize: 'clamp(2.8rem,7vw,6rem)', color: '#F8FAFC' }}
+          style={{ fontSize: 'clamp(2.8rem,7vw,6rem)', color: 'var(--l-text-on-dark)' }}
           stagger={80}
           lineDelay={220}
         />
@@ -65,7 +65,7 @@ export function LandingFooterCTA() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.9, ease: easeOut, delay: 0.48 }}
           className="mt-6 text-base leading-relaxed max-w-md"
-          style={{ color: 'rgba(248,250,252,0.55)' }}
+            style={{ color: 'var(--l-muted-on-dark)' }}
         >
           Безкоштовно для старту. Без кредитної картки. Налаштування — 15 хвилин.
         </motion.p>
@@ -80,15 +80,15 @@ export function LandingFooterCTA() {
             href="/register"
             className="group flex items-center gap-3 h-14 pl-8 pr-3 rounded-full font-semibold text-base transition-all active:scale-[0.97]"
             style={{
-              background: '#F8FAFC',
-              color: '#0F172A',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+              background: 'var(--l-text-on-dark)',
+              color: 'var(--l-accent)',
+              boxShadow: 'var(--l-shadow-xl)',
             }}
           >
             Спробувати безкоштовно
             <span
               className="w-8 h-8 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              style={{ background: 'rgba(15,23,42,0.10)' }}
+              style={{ background: 'color-mix(in srgb, var(--l-accent) 10%, transparent)' }}
             >
               <ArrowRight size={15} aria-hidden="true" />
             </span>
@@ -97,7 +97,7 @@ export function LandingFooterCTA() {
           <Link
             href="/login"
             className="text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'rgba(248,250,252,0.55)' }}
+          style={{ color: 'var(--l-muted-on-dark)' }}
           >
             Вже є акаунт? Увійти
           </Link>

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { formatCurrency } from '@/lib/utils/currency';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -54,7 +55,10 @@ export function LandingEconomy() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   const [clients, setClients] = useState(5);
   const [avgPrice, setAvgPrice] = useState(600);
@@ -77,8 +81,8 @@ export function LandingEconomy() {
           {/* Left: copy */}
           <motion.div style={{ y: headingY }}>
             <motion.span
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
+              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+              animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
               transition={{ ...spring, delay: 0.05 }}
               className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
               style={{ color: 'var(--l-indigo)' }}

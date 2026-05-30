@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { Check } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
@@ -63,7 +64,10 @@ export function LandingPricing() {
   const router = useRouter();
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section
@@ -75,8 +79,8 @@ export function LandingPricing() {
       <div className="max-w-7xl mx-auto">
         <motion.div className="text-center mb-16" style={{ y: headingY }}>
           <motion.span
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+            animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
             transition={{ ...spring, delay: 0.05 }}
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
@@ -95,8 +99,8 @@ export function LandingPricing() {
           {PLANS.map((plan, i) => (
             <motion.div
               key={plan.name}
-              initial={{ opacity: 0, y: 32 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
+              initial={{ opacity: 0, y: 32, scale: 0.97 }}
+              animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
               transition={{ duration: 0.9, ease: easeOut, delay: 0.12 + i * 0.1 }}
               className={plan.accent ? 'md:-mt-4 md:mb-4' : ''}
             >
@@ -117,7 +121,7 @@ export function LandingPricing() {
                 >
                   <p
                     className="text-[11px] font-semibold uppercase tracking-widest mb-4"
-                    style={{ color: plan.accent ? 'rgba(255,255,255,0.6)' : 'var(--l-muted-2)' }}
+                    style={{ color: plan.accent ? 'color-mix(in srgb, var(--l-text-on-dark) 60%, transparent)' : 'var(--l-muted-2)' }}
                   >
                     {plan.name}
                   </p>
@@ -127,7 +131,7 @@ export function LandingPricing() {
                       className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
                       style={{
                         fontSize: 'clamp(2.5rem,5vw,3.5rem)',
-                        color: plan.accent ? '#FDFAF5' : 'var(--l-ink)',
+                        color: plan.accent ? 'var(--l-text-on-dark)' : 'var(--l-ink)',
                       }}
                     >
                       {plan.price === '0' ? 'Безкоштовно' : `₴${plan.price}`}
@@ -135,13 +139,13 @@ export function LandingPricing() {
                   </div>
                   <p
                     className="text-sm mb-2"
-                    style={{ color: plan.accent ? 'rgba(255,255,255,0.55)' : 'var(--l-muted-2)' }}
+                    style={{ color: plan.accent ? 'var(--l-muted-on-dark)' : 'var(--l-muted-2)' }}
                   >
                     {plan.period}
                   </p>
                   <p
                     className="text-sm leading-relaxed mb-8"
-                    style={{ color: plan.accent ? 'rgba(255,255,255,0.75)' : 'var(--l-muted)' }}
+                    style={{ color: plan.accent ? 'color-mix(in srgb, var(--l-text-on-dark) 75%, transparent)' : 'var(--l-muted)' }}
                   >
                     {plan.description}
                   </p>
@@ -158,13 +162,13 @@ export function LandingPricing() {
                         <div
                           className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                           style={{
-                            background: plan.accent ? 'rgba(255,255,255,0.18)' : 'rgba(99,102,241,0.10)',
+                            background: plan.accent ? 'color-mix(in srgb, var(--l-text-on-dark) 18%, transparent)' : 'color-mix(in srgb, var(--l-indigo-glow) 10%, transparent)',
                           }}
                           aria-hidden="true"
                         >
                           <Check
                             size={11}
-                            style={{ color: plan.accent ? '#FDFAF5' : 'var(--l-accent)' }}
+                            style={{ color: plan.accent ? 'var(--l-text-on-dark)' : 'var(--l-accent)' }}
                           />
                         </div>
                         <span
@@ -183,7 +187,7 @@ export function LandingPricing() {
                     style={
                       plan.accent
                         ? {
-                            background: '#FDFAF5',
+                            background: 'var(--l-surface)',
                             color: 'var(--l-accent)',
                             boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
                           }

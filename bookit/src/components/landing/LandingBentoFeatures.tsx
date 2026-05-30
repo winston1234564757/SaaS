@@ -10,6 +10,7 @@ import {
   useTransform,
   useScroll,
 } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -94,13 +95,16 @@ export function LandingBentoFeatures() {
     target: ref,
     offset: ['start end', 'end start'],
   });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['4%', '-4%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section
       ref={ref}
       className="py-20 sm:py-36 px-4 sm:px-6 lg:px-12"
-      style={{ background: '#0F172A' }}
+      style={{ background: 'var(--l-bg-dark)' }}
     >
       <div className="max-w-7xl mx-auto">
 
@@ -108,18 +112,18 @@ export function LandingBentoFeatures() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-20">
           <motion.div style={{ y: headingY }}>
             <motion.span
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
+              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+              animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
               transition={{ ...spring, delay: 0.05 }}
               className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'rgba(99,102,241,0.7)' }}
+              style={{ color: 'color-mix(in srgb, var(--l-indigo-glow) 70%, transparent)' }}
             >
               Smart Slots
             </motion.span>
             <LandingSplitHeading
               text={"Розклад\nбез прогалин."}
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.9] tracking-tight"
-              style={{ fontSize: 'clamp(2.8rem, 6vw, 5.5rem)', color: '#F8FAFC' }}
+              style={{ fontSize: 'clamp(2.8rem, 6vw, 5.5rem)', color: 'var(--l-text-on-dark)' }}
               stagger={80}
               lineDelay={220}
             />
@@ -133,7 +137,7 @@ export function LandingBentoFeatures() {
           >
             <p
               className="text-base leading-relaxed"
-              style={{ color: 'rgba(248,250,252,0.55)' }}
+              style={{ color: 'var(--l-muted-on-dark)' }}
             >
               Алгоритм бачить твій тиждень і заповнює його рівномірно. Хтось скасував? Флеш-акція знаходить заміну за хвилини.
             </p>
@@ -150,13 +154,13 @@ export function LandingBentoFeatures() {
               transition={{ duration: 0.9, ease: easeOut, delay: 0.26 + i * 0.08 }}
               className="flex items-center gap-4 px-6 py-4 rounded-full"
               style={{
-                background: 'rgba(248,250,252,0.06)',
-                border: '1px solid rgba(248,250,252,0.10)',
+                background: 'var(--l-surface-on-dark)',
+                border: '1px solid var(--l-border-on-dark)',
               }}
             >
               <span
                 className="font-[family-name:var(--font-cormorant)] font-semibold"
-                style={{ fontSize: '1.6rem', color: '#F8FAFC' }}
+                style={{ fontSize: '1.6rem', color: 'var(--l-text-on-dark)' }}
               >
                 {m.type === 'count' ? (
                   <CountUp to={m.to} suffix={m.suffix} />
@@ -173,7 +177,7 @@ export function LandingBentoFeatures() {
               </span>
               <span
                 className="text-sm leading-snug max-w-[140px]"
-                style={{ color: 'rgba(248,250,252,0.50)' }}
+                style={{ color: 'var(--l-muted-on-dark)' }}
               >
                 {m.label}
               </span>
@@ -188,8 +192,8 @@ export function LandingBentoFeatures() {
           transition={{ duration: 0.9, ease: easeOut, delay: 0.36 }}
           className="rounded-[1.5rem] overflow-hidden"
           style={{
-            background: 'rgba(248,250,252,0.04)',
-            border: '1px solid rgba(248,250,252,0.08)',
+            background: 'var(--l-surface-on-dark)',
+            border: '1px solid var(--l-border-on-dark)',
           }}
           aria-label="Приклад розкладу Smart Slots"
         >
@@ -202,7 +206,7 @@ export function LandingBentoFeatures() {
                     <th
                       key={d}
                       className="text-center text-[11px] font-semibold pb-3"
-                      style={{ color: 'rgba(248,250,252,0.35)' }}
+                      style={{ color: 'var(--l-muted-2-on-dark)' }}
                     >
                       {d}
                     </th>
@@ -214,7 +218,7 @@ export function LandingBentoFeatures() {
                   <tr key={t}>
                     <td
                       className="text-[10px] font-medium pr-3 text-right"
-                      style={{ color: 'rgba(248,250,252,0.25)', paddingBottom: 3 }}
+                      style={{ color: 'var(--l-muted-2-on-dark)', paddingBottom: 3 }}
                     >
                       {t}
                     </td>
@@ -256,9 +260,9 @@ export function LandingBentoFeatures() {
 
             <div className="flex items-center gap-6 mt-6 flex-wrap">
               {[
-                { bg: 'rgba(99,102,241,0.30)', border: 'rgba(248,250,252,0.05)', label: 'Заброньовано' },
-                { bg: '#4338CA', border: 'rgba(99,102,241,0.6)', label: 'Smart / Flash слот' },
-                { bg: 'rgba(248,250,252,0.04)', border: 'rgba(248,250,252,0.05)', label: 'Вільно' },
+                  { bg: 'color-mix(in srgb, var(--l-indigo-glow) 30%, transparent)', border: 'var(--l-border-on-dark)', label: 'Заброньовано' },
+                { bg: 'var(--l-indigo)', border: 'color-mix(in srgb, var(--l-indigo-glow) 60%, transparent)', label: 'Smart / Flash слот' },
+                { bg: 'var(--l-surface-on-dark)', border: 'var(--l-border-on-dark)', label: 'Вільно' },
               ].map((l, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <div
@@ -270,7 +274,7 @@ export function LandingBentoFeatures() {
                     }}
                     aria-hidden="true"
                   />
-                  <span style={{ fontSize: 11, color: 'rgba(248,250,252,0.40)' }}>{l.label}</span>
+                  <span style={{ fontSize: 11, color: 'var(--l-muted-2-on-dark)' }}>{l.label}</span>
                 </div>
               ))}
             </div>

@@ -17,14 +17,14 @@ interface ClientComboboxProps {
 export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClientSelect }: ClientComboboxProps) {
   const { clients, isLoading } = useClients();
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState(watchName); // ← init від watchName, не від ''
-  const [isPreSelected, setIsPreSelected] = useState(!!watchName); // ← true якщо prefill
+  const [query, setQuery] = useState(watchName);
+  const [isPreSelected, setIsPreSelected] = useState(!!watchName);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = 'cbox-listbox';
 
-  // Синхронізуємо query з watchName при кожній зміні (важливо для prefill через resetForm)
   useEffect(() => {
     setQuery(watchName);
-    setIsPreSelected(!!watchName);
+    if (!watchName) setIsPreSelected(false);
   }, [watchName]);
 
   const filtered = query.trim().length >= 1
@@ -82,7 +82,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
   return (
     <div ref={containerRef} className="relative">
       {isPreSelected ? (
-        /* ── Клієнт вже обраний — показуємо чіп ── */
+        /* Selected client chip */
         <div className="flex items-center gap-3 h-12 px-3 rounded-xl bg-success/8 border border-success/25">
           <CheckCircle2 size={16} className="text-success shrink-0" />
           <div className="flex-1 min-w-0">
@@ -94,19 +94,24 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
           <button
             type="button"
             onClick={clearPreSelected}
+            aria-label="Змінити клієнта"
             className="p-1 rounded-lg hover:bg-accent-on/6 text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
-            title="Змінити клієнта"
           >
             <X size={14} />
           </button>
         </div>
       ) : (
-        /* ── Search input ── */
+        /* Search input */
         <div className="relative">
-          <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+          <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" aria-hidden="true" />
           <input
             data-testid="wizard-name-input"
             type="text"
+            role="combobox"
+            aria-expanded={showDropdown}
+            aria-autocomplete="list"
+            aria-controls={listboxId}
+            aria-haspopup="listbox"
             value={query}
             autoComplete="off"
             onChange={e => handleChange(e.target.value)}
@@ -121,19 +126,26 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
         </div>
       )}
       {errors.clientName && (
-        <p className="text-destructive text-[10px] mt-1 ml-1">{errors.clientName.message}</p>
+        <p className="text-destructive text-[10px] mt-1 ml-1" role="alert">{errors.clientName.message}</p>
       )}
 
       {showDropdown && (filtered.length > 0 || query.trim().length >= 2) && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 rounded-xl bg-secondary/97 border border-border shadow-lg backdrop-blur-sm overflow-hidden">
+        <div
+          id={listboxId}
+          role="listbox"
+          aria-label="Клієнти"
+          className="absolute z-50 top-full left-0 right-0 mt-1.5 rounded-xl bg-secondary/97 border border-border shadow-lg backdrop-blur-sm overflow-hidden"
+        >
           {filtered.map(c => (
             <button
               key={c.id}
               type="button"
+              role="option"
+              aria-selected={false}
               onMouseDown={() => handleSelect(c)}
               className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/8 transition-colors text-left"
             >
-              <div className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-xs font-bold text-primary shrink-0">
+              <div className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-xs font-bold text-primary shrink-0" aria-hidden="true">
                 {c.is_vip ? <Star size={12} className="fill-warning text-warning" /> : (c.client_name[0]?.toUpperCase() ?? '?')}
               </div>
               <div className="min-w-0 flex-1">
@@ -149,8 +161,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
           ))}
           {filtered.length === 0 && query.trim().length >= 2 && (
             <div className="px-4 py-3 text-xs text-muted-foreground/60">
-              Новий клієнт:{' '}
-              <span className="font-semibold text-foreground">{query.trim()}</span>
+              Клієнта не знайдено
             </div>
           )}
         </div>

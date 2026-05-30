@@ -11,7 +11,7 @@ export const getMaster = cache(async (slug: string) => {
       subscription_tier, instagram_url, telegram_url, categories,
       mood_theme, avatar_emoji, pricing_rules, working_hours, c2c_enabled, c2c_discount_pct,
       profiles!inner ( full_name, avatar_url ),
-      services ( id, name, icon_name, category, price, duration_minutes, is_popular, is_active, sort_order, description )
+      services ( id, name, icon_name, category, price, duration_minutes, is_popular, is_active, sort_order, description, image_url )
     `)
     .eq('slug', slug)
     .eq('services.is_active', true);

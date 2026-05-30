@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
@@ -20,6 +21,7 @@ import { AdaptiveContextStrip } from './widgets/AdaptiveContextStrip';
 import { ReferralBoostWidget } from './widgets/ReferralBoostWidget';
 import { EarningsPulseWidget } from './widgets/EarningsPulseWidget';
 import { ClientAlertsWidget } from './widgets/ClientAlertsWidget';
+import { ManualBookingForm } from '@/components/master/bookings/ManualBookingForm';
 
 const rise = {
   hidden:  { opacity: 0, y: 16 },
@@ -36,6 +38,13 @@ const BAR_ACTIONS = [
   { href: '/dashboard/clients',                   label: 'Клієнти',     Icon: Users      },
   { href: '/dashboard/analytics',                 label: 'Аналітика',   Icon: TrendingUp },
 ] as const;
+
+type WizardSlot = { date: string; time: string; serviceId: string };
+
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 function FrostDivider() {
   return <div className="my-5" style={{ height: '1px', background: 'var(--border)' }} />;
@@ -66,7 +75,7 @@ function FrostActionsBar() {
 }
 
 /* ─── Mobile layout ─────────────────────────────────────────── */
-function FrostMobile() {
+function FrostMobile({ onSlotClick }: { onSlotClick: (time: string, serviceId: string) => void }) {
   return (
     <div className="frost-mobile-view flex flex-col gap-3 lg:hidden">
       <motion.div custom={0} variants={rise} initial="hidden" animate="visible" data-tour-step={0}>
@@ -86,7 +95,7 @@ function FrostMobile() {
       </motion.div>
 
       <motion.div custom={4} variants={rise} initial="hidden" animate="visible">
-        <FreeSlotsWidget />
+        <FreeSlotsWidget onSlotClick={onSlotClick} />
       </motion.div>
 
       <motion.div custom={5} variants={rise} initial="hidden" animate="visible" data-tour-step={2}>
@@ -137,7 +146,7 @@ function FrostMobile() {
 }
 
 /* ─── Desktop — Variant F row layout ────────────────────────── */
-function FrostDesktop() {
+function FrostDesktop({ onSlotClick }: { onSlotClick: (time: string, serviceId: string) => void }) {
   return (
     <div className="hidden lg:block">
 
@@ -169,7 +178,7 @@ function FrostDesktop() {
           <div data-tour-step={2} className="flex flex-col">
             <ScheduleWidget />
           </div>
-          <FreeSlotsWidget />
+          <FreeSlotsWidget onSlotClick={onSlotClick} />
         </div>
       </motion.div>
 
@@ -229,10 +238,24 @@ function FrostDesktop() {
 
 /* ─── Main export ───────────────────────────────────────────── */
 export function FrostDashboard() {
+  const [wizard, setWizard] = useState<WizardSlot | null>(null);
+
+  function onSlotClick(time: string, serviceId: string) {
+    setWizard({ date: todayISO(), time, serviceId });
+  }
+
   return (
     <div className="max-w-[1360px] mx-auto px-3 pt-2 pb-28 md:px-6 lg:px-8 lg:pt-4">
-      <FrostMobile />
-      <FrostDesktop />
+      <FrostMobile onSlotClick={onSlotClick} />
+      <FrostDesktop onSlotClick={onSlotClick} />
+      <ManualBookingForm
+        isOpen={wizard !== null}
+        onClose={() => setWizard(null)}
+        onSuccess={() => setWizard(null)}
+        initialDate={wizard?.date}
+        initialTime={wizard?.time}
+        initialServiceId={wizard?.serviceId}
+      />
     </div>
   );
 }

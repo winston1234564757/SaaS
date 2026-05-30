@@ -64,12 +64,28 @@ export function LandingNav() {
             }}
           >
             Спробувати безкоштовно
-            <span
-              className="w-6 h-6 rounded-full flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-              style={{ background: 'rgba(248,250,252,0.18)' }}
-            >
-              <ArrowUpRight size={12} aria-hidden="true" />
-            </span>
+            <div data-impeccable-variants="f98252b8" data-impeccable-variant-count="3" style={{ display: "contents" }}>
+              {/* impeccable-variants-start f98252b8 */}
+              {/* Original */}
+              <div data-impeccable-variant="original">
+                <div data-impeccable-variants="f98252b8" data-impeccable-variant-count="3" style={{ display: "contents" }}>
+                  {/* impeccable-variants-start f98252b8 */}
+                  {/* Original */}
+                  <div data-impeccable-variant="original">
+                    <span
+                      className="w-6 h-6 rounded-full flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      style={{ background: 'rgba(248,250,252,0.18)' }}
+                    >
+                      <ArrowUpRight size={12} aria-hidden="true" />
+                    </span>
+                  </div>
+                  {/* Variants: insert below this line */}
+                  {/* impeccable-variants-end f98252b8 */}
+                </div>
+              </div>
+              {/* Variants: insert below this line */}
+              {/* impeccable-variants-end f98252b8 */}
+            </div>
           </Link>
 
           {/* Right: login + mobile hamburger */}
@@ -100,7 +116,7 @@ export function LandingNav() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-50 flex flex-col"
             style={{ background: 'rgba(239,242,255,0.97)', backdropFilter: 'blur(24px)' }}
           >

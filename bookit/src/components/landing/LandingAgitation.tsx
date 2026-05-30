@@ -2,6 +2,7 @@
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -122,17 +123,20 @@ export function LandingAgitation() {
     target: ref,
     offset: ['start end', 'end start'],
   });
-  const headingY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%']);
+  const isDesktop = useIsDesktop();
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-8%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-2%']);
+  const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
     <section
       ref={ref}
       className="py-20 sm:py-36 px-4 sm:px-6 lg:px-12 relative overflow-hidden"
-      style={{ background: '#FFFFFF' }}
+      style={{ background: 'var(--l-surface)' }}
     >
       {/* Ambient indigo blob */}
-      <motion.div
-        className="pointer-events-none absolute rounded-full"
+      <div
+        className="pointer-events-none absolute rounded-full l-blob-float"
         style={{
           width: 500,
           height: 500,
@@ -140,8 +144,6 @@ export function LandingAgitation() {
           top: '-12%',
           right: '-6%',
         }}
-        animate={{ x: [0, 20, 0], y: [0, -14, 0] }}
-        transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
         aria-hidden="true"
       />
 
@@ -151,8 +153,8 @@ export function LandingAgitation() {
           <div className="lg:sticky lg:top-36 self-start">
             <motion.div style={{ y: headingY }}>
               <motion.span
-                initial={{ opacity: 0, y: 12 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+                animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
                 transition={{ ...spring, delay: 0.05 }}
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-6"
                 style={{ color: 'var(--l-indigo)' }}
