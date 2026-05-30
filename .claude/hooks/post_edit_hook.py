@@ -20,6 +20,21 @@ except ImportError:
         return True
 
 TS_EXTENSIONS = {".ts", ".tsx"}
+STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
+
+
+def reset_consecutive_reads():
+    """Reset read counter after every Write/Edit (the correct action was taken)."""
+    try:
+        if STATE_FILE.exists():
+            state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        else:
+            state = {"edit_counts": {}, "consecutive_reads": 0, "read_files": []}
+        state["consecutive_reads"] = 0
+        state["read_files"] = []
+        STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
 
 
 def main():
@@ -32,6 +47,7 @@ def main():
 
         if file_path:
             track_file(file_path, tool_name.lower())
+            reset_consecutive_reads()
 
         # Post-change protocol — inject into model context for TypeScript files
         if file_path and Path(file_path).suffix in TS_EXTENSIONS:

@@ -2,9 +2,22 @@
 """
 SESSION_START_HOOK — SessionStart event: fires at the very beginning of every session.
 Injects mandatory startup protocol into model context via additionalContext.
+Also resets edit counter + read tracker state files for fresh session.
 """
 import sys
 import json
+from pathlib import Path
+
+# Reset session state (edit_counter_guard + read_limit_hook)
+try:
+    state_file = Path(__file__).parent / "state" / "session_state.json"
+    state_file.parent.mkdir(parents=True, exist_ok=True)
+    state_file.write_text(
+        json.dumps({"edit_counts": {}, "consecutive_reads": 0, "read_files": []}, indent=2),
+        encoding="utf-8"
+    )
+except Exception:
+    pass
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
