@@ -2,22 +2,22 @@
 
 > Оновлюється після кожного значущого зрушення. Live джерело правди про прогрес.
 > **Updated:** 2026-05-30
-> **Active step:** STEP 04 (Dashboard Home) — Onboarding complete, розпочинаємо
-> **Progress:** 3 / 13 complete (STEP 01 ✅; STEP 02 ✅; STEP 03 ✅)
-> **Model in use:** 🔴 Opus 4.7 max (STEP 04 — складна аналітика)
-> **Last commit:** `db69666` — docs sync (PAGE_RELEASE_ROADMAP)
+> **Active step:** STEP 04 (Dashboard Home) — In Progress (Session 3 complete)
+> **Progress:** 3 / 13 complete + STEP 04 in progress
+> **Model in use:** 🟢 Sonnet 4.6 (STEP 04 session 3)
+> **Last commit:** `65acf29` — fix(step04): tour overlay, academy tab jump, empty states, deep links
 
 ---
 
 ## 🗺️ Загальний прогрес
 
 ```
-[███░░░░░░░░░] ~23% (3/13)
+[████░░░░░░░░] ~28% (3/13 + STEP 04 in progress)
 
 Step 01: ✅ Complete (2026-05-28)
 Step 02: ✅ Complete (2026-05-28)
 Step 03: ✅ Complete (2026-05-30)
-Step 04: ⏳ Next up
+Step 04: ⏳ In progress (started 2026-05-30, sessions 1-3 done)
 Steps 05-13: 🔒 Blocked (sequential)
 ```
 
@@ -30,7 +30,7 @@ Steps 05-13: 🔒 Blocked (sequential)
 | 01 | `/` Landing | 🟢 Sonnet 4.6 high | ✅ **Complete** | 2026-05-27 | 2026-05-28 | `d61ab82e` | 3a42b10+ |
 | 02 | Auth (`/login`, `/register`, `/callback`) | 🟢 Sonnet 4.6 high | ✅ **Complete** | 2026-05-28 | 2026-05-28 | `0f174061` / `aece86e2` | ff50c78+ |
 | 03 | Onboarding (`/dashboard/onboarding`) | 🟢 Sonnet 4.6 high | ✅ **Complete** | 2026-05-28 | 2026-05-30 | `9014576630a5` | `967bf06` |
-| 04 | Dashboard Home (`/dashboard`) | 🔴 Opus 4.7 max | ⏳ **Next up** | — | — | — | — |
+| 04 | Dashboard Home (`/dashboard`) | 🟢 Sonnet 4.6 | ⏳ **In progress** | 2026-05-30 | — | — | `65acf29` |
 | 05 | Bookings (`/dashboard/bookings`) | 🔴 Opus 4.7 max | 🔒 Blocked | — | — | — | — |
 | 06 | CRM Clients (`/dashboard/clients`) | 🟡 Mixed | 🔒 Blocked | — | — | — | — |
 | 07 | Services + Products | 🟢 Sonnet 4.6 high | 🔒 Blocked | — | — | — | — |
@@ -50,15 +50,28 @@ Steps 05-13: 🔒 Blocked (sequential)
 ## 🎯 ACTIVE STEP — детальний стан
 
 ### STEP 04 — Dashboard Home (`/dashboard`)
-- **Playbook:** [STEPS/STEP_04_HANDOFF.md](./STEPS/STEP_04_HANDOFF.md) *(створити перед стартом)*
-- **Модель:** 🔴 Opus 4.7 max
-- **Статус:** ⏳ Next up — розпочинаємо після беклогу STEP 03
-- **Scope summary:** Main dashboard — analytics widgets, 3 themes (Blossom/Studio/Frost), WeeklyChart, PeakHours, greeting, quick actions
+- **Sessions:** 3 завершено (2026-05-30)
+- **Модель:** 🟢 Sonnet 4.6
+- **Статус:** ⏳ In progress — QA на живому виявила баги, виправлені в session 3
+- **Last commit:** `65acf29`
 
-#### Передумови перед стартом STEP 04
-- [ ] Розбити беклог STEP 03 → виконати пріоритетні підходи (см. секцію BACKLOG)
-- [ ] `/impeccable audit` → health score check (baseline 22/40 → target 34+)
-- [ ] Vercel QA onboarding flow (ручна верифікація після deploy `967bf06`)
+#### Виконано за STEP 04 (sessions 1-3)
+| Блок | Задача | Статус | Commit |
+|---|---|---|---|
+| A | EarningsPulseWidget: revenue `/100` bug | ✅ Done | `65acf29` |
+| B | useRealtimeNotifications: `busyness` query invalidation | ✅ Done | `65acf29` |
+| C | Empty states: TodaySchedule, TopServices, ChannelHealth, InsightsRow | ✅ Done | `65acf29` |
+| C2 | Empty states: WeeklyChart (BarChart2 icon), PeakHours (Clock icon) | ✅ Done | `65acf29` |
+| D+E | Tour: DashboardTourContext, DashboardTourBanner, FrostDashboard, data-tour-step attrs | ✅ Done | `65acf29` |
+| D-E2 | Tour highlight: DOM overlay approach (position:fixed), 350ms delay, getBCR | ✅ Done | `65acf29` |
+| F | Academy: повний rewrite (tabs+accordion+Emil springs+26 articles) | ✅ Done | `65acf29` |
+| F2 | Deep links: services/new, revenue?drawer=flash_deals | ✅ Done | `65acf29` |
+| B2 | Academy tab: mode="popLayout" → mode="wait" (layout jump fix) | ✅ Done | `65acf29` |
+
+#### Залишилось до STEP 04 Complete
+- [ ] Push на Vercel + QA на живому (перевірити tour overlay, Academy tabs, empty states)
+- [ ] `/impeccable audit` → health score (baseline 22/40 → target 34+)
+- [ ] Підтвердження від користувача: STEP 04 QA пройдено
 
 ---
 

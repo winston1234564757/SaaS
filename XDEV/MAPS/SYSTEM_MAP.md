@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-29 · Джерело: живий код (v8.2.5 "Onboarding v2 — Frost rendering fixed, RLS bypass, streaming gap") · Commit: `967bf06`
+> Оновлено: 2026-05-30 · Джерело: живий код (v8.3.0 "STEP 04 — Dashboard tour overlay, Academy v2, empty states, deep links fixed") · Commit: `65acf29`
 
 ---
 
@@ -23,7 +23,7 @@
 
 | Route | Відповідальність | Page | Actions | Key Component |
 |---|---|---|---|---|
-| `/dashboard` | Editorial dashboard: greeting, schedule, weekly chart, monthly calendar, sidebar widgets | `dashboard/page.tsx` | `dashboard/actions.ts` | `DashboardView.tsx`, `DashboardGreeting.tsx`, `DashboardDrawers.tsx`, `TodaySchedule.tsx`, `widgets/StatsMosaicWidget.tsx`, `widgets/WeeklyChartWidget.tsx`, `widgets/MonthlyCalendarWidget.tsx`, `widgets/FreeSlotsWidget.tsx`, `widgets/QuickActionsWidget.tsx`, `widgets/InsightsRow.tsx`, `widgets/ChannelHealthWidget.tsx`, `widgets/TopServicesWidget.tsx`, `widgets/NextFreeDaysWidget.tsx` |
+| `/dashboard` | Editorial dashboard: greeting, schedule, weekly chart, monthly calendar, sidebar widgets, adaptive strip, tour | `dashboard/page.tsx` | `dashboard/actions.ts` | `FrostDashboard.tsx`, `DashboardGreeting.tsx`, `DashboardDrawers.tsx`, `DashboardTourBanner.tsx` (DOM overlay highlight, position:fixed, z-48), `DashboardTourContext.tsx` (startTour/closeTour/steps 0-7), `TodaySchedule.tsx`, `widgets/EarningsPulseWidget.tsx`, `widgets/AdaptiveContextStrip.tsx` (4 states: empty/quiet/moderate/busy), `widgets/FrostMetricsStrip.tsx` (ticker, touch-drag), `widgets/frost/WeeklyChartWidget.tsx`, `widgets/frost/PeakHoursWidget.tsx`, `widgets/frost/CancellationRateWidget.tsx`, `widgets/frost/NextFreeDaysWidget.tsx`, `widgets/frost/InsightsRow.tsx`, `widgets/frost/ChannelHealthWidget.tsx`, `widgets/frost/TopServicesWidget.tsx` |
 | `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching | `bookings/page.tsx` | `bookings/actions.ts` | `BookingsPage.tsx`, `BookingCard.tsx`, `PeriodAnalyticsView.tsx` |
 | `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` | `master/clients/ClientsPage.tsx`, `ClientDetailSheet.tsx`, `ClientWidgets.tsx` |
 | `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` |
@@ -48,7 +48,7 @@
 | `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |
 | `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
 | `/dashboard/more` | Додаткові посилання: юридика, акаунт | `more/page.tsx` | — | `master/more/MorePage.tsx` |
-| `/dashboard/academy` | BookIT Академія: покрокові інструкції по кожній фічі (прогресивна — секції додаються з кожним кроком) | `academy/page.tsx` | — | `master/academy/AcademyPage.tsx` |
+| `/dashboard/academy` | BookIT Академія: 2 tabs (Функції/Цілі), 6+4 sections, 26 articles accordion, Emil springs, deep links, "Пройти тур знову" | `academy/page.tsx` | — | `master/academy/AcademyPage.tsx` (hardcode content, AnimatePresence mode="wait", layoutId tab pill, SPRING_* consts) |
 
 ### Onboarding Wizard (v2 — 5-step, 2026-05-29)
 - **Primary route**: `src/app/(master)/dashboard/onboarding/` — всередині master layout з `isOnboarding` guard; чистий Frost environment (без nav/sidebar)

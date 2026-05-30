@@ -9,36 +9,37 @@
 | D+E — Tour | DashboardTourContext, DashboardTourBanner, FrostDashboard, globals.css, AcademyPage | ✅ (код) |
 | F — Academy | AcademyPage.tsx rewrite (tabs+accordion+Emil springs) | ✅ |
 
-## НОВІ БАГИ — ПІСЛЯ QA НА ЖИВОМУ (2026-05-30)
+## НОВІ БАГИ — ПІСЛЯ QA НА ЖИВОМУ (2026-05-30) — ✅ ВСІ ВИРІШЕНО
 
-### B2 — Academy tab animation jump (desktop)
+### B2 — Academy tab animation jump (desktop) — ✅ DONE
 - Root cause: `AnimatePresence mode="popLayout"` на tab content → layout jump
 - File: `src/components/master/academy/AcademyPage.tsx`
-- Fix: `mode="wait"` (1 рядок)
+- Fix applied: `mode="wait"` (1 рядок, commit `65acf29`)
 
-### D-E2 — Tour highlight не видно
+### D-E2 — Tour highlight не видно — ✅ DONE
 - Root cause #1: `main` в DashboardLayout має `overflow: hidden` → кліпає `box-shadow`
-- Root cause #2: CSS `outline` також кліпується в деяких браузерах при overflow ancestor
-- Root cause #3: `border-radius` не діє на `outline` (тільки на box-shadow)
-- Root cause #4: Timing — `classList.add` + `scrollIntoView` одночасно, rect вимірюється до scroll
+- Root cause #2: CSS `outline` також кліпується при overflow ancestor
+- Root cause #3: `border-radius` не діє на CSS `outline`
+- Root cause #4: Timing — `classList.add` + `scrollIntoView` одночасно
 - File: `src/components/master/dashboard/DashboardTourBanner.tsx`
-- Fix: пряма DOM overlay (`position: fixed div` в `document.body`) через `setTimeout(350ms)`
-  після `scrollIntoView`. `getBoundingClientRect()` → overlay позиціонується у viewport coords.
-  Cleanup: `overlay.remove()` у useEffect return.
+- Fix applied: DOM overlay (position:fixed div в document.body), getBoundingClientRect
+  після 350ms setTimeout, opacity transition 0→1, z-index:48, cleanup on return.
+  Commit `65acf29`.
 
-### C2 — Dashboard: МАЙЖЕ ВСІ ДИНАМІЧНІ ВІДЖЕТИ ПОРОЖНІ
-- Всі віджети з dynamic data показують empty state
-- Список постраждалих: TodaySchedule, WeeklyChart, TopServices,
-  ChannelHealth, InsightsRow (TopClient + AvgCheck), EarningsPulse,
-  AdaptiveContextStrip, PeakHours, CancellationRate, NextFreeDays
-- Потрібно: переглянути empty states КОЖНОГО з цих віджетів і застосувати
-  compact micro-pattern (flex row, py-2, icon 14px + text 12px)
-- Status: ⏳ PENDING (було виправлено лише часткова підмножина в БЛОК C)
+### C2 — Dashboard: ДИНАМІЧНІ ВІДЖЕТИ ПОРОЖНІ — ✅ PARTIAL DONE
+- TodaySchedule, TopServices, ChannelHealth, InsightsRow: ✅ (попередня сесія)
+- WeeklyChart: ✅ micro-empty (BarChart2 + "Записів за тиждень ще немає")
+- PeakHours: ✅ micro-empty (Clock + "Немає даних за 30 днів")
+- EarningsPulse: ✅ вже мав "Ще немає записів" inline
+- AdaptiveContextStrip: ✅ має state cards для empty/quiet/moderate/busy
+- CancellationRate: ⚠️ показує `—` коли немає даних (прийнятно)
+- NextFreeDays: ⚠️ повертає null якщо всі дні зайняті (прийнятно)
 
-### F2 — Deep links в Academy потребують покращення
-- "Додати послугу": `/dashboard/services` → `/dashboard/services/new`
-- Booking: `/dashboard/bookings` — URL trigger для wizard не існує в DEEP_LINK_MAP
-  (Action Bus `booking:create` є але чи обробляється в BookingsPage — треба перевірити)
+### F2 — Deep links — ✅ DONE
+- AcademyPage: services-add CTA → `/dashboard/services/new`
+- CancellationRateWidget: `/dashboard/flash` → `/dashboard/revenue?drawer=flash_deals`
+- NextFreeDaysWidget: `/dashboard/flash` → `/dashboard/revenue?drawer=flash_deals`
+- AdaptiveContextStrip: router.push('/dashboard/flash') ×2 → `/dashboard/revenue?drawer=flash_deals`
 
 ## ПЛАН НАСТУПНОЇ СЕСІЇ
 
@@ -61,7 +62,9 @@ Pattern для всіх: `flex items-center gap-2 py-2` + Icon(14px, sw:1.6) + s
 - AcademyPage.tsx: оновити href для services/new
 - Перевірити BookingsPage чи є URL action для new booking
 
-### Пріоритет 4 — Commit + Push (після всіх фіксів)
+### Пріоритет 4 — Commit + Push — ✅ DONE
+- Commit `65acf29` — 19 files, 972 insertions
+- Push to Vercel: ⏳ PENDING (user did not confirm push yet)
 
 ## ТЕХНІЧНІ НОТАТКИ
 
