@@ -1,10 +1,12 @@
+const fmt = new Intl.NumberFormat('uk-UA', {
+  style: 'currency',
+  currency: 'UAH',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('uk-UA', {
-    style: 'currency',
-    currency: 'UAH',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return fmt.format(amount);
 }
 
 export function formatPrice(price: number, priceMax?: number | null): string {
