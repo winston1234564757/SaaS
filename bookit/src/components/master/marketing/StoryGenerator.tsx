@@ -323,7 +323,7 @@ function StoryCanvas({
   if (mode === 'announcement') {
     content = (
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 48, fontFamily: SERIF, color: pal.text, opacity: 0.1, lineHeight: 0.1, marginBottom: 5 }}>“</div>
+        <div style={{ fontSize: 48, fontFamily: SERIF, color: pal.text, opacity: 0.1, lineHeight: 0.1, marginBottom: 5 }}>{'\u201c'}</div>
         <div style={{
           fontSize: annoText.length > 100 ? 18 : 24,
           fontWeight: 700, fontFamily: SERIF, color: pal.text,
@@ -332,7 +332,7 @@ function StoryCanvas({
         }}>
           {annoText || "Ваше особливе повідомлення для клієнтів…"}
         </div>
-        <div style={{ fontSize: 48, fontFamily: SERIF, color: pal.text, opacity: 0.1, lineHeight: 0.1, marginTop: 20, textAlign: 'right' }}>”</div>
+        <div style={{ fontSize: 48, fontFamily: SERIF, color: pal.text, opacity: 0.1, lineHeight: 0.1, marginTop: 20, textAlign: 'right' }}>{'\u201d'}</div>
       </div>
     );
   }
@@ -1263,12 +1263,13 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
           <AnimatePresence>
             {isPremiumLocked && upgradeCopy && (
-              <motion.div
+              <motion.button
+                type="button"
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22 }}
-                className="rounded-2xl px-4 py-3.5 flex items-start gap-3 cursor-pointer"
+                className="w-full rounded-2xl px-4 py-3.5 flex items-start gap-3 text-left"
                 style={{
                   background: 'linear-gradient(135deg,rgba(212,147,90,0.10),rgba(120,154,153,0.08))',
                   border: '1px solid rgba(212,147,90,0.30)',
@@ -1286,7 +1287,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 >
                   PRO →
                 </span>
-              </motion.div>
+              </motion.button>
             )}
           </AnimatePresence>
 

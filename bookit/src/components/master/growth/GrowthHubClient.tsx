@@ -101,6 +101,8 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
             return (
               <button
                 key={tab.id}
+                type="button"
+                aria-pressed={isActive}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
                   'relative px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-colors duration-200 cursor-pointer active:scale-[0.95] transform-gpu',

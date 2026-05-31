@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Package, ShoppingBag, GripVertical } from 'lucide-react';
+import { Plus, Package, ShoppingBag } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useProducts } from '@/lib/supabase/hooks/useProducts';
 import { useOrders } from '@/lib/supabase/hooks/useOrders';
@@ -13,6 +13,8 @@ import { RestockDrawer } from './RestockDrawer';
 import { OrderCard } from './OrderCard';
 import type { Product, OrderStatus } from '@/types/database';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
+
+const FAB_SPRING = { type: 'spring' as const, stiffness: 400, damping: 22 } as const;
 
 export function ProductsPage() {
   const router = useRouter();
@@ -131,9 +133,9 @@ export function ProductsPage() {
         {tab === 'products' ? (
           <motion.div
             key="products"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
             className="flex flex-col gap-3"
           >
@@ -178,9 +180,9 @@ export function ProductsPage() {
         ) : (
           <motion.div
             key="orders"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
             className="flex flex-col gap-3"
           >
@@ -188,6 +190,8 @@ export function ProductsPage() {
               {ORDER_FILTERS.map(f => (
                 <button
                   key={f.label}
+                  type="button"
+                  aria-pressed={orderFilter === f.value}
                   onClick={() => setOrderFilter(f.value)}
                   className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     orderFilter === f.value
@@ -219,9 +223,11 @@ export function ProductsPage() {
 
       {tab === 'products' && (
         <motion.button
+          type="button"
+          aria-label="Додати товар"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 22 }}
+          transition={{ delay: 0.2, ...FAB_SPRING }}
           whileTap={{ scale: 0.94 }}
           onClick={() => router.push('/dashboard/products/new')}
           className="fixed bottom-24 right-5 size-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-primary/90 transition-colors"
@@ -254,10 +260,12 @@ function StatChip({ label, value, warn }: { label: string; value: number | strin
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
+      type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
         active ? 'bg-primary text-white shadow-sm' : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
-      } active:scale-95 transition-all`}
+      } active:scale-95`}
     >
       {children}
     </button>
@@ -275,8 +283,9 @@ function EmptyProducts({ onAdd }: { onAdd: () => void }) {
         <p className="text-xs text-muted-foreground/60 mt-1">Додайте перший продукт для продажу</p>
       </div>
       <button
+        type="button"
         onClick={onAdd}
-        className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 active:scale-95 transition-all"
+        className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 active:scale-95"
       >
         <Plus size={14} /> Додати товар
       </button>
@@ -291,7 +300,7 @@ function EmptyOrders() {
         <ShoppingBag size={28} className="text-muted-foreground/60" />
       </div>
       <p className="text-sm font-semibold text-foreground">Замовлень поки немає</p>
-      <p className="text-xs text-muted-foreground/60">Вони з'являться тут після перших покупок</p>
+      <p className="text-xs text-muted-foreground/60">Вони з&apos;являться тут після перших покупок</p>
     </div>
   );
 }

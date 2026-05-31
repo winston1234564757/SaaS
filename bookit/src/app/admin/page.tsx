@@ -1,9 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import nextDynamic from 'next/dynamic';
-const AdminOverviewCharts = nextDynamic(
-  () => import('@/components/admin/AdminOverviewCharts').then(m => ({ default: m.AdminOverviewCharts })),
-  { ssr: false }
-);
+import { AdminOverviewChartsWrapper } from '@/components/admin/AdminOverviewChartsWrapper';
 import { formatCurrency } from '@/lib/utils/currency';
 import { Users, Calendar, Banknote, ShieldAlert } from 'lucide-react';
 
@@ -95,7 +91,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* Charts Section */}
-      <AdminOverviewCharts recentBookings={stats.recent_bookings} subs={subsData} />
+      <AdminOverviewChartsWrapper recentBookings={stats.recent_bookings} subs={subsData} />
     </div>
   );
 }

@@ -62,6 +62,7 @@ export function PortfolioBookingButton({
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold text-foreground"
         style={{ background: '#FFE8DC' }}

@@ -178,6 +178,7 @@ export function ReferralPage({
                 {referralLink.replace(/https?:\/\//, '')}
               </p>
               <button
+                type="button"
                 onClick={handleCopy}
                 className="px-4 py-3 text-primary hover:bg-primary/10 transition-colors flex-shrink-0 border-l border-border active:scale-[0.88] transition-all cursor-pointer"
               >
@@ -186,6 +187,7 @@ export function ReferralPage({
             </div>
             <div className="flex gap-2.5">
               <button
+                type="button"
                 onClick={handleCopy}
                 className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-secondary border border-border text-foreground text-sm font-semibold hover:bg-secondary/80 active:scale-[0.95] transition-all cursor-pointer"
               >
@@ -193,6 +195,7 @@ export function ReferralPage({
                 {copied ? 'Скопійовано!' : 'Копіювати'}
               </button>
               <button
+                type="button"
                 onClick={handleShare}
                 className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-semibold hover:opacity-90 active:scale-[0.95] transition-all shadow-md cursor-pointer"
               >
@@ -234,6 +237,8 @@ export function ReferralPage({
         {(['overview', 'history'] as Tab[]).map((t) => (
           <button
             key={t}
+            type="button"
+            aria-pressed={tab === t}
             onClick={() => setTab(t)}
             className={cn(
               'flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.88] cursor-pointer',

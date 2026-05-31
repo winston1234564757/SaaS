@@ -1,37 +1,149 @@
-System Role: You are a Principal Frontend Architect specializing in high-performance SaaS interfaces, Next.js, Tailwind CSS, and AAA design aesthetics (minimalism, glassmorphism, bento grids).
+# TASK.md — Поточні задачі
+
+> Оновлюється після кожного завершеного кроку.
+> **Updated:** 2026-05-31
 
 ---
 
-## ✅ DONE — BookingWizard QA Sprint (2026-05-30)
+## STEP 07 — ✅ COMPLETE (2026-05-31)
 
-### Виправлені баги
-- StepProgress: невидимі dots (outline на білому) → `bg-foreground/15` fill
-- DateTimePicker: кнопка "Назад" переводила вперед → `onBack` prop fix
-- ClientCombobox: autocomplete на першому символі → `isPreSelected` clear-only useEffect
-- ClientDetails: disabled кнопка невидима → `border border-border` без `opacity-50`
-- Sticky CTA gradient: білий квадрат на Frost → `from-secondary via-secondary/90` (modal bg = `--secondary`)
-- `WizardService.image_url` pipeline: `data.ts` → `page.tsx` → `ManualBookingForm` → `ServiceSelector` → `PublicMasterPage`
+**Services + Products (`/dashboard/services`, `/dashboard/products`)**
+- **Scope:** Correctness-only audit
+- **TSC:** 0 | **build:** clean
+- **Drawer:** `drawer_bookit_audits_ea3affc66ed6c48195edda5e`
 
-### Нові фічі
-- ServiceSelector: горизонтальний carousel per-category (`CategoryCarousel`), портретні картки, dots + стрілки, photo-ready
-- StepProgress: тактильні dots з Framer Motion scale + ring
-- DateTimePicker: slot physics — `09:00 ──── 10:00` horizontal progress bar, dim non-selected
-- Service photos: `image_url` з DB → показується у wizard (client + master), PublicMasterPage
+### Що зроблено
+- **Deleted:** `services/ProductCard.tsx`, `services/ProductForm.tsx` (orphaned — 0 imports)
+- **P1 Fix:** `ServiceCard.tsx` — `motion.div onClick` → info section у `<button type="button">`
+- **type="button":** усі action buttons у 7 файлах
+- **aria-pressed:** toggle/tab buttons (ServiceCard, ServiceEditor ×2, ProductCard, ProductsPage TabBtn + order filters, ProductEditor ×2)
+- **aria-label:** FABs (ServicesPage, ProductsPage), drag handles, expand button (OrderCard)
+- **spring as const:** ServicesPage FAB, ProductsPage FAB_SPRING const
+- **AnimatePresence:** x:±10 → y:4 у ProductsPage
+- **OrderCard:** expand button + `aria-expanded`, status buttons `type="button"`, transition → spring
+- **Hardcoded stats replaced:** ServiceEditor + ProductEditor → dashed placeholder
+- **Dead code removed:** `StatBox` в ProductEditor, `useCallback` імпорт у ProductsPage
 
 ---
 
-## ACTIVE — Dashboard Layout Refactor
+## STEP 08 — ✅ COMPLETE (2026-05-31)
 
-Task: Refactor the dashboard layout architecture to completely eliminate awkward white space, uneven block heights, and broken alignments caused by dynamic content.
+**Revenue · Growth · Marketing · Billing · Settings · Studio**
+- **Scope:** Correctness-only audit (08a / 08b / 08c)
+- **TSC:** 0 | **build:** clean
+- **Drawer:** `drawer_bookit_audits_e1534fd674b5432d8685234b`
 
-Context: The current dashboard uses a Bento box style, but when dynamic elements (like charts, schedules, or lists) expand, they break the grid, leaving massive empty gaps under shorter adjacent blocks.
+### Що зроблено
+- **P1 div→button:** `DynamicPricingPage.tsx:300` (PricingRuleCard + `aria-pressed`), `StoryGenerator.tsx:1266` (`motion.div` → `motion.button`) + encoding fix curly quotes
+- **type="button":** 20+ кнопок у 10 файлах (RevenueHubClient, FlashDealPage, GrowthHubClient, LoyaltyPage ×11, ReferralPage ×4, PartnersPage ×3, MarketingTabs, BroadcastsTab, SettingsPage)
+- **aria-pressed:** tab switchers (Revenue, Growth, Marketing), toggle switches (LoyaltyPage ×2, PartnersPage)
+- **aria-label:** icon-only кнопки (FlashDealPage cancel, LoyaltyPage Pencil + Trash2, PartnersPage delete)
+- **spring as const:** BillingPage.tsx:299
+- **Dead code removed:** `BusynessWidget` у SettingsPage (69 рядків)
+- **Billing webhook:** ECDSA P-256 — аудит CLEAN (без змін)
+- **Studio:** static waitlist page — CLEAN
 
-Strict Architectural Requirements:
+---
 
-Dynamic Bento Grid Mastery: Do not use rigid height or naive CSS grid rows. Implement a robust solution for a responsive masonry-like layout or use CSS Grid with grid-auto-flow: dense and grid-template-rows: masonry (if using polyfills/hacks for current support), or strategically structure the layout using Flexbox columns (flex-col with gap-y) mapped within a main CSS Grid to ensure columns grow independently without forcing blank space in adjacent columns.
+## STEP 09 — ✅ COMPLETE (2026-05-31)
 
-Smart Content Stretching: Utilize flex-grow (Tailwind: flex-1) inside parent cards so that inner elements dynamically push the card height to match the tallest sibling in a standard grid row, keeping the bottom edges flush.
+**Explore (`/explore`)**
+- **Scope:** Correctness + visual polish audit
+- **TSC:** 0 | **build:** clean (51 pages)
+- **Drawer:** `drawer_bookit_audits_e7959f077fa9adbf72463435`
 
-Actionable Empty States: "Empty space" should not exist. If a block lacks data (e.g., "Немає клієнтів за 90 днів"), it must not just sit there empty. Inject a micro-CTA (Call to Action) or a placeholder graphic to utilize the real estate and guide the user (e.g., "Створити розсилку").
+### Що зроблено
+- **type="button":** 9 кнопок (X clear, filters toggle, "Всі", category chips, city trigger, dropdown options ×2, sort options, reset)
+- **aria-label:** X clear button (`"Очистити пошук"`) + `p-1.5` touch target
+- **aria-pressed:** filters toggle, "Всі" category, category chips, sort options
+- **aria-expanded + aria-haspopup="listbox":** city dropdown trigger
+- **role="listbox" + role="option" + aria-selected:** city dropdown container + options
+- **P1 Bug Fix:** PRO badge всередині `overflow-hidden` → кліпувався; виправлено через outer wrapper без overflow
+- **pluralUk():** замість hardcoded "послуг" → правильні відмінки (послуга/послуги/послуг)
+- **SPRING as const:** `const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const` + 4 transitions
+- **animate-pulse видалено:** з nails іконки (постійна пульсація у каталозі — відволікає)
+- **MasterCard hover lift:** `hover:-translate-y-0.5` додано
 
-Glassmorphism & Spacing Consistency: Standardize all gap, p (padding), and rounded classes across the entire dashboard. The visual hierarchy must remain absolute.
+---
+
+## STEP 10 — ✅ COMPLETE (2026-05-31)
+
+**Public Master Page (`/[slug]`)**
+- **Scope:** Correctness + visual polish audit (6 файлів, ~8,000 рядків)
+- **TSC:** 0 | **build:** clean (51 pages)
+- **Drawer:** `drawer_bookit_audits_6b554b09eed872165f45ba2a`
+
+### Що зроблено
+- **SPRING as const:** `SPRING` + `SPRING_CARD` — 15 inline transitions у `PublicMasterPage.tsx`
+- **type="button":** FlashDealCard button, referral "Забрати", referrer "Записатись"
+- **Hardcoded color:** `style={{ color: '#2C1A14' }}` → `className="text-foreground"`
+- **Referrer balance banner:** `rgba(92, 158, 122, ...)` → CSS tokens `bg-success/8`, `text-success`, `bg-success`
+- **`<img>` → `<Image>`:** service thumbnail → Next.js `Image width={48} height={48}`
+- **Share button:** `size-9` (36px) → `size-11` (44px)
+- **ServiceSelector:** carousel nav `size-7` (28px) → `size-11` (44px) × 2
+- **ClientCombobox:** `aria-selected={false}` hardcoded → `aria-selected={c.client_name === watchName}`
+- **DateTimePicker:** `aria-label` на date nav buttons + `spring as const` на toggle
+- **useBookingWizardState:** C2C race condition fixed — `cancelled` flag на eligibility check
+- **PostBookingAuth:** OTP input `w-10` (40px) → `w-11` (44px)
+- **Business logic:** createBooking, dynamicPricing, computeBookingPrice — verified clean, не змінювались
+
+---
+
+## STEP 11 — ✅ COMPLETE (2026-05-31)
+
+**Shop + Portfolio (`/[slug]/shop`, `/[slug]/portfolio`)**
+- **Scope:** Correctness + visual polish audit (3 файлів модифіковано)
+- **TSC:** 0 | **build:** clean | **A11y:** WCAG AA ✓
+- **Drawer:** `drawer_bookit_audits_2272efe59888d3addd38f5c0`
+
+### Що зроблено
+- **4× Framer spring `as const`:** `SHEET_SPRING`, `GALLERY_SPRING`, `CART_SPRING`, `SUCCESS_SPRING` — витягнуто на рівень модуля
+- **DOM ref fix:** `document.getElementById('day-slider')` → `useRef<HTMLDivElement>` + `sliderRef.current?.scrollBy()`
+- **Mid-file import:** `import { useRef }` на рядку 450 → переміщено у top-level React import
+- **Emoji:** `⚡ Залишилось` → `Залишилось` (No-Emoji Policy)
+- **17× `type="button"`:** sticky cart, close buttons, photo nav, photo dots, thumbnails, qty steppers, motion.button, CartDrawer close, scroll arrows, day picker, submit, FilterChip, DeliveryBtn
+- **7× `aria-label`:** Закрити ×2, Попереднє/Наступне фото, Прокрутити назад/вперед, Зменшити/Збільшити кількість
+- **5× `aria-pressed`:** FilterChip, DeliveryBtn, photo dots, thumbnails, day picker
+- **Touch target:** photo dots `size-2` (8px) → `<button className="p-3 -m-3"><span /></button>`
+- **`fill="currentColor"`:** Star іконки у `portfolio/[id]/page.tsx` (видалено redundant `fill="#D4935A"`)
+- **`type="button"`:** PortfolioBookingButton trigger
+
+---
+
+## Активна задача → STEP 12
+
+---
+
+## STEP 06 — ✅ COMPLETE (2026-05-31)
+
+**CRM Clients (`/dashboard/clients`)**
+- **impeccable:** 15/20 Good
+- **TSC:** 0 | **build:** clean (51/51) | **E2E:** Test 34 ✅
+- **Drawers:** `6d33b7985ead20002063c32a` · `8b26b6ff187c043ed68372b0`
+
+---
+
+## Carry-over (відкладено, не блокують STEP 07)
+
+### STEP 06 — CRM Clients
+| ID | Issue | Пріоритет | Файл |
+|---|---|---|---|
+| D-01 | ClientsPage cards: `borderLeft` 3px → full border + bg tint | 🟠 P1 | `ClientsPage.tsx:631,806` |
+| D-02 | ClientWidgets: useMemo для 6 body computations | 🟡 P2 | `ClientWidgets.tsx:47-66` |
+| D-03 | Grid action buttons size-10 → size-11 | 🟡 P2 | `ClientsPage.tsx:750-777` |
+| D-04 | Sort button: aria-expanded + aria-haspopup | 🟡 P2 | `ClientsPage.tsx:478` |
+
+### STEP 05 — Dashboard Bookings
+| ID | Issue | Пріоритет |
+|---|---|---|
+| C-01 | BookingCard: `borderLeft` 4px side-stripe → replace with full border + bg tint | 🟠 P1 Polish |
+| C-02 | BookingDetailsModal: `text-[9px]` status badge → `text-[11px]` | 🟢 P3 |
+
+### STEP 04 — Dashboard Home
+| ID | Issue | Пріоритет |
+|---|---|---|
+| B-01 | `/impeccable audit` health score (baseline 22/40 → target 34+) | 🔴 Critical |
+| B-02 | Vercel QA: onboarding flow `967bf06` | 🔴 Critical |
+| B-03 | Studio WeeklyChart: BarTooltip click → day detail | 🟡 High |
+| B-04 | Frost WeeklyChart: tooltip `rounded-[4px]` | 🟡 High |
+| B-05 | Blossom: font/contrast widget headers | 🟡 High |

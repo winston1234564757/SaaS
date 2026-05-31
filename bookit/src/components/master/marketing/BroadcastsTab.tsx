@@ -33,6 +33,7 @@ export function BroadcastsTab({ broadcastsUsed, isStarter }: Props) {
             <h2 className="text-base font-semibold text-foreground">Розсилки</h2>
           </div>
           <button
+            type="button"
             onClick={() => router.push('/dashboard/marketing/new')}
             data-testid="new-broadcast-btn"
             className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-semibold text-white transition-opacity active:opacity-80"

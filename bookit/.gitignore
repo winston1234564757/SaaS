@@ -67,3 +67,7 @@ next-env.d.ts
 
 # graphify cache
 /graphify-out/
+
+# Playwright Impeccable Audit — reference screenshots (local only, not committed)
+/audit-screenshots/
+/audit-report/

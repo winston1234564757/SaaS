@@ -35,6 +35,7 @@ export function BulkActionToolbar({ selectedCount, onConfirmAll, onCompleteAll, 
 
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               <button
+                type="button"
                 onClick={onConfirmAll}
                 disabled={isPending}
                 className="h-10 px-4 shrink-0 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center gap-2 text-xs font-bold hover:opacity-90 transition-all active:scale-[0.88] cursor-pointer disabled:opacity-50"
@@ -44,6 +45,7 @@ export function BulkActionToolbar({ selectedCount, onConfirmAll, onCompleteAll, 
               </button>
 
               <button
+                type="button"
                 onClick={onCompleteAll}
                 disabled={isPending}
                 className="h-10 px-4 shrink-0 rounded-2xl bg-success text-white flex items-center gap-2 text-xs font-bold hover:opacity-90 transition-all active:scale-[0.88] cursor-pointer disabled:opacity-50"
@@ -51,8 +53,9 @@ export function BulkActionToolbar({ selectedCount, onConfirmAll, onCompleteAll, 
                 <Check size={16} />
                 <span>Завершити</span>
               </button>
-              
+
               <button
+                type="button"
                 onClick={onCancelAll}
                 disabled={isPending}
                 className="h-10 px-4 shrink-0 rounded-2xl bg-background/10 text-background flex items-center gap-2 text-xs font-bold hover:bg-background/20 transition-all active:scale-[0.88] cursor-pointer disabled:opacity-50"
@@ -64,6 +67,8 @@ export function BulkActionToolbar({ selectedCount, onConfirmAll, onCompleteAll, 
               <div className="w-px h-6 bg-background/10 mx-1 shrink-0" />
 
               <button
+                type="button"
+                aria-label="Очистити вибір"
                 onClick={onClear}
                 className="size-10 shrink-0 flex items-center justify-center rounded-2xl hover:bg-background/10 text-background/60 transition-colors active:scale-[0.88] cursor-pointer"
               >
@@ -76,4 +81,3 @@ export function BulkActionToolbar({ selectedCount, onConfirmAll, onCompleteAll, 
     </AnimatePresence>
   );
 }
-

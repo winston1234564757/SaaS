@@ -252,6 +252,17 @@ export function BookingWizard({
             <StepProgress step={step} hasProducts={hasProducts} />
           )}
 
+          {/* Step title */}
+          {!isAtLimit && step !== 'success' && (
+            <div className="text-center mb-4 flex-shrink-0">
+              <p className="font-semibold text-base text-[var(--text-primary)]">
+                {typeof STEP_TITLE[step] === 'function'
+                  ? (STEP_TITLE[step] as (m: string) => string)(mode)
+                  : STEP_TITLE[step]}
+              </p>
+            </div>
+          )}
+
           {/* Safety alert — shown in master mode when a client with health/medical notes is selected */}
           {mode === 'master' && (
             <SafetyAlert masterId={masterId} clientId={selectedClientId} />

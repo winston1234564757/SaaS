@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-30 · Джерело: живий код (v8.3.0 "STEP 04 — Dashboard tour overlay, Academy v2, empty states, deep links fixed") · Commit: `65acf29`
+> Оновлено: 2026-05-31 · Джерело: живий код (v8.6.0 "STEP 10 — Public Master Page: SPRING ×15, type=button ×3, img→Image, success tokens, carousel nav 44px, C2C race fix, OTP touch") · Commit: `184b2eb+`
 
 ---
 
@@ -94,7 +94,7 @@
 
 | Route | Відповідальність | Page | Actions | Key Component |
 |---|---|---|---|---|
-| `/admin` | Панель огляду: фінансові та операційні метрики BookIT, Bento Grid метрик та Recharts графіки | `admin/page.tsx` | — | `AdminOverviewCharts.tsx` |
+| `/admin` | Панель огляду: фінансові та операційні метрики BookIT, Bento Grid метрик та Recharts графіки | `admin/page.tsx` | — | `AdminOverviewChartsWrapper.tsx` (Loader) → `AdminOverviewCharts.tsx` |
 | `/admin/masters` | CRM майстрів: пошук, фільтрація, зміна тарифних планів та тригер "Увійти як майстер" (impersonation) | `admin/masters/page.tsx` | — | `MastersDirectory.tsx` |
 | `/admin/alliances` | B2B Альянси: візуальний граф партнерських мереж на Framer Motion та списки рефералів | `admin/alliances/page.tsx` | — | `AllianceMap.tsx` |
 | `/admin/moderation` | Модераційний хаб: перевірка скарг на контент (відгуки, портфоліо), блокування та налаштування лімітів | `admin/moderation/page.tsx` | — | `ModerationHub.tsx` |

@@ -85,12 +85,14 @@ function ProgramForm({
 
         <div className="flex items-center gap-2 mt-1">
           <button
+            type="button"
             onClick={onCancel}
             className="flex-1 py-2.5 rounded-xl bg-secondary/70 border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
           >
             Скасувати
           </button>
           <button
+            type="button"
             onClick={() => onSave({ name: name.trim(), targetVisits: Number(targetVisits), rewardType: 'percent_discount', rewardValue: Number(rewardValue) })}
             disabled={!canSave || isSaving}
             className="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
@@ -265,6 +267,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
             onPrimaryClick={nextStep}
           />
           <motion.button
+            type="button"
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowForm(true)}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-colors shadow-[0_4px_14px_rgba(120,154,153,0.3)]"
@@ -339,6 +342,8 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-secondary/60">
                       <div className="flex items-center gap-1">
                         <button
+                          type="button"
+                          aria-label="Редагувати"
                           onClick={() => setEditingId(p.id)}
                           className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
                         >
@@ -356,6 +361,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                             >
                               <span className="text-xs text-destructive font-medium whitespace-nowrap ml-1">Видалити?</span>
                               <button
+                                type="button"
                                 onClick={() => deleteMutation.mutate(p.id)}
                                 disabled={deleteMutation.isPending}
                                 aria-disabled={deleteMutation.isPending}
@@ -366,6 +372,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                                   : 'Так'}
                               </button>
                               <button
+                                type="button"
                                 onClick={() => setConfirmDelete(null)}
                                 className="px-2.5 h-7 rounded-lg bg-secondary/70 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
                               >
@@ -374,6 +381,8 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                             </motion.div>
                           ) : (
                             <button
+                              type="button"
+                              aria-label="Видалити програму"
                               onClick={() => setConfirmDelete(p.id)}
                               className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                             >
@@ -384,6 +393,9 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                       </div>
 
                       <button
+                        type="button"
+                        aria-pressed={p.isActive}
+                        aria-label={p.isActive ? 'Вимкнути програму' : 'Увімкнути програму'}
                         onClick={() => toggleMutation.mutate({ id: p.id, isActive: p.isActive })}
                         disabled={toggleMutation.isPending}
                         aria-disabled={toggleMutation.isPending}
@@ -414,6 +426,9 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
             <p className="text-xs text-muted-foreground/60">Клієнти діляться посиланням — подруга отримує знижку</p>
           </div>
           <button
+            type="button"
+            aria-pressed={c2cEnabled}
+            aria-label="Увімкнути реферальну програму клієнтів"
             onClick={() => setC2cEnabled(v => !v)}
             disabled={c2cSaving}
             className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 disabled:opacity-60 ${c2cEnabled ? 'bg-primary' : 'bg-secondary/80'}`}
@@ -456,6 +471,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
               )}
 
               <button
+                type="button"
                 onClick={handleSaveC2C}
                 disabled={c2cSaving || showSaved}
                 className={cn(
@@ -478,12 +494,13 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
 
         {!c2cEnabled && (
           <button
+            type="button"
             onClick={handleSaveC2C}
             disabled={c2cSaving || showSaved}
             className={cn(
               "w-full py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1",
-              showSaved 
-                ? "bg-success/10 text-success border border-success/20" 
+              showSaved
+                ? "bg-success/10 text-success border border-success/20"
                 : "bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary",
               c2cSaving && "opacity-50"
             )}

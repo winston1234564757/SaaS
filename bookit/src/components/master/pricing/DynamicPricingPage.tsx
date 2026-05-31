@@ -297,11 +297,11 @@ const PricingHeader = React.memo(({ currentStep, closeTour, nextStep, enabledCou
 
 const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled, onToggle, impact, children }: any) => (
   <div className={cn('bento-card overflow-hidden border-l-4 transition-all', isEnabled ? 'border-l-current' : 'border-l-transparent')} style={{ borderLeftColor: isEnabled ? color : 'transparent' }}>
-    <div className="flex items-center gap-3 px-4 py-4 cursor-pointer select-none active:scale-[0.98] transition-transform duration-100 ease-out" onClick={onToggle}>
+    <button type="button" aria-pressed={isEnabled} className="w-full flex items-center gap-3 px-4 py-4 select-none active:scale-[0.98] transition-transform duration-100 ease-out" onClick={onToggle}>
       <div className="size-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${color}15` }}>
         <Icon size={19} style={{ color }} />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold">{title}</p>
           {impact && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${color}18`, color }}>{impact}</span>}
@@ -311,7 +311,7 @@ const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled,
       <div className="relative w-11 h-6 rounded-full transition-colors shrink-0" style={{ background: isEnabled ? color : 'var(--border)' }}>
         <motion.div animate={{ x: isEnabled ? 21 : 2 }} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
       </div>
-    </div>
+    </button>
     <AnimatePresence mode="popLayout">
       {isEnabled && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">

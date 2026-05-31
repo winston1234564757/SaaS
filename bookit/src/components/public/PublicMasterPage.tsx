@@ -19,6 +19,9 @@ import { ProductIcon } from '@/lib/product-icons';
 import { ServiceIcon } from '@/lib/service-icons';
 import type { ProductIconName } from '@/lib/product-icons';
 
+const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
+const SPRING_CARD = { type: 'spring', stiffness: 300, damping: 24 } as const;
+
 function BookingFlowSkeleton() {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" aria-hidden="true">
@@ -207,6 +210,7 @@ function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: stri
       </div>
 
       <button
+        type="button"
         onClick={onBook}
         className="w-full py-2 rounded-lg text-sm font-semibold text-[var(--accent-on)] transition-opacity hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
         style={{ background: accent }}
@@ -224,12 +228,12 @@ function FlashDealsStrip({ deals, accent, onBook }: { deals: FlashDeal[]; accent
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
+      transition={{ ...SPRING, delay: 0.1 }}
       className="mb-6"
     >
       <div className="flex items-center gap-2 mb-3 px-1">
         <Zap size={16} style={{ color: accent }} />
-        <h2 className="heading-serif text-lg" style={{ color: '#2C1A14' }}>Флеш-акції</h2>
+        <h2 className="heading-serif text-lg text-foreground">Флеш-акції</h2>
         <span className="text-[10px] font-bold px-2 py-1 rounded-full animate-pulse bg-primary/20 text-primary">
           LIVE
         </span>
@@ -476,6 +480,7 @@ export function PublicMasterPage({
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => openBooking()}
                   className="px-4 py-2 rounded-lg text-xs font-bold text-[var(--accent-on)] transition-opacity hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
                   style={{ background: theme.accent }}
@@ -494,16 +499,11 @@ export function PublicMasterPage({
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="rounded-xl border p-4 mb-4"
-              style={{
-                background: 'rgba(92, 158, 122, 0.08)',
-                borderColor: 'rgba(92, 158, 122, 0.25)',
-              }}
+              className="rounded-xl border border-success/25 p-4 mb-4 bg-success/8"
             >
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'rgba(92, 158, 122, 0.15)' }}>
-                  <Gift size={18} style={{ color: '#5C9E7A' }} />
+                <div className="size-10 rounded-xl flex items-center justify-center shrink-0 bg-success/15">
+                  <Gift size={18} className="text-success" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">У тебе є реферальний бонус</p>
@@ -512,9 +512,9 @@ export function PublicMasterPage({
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => openBooking()}
-                  className="shrink-0 px-3 py-2 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
-                  style={{ background: '#5C9E7A' }}
+                  className="shrink-0 px-3 py-2 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer bg-success"
                 >
                   Записатись
                 </button>
@@ -527,14 +527,15 @@ export function PublicMasterPage({
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 280, damping: 24 }}
+          transition={SPRING}
           className="bento-card relative mb-4 overflow-hidden border border-border"
         >
           {/* Share button — absolute top-right */}
           <button
+            type="button"
             onClick={handleShare}
             aria-label="Поділитись сторінкою"
-            className="absolute top-4 right-4 z-10 size-9 rounded-lg bg-secondary/70 border border-border backdrop-blur-sm flex items-center justify-center hover:bg-secondary/90 transition-colors cursor-pointer active:scale-[0.95] transition-all"
+            className="absolute top-4 right-4 z-10 size-11 rounded-lg bg-secondary/70 border border-border backdrop-blur-sm flex items-center justify-center hover:bg-secondary/90 transition-colors cursor-pointer active:scale-[0.95] transition-all"
             style={{ color: textSecondary }}
           >
             <Share2 size={16} />
@@ -545,20 +546,20 @@ export function PublicMasterPage({
             {/* Avatar */}
             <div
               className="size-24 rounded-[28px] flex items-center justify-center text-4xl relative overflow-hidden mb-4"
-              style={{ 
-                background: avatarBg, 
+              style={{
+                background: avatarBg,
                 boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : `0 8px 24px ${theme.accent}22`,
                 border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.4)'}`
               }}
             >
               {master.avatarUrl ? (
-                <Image 
-                  src={master.avatarUrl} 
-                  alt={master.name} 
-                  fill 
-                  className="object-cover" 
-                  sizes="96px" 
-                  priority 
+                <Image
+                  src={master.avatarUrl}
+                  alt={master.name}
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                  priority
                   quality={90}
                 />
               ) : (
@@ -692,7 +693,7 @@ export function PublicMasterPage({
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.05, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.05 }}
             className="mb-4"
           >
             <MasterLocationCard
@@ -711,7 +712,7 @@ export function PublicMasterPage({
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.08, type: 'spring', stiffness: 280, damping: 24 }}
+          transition={{ ...SPRING, delay: 0.08 }}
           className="mb-4"
         >
           {master.loyalty && (
@@ -729,7 +730,7 @@ export function PublicMasterPage({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.1 }}
             className="bento-card p-4 mb-4"
           >
             <div className="flex items-center gap-2 mb-4">
@@ -789,7 +790,7 @@ export function PublicMasterPage({
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.1 }}
             className="mb-6"
           >
             <Link
@@ -843,7 +844,7 @@ export function PublicMasterPage({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.14, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.14 }}
             className="mb-5 -mx-4"
           >
             <PublicPortfolioGallery
@@ -857,7 +858,7 @@ export function PublicMasterPage({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, type: 'spring', stiffness: 280, damping: 24 }}
+          transition={{ ...SPRING, delay: 0.15 }}
         >
           <h2 className="heading-serif text-lg mb-3 px-1" style={{ color: theme.textPrimary }}>Послуги</h2>
 
@@ -878,7 +879,7 @@ export function PublicMasterPage({
                       initial={{ opacity: 0, y: 12 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, margin: "-40px" }}
-                      transition={{ delay: i * 0.04, type: 'spring', stiffness: 300, damping: 24 }}
+                      transition={{ ...SPRING_CARD, delay: i * 0.04 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => openBooking(service)}
                       className="bento-card p-4 text-left w-full group relative overflow-hidden border border-border hover:border-border-strong hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -895,9 +896,11 @@ export function PublicMasterPage({
                       )}
                       <div className="flex items-center gap-4">
                         {service.image_url ? (
-                          <img
+                          <Image
                             src={service.image_url}
                             alt={service.name}
+                            width={48}
+                            height={48}
                             className="size-12 rounded-lg flex-shrink-0 object-cover transition-transform group-hover:scale-110"
                           />
                         ) : (
@@ -932,7 +935,7 @@ export function PublicMasterPage({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.24, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.24 }}
             className="mt-2"
           >
             <div className="flex items-center justify-between mb-3 px-1">
@@ -951,7 +954,7 @@ export function PublicMasterPage({
                   key={product.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.26 + i * 0.04, type: 'spring', stiffness: 300, damping: 24 }}
+                  transition={{ ...SPRING_CARD, delay: 0.26 + i * 0.04 }}
                 >
                   <Link
                     href={`/${master.slug}/shop`}
@@ -1006,7 +1009,7 @@ export function PublicMasterPage({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.3 }}
             className="mt-2"
           >
             <div className="flex items-baseline gap-2 mb-3 px-1">
@@ -1025,7 +1028,7 @@ export function PublicMasterPage({
                   key={review.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.32 + i * 0.04, type: 'spring', stiffness: 300, damping: 24 }}
+                  transition={{ ...SPRING_CARD, delay: 0.32 + i * 0.04 }}
                   className="bento-card p-4"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -1059,7 +1062,7 @@ export function PublicMasterPage({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.22, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.22 }}
             className="mt-8 mb-4"
           >
             <TrustedPartnersBlock partners={master.trustedPartners!} />
@@ -1080,14 +1083,14 @@ export function PublicMasterPage({
           <motion.button
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.4, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ ...SPRING, delay: 0.4 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => openBooking()}
             data-testid="book-button"
             className="pointer-events-auto w-full max-w-[280px] h-14 rounded-full text-[var(--accent-on)] font-bold text-base transition-all backdrop-blur-2xl border border-border/30 shadow-[0_12px_40px_rgba(0,0,0,0.18)] hover:scale-[1.02] active:scale-[0.95] flex items-center justify-center gap-2 cursor-pointer"
-            style={{ 
+            style={{
               background: `${theme.accent}73`, // ~45% opacity
-              boxShadow: `0 12px 32px ${theme.accent}33, inset 0 1px 0 rgba(255,255,255,0.4)` 
+              boxShadow: `0 12px 32px ${theme.accent}33, inset 0 1px 0 rgba(255,255,255,0.4)`
             }}
           >
             Записатися

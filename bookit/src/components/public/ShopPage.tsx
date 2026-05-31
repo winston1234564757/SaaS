@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +23,13 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
   brows: 'Брови',   body:  'Тіло',   tools: 'Інструменти', other: 'Інше',
 };
 
+// ── Spring constants ──────────────────────────────────────────────────────────
+
+const SHEET_SPRING   = { type: 'spring' as const, stiffness: 360, damping: 34 } as const;
+const GALLERY_SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const;
+const CART_SPRING    = { type: 'spring' as const, stiffness: 380, damping: 32 } as const;
+const SUCCESS_SPRING = { type: 'spring' as const, stiffness: 300, damping: 20 } as const;
+
 interface Props {
   masterId:        string;
   masterSlug:      string;
@@ -37,10 +44,10 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, products, isAuth, workingHours, schedule }: Props) {
-  const [cart, setCart]                   = useState<CartItem[]>([]);
-  const [cartOpen, setCartOpen]           = useState(false);
-  const [catFilter, setCatFilter]         = useState<ProductCategory | null>(null);
-  const [orderDone, setOrderDone]         = useState(false);
+  const [cart, setCart]                       = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen]               = useState(false);
+  const [catFilter, setCatFilter]             = useState<ProductCategory | null>(null);
+  const [orderDone, setOrderDone]             = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const categories = [...new Set(products.map(p => p.category))] as ProductCategory[];
@@ -131,6 +138,7 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
             exit={{ y: 80, opacity: 0 }}
           >
             <button
+              type="button"
               onClick={() => setCartOpen(true)}
               className="pointer-events-auto w-full max-w-lg mx-auto flex items-center justify-between px-5 py-4 rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.95] transition-all cursor-pointer"
             >
@@ -179,11 +187,12 @@ const CATEGORY_COLORS: Record<string, string> = {
 function ProductTile({ product: p, qty, onOpen }: {
   product: Product; qty: number; onOpen: () => void;
 }) {
-  const photo = p.photos[0] ?? null;
+  const photo    = p.photos[0] ?? null;
   const catColor = CATEGORY_COLORS[p.category] ?? '#A89F7C';
 
   return (
     <motion.button
+      type="button"
       layout
       onClick={onOpen}
       className="flex flex-col overflow-hidden rounded-xl bg-secondary border border-border/40 text-left w-full shadow-sm active:scale-[0.95] cursor-pointer transition-all"
@@ -236,11 +245,10 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
 
   if (!p) return null;
 
-  const photos = p.photos.length > 0 ? p.photos : [];
-  const currentPhoto = photos[photoIdx] ?? null;
+  const photos   = p.photos.length > 0 ? p.photos : [];
   const catColor = CATEGORY_COLORS[p.category] ?? '#A89F7C';
-  const price = (p.price_kopecks / 100).toFixed(0);
-  const inCart = qty > 0;
+  const price    = (p.price_kopecks / 100).toFixed(0);
+  const inCart   = qty > 0;
 
   function handleAddToCart() {
     onAdd(localQty);
@@ -260,7 +268,7 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
           <motion.div
             className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto bg-background rounded-t-xl flex flex-col max-h-[92dvh] overflow-hidden"
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 360, damping: 34 }}
+            transition={SHEET_SPRING}
           >
             {/* Drag handle */}
             <div className="pt-3 pb-2 flex justify-center shrink-0">
@@ -269,6 +277,8 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
 
             {/* Close */}
             <button
+              type="button"
+              aria-label="Закрити"
               onClick={onClose}
               className="absolute top-4 right-4 z-10 size-8 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center active:scale-[0.95] transition-all cursor-pointer"
             >
@@ -282,16 +292,16 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                   <motion.div
                     className="flex h-full"
                     animate={{ x: `-${photoIdx * 100}%` }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    transition={GALLERY_SPRING}
                     drag="x"
                     dragConstraints={{ left: -(photos.length - 1) * 100, right: 0 }}
                     dragElastic={0.2}
-                    onDragEnd={(e, { offset, velocity }) => {
+                    onDragEnd={(e, { offset }) => {
                       const swipeThreshold = 50;
                       if (offset.x < -swipeThreshold && photoIdx < photos.length - 1) {
-                        setPhotoIdx(p => p + 1);
+                        setPhotoIdx(prev => prev + 1);
                       } else if (offset.x > swipeThreshold && photoIdx > 0) {
-                        setPhotoIdx(p => p - 1);
+                        setPhotoIdx(prev => prev - 1);
                       }
                     }}
                   >
@@ -318,13 +328,17 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                 {photos.length > 1 && (
                   <>
                     <button
-                      onClick={(e) => { e.stopPropagation(); setPhotoIdx(p => (p - 1 + photos.length) % photos.length); }}
+                      type="button"
+                      aria-label="Попереднє фото"
+                      onClick={(e) => { e.stopPropagation(); setPhotoIdx(prev => (prev - 1 + photos.length) % photos.length); }}
                       className="absolute left-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-secondary/90 shadow-lg flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-[0.95] cursor-pointer z-20 hidden md:flex"
                     >
                       <ChevronLeft size={24} />
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); setPhotoIdx(p => (p + 1) % photos.length); }}
+                      type="button"
+                      aria-label="Наступне фото"
+                      onClick={(e) => { e.stopPropagation(); setPhotoIdx(prev => (prev + 1) % photos.length); }}
                       className="absolute right-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-secondary/90 shadow-lg flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-[0.95] cursor-pointer z-20 hidden md:flex"
                     >
                       <ChevronRight size={24} />
@@ -342,11 +356,18 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-20">
                     {photos.map((_, i) => (
                       <button
+                        type="button"
                         key={i}
                         onClick={() => setPhotoIdx(i)}
-                        className="size-2 rounded-full transition-all"
-                        style={{ background: i === photoIdx ? 'var(--accent)' : 'var(--text-tertiary)' }}
-                      />
+                        aria-label={`Фото ${i + 1}`}
+                        aria-pressed={i === photoIdx}
+                        className="p-3 -m-3"
+                      >
+                        <span
+                          className="block size-2 rounded-full transition-all"
+                          style={{ background: i === photoIdx ? 'var(--accent)' : 'var(--text-tertiary)' }}
+                        />
+                      </button>
                     ))}
                   </div>
                 )}
@@ -357,8 +378,11 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                 <div className="flex gap-2 px-4 pt-3 overflow-x-auto scrollbar-hide">
                   {photos.map((ph, i) => (
                     <button
+                      type="button"
                       key={i}
                       onClick={() => setPhotoIdx(i)}
+                      aria-label={`Фото ${i + 1}`}
+                      aria-pressed={i === photoIdx}
                       className="relative shrink-0 size-16 rounded-md overflow-hidden border-2 transition-all active:scale-[0.95] cursor-pointer"
                       style={{ borderColor: i === photoIdx ? 'var(--accent)' : 'transparent' }}
                     >
@@ -374,7 +398,7 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                   <h2 className="text-xl font-bold text-foreground leading-tight">{p.name}</h2>
                   <p className="text-2xl font-bold text-foreground mt-2">{price} ₴</p>
                   {p.stock_qty > 0 && p.stock_qty <= 10 && (
-                    <p className="text-xs text-warning font-semibold mt-1">⚡ Залишилось {p.stock_qty} шт</p>
+                    <p className="text-xs text-warning font-semibold mt-1">Залишилось {p.stock_qty} шт</p>
                   )}
                   {p.stock_qty <= 0 && (
                     <p className="text-xs text-destructive font-semibold mt-1">Немає в наявності</p>
@@ -397,17 +421,29 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                         <div className="flex items-center gap-3">
                           <p className="text-xs font-semibold text-muted-foreground">Кількість</p>
                           <div className="flex items-center rounded-md overflow-hidden border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                            <button onClick={() => setLocalQty(q => Math.max(1, q - 1))} className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]">
+                            <button
+                              type="button"
+                              aria-label="Зменшити кількість"
+                              onClick={() => setLocalQty(q => Math.max(1, q - 1))}
+                              className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]"
+                            >
                               <Minus size={15} />
                             </button>
                             <span className="w-8 text-center font-bold text-foreground">{localQty}</span>
-                            <button onClick={() => setLocalQty(q => Math.min(p.stock_qty, q + 1))} disabled={localQty >= p.stock_qty} className="size-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30">
+                            <button
+                              type="button"
+                              aria-label="Збільшити кількість"
+                              onClick={() => setLocalQty(q => Math.min(p.stock_qty, q + 1))}
+                              disabled={localQty >= p.stock_qty}
+                              className="size-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30"
+                            >
                               <Plus size={15} />
                             </button>
                           </div>
                           <p className="text-xs text-muted-foreground/60 ml-auto">{((p.price_kopecks * localQty) / 100).toFixed(0)} ₴</p>
                         </div>
                         <motion.button
+                          type="button"
                           onClick={handleAddToCart}
                           whileTap={{ scale: 0.95 }}
                           className="w-full py-4 rounded-lg bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/20 cursor-pointer active:scale-[0.95]"
@@ -422,15 +458,30 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                         </p>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center rounded-md overflow-hidden border flex-1" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                            <button onClick={() => onQtyChange(qty - 1)} className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]">
+                            <button
+                              type="button"
+                              aria-label="Зменшити кількість"
+                              onClick={() => onQtyChange(qty - 1)}
+                              className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]"
+                            >
                               <Minus size={15} />
                             </button>
                             <span className="flex-1 text-center font-bold text-foreground">{qty}</span>
-                            <button onClick={() => qty < p.stock_qty ? onQtyChange(qty + 1) : undefined} disabled={qty >= p.stock_qty} className="size-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30">
+                            <button
+                              type="button"
+                              aria-label="Збільшити кількість"
+                              onClick={() => qty < p.stock_qty ? onQtyChange(qty + 1) : undefined}
+                              disabled={qty >= p.stock_qty}
+                              className="size-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30"
+                            >
                               <Plus size={15} />
                             </button>
                           </div>
-                          <button onClick={() => { onQtyChange(0); onClose(); }} className="px-4 py-3 rounded-lg border border-foreground/20 text-foreground text-sm font-semibold active:scale-[0.95] cursor-pointer transition-all">
+                          <button
+                            type="button"
+                            onClick={() => { onQtyChange(0); onClose(); }}
+                            className="px-4 py-3 rounded-lg border border-foreground/20 text-foreground text-sm font-semibold active:scale-[0.95] cursor-pointer transition-all"
+                          >
                             Видалити
                           </button>
                         </div>
@@ -447,8 +498,6 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
   );
 }
 
-import { useRef } from 'react';
-
 // ── CartDrawer ────────────────────────────────────────────────────────────────
 
 function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth, onClose, onQtyChange, onSuccess, schedule }: {
@@ -460,14 +509,15 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
   onSuccess: () => void;
   schedule?: any[];
 }) {
-  const [delivery, setDelivery]   = useState<'pickup' | 'nova_poshta'>('pickup');
-  const [address, setAddress]     = useState('');
-  const [note, setNote]           = useState('');
-  const [name, setName]           = useState('');
-  const [phone, setPhone]         = useState('+380');
-  const [pickupDate, setPickupDate] = useState<string | null>(null);
-  const [error, setError]         = useState<string | null>(null);
+  const [delivery, setDelivery]      = useState<'pickup' | 'nova_poshta'>('pickup');
+  const [address, setAddress]        = useState('');
+  const [note, setNote]              = useState('');
+  const [name, setName]              = useState('');
+  const [phone, setPhone]            = useState('+380');
+  const [pickupDate, setPickupDate]  = useState<string | null>(null);
+  const [error, setError]            = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const sliderRef                    = useRef<HTMLDivElement>(null);
 
   const total = cart.reduce((s, i) => s + i.product.price_kopecks * i.qty, 0);
 
@@ -476,7 +526,6 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
       if (val.length < 4) setPhone('+380');
       return;
     }
-    // Only digits after prefix
     const suffix = val.slice(4).replace(/\D/g, '');
     if (suffix.length <= 9) setPhone('+380' + suffix);
   }
@@ -513,14 +562,14 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
     const d = new Date();
     d.setDate(d.getDate() + i);
     const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
-    const dayKey = dayNames[d.getDay()];
-    const templ = schedule?.find(s => s.day_of_week === dayKey);
+    const dayKey   = dayNames[d.getDay()];
+    const templ    = schedule?.find(s => s.day_of_week === dayKey);
     return {
-      date: d.toISOString().split('T')[0],
-      label: d.toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'short' }),
+      date:      d.toISOString().split('T')[0],
+      label:     d.toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'short' }),
       isWorking: templ?.is_working ?? false,
-      hours: templ?.is_working ? `${templ.start_time.slice(0, 5)} - ${templ.end_time.slice(0, 5)}` : 'Вихідний',
-      fullDate: d,
+      hours:     templ?.is_working ? `${templ.start_time.slice(0, 5)} - ${templ.end_time.slice(0, 5)}` : 'Вихідний',
+      fullDate:  d,
     };
   });
 
@@ -528,11 +577,15 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
     <AnimatePresence>
       {open && (
         <>
-          <motion.div className="fixed inset-0 bg-black/30 z-40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.div
+            className="fixed inset-0 bg-black/30 z-40"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
           <motion.div
             className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-xl max-w-lg mx-auto flex flex-col max-h-[90dvh]"
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+            transition={CART_SPRING}
           >
             <div className="pt-3 pb-1 flex justify-center shrink-0">
               <div className="w-10 h-1 bg-border rounded-full" />
@@ -540,7 +593,12 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
 
             <div className="flex items-center justify-between px-5 py-3 shrink-0">
               <h2 className="text-base font-bold text-foreground">Оформлення замовлення</h2>
-              <button onClick={onClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.95] transition-all cursor-pointer">
+              <button
+                type="button"
+                aria-label="Закрити"
+                onClick={onClose}
+                className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.95] transition-all cursor-pointer"
+              >
                 <X size={16} />
               </button>
             </div>
@@ -619,30 +677,36 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                     <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 px-1">
                       <CalendarDays size={14} className="text-primary" /> Оберіть зручний день
                     </p>
-                    
+
                     <div className="relative group">
-                      {/* Arrows */}
-                      <button 
-                        onClick={() => { const el = document.getElementById('day-slider'); el?.scrollBy({ left: -120, behavior: 'smooth' }); }}
+                      {/* Scroll arrows */}
+                      <button
+                        type="button"
+                        aria-label="Прокрутити назад"
+                        onClick={() => sliderRef.current?.scrollBy({ left: -120, behavior: 'smooth' })}
                         className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 size-8 rounded-full bg-secondary/90 shadow-md flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <ChevronLeft size={16} />
                       </button>
-                      <button 
-                        onClick={() => { const el = document.getElementById('day-slider'); el?.scrollBy({ left: 120, behavior: 'smooth' }); }}
+                      <button
+                        type="button"
+                        aria-label="Прокрутити вперед"
+                        onClick={() => sliderRef.current?.scrollBy({ left: 120, behavior: 'smooth' })}
                         className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 size-8 rounded-full bg-secondary/90 shadow-md flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <ChevronRight size={16} />
                       </button>
 
-                      <div 
-                        id="day-slider"
+                      <div
+                        ref={sliderRef}
                         className="flex gap-2 overflow-x-auto pb-4 pt-1 scrollbar-hide px-1 snap-x"
                       >
                         {nextDays.map(d => (
                           <button
+                            type="button"
                             key={d.date}
                             disabled={!d.isWorking}
+                            aria-pressed={pickupDate === d.date}
                             onClick={() => setPickupDate(d.date)}
                             className={cn(
                               'shrink-0 flex flex-col items-center justify-center size-24 rounded-xl border transition-all snap-start',
@@ -663,12 +727,12 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                       {/* Pagination Pills */}
                       <div className="flex justify-center gap-1 mt-1">
                         {nextDays.map((d, i) => (
-                          <div 
-                            key={i} 
+                          <div
+                            key={i}
                             className={cn(
-                              "size-1.5 rounded-full transition-all",
-                              pickupDate === d.date ? "bg-primary w-3" : "bg-border/40"
-                            )} 
+                              'size-1.5 rounded-full transition-all',
+                              pickupDate === d.date ? 'bg-primary w-3' : 'bg-border/40'
+                            )}
                           />
                         ))}
                       </div>
@@ -704,6 +768,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                 {error && <p className="text-xs text-destructive bg-destructive/5 py-2 px-3 rounded-xl border border-destructive/10">{error}</p>}
 
                 <button
+                  type="button"
                   onClick={handleOrder}
                   disabled={isPending || cart.length === 0}
                   className="w-full py-4 rounded-lg bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.95] transition-all cursor-pointer shadow-lg shadow-primary/20"
@@ -733,7 +798,7 @@ function OrderSuccess({ masterSlug, masterName }: { masterSlug: string; masterNa
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        transition={SUCCESS_SPRING}
         className="size-20 rounded-full bg-success/15 flex items-center justify-center"
       >
         <CheckCircle2 size={40} className="text-success" />
@@ -759,10 +824,14 @@ function OrderSuccess({ masterSlug, masterName }: { masterSlug: string; masterNa
 function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all',
-        active ? 'bg-primary text-primary-foreground active:scale-[0.95] cursor-pointer' : 'bg-secondary/70 text-muted-foreground border border-border hover:bg-secondary active:scale-[0.95] cursor-pointer'
+        active
+          ? 'bg-primary text-primary-foreground active:scale-[0.95] cursor-pointer'
+          : 'bg-secondary/70 text-muted-foreground border border-border hover:bg-secondary active:scale-[0.95] cursor-pointer'
       )}
     >
       {children}
@@ -773,7 +842,9 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
 function DeliveryBtn({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         'flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all border active:scale-[0.95] cursor-pointer',
         active
@@ -789,7 +860,7 @@ function DeliveryBtn({ active, onClick, icon, label }: { active: boolean; onClic
 function EmptyShop({ masterSlug }: { masterSlug: string }) {
   return (
     <div className="col-span-2 bento-card p-10 flex flex-col items-center gap-3 text-center">
-       <ProductIcon name="package" size={28} className="text-muted-foreground/60" />
+      <ProductIcon name="package" size={28} className="text-muted-foreground/60" />
       <p className="text-sm font-semibold text-foreground">Товарів поки немає</p>
       <Link href={`/${masterSlug}`} className="text-xs text-primary hover:underline flex items-center gap-1">
         <ArrowLeft size={12} /> Повернутись

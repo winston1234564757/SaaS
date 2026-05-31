@@ -25,16 +25,16 @@ import { ManualBookingForm } from './ManualBookingForm';
 import { SharePageCard } from '@/components/master/dashboard/SharePageCard';
 import { OpportunityMenu } from './dashboard/OpportunityMenu';
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
-import { 
-  format, 
-  parseISO, 
-  startOfWeek, 
-  eachDayOfInterval, 
-  endOfWeek, 
-  startOfMonth, 
-  endOfMonth 
+import {
+  format,
+  parseISO,
+  startOfWeek,
+  eachDayOfInterval,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
 } from 'date-fns';
 import { uk } from 'date-fns/locale';
 
@@ -43,34 +43,50 @@ import { BookingDetailsModal } from './BookingDetailsModal';
 type ViewMode = 'list' | 'timeline' | 'focus';
 type TimeRange = 'day' | 'week' | 'month';
 
+const SPRING = { type: 'spring' as const, duration: 0.35, bounce: 0 };
 
 export function BookingsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { masterProfile } = useMasterContext();
 
   const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
-  const [view, setView] = useState<ViewMode>('list');
-  const [timeRange, setTimeRange] = useState<TimeRange>('day');
-  const [anchor, setAnchor] = useState(new Date());
+  // URL-derived state (view, timeRange, anchor, statusFilter persist across navigation)
+  const view = (searchParams.get('view') ?? 'list') as ViewMode;
+  const timeRange = (searchParams.get('range') ?? 'day') as TimeRange;
+  const anchor = useMemo(() => {
+    const d = searchParams.get('date');
+    if (d) { try { return parseISO(d); } catch { /* ignore */ } }
+    return new Date();
+  }, [searchParams]);
+  const statusFilter = searchParams.get('status') ?? 'all';
+
+  // Local UI state (ephemeral, not persisted in URL)
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   const [formOpen, setFormOpen] = useState(false);
-  const [preselectedTime, setPreselectedTime]       = useState<string | undefined>();
-  const [preselectedDate, setPreselectedDate]       = useState<string | undefined>();
-  const [preselectedClientId, setPreselectedClientId]   = useState<string | undefined>();
-  const [preselectedClientName, setPreselectedClientName] = useState<string | undefined>();
+  const [preselectedTime, setPreselectedTime]               = useState<string | undefined>();
+  const [preselectedDate, setPreselectedDate]               = useState<string | undefined>();
+  const [preselectedClientId, setPreselectedClientId]       = useState<string | undefined>();
+  const [preselectedClientName, setPreselectedClientName]   = useState<string | undefined>();
   const [preselectedClientPhone, setPreselectedClientPhone] = useState<string | undefined>();
+
+  // URL updater — merges updates into current params, preserves unrelated params
+  const setUrl = (updates: Record<string, string | null>) => {
+    const p = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([k, v]) => {
+      if (v === null) p.delete(k); else p.set(k, v);
+    });
+    router.replace(`?${p.toString()}`, { scroll: false });
+  };
 
   useUrlActionBus('booking:create', ({ clientId, date, startTime }) => {
     setPreselectedClientId(clientId);
     setPreselectedDate(date);
     setPreselectedTime(startTime);
-    if (date) {
-      try { setAnchor(new Date(date)); } catch { /* invalid date — ignore */ }
-    }
+    if (date) setUrl({ date });
     setFormOpen(true);
   });
 
@@ -102,18 +118,16 @@ export function BookingsPage() {
 
   const { bookings, stats, isLoading } = useBookingsDashboardLogic(dateFrom, dateTo);
 
-
-
   const filteredBookings = useMemo(() => {
     return bookings.filter(b => {
-      const matchesSearch = b.client_name.toLowerCase().includes(search.toLowerCase()) || 
-                           b.client_phone.includes(search);
+      const matchesSearch =
+        b.client_name.toLowerCase().includes(search.toLowerCase()) ||
+        b.client_phone.includes(search);
       const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [bookings, search, statusFilter]);
 
-  // Grouping for list view
   const groupedBookings = useMemo(() => {
     const groups: Record<string, typeof filteredBookings> = {};
     filteredBookings.forEach(b => {
@@ -126,7 +140,6 @@ export function BookingsPage() {
   const handleOpportunityAction = (action: 'booking' | 'flash' | 'story') => {
     setOpportunityOpen(false);
     const dateStr = anchor.toISOString().split('T')[0];
-
     if (action === 'booking') {
       setPreselectedDate(dateStr);
       setPreselectedTime(opportunityTime);
@@ -141,28 +154,45 @@ export function BookingsPage() {
   const daysInRange = useMemo(() => {
     if (timeRange === 'day') return [anchor];
     const start = timeRange === 'week' ? startOfWeek(anchor, { weekStartsOn: 1 }) : startOfMonth(anchor);
-    const end = timeRange === 'week' ? endOfWeek(anchor, { weekStartsOn: 1 }) : endOfMonth(anchor);
+    const end   = timeRange === 'week' ? endOfWeek(anchor, { weekStartsOn: 1 })   : endOfMonth(anchor);
     return eachDayOfInterval({ start, end });
   }, [anchor, timeRange]);
 
   const navigate = (dir: 1 | -1) => {
-    setAnchor(prev => {
-      const d = new Date(prev);
-      if (timeRange === 'day') d.setDate(d.getDate() + dir);
-      else if (timeRange === 'week') d.setDate(d.getDate() + dir * 7);
-      else d.setMonth(d.getMonth() + dir);
-      return d;
-    });
+    const d = new Date(anchor);
+    if (timeRange === 'day') d.setDate(d.getDate() + dir);
+    else if (timeRange === 'week') d.setDate(d.getDate() + dir * 7);
+    else d.setMonth(d.getMonth() + dir);
+    setUrl({ date: d.toISOString().split('T')[0] });
   };
+
+  const dayWorkHours = useMemo(() => {
+    const wh = masterProfile?.working_hours as unknown as Record<string, { is_working: boolean; start_time: string; end_time: string }> | null;
+    const key = DAY_KEYS[anchor.getDay()];
+    return {
+      workStart:    wh?.[key]?.is_working ? wh[key].start_time : '09:00',
+      workEnd:      wh?.[key]?.is_working ? wh[key].end_time   : '18:00',
+      isWorkingDay: wh?.[key]?.is_working ?? true,
+    };
+  }, [masterProfile?.working_hours, anchor]);
 
   const rangeLabel = useMemo(() => {
     if (timeRange === 'day') return format(anchor, 'EEEE d MMMM', { locale: uk });
     if (timeRange === 'month') return format(anchor, 'LLLL yyyy', { locale: uk });
-    
     const from = parseISO(dateFrom);
-    const to = parseISO(dateTo);
+    const to   = parseISO(dateTo);
     return `${format(from, 'd MMM', { locale: uk })} — ${format(to, 'd MMM', { locale: uk })}`;
   }, [anchor, timeRange, dateFrom, dateTo]);
+
+  const [prevNavLabel, nextNavLabel] =
+    timeRange === 'day'
+      ? ['Попередній день', 'Наступний день']
+      : timeRange === 'week'
+      ? ['Попередній тиждень', 'Наступний тиждень']
+      : ['Попередній місяць', 'Наступний місяць'];
+
+  const trLabels: Record<TimeRange, string> = { day: 'День', week: 'Тиж', month: 'Місяць' };
+  const trLabelsMobile: Record<TimeRange, string> = { day: 'День', week: 'Тиж', month: 'Міс' };
 
   return (
     <div className="flex flex-col gap-6 lg:gap-10 pb-32">
@@ -170,7 +200,7 @@ export function BookingsPage() {
       <div className="flex flex-col gap-6 lg:gap-8">
         <div className="flex items-end justify-between">
           <div className="flex flex-col">
-            <h1 
+            <h1
               className="text-[60px] lg:text-[100px] text-foreground font-display transition-all duration-500"
               style={{
                 fontFamily: 'var(--font-great-vibes, cursive)',
@@ -180,12 +210,14 @@ export function BookingsPage() {
             >
               Записи
             </h1>
-            <p className="text-xs lg:text-sm text-muted-foreground/60 ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">Керування розкладом та аналітика</p>
+            <p className="text-xs lg:text-sm text-muted-foreground/60 ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">
+              Керування розкладом та аналітика
+            </p>
           </div>
-          
+
           <div className="flex gap-3 mb-1">
-             {/* Quick "New" button on desktop too, but maybe styled more premium */}
             <button
+              type="button"
               onClick={() => setFormOpen(true)}
               className="group relative flex items-center gap-2 px-5 py-3 rounded-[20px] bg-foreground text-background font-bold text-sm shadow-xl shadow-black/10 transition-all hover:scale-105 active:scale-[0.95] cursor-pointer overflow-hidden"
             >
@@ -200,51 +232,77 @@ export function BookingsPage() {
         <DashboardWidgets stats={stats} isLoading={isLoading} />
       </div>
 
-      {/* 2. Controls - Sticky Mobile */}
+      {/* 2. Controls — Mobile sticky */}
       <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pb-4 mb-2 -mx-4 px-4 pt-2">
         <div className="flex flex-col gap-3">
-          {/* Top row: Date Switcher + View Switcher + Search toggle */}
+
+          {/* Top row: Range + View + Search */}
           <div className="flex items-center justify-between gap-2">
-            {/* Time Range Switcher */}
-            <div className="flex bg-secondary/30 border border-border p-1 rounded-xl">
-              {['day', 'week', 'month'].map(r => (
+
+            {/* Time Range Switcher (mobile) */}
+            <div className="relative flex bg-secondary/30 border border-border p-1 rounded-xl">
+              {(['day', 'week', 'month'] as const).map(r => (
                 <button
                   key={r}
-                  onClick={() => setTimeRange(r as TimeRange)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all active:scale-[0.88] cursor-pointer ${
-                    timeRange === r ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground/60'
-                  }`}
+                  type="button"
+                  aria-pressed={timeRange === r}
+                  onClick={() => setUrl({ range: r })}
+                  className="relative px-3 min-h-[44px] flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-wider active:scale-[0.88] cursor-pointer z-10"
                 >
-                  {r === 'day' ? 'День' : r === 'week' ? 'Тиж' : 'Місяць'}
+                  <span className={`relative z-10 transition-colors ${timeRange === r ? 'text-background' : 'text-muted-foreground/60'}`}>
+                    {trLabels[r]}
+                  </span>
+                  {timeRange === r && (
+                    <motion.div
+                      layoutId="mobile-tr-indicator"
+                      className="absolute inset-0 rounded-lg bg-foreground shadow-sm"
+                      transition={SPRING}
+                    />
+                  )}
                 </button>
               ))}
             </div>
-            
-            {/* Responsive View Switcher & Search Trigger */}
+
+            {/* View Switcher + Search Toggle */}
             <div className="flex items-center gap-1.5 flex-1 justify-end">
-              <div className="flex p-1 rounded-xl bg-secondary/30 border border-border backdrop-blur-sm">
-                {[
-                  { id: 'list', icon: <LayoutList size={14} /> },
-                  { id: 'timeline', icon: <Clock size={14} /> },
-                  { id: 'focus', icon: <Zap size={14} /> },
-                ].map(m => (
+              <div className="relative flex p-1 rounded-xl bg-secondary/30 border border-border backdrop-blur-sm">
+                {(
+                  [
+                    { id: 'list'     as const, icon: <LayoutList size={14} />, label: 'Список' },
+                    { id: 'timeline' as const, icon: <Clock size={14} />,      label: 'Таймлайн' },
+                    { id: 'focus'    as const, icon: <Zap size={14} />,        label: 'Фокус' },
+                  ] as const
+                ).map(m => (
                   <button
                     key={m.id}
-                    onClick={() => setView(m.id as ViewMode)}
-                    className={`p-2 rounded-lg transition-all active:scale-[0.88] cursor-pointer flex items-center justify-center ${
-                      view === m.id ? 'bg-secondary shadow-sm text-primary' : 'text-muted-foreground/60'
-                    }`}
+                    type="button"
+                    aria-pressed={view === m.id}
+                    aria-label={m.label}
+                    onClick={() => setUrl({ view: m.id })}
+                    className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:scale-[0.88] cursor-pointer z-10"
                   >
-                    {m.icon}
+                    <span className={`relative z-10 transition-colors ${view === m.id ? 'text-primary' : 'text-muted-foreground/60'}`}>
+                      {m.icon}
+                    </span>
+                    {view === m.id && (
+                      <motion.div
+                        layoutId="mobile-view-indicator"
+                        className="absolute inset-0 rounded-lg bg-secondary shadow-sm"
+                        transition={SPRING}
+                      />
+                    )}
                   </button>
                 ))}
               </div>
 
-              <button 
+              <button
+                type="button"
+                aria-label="Пошук клієнта"
+                aria-expanded={searchOpen}
                 onClick={() => setSearchOpen(!searchOpen)}
-                className={`p-2 rounded-xl border transition-all active:scale-[0.88] cursor-pointer ${
-                  searchOpen 
-                    ? 'bg-primary/10 border-primary/20 text-primary' 
+                className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl border transition-all active:scale-[0.88] cursor-pointer ${
+                  searchOpen
+                    ? 'bg-primary/10 border-primary/20 text-primary'
                     : 'bg-secondary/30 border-border text-muted-foreground'
                 }`}
               >
@@ -262,6 +320,7 @@ export function BookingsPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Ім'я або телефон клієнта..."
+                aria-label="Пошук клієнта за ім'ям або телефоном"
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
                 autoFocus
               />
@@ -270,16 +329,20 @@ export function BookingsPage() {
 
           {/* Date Navigator */}
           <div className="flex items-center justify-between px-2">
-            <button 
-              onClick={() => navigate(-1)} 
-              className="p-2 hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer"
+            <button
+              type="button"
+              aria-label={prevNavLabel}
+              onClick={() => navigate(-1)}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer"
             >
               <ChevronLeft size={20} />
             </button>
             <span className="text-sm font-bold text-foreground capitalize">{rangeLabel}</span>
-            <button 
-              onClick={() => navigate(1)} 
-              className="p-2 hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer"
+            <button
+              type="button"
+              aria-label={nextNavLabel}
+              onClick={() => navigate(1)}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer"
             >
               <ChevronRight size={20} />
             </button>
@@ -289,14 +352,15 @@ export function BookingsPage() {
 
       {/* 3. Main Desktop Custom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
-        
-        {/* Sidebar / Floating Elements (Desktop: Right or Left? Let's go Left for controls) */}
+
+        {/* Sidebar (Desktop) */}
         <div className="hidden lg:flex lg:col-span-3 flex-col gap-6 sticky top-[104px]">
-          
-          {/* Search & Filter - Floating Mica */}
+
           <div className="widget-card p-6 flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-1">Пошук клієнта</label>
+              <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-1">
+                Пошук клієнта
+              </p>
               <div className="relative group">
                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
                 <input
@@ -304,34 +368,36 @@ export function BookingsPage() {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Ім'я або телефон..."
+                  aria-label="Пошук клієнта за ім'ям або телефоном"
                   className="w-full pl-11 pr-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-2 relative">
-              <label className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-1">Статус запису</label>
-              
+              <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-1">
+                Статус запису
+              </p>
               <DropdownMenu
                 align="left"
                 triggerClassName="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-bold cursor-pointer flex justify-between items-center"
                 trigger={
                   <>
                     <span>
-                      {statusFilter === 'all' ? 'Усі статуси' : 
-                       statusFilter === 'pending' ? 'Очікують' : 
-                       statusFilter === 'confirmed' ? 'Підтверджені' : 
-                       statusFilter === 'completed' ? 'Завершені' : 'Скасовані'}
+                      {statusFilter === 'all'       ? 'Усі статуси'   :
+                       statusFilter === 'pending'   ? 'Очікують'      :
+                       statusFilter === 'confirmed' ? 'Підтверджені'  :
+                       statusFilter === 'completed' ? 'Завершені'     : 'Скасовані'}
                     </span>
                     <ChevronRight size={16} className="rotate-90 text-muted-foreground/40" />
                   </>
                 }
                 items={[
-                  { label: 'Усі статуси', icon: <div className="w-4" />, onClick: () => setStatusFilter('all') },
-                  { label: 'Очікують', icon: <div className="size-2 rounded-full bg-warning" />, onClick: () => setStatusFilter('pending') },
-                  { label: 'Підтверджені', icon: <div className="size-2 rounded-full bg-success" />, onClick: () => setStatusFilter('confirmed') },
-                  { label: 'Завершені', icon: <div className="size-2 rounded-full bg-primary" />, onClick: () => setStatusFilter('completed') },
-                  { label: 'Скасовані', icon: <div className="size-2 rounded-full bg-error" />, onClick: () => setStatusFilter('cancelled') },
+                  { label: 'Усі статуси',  icon: <div className="w-4" />,                               onClick: () => setUrl({ status: null }) },
+                  { label: 'Очікують',     icon: <div className="size-2 rounded-full bg-warning" />,    onClick: () => setUrl({ status: 'pending' }) },
+                  { label: 'Підтверджені', icon: <div className="size-2 rounded-full bg-success" />,    onClick: () => setUrl({ status: 'confirmed' }) },
+                  { label: 'Завершені',    icon: <div className="size-2 rounded-full bg-primary" />,    onClick: () => setUrl({ status: 'completed' }) },
+                  { label: 'Скасовані',   icon: <div className="size-2 rounded-full bg-error" />,      onClick: () => setUrl({ status: 'cancelled' }) },
                 ]}
               />
             </div>
@@ -340,57 +406,87 @@ export function BookingsPage() {
           <SharePageCard />
         </div>
 
-        {/* Central Dominant Block */}
+        {/* Central Block */}
         <div className="lg:col-span-9 flex flex-col gap-6">
-          {/* Main Command Bar (Integrated into Central Block) */}
+
+          {/* Command Bar (Desktop) */}
           <div className="hidden lg:flex widget-card p-4 lg:p-6 flex-col lg:flex-row items-center justify-between gap-4">
-            
+
             {/* View Switcher */}
-            <div className="flex p-1.5 rounded-[20px] bg-secondary/30 border border-border backdrop-blur-sm w-full lg:w-auto">
-              {[
-                { id: 'list', icon: <LayoutList size={16} />, label: 'Список' },
-                { id: 'timeline', icon: <Clock size={16} />, label: 'Таймлайн' },
-                { id: 'focus', icon: <Zap size={16} />, label: 'Фокус' },
-              ].map(m => (
+            <div className="relative flex p-1.5 rounded-[20px] bg-secondary/30 border border-border backdrop-blur-sm w-full lg:w-auto">
+              {(
+                [
+                  { id: 'list'     as const, icon: <LayoutList size={16} />, label: 'Список' },
+                  { id: 'timeline' as const, icon: <Clock size={16} />,      label: 'Таймлайн' },
+                  { id: 'focus'    as const, icon: <Zap size={16} />,        label: 'Фокус' },
+                ] as const
+              ).map(m => (
                 <button
                   key={m.id}
-                  onClick={() => setView(m.id as ViewMode)}
-                  className={`flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer ${
-                    view === m.id ? 'bg-secondary shadow-md text-primary scale-105' : 'text-muted-foreground/60 hover:text-muted-foreground'
-                  }`}
+                  type="button"
+                  aria-pressed={view === m.id}
+                  onClick={() => setUrl({ view: m.id })}
+                  className="relative flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold active:scale-[0.88] cursor-pointer z-10"
                 >
-                  {m.icon}
-                  <span>{m.label}</span>
+                  <span className={`relative z-10 flex items-center gap-2 transition-colors ${view === m.id ? 'text-primary' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                    {m.icon}
+                    <span>{m.label}</span>
+                  </span>
+                  {view === m.id && (
+                    <motion.div
+                      layoutId="desktop-view-indicator"
+                      className="absolute inset-0 rounded-2xl bg-secondary shadow-md"
+                      transition={SPRING}
+                    />
+                  )}
                 </button>
               ))}
             </div>
 
             {/* Date Navigation & Range Switcher */}
             <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-              <div className="flex bg-secondary/30 p-1.5 rounded-[20px] border border-border">
-                {['day', 'week', 'month'].map(r => (
+
+              {/* Time Range Switcher (desktop) */}
+              <div className="relative flex bg-secondary/30 p-1.5 rounded-[20px] border border-border">
+                {(['day', 'week', 'month'] as const).map(r => (
                   <button
                     key={r}
-                    onClick={() => setTimeRange(r as TimeRange)}
-                    className={`px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.88] cursor-pointer ${
-                      timeRange === r ? 'bg-foreground text-background shadow-lg' : 'text-muted-foreground/40 hover:text-muted-foreground'
-                    }`}
+                    type="button"
+                    aria-pressed={timeRange === r}
+                    onClick={() => setUrl({ range: r })}
+                    className="relative px-4 min-h-[44px] flex items-center justify-center rounded-2xl text-[10px] font-bold uppercase tracking-widest active:scale-[0.88] cursor-pointer z-10"
                   >
-                    {r === 'day' ? 'День' : r === 'week' ? 'Тиж' : 'Міс'}
+                    <span className={`relative z-10 transition-colors ${timeRange === r ? 'text-background' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}>
+                      {trLabelsMobile[r]}
+                    </span>
+                    {timeRange === r && (
+                      <motion.div
+                        layoutId="desktop-tr-indicator"
+                        className="absolute inset-0 rounded-2xl bg-foreground shadow-lg"
+                        transition={SPRING}
+                      />
+                    )}
                   </button>
                 ))}
               </div>
 
+              {/* Date Navigator (desktop) */}
               <div className="flex items-center gap-4 px-4 py-2.5 rounded-[20px] bg-secondary/60 border border-border shadow-sm">
-                <button 
-                  onClick={() => navigate(-1)} 
+                <button
+                  type="button"
+                  aria-label={prevNavLabel}
+                  onClick={() => navigate(-1)}
                   className="p-1.5 rounded-xl hover:bg-secondary hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
                 >
                   <ChevronLeft size={20} />
                 </button>
-                <span className="text-sm font-bold text-foreground capitalize min-w-[120px] text-center">{rangeLabel}</span>
-                <button 
-                  onClick={() => navigate(1)} 
+                <span className="text-sm font-bold text-foreground capitalize min-w-[120px] text-center">
+                  {rangeLabel}
+                </span>
+                <button
+                  type="button"
+                  aria-label={nextNavLabel}
+                  onClick={() => navigate(1)}
                   className="p-1.5 rounded-xl hover:bg-secondary hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
                 >
                   <ChevronRight size={20} />
@@ -409,7 +505,7 @@ export function BookingsPage() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="flex items-center justify-center py-40"
-                  transition={{ duration: 0.2 }}
+                  transition={SPRING}
                 >
                   <div className="size-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
                 </motion.div>
@@ -418,7 +514,9 @@ export function BookingsPage() {
                   key="empty"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
                   className="flex flex-col items-center gap-6 py-20"
+                  transition={SPRING}
                 >
                   <div className="size-24 rounded-full bg-primary/5 flex items-center justify-center">
                     <CalendarDays size={40} className="text-primary/20" />
@@ -431,10 +529,10 @@ export function BookingsPage() {
               ) : (
                 <motion.div
                   key={view}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={SPRING}
                 >
                   {view === 'list' && (
                     <div className="flex flex-col gap-10">
@@ -467,21 +565,9 @@ export function BookingsPage() {
                         <VerticalTimeline
                           bookings={bookings}
                           date={anchor.toISOString().split('T')[0]}
-                          workStart={(() => {
-                            const wh = masterProfile?.working_hours as unknown as Record<string, { is_working: boolean; start_time: string; end_time: string }> | null;
-                            const key = DAY_KEYS[anchor.getDay()];
-                            return wh?.[key]?.is_working ? wh[key].start_time : '09:00';
-                          })()}
-                          workEnd={(() => {
-                            const wh = masterProfile?.working_hours as unknown as Record<string, { is_working: boolean; start_time: string; end_time: string }> | null;
-                            const key = DAY_KEYS[anchor.getDay()];
-                            return wh?.[key]?.is_working ? wh[key].end_time : '18:00';
-                          })()}
-                          isWorkingDay={(() => {
-                            const wh = masterProfile?.working_hours as unknown as Record<string, { is_working: boolean; start_time: string; end_time: string }> | null;
-                            const key = DAY_KEYS[anchor.getDay()];
-                            return wh?.[key]?.is_working ?? true;
-                          })()}
+                          workStart={dayWorkHours.workStart}
+                          workEnd={dayWorkHours.workEnd}
+                          isWorkingDay={dayWorkHours.isWorkingDay}
                           bufferMinutes={masterProfile?.working_hours?.buffer_time_minutes ?? 0}
                           breaks={masterProfile?.working_hours?.breaks ?? []}
                           onOpportunityClick={(time) => { setOpportunityTime(time); setOpportunityOpen(true); }}
@@ -490,14 +576,14 @@ export function BookingsPage() {
                         <PeriodAnalyticsView
                           bookings={bookings}
                           days={daysInRange}
-                          onDayClick={(date) => { setAnchor(date); setTimeRange('day'); }}
+                          onDayClick={(date) => setUrl({ date: date.toISOString().split('T')[0], range: 'day' })}
                         />
                       ) : (
                         <MonthlyAnalyticsView
                           bookings={bookings}
                           month={anchor}
-                          onDayClick={(date) => { setAnchor(date); setTimeRange('day'); }}
-                          onWeekClick={(date) => { setAnchor(date); setTimeRange('week'); }}
+                          onDayClick={(date) => setUrl({ date: date.toISOString().split('T')[0], range: 'day' })}
+                          onWeekClick={(date) => setUrl({ date: date.toISOString().split('T')[0], range: 'week' })}
                         />
                       )}
                     </div>
@@ -505,7 +591,7 @@ export function BookingsPage() {
 
                   {view === 'focus' && (
                     <div className="max-w-2xl mx-auto">
-                       <SmartQueue bookings={filteredBookings} />
+                      <SmartQueue bookings={filteredBookings} />
                     </div>
                   )}
                 </motion.div>
@@ -516,11 +602,7 @@ export function BookingsPage() {
 
       </div>
 
-      {/* 4. Overlays & Toolbars */}
-      
-      {/* Manual Booking - Now wrapped in MicaModal on Desktop? 
-          Actually the component itself handles the rendering. 
-          Let's see if we need to wrap it here or inside ManualBookingForm. */}
+      {/* 4. Overlays */}
       <ManualBookingForm
         isOpen={formOpen}
         onClose={() => {
@@ -538,7 +620,7 @@ export function BookingsPage() {
         initialClientPhone={preselectedClientPhone}
       />
 
-      <OpportunityMenu 
+      <OpportunityMenu
         isOpen={opportunityOpen}
         onClose={() => setOpportunityOpen(false)}
         time={opportunityTime}

@@ -6,11 +6,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { Search, Star, MapPin, Sparkles, ChevronDown, SlidersHorizontal, X, Scissors, Eye, Sparkle, Smile } from 'lucide-react';
 import { serviceCategories } from '@/lib/constants/categories';
+import { pluralUk } from '@/lib/utils/pluralUk';
+
+const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
 
 function getCategoryIcon(id: string, size = 12) {
   switch (id) {
     case 'nails':
-      return <Sparkles size={size} className="text-primary animate-pulse" />;
+      return <Sparkles size={size} className="text-primary" />;
     case 'hair':
       return <Scissors size={size} className="text-primary" />;
     case 'brows':
@@ -68,7 +71,7 @@ export function ExplorePage({ masters, cities }: Props) {
 
     if (activeCategory) {
       const cat = serviceCategories.find(c => c.id === activeCategory);
-      result = result.filter(m => 
+      result = result.filter(m =>
         m.categories.includes(activeCategory) || (cat && m.categories.includes(cat.label))
       );
     }
@@ -84,14 +87,12 @@ export function ExplorePage({ masters, cities }: Props) {
       );
     }
 
-    // Sort
     const sorted = [...result];
     if (sort === 'rating') {
       sorted.sort((a, b) => b.rating - a.rating || b.ratingCount - a.ratingCount);
     } else if (sort === 'newest') {
       sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
-    // 'popular' — default server order (rating_count desc), PRO first among equals
     if (sort === 'popular') {
       sorted.sort((a, b) => {
         if (a.isPro !== b.isPro) return a.isPro ? -1 : 1;
@@ -115,14 +116,14 @@ export function ExplorePage({ masters, cities }: Props) {
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 280, damping: 24 }}
+          transition={SPRING}
           className="mb-6 text-center"
         >
           <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border px-4 py-1.5 rounded-full mb-3">
             <Sparkles size={13} className="text-primary" />
             <span className="text-xs font-semibold text-muted-foreground">Знайди свого майстра</span>
           </div>
-          <h1 className="heading-serif text-3xl text-foreground leading-tight">Красота поруч</h1>
+          <h1 className="heading-serif text-3xl text-foreground leading-tight">Краса поруч</h1>
           <p className="text-sm text-muted-foreground mt-1">{masters.length} майстрів у Bookit</p>
         </motion.div>
 
@@ -130,7 +131,7 @@ export function ExplorePage({ masters, cities }: Props) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.06, type: 'spring', stiffness: 280, damping: 24 }}
+          transition={{ ...SPRING, delay: 0.06 }}
           className="relative mb-3"
         >
           <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
@@ -142,7 +143,12 @@ export function ExplorePage({ masters, cities }: Props) {
             className="w-full pl-10 pr-10 py-3 rounded-md bg-secondary/70 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:bg-secondary focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground">
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              aria-label="Очистити пошук"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground/60 hover:text-muted-foreground"
+            >
               <X size={14} />
             </button>
           )}
@@ -152,13 +158,15 @@ export function ExplorePage({ masters, cities }: Props) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.09, type: 'spring', stiffness: 280, damping: 24 }}
+          transition={{ ...SPRING, delay: 0.09 }}
           className="flex gap-2 mb-4"
         >
           {/* Filters toggle */}
           <button
+            type="button"
+            aria-pressed={showFilters}
             onClick={() => setShowFilters(v => !v)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex-shrink-0 active:scale-[0.95] cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex-shrink-0 active:scale-[0.95] ${
               activeFiltersCount > 0 || showFilters
                 ? 'bg-primary text-primary-foreground shadow-lg shadow-accent/20'
                 : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
@@ -176,8 +184,10 @@ export function ExplorePage({ masters, cities }: Props) {
           {/* Category chips */}
           <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide flex-1">
             <button
+              type="button"
+              aria-pressed={!activeCategory}
               onClick={() => setActiveCategory(null)}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-[0.95] cursor-pointer ${
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-[0.95] ${
                 !activeCategory
                   ? 'bg-primary text-primary-foreground shadow-lg shadow-accent/20'
                   : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
@@ -188,8 +198,10 @@ export function ExplorePage({ masters, cities }: Props) {
             {serviceCategories.map(cat => (
               <button
                 key={cat.id}
+                type="button"
+                aria-pressed={activeCategory === cat.id}
                 onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-[0.95] cursor-pointer ${
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-[0.95] ${
                   activeCategory === cat.id
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-accent/20'
                     : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
@@ -220,8 +232,11 @@ export function ExplorePage({ masters, cities }: Props) {
                   <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">Місто</p>
                   <div className="relative">
                     <button
+                      type="button"
+                      aria-expanded={showCityDropdown}
+                      aria-haspopup="listbox"
                       onClick={() => setShowCityDropdown(v => !v)}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-md border border-border bg-secondary/70 text-sm text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-md border border-border bg-secondary/70 text-sm text-foreground hover:bg-secondary transition-colors"
                     >
                       <span className={activeCity ? 'text-foreground' : 'text-muted-foreground/60'}>
                         {activeCity ?? 'Будь-яке місто'}
@@ -231,6 +246,7 @@ export function ExplorePage({ masters, cities }: Props) {
                     <AnimatePresence>
                       {showCityDropdown && (
                         <motion.div
+                          role="listbox"
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
@@ -238,16 +254,22 @@ export function ExplorePage({ masters, cities }: Props) {
                           className="absolute top-full left-0 right-0 mt-1 bento-card rounded-md p-1 z-20 max-h-48 overflow-y-auto"
                         >
                           <button
+                            type="button"
+                            role="option"
+                            aria-selected={!activeCity}
                             onClick={() => { setActiveCity(null); setShowCityDropdown(false); }}
-                            className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all active:scale-[0.95] cursor-pointer ${!activeCity ? 'bg-primary/12 text-primary/90 font-semibold' : 'text-muted-foreground hover:bg-secondary/60'}`}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all active:scale-[0.95] ${!activeCity ? 'bg-primary/12 text-primary/90 font-semibold' : 'text-muted-foreground hover:bg-secondary/60'}`}
                           >
                             Будь-яке місто
                           </button>
                           {cities.map(city => (
                             <button
                               key={city}
+                              type="button"
+                              role="option"
+                              aria-selected={activeCity === city}
                               onClick={() => { setActiveCity(city); setShowCityDropdown(false); }}
-                              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all active:scale-[0.95] cursor-pointer ${activeCity === city ? 'bg-primary/12 text-primary/90 font-semibold' : 'text-muted-foreground hover:bg-secondary/60'}`}
+                              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all active:scale-[0.95] ${activeCity === city ? 'bg-primary/12 text-primary/90 font-semibold' : 'text-muted-foreground hover:bg-secondary/60'}`}
                             >
                               {city}
                             </button>
@@ -265,8 +287,10 @@ export function ExplorePage({ masters, cities }: Props) {
                     {SORT_OPTIONS.map(opt => (
                       <button
                         key={opt.value}
+                        type="button"
+                        aria-pressed={sort === opt.value}
                         onClick={() => setSort(opt.value)}
-                        className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all active:scale-[0.95] cursor-pointer ${
+                        className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all active:scale-[0.95] ${
                           sort === opt.value
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary'
@@ -281,6 +305,7 @@ export function ExplorePage({ masters, cities }: Props) {
                 {/* Reset */}
                 {activeFiltersCount > 0 && (
                   <button
+                    type="button"
                     onClick={() => { setActiveCity(null); setActiveCategory(null); }}
                     className="text-xs text-destructive font-medium hover:underline text-center"
                   >
@@ -329,7 +354,7 @@ export function ExplorePage({ masters, cities }: Props) {
 }
 
 function MasterCard({ master, index }: { master: Master; index: number }) {
-  const masterCategories = serviceCategories.filter(c => 
+  const masterCategories = serviceCategories.filter(c =>
     master.categories.includes(c.id) || master.categories.includes(c.label)
   );
 
@@ -337,20 +362,20 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.035, 0.3), type: 'spring', stiffness: 280, damping: 24 }}
+      transition={{ delay: Math.min(index * 0.035, 0.3), ...SPRING }}
     >
       <Link href={`/${master.slug}`} className="block">
-        <div className="bento-card p-4 hover:shadow-lg transition-all active:scale-[0.95] cursor-pointer">
+        <div className="bento-card p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.95]">
           <div className="flex items-start gap-3.5">
-            {/* Avatar */}
-            <div
-              className="size-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 relative bg-accent/15 overflow-hidden"
-            >
-              {master.avatarUrl ? (
-                <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="56px" />
-              ) : master.avatarEmoji}
+            {/* Avatar — PRO badge outside overflow-hidden to prevent clipping */}
+            <div className="size-14 flex-shrink-0 relative">
+              <div className="size-full rounded-xl flex items-center justify-center text-2xl bg-accent/15 overflow-hidden">
+                {master.avatarUrl ? (
+                  <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="56px" />
+                ) : master.avatarEmoji}
+              </div>
               {master.isPro && (
-                <span className="absolute -top-1 -right-1 text-[8px] font-bold text-white bg-warning px-1 py-0.5 rounded-full leading-none">
+                <span className="absolute -top-1 -right-1 text-[8px] font-bold text-white bg-warning px-1 py-0.5 rounded-full leading-none z-10">
                   PRO
                 </span>
               )}
@@ -379,7 +404,9 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
                 {master.serviceCount > 0 && (
                   <div className="flex items-center gap-1">
                     <Scissors size={10} className="text-muted-foreground/60" />
-                    <span className="text-[11px] text-muted-foreground/60">{master.serviceCount} послуг</span>
+                    <span className="text-[11px] text-muted-foreground/60">
+                      {master.serviceCount} {pluralUk(master.serviceCount, 'послуга', 'послуги', 'послуг')}
+                    </span>
                   </div>
                 )}
               </div>

@@ -1,17 +1,16 @@
 {
   "edit_counts": {
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\[slug]\\data.ts": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\wizard\\types.ts": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\[slug]\\page.tsx": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\wizard\\ServiceSelector.tsx": 2,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\wizard\\DateTimePicker.tsx": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\wizard\\ClientDetails.tsx": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\wizard\\ProductCart.tsx": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\bookings\\ManualBookingForm.tsx": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\public\\PublicMasterPage.tsx": 2,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\MAPS\\SYSTEM_MAP.md": 1,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\TASK.md": 0
+    "C:\\Users\\Vitossik\\.claude\\plans\\smooth-beaming-meteor.md": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\public\\ShopPage.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\public\\portfolio\\PortfolioBookingButton.tsx": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\[slug]\\portfolio\\[id]\\page.tsx": 1,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\TASK.md": 1,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\RELEASE\\CHANGELOG.md": 1,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\RELEASE\\MAPS\\PAGE_RELEASE_ROADMAP.md": 1
   },
-  "consecutive_reads": 0,
-  "read_files": []
+  "consecutive_reads": 2,
+  "read_files": [
+    "STATUS.md",
+    "CHANGELOG.md"
+  ]
 }

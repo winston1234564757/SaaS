@@ -61,7 +61,7 @@
 | 1 | `/` Landing | 🟢 **Sonnet 4.6 high** | Емодзі-заміна, animation polish, aria-label, простий калькулятор |
 | 2 | Auth (`/login`, `/register`, `/callback`) | 🔴 **Opus 4.7 max** | Security-critical: SMS OTP + virtual email + rate-limit + Supabase auth |
 | 3 | Onboarding (`/onboarding`) | 🔴 **Opus 4.7 max** | 9-step state machine + draft persistence + TMA link + profit calc |
-| 4 | Dashboard Home (`/dashboard`) | 🔴 **Opus 4.7 max** | 10+ Bento віджетів × 3 теми + тур + миттєвий перерахунок |
+| 4 | Dashboard Home (`/dashboard`) | 🟢 **Sonnet 4.6** *(фактично використано)* | 10+ Bento віджетів × 3 теми + тур + миттєвий перерахунок |
 | 5 | Bookings (`/dashboard/bookings`) | 🔴 **Opus 4.7 max** | Day/Week/Month + URL-state + reschedule/cancel cascade notifications |
 | 6 | CRM Clients (`/dashboard/clients`) | 🟡 **Mixed** | UI поліш — Sonnet; сегментаційна логіка (RPC `get_master_clients`) — Opus |
 | 7 | Services & Products | 🟢 **Sonnet 4.6 high** | Стандартний CRUD, ImageUploader, RestockDrawer; atomic RPC уже є |

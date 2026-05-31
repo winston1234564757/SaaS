@@ -11,8 +11,6 @@ import {
   Link2,
   Eye,
   EyeOff,
-  Layers3,
-  BarChart3,
   Check,
   ImagePlus,
   Loader2,
@@ -57,7 +55,7 @@ export function ProductEditor({ id }: Props) {
   const masterId = masterProfile?.id ?? '';
   const { services } = useServices();
   const activeServices = services.filter(s => s.active);
-  const { products, isLoading } = useProductsForEditor();
+  const { products, isLoading } = useProducts();
   const product = id ? products.find(p => p.id === id) ?? null : null;
   const { links, invalidate: invalidateLinks } = useProductLinks(id ?? null);
 
@@ -214,6 +212,7 @@ export function ProductEditor({ id }: Props) {
       <div className="flex items-center justify-between mt-4 py-2">
         <div className="flex items-center gap-3 min-w-0">
           <button
+            type="button"
             onClick={() => router.back()}
             aria-label="Назад"
             className="size-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
@@ -233,6 +232,7 @@ export function ProductEditor({ id }: Props) {
         <div className="flex items-center gap-2">
           {id && (
             <button
+              type="button"
               onClick={() => setShowDelete(v => !v)}
               aria-label="Видалити товар"
               className="hidden md:flex items-center justify-center size-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
@@ -241,6 +241,7 @@ export function ProductEditor({ id }: Props) {
             </button>
           )}
           <button
+            type="button"
             onClick={handleSave}
             disabled={isSaving || uploading}
             className="flex items-center gap-2 px-6 h-11 rounded-lg bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
@@ -335,7 +336,9 @@ export function ProductEditor({ id }: Props) {
                 <div key={url} className="relative size-20 rounded-xl overflow-hidden bg-secondary border border-border shrink-0">
                   <Image src={url} alt="" fill className="object-cover" />
                   <button
+                    type="button"
                     onClick={() => setPhotos(prev => prev.filter(p => p !== url))}
+                    aria-label="Видалити фото"
                     className="absolute top-1 right-1 size-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer active:scale-95"
                   >
                     <Trash2 size={10} />
@@ -344,6 +347,7 @@ export function ProductEditor({ id }: Props) {
               ))}
               {photos.length < 5 && (
                 <button
+                  type="button"
                   onClick={() => fileRef.current?.click()}
                   disabled={uploading}
                   className="size-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-all"
@@ -366,7 +370,7 @@ export function ProductEditor({ id }: Props) {
           {/* Strategy & Prices Bento Box */}
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <h3 className="text-[13px] font-semibold text-foreground">Ціна та стратегія</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Ціна (₴)</label>
@@ -406,6 +410,7 @@ export function ProductEditor({ id }: Props) {
               <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">Наявність на складі</label>
               <button
                 type="button"
+                aria-pressed={showStockLimit}
                 onClick={() => setShowStockLimit(v => !v)}
                 className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
                   showStockLimit ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'
@@ -438,6 +443,7 @@ export function ProductEditor({ id }: Props) {
               <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">Рекомендації клієнтам</label>
               <button
                 type="button"
+                aria-pressed={recommendAlways}
                 onClick={() => setRecommendAlways(v => !v)}
                 className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
                   recommendAlways ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'
@@ -487,25 +493,8 @@ export function ProductEditor({ id }: Props) {
                 <div className="h-px bg-border" />
 
                 <div className="flex flex-col gap-4">
-                  <div className="bg-sage/5 border border-sage/20 p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="size-8 rounded-lg bg-sage/20 flex items-center justify-center text-sage shrink-0">
-                        <BarChart3 size={16} />
-                      </div>
-                      <h4 className="font-bold text-xs text-foreground">Аналітика продажів</h4>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-secondary/40 p-2.5 rounded-lg border border-border">
-                        <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground/60 mb-0.5">Продано</p>
-                        <p className="text-base font-display font-bold text-foreground leading-tight">24</p>
-                        <p className="text-xs text-success font-bold mt-0.5 leading-none">+12%</p>
-                      </div>
-                      <div className="bg-secondary/40 p-2.5 rounded-lg border border-border">
-                        <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground/60 mb-0.5">Виручка</p>
-                        <p className="text-base font-display font-bold text-foreground leading-tight">12.4к ₴</p>
-                        <p className="text-xs text-success font-bold mt-0.5 leading-none">+8%</p>
-                      </div>
-                    </div>
+                  <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
+                    <p className="text-xs font-semibold text-muted-foreground/60">Статистика з&apos;явиться після перших продажів</p>
                   </div>
 
                   <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">
@@ -544,10 +533,18 @@ export function ProductEditor({ id }: Props) {
             <h3 className="heading-serif text-xl text-foreground mb-2">Видалити товар?</h3>
             <p className="text-sm text-muted-foreground/70 mb-6">Товар сховається з dashboard і не буде доступний клієнтам.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowDelete(false)} className="flex-1 py-3 rounded-lg bg-secondary text-foreground font-semibold active:scale-[0.95] cursor-pointer transition-all">
+              <button
+                type="button"
+                onClick={() => setShowDelete(false)}
+                className="flex-1 py-3 rounded-lg bg-secondary text-foreground font-semibold active:scale-[0.95] cursor-pointer transition-all"
+              >
                 Скасувати
               </button>
-              <button onClick={handleDelete} className="flex-1 py-3 rounded-lg bg-destructive text-white font-semibold active:scale-[0.95] cursor-pointer transition-all">
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="flex-1 py-3 rounded-lg bg-destructive text-white font-semibold active:scale-[0.95] cursor-pointer transition-all"
+              >
                 Підтвердити
               </button>
             </div>
@@ -557,19 +554,3 @@ export function ProductEditor({ id }: Props) {
     </div>
   );
 }
-
-function StatBox({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return (
-    <div className="bg-secondary/40 p-3 rounded-lg border border-border">
-      <p className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1">{label}</p>
-      <p className="text-xl font-display font-bold text-foreground">{value}</p>
-      <p className="text-[10px] text-success font-bold mt-0.5">{hint}</p>
-    </div>
-  );
-}
-
-function useProductsForEditor() {
-  const { products, isLoading, error, refetch } = useProducts();
-  return { products, isLoading, error, refetch };
-}
-

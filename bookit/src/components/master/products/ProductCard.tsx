@@ -45,7 +45,9 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
       {/* Photo / placeholder */}
       <div className="relative size-16 rounded-xl overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
         <button
+          type="button"
           {...dragHandleProps}
+          aria-label="Перемістити товар"
           className="absolute top-0.5 left-0.5 size-5 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
         >
           <GripVertical size={10} className="text-white" />
@@ -64,8 +66,10 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
 
           {/* Active toggle */}
           <button
+            type="button"
+            aria-pressed={p.is_active}
             onClick={onToggle}
-            className={`shrink-0 w-9 h-5 rounded-full transition-colors ${p.is_active ? 'bg-primary' : 'bg-muted-foreground/30'} active:scale-95 transition-all`}
+            className={`shrink-0 w-9 h-5 rounded-full transition-colors ${p.is_active ? 'bg-primary' : 'bg-muted-foreground/30'} active:scale-95`}
             aria-label={p.is_active ? 'Деактивувати' : 'Активувати'}
           >
             <span
@@ -104,6 +108,7 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
 function ActionBtn({ onClick, label, children }: { onClick: () => void; label: string; children: React.ReactNode }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-label={label}
       className="size-8 rounded-xl bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"

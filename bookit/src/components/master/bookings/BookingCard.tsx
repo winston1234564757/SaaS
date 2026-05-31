@@ -131,6 +131,7 @@ export function BookingCard({
 
           {/* Main clickable row */}
           <button
+            type="button"
             onClick={openModal}
             className="w-full flex-1 flex items-center gap-4 lg:gap-6 px-4 py-4 lg:px-8 lg:py-6 text-left hover:bg-secondary/40 transition-colors rounded-2xl active:scale-95 transition-all"
           >
@@ -206,6 +207,7 @@ export function BookingCard({
             >
               {booking.status === 'pending' && (
                 <button
+                  type="button"
                   onClick={handleConfirm}
                   disabled={isAnyPending}
                   className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-primary/12 text-primary hover:bg-primary/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
@@ -217,6 +219,7 @@ export function BookingCard({
                 </button>
               )}
               <button
+                type="button"
                 onClick={handleComplete}
                 disabled={isAnyPending}
                 className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-success/12 text-success hover:bg-success/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
@@ -228,6 +231,7 @@ export function BookingCard({
               </button>
               {booking.status === 'confirmed' && (
                 <button
+                  type="button"
                   onClick={handleNoShow}
                   disabled={isAnyPending}
                   className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-muted-foreground/10 text-muted-foreground/60 hover:bg-muted-foreground/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
@@ -239,6 +243,7 @@ export function BookingCard({
                 </button>
               )}
               <button
+                type="button"
                 onClick={handleCancel}
                 disabled={isAnyPending}
                 className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-error/10 text-error hover:bg-error/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"

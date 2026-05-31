@@ -193,7 +193,7 @@ function CategoryCarousel({
             onClick={() => scrollBy('prev')}
             disabled={!canPrev}
             aria-label="Попередня"
-            className="size-7 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
+            className="size-11 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
           >
             <ChevronLeft size={14} />
           </button>
@@ -219,7 +219,7 @@ function CategoryCarousel({
             onClick={() => scrollBy('next')}
             disabled={!canNext}
             aria-label="Наступна"
-            className="size-7 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
+            className="size-11 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
           >
             <ChevronRight size={14} />
           </button>

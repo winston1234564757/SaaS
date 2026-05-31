@@ -8,7 +8,6 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  BarChart3,
   Check,
   Save,
   QrCode,
@@ -127,6 +126,7 @@ export function ServiceEditor({ id }: Props) {
       <div className="flex items-center justify-between mt-4 py-2">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => router.back()}
             aria-label="Назад"
             className="size-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
@@ -146,6 +146,7 @@ export function ServiceEditor({ id }: Props) {
         <div className="flex items-center gap-2">
           {id && (
             <button
+              type="button"
               onClick={() => setShowDeleteConfirm(true)}
               aria-label="Видалити послугу"
               className="hidden md:flex items-center justify-center size-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
@@ -154,6 +155,7 @@ export function ServiceEditor({ id }: Props) {
             </button>
           )}
           <button
+            type="button"
             onClick={handleSave}
             disabled={isSaving}
             className="flex items-center gap-2 px-6 h-11 rounded-lg bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
@@ -280,7 +282,7 @@ export function ServiceEditor({ id }: Props) {
           {/* Strategy & Prices Bento Box */}
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <h3 className="text-[13px] font-semibold text-foreground">Ціна та тривалість</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">
@@ -354,6 +356,7 @@ export function ServiceEditor({ id }: Props) {
 
               <button
                 type="button"
+                aria-pressed={form.active}
                 onClick={() => setForm(f => ({ ...f, active: !f.active }))}
                 className={cn(
                   'flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer',
@@ -374,6 +377,7 @@ export function ServiceEditor({ id }: Props) {
 
               <button
                 type="button"
+                aria-pressed={form.popular}
                 onClick={() => setForm(f => ({ ...f, popular: !f.popular }))}
                 className={cn(
                   'flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer',
@@ -398,25 +402,8 @@ export function ServiceEditor({ id }: Props) {
                 <div className="h-px bg-border" />
 
                 <div className="flex flex-col gap-4">
-                  <div className="bg-sage/5 border border-sage/20 p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="size-8 rounded-lg bg-sage/20 flex items-center justify-center text-sage shrink-0">
-                        <BarChart3 size={16} />
-                      </div>
-                      <h4 className="font-bold text-xs text-foreground">Статистика послуги</h4>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-secondary/40 p-2.5 rounded-lg border border-border">
-                        <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground/60 mb-0.5">Записи</p>
-                        <p className="text-base font-display font-bold text-foreground leading-tight">24</p>
-                        <p className="text-xs text-success font-bold mt-0.5 leading-none">+12%</p>
-                      </div>
-                      <div className="bg-secondary/40 p-2.5 rounded-lg border border-border">
-                        <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground/60 mb-0.5">Дохід</p>
-                        <p className="text-base font-display font-bold text-foreground leading-tight">12.4к ₴</p>
-                        <p className="text-xs text-success font-bold mt-0.5 leading-none">+8%</p>
-                      </div>
-                    </div>
+                  <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
+                    <p className="text-xs font-semibold text-muted-foreground/60">Статистика з&apos;явиться після перших записів</p>
                   </div>
 
                   <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Trash2, ChevronDown, Sparkles,
@@ -18,6 +18,8 @@ import {
   OPERATORS_FOR_FIELD, SEGMENT_PRESET_COLORS, SEGMENT_PRESET_ICONS,
 } from '@/lib/types/segments';
 import { pluralUk } from '@/lib/utils/pluralUk';
+
+const SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const;
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 export function getSegmentIcon(name: string, size = 14): React.ReactElement {
@@ -227,10 +229,12 @@ function ConditionRow({
             </select>
             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
           </div>
+          {/* Delete — min 44px touch target */}
           <button
             type="button"
             onClick={onRemove}
-            className="size-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
+            aria-label="Видалити умову"
+            className="size-11 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] transition-all shrink-0"
           >
             <Trash2 size={14} />
           </button>
@@ -239,13 +243,13 @@ function ConditionRow({
         {/* Row 2: operator chips + numeric value */}
         {isNumeric && (
           <div className="flex items-center gap-2">
-            {/* Operator chips — horizontal scroll */}
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide flex-1 min-w-0 pb-0.5">
               {operators.map(op => (
                 <button
                   key={op}
                   type="button"
                   onClick={() => onChange({ ...cond, operator: op })}
+                  aria-pressed={cond.operator === op}
                   className={cn(
                     'px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap shrink-0 transition-all',
                     cond.operator === op
@@ -257,7 +261,6 @@ function ConditionRow({
                 </button>
               ))}
             </div>
-            {/* Value */}
             <input
               type="number"
               value={cond.value as number | string}
@@ -276,6 +279,7 @@ function ConditionRow({
                 key={opt.v}
                 type="button"
                 onClick={() => onChange({ ...cond, value: opt.v })}
+                aria-pressed={cond.value === opt.v}
                 className={cn(
                   'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all',
                   cond.value === opt.v
@@ -298,6 +302,7 @@ function ConditionRow({
                 <button
                   key={s.value}
                   type="button"
+                  aria-pressed={selected}
                   onClick={() => {
                     const cur = Array.isArray(cond.value) ? cond.value as string[] : [];
                     onChange({ ...cond, value: selected ? cur.filter(x => x !== s.value) : [...cur, s.value] });
@@ -333,7 +338,7 @@ function ConditionRow({
           <button
             type="button"
             onClick={onToggleJoin}
-            className="px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-widest hover:bg-accent/20 active:scale-[0.88] cursor-pointer transition-all"
+            className="px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-widest hover:bg-accent/20 active:scale-[0.88] transition-all"
           >
             {cond.joinNext === 'OR' ? 'або' : 'і'}
           </button>
@@ -368,19 +373,18 @@ export function SegmentBuilder({
   const [conditions, setConditions] = useState<SegmentCondition[]>(
     initial?.conditions.length ? initial.conditions : [blankCondition()]
   );
-  const [step,    setStep]    = useState<'template' | 'edit'>(initial ? 'edit' : 'template');
+  const [step,      setStep]      = useState<'template' | 'edit'>(initial ? 'edit' : 'template');
   const [showIcons, setShowIcons] = useState(false);
 
-  // Reset when initial changes
-  const [lastId, setLastId] = useState(initial?.id);
-  if (initial?.id !== lastId) {
-    setLastId(initial?.id);
-    setName(initial?.name ?? '');
-    setIcon(initial?.icon ?? 'Star');
-    setColor(initial?.color ?? SEGMENT_PRESET_COLORS[0]);
+  // Reset state when the segment being edited changes
+  useEffect(() => {
+    setName(initial?.name        ?? '');
+    setIcon(initial?.icon        ?? 'Star');
+    setColor(initial?.color      ?? SEGMENT_PRESET_COLORS[0]);
     setConditions(initial?.conditions.length ? initial.conditions : [blankCondition()]);
     setStep(initial ? 'edit' : 'template');
-  }
+    setShowIcons(false);
+  }, [initial?.id]);
 
   const applyTemplate = (t: SegmentTemplate) => {
     setName(t.name);
@@ -432,6 +436,7 @@ export function SegmentBuilder({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
+            transition={SPRING}
             className="flex flex-col gap-5 pb-4"
           >
             <p className="text-xs text-muted-foreground/60 -mt-1">
@@ -442,9 +447,10 @@ export function SegmentBuilder({
               {TEMPLATES.map(t => (
                 <motion.button
                   key={t.name}
+                  type="button"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => applyTemplate(t)}
-                  className="flex flex-col gap-2 p-3.5 rounded-2xl border border-border bg-secondary/60 hover:bg-secondary text-left transition-all active:scale-[0.95] cursor-pointer"
+                  className="flex flex-col gap-2 p-3.5 rounded-2xl border border-border bg-secondary/60 hover:bg-secondary text-left transition-all cursor-pointer"
                 >
                   <div
                     className="size-9 rounded-xl flex items-center justify-center"
@@ -467,8 +473,9 @@ export function SegmentBuilder({
             </div>
 
             <button
+              type="button"
               onClick={() => setStep('edit')}
-              className="w-full py-3.5 rounded-2xl border border-dashed border-accent/30 text-accent text-sm font-bold hover:bg-accent/5 active:scale-[0.95] cursor-pointer transition-all"
+              className="w-full py-3.5 rounded-2xl border border-dashed border-accent/30 text-accent text-sm font-bold hover:bg-accent/5 active:scale-[0.95] transition-all"
             >
               + Створити з нуля
             </button>
@@ -482,6 +489,7 @@ export function SegmentBuilder({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
+            transition={SPRING}
             className="flex flex-col gap-5 pb-4"
           >
             {/* Name + icon preview */}
@@ -489,7 +497,9 @@ export function SegmentBuilder({
               <button
                 type="button"
                 onClick={() => setShowIcons(v => !v)}
-                className="size-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all active:scale-[0.88] cursor-pointer"
+                aria-label="Змінити іконку сегмента"
+                aria-expanded={showIcons}
+                className="size-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all active:scale-[0.88]"
                 style={{ background: `${color}20`, color }}
               >
                 {getSegmentIcon(icon, 20)}
@@ -510,18 +520,23 @@ export function SegmentBuilder({
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
+                  transition={SPRING}
                   className="overflow-hidden"
                 >
                   <div className="flex flex-col gap-3 p-4 rounded-2xl bg-muted/10 border border-muted/20">
                     <div>
                       <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2">Іконка</p>
-                      <div className="grid grid-cols-8 gap-2">
+                      {/* 6-col grid with 44px buttons for touch compliance */}
+                      <div className="grid grid-cols-6 gap-2">
                         {SEGMENT_PRESET_ICONS.map(ic => (
                           <button
-                            key={ic} type="button"
+                            key={ic}
+                            type="button"
                             onClick={() => { setIcon(ic); setShowIcons(false); }}
+                            aria-pressed={icon === ic}
+                            aria-label={ic}
                             className={cn(
-                              'size-9 rounded-xl flex items-center justify-center active:scale-[0.88] cursor-pointer transition-all',
+                              'size-11 rounded-xl flex items-center justify-center active:scale-[0.88] transition-all',
                               icon === ic
                                 ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-md'
                                 : 'bg-secondary border border-border text-muted-foreground/50 hover:text-foreground'
@@ -534,12 +549,18 @@ export function SegmentBuilder({
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2">Колір</p>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {SEGMENT_PRESET_COLORS.map(c => (
                           <button
-                            key={c} type="button"
+                            key={c}
+                            type="button"
                             onClick={() => setColor(c)}
-                            className={cn('size-8 rounded-xl active:scale-[0.88] cursor-pointer transition-all', color === c ? 'ring-2 ring-offset-2 ring-foreground/30 scale-110' : 'hover:scale-105')}
+                            aria-pressed={color === c}
+                            aria-label={`Колір ${c}`}
+                            className={cn(
+                              'size-11 rounded-xl active:scale-[0.88] transition-all',
+                              color === c ? 'ring-2 ring-offset-2 ring-foreground/30 scale-110' : 'hover:scale-105'
+                            )}
                             style={{ background: c }}
                           />
                         ))}
@@ -571,7 +592,7 @@ export function SegmentBuilder({
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.15 }}
+                      transition={{ ...SPRING, duration: 0.15 }}
                     >
                       <ConditionRow
                         cond={cond} index={i} total={conditions.length}
@@ -586,7 +607,7 @@ export function SegmentBuilder({
                 <button
                   type="button"
                   onClick={() => setConditions(prev => [...prev, blankCondition()])}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-dashed border-accent/25 text-accent text-xs font-bold hover:bg-accent/5 active:scale-[0.88] cursor-pointer transition-all mt-1"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-dashed border-accent/25 text-accent text-xs font-bold hover:bg-accent/5 active:scale-[0.88] transition-all mt-1"
                 >
                   <Plus size={13} /> Додати умову
                 </button>
@@ -607,7 +628,7 @@ export function SegmentBuilder({
                 <button
                   type="button"
                   onClick={() => setStep('template')}
-                  className="px-4 py-3.5 rounded-2xl bg-muted/20 text-muted-foreground text-sm font-bold hover:bg-muted/30 active:scale-[0.95] cursor-pointer transition-all"
+                  className="px-4 py-3.5 rounded-2xl bg-muted/20 text-muted-foreground text-sm font-bold hover:bg-muted/30 active:scale-[0.95] transition-all"
                 >
                   Шаблони
                 </button>
@@ -616,7 +637,7 @@ export function SegmentBuilder({
                 <button
                   type="button"
                   onClick={() => { onDelete(initial.id); onClose(); }}
-                  className="px-4 py-3.5 rounded-2xl bg-error/5 text-error text-sm font-bold hover:bg-error/10 active:scale-[0.95] cursor-pointer transition-all"
+                  className="px-4 py-3.5 rounded-2xl bg-error/5 text-error text-sm font-bold hover:bg-error/10 active:scale-[0.95] transition-all"
                 >
                   Видалити
                 </button>
@@ -625,7 +646,7 @@ export function SegmentBuilder({
                 type="button"
                 onClick={handleSave}
                 disabled={!isValid}
-                className="flex-1 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold disabled:opacity-40 hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all"
+                className="flex-1 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold disabled:opacity-40 hover:opacity-90 active:scale-[0.95] transition-all"
               >
                 {matchCount > 0
                   ? `Зберегти · ${matchCount} ${pluralUk(matchCount, 'клієнт', 'клієнти', 'клієнтів')}`

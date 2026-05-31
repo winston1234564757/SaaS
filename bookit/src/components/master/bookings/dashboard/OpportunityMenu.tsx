@@ -36,9 +36,11 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
                 <h3 className="text-lg font-black text-foreground">Вільне вікно</h3>
                 <p className="text-xs text-muted-foreground/60">Оберіть дію на {time}</p>
               </div>
-              <button 
+              <button
+                type="button"
+                aria-label="Закрити"
                 onClick={onClose}
-                className="size-10 rounded-full bg-muted/10 flex items-center justify-center text-muted-foreground hover:bg-muted/20 transition-all"
+                className="size-10 rounded-full bg-muted/10 flex items-center justify-center text-muted-foreground hover:bg-muted/20 transition-all active:scale-[0.88]"
               >
                 <X size={20} />
               </button>
@@ -46,6 +48,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
 
             <div className="grid grid-cols-1 gap-3">
               <button
+                type="button"
                 onClick={() => onAction('booking')}
                 className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary border border-border shadow-sm hover:border-primary/20 hover:bg-primary/5 transition-all active:scale-95"
               >
@@ -59,6 +62,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
               </button>
 
               <button
+                type="button"
                 onClick={() => onAction('flash')}
                 className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary border border-border shadow-sm hover:border-warning/20 hover:bg-warning/5 transition-all active:scale-95"
               >
@@ -72,6 +76,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
               </button>
 
               <button
+                type="button"
                 onClick={() => onAction('story')}
                 className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary border border-border shadow-sm hover:border-sage/20 hover:bg-sage/5 transition-all active:scale-95"
               >

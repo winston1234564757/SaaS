@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Plus, Scissors, Loader2, GripVertical } from 'lucide-react';
+import { AlertTriangle, Plus, Scissors, Loader2 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { type Service } from './types';
 import { ServiceCard } from './ServiceCard';
@@ -17,11 +17,10 @@ export function ServicesPage() {
   }, []);
   const router = useRouter();
   const { masterProfile } = useMasterContext();
-  const masterId = masterProfile?.id ?? '';
 
   const _s = useServices();
   const services: Service[] = _s.services;
-  const { isLoading: sLoading, error: sError, addService, editService, deleteService, toggleService, reorderServices } = _s;
+  const { isLoading: sLoading, error: sError, deleteService, toggleService, reorderServices } = _s;
 
   function handleServiceDragEnd(result: DropResult) {
     if (!result.destination || result.source.index === result.destination.index) return;
@@ -50,6 +49,7 @@ export function ServicesPage() {
           </p>
         </div>
         <button
+          type="button"
           onClick={() => router.push('/dashboard/services/new')}
           className="hidden md:flex items-center gap-2 px-5 h-11 rounded-2xl bg-primary text-white font-semibold hover:bg-primary/90 active:scale-95 transition-all shadow-sm"
         >
@@ -130,9 +130,11 @@ export function ServicesPage() {
 
       {/* Mobile FAB */}
       <motion.button
+        type="button"
+        aria-label="Додати послугу"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.3, type: 'spring', stiffness: 400, damping: 22 }}
+        transition={{ delay: 0.3, type: 'spring' as const, stiffness: 400, damping: 22 } as const}
         whileTap={{ scale: 0.94 }}
         id="tour-services-add"
         onClick={() => router.push('/dashboard/services/new')}
@@ -141,8 +143,6 @@ export function ServicesPage() {
       >
         <Plus size={24} />
       </motion.button>
-
-
     </div>
   );
 }

@@ -125,6 +125,7 @@ export function DateTimePicker({
         <div className="flex items-center gap-2 mb-5">
           <button
             type="button"
+            aria-label="Попередній день"
             disabled={scheduleLoading}
             onClick={() => {
               const base = selectedDate ?? days[0];
@@ -192,6 +193,7 @@ export function DateTimePicker({
 
           <button
             type="button"
+            aria-label="Наступний день"
             disabled={scheduleLoading}
             onClick={() => {
               const base = selectedDate ?? days[0];
@@ -359,7 +361,7 @@ export function DateTimePicker({
                     }`}>
                       <motion.div
                         animate={{ x: useDynamicPrice ? 20 : 2 }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        transition={{ type: 'spring' as const, stiffness: 500, damping: 30 }}
                         className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
                       />
                     </div>

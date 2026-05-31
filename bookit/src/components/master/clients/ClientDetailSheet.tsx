@@ -34,6 +34,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
   const [isPending, startTransition] = useTransition();
   const [archiving, setArchiving] = useState(false);
   const [reminding, setReminding] = useState(false);
+  const [archiveConfirmStep, setArchiveConfirmStep] = useState(false);
 
   const { data: bookings = [], isLoading: isLoadingBookings } = useClientBookings(client?.client_phone);
   const { data: isAmbassador = false } = useAmbassadorStatus(client?.client_phone, masterProfile?.id);
@@ -62,6 +63,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
   const [prevClient, setPrevClient] = useState(client);
   if (prevClient !== client) {
     setPrevClient(client);
+    setArchiveConfirmStep(false);
     if (client) {
       setMedicalNotes(client.medical_notes ?? '');
       setHealthNotes(client.health_notes ?? '');
@@ -363,26 +365,47 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
             </p>
           )}
 
-          <button
-            type="button"
-            onClick={async () => {
-              if (!client?.client_id || !confirm('Архiвувати клiєнта? Вiн зникне зi списку активних, але iсторiя записiв залишиться.')) return;
-              setArchiving(true);
-              const { error } = await archiveClient(client.client_id);
-              if (error) {
-                showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
-              } else {
-                showToast({ type: 'success', title: 'Клiєнта архiвовано' });
-                onClose();
-                await queryClient.invalidateQueries({ queryKey: ['clients'] });
-              }
-              setArchiving(false);
-            }}
-            disabled={archiving || !client?.client_id}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-sm font-bold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 active:scale-[0.95] transition-all disabled:opacity-40"
-          >
-            Архiвувати клiєнта
-          </button>
+          {archiveConfirmStep ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!client?.client_id) return;
+                  setArchiving(true);
+                  const { error } = await archiveClient(client.client_id);
+                  if (error) {
+                    showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+                  } else {
+                    showToast({ type: 'success', title: 'Клієнта архівовано' });
+                    onClose();
+                    await queryClient.invalidateQueries({ queryKey: ['clients'] });
+                  }
+                  setArchiving(false);
+                  setArchiveConfirmStep(false);
+                }}
+                disabled={archiving}
+                className="flex-1 py-4 rounded-lg text-sm font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 active:scale-[0.95] transition-all disabled:opacity-40"
+              >
+                {archiving ? 'Архівуємо...' : 'Підтвердити'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setArchiveConfirmStep(false)}
+                className="px-6 py-4 rounded-lg text-sm font-bold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 active:scale-[0.95] transition-all"
+              >
+                Скасувати
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setArchiveConfirmStep(true)}
+              disabled={!client?.client_id}
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-sm font-bold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 active:scale-[0.95] transition-all disabled:opacity-40"
+            >
+              Архівувати клієнта
+            </button>
+          )}
         </div>
 
         {/* Private notes */}

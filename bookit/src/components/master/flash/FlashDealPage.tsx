@@ -584,7 +584,7 @@ const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel }:
                   <p className="text-sm font-semibold truncate">{deal.service_name}</p>
                   <p className="text-[10px] text-muted-foreground">{deal.slot_date} о {deal.slot_time.slice(0, 5)} · {discounted} ₴</p>
                 </div>
-                <button onClick={() => handleCancel(deal.id)} disabled={cancellingId === deal.id} className="p-2 text-muted-foreground/60 hover:text-destructive cursor-pointer">
+                <button type="button" aria-label="Скасувати акцію" onClick={() => handleCancel(deal.id)} disabled={cancellingId === deal.id} className="p-2 text-muted-foreground/60 hover:text-destructive">
                   <X size={14} />
                 </button>
               </div>

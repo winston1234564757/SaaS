@@ -34,7 +34,8 @@ async function fetchClientBookings(phone: string): Promise<RecentBooking[]> {
     .limit(5);
 
   if (!data) return [];
-  return (data as any[]).map(b => ({
+  type RawRow = { id: string; slot_date: string; slot_time: string; status: string; total_price: number; dynamic_pricing_label: string | null; booking_services: { service_name: string }[] | null };
+  return (data as RawRow[]).map(b => ({
     id: b.id,
     date: b.slot_date,
     start_time: (b.slot_time as string)?.slice(0, 5) ?? '',

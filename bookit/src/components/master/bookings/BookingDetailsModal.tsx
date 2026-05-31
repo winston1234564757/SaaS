@@ -234,6 +234,7 @@ function ReschedulePanel({
               const disabled   = off || full;
               return (
                 <button
+                  type="button"
                   key={iso}
                   onClick={() => { if (!disabled) { setSelectedDate(d); setSelectedSlot(null); } }}
                   disabled={disabled}
@@ -247,7 +248,7 @@ function ReschedulePanel({
                       : 'bg-secondary/60 text-muted-foreground hover:bg-secondary'
                   }`}
                 >
-                  <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-muted-foreground/60'}`}>
+                  <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-muted-foreground/60'}`} aria-hidden="true">
                     {UA_DAYS_SHORT[d.getDay()]}
                   </span>
                   <span className="text-sm font-bold leading-none mt-1">{d.getDate()}</span>
@@ -281,11 +282,12 @@ function ReschedulePanel({
                   </div>
                 ) : (
                   <button
+                    type="button"
                     key={item.slot.time}
                     onClick={() => setSelectedSlot(item.slot.time)}
                     className={`relative py-2.5 rounded-xl text-center text-xs font-semibold transition-all ${
                       selectedSlot === item.slot.time
-                        ? 'bg-primary text-white shadow-sm ring-2 ring-[#789A99]/30'
+                        ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
                         : item.slot.isSuggested
                         ? 'bg-primary/10 border border-primary/30 text-foreground'
                         : 'bg-secondary/60 text-muted-foreground hover:bg-secondary'
@@ -312,16 +314,18 @@ function ReschedulePanel({
 
       <div className="flex gap-2 mt-1">
         <button
+          type="button"
           onClick={handleConfirm}
           disabled={isSaving || !selectedDate || !selectedSlot}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 active:scale-[0.95] transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 active:scale-[0.95] transition-all"
         >
           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <CalendarClock size={14} />}
           Зберегти перенесення
         </button>
         <button
+          type="button"
           onClick={onCancel}
-          className="px-4 py-2.5 rounded-xl bg-secondary text-muted-foreground/60 text-sm font-semibold hover:bg-secondary/80 transition-colors active:scale-[0.88] transition-all"
+          className="px-4 py-2.5 rounded-xl bg-secondary text-muted-foreground/60 text-sm font-semibold hover:bg-secondary/80 active:scale-[0.88] transition-all"
         >
           Скасувати
         </button>
@@ -398,7 +402,7 @@ export function BookingDetailsModal() {
   // AUTO-SAVE LOGIC
   useEffect(() => {
     if (!notesDirty) return;
-    
+
     const timer = setTimeout(async () => {
       setIsAutoSaving(true);
       try {
@@ -418,8 +422,8 @@ export function BookingDetailsModal() {
   const ModalComponent = isDesktop ? MicaModal : BottomSheet;
 
   return (
-    <ModalComponent 
-      isOpen={isModalOpen} 
+    <ModalComponent
+      isOpen={isModalOpen}
       onClose={handleClose}
       title="Деталі запису"
     >
@@ -473,7 +477,7 @@ export function BookingDetailsModal() {
               <div className="flex flex-col gap-1">
                 <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Джерело</p>
                 {displayBooking.source === 'manual' ? (
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-text-mute/60">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/60">
                     <PenLine size={12} /> Ручний запис
                   </span>
                 ) : (
@@ -604,6 +608,7 @@ export function BookingDetailsModal() {
                 )}
               </div>
               <textarea
+                aria-label="Нотатки майстра"
                 value={notes}
                 onChange={e => { setNotes(e.target.value); setNotesDirty(true); }}
                 placeholder="Додайте нотатки, видимі лише вам..."
@@ -638,6 +643,7 @@ export function BookingDetailsModal() {
                 <div className="grid grid-cols-2 gap-2.5">
                   {displayBooking.status === 'pending' && (
                     <button
+                      type="button"
                       onClick={() => updateStatus('confirmed')}
                       disabled={isUpdatingStatus}
                       className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary/15 text-sm font-bold transition-all disabled:opacity-50 active:scale-[0.95]"
@@ -647,6 +653,7 @@ export function BookingDetailsModal() {
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={() => updateStatus('completed')}
                     disabled={isUpdatingStatus}
                     className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-success/10 text-success hover:bg-success/15 text-sm font-bold transition-all disabled:opacity-50 active:scale-[0.95]"
@@ -655,6 +662,7 @@ export function BookingDetailsModal() {
                     Завершити
                   </button>
                   <button
+                    type="button"
                     onClick={() => setShowReschedule(true)}
                     className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-warning/10 text-warning hover:bg-warning/15 text-sm font-bold transition-all active:scale-[0.95]"
                   >
@@ -662,6 +670,7 @@ export function BookingDetailsModal() {
                     Перенести
                   </button>
                   <button
+                    type="button"
                     onClick={() => updateStatus('cancelled')}
                     disabled={isUpdatingStatus}
                     className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-destructive/10 text-destructive hover:bg-destructive/15 text-sm font-bold transition-all disabled:opacity-50 active:scale-[0.95]"
@@ -671,6 +680,7 @@ export function BookingDetailsModal() {
                   </button>
                   {displayBooking.status === 'confirmed' && (
                     <button
+                      type="button"
                       onClick={() => updateStatus('no_show')}
                       disabled={isUpdatingStatus}
                       className="col-span-2 flex items-center justify-center gap-2 py-4 rounded-xl bg-secondary/60 border border-border text-muted-foreground/60 hover:text-muted-foreground text-sm font-bold transition-all disabled:opacity-50 active:scale-[0.95]"

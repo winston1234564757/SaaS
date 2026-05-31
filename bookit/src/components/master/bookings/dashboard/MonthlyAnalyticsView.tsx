@@ -132,6 +132,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
 
         <div className="flex p-1 rounded-xl bg-secondary/50 border border-border gap-0.5">
           <button
+            type="button"
             onClick={() => setSubView('calendar')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all',
@@ -144,6 +145,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
             Календар
           </button>
           <button
+            type="button"
             onClick={() => setSubView('weeks')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all',

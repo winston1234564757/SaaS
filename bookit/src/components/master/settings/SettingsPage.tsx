@@ -219,7 +219,8 @@ export default function SettingsPage() {
               <ExpandableBio value={state.bio} onChange={actions.setBio} />
 
               <div className="pt-2 border-t border-border">
-                <button 
+                <button
+                  type="button"
                   onClick={() => {
                      const heroInput = document.querySelector('#hero input[type="file"]');
                      if (heroInput) (heroInput as HTMLElement).click();
@@ -343,75 +344,5 @@ function ExpandableBio({ value, onChange }: { value: string; onChange: (v: strin
         </button>
       )}
     </motion.div>
-  );
-}
-
-function BusynessWidget({ data }: { data: ReturnType<typeof useBusyness>['data'] }) {
-  const weekRate = data?.week.rate ?? 0;
-  const monthRate = data?.month.rate ?? 0;
-  const weekBooked = data?.week.booked ?? 0;
-  const weekTotal = data?.week.total ?? 0;
-  const todayRate = data?.today?.rate ?? null;
-
-  const getColor = (rate: number) => {
-    if (rate < 40) return 'text-emerald-500';
-    if (rate < 70) return 'text-amber-500';
-    return 'text-rose-500';
-  };
-
-  const getBarColor = (rate: number) => {
-    if (rate < 40) return 'bg-emerald-500';
-    if (rate < 70) return 'bg-amber-500';
-    return 'bg-rose-500';
-  };
-
-  return (
-    <div className="widget-card p-6 flex flex-col gap-5 h-full">
-      <div className="flex items-center gap-3">
-        <div className="size-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center"><Zap size={18} /></div>
-        <div>
-          <h3 className="text-sm font-bold text-text-primary">Завантаженість</h3>
-          <p className="text-[10px] text-text-mute">Аналітика робочого часу на 30 днів</p>
-        </div>
-      </div>
-
-      {todayRate !== null && (
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-text-mute uppercase tracking-wider">Сьогодні</span>
-          <span className={`text-lg font-bold ${getColor(todayRate)}`}>{todayRate}%</span>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-text-mute uppercase tracking-wider">Тиждень</span>
-          <span className={`text-2xl font-bold ${getColor(weekRate)}`}>{weekRate}%</span>
-        </div>
-        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${getBarColor(weekRate)}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${weekRate}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          />
-        </div>
-        <p className="text-[10px] text-text-mute">{weekBooked} з {weekTotal} годин заповнено</p>
-      </div>
-
-      <div className="pt-3 border-t border-border space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-text-mute uppercase tracking-wider">Місяць</span>
-          <span className={`text-lg font-bold ${getColor(monthRate)}`}>{monthRate}%</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${getBarColor(monthRate)}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${monthRate}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-          />
-        </div>
-      </div>
-    </div>
   );
 }

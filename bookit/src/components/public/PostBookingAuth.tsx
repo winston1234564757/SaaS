@@ -522,7 +522,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                   onKeyDown={e => handleDigitKeyDown(i, e)}
                   onPaste={i === 0 ? handlePaste : undefined}
                   autoFocus={i === 0}
-                  className="w-10 h-12 text-center text-lg font-bold text-foreground rounded-md border-2 border-border bg-secondary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-11 h-12 text-center text-lg font-bold text-foreground rounded-md border-2 border-border bg-secondary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
               ))}
             </div>

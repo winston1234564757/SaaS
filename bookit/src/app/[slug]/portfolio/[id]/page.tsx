@@ -261,7 +261,7 @@ export default async function PortfolioItemPage(
                     <p className="text-xs font-bold text-foreground">{r.client_name ?? 'Клієнт'}</p>
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: r.rating }).map((_, i) => (
-                        <Star key={i} size={11} fill="#D4935A" className="text-warning" />
+                        <Star key={i} size={11} fill="currentColor" className="text-warning" />
                       ))}
                     </div>
                   </div>

@@ -26,18 +26,19 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
+      transition={{ delay: index * 0.05, type: 'spring' as const, stiffness: 300, damping: 24 } as const}
       className={cn(
-        "bento-card p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer group",
+        "bento-card p-4 transition-all duration-300 group",
         !service.active && "opacity-55"
       )}
-      onClick={() => onEdit(service)}
     >
       <div className="flex items-center gap-3">
-        {/* Thumbnail or Icon */}
+        {/* Thumbnail / Drag handle */}
         <div className="relative size-12 rounded-xl overflow-hidden flex-shrink-0 bg-warning/20">
           <button
+            type="button"
             {...dragHandleProps}
+            aria-label="Перемістити послугу"
             onClick={(e) => e.stopPropagation()}
             className="absolute top-0.5 left-0.5 size-5 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
           >
@@ -52,26 +53,33 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
           )}
         </div>
 
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-foreground">{service.name}</p>
-            {service.popular && (
-              <Tooltip content={<p className="text-xs text-foreground">Відображається як «Популярне» на публічній сторінці</p>} position="top">
-                <Star size={12} className="fill-warning text-warning cursor-default" />
-              </Tooltip>
-            )}
+        {/* Info + Price — clickable area to open editor */}
+        <button
+          type="button"
+          onClick={() => onEdit(service)}
+          aria-label={`Редагувати послугу ${service.name}`}
+          className="flex-1 flex items-center gap-2 min-w-0 text-left hover:opacity-80 transition-opacity"
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-foreground">{service.name}</p>
+              {service.popular && (
+                <Tooltip content={<p className="text-xs text-foreground">Відображається як «Популярне» на публічній сторінці</p>} position="top">
+                  <Star size={12} className="fill-warning text-warning cursor-default" />
+                </Tooltip>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                {service.category}
+              </span>
+              <span className="text-xs text-muted-foreground/60">{formatDuration(service.duration)}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-              {service.category}
-            </span>
-            <span className="text-xs text-muted-foreground/60">{formatDuration(service.duration)}</span>
-          </div>
-        </div>
 
-        {/* Price */}
-        <p className="text-base font-bold text-foreground flex-shrink-0">{formatPrice(service.price)}</p>
+          {/* Price */}
+          <p className="text-base font-bold text-foreground flex-shrink-0">{formatPrice(service.price)}</p>
+        </button>
       </div>
 
       {/* Actions row */}
@@ -79,7 +87,9 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
         <div className="flex items-center gap-1">
           <Tooltip content={<p className="text-xs text-foreground">Редагувати послугу</p>} position="top">
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); onEdit(service); }}
+              aria-label="Редагувати послугу"
               className="size-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
             >
               <Pencil size={14} />
@@ -97,12 +107,14 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
               >
                 <span className="text-xs text-destructive font-medium whitespace-nowrap ml-1">Видалити?</span>
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); onDelete(service.id); }}
                   className="px-2.5 h-7 rounded-lg bg-destructive text-white text-xs font-semibold hover:bg-destructive/90 transition-colors"
                 >
                   Так
                 </button>
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); setConfirmDelete(false); }}
                   className="px-2.5 h-7 rounded-lg bg-secondary/60 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
                 >
@@ -112,7 +124,9 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
             ) : (
               <Tooltip key="btn" content={<p className="text-xs text-foreground">Видалити послугу</p>} position="top">
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
+                  aria-label="Видалити послугу"
                   className="size-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                 >
                   <Trash2 size={14} />
@@ -125,6 +139,9 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
         {/* Toggle */}
         <Tooltip content={<p className="text-xs text-foreground">{service.active ? 'Деактивувати послугу' : 'Активувати послугу'}</p>} position="top">
           <button
+            type="button"
+            aria-pressed={service.active}
+            aria-label={service.active ? 'Деактивувати послугу' : 'Активувати послугу'}
             onClick={(e) => { e.stopPropagation(); onToggle(service.id); }}
             className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
               service.active ? 'bg-primary' : 'bg-secondary/80'
@@ -132,7 +149,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
           >
             <motion.div
               animate={{ x: service.active ? 20 : 2 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
               className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
             />
           </button>

@@ -60,6 +60,7 @@ const SLUGS = {
   authMaster:       'e2e-auth-master',
   referralMaster:   'e2e-referral-master',
   studioAdmin:      'e2e-studioadmin',
+  auditMaster:      'e2e-audit-master',
 } as const;
 
 const FIXTURE_CONTRACT = {
@@ -125,6 +126,8 @@ const ACCOUNTS = {
   clientAuth:       process.env.E2E_CLIENT_AUTH_EMAIL        ?? 'e2e_client_auth@test.com',
   clientReferral:   process.env.E2E_CLIENT_REFERRAL_EMAIL    ?? 'e2e_client_referral@test.com',
   studioAdmin:      process.env.E2E_STUDIO_ADMIN_EMAIL       ?? 'e2e_studioadmin@test.com',
+  masterAudit:      process.env.E2E_MASTER_AUDIT_EMAIL       ?? 'e2e_master_audit@test.com',
+  clientAudit:      process.env.E2E_CLIENT_AUDIT_EMAIL       ?? 'e2e_client_audit@test.com',
 } as const;
 
 // Validate all emails upfront
@@ -733,6 +736,124 @@ async function seedStudioAdmin(masterId: string): Promise<void> {
   console.log(`  [seed] StudioAdmin ✓`);
 }
 
+/**
+ * AuditMaster
+ *
+ * Повний набір даних для глобального impeccable аудиту:
+ * - 3 послуги (манікюр, педикюр, покриття) + 2 товари
+ * - 20 записів (past + future, mixed statuses)
+ * - 5 клієнтів з різними статусами (VIP, sleeping, at risk)
+ * - 1 loyalty program
+ * - Flash deal
+ * - Portfolio item (placeholder — no photos)
+ * - Working hours Mon-Sat 09:00-19:00
+ * mood_theme починається як 'blossom' — switchTheme() змінює в beforeAll
+ */
+async function seedAuditMaster(masterId: string, clientId: string): Promise<void> {
+  console.log('\n[seed] AuditMaster...');
+
+  await upsertScheduleTemplates(masterId);
+
+  // Послуги
+  const [svc1Id, svc2Id, svc3Id] = await Promise.all([
+    ensureService(masterId, 'Манікюр Аудит E2E',    50000, 60),  // 500 UAH
+    ensureService(masterId, 'Педикюр Аудит E2E',    70000, 90),  // 700 UAH
+    ensureService(masterId, 'Гель-покриття E2E',    35000, 45),  // 350 UAH
+  ]);
+
+  // Товари
+  const { error: p1Err } = await admin.from('products').upsert(
+    [
+      {
+        master_id: masterId, name: 'Гель-лак Audit #1', price: 12000, stock: 10,
+        is_active: true, product_type: 'retail', stock_alert_threshold: 2,
+        icon_name: null, description: 'Тестовий товар для аудиту',
+      },
+      {
+        master_id: masterId, name: 'База Audit #2', price: 8000, stock: 5,
+        is_active: true, product_type: 'retail', stock_alert_threshold: 1,
+        icon_name: null, description: 'Тестовий товар 2',
+      },
+    ],
+    { onConflict: 'master_id,name' },
+  );
+  if (p1Err) console.warn(`  [seed] products upsert warn: ${p1Err.message}`);
+
+  // Записи — 10 past completed + 3 future confirmed + 2 cancelled
+  const now = new Date();
+  const inserts: Promise<string>[] = [];
+  const clientNames = ['Олена Мельник', 'Марія Ковальчук', 'Ірина Бондаренко', 'Наталія Шевченко', 'Тетяна Коваленко'];
+
+  for (let i = 0; i < 10; i++) {
+    const date  = skipSunday(addDays(now, -(i * 3 + 1)));
+    const hour  = 9 + (i % 8);
+    inserts.push(insertBooking({
+      masterId, serviceId: svc1Id,
+      serviceName: 'Манікюр Аудит E2E', servicePrice: 50000, serviceDuration: 60,
+      clientId, clientName: clientNames[i % clientNames.length], clientPhone: `+38050${1000000 + i}`,
+      date: fmtDate(date),
+      startTime: `${String(hour).padStart(2,'0')}:00`,
+      endTime:   `${String(hour+1).padStart(2,'0')}:00`,
+      status: 'completed',
+    }));
+  }
+
+  // Future bookings
+  for (let i = 0; i < 3; i++) {
+    const date  = skipSunday(addDays(now, i + 1));
+    inserts.push(insertBooking({
+      masterId, serviceId: svc2Id,
+      serviceName: 'Педикюр Аудит E2E', servicePrice: 70000, serviceDuration: 90,
+      clientId, clientName: 'Клієнт Майбутній E2E', clientPhone: `+38050999000${i}`,
+      date: fmtDate(date), startTime: '10:00', endTime: '11:30',
+      status: 'confirmed',
+    }));
+  }
+
+  // Cancelled bookings
+  for (let i = 0; i < 2; i++) {
+    const date = skipSunday(addDays(now, -(i * 5 + 2)));
+    inserts.push(insertBooking({
+      masterId, serviceId: svc3Id,
+      serviceName: 'Гель-покриття E2E', servicePrice: 35000, serviceDuration: 45,
+      clientId: null, clientName: 'Скасований E2E', clientPhone: `+38050888000${i}`,
+      date: fmtDate(date), startTime: '14:00', endTime: '14:45',
+      status: 'cancelled',
+    }));
+  }
+
+  for (let i = 0; i < inserts.length; i += 5) {
+    await Promise.all(inserts.slice(i, i + 5));
+  }
+  console.log(`  [seed] 15 bookings ✓`);
+
+  // client_master_relations
+  await admin.from('client_master_relations').upsert(
+    {
+      client_id: clientId, master_id: masterId,
+      total_visits: 10, total_spent: 500000,
+      average_check: 50000, last_visit_at: addDays(now, -3).toISOString(),
+      is_vip: true, loyalty_points: 0,
+    },
+    { onConflict: 'client_id,master_id' },
+  );
+
+  // Loyalty program
+  await admin.from('loyalty_programs').upsert(
+    {
+      master_id: masterId, name: 'Аудит: кожен 5-й',
+      target_visits: 5, reward_type: 'percent_discount',
+      reward_value: 10, is_active: true,
+    },
+    { onConflict: 'master_id,name' },
+  );
+
+  // mood_theme = 'blossom' (initial — switchTheme overrides before each spec)
+  await admin.from('master_profiles').update({ mood_theme: 'blossom' }).eq('id', masterId);
+
+  console.log(`  [seed] AuditMaster ✓`);
+}
+
 // ─── Post-seed verification ───────────────────────────────────────────────────
 
 async function verifySeedIntegrity(input: {
@@ -855,6 +976,8 @@ async function main(): Promise<void> {
     clientAuthId,
     clientReferralId,
     studioAdminId,
+    auditMasterId,
+    clientAuditId,
   ] =
     await Promise.all([
       getOrCreateUser(ACCOUNTS.masterTimeTravel, 'E2E TimeTravelMaster'),
@@ -866,6 +989,8 @@ async function main(): Promise<void> {
       getOrCreateUser(ACCOUNTS.clientAuth,        'E2E AuthClient'),
       getOrCreateUser(ACCOUNTS.clientReferral,    'E2E ReferralClient'),
       getOrCreateUser(ACCOUNTS.studioAdmin,       'E2E StudioAdmin'),
+      getOrCreateUser(ACCOUNTS.masterAudit,       'E2E AuditMaster'),
+      getOrCreateUser(ACCOUNTS.clientAudit,       'E2E AuditClient'),
     ]);
 
   // ── Step 2: Upsert profiles ────────────────────────────────────────────────
@@ -880,6 +1005,8 @@ async function main(): Promise<void> {
     upsertProfile(clientAuthId,       ACCOUNTS.clientAuth,       'E2E AuthClient',       'client', '+380993333333'),
     upsertProfile(clientReferralId,   ACCOUNTS.clientReferral,   'E2E ReferralClient',   'client', '+380994444444'),
     upsertProfile(studioAdminId, ACCOUNTS.studioAdmin,      'E2E StudioAdmin',      'master', '+380500000000'),
+    upsertProfile(auditMasterId, ACCOUNTS.masterAudit,      'E2E AuditMaster',      'master', '+380505555555'),
+    upsertProfile(clientAuditId, ACCOUNTS.clientAudit,      'E2E AuditClient',      'client', '+380995555555'),
   ]);
 
   // ── Step 3: Upsert master_profiles ────────────────────────────────────────
@@ -890,6 +1017,7 @@ async function main(): Promise<void> {
     upsertMasterProfile(authId,        SLUGS.authMaster,       'E2E Auth Studio',       'starter'),
     upsertMasterProfile(referralId,    SLUGS.referralMaster,   'E2E Referral Studio',   'pro'),
     upsertMasterProfile(studioAdminId, SLUGS.studioAdmin,      'E2E Studio Admin',      'studio'),
+    upsertMasterProfile(auditMasterId, SLUGS.auditMaster,      'E2E Audit Studio',      'pro', { mood_theme: 'blossom' }),
   ]);
 
   // Client profile (separate table from master_profiles)
@@ -898,13 +1026,14 @@ async function main(): Promise<void> {
     upsertClientProfile(clientCrmId),
     upsertClientProfile(clientAuthId),
     upsertClientProfile(clientReferralId),
+    upsertClientProfile(clientAuditId),
   ]);
 
   // ── Step 4: Wipe existing E2E transactional data ───────────────────────────
   console.log('\n[step 4] Wiping stale E2E data...');
   await wipeMasterData(
-    [timeTravelId, crmId, authId, referralId, studioAdminId],
-    [clientTimeTravelId, clientCrmId, clientAuthId, clientReferralId],
+    [timeTravelId, crmId, authId, referralId, studioAdminId, auditMasterId],
+    [clientTimeTravelId, clientCrmId, clientAuthId, clientReferralId, clientAuditId],
   );
 
   // ── Step 5: Seed per domain ────────────────────────────────────────────────
@@ -918,6 +1047,7 @@ async function main(): Promise<void> {
     seedCrmMaster(crmId, clientCrmId),
     seedAuthMaster(authId),
     seedStudioAdmin(studioAdminId),
+    seedAuditMaster(auditMasterId, clientAuditId),
   ]);
 
   await verifySeedIntegrity({
@@ -946,6 +1076,9 @@ async function main(): Promise<void> {
     E2E_CLIENT_REFERRAL_ID:     clientReferralId,
     E2E_STUDIO_ADMIN_ID:        studioAdminId,
     E2E_STUDIO_ADMIN_SLUG:      SLUGS.studioAdmin,
+    E2E_MASTER_AUDIT_ID:        auditMasterId,
+    E2E_MASTER_AUDIT_SLUG:      SLUGS.auditMaster,
+    E2E_CLIENT_AUDIT_ID:        clientAuditId,
     // Backward-compatible aliases used by older specs (kept deterministic).
     E2E_MASTER_ID:              crmId,
     E2E_MASTER_SLUG:            SLUGS.crmMaster,

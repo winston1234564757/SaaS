@@ -199,6 +199,7 @@ function DraggableBookingBlock({
               </p>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={handleConfirm}
                   disabled={isPending}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-success/15 text-success text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50"
@@ -209,6 +210,7 @@ function DraggableBookingBlock({
                   Так
                 </button>
                 <button
+                  type="button"
                   onClick={handleCancel}
                   disabled={isPending}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-error/10 text-error text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50"

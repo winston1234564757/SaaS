@@ -42,6 +42,8 @@ export function MarketingTabs({ initialTab, initialMode, isStarter, isPro, broad
           return (
             <button
               key={t.id}
+              type="button"
+              aria-pressed={active}
               onClick={() => switchTab(t.id)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-sm font-medium transition-all"
               style={

@@ -89,7 +89,8 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 <div className="flex-1 px-3 font-mono text-sm truncate opacity-90 min-w-0">
                   {inviteLink}
                 </div>
-                <button 
+                <button
+                  type="button"
                   onClick={copyLink}
                   className="bg-primary-foreground text-primary px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-primary-foreground/90 active:scale-[0.95] transition-all cursor-pointer"
                 >
@@ -164,10 +165,11 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 </div>
 
                 <button
+                  type="button"
+                  aria-label="Видалити партнера"
                   onClick={() => handleDelete(partner.partnerId)}
                   disabled={isDeleting === partner.partnerId}
                   className="size-9 rounded-xl flex items-center justify-center text-destructive hover:bg-destructive/10 active:scale-[0.88] transition-all disabled:opacity-50 cursor-pointer"
-                  title="Видалити партнера"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -211,6 +213,9 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                     </div>
                   </div>
                   <button
+                    type="button"
+                    aria-pressed={visible}
+                    aria-label={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
                     onClick={() => handleToggleVisibility(al.id)}
                     disabled={togglingId === al.id}
                     className={cn(
@@ -220,7 +225,6 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                         : 'bg-secondary text-muted-foreground/60 hover:bg-secondary/80',
                       togglingId === al.id && 'opacity-50 pointer-events-none',
                     )}
-                    title={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
                   >
                     {visible ? <Eye size={14} /> : <EyeOff size={14} />}
                     {visible ? 'Видно' : 'Приховано'}

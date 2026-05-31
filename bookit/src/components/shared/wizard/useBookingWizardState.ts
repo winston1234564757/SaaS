@@ -276,10 +276,13 @@ export function useBookingWizardState({
     if (phone.length < 13 || c2cCheckRef.current === phone) return;
     c2cCheckRef.current = phone;
 
+    let cancelled = false;
     checkC2cEligibility(phone, masterId, c2cRefCode).then((res) => {
+      if (cancelled) return;
       setActiveC2cDiscountPct(res.eligible ? (c2cDiscountPct ?? null) : null);
       setC2cAlreadyUsed(!res.eligible);
     });
+    return () => { cancelled = true; };
   }, [watchPhone, c2cRefCode, masterId, mode, c2cDiscountPct]);
 
   // ── Auto-suggest products ─────────────────────────────────────────────────────

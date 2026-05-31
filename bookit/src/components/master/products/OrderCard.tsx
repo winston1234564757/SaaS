@@ -49,6 +49,9 @@ export function OrderCard({ order, onStatusChange }: Props) {
     >
       {/* Main row */}
       <button
+        type="button"
+        aria-expanded={expanded}
+        aria-label="Деталі замовлення"
         onClick={() => setExpanded(e => !e)}
         className="w-full p-4 flex items-start gap-3 text-left"
       >
@@ -121,7 +124,7 @@ export function OrderCard({ order, onStatusChange }: Props) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ type: 'spring' as const, stiffness: 260, damping: 28 } as const}
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 border-t border-secondary pt-3 flex flex-col gap-3">
@@ -186,6 +189,7 @@ export function OrderCard({ order, onStatusChange }: Props) {
                     return (
                       <button
                         key={s}
+                        type="button"
                         onClick={() => onStatusChange(s)}
                         className={cn(
                           'flex-1 py-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] border',

@@ -296,7 +296,7 @@ export function BillingPage() {
             key={plan.key}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.07, type: 'spring', stiffness: 280, damping: 24 }}
+            transition={{ delay: i * 0.07, type: 'spring' as const, stiffness: 280, damping: 24 }}
             className="bento-card p-5 relative overflow-hidden"
           >
             {plan.popular && !isCurrent && (
