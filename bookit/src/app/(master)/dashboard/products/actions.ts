@@ -53,10 +53,9 @@ export interface CreateOrderPayload {
 export async function createProduct(
   payload: ProductPayload,
 ): Promise<{ id: string | null; error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { id: null, error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { id: null, error: 'Не авторизований' };
-
     if (!payload.name.trim()) return { id: null, error: 'Назва обов\'язкова' };
     if (payload.price_kopecks <= 0) return { id: null, error: 'Ціна має бути більше 0' };
     if ((payload.photos?.length ?? 0) > 5) return { id: null, error: 'Максимум 5 фото' };
@@ -108,10 +107,9 @@ export async function updateProduct(
   id: string,
   payload: Partial<ProductPayload>,
 ): Promise<{ error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { error: 'Не авторизований' };
-
     if (payload.name !== undefined && !payload.name.trim()) return { error: 'Назва обов\'язкова' };
     if (payload.price_kopecks !== undefined && payload.price_kopecks <= 0) return { error: 'Ціна має бути більше 0' };
     if ((payload.photos?.length ?? 0) > 5) return { error: 'Максимум 5 фото' };
@@ -144,10 +142,9 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<{ error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { error: 'Не авторизований' };
-
     const { error } = await createAdminClient()
       .from('products')
       .update({ is_active: false, is_archived: true })
@@ -165,10 +162,9 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
 }
 
 export async function reorderProducts(orderedIds: string[]) {
+  const masterId = await getMasterId();
+  if (!masterId) return { error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { error: 'Не авторизований' };
-
     const admin = createAdminClient();
     await Promise.all(
       orderedIds.map((id, index) =>
@@ -193,9 +189,9 @@ export async function restockProduct(
   qty: number,
   note?: string,
 ): Promise<{ error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { error: 'Не авторизований' };
     if (qty <= 0) return { error: 'Кількість має бути більше 0' };
 
     const admin = createAdminClient();
@@ -238,9 +234,9 @@ export async function adjustStock(
   newStockQty: number,
   note?: string,
 ): Promise<{ error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { error: 'Не авторизований' };
     if (newStockQty < 0) return { error: 'Залишок не може бути від\'ємним' };
 
     const admin = createAdminClient();
@@ -280,6 +276,7 @@ export async function adjustStock(
   }
 }
 
+// public action — clients can create orders without being logged in (shop flow)
 export async function createOrder(
   payload: CreateOrderPayload,
 ): Promise<{ id: string | null; error: string | null }> {
@@ -375,7 +372,6 @@ export async function createOrder(
           order_id:   order.id,
         });
 
-      // Stock alert — fetch threshold and compare
       const { data: product } = await admin
         .from('products')
         .select('name, stock_alert_threshold')
@@ -388,7 +384,6 @@ export async function createOrder(
       }
     }
 
-    // Notify master about new order (fire-and-forget)
     const orderItemsText = payload.items
       .map(i => {
         const p = productMap.get(i.product_id);
@@ -409,10 +404,9 @@ export async function saveProductLinks(
   productId: string,
   serviceIds: string[],
 ): Promise<{ error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { error: 'Не авторизований' };
-
     const admin = createAdminClient();
 
     const { data: product, error: fetchErr } = await admin
@@ -448,10 +442,9 @@ export async function updateOrderStatus(
   orderId: string,
   status: OrderStatus,
 ): Promise<{ error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { error: 'Не авторизований' };
   try {
-    const masterId = await getMasterId();
-    if (!masterId) return { error: 'Не авторизований' };
-
     const admin = createAdminClient();
 
     const { data: order, error: fetchErr } = await admin
@@ -497,7 +490,6 @@ export async function updateOrderStatus(
 
     if (error) throw error;
 
-    // Notify client on shipped/completed
     if ((status === 'shipped' || status === 'completed') && order.client_id) {
       void notifyClientOrderStatus(order.client_id as string, masterId, status, orderId);
     }
@@ -509,4 +501,3 @@ export async function updateOrderStatus(
     return { error: 'Не вдалося оновити статус замовлення.' };
   }
 }
-

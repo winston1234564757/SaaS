@@ -18,6 +18,10 @@ const APP_URL = (
 export async function createMonoInvoice(
   tier: 'pro' | 'studio'
 ): Promise<{ invoiceUrl: string } | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Unauthorized' };
+
   const PLAN: Record<string, { priceKopecks: number; name: string }> = {
     pro:    { priceKopecks: 70000, name: 'Bookit Pro — підписка на місяць' },
     studio: { priceKopecks: 29900, name: 'Bookit Studio — підписка за майстра/місяць' },
@@ -27,10 +31,6 @@ export async function createMonoInvoice(
       console.error('[createMonoInvoice] missing MONO_API_KEY');
       return { error: 'Monobank не налаштовано' };
     }
-
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Unauthorized' };
 
     const plan = PLAN[tier];
     if (!plan) return { error: 'Невідомий тариф' };
@@ -85,12 +85,11 @@ export async function createMonoInvoice(
 // (e.g. old payment before walletData.cardToken fix).
 // Mono keeps the tokenized card in their wallet — we retrieve it once.
 export async function recoverCardToken(): Promise<{ ok: true; found: boolean } | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Unauthorized' };
   try {
     if (!MONO_TOKEN) return { error: 'Monobank не налаштовано' };
-
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Unauthorized' };
 
     const admin = createAdminClient();
 
@@ -170,10 +169,10 @@ export async function recoverCardToken(): Promise<{ ok: true; found: boolean } |
 }
 
 export async function cancelSubscription(): Promise<{ ok: true } | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Unauthorized' };
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Unauthorized' };
 
     const admin = createAdminClient();
 

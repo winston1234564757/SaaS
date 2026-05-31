@@ -13,11 +13,10 @@ export async function getOrGenerateProfileReferralCode(
   id: string,
   type: 'master' | 'client' = 'master'
 ): Promise<{ success: boolean; code?: string; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id !== id) return { success: false, error: 'Unauthorized' };
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || user.id !== id) return { success: false, error: 'Unauthorized' };
-
     const admin = createAdminClient();
     const table = type === 'master' ? 'master_profiles' : 'client_profiles';
 
@@ -394,11 +393,10 @@ export async function processRegistrationReferral(
   newMasterId: string,
   refCode: string,
 ): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id !== newMasterId) return { success: false, error: 'Unauthorized' };
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || user.id !== newMasterId) return { success: false, error: 'Unauthorized' };
-
     const admin = createAdminClient();
 
     // 1. Знаходимо реферера (власника коду)
