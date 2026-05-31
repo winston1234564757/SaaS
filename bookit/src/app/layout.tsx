@@ -131,10 +131,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </ToastProvider>
           </QueryProvider>
         </NuqsAdapter>
-      {/* impeccable-live-start */}
-<script src="http://localhost:8400/live.js"></script>
-{/* impeccable-live-end */}
-</body>
+      </body>
     </html>
   );
 }

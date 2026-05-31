@@ -104,17 +104,9 @@ export function FlashDealPage({
     () => activeServices.find(s => s.id === serviceId),
     [activeServices, serviceId]
   );
-  
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-5 p-6 animate-pulse">
-        <div className="h-40 bg-secondary/40 border border-border rounded-3xl" />
-        <div className="h-64 bg-secondary/40 border border-border rounded-3xl" />
-      </div>
-    );
-  }
-  const serviceDuration = selectedService?.duration ?? 60;
 
+  // Declared before early return to satisfy Rules of Hooks
+  const serviceDuration = selectedService?.duration ?? 60;
   const availableSlots = useMemo(() => {
     if (!scheduleStore) return null;
 
@@ -143,6 +135,15 @@ export function FlashDealPage({
       selectedDate:     slotDate,
     }).filter(s => s.available);
   }, [scheduleStore, slotDate, serviceDuration]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-5 p-6 animate-pulse">
+        <div className="h-40 bg-secondary/40 border border-border rounded-3xl" />
+        <div className="h-64 bg-secondary/40 border border-border rounded-3xl" />
+      </div>
+    );
+  }
 
   const discountedPrice = originalPrice
     ? Math.round(Number(originalPrice) * (1 - discountPct / 100))

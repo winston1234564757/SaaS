@@ -116,9 +116,10 @@ export function PublicStatusWidget({
 
       {/* Action Buttons */}
       <div className="flex flex-col gap-3 mt-auto">
-        <a 
-          href={publicUrl} 
-          target="_blank" 
+        <a
+          href={publicUrl}
+          target="_blank"
+          rel="noreferrer"
           className="w-full py-4 rounded-2xl bg-secondary border border-border text-text-primary text-xs font-bold flex items-center justify-center gap-2 hover:bg-muted/10 active:scale-95 transition-all shadow-sm"
         >
           Відкрити сторінку <ExternalLink size={14} />
