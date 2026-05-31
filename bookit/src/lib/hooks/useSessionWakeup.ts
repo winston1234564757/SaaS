@@ -7,10 +7,11 @@ import { resetFetchController } from '@/lib/supabase/client';
 
 export function useSessionWakeup() {
   const queryClient = useQueryClient();
-  const lastHiddenAt = useRef(Date.now());
+  const lastHiddenAt = useRef<number>(0);
   const isRunning = useRef(false);
 
   useEffect(() => {
+    lastHiddenAt.current = Date.now();
     async function handleVisibilityChange() {
       if (document.hidden) {
         lastHiddenAt.current = Date.now();

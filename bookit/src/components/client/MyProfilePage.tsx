@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -348,7 +348,7 @@ export function MyProfilePage({ profile }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >
-        <PushSubscribeCard role="client" />
+        <PushSubscribeCard userRole="client" />
       </motion.div>
 
       {/* Save */}

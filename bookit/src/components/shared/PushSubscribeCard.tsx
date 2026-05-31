@@ -19,9 +19,9 @@ type State =
   | 'prompt'
   | 'subscribing'
   | 'subscribed'
-  | 'blocked'       // юзер щойно натиснув "Заблокувати" або вже заблоковано
-  | 'pwa-hint'      // iOS Safari без PWA — push API недоступний
-  | 'unsupported';  // зовсім старий браузер
+  | 'blocked'
+  | 'pwa-hint'
+  | 'unsupported';
 
 function detectInitialState(): State {
   if (typeof window === 'undefined') return 'checking';
@@ -38,7 +38,6 @@ function detectInitialState(): State {
     ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true);
 
   if (!hasPush) {
-    // iOS Safari в браузері (не PWA) — push недоступний, але рятується через Add to Home Screen
     if (isIOS && !isStandalone) return 'pwa-hint';
     return 'unsupported';
   }
@@ -50,10 +49,10 @@ function detectInitialState(): State {
 }
 
 interface Props {
-  role?: 'master' | 'client';
+  userRole?: 'master' | 'client';
 }
 
-export function PushSubscribeCard({ role = 'master' }: Props) {
+export function PushSubscribeCard({ userRole = 'master' }: Props) {
   const [state, setState] = useState<State>('checking');
 
   useEffect(() => {
@@ -62,13 +61,13 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
     if (initialState === 'subscribed') {
       syncSubscriptionSilently();
     }
-  }, [role]);
+  }, [userRole]);
 
   async function syncSubscriptionSilently() {
     try {
       const reg = await navigator.serviceWorker.ready;
       let sub = await reg.pushManager.getSubscription();
-      
+
       if (!sub) {
         const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
         if (!vapidKey) return;
@@ -81,7 +80,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
       await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...sub.toJSON(), role }),
+        body: JSON.stringify({ ...sub.toJSON(), role: userRole }),
       });
     } catch (err) {
       console.error('[Push] Silent sync failed:', err);
@@ -126,7 +125,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
       const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...sub.toJSON(), role }),
+        body: JSON.stringify({ ...sub.toJSON(), role: userRole }),
       });
 
       if (!res.ok) {
@@ -148,15 +147,13 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
     }
   }
 
-  const isMaster = role === 'master';
+  const isMaster = userRole === 'master';
 
   return (
     <AnimatePresence mode="popLayout">
 
-      {/* ── Завантаження (SSR → client) ──────────────────────────────── */}
       {state === 'checking' && null}
 
-      {/* ── Успішно підключено ───────────────────────────────────────── */}
       {state === 'subscribed' && (
         <motion.div key="subscribed"
           initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
@@ -176,9 +173,9 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
         </motion.div>
       )}
 
-      {/* ── Кнопка підключення ───────────────────────────────────────── */}
       {(state === 'prompt' || state === 'subscribing') && (
         <motion.button key="prompt"
+          type="button"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           onClick={subscribe}
           disabled={state === 'subscribing'}
@@ -206,7 +203,6 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
         </motion.button>
       )}
 
-      {/* ── Заблоковано браузером ────────────────────────────────────── */}
       {state === 'blocked' && (
         <motion.div key="blocked"
           initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
@@ -221,6 +217,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
               Відкрий <span className="font-medium text-foreground">Налаштування браузера → Сайти → Сповіщення</span> і дозволь для bookit.com.ua
             </p>
             <button
+              type="button"
               onClick={() => { setState('prompt'); }}
               className="mt-2 flex items-center gap-1 text-[11px] text-primary font-medium"
             >
@@ -230,7 +227,6 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
         </motion.div>
       )}
 
-      {/* ── iOS Safari без PWA ───────────────────────────────────────── */}
       {state === 'pwa-hint' && (
         <motion.div key="pwa-hint"
           initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
@@ -248,7 +244,6 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
         </motion.div>
       )}
 
-      {/* ── Зовсім не підтримується ──────────────────────────────────── */}
       {state === 'unsupported' && (
         <motion.div key="unsupported"
           initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}

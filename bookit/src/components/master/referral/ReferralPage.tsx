@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Copy, Check, Gift, Users, Share2, Loader2,
@@ -107,9 +107,12 @@ export function ReferralPage({
   };
 
   const isPro       = subscriptionTier === 'pro' || subscriptionTier === 'studio';
-  const trialLeft   = subscriptionExpiresAt
-    ? Math.max(0, Math.ceil((new Date(subscriptionExpiresAt).getTime() - Date.now()) / 86_400_000))
-    : null;
+  const trialLeft   = useMemo(
+    () => subscriptionExpiresAt
+      ? Math.max(0, Math.ceil((new Date(subscriptionExpiresAt).getTime() - Date.now()) / 86_400_000))
+      : null,
+    [subscriptionExpiresAt],
+  );
 
   // Billing decision: total = status + reserve (bounties already baked into reserve)
   const decision      = calculateBillingDecision({ activeRefsCount: activeReferralCount, discountReserve });

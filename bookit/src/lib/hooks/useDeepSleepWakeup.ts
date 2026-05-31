@@ -9,10 +9,11 @@ const FREEZE_THRESHOLD = 60_000; // браузер throttles setInterval до ~1
 
 export function useDeepSleepWakeup() {
   const queryClient = useQueryClient();
-  const lastTickRef = useRef(Date.now());
+  const lastTickRef = useRef<number>(0);
   const isRunning = useRef(false);
 
   useEffect(() => {
+    lastTickRef.current = Date.now();
     const interval = setInterval(async () => {
       const now = Date.now();
       const elapsed = now - lastTickRef.current;

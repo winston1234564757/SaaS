@@ -355,6 +355,10 @@ export function BookingDetailsModal() {
   // PERSISTENCE LOGIC: Keep the booking data visible while the modal is closing
   const [lastBooking, setLastBooking] = useState<any>(null);
   const [lastLtv, setLastLtv] = useState<any>(null);
+  const [notes, setNotes] = useState('');
+  const [notesDirty, setNotesDirty] = useState(false);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   useEffect(() => {
     if (booking) {
@@ -370,11 +374,6 @@ export function BookingDetailsModal() {
 
   const displayBooking = booking || lastBooking;
   const displayLtv = clientLtv || lastLtv;
-
-  const [notes, setNotes] = useState('');
-  const [notesDirty, setNotesDirty] = useState(false);
-  const [showReschedule, setShowReschedule] = useState(false);
-  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   // LIFECYCLE: Local open state to decouple animation from URL
   const [isModalOpen, setIsModalOpen] = useState(false);
