@@ -14,7 +14,7 @@ export function MarketingWidget() {
   return (
     <div className="p-6 h-full flex flex-col bg-gradient-to-br from-sage/5 to-primary/5">
       <div className="flex justify-between items-start mb-4">
-        <div className="w-10 h-10 rounded-xl bg-secondary/60 flex items-center justify-center shadow-sm">
+        <div className="size-10 rounded-xl bg-secondary/60 flex items-center justify-center shadow-sm">
           <ImagePlay size={20} className="text-primary" />
         </div>
         <div className="flex items-center gap-1 bg-secondary/60 px-2 py-1 rounded-full border border-border shadow-sm">

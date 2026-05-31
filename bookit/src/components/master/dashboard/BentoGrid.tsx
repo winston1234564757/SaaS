@@ -63,11 +63,11 @@ function BentoWidget({ id, span = "col-span-1 row-span-1" }: BentoWidgetProps) {
           >
             <button
               onClick={() => toggleWidget(id)}
-              className="w-10 h-10 rounded-full bg-destructive text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+              className="size-10 rounded-full bg-destructive text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
             >
               <X size={20} />
             </button>
-            <div className="w-10 h-10 rounded-full bg-secondary text-primary flex items-center justify-center shadow-lg cursor-grab active:cursor-grabbing">
+            <div className="size-10 rounded-full bg-secondary text-primary flex items-center justify-center shadow-lg cursor-grab active:cursor-grabbing">
               <GripVertical size={20} />
             </div>
           </motion.div>

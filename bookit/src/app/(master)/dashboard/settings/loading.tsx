@@ -13,7 +13,7 @@ export default function Loading() {
       <div className="rounded-xl bg-secondary/60 p-5 flex flex-col gap-4">
         <Skeleton className="h-4 w-24 rounded-lg" />
         <div className="flex items-center gap-3">
-          <Skeleton className="h-16 w-16 rounded-full flex-shrink-0" />
+          <Skeleton className="size-16 rounded-full flex-shrink-0" />
           <Skeleton className="h-8 w-28 rounded-xl" />
         </div>
         {/* Поле ім'я */}

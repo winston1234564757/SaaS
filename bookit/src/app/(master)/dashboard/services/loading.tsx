@@ -7,7 +7,7 @@ export default function Loading() {
       </div>
       {[0, 1, 2, 3].map(i => (
         <div key={i} className="bento-card p-4 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-secondary/80 flex-shrink-0" />
+          <div className="size-11 rounded-xl bg-secondary/80 flex-shrink-0" />
           <div className="flex-1 space-y-2">
             <div className="h-3 w-32 rounded-lg bg-secondary/80" />
             <div className="h-2.5 w-20 rounded-lg bg-secondary/80" />

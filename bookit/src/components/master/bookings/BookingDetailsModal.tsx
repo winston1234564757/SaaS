@@ -292,7 +292,7 @@ function ReschedulePanel({
                     }`}
                   >
                     {item.slot.isSuggested && selectedSlot !== item.slot.time && (
-                      <span className="absolute -top-1 -right-0.5 w-3 h-3 bg-primary text-white rounded-full flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-0.5 size-3 bg-primary text-white rounded-full flex items-center justify-center font-bold">
                         <Star size={6} className="fill-white text-white" />
                       </span>
                     )}
@@ -437,7 +437,7 @@ export function BookingDetailsModal() {
         <div className="flex flex-col gap-5">
           {/* Identity Header (Matching ClientDetailSheet style) */}
           <div className="flex items-center gap-4 bg-secondary/60 p-4 rounded-xl border border-border shadow-sm">
-            <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary text-xl font-bold shadow-sm shrink-0">
+            <div className="size-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary text-xl font-bold shadow-sm shrink-0">
               {displayBooking.client_name[0]}
             </div>
             <div className="flex-1 min-w-0">
@@ -528,7 +528,7 @@ export function BookingDetailsModal() {
                 {displayBooking.services.map((s: any, i: number) => (
                   <div key={i} className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                         <Clock size={14} className="text-primary" />
                       </div>
                       <div className="min-w-0">
@@ -546,7 +546,7 @@ export function BookingDetailsModal() {
                     {displayBooking.products!.map((p: any, i: number) => (
                       <div key={i} className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
+                          <div className="size-8 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
                             <ShoppingBag size={14} className="text-muted-foreground" />
                           </div>
                           <div className="min-w-0">

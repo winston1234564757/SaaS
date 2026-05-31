@@ -253,7 +253,7 @@ export function StepServices({
                     className="w-full flex items-center gap-3 px-4 pt-3 pb-2 text-left cursor-pointer active:scale-[0.98] transition-transform"
                   >
                     <div
-                      className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors"
+                      className="size-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors"
                       style={isOn
                         ? { borderColor: 'var(--accent)', background: 'var(--accent)' }
                         : { borderColor: 'var(--border)', background: 'transparent' }

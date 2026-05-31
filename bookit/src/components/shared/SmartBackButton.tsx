@@ -47,7 +47,7 @@ export function SmartBackButton({ floating, className }: Props) {
     <button
       onClick={() => router.back()}
       aria-label="Назад"
-      className={`flex items-center justify-center w-9 h-9 rounded-xl text-foreground hover:bg-black/5 active:scale-95 transition-all ${className ?? ''}`}
+      className={`flex items-center justify-center size-9 rounded-xl text-foreground hover:bg-black/5 active:scale-95 transition-all ${className ?? ''}`}
     >
       <ChevronLeft size={22} strokeWidth={2} />
     </button>

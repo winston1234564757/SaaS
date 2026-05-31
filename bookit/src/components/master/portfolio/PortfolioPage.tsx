@@ -36,17 +36,17 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
   const publishedCount = items.filter(i => i.is_published).length;
   const atLimit = isStarter && publishedCount >= STARTER_LIMIT;
 
-  const handleGridDragEnd = useCallback(async (result: DropResult) => {
+  const handleGridDragEnd = async (result: DropResult) => {
     if (!result.destination || result.source.index === result.destination.index) return;
     const reordered = Array.from(items);
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
     invalidate();
     await reorderPortfolioItems(reordered.map(i => i.id));
-  }, [items, invalidate]);
+  };
 
   // Create draft client-side → navigate directly to editor (no /new flash)
-  const handleCreate = useCallback(async () => {
+  const handleCreate = async () => {
     if (atLimit || isCreating) return;
     setIsCreating(true);
     try {
@@ -57,7 +57,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
       setIsCreating(false);
       showToast({ type: 'error', title: 'Не вдалося створити роботу', message: 'Спробуйте ще раз.' });
     }
-  }, [atLimit, isCreating, invalidate, router]);
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -107,7 +107,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           className="rounded-3xl p-4 flex items-start gap-3"
           style={{ background: 'rgba(212,147,90,0.08)', border: '1px solid rgba(212,147,90,0.2)' }}
         >
-          <div className="w-9 h-9 rounded-2xl bg-warning/15 flex items-center justify-center shrink-0">
+          <div className="size-9 rounded-2xl bg-warning/15 flex items-center justify-center shrink-0">
             <Lock size={16} className="text-warning" />
           </div>
           <div className="flex-1">
@@ -133,7 +133,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           className="rounded-3xl py-16 flex flex-col items-center justify-center gap-4 text-center"
           style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.4)' }}
         >
-          <div className="w-16 h-16 rounded-3xl bg-secondary flex items-center justify-center">
+          <div className="size-16 rounded-3xl bg-secondary flex items-center justify-center">
             <Images size={28} className="text-[#C8B8B2]" />
           </div>
           <div>

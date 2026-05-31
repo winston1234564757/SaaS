@@ -80,7 +80,7 @@ function TopClientPanel({ onOpen }: { onOpen: (c: ClientRow) => void }) {
 
       {isLoading ? (
         <div className="flex flex-col gap-2">
-          <div className="skeleton-shimmer h-8 w-8 rounded-full" />
+          <div className="skeleton-shimmer size-8 rounded-full" />
           <div className="skeleton-shimmer h-4 w-24 rounded-full" />
         </div>
       ) : topClient ? (
@@ -89,7 +89,7 @@ function TopClientPanel({ onOpen }: { onOpen: (c: ClientRow) => void }) {
           onClick={handleOpen}
         >
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold mb-2"
+            className="size-8 rounded-full flex items-center justify-center text-[12px] font-bold mb-2"
             style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
           >
             {initials}

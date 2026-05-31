@@ -34,7 +34,7 @@ function AlertRow({ alert, index }: { alert: ClientAlert; index: number }) {
       className="flex items-center gap-3 py-2.5 group"
     >
       <span
-        className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0"
+        className="flex items-center justify-center size-8 rounded-xl shrink-0"
         style={{
           background: isNoReview
             ? 'color-mix(in srgb, var(--warning) 14%, transparent)'
@@ -85,7 +85,7 @@ export function ClientAlertsWidget() {
         <div className="skeleton-shimmer h-4 w-32 rounded-full" />
         {[0, 1].map(i => (
           <div key={i} className="flex items-center gap-3">
-            <div className="skeleton-shimmer w-8 h-8 rounded-xl" />
+            <div className="skeleton-shimmer size-8 rounded-xl" />
             <div className="flex-1 space-y-1.5">
               <div className="skeleton-shimmer h-3 w-24 rounded-full" />
               <div className="skeleton-shimmer h-2.5 w-32 rounded-full" />

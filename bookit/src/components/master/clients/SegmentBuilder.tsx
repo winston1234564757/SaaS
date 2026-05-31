@@ -230,7 +230,7 @@ function ConditionRow({
           <button
             type="button"
             onClick={onRemove}
-            className="w-9 h-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
+            className="size-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
           >
             <Trash2 size={14} />
           </button>
@@ -447,7 +447,7 @@ export function SegmentBuilder({
                   className="flex flex-col gap-2 p-3.5 rounded-2xl border border-border bg-secondary/60 hover:bg-secondary text-left transition-all active:scale-[0.95] cursor-pointer"
                 >
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    className="size-9 rounded-xl flex items-center justify-center"
                     style={{ background: `${t.color}18`, color: t.color }}
                   >
                     {getSegmentIcon(t.icon, 16)}
@@ -489,7 +489,7 @@ export function SegmentBuilder({
               <button
                 type="button"
                 onClick={() => setShowIcons(v => !v)}
-                className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all active:scale-[0.88] cursor-pointer"
+                className="size-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all active:scale-[0.88] cursor-pointer"
                 style={{ background: `${color}20`, color }}
               >
                 {getSegmentIcon(icon, 20)}
@@ -521,7 +521,7 @@ export function SegmentBuilder({
                             key={ic} type="button"
                             onClick={() => { setIcon(ic); setShowIcons(false); }}
                             className={cn(
-                              'w-9 h-9 rounded-xl flex items-center justify-center active:scale-[0.88] cursor-pointer transition-all',
+                              'size-9 rounded-xl flex items-center justify-center active:scale-[0.88] cursor-pointer transition-all',
                               icon === ic
                                 ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-md'
                                 : 'bg-secondary border border-border text-muted-foreground/50 hover:text-foreground'
@@ -539,7 +539,7 @@ export function SegmentBuilder({
                           <button
                             key={c} type="button"
                             onClick={() => setColor(c)}
-                            className={cn('w-8 h-8 rounded-xl active:scale-[0.88] cursor-pointer transition-all', color === c ? 'ring-2 ring-offset-2 ring-foreground/30 scale-110' : 'hover:scale-105')}
+                            className={cn('size-8 rounded-xl active:scale-[0.88] cursor-pointer transition-all', color === c ? 'ring-2 ring-offset-2 ring-foreground/30 scale-110' : 'hover:scale-105')}
                             style={{ background: c }}
                           />
                         ))}

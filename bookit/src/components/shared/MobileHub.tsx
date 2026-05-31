@@ -178,7 +178,7 @@ function NavItem({
       <div className="relative">
         <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
         {pending > 0 && (
-          <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[var(--warning)] text-white text-[9px] font-bold flex items-center justify-center">
+          <span className="absolute -top-1.5 -right-2 size-4 rounded-full bg-[var(--warning)] text-white text-[9px] font-bold flex items-center justify-center">
             {pending > 9 ? '9+' : pending}
           </span>
         )}
@@ -247,7 +247,7 @@ function OperationTile({
       >
         <div
           className={cn(
-            'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+            'size-10 rounded-xl flex items-center justify-center shrink-0',
             isActive ? 'bg-[var(--accent-on)]/15' : 'bg-[var(--accent-soft)]'
           )}
         >
@@ -307,9 +307,11 @@ export function MobileHub() {
   const { todayPending } = useDashboardStats();
   const { masterProfile } = useMasterContext();
   const [isOpen, setIsOpen] = useState(false);
-
-  /* Close on navigation */
-  useEffect(() => { setIsOpen(false); }, [pathname]);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setIsOpen(false);
+  }
 
   /* Lock scroll when hub open */
   useEffect(() => {

@@ -81,7 +81,7 @@ export function LandingFeatures() {
               transition={{ delay: i * 0.1, type: 'spring', stiffness: 300, damping: 24 }}
               className="bento-card p-6 flex flex-col gap-4"
             >
-              <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center', f.iconCls)}>
+              <div className={cn('size-12 rounded-2xl flex items-center justify-center', f.iconCls)}>
                 <Icon size={22} />
               </div>
               <div>

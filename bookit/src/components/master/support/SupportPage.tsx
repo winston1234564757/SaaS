@@ -230,7 +230,7 @@ export function SupportPage() {
           >
             <MessageSquare size={14} />
             Чат підтримки
-            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+            <span className="flex size-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
           </button>
         </div>
       </div>

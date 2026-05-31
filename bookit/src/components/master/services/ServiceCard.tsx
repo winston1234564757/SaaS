@@ -35,11 +35,11 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
     >
       <div className="flex items-center gap-3">
         {/* Thumbnail or Icon */}
-        <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-warning/20">
+        <div className="relative size-12 rounded-xl overflow-hidden flex-shrink-0 bg-warning/20">
           <button
             {...dragHandleProps}
             onClick={(e) => e.stopPropagation()}
-            className="absolute top-0.5 left-0.5 w-5 h-5 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
+            className="absolute top-0.5 left-0.5 size-5 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
           >
             <GripVertical size={10} className="text-white" />
           </button>
@@ -80,7 +80,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
           <Tooltip content={<p className="text-xs text-foreground">Редагувати послугу</p>} position="top">
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(service); }}
-              className="w-8 h-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+              className="size-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
             >
               <Pencil size={14} />
             </button>
@@ -113,7 +113,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
               <Tooltip key="btn" content={<p className="text-xs text-foreground">Видалити послугу</p>} position="top">
                 <button
                   onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                  className="size-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -133,7 +133,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
             <motion.div
               animate={{ x: service.active ? 20 : 2 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="absolute top-1 w-4 h-4 rounded-full bg-accent-on shadow-sm"
+              className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
             />
           </button>
         </Tooltip>

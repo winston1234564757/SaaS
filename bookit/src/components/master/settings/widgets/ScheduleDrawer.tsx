@@ -90,7 +90,7 @@ export function ScheduleDrawer({
                     >
                       <motion.div
                         animate={{ x: schedule[day].is_working ? 22 : 2 }}
-                        className="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm"
+                        className="absolute top-1 left-1 size-4 rounded-full bg-white shadow-sm"
                       />
                     </button>
 
@@ -217,7 +217,7 @@ export function ScheduleDrawer({
                         />
                         <button 
                           onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
-                          className="w-10 h-10 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 transition-colors"
+                          className="size-10 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 transition-colors"
                         >
                           <Trash2 size={16} />
                         </button>

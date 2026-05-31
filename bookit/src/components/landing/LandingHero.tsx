@@ -56,7 +56,7 @@ export function LandingHero() {
           }}
         >
           <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            className="size-1.5 rounded-full animate-pulse"
             style={{ background: 'var(--l-indigo-glow)' }}
             aria-hidden="true"
           />
@@ -102,7 +102,7 @@ export function LandingHero() {
           >
             Почати безкоштовно
             <span
-              className="w-7 h-7 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              className="size-7 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               style={{ background: 'rgba(248,250,252,0.12)' }}
             >
               <ArrowUpRight size={13} aria-hidden="true" />

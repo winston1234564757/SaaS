@@ -182,7 +182,7 @@ function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: stri
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${accent}25` }}>
+          <div className="size-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${accent}25` }}>
             <Zap size={14} style={{ color: accent }} />
           </div>
           <p className="text-sm font-semibold text-foreground leading-tight">{deal.serviceName}</p>
@@ -464,7 +464,7 @@ export function PublicMasterPage({
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                  className="size-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                   style={{ background: isDark ? 'rgba(212, 175, 55, 0.2)' : `${theme.accent}25` }}
                 >
                   <Gift size={18} style={{ color: theme.accent }} />
@@ -501,7 +501,7 @@ export function PublicMasterPage({
               }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                <div className="size-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: 'rgba(92, 158, 122, 0.15)' }}>
                   <Gift size={18} style={{ color: '#5C9E7A' }} />
                 </div>
@@ -534,7 +534,7 @@ export function PublicMasterPage({
           <button
             onClick={handleShare}
             aria-label="Поділитись сторінкою"
-            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-lg bg-secondary/70 border border-border backdrop-blur-sm flex items-center justify-center hover:bg-secondary/90 transition-colors cursor-pointer active:scale-[0.95] transition-all"
+            className="absolute top-4 right-4 z-10 size-9 rounded-lg bg-secondary/70 border border-border backdrop-blur-sm flex items-center justify-center hover:bg-secondary/90 transition-colors cursor-pointer active:scale-[0.95] transition-all"
             style={{ color: textSecondary }}
           >
             <Share2 size={16} />
@@ -544,7 +544,7 @@ export function PublicMasterPage({
           <div className="pt-7 pb-5 px-6 flex flex-col items-center text-center">
             {/* Avatar */}
             <div
-              className="w-24 h-24 rounded-[28px] flex items-center justify-center text-4xl relative overflow-hidden mb-4"
+              className="size-24 rounded-[28px] flex items-center justify-center text-4xl relative overflow-hidden mb-4"
               style={{ 
                 background: avatarBg, 
                 boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : `0 8px 24px ${theme.accent}22`,
@@ -804,14 +804,14 @@ export function PublicMasterPage({
             >
               {/* Decorative blob */}
               <div
-                className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-30"
+                className="absolute -right-8 -top-8 size-32 rounded-full opacity-30"
                 style={{ background: `radial-gradient(circle, ${theme.accent}55, transparent 70%)` }}
                 aria-hidden="true"
               />
               <div className="relative flex items-center gap-4 p-5">
                 {/* Icon */}
                 <div
-                  className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
+                  className="size-14 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
                   style={{
                     background: isDark ? 'rgba(212,175,55,0.2)' : `${theme.accent}25`,
                     boxShadow: `0 4px 16px ${theme.accent}30`,
@@ -828,7 +828,7 @@ export function PublicMasterPage({
                 </div>
                 {/* Arrow */}
                 <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                  className="size-9 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ background: isDark ? 'rgba(255,255,255,0.08)' : `${theme.accent}20` }}
                 >
                   <ArrowRight size={16} style={{ color: theme.accent }} />
@@ -898,11 +898,11 @@ export function PublicMasterPage({
                           <img
                             src={service.image_url}
                             alt={service.name}
-                            className="w-12 h-12 rounded-lg flex-shrink-0 object-cover transition-transform group-hover:scale-110"
+                            className="size-12 rounded-lg flex-shrink-0 object-cover transition-transform group-hover:scale-110"
                           />
                         ) : (
                           <div
-                            className="w-12 h-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110"
+                            className="size-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110"
                             style={{ background: serviceEmojiCircleBg, border: '1px solid rgba(255,255,255,0.4)' }}
                           >
                             <ServiceIcon name={service.icon_name} size={18} />
@@ -959,7 +959,7 @@ export function PublicMasterPage({
                     style={{ textDecoration: 'none' }}
                   >
                     <div
-                      className="w-11 h-11 rounded-lg flex items-center justify-center text-xl flex-shrink-0"
+                      className="size-11 rounded-lg flex items-center justify-center text-xl flex-shrink-0"
                       style={{ background: serviceEmojiCircleBg }}
                     >
                       <ProductIcon name={product.icon_name} size={18} />
@@ -978,7 +978,7 @@ export function PublicMasterPage({
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <p className="text-base font-bold text-foreground">{formatPrice(product.price)}</p>
                       <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="size-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         style={{ background: `${theme.accent}20` }}
                       >
                         <ArrowRight size={12} style={{ color: theme.accent }} />

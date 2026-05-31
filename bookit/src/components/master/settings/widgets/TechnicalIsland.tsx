@@ -101,7 +101,7 @@ export function TechnicalIsland({
         )}>
           <div className="flex items-start gap-3 mb-4">
             <div className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+              "size-10 rounded-xl flex items-center justify-center shrink-0",
               telegramChatId ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
             )}>
               {telegramChatId ? <Check size={20} /> : <AlertCircle size={20} />}
@@ -191,7 +191,7 @@ export function TechnicalIsland({
           className="flex items-center justify-between p-4 rounded-2xl bg-secondary/40 border border-border hover:bg-secondary/80 transition-all group cursor-pointer active:scale-[0.95]"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-muted/40 flex items-center justify-center text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+            <div className="size-9 rounded-xl bg-muted/40 flex items-center justify-center text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent transition-colors">
               <CreditCard size={18} />
             </div>
             <div>

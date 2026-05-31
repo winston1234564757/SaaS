@@ -43,7 +43,7 @@ export function WidgetLibraryModal({ isOpen, onClose }: { isOpen: boolean; onClo
                 <h3 className="heading-serif text-2xl text-foreground">Бібліотека віджетів</h3>
                 <p className="text-sm text-muted-foreground">Оберіть блоки для свого ідеального дашборду</p>
               </div>
-              <button onClick={onClose} className="w-10 h-10 rounded-full bg-secondary/60 flex items-center justify-center hover:bg-secondary transition-colors">
+              <button onClick={onClose} className="size-10 rounded-full bg-secondary/60 flex items-center justify-center hover:bg-secondary transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -59,7 +59,7 @@ export function WidgetLibraryModal({ isOpen, onClose }: { isOpen: boolean; onClo
                       onClick={() => { toggleWidget(id); }}
                       className="group flex items-center gap-4 p-4 rounded-xl bg-secondary/40 border border-border hover:bg-secondary hover:border-primary/20 hover:shadow-md transition-all text-left"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-peach/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="size-12 rounded-xl bg-peach/40 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Icon size={20} className="text-primary" />
                       </div>
                       <div className="flex-1">

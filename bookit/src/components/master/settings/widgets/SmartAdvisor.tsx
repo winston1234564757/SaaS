@@ -83,12 +83,12 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
   return (
     <div className="widget-card p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-gradient-to-br from-secondary/40 to-accent/5">
       {/* Background decoration */}
-      <div className="absolute -top-12 -right-12 w-32 h-32 bg-accent/5 rounded-full blur-3xl" />
+      <div className="absolute -top-12 -right-12 size-32 bg-accent/5 rounded-full blur-3xl" />
       
       {/* Header */}
       <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
+          <div className="size-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
             <Sparkles size={18} />
           </div>
           <div>
@@ -99,7 +99,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
         
         <button 
           onClick={() => setShowExplanation(true)}
-          className="w-9 h-9 rounded-2xl bg-secondary border border-border/80 flex items-center justify-center text-text-mute hover:text-accent active:scale-[0.88] cursor-pointer transition-all shadow-sm"
+          className="size-9 rounded-2xl bg-secondary border border-border/80 flex items-center justify-center text-text-mute hover:text-accent active:scale-[0.88] cursor-pointer transition-all shadow-sm"
         >
           <HelpCircle size={18} />
         </button>

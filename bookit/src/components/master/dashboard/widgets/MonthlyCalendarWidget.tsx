@@ -271,7 +271,7 @@ export function MonthlyCalendarWidget() {
           >
             <div className="px-5 pb-3 flex items-center justify-between">
               <button
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
+                className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => {
                   setDirection(-1);
                   setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; });
@@ -286,7 +286,7 @@ export function MonthlyCalendarWidget() {
               </span>
 
               <button
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
+                className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => {
                   setDirection(1);
                   setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; });
@@ -388,7 +388,7 @@ export function MonthlyCalendarWidget() {
               </div>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="w-7 h-7 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
+                className="size-7 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
                 style={{ background: 'rgba(245,237,224,0.08)', color: 'var(--accent-on)' }}
               >
                 <X size={14} />

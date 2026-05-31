@@ -88,7 +88,7 @@ export function StepProfile({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="relative w-20 h-20 rounded-[22px] overflow-hidden border border-border bg-surface flex items-center justify-center group hover:border-accent/40 transition-colors cursor-pointer active:scale-[0.97]"
+          className="relative size-20 rounded-[22px] overflow-hidden border border-border bg-surface flex items-center justify-center group hover:border-accent/40 transition-colors cursor-pointer active:scale-[0.97]"
           aria-label="Додати фото"
         >
           {avatarPreview ? (

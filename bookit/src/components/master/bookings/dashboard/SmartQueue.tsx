@@ -49,7 +49,7 @@ export function SmartQueue({ bookings }: Props) {
   if (groups.length === 0) {
     return (
       <div className="bento-card p-10 flex flex-col items-center text-center gap-3">
-        <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+        <div className="size-16 rounded-full bg-success/10 flex items-center justify-center">
           <CheckCircle2 size={32} className="text-success" />
         </div>
         <p className="text-sm font-semibold text-foreground">Все під контролем!</p>

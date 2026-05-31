@@ -60,11 +60,11 @@ export function PeakHoursWidget() {
     [grid],
   );
 
-  const handleMove = useCallback((e: React.MouseEvent) => {
+  const handleMove = (e: React.MouseEvent) => {
     setTooltip(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
-  }, []);
+  };
 
-  const handleLeave = useCallback(() => setTooltip(null), []);
+  const handleLeave = () => setTooltip(null);
 
   if (isLoading) {
     return (

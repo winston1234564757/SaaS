@@ -112,12 +112,12 @@ export function VacationManager() {
         <div className="flex flex-col gap-1.5">
           {[0, 1].map(i => (
             <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-secondary/40 animate-pulse">
-              <div className="w-3 h-3 rounded-full bg-secondary/60 flex-shrink-0" />
+              <div className="size-3 rounded-full bg-secondary/60 flex-shrink-0" />
               <div className="flex-1 flex flex-col gap-1.5">
                 <div className="h-3 w-28 rounded bg-secondary/60" />
                 <div className="h-2.5 w-16 rounded bg-secondary/60" />
               </div>
-              <div className="w-6 h-6 rounded-lg bg-secondary/60" />
+              <div className="size-6 rounded-lg bg-secondary/60" />
             </div>
           ))}
         </div>
@@ -152,7 +152,7 @@ export function VacationManager() {
                   </div>
                   <button
                     onClick={() => remove(e.id)}
-                    className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 active:scale-[0.88] cursor-pointer"
+                    className="size-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 active:scale-[0.88] cursor-pointer"
                   >
                     <X size={12} />
                   </button>

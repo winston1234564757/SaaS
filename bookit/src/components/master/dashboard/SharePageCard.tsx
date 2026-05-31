@@ -108,13 +108,13 @@ export function SharePageCard() {
                   <p className="text-sm font-semibold text-foreground">QR-код сторінки</p>
                   <button
                     onClick={() => setQrOpen(false)}
-                  className="w-7 h-7 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                  className="size-7 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                   >
                     <X size={13} />
                   </button>
                 </div>
 
-                <div className="w-48 h-48 rounded-xl overflow-hidden bg-secondary p-2">
+                <div className="size-48 rounded-xl overflow-hidden bg-secondary p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=2c1a14&margin=0`}

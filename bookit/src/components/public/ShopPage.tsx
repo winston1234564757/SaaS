@@ -74,7 +74,7 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
       <div className="flex items-center gap-3 pt-2">
         <Link
           href={`/${masterSlug}`}
-          className="w-9 h-9 rounded-lg bg-secondary/70 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer shrink-0"
+          className="size-9 rounded-lg bg-secondary/70 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer shrink-0"
         >
           <ArrowLeft size={18} />
         </Link>
@@ -137,7 +137,7 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
               <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <ShoppingBag size={20} />
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-primary text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 size-4 rounded-full bg-primary text-[9px] font-bold flex items-center justify-center">
                     {cartCount}
                   </span>
                 </div>
@@ -270,7 +270,7 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
             {/* Close */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center active:scale-[0.95] transition-all cursor-pointer"
+              className="absolute top-4 right-4 z-10 size-8 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center active:scale-[0.95] transition-all cursor-pointer"
             >
               <X size={16} className="text-foreground" />
             </button>
@@ -319,13 +319,13 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                   <>
                     <button
                       onClick={(e) => { e.stopPropagation(); setPhotoIdx(p => (p - 1 + photos.length) % photos.length); }}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-secondary/90 shadow-lg flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-[0.95] cursor-pointer z-20 hidden md:flex"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-secondary/90 shadow-lg flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-[0.95] cursor-pointer z-20 hidden md:flex"
                     >
                       <ChevronLeft size={24} />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); setPhotoIdx(p => (p + 1) % photos.length); }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-secondary/90 shadow-lg flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-[0.95] cursor-pointer z-20 hidden md:flex"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-secondary/90 shadow-lg flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-[0.95] cursor-pointer z-20 hidden md:flex"
                     >
                       <ChevronRight size={24} />
                     </button>
@@ -344,7 +344,7 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                       <button
                         key={i}
                         onClick={() => setPhotoIdx(i)}
-                        className="w-2 h-2 rounded-full transition-all"
+                        className="size-2 rounded-full transition-all"
                         style={{ background: i === photoIdx ? 'var(--accent)' : 'var(--text-tertiary)' }}
                       />
                     ))}
@@ -359,7 +359,7 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                     <button
                       key={i}
                       onClick={() => setPhotoIdx(i)}
-                      className="relative shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all active:scale-[0.95] cursor-pointer"
+                      className="relative shrink-0 size-16 rounded-md overflow-hidden border-2 transition-all active:scale-[0.95] cursor-pointer"
                       style={{ borderColor: i === photoIdx ? 'var(--accent)' : 'transparent' }}
                     >
                       <Image src={ph} alt="" fill className="object-cover" sizes="64px" />
@@ -397,11 +397,11 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                         <div className="flex items-center gap-3">
                           <p className="text-xs font-semibold text-muted-foreground">Кількість</p>
                           <div className="flex items-center rounded-md overflow-hidden border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                            <button onClick={() => setLocalQty(q => Math.max(1, q - 1))} className="w-10 h-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]">
+                            <button onClick={() => setLocalQty(q => Math.max(1, q - 1))} className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]">
                               <Minus size={15} />
                             </button>
                             <span className="w-8 text-center font-bold text-foreground">{localQty}</span>
-                            <button onClick={() => setLocalQty(q => Math.min(p.stock_qty, q + 1))} disabled={localQty >= p.stock_qty} className="w-10 h-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30">
+                            <button onClick={() => setLocalQty(q => Math.min(p.stock_qty, q + 1))} disabled={localQty >= p.stock_qty} className="size-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30">
                               <Plus size={15} />
                             </button>
                           </div>
@@ -422,11 +422,11 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                         </p>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center rounded-md overflow-hidden border flex-1" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                            <button onClick={() => onQtyChange(qty - 1)} className="w-10 h-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]">
+                            <button onClick={() => onQtyChange(qty - 1)} className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]">
                               <Minus size={15} />
                             </button>
                             <span className="flex-1 text-center font-bold text-foreground">{qty}</span>
-                            <button onClick={() => qty < p.stock_qty ? onQtyChange(qty + 1) : undefined} disabled={qty >= p.stock_qty} className="w-10 h-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30">
+                            <button onClick={() => qty < p.stock_qty ? onQtyChange(qty + 1) : undefined} disabled={qty >= p.stock_qty} className="size-10 flex items-center justify-center text-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95] disabled:opacity-30">
                               <Plus size={15} />
                             </button>
                           </div>
@@ -540,7 +540,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
 
             <div className="flex items-center justify-between px-5 py-3 shrink-0">
               <h2 className="text-base font-bold text-foreground">Оформлення замовлення</h2>
-              <button onClick={onClose} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.95] transition-all cursor-pointer">
+              <button onClick={onClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.95] transition-all cursor-pointer">
                 <X size={16} />
               </button>
             </div>
@@ -551,7 +551,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                 <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Товари</p>
                 {cart.map(item => (
                   <div key={item.product.id} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-secondary shrink-0">
+                    <div className="size-10 rounded-lg overflow-hidden bg-secondary shrink-0">
                       {item.product.photos[0] && <Image src={item.product.photos[0]} alt="" width={40} height={40} className="object-cover w-full h-full" />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -624,13 +624,13 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                       {/* Arrows */}
                       <button 
                         onClick={() => { const el = document.getElementById('day-slider'); el?.scrollBy({ left: -120, behavior: 'smooth' }); }}
-                        className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-secondary/90 shadow-md flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 size-8 rounded-full bg-secondary/90 shadow-md flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <ChevronLeft size={16} />
                       </button>
                       <button 
                         onClick={() => { const el = document.getElementById('day-slider'); el?.scrollBy({ left: 120, behavior: 'smooth' }); }}
-                        className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-secondary/90 shadow-md flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 size-8 rounded-full bg-secondary/90 shadow-md flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <ChevronRight size={16} />
                       </button>
@@ -645,7 +645,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                             disabled={!d.isWorking}
                             onClick={() => setPickupDate(d.date)}
                             className={cn(
-                              'shrink-0 flex flex-col items-center justify-center w-24 h-24 rounded-xl border transition-all snap-start',
+                              'shrink-0 flex flex-col items-center justify-center size-24 rounded-xl border transition-all snap-start',
                               pickupDate === d.date
                                 ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02] active:scale-[0.95] cursor-pointer'
                                 : d.isWorking
@@ -666,7 +666,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                           <div 
                             key={i} 
                             className={cn(
-                              "w-1.5 h-1.5 rounded-full transition-all",
+                              "size-1.5 rounded-full transition-all",
                               pickupDate === d.date ? "bg-primary w-3" : "bg-border/40"
                             )} 
                           />
@@ -734,7 +734,7 @@ function OrderSuccess({ masterSlug, masterName }: { masterSlug: string; masterNa
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="w-20 h-20 rounded-full bg-success/15 flex items-center justify-center"
+        className="size-20 rounded-full bg-success/15 flex items-center justify-center"
       >
         <CheckCircle2 size={40} className="text-success" />
       </motion.div>

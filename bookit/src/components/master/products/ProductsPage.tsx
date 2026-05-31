@@ -32,13 +32,13 @@ export function ProductsPage() {
     router.push(`/dashboard/products/${id}`);
   });
 
-  const handleProductDragEnd = useCallback(async (result: DropResult) => {
+  const handleProductDragEnd = async (result: DropResult) => {
     if (!result.destination || result.source.index === result.destination.index) return;
     const reordered = Array.from(products);
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
     await reorderProducts(reordered.map(p => p.id));
-  }, [products, reorderProducts]);
+  };
 
   const restockTarget = restockId ? (products.find(p => p.id === restockId) ?? null) : null;
   const activeCount = products.filter(p => p.is_active).length;
@@ -119,7 +119,7 @@ export function ProductsPage() {
             <ShoppingBag size={14} />
             Замовлення
             {newOrders > 0 && (
-              <span className="ml-1 w-4 h-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center">
+              <span className="ml-1 size-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center">
                 {newOrders > 9 ? '9+' : newOrders}
               </span>
             )}
@@ -224,7 +224,7 @@ export function ProductsPage() {
           transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 22 }}
           whileTap={{ scale: 0.94 }}
           onClick={() => router.push('/dashboard/products/new')}
-          className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-primary/90 transition-colors"
+          className="fixed bottom-24 right-5 size-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-primary/90 transition-colors"
           style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
         >
           <Plus size={24} />
@@ -267,7 +267,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 function EmptyProducts({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+      <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
         <Package size={28} className="text-muted-foreground/60" />
       </div>
       <div>
@@ -287,7 +287,7 @@ function EmptyProducts({ onAdd }: { onAdd: () => void }) {
 function EmptyOrders() {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+      <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
         <ShoppingBag size={28} className="text-muted-foreground/60" />
       </div>
       <p className="text-sm font-semibold text-foreground">Замовлень поки немає</p>
@@ -302,7 +302,7 @@ function SkeletonList() {
       {[1, 2, 3].map(i => (
         <div key={i} className="bento-card p-4 animate-pulse">
           <div className="flex gap-3">
-            <div className="w-16 h-16 rounded-lg bg-secondary" />
+            <div className="size-16 rounded-lg bg-secondary" />
             <div className="flex-1 flex flex-col gap-2 pt-1">
               <div className="h-3.5 bg-secondary rounded-full w-2/3" />
               <div className="h-3 bg-secondary rounded-full w-1/3" />

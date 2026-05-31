@@ -170,7 +170,7 @@ interface ProfileMapItem {
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+          <Loader2 className="size-8 animate-spin text-slate-400" />
         </div>
       ) : viewMode === 'tree' ? (
         <div className="rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-6 shadow-sm overflow-x-auto min-h-[400px]">
@@ -243,13 +243,13 @@ function TreeNodeItem({ node, level }: { node: AllianceNode; level: number }) {
         {hasChildren ? (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer active:scale-[0.90] transition"
+            className="flex size-5 shrink-0 items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer active:scale-[0.90] transition"
           >
-            {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            {isOpen ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
           </button>
         ) : (
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center text-slate-300">
-            <User className="h-3.5 w-3.5" />
+          <div className="flex size-5 shrink-0 items-center justify-center text-slate-300">
+            <User className="size-3.5" />
           </div>
         )}
 
@@ -267,7 +267,7 @@ function TreeNodeItem({ node, level }: { node: AllianceNode; level: number }) {
           </span>
           {hasChildren && (
             <span className="flex items-center gap-0.5 text-[9px] font-bold bg-slate-100 text-slate-600 rounded px-1.5">
-              <Award className="h-2.5 w-2.5" />
+              <Award className="size-2.5" />
               {node.children.length}
             </span>
           )}

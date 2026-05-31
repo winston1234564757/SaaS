@@ -210,7 +210,7 @@ export function AdminSupportConsole() {
         {/* Search */}
         <div className="p-4 border-b border-slate-100 space-y-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-slate-400" />
             <input
               type="text"
               value={search}
@@ -240,7 +240,7 @@ export function AdminSupportConsole() {
         <div className="flex-1 overflow-y-auto divide-y divide-slate-100 scrollbar-hide">
           {loading ? (
             <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+              <Loader2 className="size-5 animate-spin text-slate-400" />
             </div>
           ) : filteredTickets.length === 0 ? (
             <div className="p-6 text-center text-slate-400 text-xs">
@@ -323,7 +323,7 @@ export function AdminSupportConsole() {
                   disabled={sending}
                   className="flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-slate-50 hover:bg-slate-800 transition active:scale-[0.95] cursor-pointer"
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <CheckCircle2 className="size-3.5" />
                   Вирішено
                 </button>
               )}
@@ -339,7 +339,7 @@ export function AdminSupportConsole() {
             <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
               {chatLoading && messages.length === 0 ? (
                 <div className="flex h-full items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                  <Loader2 className="size-6 animate-spin text-slate-400" />
                 </div>
               ) : (
                 messages.map((msg) => {
@@ -384,16 +384,16 @@ export function AdminSupportConsole() {
               <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-100 shrink-0 space-y-2">
                 {filePreview && (
                   <div className="relative flex items-center gap-2 rounded-2xl bg-slate-50 border border-slate-200 p-2 pr-8">
-                    <img src={filePreview} alt="Preview" className="h-8 w-8 rounded object-cover" />
+                    <img src={filePreview} alt="Preview" className="size-8 rounded object-cover" />
                     <span className="text-xs font-semibold text-slate-700 truncate max-w-[200px]">
                       {selectedFile?.name}
                     </span>
                     <button
                       type="button"
                       onClick={removeFile}
-                      className="absolute right-2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 active:scale-[0.90] cursor-pointer"
+                      className="absolute right-2 size-5 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 active:scale-[0.90] cursor-pointer"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="size-3" />
                     </button>
                   </div>
                 )}
@@ -409,9 +409,9 @@ export function AdminSupportConsole() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-100 active:scale-[0.90] cursor-pointer border border-slate-200"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-100 active:scale-[0.90] cursor-pointer border border-slate-200"
                   >
-                    <ImageIcon className="h-4 w-4" />
+                    <ImageIcon className="size-4" />
                   </button>
 
                   <input
@@ -425,9 +425,9 @@ export function AdminSupportConsole() {
                   <button
                     type="submit"
                     disabled={sending || (!messageText.trim() && !selectedFile)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-slate-50 transition hover:bg-slate-800 active:scale-[0.90] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-slate-50 transition hover:bg-slate-800 active:scale-[0.90] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   >
-                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                   </button>
                 </div>
               </form>
@@ -439,7 +439,7 @@ export function AdminSupportConsole() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-2">
-            <MessageSquare className="h-10 w-10 text-slate-350" />
+            <MessageSquare className="size-10 text-slate-350" />
             <p className="text-xs">Оберіть тікет підтримки зі списку ліворуч, щоб почати чат</p>
           </div>
         )}

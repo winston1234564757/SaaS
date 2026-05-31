@@ -66,7 +66,7 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
               </span>
             </div>
             <div className={cn(
-              "w-10 h-10 rounded-2xl flex items-center justify-center transition-colors",
+              "size-10 rounded-2xl flex items-center justify-center transition-colors",
               stat.count > 0 ? "bg-primary/10 text-primary" : "bg-muted/10 text-muted-foreground/40"
             )}>
               <Calendar size={18} />
@@ -112,14 +112,14 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
               {stat.bookings.slice(0, 4).map((b, j) => (
                 <div 
                   key={b.id} 
-                  className="w-7 h-7 rounded-full bg-white border-2 border-peach flex items-center justify-center text-[10px] font-bold text-primary shadow-sm"
+                  className="size-7 rounded-full bg-white border-2 border-peach flex items-center justify-center text-[10px] font-bold text-primary shadow-sm"
                   title={b.client_name}
                 >
                   {b.client_name[0]}
                 </div>
               ))}
               {stat.count > 4 && (
-                <div className="w-7 h-7 rounded-full bg-muted/20 border-2 border-peach flex items-center justify-center text-[8px] font-black text-muted-foreground">
+                <div className="size-7 rounded-full bg-muted/20 border-2 border-peach flex items-center justify-center text-[8px] font-black text-muted-foreground">
                   +{stat.count - 4}
                 </div>
               )}

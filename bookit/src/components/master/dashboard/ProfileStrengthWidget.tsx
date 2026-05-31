@@ -153,7 +153,7 @@ export function ProfileStrengthWidget() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring' as const, stiffness: 180, damping: 8 }}
-                className="w-16 h-16 rounded-full bg-accent-light flex items-center justify-center text-accent"
+                className="size-16 rounded-full bg-accent-light flex items-center justify-center text-accent"
               >
                 <PartyPopper size={32} />
               </motion.div>
@@ -229,7 +229,7 @@ export function ProfileStrengthWidget() {
                         whileTap={{ scale: 0.98 }}
                         className="flex items-center gap-3 py-2.5 px-3 rounded-xl cursor-pointer"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-accent-light flex items-center justify-center text-accent shrink-0">
+                        <div className="size-8 rounded-lg bg-accent-light flex items-center justify-center text-accent shrink-0">
                           <step.Icon size={14} />
                         </div>
                         <div className="flex-1 min-w-0">

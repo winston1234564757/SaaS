@@ -107,7 +107,7 @@ export function LandingComparison() {
                 className="flex items-start gap-3"
               >
                 <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{ background: 'color-mix(in srgb, var(--l-muted-2) 12%, transparent)' }}
                   aria-hidden="true"
                 >
@@ -127,7 +127,7 @@ export function LandingComparison() {
                 style={{ background: 'color-mix(in srgb, var(--l-indigo-glow) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--l-indigo-glow) 12%, transparent)' }}
               >
                 <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{ background: 'color-mix(in srgb, var(--l-indigo-glow) 18%, transparent)' }}
                   aria-hidden="true"
                 >

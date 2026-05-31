@@ -65,8 +65,6 @@ export function useBookingWizardState({
   const selectedDateRef = useRef<Date | null>(null);
   selectedDateRef.current = selectedDate;
   const [selectedTime, setSelectedTime]         = useState<string | null>(null);
-  const [clientName, setClientName]             = useState('');
-  const [clientPhone, setClientPhone]           = useState('');
   const [clientEmail, setClientEmail]           = useState('');
   const [clientNotes, setClientNotes]           = useState('');
   const [discountPercent, setDiscountPercent]   = useState(0);
@@ -114,15 +112,6 @@ export function useBookingWizardState({
 
   const watchName = watch('clientName');
   const watchPhone = watch('clientPhone');
-
-  // Sync manual state with form state (to keep rest of wizard happy)
-  useEffect(() => {
-    setClientName(watchName || '');
-  }, [watchName]);
-
-  useEffect(() => {
-    setClientPhone(watchPhone || '');
-  }, [watchPhone]);
 
   // ── Refs ──────────────────────────────────────────────────────────────────────
   const wasOpenRef = useRef(false); // true if modal was already open (retry vs fresh open)
@@ -183,8 +172,6 @@ export function useBookingWizardState({
       // Flash deal fast-track: pre-fill locked date & time
       setSelectedDate(initialDate ? new Date(initialDate + 'T12:00:00') : null);
       setSelectedTime(initialTime ?? null);
-      setClientName('');
-      setClientPhone('');
       setClientEmail('');
       setClientNotes('');
       setDiscountPercent(0);
@@ -217,13 +204,11 @@ export function useBookingWizardState({
         if (cancelled || !userId) return;
         setClientUserId(userId);
         if (name) {
-          setClientName(name);
           setValue('clientName', name);
         }
         if (phone) {
           const e164 = normalizeToE164(phone);
           const normalizedPhone = e164 ? '+' + e164 : phone;
-          setClientPhone(normalizedPhone);
           setValue('clientPhone', normalizedPhone, { shouldValidate: true });
         }
         if (email) setClientEmail(email);
@@ -346,7 +331,7 @@ export function useBookingWizardState({
     selectedServices, cart,
     selectedDate, setSelectedDate, selectedDateRef,
     selectedTime, setSelectedTime,
-    clientName, clientPhone,
+    clientName: watchName || '', clientPhone: watchPhone || '',
     clientEmail, setClientEmail,
     clientNotes, setClientNotes,
     discountPercent, setDiscountPercent,

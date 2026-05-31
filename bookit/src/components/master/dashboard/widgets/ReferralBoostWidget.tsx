@@ -91,7 +91,7 @@ export function ReferralBoostWidget() {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <span
-            className="flex items-center justify-center w-10 h-10 rounded-xl shrink-0"
+            className="flex items-center justify-center size-10 rounded-xl shrink-0"
             style={{
               background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
               color: 'var(--accent)',
@@ -176,7 +176,7 @@ export function ReferralBoostWidget() {
 
         <Link
           href="/dashboard/growth?tab=referral"
-          className="flex items-center justify-center w-10 h-10 rounded-xl transition-all active:scale-[0.95] cursor-pointer shrink-0"
+          className="flex items-center justify-center size-10 rounded-xl transition-all active:scale-[0.95] cursor-pointer shrink-0"
           style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}
         >
           <ChevronRight size={16} style={{ color: 'var(--accent)' }} />

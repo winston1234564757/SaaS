@@ -27,9 +27,9 @@ export function Badge({ variant = 'default', pulse = false, className, children,
       {...props}
     >
       {pulse && (
-        <span className="relative flex h-1.5 w-1.5">
+        <span className="relative flex size-1.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current" />
+          <span className="relative inline-flex rounded-full size-1.5 bg-current" />
         </span>
       )}
       {children}

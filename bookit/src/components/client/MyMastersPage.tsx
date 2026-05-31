@@ -101,7 +101,7 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
       <div className="flex items-center gap-3">
         {/* Emoji avatar */}
         <div
-          className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15"
+          className="size-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15"
         >
           {master.avatarEmoji}
         </div>

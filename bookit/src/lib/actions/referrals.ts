@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { generateSecureToken } from '@/lib/utils/token';
 
 // ── getOrGenerateReferralCode ─────────────────────────────────────
@@ -13,6 +14,10 @@ export async function getOrGenerateProfileReferralCode(
   type: 'master' | 'client' = 'master'
 ): Promise<{ success: boolean; code?: string; error?: string }> {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.id !== id) return { success: false, error: 'Unauthorized' };
+
     const admin = createAdminClient();
     const table = type === 'master' ? 'master_profiles' : 'client_profiles';
 
@@ -65,9 +70,13 @@ export async function getOrCreateReferralLink(
   | { success: true; code: string; link: string }
   | { success: false; error: string }
 > {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id !== ownerId) return { success: false, error: 'Unauthorized' };
+
   // Тепер ми просто повертаємо код з профілю для B2B
   const appUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua';
-  
+
   if (targetType === 'B2B') {
     const res = await getOrGenerateReferralCode(ownerId);
     if (res.success && res.code) {
@@ -125,6 +134,12 @@ export async function applyReferralRewards(
   newMasterId: string,
   refCode: string,
 ): Promise<ReferralBonus> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id !== newMasterId) {
+    return { subscriptionTier: 'starter', subscriptionExpiresAt: null, finalReferredBy: null };
+  }
+
   const sanitized = refCode.trim();
   if (!REFERRAL_CODE_RE.test(sanitized)) {
     return { subscriptionTier: 'starter', subscriptionExpiresAt: null, finalReferredBy: null };
@@ -380,6 +395,10 @@ export async function processRegistrationReferral(
   refCode: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.id !== newMasterId) return { success: false, error: 'Unauthorized' };
+
     const admin = createAdminClient();
 
     // 1. Знаходимо реферера (власника коду)
@@ -402,7 +421,7 @@ export async function processRegistrationReferral(
     const baseDate = referrer.subscription_expires_at
       ? new Date(referrer.subscription_expires_at)
       : new Date();
-    
+
     // Якщо підписка вже закінчилась, рахуємо від сьогодні
     const start = baseDate > new Date() ? baseDate : new Date();
     start.setDate(start.getDate() + 30);
@@ -413,21 +432,19 @@ export async function processRegistrationReferral(
       .eq('id', referrer.id);
 
     // 4. Нараховуємо бонус новому майстру (+30 днів пробного періоду Pro)
-    // (Логіка залежить від того, чи хочемо ми давати бонус і новачкові відразу)
-    // Для MVP даємо обом:
     const newMasterBonus = new Date();
     newMasterBonus.setDate(newMasterBonus.getDate() + 30);
-    
+
     await admin
       .from('master_profiles')
-      .update({ 
+      .update({
         subscription_expires_at: newMasterBonus.toISOString(),
-        subscription_tier: 'pro' // Даємо Pro тріал
+        subscription_tier: 'pro'
       })
       .eq('id', newMasterId);
 
     if (promoError) return { success: false, error: promoError.message };
-    
+
     return { success: true };
   } catch (e: any) {
     return { success: false, error: e.message };

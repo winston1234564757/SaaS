@@ -37,8 +37,8 @@ export function CancellationRateWidget() {
   const { bookings: thisBk, isLoading: l1 } = useBookings(thisWeek.from, thisWeek.to);
   const { bookings: lastBk, isLoading: l2 } = useBookings(lastWeek.from, lastWeek.to);
 
-  const thisRate = useMemo(() => (thisBk ? calcRate(thisBk) : null), [thisBk]);
-  const lastRate = useMemo(() => (lastBk ? calcRate(lastBk) : null), [lastBk]);
+  const thisRate = (thisBk ? calcRate(thisBk) : null);
+  const lastRate = (lastBk ? calcRate(lastBk) : null);
   const delta    = thisRate !== null && lastRate !== null ? thisRate - lastRate : null;
   const improved = delta !== null ? delta < 0 : null;
 

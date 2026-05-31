@@ -40,7 +40,7 @@ interface MasterProviderProps {
 
 export function MasterProvider({ children, initialUser, initialProfile, initialMasterProfile }: MasterProviderProps) {
   // Single stable client instance — created once per component mount, no leaks on re-renders
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = createClient();
 
   const [user, setUser] = useState<User | null>(initialUser ?? null);
   const [profile, setProfile] = useState<Profile | null>(initialProfile ?? null);
@@ -56,7 +56,7 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   // Якщо сервер надав initial data — пропускаємо зайвий fetchProfile на INITIAL_SESSION
   const hasInitialData = useRef(!!initialUser);
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = async (userId: string) => {
     const impersonatedId = Cookies.get('impersonate_master_id');
     const role = Cookies.get('user_role');
     const activeImpersonating = role === 'admin' && !!impersonatedId;
@@ -96,11 +96,11 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     } else {
       setRealAdminProfile(null);
     }
-  }, [supabase]);
+  };
 
-  const refresh = useCallback(async () => {
+  const refresh = async () => {
     if (user) await fetchProfile(user.id);
-  }, [user, fetchProfile]);
+  };
 
   // Відстежуємо час переходу в фон для visibility recovery
   const lastHiddenAt = useRef(0);
@@ -178,10 +178,7 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     };
   }, [supabase, fetchProfile]);
 
-  const contextValue = useMemo(
-    () => ({ user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile }),
-    [user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile]
-  );
+  const contextValue = ({ user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile });
 
   return (
     <MasterContext.Provider value={contextValue}>

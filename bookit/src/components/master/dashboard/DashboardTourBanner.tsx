@@ -131,7 +131,7 @@ export function DashboardTourBanner() {
 
               <button
                 onClick={closeTour}
-                className="flex items-center justify-center w-10 h-10 rounded-xl transition-all active:scale-[0.95] cursor-pointer"
+                className="flex items-center justify-center size-10 rounded-xl transition-all active:scale-[0.95] cursor-pointer"
                 style={{
                   background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
                   color: 'var(--text-secondary)',

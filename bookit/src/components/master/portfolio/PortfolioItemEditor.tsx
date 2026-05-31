@@ -204,7 +204,7 @@ export function PortfolioItemEditor({
               <button
                 onClick={handleClose}
                 disabled={closingAndSaving}
-                className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60 active:scale-[0.88] cursor-pointer transition-all"
+                className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60 active:scale-[0.88] cursor-pointer transition-all"
               >
                 {closingAndSaving ? <Loader2 size={14} className="animate-spin" /> : <X size={16} />}
               </button>
@@ -368,11 +368,11 @@ export function PortfolioItemEditor({
                           >
                             <div
                               className={cn(
-                                "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors",
+                                "size-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors",
                                 isSelected ? "border-primary bg-primary" : "border-border bg-transparent"
                               )}
                             >
-                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                              {isSelected && <div className="size-1.5 rounded-full bg-primary-foreground" />}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-foreground">

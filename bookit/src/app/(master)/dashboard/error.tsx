@@ -16,8 +16,8 @@ export default function DashboardError({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
-      <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
-        <AlertCircle className="w-10 h-10 text-destructive" />
+      <div className="size-20 bg-destructive/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
+        <AlertCircle className="size-10 text-destructive" />
       </div>
       
       <h1 className="text-3xl font-bold tracking-tight mb-2">Щось пішло не так</h1>
@@ -30,7 +30,7 @@ export default function DashboardError({
           onClick={() => reset()}
           className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all active:scale-95"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="size-4" />
           Спробувати знову
         </button>
         
@@ -38,7 +38,7 @@ export default function DashboardError({
           href="/dashboard"
           className="flex-1 flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-secondary/80 transition-all active:scale-95"
         >
-          <Home className="w-4 h-4" />
+          <Home className="size-4" />
           На головну
         </Link>
       </div>

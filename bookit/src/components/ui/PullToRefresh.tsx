@@ -23,7 +23,7 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
   const isPullingRef = useRef(false);
   const isRefreshingRef = useRef(false);
 
-  const handleRefresh = useCallback(async () => {
+  const handleRefresh = async () => {
     if (isRefreshingRef.current) return;
     isRefreshingRef.current = true;
     setVisualState('refreshing');
@@ -39,7 +39,7 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
       isRefreshingRef.current = false;
       setVisualState('idle');
     }
-  }, [queryClient, router]);
+  };
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
@@ -85,9 +85,9 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-full">
       {visualState !== 'idle' && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center w-10 h-10 bg-white shadow-md rounded-full">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center size-10 bg-white shadow-md rounded-full">
           <Loader2
-            className={`w-5 h-5 ${
+            className={`size-5 ${
               visualState === 'refreshing' ? 'animate-spin' : ''
             } text-primary`}
           />

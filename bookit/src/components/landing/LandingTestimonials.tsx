@@ -115,7 +115,7 @@ export function LandingTestimonials() {
                   {/* Author */}
                   <div className="flex items-center gap-3 pt-2" style={{ borderTop: '1px solid var(--l-border)' }}>
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                      className="size-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
                       style={{ background: t.bg }}
                       aria-hidden="true"
                     >

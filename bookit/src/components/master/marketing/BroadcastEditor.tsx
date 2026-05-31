@@ -135,8 +135,12 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
     }
   }, [tags, message]);
 
-  // Reset page when tags change
-  useEffect(() => { setTagPage(0); setExcludedIds(new Set()); }, [tags]);
+  const [prevTags, setPrevTags] = useState(tags);
+  if (prevTags !== tags) {
+    setPrevTags(tags);
+    setTagPage(0);
+    setExcludedIds(new Set());
+  }
 
   // Debounce search
   const handleSearchInput = (v: string) => {
@@ -172,7 +176,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
     ? selectedIds.size
     : Math.max(0, (tagPreview?.count ?? 0) - excludedIds.size);
 
-  const handlePreview = useCallback(async () => {
+  const handlePreview = async () => {
     if (!title.trim())   return setError('Вкажіть назву розсилки');
     if (!message.trim()) return setError('Напишіть повідомлення');
     if (channels.length === 0) return setError('Оберіть хоча б один канал');
@@ -197,9 +201,9 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
     } finally {
       setResolving(false);
     }
-  }, [title, message, channels, targetMode, selectedIds, tags, excludedIds]);
+  };
 
-  const handleSend = useCallback(async () => {
+  const handleSend = async () => {
     setError('');
 
     const input: CreateBroadcastInput = {
@@ -226,8 +230,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
     }
 
     onSent();
-  }, [title, message, channels, targetMode, tags, discountPct, discountServiceId, discountDays,
-      serviceLinkId, productLinkId, resolvedClientIds, create, send, onSent]);
+  };
 
   // ── Tag-mode client list ────────────────────────────────────────────────────
 
@@ -672,7 +675,7 @@ function ClientRow({
       className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-secondary/60 last:border-0 transition-colors hover:bg-secondary/40 text-left active:scale-95 transition-all"
     >
       <div
-        className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
+        className="size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
         style={checked
           ? { background: '#789A99', borderColor: '#789A99' }
           : { background: 'transparent', borderColor: '#E8D5CC' }}

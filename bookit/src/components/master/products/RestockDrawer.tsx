@@ -65,7 +65,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
                 <h2 className="text-base font-bold text-foreground">Поповнити склад</h2>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">{product.name} · зараз: {product.stock_qty} шт</p>
               </div>
-              <button onClick={handleClose} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button onClick={handleClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -74,14 +74,14 @@ export function RestockDrawer({ product, open, onClose }: Props) {
             <div className="flex items-center justify-center gap-5 my-6">
               <button
                 onClick={() => setQty(q => Math.max(1, q - 1))}
-                className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all"
+                className="size-12 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all"
               >
                 <Minus size={20} />
               </button>
               <span className="text-4xl font-bold text-foreground w-16 text-center tabular-nums">{qty}</span>
               <button
                 onClick={() => setQty(q => q + 1)}
-                className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center text-[var(--accent-on)] active:scale-[0.88] cursor-pointer transition-all"
+                className="size-12 rounded-lg bg-primary flex items-center justify-center text-[var(--accent-on)] active:scale-[0.88] cursor-pointer transition-all"
               >
                 <Plus size={20} />
               </button>

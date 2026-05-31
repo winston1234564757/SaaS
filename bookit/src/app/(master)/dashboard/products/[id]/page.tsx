@@ -12,5 +12,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
-  return <ProductEditor id={id} />;
+  return <ProductEditor key={id} id={id} />;
 }

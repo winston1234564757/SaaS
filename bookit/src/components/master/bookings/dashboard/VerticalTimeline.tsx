@@ -321,7 +321,7 @@ export function VerticalTimeline({
         className="rounded-3xl flex flex-col items-center justify-center gap-3 py-14"
         style={{ border: '0.5px solid var(--border)', background: 'var(--surface)' }}
       >
-        <div className="w-12 h-12 rounded-full bg-muted/10 flex items-center justify-center">
+        <div className="size-12 rounded-full bg-muted/10 flex items-center justify-center">
           <Moon size={22} className="text-muted-foreground/30" />
         </div>
         <p className="text-sm font-semibold text-muted-foreground/60">Вихідний день</p>
@@ -475,7 +475,7 @@ export function VerticalTimeline({
         >
           <div className="flex items-center gap-1">
             <div
-              className="w-2 h-2 rounded-full shrink-0"
+              className="size-2 rounded-full shrink-0"
               style={{ background: 'var(--error)', boxShadow: '0 0 6px var(--error)' }}
             />
             <div className="flex-1 h-px" style={{ background: 'var(--error)', opacity: 0.6 }} />

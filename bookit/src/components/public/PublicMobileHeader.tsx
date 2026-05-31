@@ -28,7 +28,7 @@ export async function PublicMobileHeader() {
             <Link
               href="/my/profile"
               aria-label="Профіль"
-              className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center text-primary"
+              className="size-9 rounded-xl bg-primary/15 flex items-center justify-center text-primary"
             >
               <User size={17} strokeWidth={2} />
             </Link>
@@ -36,7 +36,7 @@ export async function PublicMobileHeader() {
             <Link
               href="/login"
               aria-label="Увійти"
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-black/5 transition-colors"
+              className="size-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-black/5 transition-colors"
             >
               <LogIn size={17} strokeWidth={2} />
             </Link>

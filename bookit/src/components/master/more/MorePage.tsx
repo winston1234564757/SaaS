@@ -130,7 +130,7 @@ export function MorePage() {
                   {/* Icon + Soon badge */}
                   <div className="flex items-start justify-between">
                     <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+                      className="size-10 rounded-2xl flex items-center justify-center shrink-0"
                       style={{ background: `${item.accent}18` }}
                     >
                       <Icon size={18} style={{ color: item.accent }} />

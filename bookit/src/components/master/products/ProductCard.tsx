@@ -43,10 +43,10 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
       className={`bento-card p-4 flex gap-3 transition-opacity group ${!p.is_active ? 'opacity-55' : ''}`}
     >
       {/* Photo / placeholder */}
-      <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
+      <div className="relative size-16 rounded-xl overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
         <button
           {...dragHandleProps}
-          className="absolute top-0.5 left-0.5 w-5 h-5 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
+          className="absolute top-0.5 left-0.5 size-5 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
         >
           <GripVertical size={10} className="text-white" />
         </button>
@@ -69,7 +69,7 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
             aria-label={p.is_active ? 'Деактивувати' : 'Активувати'}
           >
             <span
-              className={`block w-4 h-4 rounded-full bg-accent-on shadow transition-transform ${p.is_active ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}
+              className={`block size-4 rounded-full bg-accent-on shadow transition-transform ${p.is_active ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}
               style={{ marginTop: 2 }}
             />
           </button>
@@ -106,7 +106,7 @@ function ActionBtn({ onClick, label, children }: { onClick: () => void; label: s
     <button
       onClick={onClick}
       aria-label={label}
-      className="w-8 h-8 rounded-xl bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
+      className="size-8 rounded-xl bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
     >
       {children}
     </button>

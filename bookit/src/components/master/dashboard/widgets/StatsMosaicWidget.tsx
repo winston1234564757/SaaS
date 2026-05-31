@@ -369,7 +369,7 @@ function ClientsModal({
                       <a
                         href={`tel:${phone}`}
                         onClick={e => e.stopPropagation()}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--accent)] hover:text-[var(--accent-on)] transition-colors duration-150"
+                        className="size-8 flex items-center justify-center rounded-full bg-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--accent)] hover:text-[var(--accent-on)] transition-colors duration-150"
                       >
                         <Phone size={13} strokeWidth={2} />
                       </a>
@@ -380,7 +380,7 @@ function ClientsModal({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={e => e.stopPropagation()}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--accent)] hover:text-[var(--accent-on)] transition-colors duration-150"
+                        className="size-8 flex items-center justify-center rounded-full bg-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--accent)] hover:text-[var(--accent-on)] transition-colors duration-150"
                       >
                         <MessageCircle size={13} strokeWidth={2} />
                       </a>

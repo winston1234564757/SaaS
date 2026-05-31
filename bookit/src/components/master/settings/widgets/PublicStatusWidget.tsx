@@ -67,7 +67,7 @@ export function PublicStatusWidget({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className={cn(
-            "w-9 h-9 rounded-2xl flex items-center justify-center transition-all shadow-sm",
+            "size-9 rounded-2xl flex items-center justify-center transition-all shadow-sm",
             isPublished ? "bg-success text-white" : "bg-muted text-text-mute"
           )}>
             <Globe size={18} />
@@ -89,7 +89,7 @@ export function PublicStatusWidget({
         >
           <motion.div
             animate={{ x: isPublished ? 20 : 4 }}
-            className="absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-md"
+            className="absolute top-1 left-1 size-5 rounded-full bg-white shadow-md"
           />
         </button>
       </div>
@@ -142,7 +142,7 @@ export function PublicStatusWidget({
                 ref={qrRef}
                 src={qrUrl} 
                 alt="QR Code" 
-                className="w-32 h-32" 
+                className="size-32" 
                 crossOrigin="anonymous"
               />
             </div>

@@ -23,7 +23,7 @@ export function RevenueWidget() {
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Виручка сьогодні</h3>
           <p className="text-3xl font-bold text-foreground mt-1">{formatPrice(todayRevenue)}</p>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-success/12 flex items-center justify-center">
+        <div className="size-10 rounded-xl bg-success/12 flex items-center justify-center">
           <TrendingUp size={20} className="text-success" />
         </div>
       </div>

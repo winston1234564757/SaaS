@@ -73,7 +73,7 @@ export function LandingNav() {
                   {/* Original */}
                   <div data-impeccable-variant="original">
                     <span
-                      className="w-6 h-6 rounded-full flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      className="size-6 rounded-full flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                       style={{ background: 'rgba(248,250,252,0.18)' }}
                     >
                       <ArrowUpRight size={12} aria-hidden="true" />
@@ -99,7 +99,7 @@ export function LandingNav() {
             </Link>
             <button
               onClick={() => setOpen(true)}
-              className="sm:hidden w-9 h-9 flex flex-col items-center justify-center gap-[5px] rounded-full transition-colors hover:bg-black/5"
+              className="sm:hidden size-9 flex flex-col items-center justify-center gap-[5px] rounded-full transition-colors hover:bg-black/5"
               aria-label="Відкрити навігацію"
             >
               <span className="w-4 h-[1.5px] block" style={{ background: 'var(--l-ink)' }} />
@@ -129,7 +129,7 @@ export function LandingNav() {
               </span>
               <button
                 onClick={() => setOpen(false)}
-                className="w-10 h-10 flex items-center justify-center rounded-full transition-colors"
+                className="size-10 flex items-center justify-center rounded-full transition-colors"
                 style={{ background: 'var(--l-surface-2)', border: '1px solid var(--l-border)' }}
                 aria-label="Закрити навігацію"
               >

@@ -93,7 +93,7 @@ export function FrostMetricsStrip() {
   const loaded = !isLoading;
   const convRate = fmtPct(weekNewClients, weekClients);
 
-  const items: TickerItemDef[] = useMemo(() => [
+  const items: TickerItemDef[] = [
     { label: 'Записів сьогодні',    value: isLoading ? '—' : String(todayCount),      rawCount: isLoading ? undefined : todayCount,      href: '/dashboard/bookings'  },
     { label: 'Виручка',             value: isLoading ? '—' : fmtRevenue(todayRevenue),                                                    href: '/dashboard/analytics' },
     { label: 'Підтверджено',        value: isLoading ? '—' : String(todayConfirmed),   rawCount: isLoading ? undefined : todayConfirmed,  href: '/dashboard/bookings'  },
@@ -102,7 +102,7 @@ export function FrostMetricsStrip() {
     { label: 'Нових',               value: isLoading ? '—' : String(weekNewClients),   rawCount: isLoading ? undefined : weekNewClients,  href: '/dashboard/clients'   },
     { label: 'Завершено за місяць', value: isLoading ? '—' : String(monthCompleted),   rawCount: isLoading ? undefined : monthCompleted,  href: '/dashboard/analytics' },
     { label: 'Конверсія',           value: isLoading ? '—' : convRate,                                                                    href: '/dashboard/analytics' },
-  ], [isLoading, todayCount, todayRevenue, todayConfirmed, todayPending, weekClients, weekNewClients, monthCompleted, convRate]);
+  ];
 
   const trackRef = useRef<HTMLDivElement>(null);
 

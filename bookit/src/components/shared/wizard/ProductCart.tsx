@@ -65,7 +65,7 @@ export function ProductCart({
                   qty > 0 ? 'bg-primary/10 border-primary/40 shadow-sm' : 'bg-secondary border-border'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10 border border-primary/20">
+                <div className="size-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10 border border-primary/20">
                   <ProductIcon name={p.icon_name} size={18} className="text-primary flex-shrink-0" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -80,7 +80,7 @@ export function ProductCart({
                     type="button"
                     aria-label={`Додати ${p.name}`}
                     onClick={() => onAdd(p)}
-                    className="w-11 h-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center shrink-0 hover:opacity-90 active:scale-[0.88] transition-all cursor-pointer"
+                    className="size-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center shrink-0 hover:opacity-90 active:scale-[0.88] transition-all cursor-pointer"
                   >
                     <Plus size={15} />
                   </button>
@@ -90,7 +90,7 @@ export function ProductCart({
                       type="button"
                       aria-label={`Прибрати ${p.name}`}
                       onClick={() => onRemove(p.id)}
-                      className="w-11 h-11 rounded-full bg-secondary text-muted-foreground flex items-center justify-center border border-border/40 hover:bg-secondary/80 active:scale-[0.88] transition-all cursor-pointer"
+                      className="size-11 rounded-full bg-secondary text-muted-foreground flex items-center justify-center border border-border/40 hover:bg-secondary/80 active:scale-[0.88] transition-all cursor-pointer"
                     >
                       <Minus size={14} />
                     </button>
@@ -100,7 +100,7 @@ export function ProductCart({
                       aria-label={`Додати ще ${p.name}`}
                       onClick={() => onAdd(p)}
                       disabled={atMax}
-                      className="w-11 h-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center hover:opacity-90 active:scale-[0.88] transition-all cursor-pointer disabled:opacity-40"
+                      className="size-11 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] flex items-center justify-center hover:opacity-90 active:scale-[0.88] transition-all cursor-pointer disabled:opacity-40"
                     >
                       <Plus size={14} />
                     </button>

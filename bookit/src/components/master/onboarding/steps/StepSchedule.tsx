@@ -97,7 +97,7 @@ export function StepSchedule({
           </p>
         </div>
         <div
-          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ml-3"
+          className="size-5 rounded-full flex items-center justify-center flex-shrink-0 ml-3"
           style={{ background: 'var(--accent)' }}
         >
           <Check size={11} style={{ color: 'var(--accent-on)' }} strokeWidth={3} />

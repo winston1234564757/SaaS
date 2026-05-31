@@ -38,7 +38,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
               </div>
               <button 
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-muted/10 flex items-center justify-center text-muted-foreground hover:bg-muted/20 transition-all"
+                className="size-10 rounded-full bg-muted/10 flex items-center justify-center text-muted-foreground hover:bg-muted/20 transition-all"
               >
                 <X size={20} />
               </button>
@@ -49,7 +49,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
                 onClick={() => onAction('booking')}
                 className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary border border-border shadow-sm hover:border-primary/20 hover:bg-primary/5 transition-all active:scale-95"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                   <Plus size={24} />
                 </div>
                 <div className="text-left">
@@ -62,7 +62,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
                 onClick={() => onAction('flash')}
                 className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary border border-border shadow-sm hover:border-warning/20 hover:bg-warning/5 transition-all active:scale-95"
               >
-                <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center text-warning group-hover:scale-110 transition-transform">
+                <div className="size-12 rounded-xl bg-warning/10 flex items-center justify-center text-warning group-hover:scale-110 transition-transform">
                   <Zap size={24} />
                 </div>
                 <div className="text-left">
@@ -75,7 +75,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
                 onClick={() => onAction('story')}
                 className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary border border-border shadow-sm hover:border-sage/20 hover:bg-sage/5 transition-all active:scale-95"
               >
-                <div className="w-12 h-12 rounded-xl bg-sage/10 flex items-center justify-center text-sage group-hover:scale-110 transition-transform">
+                <div className="size-12 rounded-xl bg-sage/10 flex items-center justify-center text-sage group-hover:scale-110 transition-transform">
                   <ImageIcon size={24} />
                 </div>
                 <div className="text-left">

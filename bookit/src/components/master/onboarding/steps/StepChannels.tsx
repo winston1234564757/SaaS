@@ -86,7 +86,7 @@ export function StepChannels({ direction, slideVariants, transition, saving, onC
           style={{ boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
         >
           <div
-            className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center text-xl"
+            className="size-11 rounded-xl shrink-0 flex items-center justify-center text-xl"
             style={{ background: tgState === 'opened' ? 'color-mix(in srgb, var(--color-sage) 15%, transparent)' : '#229ED9' }}
           >
             {tgState === 'opened' ? '✓' : '✈️'}
@@ -124,7 +124,7 @@ export function StepChannels({ direction, slideVariants, transition, saving, onC
           }`}
           style={{ boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
         >
-          <div className="w-11 h-11 rounded-xl bg-primary/15 shrink-0 flex items-center justify-center text-xl">
+          <div className="size-11 rounded-xl bg-primary/15 shrink-0 flex items-center justify-center text-xl">
             {pushState === 'done' ? <CheckCircle2 size={20} className="text-primary" /> : '🔔'}
           </div>
           <div className="flex-1">

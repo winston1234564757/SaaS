@@ -236,7 +236,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
              <div className="absolute top-0 right-0 p-4 opacity-5">
                 <Zap size={80} />
              </div>
-             <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground shadow-sm">
+             <div className="size-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground shadow-sm">
                 <Users size={20} className="opacity-40" />
              </div>
              <div>
@@ -321,7 +321,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                          >
                             <div className="flex items-center justify-between">
                                <div className="flex items-center gap-3">
-                                  <div className="w-9 h-9 rounded-full bg-sage/10 flex items-center justify-center text-sage font-bold text-xs">
+                                  <div className="size-9 rounded-full bg-sage/10 flex items-center justify-center text-sage font-bold text-xs">
                                      {adv.name[0]}
                                   </div>
                                   <div>
@@ -344,7 +344,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                                   <p className="text-[9px] font-bold text-sage uppercase tracking-widest mb-1">Запрошені друзі:</p>
                                   {adv.friends.map((friend, j) => (
                                      <div key={j} className="flex items-center gap-2 text-xs text-muted-foreground/70">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-sage/30" />
+                                        <div className="size-1.5 rounded-full bg-sage/30" />
                                         {friend}
                                      </div>
                                   ))}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { subDays, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
@@ -13,6 +13,7 @@ const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 function toISO(d: Date) { return format(d, 'yyyy-MM-dd'); }
 
 interface ActiveCell { dIdx: number; hIdx: number }
+interface TooltipPos { left: number; top: number; flipDown: boolean }
 
 export function PeakHoursWidget() {
   const now  = getNow();
@@ -20,9 +21,7 @@ export function PeakHoursWidget() {
   const to   = toISO(now);
   const { bookings, isLoading } = useBookings(from, to);
   const [activeCell, setActiveCell] = useState<ActiveCell | null>(null);
-  const cellRefs = useRef<(HTMLDivElement | null)[][]>(
-    Array.from({ length: 7 }, () => Array(HOURS.length).fill(null))
-  );
+  const [tooltipPos, setTooltipPos] = useState<TooltipPos | null>(null);
 
   const { grid, max } = useMemo<{ grid: number[][]; max: number }>(() => {
     const g: number[][] = Array.from({ length: 7 }, () => Array(HOURS.length).fill(0));
@@ -40,34 +39,35 @@ export function PeakHoursWidget() {
 
   useEffect(() => {
     if (!activeCell) return;
-    const dismiss = () => setActiveCell(null);
+    const dismiss = () => { setActiveCell(null); setTooltipPos(null); };
     window.addEventListener('scroll', dismiss, { passive: true });
     return () => window.removeEventListener('scroll', dismiss);
   }, [activeCell]);
 
-  const handleCell = useCallback((dIdx: number, hIdx: number) => {
-    setActiveCell(prev =>
-      prev?.dIdx === dIdx && prev?.hIdx === hIdx ? null : { dIdx, hIdx }
-    );
-  }, []);
-
-  const tooltipInfo = useMemo(() => {
-    if (!activeCell) return null;
-    const cell = cellRefs.current[activeCell.dIdx]?.[activeCell.hIdx];
-    if (!cell) return null;
-    const rect = cell.getBoundingClientRect();
+  const handleCell = (dIdx: number, hIdx: number, target: HTMLElement) => {
+    const isSame = activeCell?.dIdx === dIdx && activeCell?.hIdx === hIdx;
+    if (isSame) { setActiveCell(null); setTooltipPos(null); return; }
+    const rect = target.getBoundingClientRect();
     const TOOLTIP_H = 38;
     const GAP = 6;
     const flipDown = rect.top < TOOLTIP_H + GAP + 8;
-    return {
-      left:     rect.left + rect.width / 2,
-      top:      flipDown ? rect.bottom + GAP : rect.top - TOOLTIP_H - GAP,
+    setActiveCell({ dIdx, hIdx });
+    setTooltipPos({
+      left: rect.left + rect.width / 2,
+      top: flipDown ? rect.bottom + GAP : rect.top - TOOLTIP_H - GAP,
       flipDown,
-      count:    grid[activeCell.dIdx][activeCell.hIdx],
-      day:      DAYS[activeCell.dIdx],
-      hour:     HOURS[activeCell.hIdx],
+    });
+  };
+
+  const tooltipInfo = useMemo(() => {
+    if (!activeCell || !tooltipPos) return null;
+    return {
+      ...tooltipPos,
+      count: grid[activeCell.dIdx][activeCell.hIdx],
+      day:   DAYS[activeCell.dIdx],
+      hour:  HOURS[activeCell.hIdx],
     };
-  }, [activeCell, grid]);
+  }, [activeCell, tooltipPos, grid]);
 
   if (isLoading) {
     return (
@@ -112,7 +112,7 @@ export function PeakHoursWidget() {
           Пікові години
         </p>
 
-        <div className="flex gap-[3px]" onMouseLeave={() => setActiveCell(null)}>
+        <div className="flex gap-[3px]" onMouseLeave={() => { setActiveCell(null); setTooltipPos(null); }}>
           <div className="flex flex-col gap-[3px] pt-[18px] pr-1 shrink-0">
             {HOURS.map(h => (
               <div key={h} className="h-[17px] flex items-center">
@@ -135,7 +135,10 @@ export function PeakHoursWidget() {
                   return (
                     <div
                       key={hIdx}
-                      ref={el => { cellRefs.current[dIdx][hIdx] = el; }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${DAYS[dIdx]} ${HOURS[hIdx]}:00`}
+                      aria-pressed={isActive}
                       className="h-[17px] cursor-pointer"
                       style={{
                         borderRadius: '3px',
@@ -145,8 +148,9 @@ export function PeakHoursWidget() {
                         transform:    isActive ? 'scale(1.2)' : 'scale(1)',
                         transition:   'transform 100ms ease-out',
                       }}
-                      onMouseEnter={() => handleCell(dIdx, hIdx)}
-                      onClick={() => handleCell(dIdx, hIdx)}
+                      onMouseEnter={(e) => handleCell(dIdx, hIdx, e.currentTarget)}
+                      onClick={(e) => handleCell(dIdx, hIdx, e.currentTarget)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCell(dIdx, hIdx, e.currentTarget); }}
                     />
                   );
                 })}

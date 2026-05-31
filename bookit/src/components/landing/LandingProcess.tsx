@@ -235,7 +235,7 @@ export function LandingProcess() {
               }}
             >
               <span
-                className="w-2 h-2 rounded-full animate-pulse"
+                className="size-2 rounded-full animate-pulse"
                 style={{ background: 'var(--l-accent)' }}
                 aria-hidden="true"
               />

@@ -45,7 +45,7 @@ export function ChannelHealthWidget() {
       {data && data.total === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-4">
           <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+            className="size-10 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)' }}
           >
             <Users size={18} strokeWidth={1.4} style={{ color: 'var(--accent)' }} />

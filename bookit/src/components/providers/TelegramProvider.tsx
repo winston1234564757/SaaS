@@ -73,7 +73,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   // У TMA WebView soft-nav (router.replace) часто застрягає в iframe race.
   // Hard nav гарантує SSR-redraw зі свіжими cookies (proxy.ts читає sb-*-auth-token
   // і одразу робить server-side редирект до /dashboard або /my/bookings).
-  const navigateAfterAuth = useCallback((role: string | null | undefined, inTma: boolean) => {
+  const navigateAfterAuth = (role: string | null | undefined, inTma: boolean) => {
     setIsRedirecting(true);
     setLoadingStep('Вхід до кабінету...');
     const target = targetPathForRole(role);
@@ -82,10 +82,10 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     } else {
       router.replace(target);
     }
-  }, [router]);
+  };
 
   // ── Auto-login flow (TMA, profile linked with phone) ────────────────────────
-  const handleAutoLogin = useCallback(async (initData: string, inTma: boolean) => {
+  const handleAutoLogin = async (initData: string, inTma: boolean) => {
     try {
       setLoadingStep('Авторизація...');
       const res = await fetch('/api/auth/telegram', {
@@ -119,7 +119,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       console.error('[TelegramProvider] Auto-login error:', err);
       setIsReady(true);
     }
-  }, [supabase.auth, navigateAfterAuth]);
+  };
 
   // ── Min-loader timer (premium feel, 2.5s minimum on TMA cold start) ─────────
   useEffect(() => {
@@ -223,6 +223,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     };
 
     void initWithRetry();
+    return () => clearTimeout(safetyTimer);
   }, [handleAutoLogin, navigateAfterAuth, pathname, supabase]);
 
   // ── Catch-all redirect: e.g. RootPageClient verifyOtp fires SIGNED_IN ───────

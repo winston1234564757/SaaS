@@ -136,7 +136,7 @@ export function ServicesPage() {
         whileTap={{ scale: 0.94 }}
         id="tour-services-add"
         onClick={() => router.push('/dashboard/services/new')}
-        className="md:hidden fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-primary/90 transition-colors"
+        className="md:hidden fixed bottom-24 right-5 size-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-primary/90 transition-colors"
         style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
       >
         <Plus size={24} />
@@ -173,7 +173,7 @@ function ErrorBanner({ message }: { message: string }) {
 function EmptyState({ icon, text, sub }: { icon: React.ReactNode; text: string; sub: string }) {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+      <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
         {icon}
       </div>
       <p className="text-sm font-semibold text-foreground">{text}</p>

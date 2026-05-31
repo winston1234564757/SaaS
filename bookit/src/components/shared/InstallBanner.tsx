@@ -52,7 +52,7 @@ export function InstallBanner() {
       <div
         className="rounded-xl px-5 py-4 flex items-center gap-4 bg-primary/95 backdrop-blur-xl border border-border pointer-events-auto"
       >
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--accent-on) 20%, transparent)' }}>
+        <div className="size-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--accent-on) 20%, transparent)' }}>
           <Download size={18} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">

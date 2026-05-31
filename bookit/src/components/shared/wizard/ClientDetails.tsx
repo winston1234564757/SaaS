@@ -125,7 +125,7 @@ export function ClientDetails({
 
         {mode === 'client' && barterDiscountAmount > 0 && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 mb-4">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <div className="size-1.5 rounded-full bg-primary" />
             <p className="text-xs text-primary font-bold flex items-center gap-1">
               Дякуємо, що розповів про Bookit! Твоя знижка −50% <Gift size={12} className="inline text-primary" />
             </p>
@@ -134,7 +134,7 @@ export function ClientDetails({
 
         {mode === 'client' && clientUserId && !barterDiscountAmount && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10 border border-success/20 mb-4">
-            <div className="w-1.5 h-1.5 rounded-full bg-success" />
+            <div className="size-1.5 rounded-full bg-success" />
             <p className="text-xs text-success font-medium">Дані підтягнуто з вашого профілю</p>
           </div>
         )}
@@ -398,7 +398,7 @@ export function ClientDetails({
           }`}
         >
           {saving
-            ? <><div className="w-4 h-4 border-2 border-[var(--accent-on)]/40 border-t-[var(--accent-on)] rounded-full animate-spin" /> Зберігаємо...</>
+            ? <><div className="size-4 border-2 border-[var(--accent-on)]/40 border-t-[var(--accent-on)] rounded-full animate-spin" /> Зберігаємо...</>
             : mode === 'client'
               ? (selectedServices.length === 0 ? 'Підтвердити замовлення' : 'Підтвердити запис')
               : 'Зберегти запис'

@@ -272,7 +272,7 @@ const PricingHeader = React.memo(({ currentStep, closeTour, nextStep, enabledCou
     />
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-primary/14 flex items-center justify-center shrink-0">
+        <div className="size-11 rounded-2xl bg-primary/14 flex items-center justify-center shrink-0">
           <ArrowUpDown size={20} className="text-primary" />
         </div>
         <div>
@@ -298,7 +298,7 @@ const PricingHeader = React.memo(({ currentStep, closeTour, nextStep, enabledCou
 const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled, onToggle, impact, children }: any) => (
   <div className={cn('bento-card overflow-hidden border-l-4 transition-all', isEnabled ? 'border-l-current' : 'border-l-transparent')} style={{ borderLeftColor: isEnabled ? color : 'transparent' }}>
     <div className="flex items-center gap-3 px-4 py-4 cursor-pointer select-none active:scale-[0.98] transition-transform duration-100 ease-out" onClick={onToggle}>
-      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${color}15` }}>
+      <div className="size-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${color}15` }}>
         <Icon size={19} style={{ color }} />
       </div>
       <div className="flex-1 min-w-0">
@@ -309,7 +309,7 @@ const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled,
         <p className="text-xs text-muted-foreground/60 truncate">{hint}</p>
       </div>
       <div className="relative w-11 h-6 rounded-full transition-colors shrink-0" style={{ background: isEnabled ? color : 'var(--border)' }}>
-        <motion.div animate={{ x: isEnabled ? 21 : 2 }} className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm" />
+        <motion.div animate={{ x: isEnabled ? 21 : 2 }} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
       </div>
     </div>
     <AnimatePresence mode="popLayout">

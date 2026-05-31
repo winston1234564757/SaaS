@@ -155,7 +155,7 @@ export default function ChangelogPage() {
         <header className="mb-10">
           <button 
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-xl bg-secondary/60 flex items-center justify-center mb-6 active:scale-[0.88] cursor-pointer transition-transform"
+            className="size-10 rounded-xl bg-secondary/60 flex items-center justify-center mb-6 active:scale-[0.88] cursor-pointer transition-transform"
           >
             <ChevronLeft size={20} className="text-text-main" />
           </button>
@@ -164,7 +164,7 @@ export default function ChangelogPage() {
             <div className="px-3 py-1 rounded-full bg-accent/20 text-accent text-[10px] font-bold uppercase tracking-widest">
               v8.3 &quot;B2B Premiumization&quot;
             </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse" />
+            <div className="size-1.5 rounded-full bg-sage animate-pulse" />
           </div>
           <h1 className="font-display text-5xl text-text-main leading-tight">Що нового?</h1>
           <p className="text-text-sub mt-2 opacity-70">Детальний звіт про еволюцію BookIT</p>
@@ -182,7 +182,7 @@ export default function ChangelogPage() {
             >
               <div className="flex items-start gap-4 relative z-10">
                 <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner",
+                  "size-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner",
                   upd.color === 'sage' ? "bg-accent text-accent-on" : "bg-secondary text-text-secondary border border-border"
                 )}>
                   <upd.icon size={24} />

@@ -146,7 +146,7 @@ export default async function PortfolioItemPage(
       >
         <Link
           href={`/${masterSlug}/portfolio`}
-          className="w-9 h-9 rounded-xl bg-secondary/60 flex items-center justify-center text-muted-foreground"
+          className="size-9 rounded-xl bg-secondary/60 flex items-center justify-center text-muted-foreground"
         >
           <ArrowLeft size={18} />
         </Link>
@@ -171,7 +171,7 @@ export default async function PortfolioItemPage(
             {item.photos.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                 {item.photos.slice(1).map(photo => (
-                  <div key={photo.id} className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
+                  <div key={photo.id} className="relative size-20 rounded-xl overflow-hidden shrink-0">
                     <Image src={photo.url} alt="" fill className="object-cover" sizes="80px" />
                   </div>
                 ))}
@@ -210,11 +210,11 @@ export default async function PortfolioItemPage(
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
             {item.taggedClientAvatar ? (
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <div className="relative size-10 rounded-xl overflow-hidden shrink-0">
                 <Image src={item.taggedClientAvatar} alt={item.taggedClientName} fill className="object-cover" sizes="40px" />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+              <div className="size-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                 <User size={16} className="text-muted-foreground/60" />
               </div>
             )}
@@ -233,7 +233,7 @@ export default async function PortfolioItemPage(
             className="rounded-xl p-4 flex items-center gap-3"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
-            <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
               <User size={16} className="text-muted-foreground/60" />
             </div>
             <div className="flex-1 min-w-0">
@@ -280,11 +280,11 @@ export default async function PortfolioItemPage(
         >
           <div className="flex items-center gap-3">
             {masterAvatar ? (
-              <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <div className="size-10 rounded-xl overflow-hidden shrink-0">
                 <Image src={masterAvatar} alt={masterName} width={40} height={40} className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+              <div className="size-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
                 <Scissors size={16} className="text-white/60" />
               </div>
             )}

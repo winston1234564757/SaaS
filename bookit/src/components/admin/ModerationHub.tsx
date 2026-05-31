@@ -185,7 +185,7 @@ export function ModerationHub() {
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+          <Loader2 className="size-8 animate-spin text-slate-400" />
         </div>
       ) : activeTab === 'reports' ? (
         // Reports Queue
@@ -243,14 +243,14 @@ export function ModerationHub() {
                       ) : (
                         <>
                           <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                            <ImageIcon className="h-3.5 w-3.5 text-slate-400" />
+                            <ImageIcon className="size-3.5 text-slate-400" />
                             {report.targetDetails.title}
                           </div>
                           {report.targetDetails.description && (
                             <p className="text-slate-600">"{report.targetDetails.description}"</p>
                           )}
                           {report.targetDetails.portfolio_item_photos?.[0]?.url && (
-                            <div className="mt-2 h-20 w-20 overflow-hidden rounded-lg border border-slate-100">
+                            <div className="mt-2 size-20 overflow-hidden rounded-lg border border-slate-100">
                               <img
                                 src={report.targetDetails.portfolio_item_photos[0].url}
                                 alt="Work preview"
@@ -310,13 +310,13 @@ export function ModerationHub() {
               <button
                 onClick={() => handleTogglePublishReview(review)}
                 disabled={!!actionLoading}
-                className={`flex h-8 w-8 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${
+                className={`flex size-8 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${
                   review.is_published
                     ? 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100/50'
                     : 'bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100'
                 }`}
               >
-                {review.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {review.is_published ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
               </button>
             </div>
           ))}
@@ -331,12 +331,12 @@ export function ModerationHub() {
             >
               <div className="flex gap-4">
                 {item.portfolio_item_photos?.[0]?.url ? (
-                  <div className="h-16 w-16 overflow-hidden rounded-2xl border border-slate-100 shrink-0">
+                  <div className="size-16 overflow-hidden rounded-2xl border border-slate-100 shrink-0">
                     <img src={item.portfolio_item_photos[0].url} alt="work" className="h-full w-full object-cover" />
                   </div>
                 ) : (
-                  <div className="h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0 border border-slate-100">
-                    <ImageIcon className="h-6 w-6" />
+                  <div className="size-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0 border border-slate-100">
+                    <ImageIcon className="size-6" />
                   </div>
                 )}
                 <div className="space-y-1 min-w-0">
@@ -348,13 +348,13 @@ export function ModerationHub() {
               <button
                 onClick={() => handleTogglePublishPortfolio(item)}
                 disabled={!!actionLoading}
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${
+                className={`flex size-8 shrink-0 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${
                   item.is_published
                     ? 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100/50'
                     : 'bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100'
                 }`}
               >
-                {item.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {item.is_published ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
               </button>
             </div>
           ))}

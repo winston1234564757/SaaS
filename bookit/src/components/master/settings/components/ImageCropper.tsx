@@ -21,9 +21,9 @@ export function ImageCropper({ image, onCropComplete, aspect = 3 / 4 }: ImageCro
     setZoom(newZoom);
   };
 
-  const handleCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
+  const handleCropComplete = (_croppedArea: Area, croppedAreaPixels: Area) => {
     onCropComplete(croppedAreaPixels);
-  }, [onCropComplete]);
+  };
 
   return (
     <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/5">

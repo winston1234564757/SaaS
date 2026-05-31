@@ -87,7 +87,7 @@ export function LandingFooterCTA() {
           >
             Спробувати безкоштовно
             <span
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              className="size-8 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               style={{ background: 'color-mix(in srgb, var(--l-accent) 10%, transparent)' }}
             >
               <ArrowRight size={15} aria-hidden="true" />

@@ -77,7 +77,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
 
       {isEmpty && (
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-          <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center">
+          <div className="size-16 rounded-xl bg-secondary flex items-center justify-center">
             <Bell size={28} className="text-muted-foreground/40" />
           </div>
           <p className="text-base font-bold text-foreground">Поки порожньо</p>
@@ -105,7 +105,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
               )}
               <div className="p-4 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                  <div className="size-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
                     <Images size={16} className="text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -171,7 +171,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                   className={`rounded-xl p-4 flex items-start gap-3 ${notif.isRead ? 'bg-secondary/55' : 'bg-secondary/80'} ${isBroadcast ? 'border border-accent/25' : 'border border-border'} ${(isBroadcast && broadcast?.url) || notif.type === 'support_user_reply' || notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type) ? 'cursor-pointer hover:opacity-90 active:scale-[0.95] transition-all duration-100' : ''}`}
                 >
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/40 text-muted-foreground'}`}
+                    className={`size-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/40 text-muted-foreground'}`}
                   >
                     <Icon size={16} />
                   </div>

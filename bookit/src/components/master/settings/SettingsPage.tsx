@@ -186,7 +186,7 @@ export default function SettingsPage() {
           <section id="identity" className="md:col-span-2">
             <div className="flex flex-col gap-6 pt-2">
               <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
+                 <div className="size-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
                    <UserIcon size={20} />
                  </div>
                  <div>
@@ -368,7 +368,7 @@ function BusynessWidget({ data }: { data: ReturnType<typeof useBusyness>['data']
   return (
     <div className="widget-card p-6 flex flex-col gap-5 h-full">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center"><Zap size={18} /></div>
+        <div className="size-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center"><Zap size={18} /></div>
         <div>
           <h3 className="text-sm font-bold text-text-primary">Завантаженість</h3>
           <p className="text-[10px] text-text-mute">Аналітика робочого часу на 30 днів</p>

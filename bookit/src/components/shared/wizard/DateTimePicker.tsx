@@ -85,7 +85,7 @@ export function DateTimePicker({
   if (!mounted) {
     return (
       <div className="flex justify-center py-10" id="hydration-waiting">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -105,7 +105,7 @@ export function DateTimePicker({
           aria-label="Повернутись до вибору послуг"
           className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/25 mb-5 w-full text-left active:scale-[0.95] transition-all cursor-pointer"
         >
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 flex-shrink-0">
+          <div className="flex items-center justify-center size-7 rounded-lg bg-primary/10 border border-primary/25 flex-shrink-0">
             <Sparkles size={14} className="text-primary" />
           </div>
           <div className="flex-1 min-w-0">
@@ -131,7 +131,7 @@ export function DateTimePicker({
               const prev = addDays(base, -1);
               if (prev >= days[0]) onDateSelect(prev);
             }}
-            className="w-11 h-11 rounded-full bg-secondary/50 border border-border flex items-center justify-center flex-shrink-0 hover:bg-secondary hover:text-foreground active:scale-[0.95] transition-all cursor-pointer disabled:opacity-50"
+            className="size-11 rounded-full bg-secondary/50 border border-border flex items-center justify-center flex-shrink-0 hover:bg-secondary hover:text-foreground active:scale-[0.95] transition-all cursor-pointer disabled:opacity-50"
           >
             <ChevronLeft size={14} />
           </button>
@@ -198,7 +198,7 @@ export function DateTimePicker({
               const next = addDays(base, 1);
               if (next <= days[days.length - 1]) onDateSelect(next);
             }}
-            className="w-11 h-11 rounded-full bg-secondary/50 border border-border flex items-center justify-center flex-shrink-0 hover:bg-secondary hover:text-foreground active:scale-[0.95] transition-all cursor-pointer disabled:opacity-50"
+            className="size-11 rounded-full bg-secondary/50 border border-border flex items-center justify-center flex-shrink-0 hover:bg-secondary hover:text-foreground active:scale-[0.95] transition-all cursor-pointer disabled:opacity-50"
           >
             <ChevronRight size={14} />
           </button>
@@ -217,7 +217,7 @@ export function DateTimePicker({
           </div>
         ) : scheduleLoading ? (
           <div className="flex justify-center py-6 mb-4" data-testid="schedule-loader">
-            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>
@@ -228,7 +228,7 @@ export function DateTimePicker({
 
                 {offDayDates.has(toISO(selectedDate)) ? (
                   <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
-                    <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
+                    <div className="size-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
                       <Coffee size={28} />
                     </div>
                     <p className="text-sm font-semibold text-foreground">Вихідний день</p>
@@ -240,7 +240,7 @@ export function DateTimePicker({
 
                   if (!hasAvail) return (
                     <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
-                      <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
+                      <div className="size-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
                         <Calendar size={28} />
                       </div>
                       <p className="text-sm font-semibold text-foreground">Немає вільних слотів</p>
@@ -360,7 +360,7 @@ export function DateTimePicker({
                       <motion.div
                         animate={{ x: useDynamicPrice ? 20 : 2 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                        className="absolute top-1 w-4 h-4 rounded-full bg-accent-on shadow-sm"
+                        className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
                       />
                     </div>
                   </button>

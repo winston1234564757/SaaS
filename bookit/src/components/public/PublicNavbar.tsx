@@ -65,7 +65,7 @@ export async function PublicNavbar() {
               </Link>
               <Link
                 href="/my/profile"
-                className="w-8 h-8 ml-1 rounded-lg bg-primary/20 flex items-center justify-center text-primary hover:bg-primary/30 active:scale-[0.95] transition-all cursor-pointer"
+                className="size-8 ml-1 rounded-lg bg-primary/20 flex items-center justify-center text-primary hover:bg-primary/30 active:scale-[0.95] transition-all cursor-pointer"
                 aria-label="Профіль"
               >
                 <User size={15} strokeWidth={2} />

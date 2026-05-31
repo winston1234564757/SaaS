@@ -127,7 +127,7 @@ export function StepProfitPredictor({
           />
           {/* Custom thumb */}
           <div
-            className="absolute w-5 h-5 rounded-full bg-secondary shadow-md border-2 border-destructive pointer-events-none transition-all duration-100"
+            className="absolute size-5 rounded-full bg-secondary shadow-md border-2 border-destructive pointer-events-none transition-all duration-100"
             style={{ left: `calc(${pct}% - ${pct * 0.12}px)` }}
           />
         </div>
@@ -199,7 +199,7 @@ export function StepProfitPredictor({
           {/* Header row */}
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              <div className="size-9 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: 'linear-gradient(135deg, #F0C040, #C99020)' }}
               >
                 <Zap size={18} className="text-white" strokeWidth={2.5} />
@@ -218,7 +218,7 @@ export function StepProfitPredictor({
               style={{ background: flashDealsEnabled ? '#C99020' : '#D4C5C0' }}
             >
               <motion.div
-                className="absolute top-1 w-4 h-4 rounded-full bg-secondary shadow-sm"
+                className="absolute top-1 size-4 rounded-full bg-secondary shadow-sm"
                 animate={{ left: flashDealsEnabled ? '28px' : '4px' }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />

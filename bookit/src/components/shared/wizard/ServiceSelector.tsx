@@ -47,7 +47,7 @@ function CategoryCarousel({
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
 
-  const updateState = useCallback(() => {
+  const updateState = () => {
     const el = scrollRef.current;
     if (!el) return;
     const card = el.children[0] as HTMLElement | null;
@@ -56,7 +56,7 @@ function CategoryCarousel({
     setActiveIdx(Math.min(Math.round(el.scrollLeft / step), services.length - 1));
     setCanPrev(el.scrollLeft > 4);
     setCanNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
-  }, [services.length]);
+  };
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -146,7 +146,7 @@ function CategoryCarousel({
                 {/* Selection indicator */}
                 <div
                   aria-hidden="true"
-                  className={`absolute top-2 right-2.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 ${
+                  className={`absolute top-2 right-2.5 size-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 ${
                     sel ? 'bg-primary border-primary' : 'border-border/60 bg-background/50'
                   }`}
                 >
@@ -193,7 +193,7 @@ function CategoryCarousel({
             onClick={() => scrollBy('prev')}
             disabled={!canPrev}
             aria-label="Попередня"
-            className="w-7 h-7 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
+            className="size-7 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
           >
             <ChevronLeft size={14} />
           </button>
@@ -208,7 +208,7 @@ function CategoryCarousel({
                 className={`rounded-full transition-all duration-200 ${
                   i === activeIdx
                     ? 'w-4 h-1.5 bg-[var(--accent)]'
-                    : 'w-1.5 h-1.5 bg-foreground/20'
+                    : 'size-1.5 bg-foreground/20'
                 }`}
               />
             ))}
@@ -219,7 +219,7 @@ function CategoryCarousel({
             onClick={() => scrollBy('next')}
             disabled={!canNext}
             aria-label="Наступна"
-            className="w-7 h-7 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
+            className="size-7 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
           >
             <ChevronRight size={14} />
           </button>
@@ -248,7 +248,7 @@ export function ServiceSelector({
   hasProducts = false,
   onSkipToProducts,
 }: ServiceSelectorProps & { c2cDiscountPct?: number | null }) {
-  const categories = useMemo(() => [...new Set(services.map(s => s.category))], [services]);
+  const categories = [...new Set(services.map(s => s.category))];
   const canGoToDatetime = selectedServices.length > 0;
 
   return (
@@ -260,7 +260,7 @@ export function ServiceSelector({
       <div>
         {services.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 gap-3 text-center">
-            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+            <div className="size-12 rounded-xl bg-secondary flex items-center justify-center">
               <Sparkles size={20} className="text-muted-foreground/40" />
             </div>
             <p className="text-sm font-semibold text-foreground">Послуг ще немає</p>
@@ -302,7 +302,7 @@ export function ServiceSelector({
                   href={`/${p.slug}`}
                   className="flex-shrink-0 w-[140px] bento-card p-3 flex flex-col items-center text-center gap-2 hover:bg-secondary/90 active:scale-[0.95] transition-transform duration-100 cursor-pointer"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                  <div className="size-12 rounded-xl bg-secondary flex items-center justify-center">
                     <Sparkles size={18} className="text-primary" />
                   </div>
                   <div className="min-w-0 w-full">
@@ -387,7 +387,7 @@ export function ServiceSelector({
                   transition: 'opacity 0.2s ease 0.05s',
                 }}
               >
-                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-primary/10 border border-primary/25 flex-shrink-0">
+                <div className="flex items-center justify-center size-6 rounded-lg bg-primary/10 border border-primary/25 flex-shrink-0">
                   <Sparkles size={12} className="text-primary" />
                 </div>
                 <p className="text-xs text-muted-foreground flex-1 min-w-0 break-words leading-tight">

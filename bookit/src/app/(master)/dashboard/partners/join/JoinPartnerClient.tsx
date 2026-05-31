@@ -44,14 +44,14 @@ export function JoinPartnerClient({ inviter, token }: Props) {
       >
         {!success ? (
           <>
-            <div className="w-20 h-20 bg-secondary rounded-3xl flex items-center justify-center text-primary mx-auto mb-6 shadow-sm">
+            <div className="size-20 bg-secondary rounded-3xl flex items-center justify-center text-primary mx-auto mb-6 shadow-sm">
               <Handshake size={36} />
             </div>
             
             <h1 className="heading-serif text-2xl text-foreground mb-3">Нове партнерство!</h1>
             
             <div className="flex items-center justify-center gap-3 bg-primary/5 p-3 rounded-xl mb-6">
-               <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm">
+               <div className="size-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm">
                  {inviter.emoji}
                </div>
                <div className="text-left">

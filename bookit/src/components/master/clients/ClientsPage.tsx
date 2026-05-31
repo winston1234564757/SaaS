@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Star, Phone, Calendar, TrendingUp, Loader2, Link2, Zap, Instagram,
-  LayoutGrid, List, ChevronDown, Send, MessageSquare, PenLine, AlertCircle, Heart, X, Sparkles,
+  LayoutGrid, List, ChevronDown, Send, MessageSquare, PenLine, Heart, X, Sparkles,
   CheckCircle2, Moon, AlertTriangle, UserX, Crown, Sparkle, Gem, Share2, Plus, Settings, Search
 } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
@@ -142,7 +142,7 @@ function ClientIconStack({ client }: { client: ClientRow }) {
       {icons.slice(0, 4).map((item, i) => (
         <div 
           key={i}
-          className="w-7 h-7 rounded-lg border-2 border-[var(--background)] flex items-center justify-center shadow-md transition-transform hover:scale-110 relative"
+          className="size-7 rounded-lg border-2 border-[var(--background)] flex items-center justify-center shadow-md transition-transform hover:scale-110 relative"
           style={{ 
             background: item.bg, 
             color: item.color,
@@ -538,7 +538,7 @@ export function ClientsPage() {
 
             <button
               onClick={(e) => { e.stopPropagation(); setShowFab(false); }}
-              className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-secondary border border-secondary shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-[0.88] cursor-pointer z-10"
+              className="absolute -top-1.5 -right-1.5 size-6 rounded-full bg-secondary border border-secondary shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-[0.88] cursor-pointer z-10"
             >
               <X size={12} />
             </button>
@@ -559,7 +559,7 @@ export function ClientsPage() {
       ) : filtered.length === 0 ? (
         search ? (
           <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-            <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+            <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
               <Users size={26} className="text-muted-foreground/60" />
             </div>
             <p className="text-sm font-semibold text-foreground">Нічого не знайдено</p>
@@ -572,7 +572,7 @@ export function ClientsPage() {
             className="bento-card p-6 flex flex-col gap-5"
           >
             <div className="text-center">
-              <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <div className="size-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Users size={28} className="text-primary" />
               </div>
               <p className="text-base font-bold text-foreground">Ваша база клієнтів порожня</p>
@@ -588,8 +588,8 @@ export function ClientsPage() {
               ].map((step, i) => {
                 const StepIcon = step.icon;
                 return (
-                  <div className="flex gap-3 p-4 rounded-xl bg-secondary/50">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${step.color}15` }}>
+                  <div key={i} className="flex gap-3 p-4 rounded-xl bg-secondary/50">
+                    <div className="size-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${step.color}15` }}>
                       <StepIcon size={16} style={{ color: step.color }} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -647,7 +647,7 @@ export function ClientsPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="relative">
                       <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-lg flex-shrink-0 font-bold relative z-10"
+                        className="size-12 rounded-xl flex items-center justify-center text-lg flex-shrink-0 font-bold relative z-10"
                         style={{ 
                           background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
                           color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
@@ -661,12 +661,6 @@ export function ClientsPage() {
                         className="absolute -inset-1 rounded-xl opacity-60 z-0"
                         style={{ border: `2.5px solid ${ret.color}` }}
                       />
-                      {/* No-show indicator */}
-                      {client.total_visits > 3 && Math.random() > 0.8 && (
-                        <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-error text-white flex items-center justify-center shadow-lg border-2 border-[var(--background)] z-20">
-                          <AlertCircle size={10} />
-                        </div>
-                      )}
                     </div>
 
                     <div className="min-w-0 flex-1">
@@ -740,7 +734,7 @@ export function ClientsPage() {
                          <div className="flex justify-center gap-4">
                            <button 
                              onClick={(e) => { e.stopPropagation(); setEditingNoteId(client.id); setNoteValue(''); }}
-                             className="w-10 h-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-all active:scale-[0.88] cursor-pointer"
+                             className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-all active:scale-[0.88] cursor-pointer"
                              title="Швидка нотатка"
                            >
                              <PenLine size={16} />
@@ -752,14 +746,14 @@ export function ClientsPage() {
                                 setSmartMessage(action.template);
                                 setShowSmartAction(client); 
                               }}
-                              className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-all active:scale-[0.88] cursor-pointer hover:bg-primary hover:text-white"
+                              className="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-all active:scale-[0.88] cursor-pointer hover:bg-primary hover:text-white"
                               title="Smart-дія"
                             >
                               <Sparkles size={16} />
                             </button>
                            <button 
                              onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${client.client_phone}`; }}
-                             className="w-10 h-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-all active:scale-[0.88] cursor-pointer"
+                             className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-all active:scale-[0.88] cursor-pointer"
                              title="Подзвонити"
                            >
                              <Phone size={16} />
@@ -800,7 +794,7 @@ export function ClientsPage() {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-lg flex-shrink-0 font-bold relative z-10"
+                      className="size-11 rounded-xl flex items-center justify-center text-lg flex-shrink-0 font-bold relative z-10"
                       style={{ 
                         background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
                         color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
@@ -828,13 +822,6 @@ export function ClientsPage() {
                         </span>
                         {client.is_vip && (
                           <span className="text-[8px] font-bold text-warning border border-warning/30 px-1.5 py-0.5 rounded-lg uppercase">VIP</span>
-                        )}
-                        {/* No-show indicator list */}
-                        {client.total_visits > 3 && Math.random() > 0.8 && (
-                          <span className="flex items-center gap-0.5 text-[8px] font-bold text-error px-1.5 py-0.5 rounded-lg border border-error/20 uppercase">
-                            <AlertCircle size={8} />
-                            Risk
-                          </span>
                         )}
                       </div>
                     </div>
@@ -972,7 +959,7 @@ export function ClientsPage() {
         {showSmartAction && (
           <div className="flex flex-col gap-6">
             <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 flex items-start gap-4">
-               <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-primary shadow-sm shrink-0">
+               <div className="size-10 rounded-xl bg-secondary flex items-center justify-center text-primary shadow-sm shrink-0">
                   {getSmartAction(showSmartAction, smartSegment).icon}
                </div>
                <div>

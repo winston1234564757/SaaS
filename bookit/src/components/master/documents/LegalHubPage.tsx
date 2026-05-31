@@ -81,7 +81,7 @@ export function LegalHubPage() {
                 >
                   <div className="flex items-start justify-between">
                     <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+                      className="size-10 rounded-2xl flex items-center justify-center shrink-0"
                       style={{ background: `${doc.accent}18` }}
                     >
                       <Icon size={18} style={{ color: doc.accent }} />

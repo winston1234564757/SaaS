@@ -196,7 +196,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                         className="bento-card p-4 flex flex-col gap-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">
+                          <div className="size-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">
                             {m.masterEmoji}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -235,7 +235,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                   <div className="bento-card overflow-hidden border-none shadow-xl shadow-accent/10">
                     <div className="bg-gradient-to-br from-accent to-accent/80 p-6 text-primary-foreground relative overflow-hidden">
                       {/* Decorative background element */}
-                      <div className="absolute -right-6 -top-6 w-32 h-32 bg-accent-foreground/10 rounded-full blur-2xl" />
+                      <div className="absolute -right-6 -top-6 size-32 bg-accent-foreground/10 rounded-full blur-2xl" />
                       
                       <div className="flex justify-between items-start mb-5 relative z-10">
                         <div className="max-w-[70%]">
@@ -244,7 +244,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                             За кожного нового майстра, що зареєструється за твоїм посиланням, ти отримаєш 50% знижки на перший візит до нього.
                           </p>
                         </div>
-                        <div className="w-14 h-14 bg-accent-foreground/20 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0 shadow-lg border border-accent-foreground/10">
+                        <div className="size-14 bg-accent-foreground/20 backdrop-blur-md rounded-xl flex items-center justify-center shrink-0 shadow-lg border border-accent-foreground/10">
                           <Gift size={24} style={{ color: 'var(--accent-on)' }} />
                         </div>
                       </div>
@@ -282,7 +282,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                     </div>
                     {promocodes.length === 0 ? (
                       <div className="bento-card p-10 border-dashed border-2 border-border/40 bg-secondary/20 text-center flex flex-col items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                        <div className="size-12 rounded-full bg-secondary/20 flex items-center justify-center">
                           <Ticket size={24} className="text-muted-foreground/60" />
                         </div>
                         <p className="text-sm font-medium text-muted-foreground/60">Ще немає отриманих знижок</p>
@@ -300,7 +300,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                           )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-lg bg-secondary/30 flex items-center justify-center text-xl shrink-0 shadow-inner">
+                            <div className="size-11 rounded-lg bg-secondary/30 flex items-center justify-center text-xl shrink-0 shadow-inner">
                               {pc.masterEmoji}
                             </div>
                             <div>
@@ -316,7 +316,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                               {pc.isUsed ? (
                                 <>Використано</>
                               ) : (
-                                <><div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Активний</>
+                                <><div className="size-1.5 rounded-full bg-primary animate-pulse" /> Активний</>
                               )}
                             </div>
                             {!pc.isUsed && (
@@ -359,7 +359,7 @@ function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: nu
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-accent/15 text-accent"
+            className="size-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-accent/15 text-accent"
           >
             {p.masterEmoji}
           </div>

@@ -376,10 +376,10 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                           : 'bg-secondary/40 border-transparent hover:bg-secondary/60'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                      <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                         isSelected ? 'border-primary bg-primary' : 'border-border bg-transparent'
                       }`}>
-                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                        {isSelected && <div className="size-1.5 rounded-full bg-primary-foreground" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-foreground">

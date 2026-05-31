@@ -117,7 +117,7 @@ export function ServiceEditor({ id }: Props) {
   if (id && isLoading && !service) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -129,7 +129,7 @@ export function ServiceEditor({ id }: Props) {
           <button
             onClick={() => router.back()}
             aria-label="Назад"
-            className="w-10 h-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+            className="size-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
           >
             <ChevronLeft size={20} />
           </button>
@@ -148,7 +148,7 @@ export function ServiceEditor({ id }: Props) {
             <button
               onClick={() => setShowDeleteConfirm(true)}
               aria-label="Видалити послугу"
-              className="hidden md:flex items-center justify-center w-10 h-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
+              className="hidden md:flex items-center justify-center size-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
             >
               <Trash2 size={18} />
             </button>
@@ -159,7 +159,7 @@ export function ServiceEditor({ id }: Props) {
             className="flex items-center gap-2 px-6 h-11 rounded-lg bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
           >
             {isSaving ? (
-              <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              <div className="size-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
             ) : (
               <Save size={18} />
             )}
@@ -173,7 +173,7 @@ export function ServiceEditor({ id }: Props) {
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-[24px] flex items-center justify-center text-4xl flex-shrink-0 bg-secondary/40 border border-border shadow-inner">
+              <div className="size-20 rounded-[24px] flex items-center justify-center text-4xl flex-shrink-0 bg-secondary/40 border border-border shadow-inner">
                 <ServiceIcon name={form.icon_name} size={34} />
               </div>
               <div className="flex-1 min-w-0">
@@ -361,7 +361,7 @@ export function ServiceEditor({ id }: Props) {
                 )}
               >
                 <div className={cn(
-                  'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                  'size-9 rounded-lg flex items-center justify-center shrink-0',
                   form.active ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                 )}>
                   {form.active ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -381,7 +381,7 @@ export function ServiceEditor({ id }: Props) {
                 )}
               >
                 <div className={cn(
-                  'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                  'size-9 rounded-lg flex items-center justify-center shrink-0',
                   form.popular ? 'bg-warning/20 text-warning' : 'bg-muted/20 text-muted-foreground'
                 )}>
                   <Star size={18} className={form.popular ? 'fill-warning' : ''} />
@@ -400,7 +400,7 @@ export function ServiceEditor({ id }: Props) {
                 <div className="flex flex-col gap-4">
                   <div className="bg-sage/5 border border-sage/20 p-4 rounded-xl">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-sage/20 flex items-center justify-center text-sage shrink-0">
+                      <div className="size-8 rounded-lg bg-sage/20 flex items-center justify-center text-sage shrink-0">
                         <BarChart3 size={16} />
                       </div>
                       <h4 className="font-bold text-xs text-foreground">Статистика послуги</h4>
@@ -420,7 +420,7 @@ export function ServiceEditor({ id }: Props) {
                   </div>
 
                   <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
+                    <div className="size-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
                       <QrCode size={24} />
                     </div>
                     <div>
@@ -449,7 +449,7 @@ export function ServiceEditor({ id }: Props) {
             animate={{ scale: 1, opacity: 1 }}
             className="bg-surface rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center"
           >
-            <div className="w-16 h-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
+            <div className="size-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
               <Trash2 size={32} />
             </div>
             <h3 className="heading-serif text-xl text-foreground mb-2">Видалити послугу?</h3>

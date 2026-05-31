@@ -39,7 +39,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggle, index }: Prod
       className={`bento-card p-4 transition-opacity ${!product.active ? 'opacity-55' : ''}`}
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--sage) 12%, transparent)' }}>
+        <div className="size-12 rounded-xl overflow-hidden flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--sage) 12%, transparent)' }}>
           {product.imageUrl ? (
             <Image src={product.imageUrl} alt={product.name} width={48} height={48} className="w-full h-full object-cover" unoptimized />
           ) : (
@@ -65,7 +65,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggle, index }: Prod
           <Tooltip content={<p className="text-[11px] text-foreground">Редагувати товар</p>} position="top">
             <button
               onClick={() => onEdit(product)}
-              className="w-8 h-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+              className="size-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
             >
               <Pencil size={14} />
             </button>
@@ -88,7 +88,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggle, index }: Prod
               <Tooltip key="btn" content={<p className="text-[11px] text-foreground">Видалити товар</p>} position="top">
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                  className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -105,7 +105,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggle, index }: Prod
             <motion.div
               animate={{ x: product.active ? 20 : 2 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="absolute top-1 w-4 h-4 rounded-full bg-accent-on shadow-sm"
+              className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
             />
           </button>
         </Tooltip>

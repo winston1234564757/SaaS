@@ -14,15 +14,14 @@ const APP_URL = (
   'https://bookit-five-psi.vercel.app'
 );
 
-const PLAN: Record<string, { priceKopecks: number; name: string }> = {
-  pro:    { priceKopecks: 70000, name: 'Bookit Pro — підписка на місяць' },
-  studio: { priceKopecks: 29900, name: 'Bookit Studio — підписка за майстра/місяць' },
-};
-
 // ── Monobank Acquiring ────────────────────────────────────────────────────────
 export async function createMonoInvoice(
   tier: 'pro' | 'studio'
 ): Promise<{ invoiceUrl: string } | { error: string }> {
+  const PLAN: Record<string, { priceKopecks: number; name: string }> = {
+    pro:    { priceKopecks: 70000, name: 'Bookit Pro — підписка на місяць' },
+    studio: { priceKopecks: 29900, name: 'Bookit Studio — підписка за майстра/місяць' },
+  };
   try {
     if (!MONO_TOKEN) {
       console.error('[createMonoInvoice] missing MONO_API_KEY');

@@ -92,7 +92,7 @@ export function StepScheduleForm({
               className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${schedule[day].is_working ? 'bg-primary' : 'bg-secondary/80'}`}
             >
               <div
-                className="absolute top-0.5 w-4 h-4 rounded-full bg-secondary shadow-sm transition-[left] duration-200"
+                className="absolute top-0.5 size-4 rounded-full bg-secondary shadow-sm transition-[left] duration-200"
                 style={{ left: schedule[day].is_working ? '17px' : '2px' }}
               />
             </button>

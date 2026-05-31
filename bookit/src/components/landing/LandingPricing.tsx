@@ -160,7 +160,7 @@ export function LandingPricing() {
                         className="flex items-start gap-3"
                       >
                         <div
-                          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                          className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                           style={{
                             background: plan.accent ? 'color-mix(in srgb, var(--l-text-on-dark) 18%, transparent)' : 'color-mix(in srgb, var(--l-indigo-glow) 10%, transparent)',
                           }}

@@ -24,7 +24,7 @@ export default function DashboardLoading() {
         <div className="h-4 w-32 rounded-xl bg-secondary/80 mb-4" />
         {[0, 1, 2].map(i => (
           <div key={i} className="flex items-center gap-3 py-2.5 border-b border-secondary/60 last:border-0">
-            <div className="w-10 h-10 rounded-xl bg-secondary/80 flex-shrink-0" />
+            <div className="size-10 rounded-xl bg-secondary/80 flex-shrink-0" />
             <div className="flex-1 space-y-1.5">
               <div className="h-3 w-24 rounded-lg bg-secondary/80" />
               <div className="h-2.5 w-16 rounded-lg bg-secondary/80" />

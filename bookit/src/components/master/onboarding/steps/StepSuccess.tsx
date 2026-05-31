@@ -20,7 +20,7 @@ interface StepSuccessProps {
 function CopyButton({ text, size = 'sm' }: { text: string; size?: 'sm' | 'xs' }) {
   const [done, setDone] = useState(false);
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -33,7 +33,7 @@ function CopyButton({ text, size = 'sm' }: { text: string; size?: 'sm' | 'xs' })
     }
     setDone(true);
     setTimeout(() => setDone(false), 2200);
-  }, [text]);
+  };
 
   const cls = size === 'xs'
     ? 'px-2.5 py-1.5 text-[11px] rounded-xl gap-1'
@@ -118,14 +118,14 @@ export function StepSuccess({
   const [linkCopied, setLinkCopied] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
 
-  const copyLink = useCallback(async () => {
+  const copyLink = async () => {
     try { await navigator.clipboard.writeText(publicUrl); }
     catch { /* silent */ }
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2200);
-  }, [publicUrl]);
+  };
 
-  const handleShare = useCallback(async () => {
+  const handleShare = async () => {
     setShareLoading(true);
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
@@ -141,7 +141,7 @@ export function StepSuccess({
       }
     } catch { /* user cancelled share */ }
     finally { setShareLoading(false); }
-  }, [publicUrl]);
+  };
 
   const templates = [
     {
@@ -182,7 +182,7 @@ export function StepSuccess({
             initial={{ scale: 0, rotate: -12 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 380, damping: 16, delay: 0.08 }}
-            className="w-16 h-16 rounded-xl flex items-center justify-center mb-4 bg-success/15"
+            className="size-16 rounded-xl flex items-center justify-center mb-4 bg-success/15"
             style={{ border: '1.5px solid color-mix(in srgb, #5C9E7A 27%, transparent)' }}
           >
             <Sparkles size={28} className="text-success" strokeWidth={1.8} />

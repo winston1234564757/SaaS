@@ -77,7 +77,7 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
 
       {isLoading ? (
         <div className="flex flex-col flex-1 gap-3">
-          <div className="skeleton-shimmer h-11 w-11 rounded-full" />
+          <div className="skeleton-shimmer size-11 rounded-full" />
           <div className="space-y-2">
             <div className="skeleton-shimmer h-3.5 w-24 rounded-full" />
             <div className="skeleton-shimmer h-3 w-16 rounded-full" />
@@ -87,7 +87,7 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
         <button type="button" className="flex flex-col flex-1 text-left w-full bg-transparent border-0 p-0 cursor-pointer" onClick={handleOpen}>
           {/* Avatar */}
           <div
-            className="w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-bold mb-3 flex-shrink-0"
+            className="size-11 rounded-full flex items-center justify-center text-[14px] font-bold mb-3 flex-shrink-0"
             style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
           >
             {initials}
@@ -125,7 +125,7 @@ function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center">
           <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center"
+            className="size-10 rounded-2xl flex items-center justify-center"
             style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)' }}
           >
             <Users size={18} strokeWidth={1.4} style={{ color: 'var(--accent)', opacity: 0.6 }} />

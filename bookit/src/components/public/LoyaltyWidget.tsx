@@ -33,7 +33,7 @@ export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
     return (
       <div className="bento-card p-4 bg-secondary/40 border border-border">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/15 text-primary">
+          <div className="size-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/15 text-primary">
             <Gift size={18} />
           </div>
           <div className="flex-1 min-w-0">

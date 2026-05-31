@@ -72,7 +72,7 @@ export default async function PortfolioGridPage({ params }: { params: Promise<{ 
       >
         <Link
           href={`/${slug}`}
-          className="w-9 h-9 rounded-xl bg-secondary/60 flex items-center justify-center text-muted-foreground"
+          className="size-9 rounded-xl bg-secondary/60 flex items-center justify-center text-muted-foreground"
         >
           <ArrowLeft size={18} />
         </Link>
@@ -85,7 +85,7 @@ export default async function PortfolioGridPage({ params }: { params: Promise<{ 
       <div className="px-4 py-6">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-            <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center">
+            <div className="size-16 rounded-xl bg-secondary flex items-center justify-center">
               <Images size={28} className="text-muted-foreground" />
             </div>
             <p className="text-base font-bold text-foreground">Портфоліо порожнє</p>

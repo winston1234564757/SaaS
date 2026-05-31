@@ -13,7 +13,7 @@ export default function Loading() {
       <div className="rounded-xl bg-secondary/60 p-5 flex flex-col gap-3">
         <Skeleton className="h-4 w-28 rounded-lg" />
         <div className="flex items-center gap-3">
-          <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="size-10 rounded-xl" />
           <div className="flex flex-col gap-1.5 flex-1">
             <Skeleton className="h-5 w-24 rounded-lg" />
             <Skeleton className="h-3 w-40 rounded-md" />
@@ -29,7 +29,7 @@ export default function Loading() {
         <div className="flex flex-col gap-2">
           <Skeleton className="h-3 w-full rounded-md" />
           <Skeleton className="h-3 w-4/5 rounded-md" />
-          <Skeleton className="h-3 w-3/4 rounded-md" />
+          <Skeleton className="size-3/4 rounded-md" />
         </div>
         <Skeleton className="h-12 w-full rounded-xl mt-1" />
       </div>
@@ -41,7 +41,7 @@ export default function Loading() {
         <div className="flex flex-col gap-2">
           <Skeleton className="h-3 w-full rounded-md" />
           <Skeleton className="h-3 w-4/5 rounded-md" />
-          <Skeleton className="h-3 w-3/4 rounded-md" />
+          <Skeleton className="size-3/4 rounded-md" />
           <Skeleton className="h-3 w-2/3 rounded-md" />
         </div>
         <Skeleton className="h-12 w-full rounded-xl mt-1" />

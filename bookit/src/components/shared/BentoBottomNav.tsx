@@ -115,7 +115,7 @@ export function BentoBottomNav() {
                     href="/dashboard/changelog"
                     className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/40 border border-border backdrop-blur-xl active:scale-90 transition-all group"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse" />
+                    <div className="size-1.5 rounded-full bg-sage animate-pulse" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-text-main/80">v5.2.0 Vaul</span>
                     <ChevronUp size={10} className="rotate-90 opacity-40 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
@@ -180,7 +180,7 @@ function NavItem({ href, icon: Icon, label, pathname, todayPending }: any) {
       <div className="relative">
         <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
         {showBadge && (
-          <span className="absolute -top-1.5 -right-2 w-5 h-5 rounded-full bg-warning border-2 border-white text-white text-[10px] font-bold flex items-center justify-center shadow-lg">
+          <span className="absolute -top-1.5 -right-2 size-5 rounded-full bg-warning border-2 border-white text-white text-[10px] font-bold flex items-center justify-center shadow-lg">
             {todayPending > 9 ? '9+' : todayPending}
           </span>
         )}
@@ -225,7 +225,7 @@ function BentoTile({ href, icon: Icon, label, className, pathname, delay }: any)
 
         <div className={cn(
           "rounded-lg flex items-center justify-center transition-all duration-700 relative z-10 flex-shrink-0",
-          isWide ? "w-10 h-10" : "w-11 h-11",
+          isWide ? "size-10" : "size-11",
           isActive 
             ? "shadow-inner bg-accent-on/20" 
             : "bg-gradient-to-br from-secondary to-peach/20 shadow-sm group-hover:scale-110"

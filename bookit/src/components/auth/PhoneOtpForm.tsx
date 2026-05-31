@@ -387,7 +387,7 @@ export function PhoneOtpForm() {
                       >
                         {/* Icon */}
                         <div
-                          className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
+                          className="shrink-0 size-11 rounded-xl flex items-center justify-center"
                           style={{
                             background: isSelected
                               ? 'rgba(255,255,255,0.10)'
@@ -417,7 +417,7 @@ export function PhoneOtpForm() {
 
                         {/* Radio dot */}
                         <div
-                          className="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                          className="shrink-0 size-5 rounded-full border-2 flex items-center justify-center"
                           style={{
                             borderColor: isSelected
                               ? 'rgba(255,255,255,0.45)'
@@ -427,7 +427,7 @@ export function PhoneOtpForm() {
                           <motion.div
                             animate={{ scale: isSelected ? 1 : 0, opacity: isSelected ? 1 : 0 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 28 } as const}
-                            className="w-2.5 h-2.5 rounded-full bg-white"
+                            className="size-2.5 rounded-full bg-white"
                           />
                         </div>
                       </motion.button>
@@ -553,7 +553,7 @@ export function PhoneOtpForm() {
                 {/* Header */}
                 <div className="text-center mb-6">
                   <div
-                    className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
+                    className="inline-flex items-center justify-center size-12 rounded-2xl mb-4"
                     style={{ background: 'rgba(99,102,241,0.08)' }}
                   >
                     <Phone size={20} strokeWidth={1.5} style={{ color: '#6366F1' }} />
@@ -676,7 +676,7 @@ export function PhoneOtpForm() {
                 {/* Header */}
                 <div className="text-center mb-6">
                   <div
-                    className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
+                    className="inline-flex items-center justify-center size-12 rounded-2xl mb-4"
                     style={{ background: 'rgba(99,102,241,0.08)' }}
                   >
                     <MessageSquare size={20} strokeWidth={1.5} style={{ color: '#6366F1' }} />

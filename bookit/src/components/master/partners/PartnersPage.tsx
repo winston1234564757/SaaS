@@ -76,7 +76,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                   Об'єднуйтесь з іншими майстрами (бровисти + манікюрниці і т.д.), щоб рекомендувати один одного клієнтам та рости разом.
                 </p>
               </div>
-              <div className="w-14 h-14 bg-primary-foreground/20 rounded-2xl flex items-center justify-center text-primary-foreground">
+              <div className="size-14 bg-primary-foreground/20 rounded-2xl flex items-center justify-center text-primary-foreground">
                 <Handshake size={24} />
               </div>
             </div>
@@ -105,7 +105,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
           <div className="bg-secondary/50 p-4 border-t border-border flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <Users size={16} />
               </div>
               <div>
@@ -129,7 +129,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
         {activePartners.length === 0 ? (
           <div className="bento-card p-12 border-dashed border-2 border-border bg-transparent text-center flex flex-col items-center gap-4">
-             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+             <div className="size-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
                <Users size={32} className="text-muted-foreground/40" />
              </div>
              <div>
@@ -148,7 +148,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 className="bento-card p-4 flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                   <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground shrink-0 font-bold text-sm">
+                   <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground shrink-0 font-bold text-sm">
                      {partner.name.slice(0, 2).toUpperCase()}
                    </div>
                    <div className="min-w-0">
@@ -166,7 +166,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 <button
                   onClick={() => handleDelete(partner.partnerId)}
                   disabled={isDeleting === partner.partnerId}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-destructive hover:bg-destructive/10 active:scale-[0.88] transition-all disabled:opacity-50 cursor-pointer"
+                  className="size-9 rounded-xl flex items-center justify-center text-destructive hover:bg-destructive/10 active:scale-[0.88] transition-all disabled:opacity-50 cursor-pointer"
                   title="Видалити партнера"
                 >
                   <Trash2 size={18} />
@@ -196,7 +196,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                   className="bento-card p-4 flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground font-bold text-xs flex-shrink-0">
+                    <div className="size-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground font-bold text-xs flex-shrink-0">
                       {al.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="min-w-0">
@@ -244,7 +244,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
             { t: 'Крос-трафік', d: 'Твої партнери так само рекомендують тебе своїм клієнтам.' },
           ].map((item, i) => (
             <li key={i} className="flex gap-3">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+              <span className="flex-shrink-0 size-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
                 {i + 1}
               </span>
               <div>

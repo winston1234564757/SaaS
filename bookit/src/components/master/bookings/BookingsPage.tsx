@@ -328,10 +328,10 @@ export function BookingsPage() {
                 }
                 items={[
                   { label: 'Усі статуси', icon: <div className="w-4" />, onClick: () => setStatusFilter('all') },
-                  { label: 'Очікують', icon: <div className="w-2 h-2 rounded-full bg-warning" />, onClick: () => setStatusFilter('pending') },
-                  { label: 'Підтверджені', icon: <div className="w-2 h-2 rounded-full bg-success" />, onClick: () => setStatusFilter('confirmed') },
-                  { label: 'Завершені', icon: <div className="w-2 h-2 rounded-full bg-primary" />, onClick: () => setStatusFilter('completed') },
-                  { label: 'Скасовані', icon: <div className="w-2 h-2 rounded-full bg-error" />, onClick: () => setStatusFilter('cancelled') },
+                  { label: 'Очікують', icon: <div className="size-2 rounded-full bg-warning" />, onClick: () => setStatusFilter('pending') },
+                  { label: 'Підтверджені', icon: <div className="size-2 rounded-full bg-success" />, onClick: () => setStatusFilter('confirmed') },
+                  { label: 'Завершені', icon: <div className="size-2 rounded-full bg-primary" />, onClick: () => setStatusFilter('completed') },
+                  { label: 'Скасовані', icon: <div className="size-2 rounded-full bg-error" />, onClick: () => setStatusFilter('cancelled') },
                 ]}
               />
             </div>
@@ -411,7 +411,7 @@ export function BookingsPage() {
                   className="flex items-center justify-center py-40"
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
+                  <div className="size-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
                 </motion.div>
               ) : filteredBookings.length === 0 && view !== 'timeline' ? (
                 <motion.div
@@ -420,7 +420,7 @@ export function BookingsPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center gap-6 py-20"
                 >
-                  <div className="w-24 h-24 rounded-full bg-primary/5 flex items-center justify-center">
+                  <div className="size-24 rounded-full bg-primary/5 flex items-center justify-center">
                     <CalendarDays size={40} className="text-primary/20" />
                   </div>
                   <div className="text-center">

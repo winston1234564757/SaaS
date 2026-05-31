@@ -13,7 +13,7 @@ export default async function AdminOverviewPage() {
   if (error || !statsRaw) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-6">
-        <ShieldAlert className="h-10 w-10 text-red-500 mb-4 animate-pulse" />
+        <ShieldAlert className="size-10 text-red-500 mb-4 animate-pulse" />
         <h2 className="text-lg font-semibold text-slate-800">Помилка завантаження аналітики</h2>
         <p className="text-sm mt-1">{error?.message || 'Не вдалося отримати дані з бази'}</p>
       </div>
@@ -82,8 +82,8 @@ export default async function AdminOverviewPage() {
                 <div className="text-3xl font-bold text-slate-900 tracking-tight">{m.value}</div>
                 <p className="text-[11px] text-slate-400 font-medium">{m.desc}</p>
               </div>
-              <div className={`h-12 w-12 rounded-2xl flex items-center justify-center border ${m.colorClass}`}>
-                <Icon className="h-5 w-5" />
+              <div className={`size-12 rounded-2xl flex items-center justify-center border ${m.colorClass}`}>
+                <Icon className="size-5" />
               </div>
             </div>
           );

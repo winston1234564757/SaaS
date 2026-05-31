@@ -7,7 +7,7 @@ import { Copy, Check, ChevronDown, Lock } from 'lucide-react';
 function CopyButton({ text }: { text: string }) {
   const [done, setDone] = useState(false);
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     try { await navigator.clipboard.writeText(text); }
     catch {
       const el = document.createElement('textarea');
@@ -19,7 +19,7 @@ function CopyButton({ text }: { text: string }) {
     }
     setDone(true);
     setTimeout(() => setDone(false), 2200);
-  }, [text]);
+  };
 
   return (
     <button

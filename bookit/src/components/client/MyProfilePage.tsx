@@ -119,7 +119,7 @@ export function MyProfilePage({ profile }: Props) {
       <div className="flex items-center gap-3">
         <Link
           href="/my/bookings"
-          className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.88] cursor-pointer transition-all flex-shrink-0"
+          className="size-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.88] cursor-pointer transition-all flex-shrink-0"
         >
           <ArrowLeft size={16} />
         </Link>
@@ -136,7 +136,7 @@ export function MyProfilePage({ profile }: Props) {
         className="bento-card p-5 flex items-center gap-4"
       >
         <div
-          className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15 text-accent font-bold"
+          className="size-16 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15 text-accent font-bold"
         >
           {fullName ? fullName.charAt(0).toUpperCase() : ''}
         </div>

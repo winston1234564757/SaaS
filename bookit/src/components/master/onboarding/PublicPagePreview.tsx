@@ -76,11 +76,11 @@ export function PublicPagePreview({
       {/* Blob background */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-30"
+          className="absolute -top-16 -right-16 size-48 rounded-full opacity-30"
           style={{ background: theme.accent, filter: 'blur(40px)' }}
         />
         <div
-          className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full opacity-20"
+          className="absolute -bottom-8 -left-8 size-36 rounded-full opacity-20"
           style={{ background: theme.gradient[0], filter: 'blur(32px)' }}
         />
       </div>
@@ -102,7 +102,7 @@ export function PublicPagePreview({
         <div className="flex flex-col items-center px-4 pt-3 pb-4">
           {/* Avatar */}
           <div
-            className="w-16 h-16 rounded-[18px] flex items-center justify-center mb-3 overflow-hidden border-2"
+            className="size-16 rounded-[18px] flex items-center justify-center mb-3 overflow-hidden border-2"
             style={{
               borderColor: `${theme.accent}50`,
               background: avatarUrl ? undefined : `${theme.accent}25`,
@@ -195,7 +195,7 @@ export function PublicPagePreview({
                       {svc.price.toLocaleString('uk-UA')} ₴
                     </span>
                     <div
-                      className="w-6 h-6 rounded-lg flex items-center justify-center"
+                      className="size-6 rounded-lg flex items-center justify-center"
                       style={{ background: theme.accent }}
                     >
                       <Calendar size={10} style={{ color: ctaTextColor }} />

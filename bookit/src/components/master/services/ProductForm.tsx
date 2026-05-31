@@ -125,7 +125,7 @@ export function ProductForm({
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">Іконка</p>
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-lg flex items-center justify-center text-3xl flex-shrink-0 bg-secondary/40 border border-border">
+            <div className="size-14 rounded-lg flex items-center justify-center text-3xl flex-shrink-0 bg-secondary/40 border border-border">
               <ProductIcon name={form.icon_name} size={20} />
             </div>
             <div className="flex flex-wrap gap-1.5 flex-1">
@@ -134,7 +134,7 @@ export function ProductForm({
                   key={opt.name}
                   type="button"
                   onClick={() => setForm(f => ({ ...f, icon_name: opt.name }))}
-                  className={`w-9 h-9 rounded-xl transition-all active:scale-[0.88] cursor-pointer flex items-center justify-center ${
+                  className={`size-9 rounded-xl transition-all active:scale-[0.88] cursor-pointer flex items-center justify-center ${
                     form.icon_name === opt.name
                       ? 'bg-primary/20 ring-1.5 ring-primary scale-110'
                       : 'bg-secondary/40 hover:bg-secondary/80 border border-border'
@@ -290,10 +290,10 @@ export function ProductForm({
                     >
                       <ServiceIcon name={s.icon_name} size={14} />
                       <span className="flex-1 text-sm text-foreground">{s.name}</span>
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                      <div className={`size-4 rounded border-2 flex items-center justify-center transition-colors ${
                         checked ? 'bg-primary border-primary' : 'border-border'
                       }`}>
-                        {checked && <div className="w-2 h-2 rounded-sm bg-primary-foreground" />}
+                        {checked && <div className="size-2 rounded-sm bg-primary-foreground" />}
                       </div>
                     </button>
                   );

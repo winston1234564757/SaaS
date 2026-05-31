@@ -155,7 +155,7 @@ export function ReferralPage({
         className="bento-card p-5 border-2 border-primary/20"
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+          <div className="size-10 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
             <Gift size={18} className="text-primary" />
           </div>
           <div>
@@ -263,7 +263,7 @@ export function ReferralPage({
             )}>
               <div className="flex items-center gap-2.5 mb-3">
                 <div className={cn(
-                  'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
+                  'size-9 rounded-xl flex items-center justify-center flex-shrink-0',
                   reservePct > 0 ? 'bg-warning/15' : 'bg-secondary/60'
                 )}>
                   <Zap size={16} className={reservePct > 0 ? 'text-warning' : 'text-muted-foreground/60'} />
@@ -282,7 +282,7 @@ export function ReferralPage({
                       Накопичено у вашому резерві
                     </p>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center text-warning flex-shrink-0">
+                  <div className="size-10 rounded-xl bg-warning/10 flex items-center justify-center text-warning flex-shrink-0">
                     <Landmark size={20} />
                   </div>
                 </div>
@@ -297,7 +297,7 @@ export function ReferralPage({
             <div className="bento-card p-5">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className={cn(
-                  'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
+                  'size-9 rounded-xl flex items-center justify-center flex-shrink-0',
                   currentLTDisc > 0 ? 'bg-primary/15' : 'bg-secondary/60'
                 )}>
                   <Crown size={16} className={currentLTDisc > 0 ? 'text-primary' : 'text-muted-foreground/60'} />
@@ -521,7 +521,7 @@ export function ReferralPage({
                   className="bento-card p-4 flex items-center gap-3"
                 >
                   <div className={cn(
-                    'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
+                    'size-9 rounded-xl flex items-center justify-center flex-shrink-0',
                     item.isFirstPaymentMade ? 'bg-success/12' : 'bg-secondary/60'
                   )}>
                     {item.isFirstPaymentMade

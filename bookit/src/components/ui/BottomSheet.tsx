@@ -46,7 +46,7 @@ export function BottomSheet({ isOpen, onClose, title, children, className, conte
               </Drawer.Title>
               <button
                 onClick={onClose}
-                className="w-9 h-9 flex items-center justify-center rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary/80 hover:text-foreground active:scale-[0.88] transition-all cursor-pointer border border-border"
+                className="size-9 flex items-center justify-center rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary/80 hover:text-foreground active:scale-[0.88] transition-all cursor-pointer border border-border"
               >
                 <X size={18} />
               </button>

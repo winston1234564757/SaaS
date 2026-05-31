@@ -18,7 +18,7 @@ export function useRealtimeNotifications() {
   const pathname = usePathname();
   const masterId = masterProfile?.id;
 
-  const invalidateAll = useCallback((id: string) => {
+  const invalidateAll = (id: string) => {
     qc.invalidateQueries({ queryKey: ['bookings', id] });
     qc.invalidateQueries({ queryKey: ['wizard-schedule', id] });
     qc.invalidateQueries({ queryKey: ['dashboard-stats', id] });
@@ -27,14 +27,14 @@ export function useRealtimeNotifications() {
     qc.invalidateQueries({ queryKey: ['notifications', id] });
     qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
     qc.invalidateQueries({ queryKey: ['clients', id] });
-  }, [qc]);
+  };
 
-  const markReadAndNavigate = useCallback(async (notifId: string, url: string) => {
+  const markReadAndNavigate = async (notifId: string, url: string) => {
     const supabase = createClient();
     await supabase.from('notifications').update({ is_read: true }).eq('id', notifId);
     qc.invalidateQueries({ queryKey: ['notifications', masterId] });
     router.push(url);
-  }, [masterId, qc, router]);
+  };
 
   useEffect(() => {
     console.log('[Realtime] masterId:', masterId);

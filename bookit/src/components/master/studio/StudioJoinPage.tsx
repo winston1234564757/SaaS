@@ -49,7 +49,7 @@ export function StudioJoinPage({ studio, token }: Props) {
       >
         {joined ? (
           <>
-            <div className="w-16 h-16 rounded-3xl bg-success/12 flex items-center justify-center">
+            <div className="size-16 rounded-3xl bg-success/12 flex items-center justify-center">
               <CheckCircle size={30} className="text-success" />
             </div>
             <div>
@@ -59,7 +59,7 @@ export function StudioJoinPage({ studio, token }: Props) {
           </>
         ) : !studio ? (
           <>
-            <div className="w-16 h-16 rounded-3xl bg-destructive/10 flex items-center justify-center">
+            <div className="size-16 rounded-3xl bg-destructive/10 flex items-center justify-center">
               <AlertCircle size={28} className="text-destructive" />
             </div>
             <div>
@@ -72,7 +72,7 @@ export function StudioJoinPage({ studio, token }: Props) {
           </>
         ) : (
           <>
-            <div className="w-16 h-16 rounded-3xl bg-success/12 flex items-center justify-center">
+            <div className="size-16 rounded-3xl bg-success/12 flex items-center justify-center">
               <Building2 size={28} className="text-success" />
             </div>
             <div>

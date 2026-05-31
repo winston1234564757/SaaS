@@ -69,7 +69,7 @@ export function StepBasic({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30 bg-secondary/70 flex items-center justify-center group hover:border-primary transition-colors cursor-pointer"
+          className="relative size-24 rounded-full overflow-hidden border-2 border-primary/30 bg-secondary/70 flex items-center justify-center group hover:border-primary transition-colors cursor-pointer"
         >
           {avatarPreview ? (
             // eslint-disable-next-line @next/next/no-img-element

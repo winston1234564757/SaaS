@@ -44,7 +44,7 @@ export function useBookingPricing({
     [selectedServices],
   );
 
-  const serviceIds = useMemo(() => selectedServices.map(s => s.id), [selectedServices]);
+  const serviceIds = selectedServices.map(s => s.id);
   const productLines = useMemo(
     () => cart.map(ci => ({ id: ci.product.id, quantity: ci.quantity })),
     [cart],

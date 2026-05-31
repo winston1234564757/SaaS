@@ -34,7 +34,7 @@ export function LocationWidget({
   return (
     <div className="widget-card p-6 h-full flex flex-col gap-6">
       <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
+        <div className="size-9 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
           <MapPin size={18} />
         </div>
         <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute">Локація та адреса</h3>

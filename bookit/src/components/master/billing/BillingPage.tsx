@@ -162,7 +162,7 @@ export function BillingPage() {
             exit={{ opacity: 0, y: -8 }}
             className="bento-card p-4 flex items-center gap-3 border border-success/30 bg-success/8"
           >
-            <div className="w-10 h-10 rounded-2xl bg-success/15 flex items-center justify-center flex-shrink-0">
+            <div className="size-10 rounded-2xl bg-success/15 flex items-center justify-center flex-shrink-0">
               <PartyPopper size={18} className="text-success" />
             </div>
             <div className="flex-1">
@@ -203,7 +203,7 @@ export function BillingPage() {
             return (
               <>
                 <div
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                  className="size-10 rounded-2xl flex items-center justify-center"
                   style={{ background: `${plan?.color ?? '#789A99'}18` }}
                 >
                   <PlanIcon size={18} style={{ color: plan?.color ?? '#789A99' }} />
@@ -319,7 +319,7 @@ export function BillingPage() {
             {/* Plan header */}
             <div className="flex items-center gap-3 mb-4">
               <div
-                className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                className="size-10 rounded-2xl flex items-center justify-center flex-shrink-0"
                 style={{ background: `${plan.color}18` }}
               >
                 <PlanIcon size={18} style={{ color: plan.color }} />
@@ -404,7 +404,7 @@ export function BillingPage() {
       {/* Referral promo */}
       <div className="bento-card p-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+          <div className="size-10 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
             <Gift size={20} className="text-primary" />
           </div>
           <div>

@@ -62,14 +62,14 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
+              className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
             >
               <X size={16} />
             </button>
 
             <div className="flex flex-col items-center text-center gap-2 pt-2">
               <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                className="size-12 rounded-2xl flex items-center justify-center"
                 style={{ background: isMarketing ? 'rgba(212,147,90,0.15)' : 'rgba(120,154,153,0.15)' }}
               >
                 {isMarketing

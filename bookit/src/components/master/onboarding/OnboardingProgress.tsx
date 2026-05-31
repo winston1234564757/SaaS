@@ -45,7 +45,7 @@ export function OnboardingProgress({ step }: OnboardingProgressProps) {
                     : 'color-mix(in srgb, var(--accent) 18%, transparent)',
               }}
               transition={{ type: 'spring' as const, stiffness: 320, damping: 26 }}
-              className="w-2 h-2 rounded-full"
+              className="size-2 rounded-full"
             />
             {i === current && (
               <motion.span

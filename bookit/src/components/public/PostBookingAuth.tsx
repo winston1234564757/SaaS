@@ -332,7 +332,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                             {loyaltyPrograms[0].name}
                           </p>
                         </div>
-                        <div className="w-10 h-10 rounded-xl bg-[var(--accent-on)]/15 flex items-center justify-center shrink-0">
+                        <div className="size-10 rounded-xl bg-[var(--accent-on)]/15 flex items-center justify-center shrink-0">
                           <Sparkles size={18} className="text-[var(--accent-on)]" />
                         </div>
                       </div>
@@ -362,7 +362,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                     className="rounded-xl mb-3 p-4 flex items-center gap-3"
                     style={{ background: 'var(--surface)', backdropFilter: 'blur(8px)', border: '1px solid var(--border)', boxShadow: '0 2px 12px var(--border)' }}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                    <div className="size-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
                       <Handshake size={20} className="text-primary" />
                     </div>
                     <div>
@@ -392,7 +392,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                             Один акаунт — всі майстри
                           </p>
                         </div>
-                        <div className="w-10 h-10 rounded-xl bg-[var(--accent-on)]/15 flex items-center justify-center shrink-0">
+                        <div className="size-10 rounded-xl bg-[var(--accent-on)]/15 flex items-center justify-center shrink-0">
                           <Sparkles size={18} className="text-[var(--accent-on)]" />
                         </div>
                       </div>
@@ -561,7 +561,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
             className="flex flex-col"
           >
             <div className="text-center mb-5">
-              <div className="w-14 h-14 rounded-xl bg-primary/12 flex items-center justify-center mx-auto mb-3 text-primary">
+              <div className="size-14 rounded-xl bg-primary/12 flex items-center justify-center mx-auto mb-3 text-primary">
                 <Bell size={28} />
               </div>
               <h2 className="heading-serif text-xl text-foreground leading-snug mb-1">
@@ -582,7 +582,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                   className="rounded-xl p-4 flex items-center gap-3"
                   style={{ background: tgOpened ? 'var(--accent-light)' : 'var(--surface)', border: tgOpened ? '1px solid var(--accent)' : '1px solid var(--border)', boxShadow: '0 2px 12px var(--border)' }}
                 >
-                  <div className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center" style={{ background: '#229ED9' }}>
+                  <div className="size-10 rounded-xl shrink-0 flex items-center justify-center" style={{ background: '#229ED9' }}>
                     <Send size={18} className="text-white" />
                   </div>
                   <div className="flex-1">
@@ -612,7 +612,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                 className="rounded-xl p-4 flex items-center gap-3"
                 style={{ background: pushState === 'done' ? 'var(--accent-light)' : 'var(--surface)', border: pushState === 'done' ? '1px solid var(--accent)' : '1px solid var(--border)', boxShadow: '0 2px 12px var(--border)' }}
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/15 shrink-0 flex items-center justify-center text-primary">
+                <div className="size-10 rounded-xl bg-primary/15 shrink-0 flex items-center justify-center text-primary">
                   {pushState === 'done' ? <CheckCircle2 size={20} /> : <Bell size={20} />}
                 </div>
                 <div className="flex-1">

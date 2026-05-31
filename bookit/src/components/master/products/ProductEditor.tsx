@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -78,7 +78,11 @@ export function ProductEditor({ id }: Props) {
   const [showStockLimit, setShowStockLimit] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevProduct, setPrevProduct] = useState(product);
+  const [prevLinks, setPrevLinks] = useState(links);
+
+  if (prevProduct !== product) {
+    setPrevProduct(product);
     if (id && product) {
       setName(product.name);
       setDescription(product.description ?? '');
@@ -90,28 +94,15 @@ export function ProductEditor({ id }: Props) {
       setIconName((product as Product & { icon_name?: ProductIconName }).icon_name ?? 'package');
       setProductType((product as Product & { product_type?: 'retail' | 'consumable' }).product_type ?? 'retail');
       setShowStockLimit(true);
-    } else if (!id) {
-      setName('');
-      setDescription('');
-      setCategory('other');
-      setPriceStr('');
-      setStockStr('0');
-      setPhotos([]);
-      setRecommendAlways(true);
-      setLinkedServiceIds([]);
-      setIconName('package');
-      setProductType('retail');
-      setShowStockLimit(true);
     }
     setError(null);
     setShowDelete(false);
-  }, [id, product]);
+  }
 
-  useEffect(() => {
-    if (id && links.length > 0) {
-      setLinkedServiceIds(links.map(l => l.serviceId));
-    }
-  }, [id, links]);
+  if (prevLinks !== links && id && links.length > 0) {
+    setPrevLinks(links);
+    setLinkedServiceIds(links.map(l => l.serviceId));
+  }
 
   function toggleService(serviceId: string) {
     setLinkedServiceIds(prev =>
@@ -213,7 +204,7 @@ export function ProductEditor({ id }: Props) {
   if (id && isLoading && !product) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -225,7 +216,7 @@ export function ProductEditor({ id }: Props) {
           <button
             onClick={() => router.back()}
             aria-label="Назад"
-            className="w-10 h-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+            className="size-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
           >
             <ChevronLeft size={20} />
           </button>
@@ -244,7 +235,7 @@ export function ProductEditor({ id }: Props) {
             <button
               onClick={() => setShowDelete(v => !v)}
               aria-label="Видалити товар"
-              className="hidden md:flex items-center justify-center w-10 h-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
+              className="hidden md:flex items-center justify-center size-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
             >
               <Trash2 size={18} />
             </button>
@@ -265,7 +256,7 @@ export function ProductEditor({ id }: Props) {
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-[24px] flex items-center justify-center text-4xl flex-shrink-0 bg-secondary/40 border border-border shadow-inner">
+              <div className="size-20 rounded-[24px] flex items-center justify-center text-4xl flex-shrink-0 bg-secondary/40 border border-border shadow-inner">
                 <ProductIcon name={iconName} size={28} />
               </div>
               <div className="flex-1 min-w-0">
@@ -341,11 +332,11 @@ export function ProductEditor({ id }: Props) {
             <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1">Фото товару (до 5)</label>
             <div className="flex gap-2 flex-wrap">
               {photos.map(url => (
-                <div key={url} className="relative w-20 h-20 rounded-xl overflow-hidden bg-secondary border border-border shrink-0">
+                <div key={url} className="relative size-20 rounded-xl overflow-hidden bg-secondary border border-border shrink-0">
                   <Image src={url} alt="" fill className="object-cover" />
                   <button
                     onClick={() => setPhotos(prev => prev.filter(p => p !== url))}
-                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer active:scale-95"
+                    className="absolute top-1 right-1 size-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer active:scale-95"
                   >
                     <Trash2 size={10} />
                   </button>
@@ -355,7 +346,7 @@ export function ProductEditor({ id }: Props) {
                 <button
                   onClick={() => fileRef.current?.click()}
                   disabled={uploading}
-                  className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-all"
+                  className="size-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-all"
                 >
                   {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
                   <span className="text-xs">Додати</span>
@@ -420,7 +411,7 @@ export function ProductEditor({ id }: Props) {
                   showStockLimit ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'
                 }`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${showStockLimit ? 'bg-success/20 text-success' : 'bg-primary/20 text-primary'}`}>
+                <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${showStockLimit ? 'bg-success/20 text-success' : 'bg-primary/20 text-primary'}`}>
                   {showStockLimit ? <Hash size={18} /> : <InfinityIcon size={18} />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -452,7 +443,7 @@ export function ProductEditor({ id }: Props) {
                   recommendAlways ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'
                 }`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${recommendAlways ? 'bg-success/20 text-success' : 'bg-primary/20 text-primary'}`}>
+                <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${recommendAlways ? 'bg-success/20 text-success' : 'bg-primary/20 text-primary'}`}>
                   {recommendAlways ? <Eye size={18} /> : <EyeOff size={18} />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -498,7 +489,7 @@ export function ProductEditor({ id }: Props) {
                 <div className="flex flex-col gap-4">
                   <div className="bg-sage/5 border border-sage/20 p-4 rounded-xl">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-sage/20 flex items-center justify-center text-sage shrink-0">
+                      <div className="size-8 rounded-lg bg-sage/20 flex items-center justify-center text-sage shrink-0">
                         <BarChart3 size={16} />
                       </div>
                       <h4 className="font-bold text-xs text-foreground">Аналітика продажів</h4>
@@ -518,7 +509,7 @@ export function ProductEditor({ id }: Props) {
                   </div>
 
                   <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
+                    <div className="size-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
                       <Package size={24} />
                     </div>
                     <div>
@@ -547,7 +538,7 @@ export function ProductEditor({ id }: Props) {
       {showDelete && id && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/40 backdrop-blur-sm">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-surface rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
-            <div className="w-16 h-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
+            <div className="size-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
               <Trash2 size={32} />
             </div>
             <h3 className="heading-serif text-xl text-foreground mb-2">Видалити товар?</h3>

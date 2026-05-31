@@ -16,8 +16,8 @@ export default function RootError({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] gap-4 px-6 text-center">
-      <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
-        <AlertTriangle className="w-7 h-7 text-destructive" />
+      <div className="size-14 rounded-full bg-destructive/10 flex items-center justify-center">
+        <AlertTriangle className="size-7 text-destructive" />
       </div>
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-1">Щось пішло не так</h2>
@@ -27,7 +27,7 @@ export default function RootError({
         onClick={reset}
         className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary text-white text-sm font-medium active:scale-95 transition-transform"
       >
-        <RefreshCw className="w-4 h-4" />
+        <RefreshCw className="size-4" />
         Оновити
       </button>
     </div>

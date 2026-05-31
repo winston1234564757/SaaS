@@ -32,7 +32,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
     <>
       <div className="widget-card p-6 flex flex-col gap-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
+          <div className="size-10 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
             <Plus size={18} className="text-accent" />
           </div>
           <div>
@@ -59,7 +59,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
                 className="flex items-center gap-2.5 p-3 rounded-2xl border border-border bg-secondary/60 hover:bg-secondary active:scale-[0.95] cursor-pointer transition-all text-left"
               >
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                  className="size-8 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: `${seg.color}18`, color: seg.color }}
                 >
                   {getSegmentIcon(seg.icon, 14)}

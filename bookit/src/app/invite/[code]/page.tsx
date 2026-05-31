@@ -78,7 +78,7 @@ export default async function InvitePage({ params }: Props) {
         <div className="bento-card p-7 text-center">
           {/* Avatar */}
           <div
-            className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4"
+            className="size-20 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4"
             style={{ background: 'rgba(255, 210, 194, 0.55)' }}
           >
             {emoji}

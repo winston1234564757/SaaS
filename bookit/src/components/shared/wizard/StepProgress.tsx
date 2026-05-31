@@ -34,7 +34,7 @@ export function StepProgress({ step, hasProducts }: { step: WizardStep; hasProdu
                 ? '0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent)'
                 : 'none',
             }}
-            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+            className={`size-2 rounded-full transition-colors duration-300 ${
               isActive
                 ? 'bg-[var(--accent)]'
                 : isDone

@@ -24,7 +24,7 @@ export function BulkActionToolbar({ selectedCount, onConfirmAll, onCompleteAll, 
         >
           <div className="bg-foreground text-background rounded-3xl p-4 shadow-2xl flex items-center justify-between gap-4 border border-background/10 backdrop-blur-xl">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-background/10 flex items-center justify-center font-bold text-sm">
+              <div className="size-10 rounded-2xl bg-background/10 flex items-center justify-center font-bold text-sm">
                 {selectedCount}
               </div>
               <div className="hidden sm:block">
@@ -65,7 +65,7 @@ export function BulkActionToolbar({ selectedCount, onConfirmAll, onCompleteAll, 
 
               <button
                 onClick={onClear}
-                className="w-10 h-10 shrink-0 flex items-center justify-center rounded-2xl hover:bg-background/10 text-background/60 transition-colors active:scale-[0.88] cursor-pointer"
+                className="size-10 shrink-0 flex items-center justify-center rounded-2xl hover:bg-background/10 text-background/60 transition-colors active:scale-[0.88] cursor-pointer"
               >
                 <Trash2 size={18} />
               </button>

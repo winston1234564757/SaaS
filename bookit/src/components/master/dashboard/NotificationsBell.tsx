@@ -53,14 +53,14 @@ export function NotificationsBell() {
     <>
       <button
         onClick={handleOpen}
-        className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
+        className="relative size-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
       >
         <Bell size={16} />
         {unreadCount > 0 && (
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center leading-none"
+            className="absolute -top-1 -right-1 size-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center leading-none"
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.span>
@@ -96,7 +96,7 @@ export function NotificationsBell() {
                 <p className="text-base font-semibold text-foreground">Сповіщення</p>
                 <button
                   onClick={() => setOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-peach/60 transition-colors"
+                  className="size-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-peach/60 transition-colors"
                 >
                   <X size={15} />
                 </button>
@@ -131,7 +131,7 @@ export function NotificationsBell() {
                             } disabled:cursor-default`}
                           >
                             <div
-                              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                              className="size-9 rounded-xl flex items-center justify-center flex-shrink-0"
                               style={{ background: cfg.bg }}
                             >
                               <Icon size={16} style={{ color: cfg.color }} />
@@ -148,7 +148,7 @@ export function NotificationsBell() {
                               <p className="text-xs text-muted-foreground leading-tight mt-0.5">{n.body}</p>
                             </div>
                             {!n.isRead && (
-                              <div className="w-2 h-2 rounded-full bg-warning flex-shrink-0 mt-1.5" />
+                              <div className="size-2 rounded-full bg-warning flex-shrink-0 mt-1.5" />
                             )}
                           </button>
                         </motion.div>

@@ -139,7 +139,7 @@ export function ReviewsPage() {
         </div>
       ) : reviews.length === 0 ? (
         <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
-          <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+          <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
             <MessageSquare size={26} className="text-muted-foreground/60" />
           </div>
           <p className="text-sm font-semibold text-foreground">Відгуків ще немає</p>
@@ -174,7 +174,7 @@ export function ReviewsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div
-                      className="w-9 h-9 rounded-2xl flex items-center justify-center text-base flex-shrink-0 bg-primary/20 text-primary"
+                      className="size-9 rounded-2xl flex items-center justify-center text-base flex-shrink-0 bg-primary/20 text-primary"
                     >
                       {r.client_name[0]?.toUpperCase() ?? '?'}
                     </div>

@@ -118,7 +118,7 @@ export function SystemLogsViewer() {
 
         <div className="flex gap-3 w-full sm:w-auto items-center shrink-0 justify-end">
           <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-slate-400" />
             <input
               type="text"
               value={search}
@@ -130,9 +130,9 @@ export function SystemLogsViewer() {
 
           <button
             onClick={loadLogs}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 active:scale-[0.90] cursor-pointer"
+            className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 active:scale-[0.90] cursor-pointer"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="size-4" />
           </button>
         </div>
 
@@ -140,7 +140,7 @@ export function SystemLogsViewer() {
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+          <Loader2 className="size-8 animate-spin text-slate-400" />
         </div>
       ) : activeTab === 'notif' ? (
         // Notification logs table
@@ -221,12 +221,12 @@ export function SystemLogsViewer() {
                       }`}>
                         {l.used ? (
                           <>
-                            <ShieldCheck className="h-3 w-3 shrink-0" />
+                            <ShieldCheck className="size-3 shrink-0" />
                             використано
                           </>
                         ) : (
                           <>
-                            <AlertTriangle className="h-3 w-3 shrink-0 animate-pulse" />
+                            <AlertTriangle className="size-3 shrink-0 animate-pulse" />
                             активний / невикористано
                           </>
                         )}

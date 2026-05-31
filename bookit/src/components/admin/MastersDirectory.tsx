@@ -157,7 +157,7 @@ export function MastersDirectory() {
       {/* Search and Filters Bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-4 shadow-sm">
         <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
           <input
             type="text"
             value={search}
@@ -187,7 +187,7 @@ export function MastersDirectory() {
       {/* Directory Grid */}
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+          <Loader2 className="size-8 animate-spin text-slate-400" />
         </div>
       ) : filteredMasters.length === 0 ? (
         <div className="rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-12 text-center text-slate-400">
@@ -212,7 +212,7 @@ export function MastersDirectory() {
                   <tr key={m.id} className="hover:bg-slate-50/50 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
                           <User className="h-4.5 w-4.5" />
                         </div>
                         <div>
@@ -252,7 +252,7 @@ export function MastersDirectory() {
                       <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${
                         m.is_published ? 'text-green-600' : 'text-slate-400'
                       }`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${m.is_published ? 'bg-green-500' : 'bg-slate-400'}`} />
+                        <span className={`size-1.5 rounded-full ${m.is_published ? 'bg-green-500' : 'bg-slate-400'}`} />
                         {m.is_published ? 'Опубліковано' : 'Чернетка'}
                       </span>
                     </td>
@@ -265,7 +265,7 @@ export function MastersDirectory() {
                         className="inline-flex h-8 items-center gap-1 rounded-full border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.95] cursor-pointer"
                       >
                         Керування
-                        <ChevronRight className="h-3 w-3 text-slate-400" />
+                        <ChevronRight className="size-3 text-slate-400" />
                       </button>
                     </td>
                   </tr>
@@ -297,7 +297,7 @@ export function MastersDirectory() {
                 onClick={() => handleImpersonate(selectedMaster)}
                 className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-xs font-bold text-slate-50 transition hover:bg-slate-800 active:scale-[0.95] cursor-pointer"
               >
-                <Key className="h-4 w-4" />
+                <Key className="size-4" />
                 Увійти як майстер
               </button>
 
@@ -312,12 +312,12 @@ export function MastersDirectory() {
               >
                 {selectedMaster.is_published ? (
                   <>
-                    <ShieldAlert className="h-4 w-4" />
+                    <ShieldAlert className="size-4" />
                     Зняти з публікації
                   </>
                 ) : (
                   <>
-                    <ShieldCheck className="h-4 w-4" />
+                    <ShieldCheck className="size-4" />
                     Опублікувати
                   </>
                 )}
@@ -367,7 +367,7 @@ export function MastersDirectory() {
                   disabled={saving}
                   className="w-full flex items-center justify-center gap-2 rounded-full bg-slate-900 py-3 text-xs font-bold text-slate-50 transition hover:bg-slate-800 active:scale-[0.95] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 >
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {saving && <Loader2 className="size-4 animate-spin" />}
                   Зберегти зміни тарифу
                 </button>
               </div>
@@ -386,7 +386,7 @@ export function MastersDirectory() {
                   className="font-mono text-indigo-600 hover:underline flex items-center gap-1"
                 >
                   {selectedMaster.slug}
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLink className="size-3" />
                 </a>
               </div>
 

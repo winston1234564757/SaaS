@@ -177,14 +177,14 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
         <div className="flex items-center gap-3">
           <button
             onClick={handleBack}
-            className="flex items-center justify-center h-10 w-10 rounded-full border border-[var(--border)] hover:bg-[var(--surface-hover)] active:scale-[0.95] transition-all cursor-pointer"
+            className="flex items-center justify-center size-10 rounded-full border border-[var(--border)] hover:bg-[var(--surface-hover)] active:scale-[0.95] transition-all cursor-pointer"
           >
-            <ChevronLeft className="h-5 w-5 text-[var(--text-primary)]" />
+            <ChevronLeft className="size-5 text-[var(--text-primary)]" />
           </button>
           <div className="flex items-center gap-3">
             <div className="relative size-10 rounded-full bg-[var(--accent-light)] border border-[var(--border-strong)] flex items-center justify-center shrink-0">
-              <LifeBuoy className="h-5 w-5 text-[var(--accent)]" />
-              <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
+              <LifeBuoy className="size-5 text-[var(--accent)]" />
+              <span className="absolute bottom-0 right-0 block size-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
             </div>
             <div>
               <h1 className="text-sm font-bold leading-tight">Служба підтримки BookIT</h1>
@@ -198,12 +198,12 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 scrollbar-hide bg-slate-50/5 dark:bg-black/5">
         {chatLoading && messages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <Loader2 className="h-7 w-7 animate-spin text-[var(--accent)]" />
+            <Loader2 className="size-7 animate-spin text-[var(--accent)]" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[50vh] text-center max-w-sm mx-auto space-y-4 px-4">
             <div className="size-16 rounded-full bg-[var(--accent-light)] border border-[var(--border-strong)] flex items-center justify-center text-[var(--accent)] shadow-inner">
-              <Sparkles className="h-7 w-7" />
+              <Sparkles className="size-7" />
             </div>
             <h3 className="text-base font-bold">Потрібна допомога?</h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-medium">
@@ -292,16 +292,16 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
           {/* Attachment Preview */}
           {filePreview && (
             <div className="relative flex items-center gap-2.5 rounded-2xl bg-[var(--surface-hover)] border border-[var(--border)] p-2 pr-9 w-fit shadow-sm">
-              <img src={filePreview} alt="Screenshot preview" className="h-9 w-9 rounded-lg object-cover" />
+              <img src={filePreview} alt="Screenshot preview" className="size-9 rounded-lg object-cover" />
               <div className="text-xs font-semibold truncate max-w-[200px]">
                 {selectedFile?.name}
               </div>
               <button
                 type="button"
                 onClick={removeFile}
-                className="absolute right-2.5 w-5 h-5 flex items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:scale-[0.90] cursor-pointer"
+                className="absolute right-2.5 size-5 flex items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:scale-[0.90] cursor-pointer"
               >
-                <X className="h-3 w-3" />
+                <X className="size-3" />
               </button>
             </div>
           )}
@@ -318,7 +318,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-[var(--border)] transition active:scale-[0.90] cursor-pointer"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-[var(--border)] transition active:scale-[0.90] cursor-pointer"
             >
               <ImageIcon className="h-4.5 w-4.5" />
             </button>
@@ -334,12 +334,12 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
             <button
               type="submit"
               disabled={submitting || (!messageText.trim() && !selectedFile)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-on)] transition hover:opacity-90 active:scale-[0.90] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-on)] transition hover:opacity-90 active:scale-[0.90] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >
               {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="size-4" />
               )}
             </button>
           </form>

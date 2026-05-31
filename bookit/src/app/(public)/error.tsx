@@ -18,8 +18,8 @@ export default function PublicError({
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
       <div className="relative mb-8">
         <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-        <div className="relative w-24 h-24 bg-background border-2 border-primary/20 rounded-3xl flex items-center justify-center rotate-12 transition-transform hover:rotate-0">
-          <AlertTriangle className="w-12 h-12 text-primary" />
+        <div className="relative size-24 bg-background border-2 border-primary/20 rounded-3xl flex items-center justify-center rotate-12 transition-transform hover:rotate-0">
+          <AlertTriangle className="size-12 text-primary" />
         </div>
       </div>
       
@@ -35,7 +35,7 @@ export default function PublicError({
           onClick={() => reset()}
           className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-3xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95"
         >
-          <RefreshCcw className="w-5 h-5" />
+          <RefreshCcw className="size-5" />
           Спробувати ще раз
         </button>
         
@@ -43,7 +43,7 @@ export default function PublicError({
           href="/"
           className="flex-1 flex items-center justify-center gap-2 bg-secondary/50 backdrop-blur-sm text-secondary-foreground px-8 py-4 rounded-3xl font-bold border border-secondary/50 hover:bg-secondary/80 transition-all active:scale-95"
         >
-          <Home className="w-5 h-5" />
+          <Home className="size-5" />
           На головну
         </Link>
       </div>

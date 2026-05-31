@@ -45,9 +45,9 @@ export function BeautyLoader({ message }: BeautyLoaderProps) {
             repeat: Infinity,
             ease: "easeInOut" 
           }}
-          className="w-20 h-20 bg-secondary/80 backdrop-blur-md rounded-xl shadow-xl border border-border flex items-center justify-center mb-8"
+          className="size-20 bg-secondary/80 backdrop-blur-md rounded-xl shadow-xl border border-border flex items-center justify-center mb-8"
         >
-          <Sparkles className="w-10 h-10 text-sage" />
+          <Sparkles className="size-10 text-sage" />
         </motion.div>
 
         {/* Primary Message */}

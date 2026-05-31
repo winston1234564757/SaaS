@@ -99,11 +99,11 @@ export function useDateRange(): DateRangeState {
   const [preset, setPresetState] = useState<Preset>('month');
   const [offset, setOffset]      = useState(0);
 
-  const setPreset  = useCallback((p: Preset) => { setPresetState(p); setOffset(0); }, []);
-  const goPrev     = useCallback(() => { if (preset !== 'all') setOffset(o => o - 1); }, [preset]);
-  const goNext     = useCallback(() => {
+  const setPreset  = (p: Preset) => { setPresetState(p); setOffset(0); };
+  const goPrev     = () => { if (preset !== 'all') setOffset(o => o - 1); };
+  const goNext     = () => {
     if (preset !== 'all') setOffset(o => Math.min(o + 1, 0));
-  }, [preset]);
+  };
 
   const { start, end, label } = computeRange(preset, offset);
 

@@ -52,7 +52,7 @@ function StripCard({ card, index, accent = false }: CardProps) {
     >
       <div className="flex items-start gap-3">
         <span
-          className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
+          className="flex items-center justify-center size-9 rounded-xl shrink-0"
           style={{
             background: accent
               ? 'color-mix(in srgb, var(--accent) 16%, transparent)'

@@ -47,7 +47,7 @@ export function QuickActionsWidget() {
                 style={{ background: 'color-mix(in srgb, var(--accent-on) 8%, transparent)' }}
               />
               <span
-                className="relative z-10 flex items-center justify-center w-9 h-9 rounded-full"
+                className="relative z-10 flex items-center justify-center size-9 rounded-full"
                 style={{ background: 'color-mix(in srgb, var(--accent-on) 18%, transparent)' }}
               >
                 <span style={{ color: 'var(--accent-on)' }}>

@@ -82,7 +82,7 @@ export function ScheduleWidget({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
             <div className={cn(
-              'w-9 h-9 rounded-2xl flex items-center justify-center shadow-md',
+              'size-9 rounded-2xl flex items-center justify-center shadow-md',
               isWorkingNow ? 'bg-success text-white' : 'bg-warning text-white',
             )}>
               <Clock size={18} />
@@ -248,7 +248,7 @@ export function ScheduleWidget({
                       <motion.div
                         animate={{ x: schedule[day].is_working ? 21 : 3 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                        className="absolute top-[3px] left-0 w-4 h-4 rounded-full bg-white shadow-sm"
+                        className="absolute top-[3px] left-0 size-4 rounded-full bg-white shadow-sm"
                       />
                     </button>
 
@@ -374,7 +374,7 @@ export function ScheduleWidget({
                         />
                         <button
                           onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
-                          className="w-9 h-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
+                          className="size-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
                         >
                           <Trash2 size={14} />
                         </button>

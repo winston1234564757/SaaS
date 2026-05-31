@@ -83,7 +83,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground/60 hover:bg-black/5 transition-colors flex-shrink-0 active:scale-[0.95] transition-all cursor-pointer"
+                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground/60 hover:bg-black/5 transition-colors flex-shrink-0 active:scale-[0.95] transition-all cursor-pointer"
                 aria-label="Закрити"
               >
                 <X size={16} />
@@ -137,7 +137,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
                 className="w-full h-12 rounded-lg bg-primary hover:opacity-90 text-primary-foreground text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center active:scale-[0.95] transition-all cursor-pointer"
               >
                 {loading ? (
-                  <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <span className="size-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                 ) : (
                   'Увійти'
                 )}

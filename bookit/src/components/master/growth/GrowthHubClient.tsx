@@ -84,7 +84,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-warning/10 flex items-center justify-center text-warning shrink-0">
+          <div className="size-12 rounded-2xl bg-warning/10 flex items-center justify-center text-warning shrink-0">
             <Rocket size={24} />
           </div>
           <div>

@@ -94,7 +94,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
         animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center gap-4 text-center py-4"
       >
-        <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+        <div className="size-16 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
           <span style={{ color: 'var(--accent)' }}>
             <Mail size={32} />
           </span>
@@ -131,7 +131,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
         >
           {/* Header */}
           <div className="text-center">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
               <span style={{ color: 'var(--accent)' }}>
                 <Sparkles size={24} />
               </span>
@@ -152,7 +152,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
                 transition={{ delay: i * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/50 border border-border"
               >
-                <div className="w-8 h-8 rounded-xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+                <div className="size-8 rounded-xl bg-primary/12 flex items-center justify-center flex-shrink-0">
                   <Icon size={16} className="text-primary" />
                 </div>
                 <span className="text-sm text-foreground font-medium">{text}</span>
@@ -265,7 +265,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
             className="w-full h-12 rounded-lg bg-primary hover:opacity-90 text-primary-foreground text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              <div className="size-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
             ) : (
               <>Зареєструватись <span className="opacity-70">→</span></>
             )}

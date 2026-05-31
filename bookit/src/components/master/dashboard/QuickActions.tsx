@@ -46,7 +46,7 @@ export function QuickActions() {
                 onClick={() => openDrawer('flash_deals')}
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer"
               >
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-warning shadow-lg">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-warning shadow-lg">
                   <Zap size={18} className="text-white" />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
@@ -66,7 +66,7 @@ export function QuickActions() {
                 onClick={() => openDrawer('dynamic_pricing')}
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer"
               >
-<div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary shadow-lg shadow-primary/30">
+<div className="size-11 rounded-xl flex items-center justify-center bg-primary shadow-lg shadow-primary/30">
                   <TrendingUp size={18} className="text-white" />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
@@ -83,7 +83,7 @@ export function QuickActions() {
               <motion.div whileTap={{ scale: 0.94 }} className="w-full">
                 <Link href="/dashboard/marketing"
                   className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-text-main shadow-lg shadow-text-main/20">
+                  <div className="size-11 rounded-xl flex items-center justify-center bg-text-main shadow-lg shadow-text-main/20">
                     <Sparkles size={18} className="text-peach" />
                   </div>
                   <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
@@ -107,7 +107,7 @@ export function QuickActions() {
               onClick={() => setBookingOpen(true)}
               className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer"
             >
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
+              <div className="size-11 rounded-xl flex items-center justify-center bg-primary shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
                 <Plus size={18} className="text-white" />
               </div>
               <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Новий запис</span>
@@ -119,7 +119,7 @@ export function QuickActions() {
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/analytics"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
                   <BarChart2 size={18} className="text-muted-foreground" />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Аналітика</span>
@@ -132,7 +132,7 @@ export function QuickActions() {
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/settings"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
                   <Settings size={18} className="text-muted-foreground" />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Налаштування</span>
@@ -145,7 +145,7 @@ export function QuickActions() {
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/services"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
                   <Scissors size={18} className="text-muted-foreground" />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Послуги</span>
@@ -158,7 +158,7 @@ export function QuickActions() {
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/clients"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
                   <Users size={18} className="text-muted-foreground" />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Клієнти</span>
@@ -171,7 +171,7 @@ export function QuickActions() {
             <motion.div whileTap={{ scale: 0.94 }} className="w-full">
               <Link href="/dashboard/bookings"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
                   <CalendarDays size={18} className="text-muted-foreground" />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Записи</span>

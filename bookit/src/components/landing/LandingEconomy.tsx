@@ -247,7 +247,7 @@ function Slider({
           />
         </div>
         <div
-          className="absolute w-4 h-4 rounded-full pointer-events-none transition-transform active:scale-110"
+          className="absolute size-4 rounded-full pointer-events-none transition-transform active:scale-110"
           style={{
             left: `calc(${pct}% - 8px)`,
             background: 'var(--l-surface)',

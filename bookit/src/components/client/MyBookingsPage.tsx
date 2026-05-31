@@ -195,7 +195,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
 
       <div className="flex items-start gap-3">
         <div
-          className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 bg-accent/10"
+          className="size-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 bg-accent/10"
         >
           {b.masterEmoji}
         </div>

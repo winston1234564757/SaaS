@@ -80,7 +80,7 @@ function ProfileMenu({ open, onClose }: { open: boolean; onClose: () => void }) 
           <div className="p-3" style={{ borderBottom: '0.5px solid var(--border)' }}>
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center text-base shrink-0"
+                className="size-10 rounded-2xl overflow-hidden flex items-center justify-center text-base shrink-0"
                 style={{ background: 'var(--accent-light)' }}
               >
                 {src
@@ -252,7 +252,7 @@ export function DashboardTopBar() {
                 {/* Back button */}
                 <button
                   onClick={() => setActiveGroup('none')}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary/50 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary active:scale-[0.9] transition-all cursor-pointer shrink-0"
+                  className="size-9 rounded-xl flex items-center justify-center bg-secondary/50 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary active:scale-[0.9] transition-all cursor-pointer shrink-0"
                 >
                   <ArrowLeft size={16} strokeWidth={2.5} />
                 </button>
@@ -302,7 +302,7 @@ export function DashboardTopBar() {
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <div
-                className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center text-sm shrink-0"
+                className="size-7 rounded-lg overflow-hidden flex items-center justify-center text-sm shrink-0"
                 style={{ background: 'var(--accent-light)' }}
               >
                 {src

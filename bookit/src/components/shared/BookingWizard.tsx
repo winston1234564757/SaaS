@@ -260,7 +260,7 @@ export function BookingWizard({
           <div className="relative">
             {isAtLimit && step !== 'success' && (
               <div className="flex flex-col items-center text-center py-10 px-5 gap-4">
-                <div className="w-16 h-16 rounded-xl bg-warning/10 flex items-center justify-center"><Lock size={28} className="text-warning" /></div>
+                <div className="size-16 rounded-xl bg-warning/10 flex items-center justify-center"><Lock size={28} className="text-warning" /></div>
                 <p className="text-base font-bold text-foreground">Ліміт записів вичерпано</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Майстер досяг ліміту 40 записів на місяць.<br />

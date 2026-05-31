@@ -55,7 +55,7 @@ function FAQItem({ item, index, inView }: { item: typeof FAQS[0]; index: number;
           {item.q}
         </span>
         <span
-          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+          className="size-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{
             background: open ? 'var(--l-accent)' : 'var(--l-surface-2)',
             border: '1px solid var(--l-border)',

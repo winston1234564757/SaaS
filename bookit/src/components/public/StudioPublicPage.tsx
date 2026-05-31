@@ -99,7 +99,7 @@ export function StudioPublicPage({ studio, members }: Props) {
                 onClick={() => setExpandedMaster(isExpanded ? null : master.masterId)}
               >
                 <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 bg-accent/15 overflow-hidden"
+                  className="size-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 bg-accent/15 overflow-hidden"
                 >
                   {master.avatarUrl ? (
                     <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="56px" />
@@ -130,7 +130,7 @@ export function StudioPublicPage({ studio, members }: Props) {
                 </div>
 
                 <div
-                  className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-transform duration-300"
+                  className="size-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-transform duration-300"
                   style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                 >
                   <ChevronDown size={14} className="text-primary" />

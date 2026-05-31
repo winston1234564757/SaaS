@@ -157,7 +157,7 @@ export function StepServicesForm({
           type="button"
           onClick={goPrev}
           disabled={!canPrev}
-          className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
+          className="size-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
           style={canPrev
             ? { background: tints.bg, color: tints.iconColor }
             : { background: 'var(--surface)', color: 'var(--text-tertiary)' }
@@ -189,7 +189,7 @@ export function StepServicesForm({
           type="button"
           onClick={goNext}
           disabled={!canNext}
-          className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
+          className="size-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
           style={canNext
             ? { background: tints.bg, color: tints.iconColor }
             : { background: 'var(--surface)', color: 'var(--text-tertiary)' }
@@ -258,7 +258,7 @@ export function StepServicesForm({
                   }
                 >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    className="size-10 rounded-xl flex items-center justify-center"
                     style={{ background: isSelected ? tints.iconColor : tints.bg }}
                   >
                     <Icon size={18} strokeWidth={1.8} color={isSelected ? '#fff' : tints.iconColor} />
@@ -276,7 +276,7 @@ export function StepServicesForm({
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center"
+                      className="absolute top-2.5 right-2.5 size-5 rounded-full flex items-center justify-center"
                       style={{ background: tints.iconColor }}
                     >
                       <Check size={11} strokeWidth={3} className="text-white" />
@@ -368,7 +368,7 @@ export function StepServicesForm({
                           />
                           <div className="flex items-center gap-3 flex-1 px-4 py-3.5">
                             <div
-                              className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+                              className="size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
                               style={isSel
                                 ? { borderColor: cfg.accent, background: cfg.accent }
                                 : { borderColor: '#D4C5C0', background: 'transparent' }

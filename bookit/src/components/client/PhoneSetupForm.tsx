@@ -135,7 +135,7 @@ export function PhoneSetupForm() {
           className="flex flex-col gap-4"
         >
           <div className="text-center mb-2">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-primary/15 mb-4">
+            <div className="inline-flex items-center justify-center size-14 rounded-lg bg-primary/15 mb-4">
               <Phone size={24} className="text-primary" />
             </div>
             <h1 className="heading-serif text-2xl text-foreground mb-1.5">
@@ -186,7 +186,7 @@ export function PhoneSetupForm() {
           className="flex flex-col gap-4"
         >
           <div className="text-center mb-2">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-primary/15 mb-4">
+            <div className="inline-flex items-center justify-center size-14 rounded-lg bg-primary/15 mb-4">
               <MessageSquare size={24} className="text-primary" />
             </div>
             <h1 className="heading-serif text-2xl text-foreground mb-1.5">

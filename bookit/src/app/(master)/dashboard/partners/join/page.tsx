@@ -37,7 +37,7 @@ export default async function JoinPartnerPage({
   if (!inviter) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
-        <div className="w-16 h-16 rounded-xl bg-secondary/60 mb-4" />
+        <div className="size-16 rounded-xl bg-secondary/60 mb-4" />
         <h1 className="heading-serif text-2xl text-foreground mb-2">Запрошення не знайдено</h1>
         <p className="text-muted-foreground/60 text-sm max-w-xs">
           Можливо, посилання застаріло або воно невірне.

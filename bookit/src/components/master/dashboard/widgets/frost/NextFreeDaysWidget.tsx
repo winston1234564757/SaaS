@@ -54,7 +54,7 @@ export function NextFreeDaysWidget() {
 
       {isLoading ? (
         <div className="flex gap-1.5">
-          {[0, 1, 2, 3].map(i => <div key={i} className="skeleton-shimmer h-12 w-12 rounded-lg flex-shrink-0" />)}
+          {[0, 1, 2, 3].map(i => <div key={i} className="skeleton-shimmer size-12 rounded-lg flex-shrink-0" />)}
         </div>
       ) : (
         <div className="flex gap-2">

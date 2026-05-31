@@ -23,7 +23,7 @@ export function TrustedPartnersBlock({ partners }: Props) {
   return (
     <section className="bento-card p-5 flex flex-col gap-4">
       <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+        <div className="size-9 rounded-xl bg-primary/12 flex items-center justify-center flex-shrink-0">
           <Users size={17} className="text-primary" />
         </div>
         <div>
@@ -39,7 +39,7 @@ export function TrustedPartnersBlock({ partners }: Props) {
             href={`/${p.slug}`}
             className="flex items-center gap-3 p-3 rounded-xl bg-secondary/60 border border-border hover:bg-secondary active:scale-[0.98] transition-all"
           >
-            <span className="w-9 h-9 flex items-center justify-center rounded-xl bg-background flex-shrink-0 overflow-hidden relative">
+            <span className="size-9 flex items-center justify-center rounded-xl bg-background flex-shrink-0 overflow-hidden relative">
               {p.avatarUrl ? (
                 <Image src={p.avatarUrl} alt={p.name} fill className="object-cover" sizes="36px" />
               ) : (

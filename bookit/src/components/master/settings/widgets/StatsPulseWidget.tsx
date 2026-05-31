@@ -22,7 +22,7 @@ export function StatsPulseWidget({
       {/* Rating Tile */}
       <div className="widget-card p-4 flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+          <div className="size-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
             <Star size={16} fill="currentColor" />
           </div>
           <div className="flex items-center gap-0.5 text-[10px] font-bold text-success">
@@ -42,7 +42,7 @@ export function StatsPulseWidget({
       {/* Views Tile */}
       <div className="widget-card p-4 flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
-          <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+          <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
             <Eye size={16} />
           </div>
           <div className="flex items-center gap-0.5 text-[10px] font-bold text-accent">
@@ -62,7 +62,7 @@ export function StatsPulseWidget({
       {/* Bookings Tile - Full Width below */}
       <div className="col-span-2 widget-card p-4 flex items-center justify-between bg-accent/5 border-accent/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
+          <div className="size-10 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
             <CalendarCheck size={20} />
           </div>
           <div>

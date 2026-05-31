@@ -87,7 +87,7 @@ export function BookingSuccess({
       <motion.div
         initial={{ scale: 0 }} animate={{ scale: 1 }}
         transition={{ delay: 0.05, type: 'spring' as const, stiffness: 300, damping: 18 }}
-        className="w-20 h-20 rounded-full bg-success/15 flex items-center justify-center">
+        className="size-20 rounded-full bg-success/15 flex items-center justify-center">
         <Check size={36} className="text-success" strokeWidth={2.5} />
       </motion.div>
 

@@ -52,7 +52,7 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 2px 16px rgba(44,26,20,0.08)' }}
               >
                 {/* Cover */}
-                <div className="relative w-44 h-44 bg-secondary">
+                <div className="relative size-44 bg-secondary">
                   {item.cover_url ? (
                     <Image src={item.cover_url} alt={item.title} fill className="object-cover" sizes="176px" />
                   ) : (

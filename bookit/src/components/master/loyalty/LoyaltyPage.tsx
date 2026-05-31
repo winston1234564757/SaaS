@@ -292,7 +292,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
         </div>
       ) : programs.length === 0 && !showForm ? (
         <div className="bento-card p-8 flex flex-col items-center gap-3 text-center">
-          <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+          <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
             <Users size={26} className="text-muted-foreground/60" />
           </div>
           <p className="text-sm font-semibold text-foreground">Програм лояльності ще немає</p>
@@ -320,7 +320,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                 ) : (
                   <>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary/10 shrink-0">
+                      <div className="size-10 rounded-2xl flex items-center justify-center bg-primary/10 shrink-0">
                         <Gift size={18} className="text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -340,7 +340,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setEditingId(p.id)}
-                          className="w-8 h-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+                          className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
                         >
                           <Pencil size={14} />
                         </button>
@@ -375,7 +375,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                           ) : (
                             <button
                               onClick={() => setConfirmDelete(p.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                              className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -392,7 +392,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                         <motion.div
                           animate={{ x: p.isActive ? 20 : 2 }}
                           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                          className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+                          className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
                         />
                       </button>
                     </div>
@@ -406,7 +406,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
       {/* C2C Referral Settings */}
       <div className="bento-card p-5 flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+          <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
             <Share2 size={18} className="text-primary" />
           </div>
           <div className="flex-1">
@@ -421,7 +421,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
             <motion.div
               animate={{ x: c2cEnabled ? 20 : 2 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+              className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
             />
           </button>
         </div>

@@ -63,7 +63,7 @@ export function BottomNav() {
                 <div className="relative">
                   <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
                   {showBadge && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                    <span className="absolute -top-1 -right-1 size-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center leading-none">
                       {todayPending > 9 ? '9+' : todayPending}
                     </span>
                   )}
@@ -121,7 +121,7 @@ export function BottomNav() {
                 <p className="text-sm font-bold text-foreground">Розділи</p>
                 <button
                   onClick={() => setMoreOpen(false)}
-                  className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60"
+                  className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60"
                 >
                   <X size={15} />
                 </button>
@@ -143,7 +143,7 @@ export function BottomNav() {
                       )}
                     >
                       <div className={cn(
-                        'w-10 h-10 rounded-lg flex items-center justify-center relative',
+                        'size-10 rounded-lg flex items-center justify-center relative',
                         isActive ? 'bg-primary/15' : 'bg-secondary'
                       )}>
                         <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />

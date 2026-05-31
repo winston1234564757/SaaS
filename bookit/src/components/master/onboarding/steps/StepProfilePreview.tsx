@@ -118,7 +118,7 @@ function PhoneMockup({
             <div className="flex items-center gap-2">
               {/* Avatar */}
               <div
-                className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shrink-0"
+                className="size-10 rounded-full overflow-hidden flex items-center justify-center shrink-0"
                 style={{ background: '#E8D0C8' }}
               >
                 {avatarPreview
@@ -238,7 +238,7 @@ function PhoneMockup({
           <motion.span
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ duration: 1.8, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full bg-success shrink-0"
+            className="size-1.5 rounded-full bg-success shrink-0"
           />
           Live preview
         </span>

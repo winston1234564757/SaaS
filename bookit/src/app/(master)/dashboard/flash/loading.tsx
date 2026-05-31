@@ -11,7 +11,7 @@ export default function Loading() {
 
       {/* Ліміт / статистика */}
       <div className="rounded-xl bg-secondary/60 p-4 flex items-center gap-3">
-        <Skeleton className="h-10 w-10 rounded-xl flex-shrink-0" />
+        <Skeleton className="size-10 rounded-xl flex-shrink-0" />
         <div className="flex flex-col gap-1.5 flex-1">
           <Skeleton className="h-4 w-32 rounded-lg" />
           <Skeleton className="h-3 w-24 rounded-md" />

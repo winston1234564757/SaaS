@@ -53,7 +53,7 @@ function QuietHoursWidget({ insight }: { insight: QuietHoursInsight }) {
       style={{ background: 'rgba(120,154,153,0.06)', borderColor: 'rgba(120,154,153,0.18)' }}
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+        className="size-10 rounded-xl flex items-center justify-center shrink-0"
         style={{ background: 'rgba(120,154,153,0.12)' }}
       >
         <Moon size={18} className="text-primary" />
@@ -109,7 +109,7 @@ function TrialActiveView({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="size-9 rounded-xl flex items-center justify-center"
                 style={{ background: 'rgba(92,158,122,0.14)' }}
               >
                 <Sparkles size={16} style={{ color: '#5C9E7A' }} />
@@ -230,7 +230,7 @@ function TrialExhaustedView({
           style={{ background: 'linear-gradient(135deg, rgba(192,91,91,0.07) 0%, rgba(212,147,90,0.04) 100%)' }}
         >
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center"
+            className="size-12 rounded-2xl flex items-center justify-center"
             style={{ background: 'rgba(192,91,91,0.10)' }}
           >
             <Lock size={22} style={{ color: '#C05B5B' }} />
@@ -296,7 +296,7 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
             filter: 'blur(10px)'
           }} />
         )}
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center relative z-10" style={{ background: 'rgba(120,154,153,0.15)' }}>
+        <div className="size-14 rounded-2xl flex items-center justify-center relative z-10" style={{ background: 'rgba(120,154,153,0.15)' }}>
           <TrendingUp size={26} className="text-primary" />
         </div>
         <div className="relative z-10">
@@ -321,7 +321,7 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
             transition={{ ...SPRING, delay: i * 0.07 }}
             className="bento-card p-4 flex items-start gap-3 opacity-70"
           >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(120,154,153,0.1)' }}>
+            <div className="size-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(120,154,153,0.1)' }}>
               <Icon size={16} className="text-primary" />
             </div>
             <div className="min-w-0">

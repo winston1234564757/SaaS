@@ -29,13 +29,13 @@ export default function Loading() {
           <Skeleton className="h-10 w-full rounded-xl" />
           <Skeleton className="h-10 w-full rounded-xl" />
         </div>
-        <Skeleton className="h-3 w-3/4 rounded-md" />
+        <Skeleton className="size-3/4 rounded-md" />
       </div>
 
       {/* Картки рівнів */}
       {[0, 1].map(i => (
         <div key={i} className="rounded-xl bg-secondary/60 p-4 flex items-center gap-3">
-          <Skeleton className="h-10 w-10 rounded-xl flex-shrink-0" />
+          <Skeleton className="size-10 rounded-xl flex-shrink-0" />
           <div className="flex flex-col gap-1.5 flex-1">
             <Skeleton className="h-4 w-32 rounded-lg" />
             <Skeleton className="h-3 w-48 rounded-md" />

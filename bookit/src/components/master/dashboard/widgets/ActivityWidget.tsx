@@ -53,7 +53,7 @@ export function ActivityWidget() {
                   transition={{ delay: i * 0.05 }}
                   className="flex gap-3 group"
                 >
-                  <div className={cn("w-9 h-9 rounded-xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-110", cfg.bg)}>
+                  <div className={cn("size-9 rounded-xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-110", cfg.bg)}>
                     <Icon size={16} className={cfg.color} />
                   </div>
                   <div className="flex-1 min-w-0 border-b border-secondary/30 pb-3 group-last:border-0">

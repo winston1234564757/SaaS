@@ -255,7 +255,7 @@ export function StepPreview({
             {/* Avatar + identity */}
             <div className="flex flex-col items-center mb-3">
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mb-2.5 overflow-hidden flex-shrink-0"
+                className="size-16 rounded-full flex items-center justify-center mb-2.5 overflow-hidden flex-shrink-0"
                 style={{
                   background: avatarUrl ? undefined : `linear-gradient(140deg, ${g1} 0%, ${g2} 100%)`,
                   boxShadow: avatarUrl
@@ -359,7 +359,7 @@ export function StepPreview({
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <div
-                            className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+                            className="size-6 rounded-lg flex items-center justify-center flex-shrink-0"
                             style={{ background: `${acc.dot}20` }}
                           >
                             <Icon size={11} style={{ color: acc.dot }} />
@@ -437,7 +437,7 @@ export function StepPreview({
                     type="button"
                     onClick={handleSlugSave}
                     aria-label="Зберегти"
-                    className="w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer active:scale-[0.95]"
+                    className="size-7 flex items-center justify-center rounded-lg cursor-pointer active:scale-[0.95]"
                     style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', color: 'var(--accent)' }}
                   >
                     <Check size={13} />
@@ -446,7 +446,7 @@ export function StepPreview({
                     type="button"
                     onClick={() => { setIsEditingSlug(false); setSlugDraft(slug); setSlugError(null); }}
                     aria-label="Скасувати"
-                    className="w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer active:scale-[0.95]"
+                    className="size-7 flex items-center justify-center rounded-lg cursor-pointer active:scale-[0.95]"
                     style={{ background: 'var(--secondary)', color: 'var(--text-secondary)' }}
                   >
                     <X size={13} />
@@ -470,7 +470,7 @@ export function StepPreview({
                 type="button"
                 onClick={() => setIsEditingSlug(true)}
                 aria-label="Змінити адресу"
-                className="w-8 h-8 flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.95]"
+                className="size-8 flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.95]"
                 style={{ background: 'var(--secondary)', color: 'var(--text-secondary)' }}
               >
                 <Pencil size={12} />
@@ -496,7 +496,7 @@ export function StepPreview({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Відкрити сторінку"
-                className="w-8 h-8 flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.95]"
+                className="size-8 flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.95]"
                 style={{ background: 'var(--secondary)', color: 'var(--text-secondary)' }}
               >
                 <ExternalLink size={13} />

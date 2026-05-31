@@ -30,7 +30,7 @@ export function StatsStrip() {
       <div className="grid grid-cols-3 gap-3 items-stretch">
         {[0, 1, 2].map(i => (
           <div key={i} className="bento-card p-4 flex flex-col justify-between gap-3">
-            <Skeleton className="w-10 h-10 rounded-xl" />
+            <Skeleton className="size-10 rounded-xl" />
             <div className="flex flex-col gap-1.5">
               <Skeleton className="h-7 w-10" />
               <Skeleton className="h-3 w-full mt-1.5" />
@@ -112,7 +112,7 @@ export function StatsStrip() {
           >
             <Tooltip content={stat.tooltip} position="bottom">
               <div className="bento-card p-4 flex flex-col justify-between w-full h-full cursor-default">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: stat.bg }}>
+                <div className="size-10 rounded-xl flex items-center justify-center" style={{ background: stat.bg }}>
                   <Icon size={18} style={{ color: stat.color }} />
                 </div>
                 <div>
@@ -136,7 +136,7 @@ export function StatsStrip() {
       >
         <Link href="/dashboard/pricing" className="block px-4 py-3 rounded-xl bg-warning/8 border border-warning/20 hover:bg-warning/12 transition-colors">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-7 h-7 rounded-xl bg-warning/15 flex items-center justify-center flex-shrink-0">
+            <div className="size-7 rounded-xl bg-warning/15 flex items-center justify-center flex-shrink-0">
               <Sparkles size={13} style={{ color: 'var(--accent)' }} />
             </div>
             <p className="text-xs font-semibold text-foreground flex-1">Динамічне ціноутворення — тріал</p>
@@ -161,7 +161,7 @@ export function StatsStrip() {
         transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 24 }}
         className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/8 border border-primary/20"
       >
-        <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+        <div className="size-8 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
           <Zap size={14} className="text-primary" />
         </div>
         <p className="text-xs text-muted-foreground flex-1 leading-relaxed">

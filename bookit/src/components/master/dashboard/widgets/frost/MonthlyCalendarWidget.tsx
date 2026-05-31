@@ -207,14 +207,14 @@ export function MonthlyCalendarWidget() {
             className="overflow-hidden"
           >
             <div className="flex items-center justify-between px-4 pt-3 pb-1">
-              <button className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
+              <button className="size-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}>
                 <ChevronLeft size={12} />
               </button>
               <span className="font-mono text-[11px] font-bold tracking-[0.08em] uppercase text-[var(--text-secondary)] capitalize">
                 {format(currentDate, 'LLLL yyyy', { locale: uk })}
               </span>
-              <button className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
+              <button className="size-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}>
                 <ChevronRight size={12} />
               </button>

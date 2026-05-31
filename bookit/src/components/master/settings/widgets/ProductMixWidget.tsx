@@ -37,7 +37,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
     <div className="widget-card p-6 h-full flex flex-col gap-4">
       {/* Title row */}
       <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20 shrink-0">
+        <div className="size-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20 shrink-0">
           <Award size={18} />
         </div>
         <div>
@@ -50,7 +50,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
       <div className="flex items-center justify-between gap-2 bg-muted/20 rounded-2xl px-1 py-1 border border-white/60">
         <button
           onClick={handlePrev}
-          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
+          className="size-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
         >
           <ChevronLeft size={15} className="text-text-mute" />
         </button>
@@ -59,7 +59,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
         </span>
         <button
           onClick={handleNext}
-          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
+          className="size-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
         >
           <ChevronRight size={15} className="text-text-mute" />
         </button>
@@ -98,7 +98,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
       {/* Legend / Trend */}
       <div className="pt-4 border-t border-white/40 flex items-center justify-between text-[10px] font-bold text-text-mute/60">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-success/10 text-success flex items-center justify-center">
+          <div className="size-6 rounded-lg bg-success/10 text-success flex items-center justify-center">
             <TrendingUp size={12} />
           </div>
           <span>Тред місяця — це послуга з найбільшим ростом популярності</span>

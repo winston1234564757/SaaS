@@ -162,7 +162,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
           initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
           className="bento-card p-4 flex items-center gap-3"
         >
-          <div className="w-9 h-9 rounded-lg bg-success/15 flex items-center justify-center shrink-0">
+          <div className="size-9 rounded-lg bg-success/15 flex items-center justify-center shrink-0">
             <CheckCircle2 size={18} className="text-success" />
           </div>
           <div>
@@ -184,7 +184,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
           disabled={state === 'subscribing'}
           className="bento-card p-4 flex items-center gap-3 w-full text-left active:scale-[0.98] transition-transform disabled:opacity-70"
         >
-          <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+          <div className="size-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
             {state === 'subscribing'
               ? <Loader2 size={18} className="text-primary animate-spin" />
               : <Bell size={18} className="text-primary" />
@@ -201,7 +201,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
             </p>
           </div>
           <div className="w-8 h-5 rounded-full bg-secondary/80 relative shrink-0">
-            <div className="absolute top-0 left-0 w-5 h-5 rounded-full bg-accent-on" />
+            <div className="absolute top-0 left-0 size-5 rounded-full bg-accent-on" />
           </div>
         </motion.button>
       )}
@@ -212,7 +212,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
           initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
           className="bento-card p-4 flex items-start gap-3"
         >
-          <div className="w-9 h-9 rounded-lg bg-warning/12 flex items-center justify-center shrink-0">
+          <div className="size-9 rounded-lg bg-warning/12 flex items-center justify-center shrink-0">
             <BellOff size={18} className="text-warning" />
           </div>
           <div className="flex-1">
@@ -236,7 +236,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
           initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
           className="bento-card p-4 flex items-start gap-3"
         >
-          <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+          <div className="size-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
             <Smartphone size={18} className="text-primary" />
           </div>
           <div>
@@ -254,7 +254,7 @@ export function PushSubscribeCard({ role = 'master' }: Props) {
           initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
           className="bento-card p-4 flex items-start gap-3"
         >
-          <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+          <div className="size-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
             <Bell size={18} className="text-primary" />
           </div>
           <div>

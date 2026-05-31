@@ -136,7 +136,7 @@ function ToastItem({
             e.stopPropagation();
             onDismiss(toast.id);
           }}
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary transition-colors"
+          className="flex-shrink-0 size-8 flex items-center justify-center rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary transition-colors"
         >
           <X size={15} />
         </button>
@@ -149,7 +149,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const showToast = useCallback((options: Omit<Toast, 'id' | 'createdAt'>) => {
+  const showToast = (options: Omit<Toast, 'id' | 'createdAt'>) => {
     const id = crypto.randomUUID();
     const createdAt = Date.now();
     
@@ -164,11 +164,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         setToasts(prev => prev.filter(t => t.id !== id));
       }, duration);
     }
-  }, []);
+  };
 
-  const dismiss = useCallback((id: string) => {
+  const dismiss = (id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
+  };
 
   // Скидаємо розгортання, якщо тостів не залишилось
   useEffect(() => {

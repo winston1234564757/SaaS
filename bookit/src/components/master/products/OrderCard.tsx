@@ -55,7 +55,7 @@ export function OrderCard({ order, onStatusChange }: Props) {
         {/* Source icon */}
         <div
           className={cn(
-            'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
+            'size-9 rounded-xl flex items-center justify-center shrink-0',
             order.source === 'booking' ? 'bg-primary/15' : 'bg-warning/12',
           )}
         >
@@ -129,7 +129,7 @@ export function OrderCard({ order, onStatusChange }: Props) {
               <div className="flex flex-col gap-2">
                 {order.items.map(item => (
                   <div key={item.id} className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                    <div className="size-8 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                       <Package size={14} className="text-muted-foreground/60" />
                     </div>
                     <div className="flex-1 min-w-0">

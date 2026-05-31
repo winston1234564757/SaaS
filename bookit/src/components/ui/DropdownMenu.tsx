@@ -31,14 +31,14 @@ export function DropdownMenu({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleToggle = useCallback((e: React.MouseEvent) => {
+  const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (disabled) return;
     if (!open && triggerRef.current) {
       setRect(triggerRef.current.getBoundingClientRect());
     }
     setOpen(prev => !prev);
-  }, [open, disabled]);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -85,7 +85,7 @@ export function DropdownMenu({
         aria-expanded={open}
         className={
           triggerClassName ??
-          'flex items-center justify-center w-11 h-11 rounded-xl text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-all active:scale-95 disabled:opacity-40 shrink-0'
+          'flex items-center justify-center size-11 rounded-xl text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-all active:scale-95 disabled:opacity-40 shrink-0'
         }
       >
         {trigger}

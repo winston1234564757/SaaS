@@ -14,9 +14,9 @@ export default function Loading() {
         <Skeleton className="h-4 w-32 rounded-lg" />
         <div className="flex gap-2">
           <Skeleton className="h-12 flex-1 rounded-xl" />
-          <Skeleton className="h-12 w-12 rounded-xl" />
+          <Skeleton className="size-12 rounded-xl" />
         </div>
-        <Skeleton className="h-3 w-3/4 rounded-md" />
+        <Skeleton className="size-3/4 rounded-md" />
       </div>
 
       {/* Статистика запрошень */}
@@ -38,7 +38,7 @@ export default function Loading() {
         <div className="flex flex-col gap-2">
           <Skeleton className="h-3 w-full rounded-md" />
           <Skeleton className="h-3 w-4/5 rounded-md" />
-          <Skeleton className="h-3 w-3/4 rounded-md" />
+          <Skeleton className="size-3/4 rounded-md" />
         </div>
       </div>
     </div>

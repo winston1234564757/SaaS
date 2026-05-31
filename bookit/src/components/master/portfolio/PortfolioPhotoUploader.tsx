@@ -24,7 +24,7 @@ function SortablePhoto({ photo, index, onDelete, deleting }: SortablePhotoProps)
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className="group relative w-24 h-24 rounded-2xl overflow-hidden shrink-0"
+          className="group relative size-24 rounded-2xl overflow-hidden shrink-0"
           style={{
             ...provided.draggableProps.style,
             opacity: snapshot.isDragging ? 0.6 : 1,
@@ -33,14 +33,14 @@ function SortablePhoto({ photo, index, onDelete, deleting }: SortablePhotoProps)
           <Image src={photo.url} alt="" fill className="object-cover" sizes="96px" />
           <button
             {...provided.dragHandleProps}
-            className="absolute top-1 left-1 w-6 h-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing active:scale-95 transition-all"
+            className="absolute top-1 left-1 size-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing active:scale-95 transition-all"
           >
             <GripVertical size={12} className="text-white" />
           </button>
           <button
             onClick={() => onDelete(photo.id)}
             disabled={deleting}
-            className="absolute top-1 right-1 w-6 h-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-1 right-1 size-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
             {deleting ? <Loader2 size={10} className="text-white animate-spin" /> : <X size={10} className="text-white" />}
           </button>
@@ -70,7 +70,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
-  const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
 
@@ -116,16 +116,16 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
     }
-  }, [itemId, masterId, photos, supabase, onPhotosChange]);
+  };
 
-  const handleDelete = useCallback(async (photoId: string) => {
+  const handleDelete = async (photoId: string) => {
     setDeletingId(photoId);
     await deletePortfolioPhoto(photoId);
     onPhotosChange(photos.filter(p => p.id !== photoId));
     setDeletingId(null);
-  }, [photos, onPhotosChange]);
+  };
 
-  const handleDragEnd = useCallback(async (result: DropResult) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!result.destination || result.source.index === result.destination.index) return;
 
     const reordered = Array.from(photos);
@@ -134,14 +134,14 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
     const updated = reordered.map((p, i) => ({ ...p, display_order: i }));
     onPhotosChange(updated);
     await reorderPortfolioPhotos(itemId, updated.map(p => p.id));
-  }, [photos, itemId, onPhotosChange]);
+  };
 
   return (
     <div className="space-y-3">
       {!mounted ? (
         <div className="flex items-center gap-2 flex-wrap">
           {photos.map((photo) => (
-            <div key={photo.id} className="relative w-24 h-24 rounded-2xl overflow-hidden shrink-0">
+            <div key={photo.id} className="relative size-24 rounded-2xl overflow-hidden shrink-0">
               <Image src={photo.url} alt="" fill className="object-cover" sizes="96px" />
             </div>
           ))}
@@ -150,7 +150,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading || disabled}
-              className="w-24 h-24 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors shrink-0"
+              className="size-24 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors shrink-0"
             >
               {uploading
                 ? <Loader2 size={18} className="animate-spin" />
@@ -180,7 +180,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     disabled={uploading || disabled}
-                    className="w-24 h-24 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors shrink-0"
+                    className="size-24 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors shrink-0"
                   >
                     {uploading
                       ? <Loader2 size={18} className="animate-spin" />

@@ -38,7 +38,7 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
     return (
       <div className="widget-card p-6 h-full flex flex-col">
         <div className="flex items-center gap-2 mb-5">
-          <div className="w-9 h-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
+          <div className="size-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
             <Sparkles size={18} />
           </div>
           <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute">Спеціалізації</h3>

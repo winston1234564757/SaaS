@@ -197,7 +197,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               <h2 className="text-base font-bold text-foreground">
                 {isEdit ? 'Редагувати товар' : 'Новий товар'}
               </h2>
-              <button onClick={handleClose} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button onClick={handleClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -212,11 +212,11 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                 </label>
                 <div className="flex gap-2 flex-wrap">
                   {photos.map(url => (
-                    <div key={url} className="relative w-20 h-20 rounded-lg overflow-hidden bg-secondary">
+                    <div key={url} className="relative size-20 rounded-lg overflow-hidden bg-secondary">
                       <Image src={url} alt="" fill className="object-cover" />
                       <button
                         onClick={() => removePhoto(url)}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer"
+                        className="absolute top-1 right-1 size-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer"
                       >
                         <X size={10} />
                       </button>
@@ -226,7 +226,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     <button
                       onClick={() => fileRef.current?.click()}
                       disabled={uploading}
-                      className="w-20 h-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-colors"
+                      className="size-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-colors"
                     >
                       {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
                       <span className="text-[9px]">Додати</span>
@@ -330,7 +330,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     }`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-[var(--accent-on)] shadow-sm transition-transform ${
+                      className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-[var(--accent-on)] shadow-sm transition-transform ${
                         recommendAlways ? 'translate-x-6' : 'translate-x-0'
                       }`}
                     />

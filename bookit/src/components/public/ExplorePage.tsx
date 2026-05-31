@@ -167,7 +167,7 @@ export function ExplorePage({ masters, cities }: Props) {
             <SlidersHorizontal size={12} />
             Фільтри
             {activeFiltersCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-secondary text-primary text-[9px] font-bold flex items-center justify-center">
+              <span className="size-4 rounded-full bg-secondary text-primary text-[9px] font-bold flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}
@@ -344,7 +344,7 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
           <div className="flex items-start gap-3.5">
             {/* Avatar */}
             <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 relative bg-accent/15 overflow-hidden"
+              className="size-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 relative bg-accent/15 overflow-hidden"
             >
               {master.avatarUrl ? (
                 <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="56px" />

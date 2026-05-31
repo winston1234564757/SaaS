@@ -278,9 +278,9 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, type: 'spring' }}
-          className="w-20 h-20 bg-sage/20 rounded-[28px] flex items-center justify-center mb-8"
+          className="size-20 bg-sage/20 rounded-[28px] flex items-center justify-center mb-8"
         >
-          <Smartphone className="w-10 h-10 text-sage" />
+          <Smartphone className="size-10 text-sage" />
         </motion.div>
 
         <motion.h1
@@ -308,8 +308,8 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             onClick={() => setUserRole('master')}
             className="group relative overflow-hidden bg-white/50 border border-white/60 p-5 rounded-[24px] flex items-center gap-4 transition-all hover:bg-white/80 hover:border-white shadow-sm"
           >
-            <div className="w-14 h-14 bg-sage text-white rounded-2xl flex items-center justify-center shadow-lg shadow-sage/20 group-hover:scale-105 transition-transform duration-500">
-              <Smartphone className="w-7 h-7" />
+            <div className="size-14 bg-sage text-white rounded-2xl flex items-center justify-center shadow-lg shadow-sage/20 group-hover:scale-105 transition-transform duration-500">
+              <Smartphone className="size-7" />
             </div>
             <div className="text-left">
               <h3 className="text-lg font-bold text-sage leading-tight">Я Майстер</h3>
@@ -323,8 +323,8 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             onClick={() => setUserRole('client')}
             className="group relative overflow-hidden bg-white/50 border border-white/60 p-5 rounded-[24px] flex items-center gap-4 transition-all hover:bg-white/80 hover:border-white shadow-sm"
           >
-            <div className="w-14 h-14 bg-white text-sage rounded-2xl flex items-center justify-center shadow-lg shadow-black/5 group-hover:scale-105 transition-transform duration-500">
-              <Phone className="w-7 h-7" />
+            <div className="size-14 bg-white text-sage rounded-2xl flex items-center justify-center shadow-lg shadow-black/5 group-hover:scale-105 transition-transform duration-500">
+              <Phone className="size-7" />
             </div>
             <div className="text-left">
               <h3 className="text-lg font-bold text-foreground leading-tight">Я Клієнт</h3>
@@ -351,8 +351,8 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           exit={{ opacity: 0, scale: 0.95 }}
           className="w-full max-w-[320px] flex flex-col items-center"
         >
-          <div className="w-20 h-20 bg-sage/10 rounded-[28px] flex items-center justify-center mb-8">
-            <ShieldCheck className="w-10 h-10 text-sage/60" />
+          <div className="size-20 bg-sage/10 rounded-[28px] flex items-center justify-center mb-8">
+            <ShieldCheck className="size-10 text-sage/60" />
           </div>
 
           <h2 className="heading-serif text-2xl text-foreground mb-2">
@@ -370,18 +370,18 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             >
               {status === 'requesting' ? (
                 <>
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="size-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Чекаємо підтвердження...</span>
                 </>
               ) : status === 'polling' ? (
                 <>
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="size-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Перевіряємо...</span>
                 </>
               ) : showSuccess ? (
                 <>
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="size-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </motion.div>

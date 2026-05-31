@@ -249,7 +249,7 @@ export function MonthlyCalendarWidget() {
           >
             <div className="flex items-center justify-between mb-3">
               <button
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
+                className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}
               >
                 <ChevronLeft size={15} />
@@ -267,7 +267,7 @@ export function MonthlyCalendarWidget() {
                 {format(currentDate, 'LLLL yyyy', { locale: uk })}
               </span>
               <button
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
+                className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}
               >
                 <ChevronRight size={15} />
@@ -343,7 +343,7 @@ export function MonthlyCalendarWidget() {
               </p>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="w-6 h-6 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
+                className="size-6 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
                 style={{ background: 'var(--border)', color: 'var(--text-secondary)' }}
               >
                 <X size={12} />

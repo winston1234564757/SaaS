@@ -1156,7 +1156,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               <button
                 type="button"
                 onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }}
-                className={`relative w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'
+                className={`relative size-12 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'
                   }`}
               >
                 <X size={18} />
@@ -1165,7 +1165,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 <button
                   type="button"
                   onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
-                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'
+                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'
                     }`}
                 >
                   <img src={customBgPhoto} className="w-full h-full object-cover" />
@@ -1182,7 +1182,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                   key={item.id}
                   type="button"
                   onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
-                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'
+                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'
                     }`}
                 >
                   <img src={item.photos[0]?.url} className="w-full h-full object-cover" />
@@ -1197,7 +1197,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               {PALETTES.map((p, i) => (
                 <button key={p.id} type="button" title={p.label}
                   onClick={() => setPalIdx(i)}
-                  className="relative w-8 h-8 rounded-full transition-all cursor-pointer"
+                  className="relative size-8 rounded-full transition-all cursor-pointer"
                   style={{
                     background: p.bg,
                     border: i === palIdx ? '2.5px solid #789A99' : `2px solid ${p.muted}`,
@@ -1438,14 +1438,14 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                     rotate: { duration: 8, repeat: Infinity, ease: "linear" },
                     scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
                   }}
-                  className="w-24 h-24 rounded-full border-2 border-dashed border-primary/30"
+                  className="size-24 rounded-full border-2 border-dashed border-primary/30"
                 />
                 <motion.div
                   initial={{ x: -20, y: 20, opacity: 0 }}
                   animate={{ x: 0, y: 0, opacity: 1 }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <Send className="w-10 h-10 text-primary" />
+                  <Send className="size-10 text-primary" />
                 </motion.div>
               </div>
 

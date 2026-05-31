@@ -78,12 +78,12 @@ function DateRangeBar({
       </div>
       <div className="flex items-center gap-2">
         <button onClick={goPrev}
-          className="w-8 h-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm active:scale-95 transition-all">
+          className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm active:scale-95 transition-all">
           <ChevronLeft size={14} />
         </button>
         <p className="flex-1 text-center text-sm font-semibold text-foreground">{label}</p>
         <button onClick={goNext} disabled={!canGoNext}
-          className="w-8 h-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm disabled:opacity-30 active:scale-95 transition-all">
+          className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm disabled:opacity-30 active:scale-95 transition-all">
           <ChevronRight size={14} />
         </button>
       </div>
@@ -273,11 +273,11 @@ function ProUpgradeCard() {
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.1 }}
     >
       {/* Декоративні блоби */}
-      <div className="absolute -top-8 -right-8 w-32 h-32 bg-primary/15 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-success/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -top-8 -right-8 size-32 bg-primary/15 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-6 -left-6 size-24 bg-success/10 rounded-full blur-2xl pointer-events-none" />
 
       <div className="flex items-center gap-3 mb-5 relative">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-[0_4px_14px_var(--accent-light)] flex-shrink-0">
+        <div className="size-11 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-[0_4px_14px_var(--accent-light)] flex-shrink-0">
           <Crown size={19} className="text-white" />
         </div>
         <div>
@@ -295,7 +295,7 @@ function ProUpgradeCard() {
           { icon: Download, label: 'CSV-експорт усіх транзакцій' },
         ].map(f => (
           <div key={f.label} className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <div className="size-7 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
               <f.icon size={13} className="text-primary" />
             </div>
             <p className="text-[13px] text-muted-foreground">{f.label}</p>
@@ -455,7 +455,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             <p className="text-sm text-muted-foreground/60">Статистика та звіти</p>
           </div>
           <button onClick={() => refetch()} disabled={isFetching}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.88] cursor-pointer transition-colors disabled:opacity-40">
+            className="size-9 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.88] cursor-pointer transition-colors disabled:opacity-40">
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
         </div>
@@ -496,7 +496,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
         {isLockedDateRange ? (
           <div className="flex flex-col items-center py-6 gap-2.5" data-testid="locked-date-range">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center">
               <Crown size={20} className="text-primary" data-testid="paywall-lock" />
             </div>
             <p className="text-sm font-bold text-foreground">Виберіть поточний місяць</p>
@@ -513,7 +513,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               { icon: Users, label: 'Клієнтів', value: isLoading ? null : summary.activeClients, color: '#789A99' },
             ].map(s => (
               <div key={s.label} className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-secondary/50 border border-border">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                <div className="size-10 rounded-2xl flex items-center justify-center flex-shrink-0"
                   style={{ background: `${s.color}18` }}>
                   <s.icon size={18} style={{ color: s.color }} />
                 </div>
@@ -537,7 +537,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           className="bento-card p-6 flex flex-col gap-5"
         >
           <div className="text-center">
-            <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <div className="size-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <BarChart2 size={28} className="text-primary" />
             </div>
             <p className="text-base font-bold text-foreground">Даних ще немає</p>
@@ -693,7 +693,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                         >
                           <div className="flex items-center justify-between cursor-default">
                             <div className="flex items-center gap-1.5">
-                              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: item.dot }} />
+                              <div className="size-2 rounded-full flex-shrink-0" style={{ background: item.dot }} />
                               <span className="text-[10px] text-muted-foreground/60 truncate max-w-[70px]">{item.label}</span>
                             </div>
                             <span className="text-[10px] font-bold text-foreground">{item.pct}%</span>
@@ -790,7 +790,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     disabled={!c.clientId}
                     className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-secondary/60 transition-colors cursor-pointer disabled:cursor-default text-left w-full"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-warning/20 text-warning' : i === 1 ? 'bg-primary/15 text-primary' : 'bg-secondary text-muted-foreground/60'
+                    <div className={`size-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-warning/20 text-warning' : i === 1 ? 'bg-primary/15 text-primary' : 'bg-secondary text-muted-foreground/60'
                       }`}>{i + 1}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground truncate">{c.clientName}</p>
@@ -958,7 +958,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           {/* CSV Експорт */}
           <div className="bento-card p-5">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div className="size-9 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Download size={16} className="text-primary" />
               </div>
               <div>

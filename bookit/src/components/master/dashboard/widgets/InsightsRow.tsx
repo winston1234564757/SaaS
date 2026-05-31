@@ -105,13 +105,13 @@ function TopClientCard({ onOpen }: { onOpen: (client: ClientRow) => void }) {
       >
         {isLoading ? (
           <div className="space-y-2">
-            <div className="skeleton-shimmer h-10 w-10 rounded-full" />
+            <div className="skeleton-shimmer size-10 rounded-full" />
             <div className="skeleton-shimmer h-3 w-20 rounded-full" />
           </div>
         ) : topClient ? (
           <div>
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold mb-2"
+              className="size-9 rounded-full flex items-center justify-center text-[14px] font-bold mb-2"
               style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
             >
               {initials}
