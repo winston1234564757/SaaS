@@ -1,170 +1,170 @@
 # 🤝 HANDOFF — MTRP Execution (для наступного чату)
 
-> **Прочитай це ПЕРШИМ** (разом з [MAP.md](./MAP.md)). Це повний контекст виконання плану [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Дата handoff:** 2026-06-04 (Sessions 01-04) · **Гілка:** `main` · **Стан:** tsc 0 · build clean · все закомічено.
-> ⚠️ **PENDING:** `npx supabase db push` для P0.1 міграції (`20260604000000_booking_link_security.sql`)
+> **Прочитай це ПЕРШИМ** (разом з [MAP.md](./MAP.md)). Повний контекст виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
+> **Дата handoff:** 2026-06-05 (Sessions 01-05) · **Гілка:** `main` · **Стан:** tsc 0 · build 0 · lint 0. Все закомічено.
+> ⚠️ **PENDING:** `npx supabase db push` для P0.1 (міграція `link_attempts` ще не задеплоєна в cloud)
 
 ---
 
 ## 0. TL;DR — звідки продовжувати
 
 ```
-PHASE 0 COMPLETE ✅. PHASE 1 почато.
-ЗРОБЛЕНО S04: P0.6 ✅(72 aria-labels) · P0.8 ✅(3 div→button) · P0.9 ✅(0 real) · P0.1 ✅(security)
-НАСТУПНА ДІЯ: npx supabase db push → потім P0.2 (admin client leaks ~12 zones + ESLint rule)
+PHASE 0 ✅ COMPLETE. PHASE 1 ~25% (P0.1 ✅ · P0.2 ✅)
+НАСТУПНА ДІЯ: (опційно) npx supabase db push → потім P0.7 (MicaModal → Radix Dialog focus trap)
 ```
 
 **Перший хід наступного чату:**
 ```bash
-# 1. контекст
+# 1. startup
 mcp__mempalace__mempalace_status
 Read XDEV/MAPS/SYSTEM_MAP.md (last 50)
 Read XDEV/PLANS/MTRP/HANDOFF.md   # цей файл
-Read XDEV/PLANS/MTRP/MAP.md       # resume-pointer
-Read XDEV/PLANS/MTRP/TRACKER.md   # статуси
+Read XDEV/PLANS/MTRP/MAP.md
+Read XDEV/PLANS/MTRP/TRACKER.md
 
-# 2. Deploy P0.1 migration
-cd bookit && npx supabase db push   # застосувати link_attempts table
+# 2. opional: deploy P0.1 migration
+cd bookit && npx supabase db push
 
-# 3. Verify P0.1
-npx tsc --noEmit && npm run build
+# 3. P0.7: start
+Read src/components/ui/MicaModal.tsx
+grep -rn "MicaModal" src/ --include="*.tsx" | grep -v "node_modules"
 ```
 
 ---
 
 ## 1. Що це за задача
 
-Виконання **MTRP-2026-06-02** — Master Technical Remediation Plan: **71 item**, 5 фаз (Phase 0→4).
-**Мандат користувача (Вітос):** «роби все що треба; на виборі — архітектурно найкращий варіант; **НАЙГОЛОВНІШЕ — нічого не зламати, зробити стабільнішим і кращим**».
+**MTRP-2026-06-02** — 71 item, 5 phases. **Мандат:** «роби все що треба; нічого не зламати, зробити стабільнішим і кращим».
 
 ---
 
-## 2. Хаб виконання `XDEV/PLANS/MTRP/`
+## 2. Хаб `XDEV/PLANS/MTRP/`
 
 | Файл | Роль |
 |---|---|
-| `HANDOFF.md` | Цей файл — повний контекст для нового чату |
-| `MAP.md` | Resume-pointer: наступна дія, блокери, лічильник |
-| `TRACKER.md` | Статус усіх 71 item + **Plan Corrections C-01..C-12** |
-| `WORKFLOW.md` | Per-item цикл (verify→fix→tsc→build→log→commit) |
+| `HANDOFF.md` | Цей файл |
+| `MAP.md` | Resume-pointer: наступна дія |
+| `TRACKER.md` | Статус 71 items + C-01..C-12 corrections |
 | `AUDIT_LOG.md` | Append-only журнал сесій |
-| `tools/scan-buttons.cjs` | Детектор `<button>` без `type=` |
-| `tools/fix-button-type.cjs` | Codemod: `type="button"` на onClick-кнопки |
-| `tools/scan-icon-buttons.cjs` | Детектор icon-only кнопок без `aria-label` |
+| `tools/scan-buttons.cjs` | `<button>` без type= |
+| `tools/fix-button-type.cjs` | Codemod type="button" |
+| `tools/scan-icon-buttons.cjs` | icon-only без aria-label |
 
 ---
 
-## 3. Що ЗРОБЛЕНО (Sessions 01-04, усе в `main`)
+## 3. Що ЗРОБЛЕНО (Sessions 01-05)
 
-### Phase 0 — ALL COMPLETE ✅
-- **P0.3** — видалено `old_BookingsPage.tsx` (stub). ✅
-- **P0.10 ✅** — 11 root dead-widgets видалено (~2,400 рядків / 22 файли).
-- **P0.11 ✅** — 9 dead-файлів + 3 dead-експорти.
-- **P0.5 ✅** — 204 кнопки типізовано `type="button"`.
-- **P0.6 ✅** — 72 icon-only кнопки → aria-label (12 батчів, ~35 файлів). 180 scanner залишок = false-positives.
-- **P0.8 ✅** — 3 div→button: TodaySchedule · blossom/InsightsRow · SegmentConfigWidget.
-- **P0.9 ✅** — 0 реальних порушень (усі `<a href onClick>` — легітимні посилання).
+### Phase 0 — 100% COMPLETE ✅
+- **P0.3** stub видалено · **P0.10** 11 root widgets · **P0.11** ~2,400 рядків dead-code · **N-01** blocks-test
+- **P0.5** 204 buttons `type="button"` · **P0.6** 72 aria-labels (12 batches)
+- **P0.8** 3 div→button (TodaySchedule · blossom/InsightsRow · SegmentConfigWidget)
+- **P0.9** 0 real violations (all legit links)
 
-### Phase 1 — STARTED
-- **P0.1 ✅** — booking hijack security fix:
-  - `src/app/[slug]/actions.ts` — `linkBookingToClient()` тепер: rate-limit (5/15хв) + phone-match (last 10 digits) + audit log
-  - Migration `supabase/migrations/20260604000000_booking_link_security.sql` — таблиця `link_attempts` + RLS + indexes
-  - ⚠️ **`npx supabase db push` ще НЕ запущено** — потрібна підтвердження/виконання наступним чатом
+### Phase 1 — ~25%
+- **P0.1 ✅** — booking hijack fix:
+  - `src/app/[slug]/actions.ts` → phone-match + rate-limit (5/15хв) + link_attempts audit
+  - Migration `supabase/migrations/20260604000000_booking_link_security.sql`
+  - ⚠️ `npx supabase db push` ще не виконано
+  - Caller `ClientAuthSheet.tsx:79` використовує `.catch(() => {})` — якщо phone mismatch, booking не лінкується (безпечно, SMS flow підхоплює)
 
-### Plan Corrections знайдено (C-01..C-12 + N-01)
-Детально → TRACKER.md §Corrections.
+- **P0.2 ✅** — admin client leaks:
+  - **NEW:** `src/lib/supabase/public.ts` — `createPublicClient()` (anon key, server-side)
+  - **NEW:** `src/app/(master)/dashboard/growth/actions.ts` — всі growth data fetches (cross-user referral queries)
+  - 17 файлів виправлено: page/layout → createClient() або createPublicClient()
+  - ESLint rule у `eslint.config.mjs` — compile-time guard
 
 ---
 
 ## 4. НАСТУПНІ КРОКИ (у порядку)
 
-### 4.1 Deploy P0.1 migration (PENDING)
+### 4.1 P0.7 — MicaModal → Radix Dialog (focus trap) [6h]
+**Файл:** `src/components/ui/MicaModal.tsx` (~99 рядків)
+**Проблема:** Custom `motion.div` — немає focus trap, немає `role="dialog"`, Tab виходить з модала.
+
+**VERIFY перед правкою:**
 ```bash
-cd bookit && npx supabase db push
+grep -rn "MicaModal" src/ --include="*.tsx" | grep -v "node_modules"
+# Знайди всіх consumers — BookingDetailsModal, StatsModals, UpgradePromptModal, etc.
 ```
-Verify: таблиця `link_attempts` з'явилась у Supabase Dashboard.
 
-### 4.2 P0.2 — admin client leaks (~12 files)
-Реальні non-API порушення (route handlers `auth/callback` + `r/[code]` виключено per C-12):
-- `src/app/(master)/dashboard/*/page.tsx` (6 files) → перенести в `actions.ts` + `createClient()`
-- `src/app/my/layout.tsx` + `my/notifications/page.tsx` → `createClient()` + RLS
-- `src/app/[slug]/data.ts` + `[slug]/page.tsx` → `publicSupabase()` (anon key)
-- `src/app/studio/join/page.tsx` + `studio/[slug]/page.tsx` → `publicSupabase()` або action
-- **Потім:** ESLint rule `no-restricted-imports` для `@/lib/supabase/admin` (forbidden zones)
-- ⚠️ VERIFY кожен файл перед правкою — план міг бути неточним (урок C-10)
+**Fix (план):**
+1. Зберегти поточний AnimatePresence/Framer Motion вигляд
+2. Обгорнути в `@radix-ui/react-dialog` (вже є у проекті — `PopUpModal.tsx` його використовує)
+3. Додати `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
+4. Focus trap автоматично через Radix
+5. ⚠️ Перевірити scroll lock + backdrop click behavior
 
-### 4.3 P0.7 — MicaModal → Radix Dialog (focus trap)
-- `src/components/ui/MicaModal.tsx` (99 рядків) — замінити на Radix Dialog pattern
-- 8+ consumers: BookingDetailsModal, StatsModals, UpgradePromptModal etc.
+**Дивись існуючий зразок:** `src/components/ui/PopUpModal.tsx` (вже Radix)
 
-### 4.4 Решта Phase 1: P1.1(useIsDesktop merge), P1.3(heatmap tabindex), P1.4(WeeklyChart aria-pressed), P1.12(timingSafeEqual CRON), P1.16(touch targets)
+### 4.2 Решта Phase 1
+P1.1 (useIsDesktop merge) · P1.12 (timingSafeEqual CRON, 5 routes) · P1.4 (WeeklyChart aria-pressed) · P1.3 (heatmap roving tabindex) · P1.16 (touch targets 14+ files)
 
----
-
-## 5. ⚠️ КРИТИЧНІ УРОКИ (hard-won)
-
-1. **VERIFY-BEFORE-DELETE/FIX.** 12 plan corrections знайдено. Завжди Grep/read перед дією.
-2. **Grep НЕнадійний для `<button>` атрибутів** → `tools/scan-buttons.cjs` (AST).
-3. **Видалення РОУТУ** → `rm -rf .next && npm run build` (stale types).
-4. **P0.9 виявилась false alarm** — всі `<a href onClick>` були легітимні.
-5. **edit_counter_guard: 6-й Edit/файл/сесія** → Write повну версію.
-6. **aria-label = технічні рядки** → humanizer НЕ потрібен (RULE 0.5 виняток).
-7. **phone-match: last 10 digits** — нормалізація E.164 варіюється (+38... vs 0...).
+### 4.3 Phase 2-4
+Деталі → TRACKER.md §7-9. Phase 3 (тести) — user priority.
 
 ---
 
-## 6. Конвенції aria-label (UA, технічні)
+## 5. ⚠️ КРИТИЧНІ УРОКИ
 
-| Контекст | aria-label |
+1. **VERIFY-BEFORE-FIX** — 12 plan corrections знайдено. Читай код перед правкою.
+2. **ESLint + AST scanners > grep** для button/import detection.
+3. **Видалення роуту** → `rm -rf .next && npm run build` (stale types).
+4. **growth/page.tsx cross-user query** — `referred_by = referralCode` рахує ІНШИХ майстрів → admin в actions.ts.
+5. **edit_counter_guard: 6-й Edit/файл/сесія** → Write повну версію (скидає лічильник).
+6. **aria-label = технічні рядки** → humanizer SKIP (RULE 0.5 виняток).
+7. **P0.9 false alarm** — всі `<a href onClick>` були легітимні (tel:, Telegram, legal).
+
+---
+
+## 6. Конвенції aria-label (UA)
+
+| Контекст | Label |
 |---|---|
-| Закрити модал/дровер (X) | `Закрити` |
-| Видалити файл/фото/перерву | `Видалити файл` / `Видалити фото` / `Видалити перерву` |
-| Назад (ChevronLeft/ArrowLeft) | `Назад` |
-| Попередній/Наступний місяць | `Попередній місяць` / `Наступний місяць` |
-| Попередня/Наступна категорія | `Попередня категорія` / `Наступна категорія` |
-| Refresh | `Оновити` |
-| Stepper −/+ | `Зменшити` / `Збільшити` |
-| Toggle visibility | `{x ? 'Сховати' : 'Показати'}` |
+| Закрити (X) | `Закрити` |
+| Назад | `Назад` |
+| Prev/Next місяць | `Попередній місяць` / `Наступний місяць` |
+| Prev/Next категорія | `Попередня категорія` / `Наступна категорія` |
 | Copy | `{copied ? 'Скопійовано' : 'Скопіювати'}` |
-| Надіслати (Send) | `Надіслати` |
+| Delete | `Видалити` / `Видалити файл` / `Видалити перерву` |
 | Expand/collapse | `{open ? 'Згорнути' : 'Розгорнути'}` |
-| Завантажити зображення | `Додати зображення` / `Завантажити аватар` |
+| Help | `Як це працює?` |
+| Upload | `Завантажити аватар` / `Додати зображення` |
 
 ---
 
-## 7. Plan Corrections (задокументовано в TRACKER)
+## 7. Plan Corrections (C-01..C-12)
 
-C-01..C-04: P0.10 dead-widgets · N-01 (blocks-test dev-route) · C-05/C-06 (kept live utils) · C-07 (P0.5 grep false-neg) · C-08 (pluralize→P3.2) · **C-09** (P0.9 = 0 violations) · **C-10** (P0.8 3 not 9) · **C-11** (P0.6 210 candidates) · **C-12** (P0.2 ~12 not 18).
+Детально → TRACKER.md §Corrections. Ключові:
+- C-09: P0.9 = 0 real · C-10: P0.8 = 3 not 9 · C-11: P0.6 = 210 scanner · C-12: P0.2 = ~12 not 18
 
 ---
 
-## 8. Verification protocol (кожен батч/item)
+## 8. Verification protocol
 
 ```bash
 cd bookit
-npx tsc --noEmit                 # 0 errors — ОБОВ'ЯЗКОВО перед commit
-npm run build                    # clean (для видалень — ловить barrel/dynamic; роут → rm -rf .next)
-npm test                         # якщо торкнувся логіки (Phase 3 — завжди)
+npx tsc --noEmit               # 0 errors — ОБОВ'ЯЗКОВО
+npm run build                  # clean
+npm run lint                   # 0 errors (ESLint P0.2 rule)
+npm test                       # якщо торкнувся логіки
 ```
-**Після item:** AUDIT_LOG entry · TRACKER статус · MAP лічильник · commit · `mempalace_add_drawer`.
+**Після item:** AUDIT_LOG · TRACKER · MAP · commit · `mempalace_add_drawer`.
 
 ---
 
-## 9. Open decisions / pending
+## 9. Open decisions
 
-- ⚠️ **P0.1 migration** — `npx supabase db push` для `20260604000000_booking_link_security.sql`
-- 🔒 **P0.12** — телеметрія onboarding (Phase 1) — user-decision
-- **P0.2 ESLint rule** — `no-restricted-imports` для `@/lib/supabase/admin`
-
----
-
-## 10. MemPalace drawers (S04)
-
-Шукати: `mempalace_search "MTRP P0.6"` / `"P0.1 booking hijack"` / `"P0.8 div button"`. Ключові drawers:
-- P0.6 progress (72 buttons, false-positive detection patterns)
-- P0.8 + P0.9 (div→button lessons, P0.9 was false alarm)
-- P0.1 (phone-match impl, link_attempts schema, caller analysis)
+- ⚠️ `npx supabase db push` — P0.1 migration (link_attempts table) ще в pending
+- 🔒 P0.12 — onboarding telemetry — user-decision
 
 ---
 
-*Створено: 2026-06-04 · Sessions 01-04 · Наступне: supabase db push → P0.2 admin leaks*
+## 10. MemPalace (S05 drawers)
+
+`mempalace_search "P0.2 admin client"` → drawer про publicClient + createClient + ESLint rule.
+`mempalace_search "P0.1 booking hijack"` → phone-match implementation + caller analysis.
+`mempalace_search "MTRP P0.6"` → aria-label batches + false-positive patterns.
+
+---
+
+*Створено: 2026-06-05 · Sessions 01-05 · Наступне: supabase push → P0.7 MicaModal focus trap*

@@ -5,6 +5,60 @@
 
 ---
 
+## 2026-06-05 · Session 05 · P0.2 admin client leaks (17 files)
+
+**Контекст:** Продовження MTRP Phase 1. P0.1 ✅ з S04. Задача: P0.2 — видалити admin client з forbidden zones.
+
+### Зроблено
+1. **`src/lib/supabase/public.ts`** — новий `createPublicClient()` (anon-key, no session persistence).
+2. **Master dashboard pages** (5 files) → `createClient()` (server auth, self-queries, RLS): marketing/page, marketing/new/page, portfolio/page, portfolio/[id]/page, revenue/page.
+3. **`growth/page.tsx`** — витягнуто весь data fetch до `growth/actions.ts` (`'use server'`), яке використовує admin легітимно (cross-user referral count). Page.tsx став ~15 рядків.
+4. **Client pages** → `createClient()`: my/layout.tsx (push_subscriptions), my/notifications/page.tsx (notifications + portfolio consent).
+5. **Public pages** → `createPublicClient()`: [slug]/data.ts · [slug]/page.tsx (generateStaticParams + C2C + occupancy) · [slug]/portfolio/page.tsx · [slug]/portfolio/[id]/page.tsx · [slug]/shop/page.tsx · studio/join/page.tsx · studio/[slug]/page.tsx.
+6. **partners/join/page.tsx** → `createPublicClient()` для inviter lookup (публічні дані майстра).
+7. **ESLint rule** у `eslint.config.mjs` — `no-restricted-imports` на createAdminClient у page/layout/components/**. Дає compile-time error при нових порушеннях.
+
+### VERIFY
+- `grep -rn "createAdminClient" src/app/ | grep -v "api/\|cron/\|webhook\|actions.ts\|admin.ts\|route.ts"` → **0 results** ✓
+- Перевірено кожен файл перед правкою (урок C-10: VERIFY first)
+- Ключовий висновок: `growth/page.tsx` має cross-user query (referred_by count) → admin only у actions.ts
+
+### CHECK
+- tsc: **0 errors** · build: **clean** · lint: **0 errors**
+- Commits: `3ae2104`, `4980f67`, `7fc67ca`, `d095205`
+
+### Drawers
+- `drawer_bookit_decisions_3d4efc2df9b8dbfe7e83f4b8` — P0.2 full implementation notes
+
+---
+
+## 2026-06-04 · Session 04 · Plan audit + corrections C-09..C-12
+
+**Контекст:** Новий чат. Після startup (mempalace + SYSTEM_MAP + HANDOFF) — аудит плану MTRP vs реальний код перед продовженням виконання.
+
+### Зроблено
+1. **Plan audit** — верифіковано 4 ключові items проти реального коду.
+2. **C-09** — `StatsMosaicWidget.tsx` відсутній (видалено S02). P0.9 scope: ~7 violations not 11.
+3. **C-10** — P0.8 реальних порушень **3** (не 9): `TodaySchedule.tsx:121`, `blossom/InsightsRow.tsx:89`, `SegmentConfigWidget.tsx:45`. frost/studio InsightsRow + blossom/WeeklyChart/Monthly вже `<button>`.
+4. **C-11** — P0.6 scanner: **210 кандидатів** (не ~120). Після 42 done → ~70-80 реальних залишилось.
+5. **C-12** — P0.2: `auth/callback/route.ts`, `r/[code]/route.ts` — route handlers (API zone, законно). Реальних leaks ~12 not 18.
+6. **P0.1 confirmed** — `linkBookingToClient` вразливий: код ідентичний плану (`.is('client_id', null)` без phone-match).
+
+### VERIFY
+- `grep linkBookingToClient` → код confirmed vulnerable (line 12-29 actions.ts)
+- `scan-icon-buttons.cjs` → 210 candidates (42 done)
+- manual grep `<div onClick>` → 3 real violations confirmed
+- `grep <a.*onClick` → 0 classic a-tag violations (P0.9 line-numbers in plan stale)
+
+### CHECK
+- tsc/build: N/A (тільки документи оновлено)
+
+### Оновлено файли
+- `TRACKER.md` — corrections C-09..C-12 додано; P0.8/P0.9 effort/count оновлено
+- `MAP.md` — Phase 0 % + candidate counts оновлено; лічильник corrections 12
+
+---
+
 ## 2026-06-04 · Session 01 · Setup + Phase 0 dead-code
 
 **Контекст:** Перша сесія виконання MTRP. Ціль: побудувати інфраструктуру трекінгу + старт Phase 0 (рішення Вітоса).
