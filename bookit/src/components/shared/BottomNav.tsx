@@ -121,6 +121,7 @@ export function BottomNav() {
                 <p className="text-sm font-bold text-foreground">Розділи</p>
                 <button type="button"
                   onClick={() => setMoreOpen(false)}
+                  aria-label="Закрити"
                   className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60"
                 >
                   <X size={15} />

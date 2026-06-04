@@ -136,6 +136,7 @@ function ToastItem({
             e.stopPropagation();
             onDismiss(toast.id);
           }}
+          aria-label="Закрити"
           className="flex-shrink-0 size-8 flex items-center justify-center rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary transition-colors"
         >
           <X size={15} />

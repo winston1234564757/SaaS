@@ -133,6 +133,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
           <button
             type="button"
             onClick={handleBack}
+            aria-label="Назад"
             className="flex items-center justify-center size-10 rounded-full border border-[var(--border)] hover:bg-[var(--surface-hover)] active:scale-[0.95] transition-all cursor-pointer"
           >
             <ChevronLeft className="size-5 text-[var(--text-primary)]" />
@@ -235,6 +236,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
               <button
                 type="button"
                 onClick={removeFile}
+                aria-label="Видалити файл"
                 className="absolute right-2.5 size-5 flex items-center justify-center rounded-full bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:scale-[0.90] cursor-pointer"
               >
                 <X className="size-3" />
@@ -246,6 +248,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              aria-label="Додати зображення"
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-[var(--border)] transition active:scale-[0.90] cursor-pointer"
             >
               <ImageIcon className="h-4.5 w-4.5" />
@@ -259,6 +262,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
             />
             <button
               type="submit"
+              aria-label="Надіслати"
               disabled={submitting || (!messageText.trim() && !selectedFile)}
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-on)] transition hover:opacity-90 active:scale-[0.90] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >

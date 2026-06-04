@@ -169,7 +169,7 @@ export function BillingPage() {
               <p className="text-sm font-semibold text-foreground">Оплата успішна! 🎉</p>
               <p className="text-xs text-muted-foreground">Ваш тариф оновлено. Всі функції вже активні.</p>
             </div>
-            <button type="button" onClick={() => setShowSuccess(false)} className="text-muted-foreground/60 hover:text-muted-foreground">
+            <button type="button" onClick={() => setShowSuccess(false)} aria-label="Закрити" className="text-muted-foreground/60 hover:text-muted-foreground">
               <X size={14} />
             </button>
           </motion.div>
@@ -186,7 +186,7 @@ export function BillingPage() {
             className="bento-card p-4 flex items-center gap-3 border border-destructive/30 bg-destructive/8"
           >
             <p className="text-sm text-destructive flex-1">{error}</p>
-            <button type="button" onClick={() => setError(null)} className="text-muted-foreground/60">
+            <button type="button" onClick={() => setError(null)} aria-label="Закрити" className="text-muted-foreground/60">
               <X size={14} />
             </button>
           </motion.div>

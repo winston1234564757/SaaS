@@ -266,6 +266,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                           <button
                             type="button"
                             onClick={() => copyToClipboard(inviteLink, 'c2b')}
+                            aria-label={copied === 'c2b' ? 'Скопійовано' : 'Скопіювати'}
                             className="bg-primary-foreground text-accent p-2.5 rounded-lg hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all shadow-sm"
                           >
                             {copied === 'c2b' ? <Check size={18} /> : <Copy size={18} />}

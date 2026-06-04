@@ -73,7 +73,7 @@ export function InstallBanner() {
             Додати
           </button>
         )}
-        <button type="button" onClick={dismiss} className="text-white/70 flex-shrink-0 ml-1 active:scale-95 transition-all">
+        <button type="button" onClick={dismiss} aria-label="Закрити" className="text-white/70 flex-shrink-0 ml-1 active:scale-95 transition-all">
           <X size={16} />
         </button>
       </div>
