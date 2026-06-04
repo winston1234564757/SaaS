@@ -5,18 +5,68 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { notifyMasterNewBooking } from '@/lib/notifications';
 import { normalizeToE164 } from '@/lib/utils/phone';
 
+const LINK_RATE_LIMIT = 5;
+const LINK_RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
 /**
  * Links a booking to the currently authenticated client.
- * Uses service role to bypass RLS (no client UPDATE policy on bookings).
+ * Validates phone match to prevent horizontal privilege escalation (P0.1 MTRP).
  */
 export async function linkBookingToClient(bookingId: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) throw new Error('Not authenticated');
 
   const admin = createAdminClient();
 
-  // Ensure client_profiles row exists
+  // Rate limit: 5 attempts per 15 minutes per user
+  const windowStart = new Date(Date.now() - LINK_RATE_WINDOW_MS).toISOString();
+  const { count } = await admin
+    .from('link_attempts')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .gte('created_at', windowStart);
+
+  if ((count ?? 0) >= LINK_RATE_LIMIT) {
+    await admin.from('link_attempts').insert({ booking_id: bookingId, user_id: user.id, result: 'rate_limited' });
+    throw new Error('RATE_LIMITED');
+  }
+
+  // Fetch booking — must exist and be unlinked (or linked to self)
+  const { data: booking, error } = await admin
+    .from('bookings')
+    .select('id, client_id, client_phone')
+    .eq('id', bookingId)
+    .single();
+
+  if (error || !booking) {
+    await admin.from('link_attempts').insert({ booking_id: bookingId, user_id: user.id, result: 'not_found' });
+    throw new Error('Booking not found');
+  }
+
+  if (booking.client_id && booking.client_id !== user.id) {
+    await admin.from('link_attempts').insert({ booking_id: bookingId, user_id: user.id, result: 'already_linked' });
+    throw new Error('BOOKING_ALREADY_LINKED');
+  }
+
+  if (booking.client_id === user.id) return; // already linked to self — no-op
+
+  // Verify user's phone matches booking's client_phone (last 10 digits)
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('phone')
+    .eq('id', user.id)
+    .single();
+
+  const bookingPhone = booking.client_phone?.slice(-10) ?? '';
+  const userPhone = profile?.phone?.slice(-10) ?? '';
+
+  if (!bookingPhone || !userPhone || bookingPhone !== userPhone) {
+    await admin.from('link_attempts').insert({ booking_id: bookingId, user_id: user.id, result: 'phone_mismatch' });
+    throw new Error('PHONE_MISMATCH_REQUIRES_OTP');
+  }
+
+  // Ensure client_profiles row exists (FK requirement)
   await admin
     .from('client_profiles')
     .upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true });
@@ -26,7 +76,9 @@ export async function linkBookingToClient(bookingId: string): Promise<void> {
     .from('bookings')
     .update({ client_id: user.id })
     .eq('id', bookingId)
-    .is('client_id', null); // only link if not already linked
+    .is('client_id', null);
+
+  await admin.from('link_attempts').insert({ booking_id: bookingId, user_id: user.id, result: 'success' });
 }
 
 /**
