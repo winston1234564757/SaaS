@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 import { ArrowLeft, Scissors, Star, User, CheckCircle, Clock } from 'lucide-react';
 import { formatDateFull } from '@/lib/utils/dates';
 import { PortfolioBookingButton } from '@/components/public/portfolio/PortfolioBookingButton';
@@ -10,9 +10,9 @@ import { PortfolioBookingButton } from '@/components/public/portfolio/PortfolioB
 export const revalidate = 300;
 
 async function getPortfolioItem(slug: string, id: string) {
-  const admin = createAdminClient();
+  const supabase = createPublicClient();
 
-  const { data: mp } = await admin
+  const { data: mp } = await supabase
     .from('master_profiles')
     .select('id, slug, subscription_tier, working_hours, pricing_rules, profiles!inner(full_name, avatar_url)')
     .eq('slug', slug)
@@ -22,7 +22,7 @@ async function getPortfolioItem(slug: string, id: string) {
   if (!mp) return null;
 
   const [itemRes, servicesRes, bookingsRes] = await Promise.all([
-    admin
+    supabase
       .from('portfolio_items')
       .select(`
         id, title, description, service_id, tagged_client_id, consent_status, created_at,
@@ -34,14 +34,14 @@ async function getPortfolioItem(slug: string, id: string) {
       .eq('is_published', true)
       .single(),
 
-    admin
+    supabase
       .from('services')
       .select('id, name, price, duration_minutes, is_popular, icon_name, category, sort_order')
       .eq('master_id', mp.id)
       .eq('is_active', true)
       .order('sort_order', { ascending: true }),
 
-    admin
+    supabase
       .from('bookings')
       .select('id', { count: 'exact', head: true })
       .eq('master_id', mp.id)
@@ -55,14 +55,14 @@ async function getPortfolioItem(slug: string, id: string) {
 
   const [reviewsRes, clientRes] = await Promise.all([
     reviewIds.length > 0
-      ? admin
+      ? supabase
           .from('reviews')
           .select('id, rating, comment, client_name, created_at')
           .in('id', reviewIds)
           .eq('is_published', true)
       : Promise.resolve({ data: [] }),
     item.tagged_client_id
-      ? admin.from('profiles').select('full_name, avatar_url').eq('id', item.tagged_client_id).single()
+      ? supabase.from('profiles').select('full_name, avatar_url').eq('id', item.tagged_client_id).single()
       : Promise.resolve({ data: null }),
   ]);
 
@@ -133,13 +133,11 @@ export default async function PortfolioItemPage(
 
   return (
     <div className="min-h-dvh pb-24" style={{ background: '#FFE8DC' }}>
-      {/* Blob */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full opacity-30"
           style={{ background: 'radial-gradient(circle, #FFD4BE 0%, transparent 70%)' }} />
       </div>
 
-      {/* Back header */}
       <div
         className="sticky top-0 z-20 px-4 py-3 flex items-center gap-3"
         style={{ background: 'color-mix(in srgb, var(--background) 92%, transparent)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border)' }}
@@ -154,19 +152,11 @@ export default async function PortfolioItemPage(
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
-        {/* Photo gallery */}
         {item.photos.length > 0 && (
           <div className="space-y-2">
             <div className="relative w-full aspect-square rounded-xl overflow-hidden"
               style={{ boxShadow: '0 4px 24px rgba(44,26,20,0.10)' }}>
-              <Image
-                src={item.photos[0].url}
-                alt={item.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 512px"
-                priority
-              />
+              <Image src={item.photos[0].url} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, 512px" priority />
             </div>
             {item.photos.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -180,35 +170,21 @@ export default async function PortfolioItemPage(
           </div>
         )}
 
-        {/* Title & meta */}
-        <div
-          className="rounded-xl p-5 space-y-3"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
-        >
+        <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}>
           <h1 className="text-xl font-bold text-foreground font-display">{item.title}</h1>
-
           <div className="flex flex-wrap gap-2">
             {item.serviceName && (
               <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-secondary rounded-full px-3 py-1">
                 <Scissors size={11} /> {item.serviceName}
               </span>
             )}
-            <span className="text-xs text-muted-foreground/60 py-1">
-              {formatDateFull(item.created_at)}
-            </span>
+            <span className="text-xs text-muted-foreground/60 py-1">{formatDateFull(item.created_at)}</span>
           </div>
-
-          {item.description && (
-            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
-          )}
+          {item.description && <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>}
         </div>
 
-        {/* Tagged client */}
         {item.taggedClientName && item.consent_status === 'approved' && (
-          <div
-            className="rounded-xl p-4 flex items-center gap-3"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-          >
+          <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             {item.taggedClientAvatar ? (
               <div className="relative size-10 rounded-xl overflow-hidden shrink-0">
                 <Image src={item.taggedClientAvatar} alt={item.taggedClientName} fill className="object-cover" sizes="40px" />
@@ -229,10 +205,7 @@ export default async function PortfolioItemPage(
         )}
 
         {item.taggedClientName && item.consent_status === 'pending' && (
-          <div
-            className="rounded-xl p-4 flex items-center gap-3"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-          >
+          <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <div className="size-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
               <User size={16} className="text-muted-foreground/60" />
             </div>
@@ -246,17 +219,12 @@ export default async function PortfolioItemPage(
           </div>
         )}
 
-        {/* Reviews */}
         {item.reviews.length > 0 && (
           <div className="space-y-3">
             <h2 className="text-sm font-bold text-foreground">Відгуки про цю роботу</h2>
             <div className="space-y-2">
               {item.reviews.map(r => (
-                <div
-                  key={r.id}
-                  className="rounded-xl p-4 space-y-2"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
+                <div key={r.id} className="rounded-xl p-4 space-y-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-foreground">{r.client_name ?? 'Клієнт'}</p>
                     <div className="flex items-center gap-0.5">
@@ -273,11 +241,7 @@ export default async function PortfolioItemPage(
           </div>
         )}
 
-        {/* CTA — book master */}
-        <div
-          className="rounded-xl p-5 flex items-center justify-between"
-          style={{ background: '#2C1A14' }}
-        >
+        <div className="rounded-xl p-5 flex items-center justify-between" style={{ background: '#2C1A14' }}>
           <div className="flex items-center gap-3">
             {masterAvatar ? (
               <div className="size-10 rounded-xl overflow-hidden shrink-0">

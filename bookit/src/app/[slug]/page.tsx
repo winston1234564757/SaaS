@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 import { cookies, headers } from 'next/headers';
 import { toZonedTime } from 'date-fns-tz';
 import { getNow } from '@/lib/utils/now';
@@ -15,7 +15,7 @@ import { computeOccupancy } from '@/lib/utils/occupancy';
 export const revalidate = 300;
 
 export async function generateStaticParams() {
-  const supabase = createAdminClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from('master_profiles')
     .select('slug')
@@ -121,7 +121,7 @@ export default async function MasterPublicPage(
   let c2cDiscountPct: number | null = null;
   const masterC2cEnabled = (data as any).c2c_enabled as boolean | null;
   if (refCode && masterC2cEnabled) {
-    const adminC = createAdminClient();
+    const adminC = createPublicClient();
     const { data: referrerProfile } = await adminC
       .from('client_profiles')
       .select('id')
@@ -223,8 +223,8 @@ export default async function MasterPublicPage(
       .eq('is_published', true)
       .order('display_order', { ascending: true })
       .limit(8),
-    // Occupancy: admin client bypasses RLS so data is consistent for all visitors
-    createAdminClient()
+    // Occupancy: anon client with public read RLS — consistent for all visitors
+    createPublicClient()
       .from('bookings')
       .select('start_time, end_time, status')
       .eq('master_id', data.id)

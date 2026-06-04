@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 import { ShopPage } from '@/components/public/ShopPage';
 import type { Product } from '@/types/database';
@@ -8,8 +8,8 @@ import type { Product } from '@/types/database';
 export const revalidate = 60;
 
 async function getMasterShop(slug: string) {
-  const admin = createAdminClient();
-  const { data } = await admin
+  const supabase = createPublicClient();
+  const { data } = await supabase
     .from('master_profiles')
     .select(`
       id, slug, subscription_tier, ships_nova_poshta, working_hours,
@@ -58,8 +58,8 @@ export default async function Page(
   }
 
   // Fetch active products
-  const admin = createAdminClient();
-  const { data: productsData } = await admin
+  const pub = createPublicClient();
+  const { data: productsData } = await pub
     .from('products')
     .select('id, master_id, icon_name, name, description, category, price_kopecks, photos, stock_qty, is_active, sort_order, created_at, updated_at')
     .eq('master_id', master.id)
@@ -72,7 +72,7 @@ export default async function Page(
   const { data: { user } } = await supabase.auth.getUser();
 
   // Fetch schedule
-  const { data: schedule } = await admin
+  const { data: schedule } = await pub
     .from('schedule_templates')
     .select('*')
     .eq('master_id', master.id);
@@ -90,4 +90,3 @@ export default async function Page(
     />
   );
 }
-

@@ -2,15 +2,15 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 import { ArrowLeft, Scissors, Star, Images } from 'lucide-react';
 
 export const revalidate = 300;
 
 async function getMasterPortfolio(slug: string) {
-  const admin = createAdminClient();
+  const supabase = createPublicClient();
 
-  const { data: mp } = await admin
+  const { data: mp } = await supabase
     .from('master_profiles')
     .select('id, slug, profiles!inner(full_name)')
     .eq('slug', slug)
@@ -21,7 +21,7 @@ async function getMasterPortfolio(slug: string) {
 
   const masterName = (mp.profiles as unknown as { full_name: string }).full_name;
 
-  const { data: items } = await admin
+  const { data: items } = await supabase
     .from('portfolio_items')
     .select(`
       id, title, description, service_id, display_order, is_published,
@@ -105,7 +105,6 @@ export default async function PortfolioGridPage({ params }: { params: Promise<{ 
                     className="rounded-xl overflow-hidden transition-transform active:scale-[0.97] hover:shadow-md"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
                   >
-                    {/* Cover */}
                     <div className="relative w-full aspect-square bg-secondary">
                       {cover ? (
                         <Image src={cover.url} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, 33vw" />
