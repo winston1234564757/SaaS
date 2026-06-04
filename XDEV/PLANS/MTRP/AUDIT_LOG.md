@@ -81,4 +81,32 @@
 
 ---
 
+## 2026-06-04 · Session 03 · P0.5 reopened + P0.6 start (3 UI primitives)
+
+### Зроблено
+1. **C-07 ВІДКЛИКАНО** — я хибно закрив P0.5 минулої сесії (grep дав false-negative).
+2. **Створено AST-сканер** `XDEV/PLANS/MTRP/tools/scan-buttons.cjs` (brace-aware, ігнорує `>` у `=>`).
+3. **Точний результат:** **204** з 595 `<button>` — без `type=`.
+4. **P0.5/P0.6 батч 1** — 3 UI-примітиви (переюзані десятками консюмерів):
+   - `ui/BottomSheet.tsx` — close: +`type="button"` +`aria-label="Закрити"`
+   - `ui/MicaModal.tsx` — close: +`type="button"` +`aria-label="Закрити"`
+   - `ui/PopUpModal.tsx` — close: +`type="button"` (aria вже був)
+
+### VERIFY / урок
+- **C-07 root cause:** flat ripgrep multiline `<button` без `type=` дав 0 матчів, хоча `BottomSheet:47` явно без type. Причина: ненадійність multiline-lookahead для JSX зі стрілками. **Висновок:** для атрибутів `<button>` використовувати `tools/scan-buttons.cjs`, не grep.
+- **Safety rule (don't break):** НЕ ставити `type="button"` сліпо — submit-кнопка форми має лишитись `type="submit"`. Сканер хінтить `[onClick]`/`[NO-onClick]`/`[file-has-form]`. Кнопки з onClick → type=button безпечно.
+
+### CHECK
+- `npx tsc --noEmit` → **0** ✅
+- `npm run build` → **0** ✅ (route-summary present)
+
+### COMMIT
+- `fix(a11y): type=button + aria-label on 3 UI primitives (P0.5/P0.6)`
+- `docs(mtrp): reopen P0.5 (204 untyped, AST-scan) + scan-buttons tool`
+
+### Наступна дія
+→ Продовжити P0.5/P0.6 батчами по файлах (`scan-buttons.cjs` дає список). Правило type= за хінтами. Потім P0.1 security. Деталі — MAP.md.
+
+---
+
 <!-- НОВІ ENTRIES ДОДАВАТИ ВИЩЕ ЦІЄЇ ЛІНІЇ -->
