@@ -118,9 +118,10 @@ function BookingRow({
   const dotCls  = DOT_CLASS[cfg.variant] ?? DOT_CLASS.default;
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onOpen(b.id)}
-      className={`relative cursor-pointer border-b border-[var(--border)] last:border-b-0
+      className={`w-full text-left relative cursor-pointer border-b border-[var(--border)] last:border-b-0
                  hover:bg-[var(--surface-hover)] active:bg-[var(--border)]
                  transition-colors duration-150
                  ${active ? 'bg-[var(--accent)]/[0.04]' : ''}`}
@@ -186,7 +187,7 @@ function BookingRow({
           </button>
         </div>
       )}
-    </div>
+    </button>
   );
 }
 

@@ -84,8 +84,9 @@ function TopClientPanel({ onOpen }: { onOpen: (c: ClientRow) => void }) {
           <div className="skeleton-shimmer h-4 w-24 rounded-full" />
         </div>
       ) : topClient ? (
-        <div
-          className="cursor-pointer group"
+        <button
+          type="button"
+          className="cursor-pointer group text-left w-full"
           onClick={handleOpen}
         >
           <div
@@ -103,7 +104,7 @@ function TopClientPanel({ onOpen }: { onOpen: (c: ClientRow) => void }) {
           <p className="text-[13px] text-[var(--text-tertiary)] mt-0.5">
             {topClient.count} {pluralUk(topClient.count, 'візит', 'візити', 'візитів')}
           </p>
-        </div>
+        </button>
       ) : (
         <div className="flex flex-col gap-1">
           <span style={{ color: 'var(--text-tertiary)' }}><Users size={18} strokeWidth={1.5} /></span>

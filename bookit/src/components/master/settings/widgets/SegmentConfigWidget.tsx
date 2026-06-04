@@ -42,13 +42,14 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
         </div>
 
         {segments.length === 0 ? (
-          <div
+          <button
+            type="button"
             onClick={openNew}
-            className="flex flex-col items-center justify-center py-8 rounded-2xl border border-dashed border-muted-foreground/20 text-muted-foreground/40 cursor-pointer hover:border-accent/30 hover:text-accent/60 active:scale-[0.95] transition-all gap-2"
+            className="w-full flex flex-col items-center justify-center py-8 rounded-2xl border border-dashed border-muted-foreground/20 text-muted-foreground/40 cursor-pointer hover:border-accent/30 hover:text-accent/60 active:scale-[0.95] transition-all gap-2"
           >
             <Plus size={22} strokeWidth={1.5} />
             <p className="text-xs font-medium">Створіть перший сегмент</p>
-          </div>
+          </button>
         ) : (
           <div className="grid grid-cols-2 gap-2">
             {segments.map(seg => (
