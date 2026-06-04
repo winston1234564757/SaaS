@@ -134,4 +134,28 @@
 
 ---
 
+## 2026-06-04 · Session 03c · P0.6 batch 2 (6 icon-only aria-labels)
+
+### Зроблено
+- **Детектор `tools/scan-icon-buttons.cjs`** — знаходить icon-only кнопки без aria-label (247 кандидатів, але heuristic over-flags `{текст-через-вираз}` напр. `[Loader2,ArrowRight]`="Далі →" → реально ~120). **Verify each before edit.**
+- **6 aria-label** (всі verified icon-only, вже мали type=button):
+  - `AnalyticsPage.tsx` :80 "Попередній період" · :85 "Наступний період" · :457 "Оновити"
+  - `WidgetLibraryModal.tsx`:46 "Закрити" · `UpgradePromptModal.tsx`:63 "Закрити" · `AnchoredTooltip.tsx`:99 "Закрити"
+- Пропущено false-positives: WidgetLibrary:57 (Icon+text), Tooltip:91 (primaryButtonText) — мають текст.
+
+### VERIFY / CHECK
+- aria-label = технічні рядки (RULE 0.5 виняток, без humanizer). Кольори не чіпав (a11y-color хуки — skip).
+- tsc 0 ✅ · build (фон).
+
+### COMMIT
+- `fix(a11y): aria-label on 6 icon-only buttons (P0.6 batch 2)` + scan-icon-buttons tool
+
+### Прогрес P0.6
+11 / ~120 done (S03 primitives 3 + portfolio 2 + цей батч 6). Лишилось ~110 — кілька проходів.
+
+### Наступна дія
+→ Продовжити P0.6 батчами (`scan-icon-buttons.cjs`, verify each). Найчастіші: X close, Chevron nav, Copy/Check, Eye/EyeOff, Trash2. Потім P0.1 security.
+
+---
+
 <!-- НОВІ ENTRIES ДОДАВАТИ ВИЩЕ ЦІЄЇ ЛІНІЇ -->

@@ -80,7 +80,7 @@ cd bookit && node ../XDEV/PLANS/MTRP/tools/scan-buttons.cjs   # свіжий с�
 
 ```
 Items closed: 6 / 71   (P0.3 · P0.5 · P0.10 · P0.11 · P1.13 · P3.11) + N-01
-In progress: P0.6 (5/~27 icon-only buttons)
+In progress: P0.6 (11/~120 icon-only buttons — scan-icon-buttons.cjs; ~27 was stale §5.6 est.)
 Deferred: 2 (P0.4, P1.2) · Blocked: 2 (P0.1 ready, P0.12)
 Dead code removed: ~2,400 рядків (22 файли) · a11y: 3 primitives
 Plan corrections: 8 (C-01..C-08) + N-01 + StatsMosaicWidget
