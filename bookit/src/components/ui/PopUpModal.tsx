@@ -90,6 +90,7 @@ export function PopUpModal({ isOpen, onClose, title, children, keepMounted = fal
                     <Dialog.Title className="heading-serif text-2xl text-foreground m-0 tracking-tight">{title}</Dialog.Title>
                     <Dialog.Close asChild>
                       <button
+                        type="button"
                         onClick={onClose}
                         aria-label="Закрити"
                         className="size-10 rounded-lg flex items-center justify-center bg-secondary/50 border border-border hover:bg-secondary/80 hover:text-foreground transition-all shadow-sm cursor-pointer active:scale-[0.88] group"

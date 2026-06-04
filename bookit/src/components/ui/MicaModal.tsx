@@ -80,7 +80,9 @@ export function MicaModal({
                 <h3 className="heading-serif text-2xl text-foreground">{title}</h3>
               )}
               <button
+                type="button"
                 onClick={onClose}
+                aria-label="Закрити"
                 className="ml-auto p-2 rounded-lg bg-secondary/50 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all active:scale-[0.88] cursor-pointer"
               >
                 <X size={20} />
