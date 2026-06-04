@@ -69,7 +69,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | done | ✅ **DONE** | matchMedia canonical у src/lib/hooks/. src/hooks/ deleted. 10 Landing* + 2 app consumers — 12 total. tsc 0. |
 | **P1.3** | Heatmap roving tabindex (168 cells) | §6.3 | 3h | ⏳ TODO |  |
 | **P1.4** | WeeklyChart `aria-pressed` (8 toggles) | §6.4 | 30m | ⏳ TODO |  |
-| **P1.12** | `timingSafeEqual` для CRON_SECRET (5 routes) | §6.12 | 30m | ⏳ TODO |  |
+| **P1.12** | `timingSafeEqual` для CRON_SECRET (5 routes) | §6.12 | done | ✅ **DONE** | New: verifyCronSecret.ts (HMAC sha256). 5 routes patched. tsc 0. |
 | **P1.16** | Touch targets ≥44px (14+ файлів) | §6.16 | 3h | ⏳ TODO |  |
 
 ---
