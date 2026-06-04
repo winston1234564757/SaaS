@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-04 · **Active phase:** Phase 0 · **Progress:** 4 / 71 closed (P0.3 ✅, P0.10 🔄, P0.11 🔄, + corrections)
+> **Updated:** 2026-06-04 (S02) · **Active phase:** Phase 0 (near done) · **Progress:** 5 closed (P0.3·P0.5·P0.10·P0.11·P3.11) · 2 deferred · 3 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -9,7 +9,7 @@
 ## 🗺️ Progress by Phase
 
 ```
-Phase 0  HOT FIXES        [███░░░░░] ~40%  ← active (dead code зроблено, a11y+security лишилось)
+Phase 0  HOT FIXES        [██████░░] ~75%  ← dead-code ✅ · P0.5 ✅(verified) · лишилось P0.6, P0.1
 Phase 1  SECURITY & A11Y  [░░░░░░░░]   0%
 Phase 2  LIMITED DRY      [░░░░░░░░]   0%
 Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← user priority
@@ -24,11 +24,17 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | # | Item | План казав | Реальність (verified 2026-06-04) | Дія |
 |---|---|---|---|---|
-| C-01 | P0.10 | «11 root widgets, 0 importers, видалити всі» | Лише **5** мертві (WeeklyChart, MonthlyCalendar, PeakHours, NextFreeDays, CancellationRate). | ✅ видалено 5 |
+| C-01 | P0.10 | «11 root widgets, 0 importers, видалити всі» | Лише **5** мертві (WeeklyChart, MonthlyCalendar, PeakHours, NextFreeDays, CancellationRate) | ✅ видалено 5 (S01) |
 | C-02 | P0.10 | `ScheduleWidget` (root) — мертвий | **ЖИВИЙ**: import у `SettingsPage.tsx` + `BentoGrid.tsx` | ⚠️ лишено |
-| C-03 | P0.10 | `InsightsRow/QuickActions/FreeSlots/TopServices/ChannelHealth` (root) — мертві | Живі лише через dev-сторінку `(public)/auth/blocks-test/page.tsx` | 🔒 → N-01 |
-| C-04 | P0.11 / P0.6 | Суперечність: P0.11 «видалити ScheduleDrawer», P0.6 «додати aria-label» | 0 importers → справді мертвий | ✅ видалено |
-| N-01 | NEW | — | `(public)/auth/blocks-test/page.tsx` — dev-харнес у проді, єдиний споживач 5 root-widgets. Публічний роут. | 🔒 рішення: видалити сторінку+5 віджетів разом |
+| C-03 | P0.10 | `InsightsRow/QuickActions/FreeSlots/TopServices/ChannelHealth` (root) — мертві | Живі лише через dev-сторінку `blocks-test` | ✅ resolved (N-01) |
+| C-04 | P0.11 / P0.6 | Суперечність: «видалити ScheduleDrawer» vs «додати aria-label» | 0 importers → справді мертвий | ✅ видалено (S01) |
+| N-01 | NEW | — | `blocks-test/page.tsx` — dev-харнес у проді (публічний роут), споживач 6 root-widgets (вкл. StatsMosaicWidget) | ✅ **RESOLVED** — сторінку+6 віджетів видалено |
+| C-05 | P0.11 | `broadcastUtils.ts` — «видалити 5 експортів, 0 imp» | ЖИВИЙ: усі 4 fn юзає `marketing/actions.ts` + має `broadcastUtils.test.ts` | ⚠️ KEPT |
+| C-06 | P0.11 | `pricing.ts` BillingInput/TierProgress — «видалити» | Internal param + public return type (ReferralPage + тести) | ⚠️ KEPT |
+| C-07 | P0.5 | «209 кнопок без type=button» | **0** без type на 599 кнопок/154 файли (закрито STEP 5-13) | ✅ no-work |
+| C-08 | P0.11 | `dates.ts pluralize` — «видалити» | Юзає `FlashDealPage`; `pluralUk` має іншу сигнатуру | 🔒 → P3.2 |
+
+> **Урок (у WORKFLOW):** видалення **роуту** (`page.tsx`) лишає stale `.next/types` + `.next/dev/types` → tsc/build падають на фантомному модулі. Фікс: `rm -rf .next && npm run build`. Видалення лише компонентів цього не потребує.
 
 ---
 
@@ -36,12 +42,12 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | Item | Title | Scope / §план | Effort | Status | Нотатка |
 |---|---|---|---|---|---|
-| **P0.3** | old_BookingsPage.tsx 0-byte stub | root · §5.3 | 5m | ✅ **DONE** | Видалено 2026-06-04, commit `dead-code` |
-| **P0.11** | ~3,500 рядків dead code | §5.11 | 30m | 🔄 **IN PROGRESS** | Файли видалено (9). Лишилось: trim експортів — див. під-таблицю ↓ |
-| **P0.10** | root-level dead widgets | §5.10 | 30m | 🔄 **IN PROGRESS** | 5/11 видалено (див. C-01..C-03). ScheduleWidget лишено. 5 чекають N-01 |
-| **P0.5** | 209 кнопок без `type="button"` | §5.5 | 1h | ⏳ TODO | Bulk Edit Protocol. Технічні — без humanizer |
-| **P0.6** | 30+ icon-only без `aria-label` | §5.6 | 3h | ⏳ TODO | UA-лейбли (технічні). Список файлів у §5.6 |
-| **P0.1** | linkBookingToClient booking hijack | `[slug]/actions.ts` · §5.1 | 4h | 🔒 **BLOCKED** | Потрібно рішення Q1 (phone-match/magic-link/OTP) + міграція `139_*`. Прочитати поточний код перед фіксом |
+| **P0.3** | old_BookingsPage.tsx 0-byte stub | root · §5.3 | 5m | ✅ **DONE** | Видалено S01 |
+| **P0.5** | кнопки без `type="button"` | §5.5 | — | ✅ **DONE** | Verified: 0 без type на 599 кнопок (C-07). Закрито STEP 5-13 |
+| **P0.10** | root-level dead widgets | §5.10 | 30m | ✅ **DONE** | 11 dead-віджетів (S01:5 + S02:6 через N-01). ScheduleWidget лишено — живий (C-02) |
+| **P0.11** | dead code (~2,400 рядків) | §5.11 | 30m | ✅ **DONE** | 9 файлів + 3 dead-експорти. broadcastUtils/pricing — KEPT (C-05/C-06). pluralize→P3.2 (C-08) |
+| **P0.6** | 30+ icon-only без `aria-label` | §5.6 | 3h | ⏳ **NEXT** | Спершу VERIFY (можливо частково зроблено STEP 5-13). UA-лейбли (технічні) §5.6 |
+| **P0.1** | linkBookingToClient booking hijack | `[slug]/actions.ts` · §5.1 | 4h | 🔒 **BLOCKED** | Рішення Q1 = phone-match + `link_attempts` + rate-limit; magic-link = future. Міграція `139_*`. Прочитати поточний код перед фіксом |
 
 ### P0.11 — під-чеклист
 | Файл / ціль | Status |
@@ -55,25 +61,28 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | `dashboard/ProfileStrengthWidget.tsx` | ✅ deleted |
 | `scratch_test_new_portfolio.ts` (58L) | ✅ deleted |
 | `supabase/tests/referral_system_test.sql` (353L) | ✅ deleted |
-| `lib/utils/currency.ts` → remove `formatPrice` | ⏳ TODO (verify importers) |
-| `lib/utils/dates.ts` → remove `formatTime`/`formatDayFull`/`pluralize` | ⏳ TODO (verify) |
-| `lib/utils/broadcastUtils.ts` → remove 5 exports | ⏳ TODO (verify) |
-| `lib/billing/pricing.ts` → remove `TierProgress`/`BillingInput` | ⏳ TODO (verify) |
+| `lib/utils/currency.ts` → remove `formatPrice` | ✅ done (formatCurrency kept — alive) |
+| `lib/utils/dates.ts` → remove `formatTime`, `formatDayFull` | ✅ done |
+| `lib/utils/dates.ts` → remove `pluralize` | 🔒 P3.2 (used by FlashDealPage, C-08) |
+| `lib/utils/broadcastUtils.ts` → remove 5 exports | ⚠️ KEPT — alive + tested (C-05) |
+| `lib/billing/pricing.ts` → remove `TierProgress`/`BillingInput` | ⚠️ KEPT — public API (C-06) |
 
 ### P0.10 — під-чеклист
 | root widget | verified | Status |
 |---|---|---|
-| `WeeklyChartWidget.tsx` (244L) | 0 imp | ✅ deleted |
-| `MonthlyCalendarWidget.tsx` (420L) | 0 imp | ✅ deleted |
-| `PeakHoursWidget.tsx` (161L) | 0 imp | ✅ deleted |
-| `NextFreeDaysWidget.tsx` (87L) | 0 imp | ✅ deleted |
-| `CancellationRateWidget.tsx` (90L) | 0 imp | ✅ deleted |
+| `WeeklyChartWidget.tsx` (244L) | 0 imp | ✅ deleted (S01) |
+| `MonthlyCalendarWidget.tsx` (420L) | 0 imp | ✅ deleted (S01) |
+| `PeakHoursWidget.tsx` (161L) | 0 imp | ✅ deleted (S01) |
+| `NextFreeDaysWidget.tsx` (87L) | 0 imp | ✅ deleted (S01) |
+| `CancellationRateWidget.tsx` (90L) | 0 imp | ✅ deleted (S01) |
+| `InsightsRow.tsx` | blocks-test only | ✅ deleted (N-01) |
+| `QuickActionsWidget.tsx` | blocks-test only | ✅ deleted (N-01) |
+| `FreeSlotsWidget.tsx` | blocks-test only | ✅ deleted (N-01) |
+| `TopServicesWidget.tsx` | blocks-test only | ✅ deleted (N-01) |
+| `ChannelHealthWidget.tsx` | blocks-test only | ✅ deleted (N-01) |
+| `StatsMosaicWidget.tsx` (NEW find) | blocks-test only | ✅ deleted (N-01) |
+| `(public)/auth/blocks-test/page.tsx` | dev route in prod | ✅ deleted (N-01) |
 | `ScheduleWidget.tsx` | **2 imp** | ⚠️ KEEP (alive) |
-| `InsightsRow.tsx` | blocks-test | 🔒 N-01 |
-| `QuickActionsWidget.tsx` | blocks-test | 🔒 N-01 |
-| `FreeSlotsWidget.tsx` | blocks-test | 🔒 N-01 |
-| `TopServicesWidget.tsx` | blocks-test | 🔒 N-01 |
-| `ChannelHealthWidget.tsx` | blocks-test | 🔒 N-01 |
 
 ➖ **P0.4** secrets audit — DEFERRED (§5.4)
 
@@ -105,10 +114,10 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P1.7** | Дубль нумерації міграцій (137×2) | §6.7 | 5m | ⏳ TODO |
 | **P1.8** | StoryGenerator empty-deps → хуки | §6.8 | 3h | ⏳ TODO |
 | **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | 1h | ⏳ TODO |
-| **P1.13** | Remove `formatPrice` dup | §6.13 | 5m | ⏳ TODO (= частина P0.11) |
+| **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |
 | **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | 30m | ⏳ TODO |
 | **P1.15** | Типи замість `working_hours as any` | §6.15 | 4h+ | ⏳ TODO (start P2.1) |
-| **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | 30m | ⏳ TODO |
+| **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | 30m | ⏳ TODO (verify кожен) |
 | **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | 5m | ⏳ TODO |
 | **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | 1h | ⏳ TODO (міграція `141_*`) |
 | ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |
@@ -138,7 +147,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P2.11** | Контраст `text-muted/30-50` → WCAG AA | §7.11 | 4h | ⏳ TODO |
 | **P2.12** | 79 inputs без labels | §7.12 | 6h | ⏳ TODO |
 | **P2.15** | `useBookings` refetch cascade (6 keys) | §7.15 | 2h | ⏳ TODO |
-| **P3.2** | `pluralize` → `pluralUk` (FlashDealPage) | §8.2 | 30m | ⏳ TODO |
+| **P3.2** | `pluralize` → `pluralUk` (FlashDealPage) + видалити pluralize | §8.2 | 30m | ⏳ TODO (unblocks C-08) |
 | **P3.3** | Decorative `<svg aria-hidden>` | §8.3 | 1h | ⏳ TODO |
 | **P3.4** | BottomSheet drag handle `role` | §8.4 | 15m | ⏳ TODO |
 | **P3.5** | `outline-none` → `focus:ring` | §8.5 | 30m | ⏳ TODO |
@@ -156,11 +165,14 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | Severity | Total | ✅/no-fix | 🔄 | 🔒/➖ | ⏳ |
 |---|---|---|---|---|---|
-| P0 | 13 | 1 | 2 | 3 (P0.1, P0.4, P0.12) | 7 |
-| P1 | 26 | 0 | 0 | 1 (P1.2) | 25 |
+| P0 | 13 | 4 | 0 | 3 (P0.1, P0.4, P0.12) | 6 |
+| P1 | 26 | 1 | 0 | 1 (P1.2) | 24 |
 | P2 | 21 | 0 | 0 | 0 | 21 |
 | P3 | 11 | 1 | 0 | 0 | 10 |
 
+**Закрито повністю:** P0.3, P0.5, P0.10, P0.11, P1.13, P3.11 (+ N-01 resolved)
+**Видалено dead code:** ~2,400 рядків (22 файли загалом across S01+S02)
+
 ---
 
-*Updated: 2026-06-04 — Phase 0 dead-code batch · Next: P0.11 export-trim + P0.5 type=button*
+*Updated: 2026-06-04 S02 — Phase 0 dead-code complete + P0.5 verified · Next: P0.6 aria-label (verify first) → P0.1 security*
