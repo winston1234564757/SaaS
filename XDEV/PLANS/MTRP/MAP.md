@@ -1,6 +1,6 @@
 # 🧭 MAP.md — «Де я зупинився» (resume-pointer)
 
-> **Читати ПЕРШИМ на старті сесії** (після mempalace_status + SYSTEM_MAP).
+> **Читати ПЕРШИМ на старті сесії** (після mempalace_status + SYSTEM_MAP). Повний контекст → [HANDOFF.md](./HANDOFF.md).
 > **Updated:** 2026-06-04 (Session 03c)
 
 ---
@@ -40,7 +40,7 @@ PHASE 0 · P0.6 (icon-only aria-label, ~100 лишилось) → потім P0.
 ## 📍 Фазова мапа
 
 ```
-► Phase 0  HOT FIXES        ~82%  ← dead-code ✅ · P0.5 ✅ · P0.6 🔄(21/~120) · P0.1 🔒
+► Phase 0  HOT FIXES        ~85%  ← dead-code ✅ · P0.5 ✅ · P0.6 🔄(42/~120) · P0.1 🔒
   Phase 1  SECURITY & A11Y    0%  (P0.1, P0.2 admin-leak, P0.7 MicaModal, P0.8/9, P1.x)
   Phase 2  LIMITED DRY        0%
   Phase 3  TESTS & TYPES ⭐    0%  ← USER PRIORITY
@@ -76,7 +76,7 @@ cd bookit && node ../XDEV/PLANS/MTRP/tools/scan-icon-buttons.cjs   # свіжи�
 
 ```
 Items closed: 6 / 71   (P0.3 · P0.5 · P0.10 · P0.11 · P1.13 · P3.11) + N-01
-In progress: P0.6 (21/~120 icon-only aria-labels)
+In progress: P0.6 (42/~120 icon-only aria-labels)
 Deferred: 2 (P0.4, P1.2) · Blocked: 2 (P0.1 ready, P0.12)
 Dead code removed: ~2,400 рядків (22 файли)
 Plan corrections: 8 (C-01..C-08) + N-01 + StatsMosaicWidget

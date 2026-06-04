@@ -158,4 +158,24 @@
 
 ---
 
+## 2026-06-04 · Session 03d · P0.6 batches 3-5 (31 кнопок) + HANDOFF
+
+### Зроблено
+- **P0.6 batch 3 (10):** MonthlyCalendarWidget ×3 теми (prev/next місяць + close-day) + RestockDrawer (close/−/+).
+- **P0.6 batch 4 (10):** SharePageCard (QR/close), BentoGrid (remove-widget), NotificationsBell (close), ProductFormDrawer (close/remove-photo), VacationManager (remove), ImageUploader (clear), BroadcastEditor (close), SystemLogsViewer (refresh).
+- **P0.6 batch 5 (11):** AdminSupportConsole (remove-file/add-image/send-submit), ModerationHub (publish toggles — динамічний aria-label), MyBookingsPage (close), ProfileHero (close), ScheduleWidget (remove-break), DashboardTopBar (back), ProductMixWidget (prev/next місяць).
+- **P0.6 разом: 42/~120.**
+- **Створено `HANDOFF.md`** — повний контекст для наступного чату (стан, кроки, 8 уроків, конвенції, plan corrections).
+
+### CHECK
+- Кожен батч: `npx tsc --noEmit` 0 + `npm run build` 0. Кольори не чіпав (a11y-color хуки skip).
+
+### COMMITS
+- `fix(a11y): aria-label batch 3/4/5` (×3) + `docs(mtrp): HANDOFF + MAP/README`.
+
+### Наступна дія
+→ P0.6 tail (~78 icon-only) батчами (scan-icon-buttons.cjs, verify each) → P0.1 security. Повний план — HANDOFF.md §4.
+
+---
+
 <!-- НОВІ ENTRIES ДОДАВАТИ ВИЩЕ ЦІЄЇ ЛІНІЇ -->
