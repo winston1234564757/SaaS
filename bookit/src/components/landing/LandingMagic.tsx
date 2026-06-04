@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
@@ -13,23 +13,23 @@ const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const FEATURES = [
   {
     stat: '24/7',
-    eyebrow: 'Онлайн-запис',
-    title: 'Клієнт обирає час сам. О третій ночі.',
-    body: 'Публічна сторінка з твоїми послугами, цінами й розкладом — завжди доступна. Клієнт записується без дзвінків і повідомлень, ти отримуєш підтвердження в Telegram.',
+    eyebrow: 'РћРЅР»Р°Р№РЅ-Р·Р°РїРёСЃ',
+    title: 'РљР»С–С”РЅС‚ РѕР±РёСЂР°С” С‡Р°СЃ СЃР°Рј. Рћ С‚СЂРµС‚С–Р№ РЅРѕС‡С–.',
+    body: 'РџСѓР±Р»С–С‡РЅР° СЃС‚РѕСЂС–РЅРєР° Р· С‚РІРѕС—РјРё РїРѕСЃР»СѓРіР°РјРё, С†С–РЅР°РјРё Р№ СЂРѕР·РєР»Р°РґРѕРј вЂ” Р·Р°РІР¶РґРё РґРѕСЃС‚СѓРїРЅР°. РљР»С–С”РЅС‚ Р·Р°РїРёСЃСѓС”С‚СЊСЃСЏ Р±РµР· РґР·РІС–РЅРєС–РІ С– РїРѕРІС–РґРѕРјР»РµРЅСЊ, С‚Рё РѕС‚СЂРёРјСѓС”С€ РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ РІ Telegram.',
     reverse: false,
   },
   {
     stat: '+27%',
     eyebrow: 'Smart Slots',
-    title: 'Порожні вікна заповнюються до того, як ти їх помітила.',
-    body: 'Алгоритм аналізує твій розклад і автоматично пропонує клієнтам час без зайвих пауз. Флеш-акції при скасуваннях — і вікно закривається за 10 хвилин.',
+    title: 'РџРѕСЂРѕР¶РЅС– РІС–РєРЅР° Р·Р°РїРѕРІРЅСЋСЋС‚СЊСЃСЏ РґРѕ С‚РѕРіРѕ, СЏРє С‚Рё С—С… РїРѕРјС–С‚РёР»Р°.',
+    body: 'РђР»РіРѕСЂРёС‚Рј Р°РЅР°Р»С–Р·СѓС” С‚РІС–Р№ СЂРѕР·РєР»Р°Рґ С– Р°РІС‚РѕРјР°С‚РёС‡РЅРѕ РїСЂРѕРїРѕРЅСѓС” РєР»С–С”РЅС‚Р°Рј С‡Р°СЃ Р±РµР· Р·Р°Р№РІРёС… РїР°СѓР·. Р¤Р»РµС€-Р°РєС†С–С— РїСЂРё СЃРєР°СЃСѓРІР°РЅРЅСЏС… вЂ” С– РІС–РєРЅРѕ Р·Р°РєСЂРёРІР°С”С‚СЊСЃСЏ Р·Р° 10 С…РІРёР»РёРЅ.',
     reverse: true,
   },
   {
-    stat: '×3',
-    eyebrow: 'Повернення клієнтів',
-    title: 'Клієнт, якого ти вже забула, пишеться сам.',
-    body: 'Автоматичні нагадування через Telegram і Push виходять у потрібний момент — коли минає стандартний цикл повернення. Ніяких ручних розсилок.',
+    stat: 'Г—3',
+    eyebrow: 'РџРѕРІРµСЂРЅРµРЅРЅСЏ РєР»С–С”РЅС‚С–РІ',
+    title: 'РљР»С–С”РЅС‚, СЏРєРѕРіРѕ С‚Рё РІР¶Рµ Р·Р°Р±СѓР»Р°, РїРёС€РµС‚СЊСЃСЏ СЃР°Рј.',
+    body: 'РђРІС‚РѕРјР°С‚РёС‡РЅС– РЅР°РіР°РґСѓРІР°РЅРЅСЏ С‡РµСЂРµР· Telegram С– Push РІРёС…РѕРґСЏС‚СЊ Сѓ РїРѕС‚СЂС–Р±РЅРёР№ РјРѕРјРµРЅС‚ вЂ” РєРѕР»Рё РјРёРЅР°С” СЃС‚Р°РЅРґР°СЂС‚РЅРёР№ С†РёРєР» РїРѕРІРµСЂРЅРµРЅРЅСЏ. РќС–СЏРєРёС… СЂСѓС‡РЅРёС… СЂРѕР·СЃРёР»РѕРє.',
     reverse: false,
   },
 ];
@@ -82,7 +82,7 @@ function FeatureCard({ feature }: { feature: typeof FEATURES[0] }) {
         </motion.p>
       </div>
 
-      {/* Content side — title and body start simultaneously */}
+      {/* Content side вЂ” title and body start simultaneously */}
       <div className="flex-1 pt-2">
         <h3
           className="font-[family-name:var(--font-cormorant)] font-semibold leading-snug mb-5"
@@ -159,10 +159,10 @@ export function LandingMagic() {
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
           >
-            Як це працює
+            РЇРє С†Рµ РїСЂР°С†СЋС”
           </motion.span>
           <LandingSplitHeading
-            text={"Bookit працює,\nпоки ти — зі своїми клієнтами."}
+            text={"Bookit РїСЂР°С†СЋС”,\nРїРѕРєРё С‚Рё вЂ” Р·С– СЃРІРѕС—РјРё РєР»С–С”РЅС‚Р°РјРё."}
             className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight"
             style={{ fontSize: 'clamp(2.6rem, 5.5vw, 4.8rem)', color: 'var(--l-ink)' }}
             stagger={60}
@@ -189,7 +189,7 @@ export function LandingMagic() {
             className="font-[family-name:var(--font-cormorant)] font-semibold"
             style={{ fontSize: 'clamp(1.4rem, 2.5vw, 2rem)', color: 'var(--l-ink)' }}
           >
-            Починається безкоштовно. Назавжди.
+            РџРѕС‡РёРЅР°С”С‚СЊСЃСЏ Р±РµР·РєРѕС€С‚РѕРІРЅРѕ. РќР°Р·Р°РІР¶РґРё.
           </p>
           <Link
             href="/register"
@@ -200,7 +200,7 @@ export function LandingMagic() {
               boxShadow: '0 4px 20px rgba(15,23,42,0.22)',
             }}
           >
-            Спробувати безкоштовно
+            РЎРїСЂРѕР±СѓРІР°С‚Рё Р±РµР·РєРѕС€С‚РѕРІРЅРѕ
             <span
               className="size-7 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               style={{ background: 'color-mix(in srgb, var(--l-accent-on) 12%, transparent)' }}

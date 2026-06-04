@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -10,18 +10,18 @@ const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const STEPS = [
   {
     no: '01',
-    title: 'Реєструєшся за 2 хвилини',
-    body: 'Номер телефону, назва і місто. Більше нічого. Без демо-дзвінків і менеджерів.',
+    title: 'Р РµС”СЃС‚СЂСѓС”С€СЃСЏ Р·Р° 2 С…РІРёР»РёРЅРё',
+    body: 'РќРѕРјРµСЂ С‚РµР»РµС„РѕРЅСѓ, РЅР°Р·РІР° С– РјС–СЃС‚Рѕ. Р‘С–Р»СЊС€Рµ РЅС–С‡РѕРіРѕ. Р‘РµР· РґРµРјРѕ-РґР·РІС–РЅРєС–РІ С– РјРµРЅРµРґР¶РµСЂС–РІ.',
   },
   {
     no: '02',
-    title: 'Додаєш послуги і розклад',
-    body: 'Завантажуєш портфоліо, вказуєш ціни і час роботи. Система сама формує твою публічну сторінку.',
+    title: 'Р”РѕРґР°С”С€ РїРѕСЃР»СѓРіРё С– СЂРѕР·РєР»Р°Рґ',
+    body: 'Р—Р°РІР°РЅС‚Р°Р¶СѓС”С€ РїРѕСЂС‚С„РѕР»С–Рѕ, РІРєР°Р·СѓС”С€ С†С–РЅРё С– С‡Р°СЃ СЂРѕР±РѕС‚Рё. РЎРёСЃС‚РµРјР° СЃР°РјР° С„РѕСЂРјСѓС” С‚РІРѕСЋ РїСѓР±Р»С–С‡РЅСѓ СЃС‚РѕСЂС–РЅРєСѓ.',
   },
   {
     no: '03',
-    title: 'Отримуєш записи в Telegram',
-    body: 'Клієнти записуються через посилання або QR-код. Ти бачиш все в одному місці і нічого не пропускаєш.',
+    title: 'РћС‚СЂРёРјСѓС”С€ Р·Р°РїРёСЃРё РІ Telegram',
+    body: 'РљР»С–С”РЅС‚Рё Р·Р°РїРёСЃСѓСЋС‚СЊСЃСЏ С‡РµСЂРµР· РїРѕСЃРёР»Р°РЅРЅСЏ Р°Р±Рѕ QR-РєРѕРґ. РўРё Р±Р°С‡РёС€ РІСЃРµ РІ РѕРґРЅРѕРјСѓ РјС–СЃС†С– С– РЅС–С‡РѕРіРѕ РЅРµ РїСЂРѕРїСѓСЃРєР°С”С€.',
   },
 ];
 
@@ -102,7 +102,7 @@ function StepItem({ item }: { item: typeof STEPS[0] }) {
       </motion.span>
 
       <div className="pt-1 flex-1 min-w-0">
-        {/* Word-by-word h3 — starts simultaneously with body */}
+        {/* Word-by-word h3 вЂ” starts simultaneously with body */}
         <h3 className="font-semibold leading-snug mb-3" style={{ fontSize: '1.1rem', color: 'var(--l-ink)' }}>
           {item.title.split(' ').map((word, wi, arr) => (
             <span
@@ -191,15 +191,15 @@ export function LandingProcess() {
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
                 style={{ color: 'var(--l-indigo)' }}
               >
-                Старт
+                РЎС‚Р°СЂС‚
               </motion.span>
               <h2
                 className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"
                 style={{ fontSize: 'clamp(2.4rem,5vw,4rem)', color: 'var(--l-ink)' }}
               >
-                <WordLine words={['Три', 'кроки']} lineIndex={0} inView={inView} />
+                <WordLine words={['РўСЂРё', 'РєСЂРѕРєРё']} lineIndex={0} inView={inView} />
                 <WordLine
-                  words={['до', 'першого', 'запису.']}
+                  words={['РґРѕ', 'РїРµСЂС€РѕРіРѕ', 'Р·Р°РїРёСЃСѓ.']}
                   lineIndex={1}
                   inView={inView}
                   style={{ color: 'var(--l-accent)', fontStyle: 'normal' }}
@@ -212,7 +212,7 @@ export function LandingProcess() {
                 className="mt-5 text-base leading-relaxed"
                 style={{ color: 'var(--l-muted)' }}
               >
-                Від реєстрації до першої броні — менше одного дня.
+                Р’С–Рґ СЂРµС”СЃС‚СЂР°С†С–С— РґРѕ РїРµСЂС€РѕС— Р±СЂРѕРЅС– вЂ” РјРµРЅС€Рµ РѕРґРЅРѕРіРѕ РґРЅСЏ.
               </motion.p>
             </motion.div>
           </div>
@@ -240,7 +240,7 @@ export function LandingProcess() {
                 aria-hidden="true"
               />
               <span className="text-sm font-medium" style={{ color: 'var(--l-accent)' }}>
-                Старт за 2 хвилини · Без кредитної картки
+                РЎС‚Р°СЂС‚ Р·Р° 2 С…РІРёР»РёРЅРё В· Р‘РµР· РєСЂРµРґРёС‚РЅРѕС— РєР°СЂС‚РєРё
               </span>
             </motion.div>
           </div>

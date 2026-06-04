@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -11,21 +11,21 @@ const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const STEPS = [
   {
     no: '01',
-    title: 'Клієнт відкриває посилання',
-    body: 'Ніякої реєстрації. Бачить твої послуги, ціни і вільний час прямо зараз.',
+    title: 'РљР»С–С”РЅС‚ РІС–РґРєСЂРёРІР°С” РїРѕСЃРёР»Р°РЅРЅСЏ',
+    body: 'РќС–СЏРєРѕС— СЂРµС”СЃС‚СЂР°С†С–С—. Р‘Р°С‡РёС‚СЊ С‚РІРѕС— РїРѕСЃР»СѓРіРё, С†С–РЅРё С– РІС–Р»СЊРЅРёР№ С‡Р°СЃ РїСЂСЏРјРѕ Р·Р°СЂР°Р·.',
     detail: 'bookit.ua/anna',
   },
   {
     no: '02',
-    title: 'Обирає час і підтверджує номер',
-    body: 'OTP за 30 секунд. Запис підтверджено — жодного дзвінка.',
-    detail: 'SMS · 30 сек',
+    title: 'РћР±РёСЂР°С” С‡Р°СЃ С– РїС–РґС‚РІРµСЂРґР¶СѓС” РЅРѕРјРµСЂ',
+    body: 'OTP Р·Р° 30 СЃРµРєСѓРЅРґ. Р—Р°РїРёСЃ РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ вЂ” Р¶РѕРґРЅРѕРіРѕ РґР·РІС–РЅРєР°.',
+    detail: 'SMS В· 30 СЃРµРє',
   },
   {
     no: '03',
-    title: 'Отримує нагадування перед записом',
-    body: 'Telegram або Push за 2 години. Ніхто не забуває, ніхто не спізнюється.',
-    detail: 'TG / Push · −2 год',
+    title: 'РћС‚СЂРёРјСѓС” РЅР°РіР°РґСѓРІР°РЅРЅСЏ РїРµСЂРµРґ Р·Р°РїРёСЃРѕРј',
+    body: 'Telegram Р°Р±Рѕ Push Р·Р° 2 РіРѕРґРёРЅРё. РќС–С…С‚Рѕ РЅРµ Р·Р°Р±СѓРІР°С”, РЅС–С…С‚Рѕ РЅРµ СЃРїС–Р·РЅСЋС”С‚СЊСЃСЏ.',
+    detail: 'TG / Push В· в€’2 РіРѕРґ',
   },
 ];
 
@@ -80,7 +80,7 @@ function StepCard({ item }: { item: typeof STEPS[0] }) {
       </div>
 
       <div>
-        {/* Word-by-word h3 — starts simultaneously with body */}
+        {/* Word-by-word h3 вЂ” starts simultaneously with body */}
         <h3 className="font-semibold leading-snug mb-3" style={{ fontSize: '1.05rem', color: 'var(--l-ink)' }}>
           {item.title.split(' ').map((word, wi, arr) => (
             <span
@@ -155,10 +155,10 @@ export function LandingClientFlow() {
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
           >
-            Клієнтський досвід
+            РљР»С–С”РЅС‚СЃСЊРєРёР№ РґРѕСЃРІС–Рґ
           </motion.span>
           <LandingSplitHeading
-            text={"Три кроки\nдля клієнта."}
+            text={"РўСЂРё РєСЂРѕРєРё\nРґР»СЏ РєР»С–С”РЅС‚Р°."}
             className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight"
             style={{ fontSize: 'clamp(2.6rem,5vw,4.4rem)', color: 'var(--l-ink)' }}
             stagger={70}

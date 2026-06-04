@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -10,7 +10,7 @@ import {
   useTransform,
   useScroll,
 } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -41,40 +41,40 @@ function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
   );
 }
 
-const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+const DAYS = ['РџРЅ', 'Р’С‚', 'РЎСЂ', 'Р§С‚', 'РџС‚', 'РЎР±'];
 const TIMES = ['09:00', '10:30', '12:00', '13:30', '15:00', '16:30', '18:00'];
 
 const SLOTS: Record<string, { status: 'booked' | 'smart' | 'free'; label?: string }> = {
-  'Пн-09:00': { status: 'booked' },
-  'Пн-10:30': { status: 'booked' },
-  'Пн-12:00': { status: 'smart', label: 'Flash' },
-  'Пн-15:00': { status: 'booked' },
-  'Пн-16:30': { status: 'booked' },
-  'Пн-18:00': { status: 'booked' },
-  'Вт-09:00': { status: 'booked' },
-  'Вт-10:30': { status: 'smart', label: 'Smart' },
-  'Вт-13:30': { status: 'booked' },
-  'Вт-15:00': { status: 'booked' },
-  'Вт-16:30': { status: 'booked' },
-  'Ср-09:00': { status: 'booked' },
-  'Ср-12:00': { status: 'booked' },
-  'Ср-13:30': { status: 'smart', label: 'Smart' },
-  'Ср-15:00': { status: 'booked' },
-  'Ср-18:00': { status: 'booked' },
-  'Чт-09:00': { status: 'booked' },
-  'Чт-10:30': { status: 'booked' },
-  'Чт-15:00': { status: 'booked' },
-  'Чт-16:30': { status: 'smart', label: 'Smart' },
-  'Пт-09:00': { status: 'booked' },
-  'Пт-12:00': { status: 'booked' },
-  'Пт-13:30': { status: 'booked' },
-  'Пт-16:30': { status: 'booked' },
-  'Пт-18:00': { status: 'booked' },
-  'Сб-09:00': { status: 'booked' },
-  'Сб-10:30': { status: 'booked' },
-  'Сб-12:00': { status: 'smart', label: 'Smart' },
-  'Сб-13:30': { status: 'booked' },
-  'Сб-15:00': { status: 'booked' },
+  'РџРЅ-09:00': { status: 'booked' },
+  'РџРЅ-10:30': { status: 'booked' },
+  'РџРЅ-12:00': { status: 'smart', label: 'Flash' },
+  'РџРЅ-15:00': { status: 'booked' },
+  'РџРЅ-16:30': { status: 'booked' },
+  'РџРЅ-18:00': { status: 'booked' },
+  'Р’С‚-09:00': { status: 'booked' },
+  'Р’С‚-10:30': { status: 'smart', label: 'Smart' },
+  'Р’С‚-13:30': { status: 'booked' },
+  'Р’С‚-15:00': { status: 'booked' },
+  'Р’С‚-16:30': { status: 'booked' },
+  'РЎСЂ-09:00': { status: 'booked' },
+  'РЎСЂ-12:00': { status: 'booked' },
+  'РЎСЂ-13:30': { status: 'smart', label: 'Smart' },
+  'РЎСЂ-15:00': { status: 'booked' },
+  'РЎСЂ-18:00': { status: 'booked' },
+  'Р§С‚-09:00': { status: 'booked' },
+  'Р§С‚-10:30': { status: 'booked' },
+  'Р§С‚-15:00': { status: 'booked' },
+  'Р§С‚-16:30': { status: 'smart', label: 'Smart' },
+  'РџС‚-09:00': { status: 'booked' },
+  'РџС‚-12:00': { status: 'booked' },
+  'РџС‚-13:30': { status: 'booked' },
+  'РџС‚-16:30': { status: 'booked' },
+  'РџС‚-18:00': { status: 'booked' },
+  'РЎР±-09:00': { status: 'booked' },
+  'РЎР±-10:30': { status: 'booked' },
+  'РЎР±-12:00': { status: 'smart', label: 'Smart' },
+  'РЎР±-13:30': { status: 'booked' },
+  'РЎР±-15:00': { status: 'booked' },
 };
 
 type MetricItem =
@@ -82,9 +82,9 @@ type MetricItem =
   | { type: 'static'; text: string; label: string };
 
 const METRICS: MetricItem[] = [
-  { type: 'count', to: 32, suffix: '%', label: 'більше доходу в середньому' },
-  { type: 'static', text: '0', label: 'порожніх вікон тижнями' },
-  { type: 'count', to: 10, suffix: '', label: 'хвилин — і скасування закрите' },
+  { type: 'count', to: 32, suffix: '%', label: 'Р±С–Р»СЊС€Рµ РґРѕС…РѕРґСѓ РІ СЃРµСЂРµРґРЅСЊРѕРјСѓ' },
+  { type: 'static', text: '0', label: 'РїРѕСЂРѕР¶РЅС–С… РІС–РєРѕРЅ С‚РёР¶РЅСЏРјРё' },
+  { type: 'count', to: 10, suffix: '', label: 'С…РІРёР»РёРЅ вЂ” С– СЃРєР°СЃСѓРІР°РЅРЅСЏ Р·Р°РєСЂРёС‚Рµ' },
 ];
 
 export function LandingBentoFeatures() {
@@ -121,7 +121,7 @@ export function LandingBentoFeatures() {
               Smart Slots
             </motion.span>
             <LandingSplitHeading
-              text={"Розклад\nбез прогалин."}
+              text={"Р РѕР·РєР»Р°Рґ\nР±РµР· РїСЂРѕРіР°Р»РёРЅ."}
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.9] tracking-tight"
               style={{ fontSize: 'clamp(2.8rem, 6vw, 5.5rem)', color: 'var(--l-text-on-dark)' }}
               stagger={80}
@@ -139,7 +139,7 @@ export function LandingBentoFeatures() {
               className="text-base leading-relaxed"
               style={{ color: 'var(--l-muted-on-dark)' }}
             >
-              Алгоритм бачить твій тиждень і заповнює його рівномірно. Хтось скасував? Флеш-акція знаходить заміну за хвилини.
+              РђР»РіРѕСЂРёС‚Рј Р±Р°С‡РёС‚СЊ С‚РІС–Р№ С‚РёР¶РґРµРЅСЊ С– Р·Р°РїРѕРІРЅСЋС” Р№РѕРіРѕ СЂС–РІРЅРѕРјС–СЂРЅРѕ. РҐС‚РѕСЃСЊ СЃРєР°СЃСѓРІР°РІ? Р¤Р»РµС€-Р°РєС†С–СЏ Р·РЅР°С…РѕРґРёС‚СЊ Р·Р°РјС–РЅСѓ Р·Р° С…РІРёР»РёРЅРё.
             </p>
           </motion.div>
         </div>
@@ -195,7 +195,7 @@ export function LandingBentoFeatures() {
             background: 'var(--l-surface-on-dark)',
             border: '1px solid var(--l-border-on-dark)',
           }}
-          aria-label="Приклад розкладу Smart Slots"
+          aria-label="РџСЂРёРєР»Р°Рґ СЂРѕР·РєР»Р°РґСѓ Smart Slots"
         >
           <div className="p-5 sm:p-8 overflow-x-auto">
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '3px' }} role="presentation">
@@ -260,9 +260,9 @@ export function LandingBentoFeatures() {
 
             <div className="flex items-center gap-6 mt-6 flex-wrap">
               {[
-                  { bg: 'color-mix(in srgb, var(--l-indigo-glow) 30%, transparent)', border: 'var(--l-border-on-dark)', label: 'Заброньовано' },
-                { bg: 'var(--l-indigo)', border: 'color-mix(in srgb, var(--l-indigo-glow) 60%, transparent)', label: 'Smart / Flash слот' },
-                { bg: 'var(--l-surface-on-dark)', border: 'var(--l-border-on-dark)', label: 'Вільно' },
+                  { bg: 'color-mix(in srgb, var(--l-indigo-glow) 30%, transparent)', border: 'var(--l-border-on-dark)', label: 'Р—Р°Р±СЂРѕРЅСЊРѕРІР°РЅРѕ' },
+                { bg: 'var(--l-indigo)', border: 'color-mix(in srgb, var(--l-indigo-glow) 60%, transparent)', label: 'Smart / Flash СЃР»РѕС‚' },
+                { bg: 'var(--l-surface-on-dark)', border: 'var(--l-border-on-dark)', label: 'Р’С–Р»СЊРЅРѕ' },
               ].map((l, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <div

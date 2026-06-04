@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { X, Check } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
@@ -11,24 +11,24 @@ const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const ROWS = [
   {
-    before: 'Записуєш у Direct і губиш у переписці',
-    after: 'Клієнт записується сам за посиланням',
+    before: 'Р—Р°РїРёСЃСѓС”С€ Сѓ Direct С– РіСѓР±РёС€ Сѓ РїРµСЂРµРїРёСЃС†С–',
+    after: 'РљР»С–С”РЅС‚ Р·Р°РїРёСЃСѓС”С‚СЊСЃСЏ СЃР°Рј Р·Р° РїРѕСЃРёР»Р°РЅРЅСЏРј',
   },
   {
-    before: 'Скасування — годину шукаєш заміну',
-    after: 'Флеш-акція закриває вікно за 10 хвилин',
+    before: 'РЎРєР°СЃСѓРІР°РЅРЅСЏ вЂ” РіРѕРґРёРЅСѓ С€СѓРєР°С”С€ Р·Р°РјС–РЅСѓ',
+    after: 'Р¤Р»РµС€-Р°РєС†С–СЏ Р·Р°РєСЂРёРІР°С” РІС–РєРЅРѕ Р·Р° 10 С…РІРёР»РёРЅ',
   },
   {
-    before: 'Клієнт зник після першого разу — назавжди',
-    after: 'Нагадування повертає клієнта в потрібний момент',
+    before: 'РљР»С–С”РЅС‚ Р·РЅРёРє РїС–СЃР»СЏ РїРµСЂС€РѕРіРѕ СЂР°Р·Сѓ вЂ” РЅР°Р·Р°РІР¶РґРё',
+    after: 'РќР°РіР°РґСѓРІР°РЅРЅСЏ РїРѕРІРµСЂС‚Р°С” РєР»С–С”РЅС‚Р° РІ РїРѕС‚СЂС–Р±РЅРёР№ РјРѕРјРµРЅС‚',
   },
   {
-    before: 'Виручка — щось між 8 і 12 тисячами',
-    after: 'Точна аналітика за день, тиждень, місяць',
+    before: 'Р’РёСЂСѓС‡РєР° вЂ” С‰РѕСЃСЊ РјС–Р¶ 8 С– 12 С‚РёСЃСЏС‡Р°РјРё',
+    after: 'РўРѕС‡РЅР° Р°РЅР°Р»С–С‚РёРєР° Р·Р° РґРµРЅСЊ, С‚РёР¶РґРµРЅСЊ, РјС–СЃСЏС†СЊ',
   },
   {
-    before: 'Нові клієнти тільки по знайомству',
-    after: 'Публічна сторінка знаходить тебе в Google',
+    before: 'РќРѕРІС– РєР»С–С”РЅС‚Рё С‚С–Р»СЊРєРё РїРѕ Р·РЅР°Р№РѕРјСЃС‚РІСѓ',
+    after: 'РџСѓР±Р»С–С‡РЅР° СЃС‚РѕСЂС–РЅРєР° Р·РЅР°С…РѕРґРёС‚СЊ С‚РµР±Рµ РІ Google',
   },
 ];
 
@@ -59,10 +59,10 @@ export function LandingComparison() {
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
           >
-            Порівняння
+            РџРѕСЂС–РІРЅСЏРЅРЅСЏ
           </motion.span>
           <LandingSplitHeading
-            text={"Як виглядає\nрізниця."}
+            text={"РЇРє РІРёРіР»СЏРґР°С”\nСЂС–Р·РЅРёС†СЏ."}
             className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight"
             style={{ fontSize: 'clamp(2.6rem,5vw,4.4rem)', color: 'var(--l-ink)' }}
             stagger={70}
@@ -81,13 +81,13 @@ export function LandingComparison() {
             className="text-[11px] font-semibold uppercase tracking-[0.15em]"
             style={{ color: 'var(--l-muted-2)' }}
           >
-            Без Bookit
+            Р‘РµР· Bookit
           </p>
           <p
             className="text-[11px] font-semibold uppercase tracking-[0.15em]"
             style={{ color: 'var(--l-indigo)' }}
           >
-            З Bookit
+            Р— Bookit
           </p>
         </motion.div>
 
@@ -99,7 +99,7 @@ export function LandingComparison() {
               className="grid grid-cols-2 gap-4 py-5 px-4"
               style={{ borderBottom: '1px solid var(--l-border)' }}
             >
-              {/* Before — slides from left, reinforces "without Bookit" narrative */}
+              {/* Before вЂ” slides from left, reinforces "without Bookit" narrative */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={inView ? { opacity: 1, x: 0 } : {}}
@@ -118,7 +118,7 @@ export function LandingComparison() {
                 </p>
               </motion.div>
 
-              {/* After — slides from right, reinforces "with Bookit" narrative */}
+              {/* After вЂ” slides from right, reinforces "with Bookit" narrative */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={inView ? { opacity: 1, x: 0 } : {}}

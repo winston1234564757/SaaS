@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { Check } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
@@ -14,46 +14,46 @@ const PLANS = [
   {
     name: 'Starter',
     price: '0',
-    period: 'назавжди',
-    description: 'Для старту. Без обмежень по часу.',
+    period: 'РЅР°Р·Р°РІР¶РґРё',
+    description: 'Р”Р»СЏ СЃС‚Р°СЂС‚Сѓ. Р‘РµР· РѕР±РјРµР¶РµРЅСЊ РїРѕ С‡Р°СЃСѓ.',
     features: [
-      'До 40 записів на місяць',
-      'Публічна сторінка',
-      'Telegram-сповіщення',
-      'Базова аналітика',
+      'Р”Рѕ 40 Р·Р°РїРёСЃС–РІ РЅР° РјС–СЃСЏС†СЊ',
+      'РџСѓР±Р»С–С‡РЅР° СЃС‚РѕСЂС–РЅРєР°',
+      'Telegram-СЃРїРѕРІС–С‰РµРЅРЅСЏ',
+      'Р‘Р°Р·РѕРІР° Р°РЅР°Р»С–С‚РёРєР°',
     ],
-    cta: 'Почати безкоштовно',
+    cta: 'РџРѕС‡Р°С‚Рё Р±РµР·РєРѕС€С‚РѕРІРЅРѕ',
     accent: false,
   },
   {
     name: 'Pro',
     price: '700',
-    period: 'місяць',
-    description: 'Для майстра, який хоче більше.',
+    period: 'РјС–СЃСЏС†СЊ',
+    description: 'Р”Р»СЏ РјР°Р№СЃС‚СЂР°, СЏРєРёР№ С…РѕС‡Рµ Р±С–Р»СЊС€Рµ.',
     features: [
-      'Необмежені записи',
-      'Smart Slots + Флеш-акції',
-      'Програма лояльності',
-      'CRM клієнтів з нотатками',
-      'Розширена аналітика',
-      'Пріоритетна підтримка',
+      'РќРµРѕР±РјРµР¶РµРЅС– Р·Р°РїРёСЃРё',
+      'Smart Slots + Р¤Р»РµС€-Р°РєС†С–С—',
+      'РџСЂРѕРіСЂР°РјР° Р»РѕСЏР»СЊРЅРѕСЃС‚С–',
+      'CRM РєР»С–С”РЅС‚С–РІ Р· РЅРѕС‚Р°С‚РєР°РјРё',
+      'Р РѕР·С€РёСЂРµРЅР° Р°РЅР°Р»С–С‚РёРєР°',
+      'РџСЂС–РѕСЂРёС‚РµС‚РЅР° РїС–РґС‚СЂРёРјРєР°',
     ],
-    cta: 'Спробувати Pro',
+    cta: 'РЎРїСЂРѕР±СѓРІР°С‚Рё Pro',
     accent: true,
   },
   {
     name: 'Studio',
     price: '299',
-    period: 'майстер / місяць',
-    description: 'Для студій від 2 майстрів.',
+    period: 'РјР°Р№СЃС‚РµСЂ / РјС–СЃСЏС†СЊ',
+    description: 'Р”Р»СЏ СЃС‚СѓРґС–Р№ РІС–Рґ 2 РјР°Р№СЃС‚СЂС–РІ.',
     features: [
-      'Все з Pro для кожного майстра',
-      'Управління командою',
-      'Загальна аналітика студії',
-      'Білий лейбл (ваш бренд)',
-      'Виділений менеджер',
+      'Р’СЃРµ Р· Pro РґР»СЏ РєРѕР¶РЅРѕРіРѕ РјР°Р№СЃС‚СЂР°',
+      'РЈРїСЂР°РІР»С–РЅРЅСЏ РєРѕРјР°РЅРґРѕСЋ',
+      'Р—Р°РіР°Р»СЊРЅР° Р°РЅР°Р»С–С‚РёРєР° СЃС‚СѓРґС–С—',
+      'Р‘С–Р»РёР№ Р»РµР№Р±Р» (РІР°С€ Р±СЂРµРЅРґ)',
+      'Р’РёРґС–Р»РµРЅРёР№ РјРµРЅРµРґР¶РµСЂ',
     ],
-    cta: 'Обговорити Studio',
+    cta: 'РћР±РіРѕРІРѕСЂРёС‚Рё Studio',
     accent: false,
   },
 ];
@@ -85,10 +85,10 @@ export function LandingPricing() {
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
           >
-            Тарифи
+            РўР°СЂРёС„Рё
           </motion.span>
           <LandingSplitHeading
-            text="Оберіть свій план."
+            text="РћР±РµСЂС–С‚СЊ СЃРІС–Р№ РїР»Р°РЅ."
             className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"
             style={{ fontSize: 'clamp(2.2rem,4.5vw,3.8rem)', color: 'var(--l-ink)' }}
             stagger={80}
@@ -134,7 +134,7 @@ export function LandingPricing() {
                         color: plan.accent ? 'var(--l-text-on-dark)' : 'var(--l-ink)',
                       }}
                     >
-                      {plan.price === '0' ? 'Безкоштовно' : `₴${plan.price}`}
+                      {plan.price === '0' ? 'Р‘РµР·РєРѕС€С‚РѕРІРЅРѕ' : `в‚ґ${plan.price}`}
                     </span>
                   </div>
                   <p
@@ -213,7 +213,7 @@ export function LandingPricing() {
           className="text-center text-sm mt-8"
           style={{ color: 'var(--l-muted)' }}
         >
-          Всі тарифи без прихованих комісій. Змінити або скасувати — в два кліки.
+          Р’СЃС– С‚Р°СЂРёС„Рё Р±РµР· РїСЂРёС…РѕРІР°РЅРёС… РєРѕРјС–СЃС–Р№. Р—РјС–РЅРёС‚Рё Р°Р±Рѕ СЃРєР°СЃСѓРІР°С‚Рё вЂ” РІ РґРІР° РєР»С–РєРё.
         </motion.p>
       </div>
     </section>

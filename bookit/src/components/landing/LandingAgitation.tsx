@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { Fragment, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -11,23 +11,23 @@ const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const PAINS = [
   {
     no: '01',
-    title: 'Записуєш у Direct, потім забуваєш',
-    body: 'Переписка розпорошена між Instagram, Viber і Telegram. Про скасування дізнаєшся о 22:00.',
+    title: 'Р—Р°РїРёСЃСѓС”С€ Сѓ Direct, РїРѕС‚С–Рј Р·Р°Р±СѓРІР°С”С€',
+    body: 'РџРµСЂРµРїРёСЃРєР° СЂРѕР·РїРѕСЂРѕС€РµРЅР° РјС–Р¶ Instagram, Viber С– Telegram. РџСЂРѕ СЃРєР°СЃСѓРІР°РЅРЅСЏ РґС–Р·РЅР°С”С€СЃСЏ Рѕ 22:00.',
   },
   {
     no: '02',
-    title: 'Порожні вікна — і ніхто їх не заповнить',
-    body: 'Клієнт відмінив запис, а ти годину шукаєш заміну по чатах. Гроші просто зникли.',
+    title: 'РџРѕСЂРѕР¶РЅС– РІС–РєРЅР° вЂ” С– РЅС–С…С‚Рѕ С—С… РЅРµ Р·Р°РїРѕРІРЅРёС‚СЊ',
+    body: 'РљР»С–С”РЅС‚ РІС–РґРјС–РЅРёРІ Р·Р°РїРёСЃ, Р° С‚Рё РіРѕРґРёРЅСѓ С€СѓРєР°С”С€ Р·Р°РјС–РЅСѓ РїРѕ С‡Р°С‚Р°С…. Р“СЂРѕС€С– РїСЂРѕСЃС‚Рѕ Р·РЅРёРєР»Рё.',
   },
   {
     no: '03',
-    title: 'Без сторінки немає довіри',
-    body: 'Клієнт хоче побачити ціни й портфоліо до дзвінка. Якщо не знайде — просто іде.',
+    title: 'Р‘РµР· СЃС‚РѕСЂС–РЅРєРё РЅРµРјР°С” РґРѕРІС–СЂРё',
+    body: 'РљР»С–С”РЅС‚ С…РѕС‡Рµ РїРѕР±Р°С‡РёС‚Рё С†С–РЅРё Р№ РїРѕСЂС‚С„РѕР»С–Рѕ РґРѕ РґР·РІС–РЅРєР°. РЇРєС‰Рѕ РЅРµ Р·РЅР°Р№РґРµ вЂ” РїСЂРѕСЃС‚Рѕ С–РґРµ.',
   },
   {
     no: '04',
-    title: 'Облік "на пальцях" — жодної картини',
-    body: 'Скільки заробила цього місяця? Яка послуга найвигідніша? Ці цифри нікуди не записані.',
+    title: 'РћР±Р»С–Рє "РЅР° РїР°Р»СЊС†СЏС…" вЂ” Р¶РѕРґРЅРѕС— РєР°СЂС‚РёРЅРё',
+    body: 'РЎРєС–Р»СЊРєРё Р·Р°СЂРѕР±РёР»Р° С†СЊРѕРіРѕ РјС–СЃСЏС†СЏ? РЇРєР° РїРѕСЃР»СѓРіР° РЅР°Р№РІРёРіС–РґРЅС–С€Р°? Р¦С– С†РёС„СЂРё РЅС–РєСѓРґРё РЅРµ Р·Р°РїРёСЃР°РЅС–.',
   },
 ];
 
@@ -67,7 +67,7 @@ function PainItem({ item }: { item: typeof PAINS[0] }) {
       </motion.span>
 
       <div className="flex-1 min-w-0">
-        {/* Word-by-word h3 — title and body start simultaneously */}
+        {/* Word-by-word h3 вЂ” title and body start simultaneously */}
         <h3 className="font-semibold leading-snug mb-3" style={{ fontSize: '1.1rem', color: 'var(--l-ink)' }}>
           {item.title.split(' ').map((word, wi, arr) => (
             <span
@@ -92,7 +92,7 @@ function PainItem({ item }: { item: typeof PAINS[0] }) {
           ))}
         </h3>
 
-        {/* Sentence-by-sentence body — starts at same base delay as title first word */}
+        {/* Sentence-by-sentence body вЂ” starts at same base delay as title first word */}
         <p className="text-[0.9rem] leading-relaxed" style={{ color: 'var(--l-muted)' }}>
           {sentences.map((sentence, si, arr) => (
             <Fragment key={si}>
@@ -159,10 +159,10 @@ export function LandingAgitation() {
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-6"
                 style={{ color: 'var(--l-indigo)' }}
               >
-                Проблема
+                РџСЂРѕР±Р»РµРјР°
               </motion.span>
               <LandingSplitHeading
-                text={"Звикла\nдо хаосу?"}
+                text={"Р—РІРёРєР»Р°\nРґРѕ С…Р°РѕСЃСѓ?"}
                 className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.9] tracking-tight"
                 style={{ fontSize: 'clamp(2.8rem, 5.5vw, 5rem)', color: 'var(--l-ink)' }}
                 stagger={80}
@@ -175,7 +175,7 @@ export function LandingAgitation() {
                 className="mt-5 text-base leading-relaxed"
                 style={{ color: 'var(--l-muted)', maxWidth: 280 }}
               >
-                Більшість майстрів витрачають 2–3 години щодня не на роботу, а на її організацію.
+                Р‘С–Р»СЊС€С–СЃС‚СЊ РјР°Р№СЃС‚СЂС–РІ РІРёС‚СЂР°С‡Р°СЋС‚СЊ 2вЂ“3 РіРѕРґРёРЅРё С‰РѕРґРЅСЏ РЅРµ РЅР° СЂРѕР±РѕС‚Сѓ, Р° РЅР° С—С— РѕСЂРіР°РЅС–Р·Р°С†С–СЋ.
               </motion.p>
             </motion.div>
           </div>

@@ -29,6 +29,21 @@
 
 ---
 
+## 2026-06-05 · Session 06 · P1.1 useIsDesktop merge
+
+**Контекст:** MTRP Phase 1. Задача: усунути дублікат useIsDesktop хука.
+
+### Зроблено
+1. `src/lib/hooks/useIsDesktop.ts` → оновлено до matchMedia реалізації (краща: change events лише на breakpoint cross).
+2. `src/hooks/useIsDesktop.ts` + директорія → ВИДАЛЕНО.
+3. 10 Landing компонентів → `@/hooks/` → `@/lib/hooks/` (PowerShell bulk replace).
+4. 2 app consumers (BookingWizard, BookingDetailsModal) вже були на `@/lib/hooks/` — без змін.
+
+### VERIFY
+tsc 0 · build clean · 12 consumers тепер на єдиному canonical хуку.
+
+---
+
 ## 2026-06-05 · Session 05 · P0.2 admin client leaks (17 files)
 
 **Контекст:** Продовження MTRP Phase 1. P0.1 ✅ з S04. Задача: P0.2 — видалити admin client з forbidden zones.

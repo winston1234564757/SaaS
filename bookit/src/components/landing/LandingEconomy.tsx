@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { formatCurrency } from '@/lib/utils/currency';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
@@ -87,7 +87,7 @@ export function LandingEconomy() {
               className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
               style={{ color: 'var(--l-indigo)' }}
             >
-              Калькулятор доходу
+              РљР°Р»СЊРєСѓР»СЏС‚РѕСЂ РґРѕС…РѕРґСѓ
             </motion.span>
 
             {/* Word-by-word heading: 3 lines, last line accent-colored */}
@@ -95,10 +95,10 @@ export function LandingEconomy() {
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"
               style={{ fontSize: 'clamp(2.2rem,4.5vw,3.8rem)', color: 'var(--l-ink)' }}
             >
-              <WordLine words={['Порахуй,']} lineIndex={0} inView={inView} />
-              <WordLine words={['скільки', 'ти']} lineIndex={1} inView={inView} />
+              <WordLine words={['РџРѕСЂР°С…СѓР№,']} lineIndex={0} inView={inView} />
+              <WordLine words={['СЃРєС–Р»СЊРєРё', 'С‚Рё']} lineIndex={1} inView={inView} />
               <WordLine
-                words={['залишаєш', 'на', 'столі.']}
+                words={['Р·Р°Р»РёС€Р°С”С€', 'РЅР°', 'СЃС‚РѕР»С–.']}
                 lineIndex={2}
                 inView={inView}
                 style={{ color: 'var(--l-accent)', fontStyle: 'normal' }}
@@ -112,7 +112,7 @@ export function LandingEconomy() {
               className="mt-5 text-base leading-relaxed max-w-sm"
               style={{ color: 'var(--l-muted)' }}
             >
-              В середньому майстри з Bookit заробляють на 32% більше за рахунок заповнених вікон і повернутих клієнтів.
+              Р’ СЃРµСЂРµРґРЅСЊРѕРјСѓ РјР°Р№СЃС‚СЂРё Р· Bookit Р·Р°СЂРѕР±Р»СЏСЋС‚СЊ РЅР° 32% Р±С–Р»СЊС€Рµ Р·Р° СЂР°С…СѓРЅРѕРє Р·Р°РїРѕРІРЅРµРЅРёС… РІС–РєРѕРЅ С– РїРѕРІРµСЂРЅСѓС‚РёС… РєР»С–С”РЅС‚С–РІ.
             </motion.p>
 
             {/* Result display */}
@@ -131,7 +131,7 @@ export function LandingEconomy() {
                 <div className="flex items-end justify-between gap-4">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--l-muted-2)' }}>
-                      Зараз
+                      Р—Р°СЂР°Р·
                     </p>
                     <p
                       className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
@@ -142,7 +142,7 @@ export function LandingEconomy() {
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--l-muted-2)' }}>
-                      З Bookit
+                      Р— Bookit
                     </p>
                     <p
                       className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
@@ -157,14 +157,14 @@ export function LandingEconomy() {
 
                 <div className="flex items-center justify-between">
                   <p className="text-sm" style={{ color: 'var(--l-muted)' }}>
-                    Додатковий дохід на місяць
+                    Р”РѕРґР°С‚РєРѕРІРёР№ РґРѕС…С–Рґ РЅР° РјС–СЃСЏС†СЊ
                   </p>
                   <p className="text-lg font-bold" style={{ color: 'var(--l-accent)' }}>
                     +{formatCurrency(gain)}
                   </p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm" style={{ color: 'var(--l-muted)' }}>На рік</p>
+                  <p className="text-sm" style={{ color: 'var(--l-muted)' }}>РќР° СЂС–Рє</p>
                   <p className="text-lg font-bold" style={{ color: 'var(--l-ink)' }}>
                     {formatCurrency(yearlyBookit)}
                   </p>
@@ -181,21 +181,21 @@ export function LandingEconomy() {
             className="flex flex-col gap-10 lg:pt-24"
           >
             <Slider
-              label="Клієнтів на день"
+              label="РљР»С–С”РЅС‚С–РІ РЅР° РґРµРЅСЊ"
               value={clients}
               min={1} max={15} step={1}
               format={(v) => `${v}`}
               onChange={setClients}
             />
             <Slider
-              label="Середня вартість послуги"
+              label="РЎРµСЂРµРґРЅСЏ РІР°СЂС‚С–СЃС‚СЊ РїРѕСЃР»СѓРіРё"
               value={avgPrice}
               min={200} max={2000} step={50}
-              format={(v) => `${v} ₴`}
+              format={(v) => `${v} в‚ґ`}
               onChange={setAvgPrice}
             />
             <Slider
-              label="Робочих днів на місяць"
+              label="Р РѕР±РѕС‡РёС… РґРЅС–РІ РЅР° РјС–СЃСЏС†СЊ"
               value={workDays}
               min={10} max={30} step={1}
               format={(v) => `${v}`}
