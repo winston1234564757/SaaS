@@ -394,6 +394,7 @@ export function AdminSupportConsole() {
                     <button
                       type="button"
                       onClick={removeFile}
+                      aria-label="Видалити файл"
                       className="absolute right-2 size-5 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 active:scale-[0.90] cursor-pointer"
                     >
                       <X className="size-3" />
@@ -412,6 +413,7 @@ export function AdminSupportConsole() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
+                    aria-label="Додати зображення"
                     className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-100 active:scale-[0.90] cursor-pointer border border-slate-200"
                   >
                     <ImageIcon className="size-4" />
@@ -428,6 +430,7 @@ export function AdminSupportConsole() {
                   <button
                     type="submit"
                     disabled={sending || (!messageText.trim() && !selectedFile)}
+                    aria-label="Надіслати"
                     className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-slate-50 transition hover:bg-slate-800 active:scale-[0.90] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   >
                     {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}

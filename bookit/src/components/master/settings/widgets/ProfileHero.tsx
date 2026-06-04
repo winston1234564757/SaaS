@@ -212,7 +212,7 @@ export function ProfileHero({
               <div className="max-w-md mx-auto">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl font-bold tracking-tight">Редагувати фото</h3>
-                  <button type="button" onClick={() => setIsDrawerOpen(false)} className="p-3 rounded-2xl bg-muted/30 hover:bg-muted transition-colors cursor-pointer">
+                  <button type="button" onClick={() => setIsDrawerOpen(false)} aria-label="Закрити" className="p-3 rounded-2xl bg-muted/30 hover:bg-muted transition-colors cursor-pointer">
                     <X size={20} />
                   </button>
                 </div>

@@ -316,6 +316,7 @@ export function ModerationHub() {
                 type="button"
                 onClick={() => handleTogglePublishReview(review)}
                 disabled={!!actionLoading}
+                aria-label={review.is_published ? 'Сховати відгук' : 'Опублікувати відгук'}
                 className={`flex size-8 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${
                   review.is_published
                     ? 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100/50'
@@ -355,6 +356,7 @@ export function ModerationHub() {
                 type="button"
                 onClick={() => handleTogglePublishPortfolio(item)}
                 disabled={!!actionLoading}
+                aria-label={item.is_published ? 'Сховати кейс' : 'Опублікувати кейс'}
                 className={`flex size-8 shrink-0 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${
                   item.is_published
                     ? 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100/50'

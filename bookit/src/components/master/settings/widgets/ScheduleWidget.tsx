@@ -374,6 +374,7 @@ export function ScheduleWidget({
                         />
                         <button type="button"
                           onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
+                          aria-label="Видалити перерву"
                           className="size-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
                         >
                           <Trash2 size={14} />

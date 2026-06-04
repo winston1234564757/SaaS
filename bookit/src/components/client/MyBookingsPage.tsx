@@ -310,7 +310,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                     >
                       {cancelPending ? '...' : 'Так'}
                     </button>
-                    <button type="button" onClick={() => setConfirmCancel(false)} className="text-muted-foreground/60 p-1 active:scale-[0.95] cursor-pointer">
+                    <button type="button" onClick={() => setConfirmCancel(false)} aria-label="Закрити" className="text-muted-foreground/60 p-1 active:scale-[0.95] cursor-pointer">
                       <X size={14} />
                     </button>
                   </div>

@@ -50,6 +50,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
       <div className="flex items-center justify-between gap-2 bg-muted/20 rounded-2xl px-1 py-1 border border-white/60">
         <button type="button"
           onClick={handlePrev}
+          aria-label="Попередній місяць"
           className="size-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
         >
           <ChevronLeft size={15} className="text-text-mute" />
@@ -59,6 +60,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
         </span>
         <button type="button"
           onClick={handleNext}
+          aria-label="Наступний місяць"
           className="size-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
         >
           <ChevronRight size={15} className="text-text-mute" />
