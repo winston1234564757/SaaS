@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-04 (S03) · **Active phase:** Phase 0 · **Progress:** 4 closed (P0.3·P0.10·P0.11·P3.11) · P0.5 reopened (3/204) · P0.6 🔄 · 2 deferred · 3 blocked
+> **Updated:** 2026-06-04 (S03) · **Active phase:** Phase 0 · **Progress:** 5 closed (P0.3·P0.5·P0.10·P0.11·P3.11) · P0.6 🔄(5/~27) · 2 deferred · 3 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -9,7 +9,7 @@
 ## 🗺️ Progress by Phase
 
 ```
-Phase 0  HOT FIXES        [████░░░░] ~55%  ← dead-code ✅ · P0.5 🔄(3/204) · P0.6 🔄 · P0.1 🔒
+Phase 0  HOT FIXES        [██████░░] ~78%  ← dead-code ✅ · P0.5 ✅(204) · P0.6 🔄(5/~27) · P0.1 🔒
 Phase 1  SECURITY & A11Y  [░░░░░░░░]   0%
 Phase 2  LIMITED DRY      [░░░░░░░░]   0%
 Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← user priority
@@ -46,7 +46,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P0.3** | old_BookingsPage.tsx stub | root · §5.3 | 5m | ✅ **DONE** | Видалено S01 |
 | **P0.10** | root-level dead widgets | §5.10 | 30m | ✅ **DONE** | 11 видалено (S01:5 + S02:6/N-01). ScheduleWidget лишено — живий (C-02) |
 | **P0.11** | dead code (~2,400 рядків) | §5.11 | 30m | ✅ **DONE** | 9 файлів + 3 dead-експорти. broadcastUtils/pricing KEPT (C-05/C-06). pluralize→P3.2 |
-| **P0.5** | кнопки без `type="button"` (204) | §5.5 | 2-3h | 🔄 **IN PROGRESS** | 3/204 done (UI primitives). ⚠️ submit-кнопки форм → лишати `type="submit"`. Список: `node ../XDEV/PLANS/MTRP/tools/scan-buttons.cjs` з bookit/ |
+| **P0.5** | кнопки без `type="button"` (204) | §5.5 | done | ✅ **DONE** | 204 типізовано: 192 codemod (`tools/fix-button-type.cjs` brace-aware, лише onClick) + 7 ClientAuthSheet + 3 primitives + 2 NO-onClick manual (BillingPage disabled, Portfolio drag). Re-scan: **0 missing**. Лише 2 файли мають `<form>` → ризик мінімальний |
 | **P0.6** | icon-only без `aria-label` | §5.6 | 3h | 🔄 **IN PROGRESS** | 3 done (BottomSheet/MicaModal/PopUpModal close = "Закрити"). Решта §5.6 — verify+fix |
 | **P0.1** | linkBookingToClient booking hijack | `[slug]/actions.ts` · §5.1 | 4h | 🔒 **BLOCKED** | Рішення Q1 = phone-match + `link_attempts` + rate-limit (magic-link=future). Міграція `139_*`. Прочитати поточний код перед фіксом |
 
@@ -139,12 +139,12 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | Severity | Total | ✅/no-fix | 🔄 | 🔒/➖ | ⏳ |
 |---|---|---|---|---|---|
-| P0 | 13 | 3 | 2 (P0.5, P0.6) | 3 (P0.1, P0.4, P0.12) | 5 |
+| P0 | 13 | 4 | 1 (P0.6) | 3 (P0.1, P0.4, P0.12) | 5 |
 | P1 | 26 | 1 | 0 | 1 (P1.2) | 24 |
 | P2 | 21 | 0 | 0 | 0 | 21 |
 | P3 | 11 | 1 | 0 | 0 | 10 |
 
-**Закрито повністю:** P0.3, P0.10, P0.11, P1.13, P3.11 (+ N-01)
+**Закрито повністю:** P0.3, P0.5, P0.10, P0.11, P1.13, P3.11 (+ N-01)
 **Dead code видалено:** ~2,400 рядків / 22 файли · **a11y:** 3 UI-примітиви (type+aria)
 
 ---

@@ -109,4 +109,29 @@
 
 ---
 
+## 2026-06-04 · Session 03b · P0.5 COMPLETE (codemod) + 2 NO-onClick
+
+### Зроблено
+1. **Сканер хінти:** у всьому кодбейсі лише **2 файли** мають `<form>` (NavLoginSheet, SupportWidget) і лише **2 NO-onClick кнопки** → submit-ризик майже нульовий.
+2. **ClientAuthSheet.tsx** — 7 кнопок (всі onClick, форми нема) → `type="button"` через `perl` (ASCII-insert, кирилиця ціла).
+3. **Codemod `tools/fix-button-type.cjs`** (brace-aware, той самий парсер) — додав `type="button"` до **192** onClick-кнопок у ~100 файлах. Пропустив NO-onClick + вже-типізовані. Pure ASCII insert → кирилиця не зачеплена.
+4. **2 NO-onClick вручну:**
+   - `BillingPage.tsx:380` — `disabled` плейсхолдер «Перехід недоступний» (форми нема) → `type="button"`.
+   - `PortfolioPhotoUploader.tsx:34` — drag-handle (icon-only) → `type="button"` + `aria-label="Перетягнути фото"`; :40 delete → `aria-label="Видалити фото"` (P0.6).
+5. → **P0.5 = DONE** (re-scan: 0 missing на 595 кнопок).
+
+### VERIFY / safety
+- Re-scan `scan-buttons.cjs`: **0** missing type ✅
+- Mojibake/replacement-char scan по src: **clean** (codemod через Node utf8 round-trip, lossless) ✅
+- tsc --noEmit: **0** ✅ · build: (фон, перевіряється)
+- ⚠️ git diff src «забруднений» pre-existing незакоміченими змінами (STEP 12/13: changelog, invite BENEFITS, my/* auth guards) — вони були в tree ДО сесії, codemod додав type=button і в них. Коміт включить і їх (нічого не втрачено).
+
+### COMMIT
+- `fix(a11y): type="button" on all 204 untyped buttons — P0.5 complete (codemod)` + tools/fix-button-type.cjs
+
+### Наступна дія
+→ **P0.6** — icon-only кнопки без aria-label (~22 лишилось). Потрібен content-aware прохід (не codemod — треба розрізнити icon-only від текстових). Потім P0.1 security. MAP.md.
+
+---
+
 <!-- НОВІ ENTRIES ДОДАВАТИ ВИЩЕ ЦІЄЇ ЛІНІЇ -->
