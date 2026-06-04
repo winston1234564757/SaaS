@@ -5,6 +5,35 @@
 
 ---
 
+## 2026-06-05 · Session 06 · P1.4 WeeklyChart aria-pressed (3 themes)
+
+**Контекст:** MTRP Phase 1. Задача: додати aria-pressed на bar + mode tab buttons.
+
+### Зроблено
+1. **Mode tab buttons** (`bookings`/`revenue`) — всі 3 теми → `aria-pressed={mode === m}`.
+2. **Bar buttons** (Studio + Blossom) → `aria-label={ariaLabel}` + `aria-pressed={isActive}`.
+   - `ariaLabel = \`${DAYS[i]}: ${...}\`` — патерн з Frost (вже мав обидва).
+3. **Frost bar buttons** — вже мали `aria-label` + `aria-pressed` з попередньої сесії, не чіпали.
+
+### VERIFY
+tsc 0 · build clean · commit `8d8fc4e`.
+
+---
+
+## 2026-06-05 · Session 06 · P1.12 timingSafeEqual CRON_SECRET (5 routes)
+
+**Контекст:** MTRP Phase 1 security. Задача: замінити `===` на timing-safe порівняння.
+
+### Зроблено
+1. **NEW** `src/lib/utils/verifyCronSecret.ts` — HMAC sha256, нормалізує до 32 байт → no length leak.
+2. **5 cron routes** → `!verifyCronSecret(authHeader)` / `!verifyCronSecret(req.headers.get(...))`.
+3. PowerShell bulk edit через `[System.IO.File]::ReadAllText/WriteAllText` (UTF-8 no BOM).
+   - ⚠️ УРОК: перший спробував Set-Content без -Encoding utf8 → mojibake Cyrillic. Відновлено з git, повторено правильно.
+
+### VERIFY
+tsc 0 · build clean · diff: 3±1 рядки на файл (import + comparison only) · commit `eaa1920`.
+
+---
 ## 2026-06-05 · Session 06 · P0.7 MicaModal → Radix Dialog (focus trap)
 
 **Контекст:** MTRP Phase 1. P0.2 ✅ з S05. Задача: P0.7 — MicaModal без focus trap → Radix Dialog.
