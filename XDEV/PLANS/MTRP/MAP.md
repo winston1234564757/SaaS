@@ -8,22 +8,19 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 0 · P0.6 ✅ · P0.8 (3 div→button) → P0.9 (~7 a→button) → P0.1 (security). dead-code ✅ P0.5 ✅
+PHASE 0 COMPLETE ✅ → PHASE 1 · P0.1 (booking hijack security) ← NEXT
+dead-code ✅ · P0.5 ✅ · P0.6 ✅(72) · P0.8 ✅(3) · P0.9 ✅(0 real)
 ```
 
-**P0.8 — 3 реальних `<div onClick>` → `<button>`** (C-10: решта вже виправлено):
-1. `TodaySchedule.tsx:121` — `<div onClick={() => onOpen(b.id)}>` — рядок букінгу → `<button type="button">`
-2. `blossom/InsightsRow.tsx:89` — `<div onClick={handleOpen} className="cursor-pointer">` → `<button type="button">`
-3. `SegmentConfigWidget.tsx:45` — `<div onClick={openNew}>` empty-state CTA → `<button type="button">`
+**P0.1 — booking hijack (CRITICAL SECURITY) — рішення прийнято:**
+1. ⚠️ Прочитати **поточний** `src/app/[slug]/actions.ts` (~30 рядків linkBookingToClient)
+2. Перевірити схему: `bookings.client_phone` + `profiles.phone` (чи є ці колонки)
+3. Реалізація: fetch booking → if client_id != null AND != user.id → throw; звірити `profile.phone === booking.client_phone`; mismatch → throw `PHONE_MISMATCH_REQUIRES_OTP`; link + audit
+4. Міграція `139_booking_link_security.sql`: таблиця `link_attempts` + RLS (service-role only) → `npx supabase db push`
+5. E2E: hijack blocked · matching phone ok · rate-limit (5/15хв)
+6. ⚠️ Feature flag `FEATURE_STRICT_BOOKING_LINK` для canary deploy
 
-**Потім P0.9 — ~7 `<a href onClick>` → `<button>`** (C-09: StatsMosaicWidget видалено)
-
-**Потім P0.1 — booking hijack (рішення прийнято):** phone-match + `link_attempts` + rate-limit.
-- ⚠️ Прочитати **поточний** `src/app/[slug]/actions.ts`. Перевірити схему `bookings.client_phone`, `profiles.phone`.
-- Міграція `139_booking_link_security.sql` → `npx supabase db push`. E2E: hijack blocked / matching phone ok / rate-limit. magic-link=future.
-
-**P0.6 — DONE ✅.** 72 кнопки у ~35 файлах (batches 1-12, S01-S04). Scanner 210→180 (180 залишок = false-positives: all have visible text).
-- Конвенції: close→"Закрити" · back→"Назад" · prev/next місяць→"Попередній/Наступний місяць" · refresh→"Оновити" · copy→"Скопіювати" · delete→"Видалити …"
+**Після P0.1:** P0.2 (admin client leaks ~12, ESLint rule) → P0.7 (MicaModal→Radix Dialog focus trap)
 
 ---
 
@@ -40,11 +37,11 @@ PHASE 0 · P0.6 ✅ · P0.8 (3 div→button) → P0.9 (~7 a→button) → P0.1 (
 ## 📍 Фазова мапа
 
 ```
-► Phase 0  HOT FIXES        ~93%  ← dead-code ✅ · P0.5 ✅ · P0.6 ✅(72) · P0.8 ⏳(3) · P0.1 🔒
-  Phase 1  SECURITY & A11Y    0%  (P0.1, P0.2 ~12 real, P0.7 MicaModal, P0.9, P1.x)
-  Phase 2  LIMITED DRY        0%
-  Phase 3  TESTS & TYPES ⭐    0%  ← USER PRIORITY
-  Phase 4  POLISH             0%
+  Phase 0  HOT FIXES       [████████] ~100% ← dead-code ✅ · P0.5 ✅ · P0.6 ✅ · P0.8 ✅ · P0.9 ✅
+► Phase 1  SECURITY & A11Y [░░░░░░░░]    0%  ← P0.1 NEXT (critical) · P0.2 · P0.7 · P1.x
+  Phase 2  LIMITED DRY     [░░░░░░░░]    0%
+  Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]    0%  ← USER PRIORITY
+  Phase 4  POLISH          [░░░░░░░░]    0%
 ```
 
 ---
@@ -52,9 +49,9 @@ PHASE 0 · P0.6 ✅ · P0.8 (3 div→button) → P0.9 (~7 a→button) → P0.1 (
 ## ✅ Що вже закрито
 
 **S01:** хаб `XDEV/PLANS/MTRP/` · P0.3 · P0.11 (9 файлів) · P0.10 (5 widgets)
-**S02:** N-01 (blocks-test + 6 widgets → P0.10 ✅) · P0.11 ✅ (export-trim; broadcastUtils/pricing KEPT) · ~2,400 рядків / 22 файли видалено
-**S03:** P0.5 **✅ DONE** (204 typed: codemod +192, ClientAuthSheet +7, primitives +3, manual +2) · виправив власну C-07 · P0.6 21/~120 (batches 1-3) · 3 інструменти аудиту в хабі
-**S04:** P0.6 **✅ DONE** (72 buttons batches 4-12, ~35 files) · C-09..C-12 corrections · plan audit
+**S02:** N-01 (blocks-test + 6 widgets → P0.10 ✅) · P0.11 ✅ (export-trim) · ~2,400 рядків / 22 файли видалено
+**S03:** P0.5 **✅ DONE** (204 typed: codemod +192, ClientAuthSheet +7, primitives +3, manual +2) · P0.6 21/~120 (batches 1-3)
+**S04:** P0.6 **✅ DONE** (72 buttons, batches 4-12, ~35 files) · P0.8 **✅ DONE** (3 div→button) · P0.9 **✅ DONE** (0 real violations — all legit links) · C-09..C-12 corrections
 **CHECK кожної сесії:** tsc 0 · build 0 · mojibake clean
 
 ---
@@ -67,10 +64,12 @@ Read XDEV/MAPS/SYSTEM_MAP.md (last 50)
 Read XDEV/PLANS/MTRP/MAP.md          # цей файл
 Read XDEV/PLANS/MTRP/TRACKER.md      # статуси + corrections C-01..C-12
 
-# P0.8: verify 3 div→button → fix → tsc + build → commit
-# P0.9: grep '<a.*href.*onClick' → verify ~7 files → fix → tsc + build → commit
-# P0.1: read src/app/[slug]/actions.ts current code → implement phone-match fix
-# ⚠️ видалення роуту: rm -rf .next перед build
+# P0.1: Read src/app/[slug]/actions.ts (linkBookingToClient ~30 lines)
+# Check DB: select * from bookings limit 1; -- has client_phone?
+#           select * from profiles limit 1; -- has phone?
+# Implement phone-match + link_attempts table + rate-limit
+# npx supabase db push → tsc → build → E2E tests
+# ⚠️ HIGH RISK item — test thoroughly before commit
 ```
 
 ---
@@ -78,16 +77,16 @@ Read XDEV/PLANS/MTRP/TRACKER.md      # статуси + corrections C-01..C-12
 ## 📊 Лічильник
 
 ```
-Items closed: 7 / 71   (P0.3 · P0.5 · P0.6 · P0.10 · P0.11 · P1.13 · P3.11) + N-01
-Next: P0.8 (3 div→button) → P0.9 (~7) → P0.1 security
+Items closed: 9 / 71   (P0.3 · P0.5 · P0.6 · P0.8 · P0.9 · P0.10 · P0.11 · P1.13 · P3.11) + N-01
+Next: P0.1 (booking hijack — CRITICAL)
 Deferred: 2 (P0.4, P1.2) · Blocked: 2 (P0.1 ready, P0.12)
 Dead code removed: ~2,400 рядків (22 файли)
 aria-label fixed: 72 buttons (~35 files, 12 batches)
+div→button fixed: 3 (TodaySchedule · blossom/InsightsRow · SegmentConfigWidget)
 Plan corrections: 12 (C-01..C-12) + N-01
-Tools: scan-buttons.cjs · fix-button-type.cjs · scan-icon-buttons.cjs
-Commits: ~28 (infra · dead-code · P0.5 · P0.6 batches 1-12 · docs)
+Commits: ~32 (infra · dead-code · P0.5 · P0.6 batches 1-12 · P0.8 · docs)
 ```
 
 ---
 
-*Updated: 2026-06-04 S04 · Next: P0.8 (3 divs) → P0.9 → P0.1*
+*Updated: 2026-06-04 S04 · Phase 0 COMPLETE · Next: P0.1 booking hijack security*

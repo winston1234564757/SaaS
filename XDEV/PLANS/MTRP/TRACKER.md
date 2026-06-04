@@ -71,7 +71,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 |---|---|---|---|---|
 | **P0.2** | Admin client leak (~12 forbidden zones) + ESLint | §5.2 | 8h | ⏳ TODO |
 | **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | 6h | ⏳ TODO |
-| **P0.9** | ~7 `<a href onClick>` → `<button>` (C-09: StatsMosaicWidget gone) | §5.9 | 1h | ⏳ TODO |
+| **P0.9** | ~7 `<a href onClick>` (C-09: StatsMosaicWidget gone) | §5.9 | done | ✅ **DONE** | 0 реальних порушень — всі `<a href onClick>` легітимні (Telegram deep-links, tel:, legal pages). План мав застарілі номери рядків. |
 | **P0.12** | Onboarding telemetry (keep both pages) | §5.12 | 4h | 🔒 user-decision |
 | **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | 1h | ⏳ TODO |
 | **P1.3** | Heatmap roving tabindex (168 cells) | §6.3 | 3h | ⏳ TODO |
