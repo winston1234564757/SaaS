@@ -5,6 +5,30 @@
 
 ---
 
+## 2026-06-05 · Session 06 · P0.7 MicaModal → Radix Dialog (focus trap)
+
+**Контекст:** MTRP Phase 1. P0.2 ✅ з S05. Задача: P0.7 — MicaModal без focus trap → Radix Dialog.
+
+### Зроблено
+1. **`src/components/ui/MicaModal.tsx`** — повна заміна на Radix Dialog pattern.
+   - `Dialog.Root` + `AnimatePresence` + `Dialog.Portal` (no forceMount).
+   - `Dialog.Overlay asChild` → motion.div backdrop (opacity 0→1→0).
+   - Plain `div` centering wrapper (fixed inset-0 flex center).
+   - `Dialog.Content asChild` → modal motion.div — focus trap на box, backdrop click close зберігся.
+   - `Dialog.Title` (visible або sr-only), `Dialog.Description` (sr-only), `Dialog.Close asChild`.
+   - Видалено: `mounted` state, manual `document.body.style.overflow`.
+   - Зберігається: spring animation, всі props, `maxWidth`, зовнішній вигляд.
+2. **Consumers** — 0 змін (API ідентичний): `BookingDetailsModal.tsx` + `BookingWizard.tsx`.
+
+### VERIFY
+- tsc 0 · build clean
+- 2 consumers — no prop changes needed
+- Backdrop click ✓ · Escape key ✓ · Focus trap ✓ · Scroll lock ✓ (Radix native)
+
+**Drawer:** `drawer_bookit_decisions_297dec01fe276b1ba9b65364`
+
+---
+
 ## 2026-06-05 · Session 05 · P0.2 admin client leaks (17 files)
 
 **Контекст:** Продовження MTRP Phase 1. P0.1 ✅ з S04. Задача: P0.2 — видалити admin client з forbidden zones.

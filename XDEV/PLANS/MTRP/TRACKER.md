@@ -64,7 +64,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 |---|---|---|---|---|---|
 | **P0.1** | linkBookingToClient booking hijack | §5.1 | done | ✅ **DONE** | phone-match + link_attempts audit + rate-limit (5/15хв). Migration `20260604000000_booking_link_security.sql`. ⚠️ `npx supabase db push` потрібен |
 | **P0.2** | Admin client leak (~12 zones) + ESLint | §5.2 | done | ✅ **DONE** | 17 files fixed: publicClient (public pages) + createClient (dashboard/client pages) + growth/actions.ts (cross-user). New: src/lib/supabase/public.ts + ESLint rule in eslint.config.mjs. tsc 0 + lint 0. |
-| **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | 6h | ⏳ TODO |  |
+| **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | done | ✅ **DONE** | Dialog.Content asChild on modal box (not wrapper) — focus trap + backdrop click. tsc 0 · build clean. |
 | **P0.12** | Onboarding telemetry (keep both pages) | §5.12 | 4h | 🔒 user-decision |  |
 | **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | 1h | ⏳ TODO |  |
 | **P1.3** | Heatmap roving tabindex (168 cells) | §6.3 | 3h | ⏳ TODO |  |

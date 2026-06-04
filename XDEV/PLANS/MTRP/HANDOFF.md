@@ -9,8 +9,8 @@
 ## 0. TL;DR — звідки продовжувати
 
 ```
-PHASE 0 ✅ COMPLETE. PHASE 1 ~25% (P0.1 ✅ · P0.2 ✅)
-НАСТУПНА ДІЯ: (опційно) npx supabase db push → потім P0.7 (MicaModal → Radix Dialog focus trap)
+PHASE 0 ✅ COMPLETE. PHASE 1 ~33% (P0.1 ✅ · P0.2 ✅ · P0.7 ✅)
+НАСТУПНА ДІЯ: (опційно) npx supabase db push → потім P1.1 (useIsDesktop merge)
 ```
 
 **Перший хід наступного чату:**
@@ -77,26 +77,14 @@ grep -rn "MicaModal" src/ --include="*.tsx" | grep -v "node_modules"
 
 ## 4. НАСТУПНІ КРОКИ (у порядку)
 
-### 4.1 P0.7 — MicaModal → Radix Dialog (focus trap) [6h]
-**Файл:** `src/components/ui/MicaModal.tsx` (~99 рядків)
-**Проблема:** Custom `motion.div` — немає focus trap, немає `role="dialog"`, Tab виходить з модала.
+### 4.1 ✅ P0.7 — MicaModal → Radix Dialog (focus trap) — DONE S06
+`src/components/ui/MicaModal.tsx` — Dialog.Content asChild на modal box (не на wrapper).
+Focus trap ✓ · Escape key ✓ · Backdrop click ✓ · Scroll lock ✓ · 2 consumers unchanged.
 
-**VERIFY перед правкою:**
-```bash
-grep -rn "MicaModal" src/ --include="*.tsx" | grep -v "node_modules"
-# Знайди всіх consumers — BookingDetailsModal, StatsModals, UpgradePromptModal, etc.
-```
+### 4.2 P1.1 — Merge подвійний `useIsDesktop` [1h]
+Знайти та усунути дублікат хука `useIsDesktop`. Verify всі importer'и.
 
-**Fix (план):**
-1. Зберегти поточний AnimatePresence/Framer Motion вигляд
-2. Обгорнути в `@radix-ui/react-dialog` (вже є у проекті — `PopUpModal.tsx` його використовує)
-3. Додати `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
-4. Focus trap автоматично через Radix
-5. ⚠️ Перевірити scroll lock + backdrop click behavior
-
-**Дивись існуючий зразок:** `src/components/ui/PopUpModal.tsx` (вже Radix)
-
-### 4.2 Решта Phase 1
+### 4.3 Решта Phase 1
 P1.1 (useIsDesktop merge) · P1.12 (timingSafeEqual CRON, 5 routes) · P1.4 (WeeklyChart aria-pressed) · P1.3 (heatmap roving tabindex) · P1.16 (touch targets 14+ files)
 
 ### 4.3 Phase 2-4

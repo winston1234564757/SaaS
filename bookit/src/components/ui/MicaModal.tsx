@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -33,69 +34,65 @@ export function MicaModal({
   className,
   maxWidth = 'xl',
 }: MicaModalProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-
-  if (!mounted) return null;
-
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/5 backdrop-blur-md"
-          />
+    <Dialog.Root open={isOpen} onOpenChange={(v) => !v && onClose()}>
+      <AnimatePresence>
+        {isOpen && (
+          <Dialog.Portal>
+            <Dialog.Overlay asChild>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] bg-black/5 backdrop-blur-md"
+              />
+            </Dialog.Overlay>
 
-          {/* Modal Content */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={cn(
-              'relative w-full overflow-hidden bg-secondary backdrop-blur-3xl border border-border shadow-2xl rounded-xl flex flex-col max-h-[calc(100dvh-2rem)]',
-              maxWidthClasses[maxWidth],
-              className
-            )}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 pb-2">
-              {title && (
-                <h3 className="heading-serif text-2xl text-foreground">{title}</h3>
-              )}
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Закрити"
-                className="ml-auto p-2 rounded-lg bg-secondary/50 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all active:scale-[0.88] cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-            </div>
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+              <Dialog.Content asChild>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  className={cn(
+                    'relative w-full overflow-hidden bg-secondary backdrop-blur-3xl border border-border shadow-2xl rounded-xl flex flex-col max-h-[calc(100dvh-2rem)] outline-none',
+                    maxWidthClasses[maxWidth],
+                    className
+                  )}
+                >
+                  <div className="flex items-center justify-between p-6 pb-2">
+                    {title ? (
+                      <Dialog.Title className="heading-serif text-2xl text-foreground">
+                        {title}
+                      </Dialog.Title>
+                    ) : (
+                      <Dialog.Title className="sr-only">Модальне вікно</Dialog.Title>
+                    )}
+                    <Dialog.Close asChild>
+                      <button
+                        type="button"
+                        aria-label="Закрити"
+                        className="ml-auto p-2 rounded-lg bg-secondary/50 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all active:scale-[0.88] cursor-pointer"
+                      >
+                        <X size={20} />
+                      </button>
+                    </Dialog.Close>
+                  </div>
 
-            {/* Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-6 scrollbar-none">
-              {children}
+                  <Dialog.Description className="sr-only">
+                    {title || 'Модальне вікно'}
+                  </Dialog.Description>
+
+                  <div className="flex-1 overflow-y-auto p-6 scrollbar-none">
+                    {children}
+                  </div>
+                </motion.div>
+              </Dialog.Content>
             </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+          </Dialog.Portal>
+        )}
+      </AnimatePresence>
+    </Dialog.Root>
   );
 }

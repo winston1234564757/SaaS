@@ -8,16 +8,15 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ACTIVE · P0.1 ✅ · P0.2 ✅ · P0.7 (MicaModal → Radix Dialog) ← NEXT
+PHASE 1 ACTIVE · P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 (useIsDesktop merge) ← NEXT
 ```
 
-**P0.7 — MicaModal → Radix Dialog (focus trap):**
-1. Читати `src/components/ui/MicaModal.tsx` (99 рядків) — поточна реалізація
-2. VERIFY consumers: `BookingDetailsModal`, `StatsModals`, `UpgradePromptModal` та ін. (8+ файлів)
-3. Замінити на Radix Dialog pattern — можна використати існуючий `PopUpModal.tsx` як зразок
-4. ⚠️ Не зламати: focus trap, escape key, backdrop click, scroll lock
+**P1.1 — Merge подвійний `useIsDesktop`:**
+1. Знайти всі `useIsDesktop` хуки в проекті (можливо 2 паралельні impl.)
+2. Залишити один canonical хук, видалити дублікат
+3. Оновити всі importer'и
 
-**Після P0.7:** P1.1 (useIsDesktop merge) → P1.12 (timingSafeEqual CRON) → P1.4 (WeeklyChart aria-pressed)
+**Після P1.1:** P1.12 (timingSafeEqual CRON, 5 routes) → P1.4 (WeeklyChart aria-pressed)
 
 **Pending (потрібен ще supabase db push):**
 ```bash
@@ -40,7 +39,7 @@ cd bookit && npx supabase db push  # P0.1 migration: link_attempts table
 
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
-► Phase 1  SECURITY & A11Y [███░░░░░]  25%  ← P0.1 ✅ · P0.2 ✅ · P0.7 NEXT · P1.x
+► Phase 1  SECURITY & A11Y [███░░░░░]  33%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 NEXT
   Phase 2  LIMITED DRY     [░░░░░░░░]   0%
   Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY
   Phase 4  POLISH          [░░░░░░░░]   0%
@@ -54,6 +53,7 @@ cd bookit && npx supabase db push  # P0.1 migration: link_attempts table
 **S03:** P0.5 ✅ (204 buttons) · P0.6 batches 1-3
 **S04:** P0.6 ✅(72 aria) · P0.8 ✅(3 div→btn) · P0.9 ✅(0 real) · P0.1 ✅(security)
 **S05:** P0.2 ✅ (17 files: publicClient+createClient+ESLint) · growth/actions.ts · public.ts
+**S06:** P0.7 ✅ (MicaModal → Radix Dialog, focus trap, backdrop click, escape key)
 
 ---
 
@@ -74,12 +74,12 @@ Read XDEV/PLANS/MTRP/TRACKER.md
 ## 📊 Лічильник
 
 ```
-Items closed: 12 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.8·P0.9·P0.10·P0.11·P1.13·P3.11 + N-01 corrected)
-Next: P0.7 (MicaModal focus trap)
+Items closed: 13 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.13·P3.11 + N-01 corrected)
+Next: P1.1 (useIsDesktop merge)
 New files: src/lib/supabase/public.ts · src/app/(master)/dashboard/growth/actions.ts
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S05 · P0.2 ✅ complete · Next: npx supabase db push → P0.7 MicaModal*
+*Updated: 2026-06-05 S06 · P0.7 ✅ MicaModal → Radix Dialog complete · Next: P1.1 useIsDesktop merge*
