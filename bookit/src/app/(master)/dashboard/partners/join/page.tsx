@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import { JoinPartnerClient } from './JoinPartnerClient';
 import { redirect } from 'next/navigation';
 
@@ -17,15 +17,13 @@ export default async function JoinPartnerPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    // Redirect to login but keep the join intent, properly encoded
     const nextPath = encodeURIComponent(`/dashboard/partners/join?token=${token}`);
     redirect(`/login?next=${nextPath}`);
   }
 
-  const admin = createAdminClient();
-  
-  // Find the inviting master
-  const { data: inviter } = await admin
+  // Find the inviting master — public data, use anon client
+  const pub = createPublicClient();
+  const { data: inviter } = await pub
     .from('master_profiles')
     .select(`
       id, slug, avatar_emoji,
@@ -46,12 +44,10 @@ export default async function JoinPartnerPage({
     );
   }
 
-  // Check if invited master is trying to invite themselves
   if (inviter.id === user.id) {
     redirect('/dashboard/partners');
   }
 
-  // inviter.profiles should be an object in this query structure
   const inviterProfile = Array.isArray(inviter.profiles) ? inviter.profiles[0] : inviter.profiles;
   const inviterData = {
     name: inviterProfile?.full_name || 'Майстер',
@@ -60,7 +56,7 @@ export default async function JoinPartnerPage({
   };
 
   return (
-    <JoinPartnerClient 
+    <JoinPartnerClient
       inviter={inviterData}
       token={token}
     />

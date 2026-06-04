@@ -1,8 +1,8 @@
 import { cache } from 'react';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 
 export const getMaster = cache(async (slug: string) => {
-  const supabase = createAdminClient();
+  const supabase = createPublicClient();
 
   let q = supabase
     .from('master_profiles')

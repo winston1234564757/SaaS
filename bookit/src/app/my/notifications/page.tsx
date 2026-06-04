@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import { ClientNotificationsPage } from '@/components/client/ClientNotificationsPage';
 
@@ -10,10 +9,8 @@ export default async function MyNotificationsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createAdminClient();
-
   const [{ data: notifications }, { data: pendingItems }] = await Promise.all([
-    admin
+    supabase
       .from('notifications')
       .select('id, type, title, body, is_read, related_booking_id, created_at')
       .eq('recipient_id', user.id)
@@ -21,7 +18,7 @@ export default async function MyNotificationsPage() {
       .limit(50),
 
     // All portfolio items awaiting this client's consent
-    admin
+    supabase
       .from('portfolio_items')
       .select(`
         id, title,
@@ -33,7 +30,7 @@ export default async function MyNotificationsPage() {
   ]);
 
   // Mark all as read
-  await admin
+  await supabase
     .from('notifications')
     .update({ is_read: true })
     .eq('recipient_id', user.id)

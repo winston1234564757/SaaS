@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { BroadcastEditorPage } from '@/components/master/marketing/BroadcastEditorPage';
 
 export const metadata: Metadata = { title: 'Нова розсилка — Bookit' };
@@ -11,14 +10,13 @@ export default async function NewBroadcastPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createAdminClient();
   const [mpResult, productsResult] = await Promise.all([
-    admin
+    supabase
       .from('master_profiles')
       .select('subscription_tier, broadcasts_used')
       .eq('id', user.id)
       .single(),
-    admin
+    supabase
       .from('products')
       .select('id, name, price')
       .eq('master_id', user.id)

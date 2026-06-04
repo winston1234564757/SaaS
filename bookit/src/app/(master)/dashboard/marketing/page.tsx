@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import { MarketingTabs } from '@/components/master/marketing/MarketingTabs';
 
@@ -15,15 +14,13 @@ export default async function Page({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = createAdminClient();
-
   const [mpResult, productsResult] = await Promise.all([
-    admin
+    supabase
       .from('master_profiles')
       .select('subscription_tier, broadcasts_used')
       .eq('id', user.id)
       .single(),
-    admin
+    supabase
       .from('products')
       .select('id, name, price')
       .eq('master_id', user.id)

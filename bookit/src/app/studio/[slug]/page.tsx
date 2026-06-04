@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 import { StudioPublicPage, type StudioMemberPublic } from '@/components/public/StudioPublicPage';
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const admin = createAdminClient();
-  const { data: mp } = await admin
+  const supabase = createPublicClient();
+  const { data: mp } = await supabase
     .from('master_profiles')
     .select('business_name, studios!master_profiles_studio_id_fkey(name)')
     .eq('slug', slug)
@@ -26,10 +26,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StudioSlugPage({ params }: Props) {
   const { slug } = await params;
-  const admin = createAdminClient();
+  const supabase = createPublicClient();
 
-  // Find the owner master by slug — must belong to a studio
-  const { data: ownerMp } = await admin
+  const { data: ownerMp } = await supabase
     .from('master_profiles')
     .select('id, slug, studio_id')
     .eq('slug', slug)
@@ -38,14 +37,13 @@ export default async function StudioSlugPage({ params }: Props) {
 
   if (!ownerMp?.studio_id) return notFound();
 
-  // Get studio info + all members in parallel
   const [studioRes, membersRes] = await Promise.all([
-    admin
+    supabase
       .from('studios')
       .select('id, name, owner_id')
       .eq('id', ownerMp.studio_id)
       .single(),
-    admin
+    supabase
       .from('studio_members')
       .select(`
         master_id,
@@ -61,10 +59,9 @@ export default async function StudioSlugPage({ params }: Props) {
   const studio = studioRes.data;
   const membersRaw = membersRes.data ?? [];
 
-  // Fetch services for all members
   const masterIds = membersRaw.map(m => m.master_id);
   const { data: servicesRaw } = masterIds.length > 0
-    ? await admin
+    ? await supabase
         .from('services')
         .select('id, master_id, name, price, duration_minutes, is_popular, sort_order')
         .in('master_id', masterIds)
@@ -72,7 +69,6 @@ export default async function StudioSlugPage({ params }: Props) {
         .order('sort_order')
     : { data: [] };
 
-  // Build members array — owner first, then members by join order
   const members: StudioMemberPublic[] = membersRaw.map(m => {
     const mp = (m.master_profiles as any) ?? {};
     const profile = (m.profiles as any) ?? {};
@@ -99,7 +95,6 @@ export default async function StudioSlugPage({ params }: Props) {
         })),
     };
   }).sort((a, b) => {
-    // Owner always first
     if (a.role === 'owner') return -1;
     if (b.role === 'owner') return 1;
     return 0;

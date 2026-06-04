@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createPublicClient } from '@/lib/supabase/public';
 import { sha256Hex } from '@/lib/utils/token';
 import { StudioJoinPage } from '@/components/master/studio/StudioJoinPage';
 
@@ -16,7 +16,7 @@ export default async function StudioJoin({ searchParams }: Props) {
     return <StudioJoinPage studio={null} token="" />;
   }
 
-  const supabase = createAdminClient();
+  const supabase = createPublicClient();
   const tokenHash = await sha256Hex(token);
   const { data: studio } = await supabase
     .from('studios')

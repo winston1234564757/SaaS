@@ -8,10 +8,8 @@ export default async function PortfolioRoute() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const admin = (await import('@/lib/supabase/admin')).createAdminClient();
-
   const [{ data: mp }, items] = await Promise.all([
-    admin.from('master_profiles').select('subscription_tier, slug').eq('id', user.id).single(),
+    supabase.from('master_profiles').select('subscription_tier, slug').eq('id', user.id).single(),
     getPortfolioItems(),
   ]);
 
