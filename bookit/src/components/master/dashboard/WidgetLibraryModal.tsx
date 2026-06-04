@@ -43,7 +43,7 @@ export function WidgetLibraryModal({ isOpen, onClose }: { isOpen: boolean; onClo
                 <h3 className="heading-serif text-2xl text-foreground">Бібліотека віджетів</h3>
                 <p className="text-sm text-muted-foreground">Оберіть блоки для свого ідеального дашборду</p>
               </div>
-              <button type="button" onClick={onClose} className="size-10 rounded-full bg-secondary/60 flex items-center justify-center hover:bg-secondary transition-colors">
+              <button type="button" onClick={onClose} aria-label="Закрити" className="size-10 rounded-full bg-secondary/60 flex items-center justify-center hover:bg-secondary transition-colors">
                 <X size={20} />
               </button>
             </div>

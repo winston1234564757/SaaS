@@ -62,6 +62,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
           >
             <button type="button"
               onClick={onClose}
+              aria-label="Закрити"
               className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
             >
               <X size={16} />

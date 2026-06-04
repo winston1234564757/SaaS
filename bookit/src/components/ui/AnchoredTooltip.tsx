@@ -98,6 +98,7 @@ export function AnchoredTooltip({
 
               <button type="button"
                 onClick={onClose}
+                aria-label="Закрити"
                 className="flex-shrink-0 size-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
               >
                 <X size={12} />

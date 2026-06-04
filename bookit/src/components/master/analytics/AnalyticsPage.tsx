@@ -77,12 +77,12 @@ function DateRangeBar({
         ))}
       </div>
       <div className="flex items-center gap-2">
-        <button type="button" onClick={goPrev}
+        <button type="button" onClick={goPrev} aria-label="Попередній період"
           className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm active:scale-95 transition-all">
           <ChevronLeft size={14} />
         </button>
         <p className="flex-1 text-center text-sm font-semibold text-foreground">{label}</p>
-        <button type="button" onClick={goNext} disabled={!canGoNext}
+        <button type="button" onClick={goNext} disabled={!canGoNext} aria-label="Наступний період"
           className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm disabled:opacity-30 active:scale-95 transition-all">
           <ChevronRight size={14} />
         </button>
@@ -454,7 +454,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             <h1 className="heading-serif text-xl text-foreground mb-0.5">Аналітика</h1>
             <p className="text-sm text-muted-foreground/60">Статистика та звіти</p>
           </div>
-          <button type="button" onClick={() => refetch()} disabled={isFetching}
+          <button type="button" onClick={() => refetch()} disabled={isFetching} aria-label="Оновити"
             className="size-9 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.88] cursor-pointer transition-colors disabled:opacity-40">
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
