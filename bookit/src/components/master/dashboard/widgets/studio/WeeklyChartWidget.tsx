@@ -102,6 +102,7 @@ export function WeeklyChartWidget() {
             <button
               key={m}
               type="button"
+              aria-pressed={mode === m}
               onClick={() => { setMode(m); setActiveBar(null); }}
               className="relative text-[11px] font-bold tracking-[0.14em] uppercase pb-px transition-colors duration-150"
               style={{ color: mode === m ? 'var(--accent)' : 'var(--text-tertiary)' }}
@@ -128,14 +129,17 @@ export function WeeklyChartWidget() {
           {values.map((val, i) => {
             const barH     = val === 0 ? 2 : Math.max(Math.round((val / maxVal) * BAR_MAX), 6);
             const isToday  = i === today;
-            const isActive = activeBar === i;
-            const d        = weekDates[i];
-            const dateStr  = d ? `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}` : '';
+            const isActive  = activeBar === i;
+            const d         = weekDates[i];
+            const dateStr   = d ? `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}` : '';
+            const ariaLabel = `${DAYS[i]}: ${val === 0 ? 'немає записів' : mode === 'bookings' ? `${val} записів` : formatPrice(val)}`;
 
             return (
               <button
                 key={i}
                 type="button"
+                aria-label={ariaLabel}
+                aria-pressed={isActive}
                 className="relative flex flex-col items-center justify-end flex-1 bg-transparent border-0 p-0 min-w-0"
                 onClick={() => setActiveBar(prev => prev === i ? null : i)}
               >

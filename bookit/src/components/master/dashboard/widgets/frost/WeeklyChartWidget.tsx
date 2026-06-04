@@ -101,6 +101,7 @@ export function WeeklyChartWidget() {
             <button
               key={m}
               type="button"
+              aria-pressed={mode === m}
               onClick={() => { setMode(m); setActiveBar(null); }}
               className="relative px-2.5 py-[4px] rounded-full text-[11px] font-bold active:scale-[0.95] transition-transform duration-100"
               style={{ color: mode === m ? 'var(--accent-on)' : 'var(--text-tertiary)' }}
