@@ -1,7 +1,74 @@
 # TASK.md — Поточні задачі
 
 > Оновлюється після кожного завершеного кроку.
-> **Updated:** 2026-05-31
+> **Updated:** 2026-06-02
+
+---
+
+## 📋 Стратегічні плани
+
+> Поза поточним спринтом — див. [XDEV/PLANS/](./PLANS/README.md):
+> - **[MTRP-2026-06-02](./PLANS/MTRP-2026-06-02.md)** — Master Technical Remediation Plan (71 items, 5 phases) — 🔄 **IN PROGRESS**
+>   - **Хаб виконання:** [XDEV/PLANS/MTRP/](./PLANS/MTRP/MAP.md) (MAP=де зупинився · TRACKER=статуси · WORKFLOW · AUDIT_LOG)
+>   - **Phase 0:** dead-code ✅ + P0.5 ✅ · далі P0.6 (aria-label) → P0.1 (security)
+
+---
+
+## STEP 13 — ✅ COMPLETE (2026-06-01)
+
+**Final Sprint — Legal · Offline · Invite · Studio · Admin · Backlog B/C/D**
+- **Scope:** Security P0 + Admin A11y P1 + Public pages P3 + Backlog Polish
+- **TSC:** 0 | **build:** clean
+- **Drawer:** `774ccb6b5e3b9700582e81ce`
+
+### Що зроблено (13a — Security + Admin A11y)
+- **SECURITY P0:** `resolveSupportTicketAction()` — missing admin role check → added profile role guard
+- **25× type="button":** MastersDirectory (4) · ModerationHub (7) · AdminSupportConsole (3) · SystemLogsViewer (3) · AllianceMap (3)
+
+### Що зроблено (13b — Public Pages)
+- **offline/page.tsx:** `type="button"` + `aria-label` + `aria-hidden` on emoji
+- **invite/[code]/page.tsx:** emoji ✨📅💎 → Lucide icons (Sparkles, CalendarCheck, Gem)
+
+### Що зроблено (13c — Backlog)
+- **B-03** Studio WeeklyChart: date in tooltip + getWeekDates() + div→button on bars + type="button" on mode toggle
+- **B-04** Frost: вже `rounded-[4px]` — нічого не змінено ✅
+- **B-05** Blossom WeeklyChart: type="button" on mode toggle + div→button on bars
+- **C-01** BookingCard: `borderLeft: 4px` → `border: 1px + background: color08` + remove `pl-1`
+- **D-01** ClientsPage: same border fix on grid (line ~631) + list (line ~806)
+
+### Відкладено
+- B-01: Dashboard /impeccable audit (окрема сесія)
+- B-02: Vercel QA — manual verification
+
+---
+
+## STEP 12 — ✅ COMPLETE (2026-06-01)
+
+**Client Portal (`/my/*`)**
+- **Scope:** Security + A11y P1 + Correctness P2 + Emoji P3
+- **TSC:** 0 | **build:** clean (51 pages)
+- **Drawers:** `0a433239dd2c899a3691ba79` (12a) · `3bec0459fbf4b9a44e1aa9d9` (12b)
+
+### Що зроблено (12a — Security + A11y P1)
+- **Auth guards:** `bookings/`, `loyalty/`, `masters/`, `profile/` page.tsx → `if (!user) redirect('/login')`
+- **Critical:** `setup/phone/page.tsx` — не мав AUTH ВЗАГАЛІ → повний rewrite async + createClient + redirect
+- **P1:** `ClientNotificationsPage.tsx` — `motion.div onClick` → `motion.button type="button"`
+- **P1:** `MyProfilePage.tsx` — `aria-label="Назад до записів"` + encoding fix U+2019 → U+0027
+- **P1:** `MyBookingsPage.tsx` — star buttons: `type="button"` + `aria-label` + `aria-pressed`
+- **P1:** `ChannelBanner.tsx` — dismiss button: `aria-label="Закрити"`
+
+### Що зроблено (12b — Correctness P2 + P3)
+- **type="button":** 30+ кнопок у 8 компонентах
+- **aria-pressed:** tab/filter кнопки (MyBookingsPage, MyLoyaltyPage)
+- **htmlFor/id:** 5 полів форми (MyProfilePage)
+- **spring as const:** 6 компонентів (MyBookingsPage, MyLoyaltyPage, MyMastersPage + completed reward)
+- **aria-current="page":** nav Links (MyBottomNav)
+- **Emoji cleanup:** SUGGESTIONS у SupportChatPage (🔔📅💳🔗 → текст)
+- **PhoneSetupForm:** CLEAN — вже мав type="button" (agent false-positive)
+
+### Bonus insights
+- `edit_counter_guard.py`: блокує на 5 Edit/file/session; Write скидає лічильник
+- Middleware audit: всі публічні маршрути доступні без auth ✅
 
 ---
 
