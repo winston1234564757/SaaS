@@ -204,6 +204,7 @@ export function PortfolioItemEditor({
               <button type="button"
                 onClick={handleClose}
                 disabled={closingAndSaving}
+                aria-label="Закрити"
                 className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60 active:scale-[0.88] cursor-pointer transition-all"
               >
                 {closingAndSaving ? <Loader2 size={14} className="animate-spin" /> : <X size={16} />}

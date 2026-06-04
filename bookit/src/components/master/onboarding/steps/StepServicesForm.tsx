@@ -157,6 +157,7 @@ export function StepServicesForm({
           type="button"
           onClick={goPrev}
           disabled={!canPrev}
+          aria-label="Попередня категорія"
           className="size-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
           style={canPrev
             ? { background: tints.bg, color: tints.iconColor }
@@ -189,6 +190,7 @@ export function StepServicesForm({
           type="button"
           onClick={goNext}
           disabled={!canNext}
+          aria-label="Наступна категорія"
           className="size-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-25 active:scale-95 transition-all"
           style={canNext
             ? { background: tints.bg, color: tints.iconColor }

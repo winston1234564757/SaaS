@@ -1156,6 +1156,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               <button
                 type="button"
                 onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }}
+                aria-label="Без фону"
                 className={`relative size-12 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'
                   }`}
               >
@@ -1506,7 +1507,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             >
               <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border">
                 <h2 className="font-display text-lg font-bold">Генератор Сторіс</h2>
-                <button type="button" onClick={() => typeof onClose === 'function' && onClose()} className="p-2 hover:bg-secondary rounded-full transition-colors">
+                <button type="button" onClick={() => typeof onClose === 'function' && onClose()} aria-label="Закрити" className="p-2 hover:bg-secondary rounded-full transition-colors">
                   <X size={20} />
                 </button>
               </div>

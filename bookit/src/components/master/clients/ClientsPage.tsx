@@ -450,6 +450,7 @@ export function ClientsPage() {
                   key={v}
                   type="button"
                   aria-pressed={view === v}
+                  aria-label={v === 'list' ? 'Список' : 'Сітка'}
                   onClick={() => setParam('view', v)}
                   className={`flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] ${
                     view === v ? 'bg-secondary shadow-md text-primary scale-105' : 'text-muted-foreground/60 hover:text-muted-foreground'

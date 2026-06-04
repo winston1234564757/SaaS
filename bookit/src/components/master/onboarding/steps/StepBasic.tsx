@@ -69,6 +69,7 @@ export function StepBasic({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
+          aria-label="Завантажити аватар"
           className="relative size-24 rounded-full overflow-hidden border-2 border-primary/30 bg-secondary/70 flex items-center justify-center group hover:border-primary transition-colors cursor-pointer"
         >
           {avatarPreview ? (
