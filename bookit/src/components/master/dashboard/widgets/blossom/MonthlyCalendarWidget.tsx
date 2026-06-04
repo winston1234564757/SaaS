@@ -249,6 +249,7 @@ export function MonthlyCalendarWidget() {
           >
             <div className="flex items-center justify-between mb-3">
               <button type="button"
+                aria-label="Попередній місяць"
                 className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}
               >
@@ -267,6 +268,7 @@ export function MonthlyCalendarWidget() {
                 {format(currentDate, 'LLLL yyyy', { locale: uk })}
               </span>
               <button type="button"
+                aria-label="Наступний місяць"
                 className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}
               >

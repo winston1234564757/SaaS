@@ -65,7 +65,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
                 <h2 className="text-base font-bold text-foreground">Поповнити склад</h2>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">{product.name} · зараз: {product.stock_qty} шт</p>
               </div>
-              <button type="button" onClick={handleClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button type="button" onClick={handleClose} aria-label="Закрити" className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -74,6 +74,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
             <div className="flex items-center justify-center gap-5 my-6">
               <button type="button"
                 onClick={() => setQty(q => Math.max(1, q - 1))}
+                aria-label="Зменшити"
                 className="size-12 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all"
               >
                 <Minus size={20} />
@@ -81,6 +82,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               <span className="text-4xl font-bold text-foreground w-16 text-center tabular-nums">{qty}</span>
               <button type="button"
                 onClick={() => setQty(q => q + 1)}
+                aria-label="Збільшити"
                 className="size-12 rounded-lg bg-primary flex items-center justify-center text-[var(--accent-on)] active:scale-[0.88] cursor-pointer transition-all"
               >
                 <Plus size={20} />
