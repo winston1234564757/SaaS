@@ -8,7 +8,7 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 0 · P0.5 (204 untyped buttons) + P0.6 (aria-label) — БАТЧІ по файлах → потім P0.1 (security)
+PHASE 0 · P0.6 (icon-only aria-label, ~22 лишилось) → потім P0.1 (security). P0.5 ✅ DONE
 ```
 
 **P0.5 + P0.6 разом, батчами по файлах** (комбінувати — обидва торкаються `<button>`):
@@ -44,7 +44,7 @@ PHASE 0 · P0.5 (204 untyped buttons) + P0.6 (aria-label) — БАТЧІ по ф
 ## 📍 Фазова мапа
 
 ```
-► Phase 0  HOT FIXES        ~55%  ← dead-code ✅ · P0.5 🔄(3/204) · P0.6 🔄 · P0.1 🔒
+► Phase 0  HOT FIXES        ~78%  ← dead-code ✅ · P0.5 ✅ · P0.6 🔄(5/~27) · P0.1 🔒
   Phase 1  SECURITY & A11Y    0%  (P0.1, P0.2 admin-leak, P0.7 MicaModal, P0.8/9, P1.x)
   Phase 2  LIMITED DRY        0%
   Phase 3  TESTS & TYPES ⭐    0%  ← USER PRIORITY
@@ -57,8 +57,8 @@ PHASE 0 · P0.5 (204 untyped buttons) + P0.6 (aria-label) — БАТЧІ по ф
 
 **S01 (2026-06-04):** хаб `XDEV/PLANS/MTRP/` · P0.3 · P0.11 (9 файлів) · P0.10 (5 widgets)
 **S02:** N-01 (blocks-test + 6 widgets → P0.10 ✅) · P0.11 ✅ (export-trim; broadcastUtils/pricing KEPT) · ~2,400 рядків / 22 файли видалено
-**S03:** P0.5 **reopened** (хибно закрив — grep false-negative; AST-сканер → 204 untyped) · 3 UI-примітиви (BottomSheet/MicaModal/PopUpModal) type+aria · сканер `tools/scan-buttons.cjs` у хабі
-**CHECK кожної сесії:** tsc 0 · build 0
+**S03:** P0.5 **✅ DONE** (204 typed: codemod `fix-button-type.cjs` +192 · ClientAuthSheet +7 · 3 primitives · 2 manual) · знайшов+виправив власну C-07 (grep false-negative) · 2 інструменти аудиту в хабі (scan + codemod)
+**CHECK кожної сесії:** tsc 0 · build 0 · mojibake clean
 
 ---
 
@@ -79,8 +79,8 @@ cd bookit && node ../XDEV/PLANS/MTRP/tools/scan-buttons.cjs   # свіжий с�
 ## 📊 Лічильник
 
 ```
-Items closed: 5 / 71   (P0.3 · P0.10 · P0.11 · P1.13 · P3.11) + N-01
-In progress: P0.5 (3/204) · P0.6 (3/~30)
+Items closed: 6 / 71   (P0.3 · P0.5 · P0.10 · P0.11 · P1.13 · P3.11) + N-01
+In progress: P0.6 (5/~27 icon-only buttons)
 Deferred: 2 (P0.4, P1.2) · Blocked: 2 (P0.1 ready, P0.12)
 Dead code removed: ~2,400 рядків (22 файли) · a11y: 3 primitives
 Plan corrections: 8 (C-01..C-08) + N-01 + StatsMosaicWidget
