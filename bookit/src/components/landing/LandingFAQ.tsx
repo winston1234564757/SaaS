@@ -46,7 +46,7 @@ function FAQItem({ item, index, inView }: { item: typeof FAQS[0]; index: number;
       transition={{ duration: 0.9, ease: easeOut, delay: 0.08 + index * 0.07 }}
       style={{ borderBottom: '1px solid var(--l-border)' }}
     >
-      <button
+      <button type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between gap-6 py-6 text-left transition-opacity hover:opacity-80"
         aria-expanded={open}

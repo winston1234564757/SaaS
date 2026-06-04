@@ -1506,7 +1506,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             >
               <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border">
                 <h2 className="font-display text-lg font-bold">Генератор Сторіс</h2>
-                <button onClick={() => typeof onClose === 'function' && onClose()} className="p-2 hover:bg-secondary rounded-full transition-colors">
+                <button type="button" onClick={() => typeof onClose === 'function' && onClose()} className="p-2 hover:bg-secondary rounded-full transition-colors">
                   <X size={20} />
                 </button>
               </div>

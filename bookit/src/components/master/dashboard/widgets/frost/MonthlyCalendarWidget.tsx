@@ -36,7 +36,7 @@ function DayCell({ day, bookings, isCurrentMonth, isSelected, onClick }: DayProp
   const tooltipPos = colIndex <= 1 ? { left: 0 } : colIndex >= 5 ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' };
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -175,7 +175,7 @@ export function MonthlyCalendarWidget() {
           style={{ background: 'var(--border)' }}
         >
           {([{ label: 'Тиждень', val: false }, { label: 'Місяць', val: true }]).map(opt => (
-            <button
+            <button type="button"
               key={String(opt.val)}
               onClick={() => { setDirection(0); setIsExpanded(opt.val); setSelectedDay(null); }}
               className="relative px-2.5 py-[4px] rounded-full text-[11px] font-bold transition-colors duration-100"
@@ -207,14 +207,14 @@ export function MonthlyCalendarWidget() {
             className="overflow-hidden"
           >
             <div className="flex items-center justify-between px-4 pt-3 pb-1">
-              <button className="size-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
+              <button type="button" className="size-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}>
                 <ChevronLeft size={12} />
               </button>
               <span className="font-mono text-[11px] font-bold tracking-[0.08em] uppercase text-[var(--text-secondary)] capitalize">
                 {format(currentDate, 'LLLL yyyy', { locale: uk })}
               </span>
-              <button className="size-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
+              <button type="button" className="size-6 flex items-center justify-center rounded-full hover:bg-[var(--border)] text-[var(--text-tertiary)] active:scale-[0.88] transition-all"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}>
                 <ChevronRight size={12} />
               </button>
@@ -290,7 +290,7 @@ export function MonthlyCalendarWidget() {
                 {' · '}
                 {selectedBookings.length === 0 ? 'вільний' : `${selectedBookings.length} ${pluralUk(selectedBookings.length, 'запис', 'записи', 'записів')}`}
               </p>
-              <button onClick={() => setSelectedDay(null)} className="opacity-40 hover:opacity-80 transition-opacity">
+              <button type="button" onClick={() => setSelectedDay(null)} className="opacity-40 hover:opacity-80 transition-opacity">
                 <X size={12} style={{ color: 'var(--accent-on)' }} />
               </button>
             </div>

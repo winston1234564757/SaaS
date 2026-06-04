@@ -31,7 +31,7 @@ export default function PublicError({
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-        <button
+        <button type="button"
           onClick={() => reset()}
           className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-3xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95"
         >

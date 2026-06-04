@@ -122,9 +122,9 @@ export function BookingCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, type: 'spring', stiffness: 260, damping: 28 }}
       className={cn("bento-card overflow-hidden transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl hover:border-primary/20 group flex flex-col", className)}
-      style={{ borderLeft: `4px solid ${cfg.color}` }}
+      style={{ border: `1px solid ${cfg.color}`, background: `${cfg.color}08` }}
     >
-      <div className="flex pl-1 flex-1">
+      <div className="flex flex-1">
 
         {/* ── Card body ───────────────────────────── */}
         <div className="flex-1 min-w-0 flex flex-col">

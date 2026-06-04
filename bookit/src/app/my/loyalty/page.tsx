@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { MyLoyaltyPage } from '@/components/client/MyLoyaltyPage';
 import { getOrGenerateProfileReferralCode } from '@/lib/actions/referrals';
 
@@ -7,6 +8,7 @@ export const metadata = { title: 'Лояльність — Bookit' };
 export default async function LoyaltyRoute() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
   // 1. Get client's relations with masters (for loyalty)
   const { data: relations } = await supabase

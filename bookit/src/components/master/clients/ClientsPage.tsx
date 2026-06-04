@@ -628,7 +628,7 @@ export function ClientsPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ ...SPRING, delay: i * 0.03 }}
                     className="bento-card p-4 hover:shadow-md transition-shadow flex flex-col gap-3 relative"
-                    style={{ borderLeft: `3px solid ${ret.color}` }}
+                    style={{ border: `1px solid ${ret.color}`, background: `${ret.color}08` }}
                   >
                     <ClientIconStack client={client} />
 
@@ -803,7 +803,7 @@ export function ClientsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ ...SPRING, delay: i * 0.04 }}
                     className="bento-card p-4 hover:shadow-md transition-shadow relative group"
-                    style={{ borderLeft: `3px solid ${ret.color}` }}
+                    style={{ border: `1px solid ${ret.color}`, background: `${ret.color}08` }}
                   >
                     {/* Main info row — opens detail sheet */}
                     <button

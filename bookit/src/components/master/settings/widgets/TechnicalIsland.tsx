@@ -117,7 +117,7 @@ export function TechnicalIsland({
           </div>
 
           {!telegramChatId && (
-            <button
+            <button type="button"
               onClick={handleConnectTelegram}
               disabled={connectingBot}
               className="w-full py-3 rounded-xl bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.95] transition-all shadow-md shadow-accent/10 cursor-pointer"
@@ -139,7 +139,7 @@ export function TechnicalIsland({
             const isActive = effectiveThemeKey === theme.key;
 
             return (
-              <button
+              <button type="button"
                 key={theme.key}
                 onClick={() => {
                   if (isLocked) {

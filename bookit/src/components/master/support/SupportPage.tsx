@@ -185,7 +185,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b border-white/30 last:border-0">
-      <button
+      <button type="button"
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-3 text-left text-sm font-medium text-foreground gap-3"
       >
@@ -224,7 +224,7 @@ export function SupportPage() {
             <BookOpen size={14} />
             Довідка та FAQ
           </div>
-          <button
+          <button type="button"
             onClick={handleGoToChat}
             className="flex items-center gap-1.5 px-4.5 py-1.5 rounded-full text-xs font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer relative"
           >
@@ -247,7 +247,7 @@ export function SupportPage() {
             </div>
           </div>
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <button
+            <button type="button"
               onClick={handleGoToChat}
               className="flex-1 sm:flex-none px-4.5 py-2 bg-primary text-white text-sm font-bold rounded-2xl hover:bg-[#6a8a89] active:scale-[0.96] transition-all cursor-pointer text-center"
             >
@@ -281,7 +281,7 @@ export function SupportPage() {
         <div className="text-center py-4">
           <HelpCircle size={24} className="text-muted-foreground/60 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">Не знайшли відповідь?</p>
-          <button
+          <button type="button"
             onClick={handleGoToChat}
             className="text-sm text-primary underline underline-offset-2 font-semibold cursor-pointer"
           >

@@ -31,7 +31,7 @@ export function SmartBackButton({ floating, className }: Props) {
 
   if (floating) {
     return (
-      <button
+      <button type="button"
         onClick={() => router.back()}
         aria-label="Назад"
         className="fixed z-40 flex items-center gap-1 pl-2 pr-3 h-8 rounded-full bg-secondary/60 backdrop-blur-md border border-border text-foreground text-xs font-medium active:scale-95 transition-all"
@@ -44,7 +44,7 @@ export function SmartBackButton({ floating, className }: Props) {
   }
 
   return (
-    <button
+    <button type="button"
       onClick={() => router.back()}
       aria-label="Назад"
       className={`flex items-center justify-center size-9 rounded-xl text-foreground hover:bg-black/5 active:scale-95 transition-all ${className ?? ''}`}

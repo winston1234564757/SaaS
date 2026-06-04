@@ -197,7 +197,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               <h2 className="text-base font-bold text-foreground">
                 {isEdit ? 'Редагувати товар' : 'Новий товар'}
               </h2>
-              <button onClick={handleClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button type="button" onClick={handleClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -214,7 +214,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                   {photos.map(url => (
                     <div key={url} className="relative size-20 rounded-lg overflow-hidden bg-secondary">
                       <Image src={url} alt="" fill className="object-cover" />
-                      <button
+                      <button type="button"
                         onClick={() => removePhoto(url)}
                         className="absolute top-1 right-1 size-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer"
                       >
@@ -223,7 +223,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     </div>
                   ))}
                   {photos.length < 5 && (
-                    <button
+                    <button type="button"
                       onClick={() => fileRef.current?.click()}
                       disabled={uploading}
                       className="size-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-colors"
@@ -258,7 +258,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               <Field label="Категорія">
                 <div className="flex gap-2 flex-wrap">
                   {CATEGORIES.map(c => (
-                    <button
+                    <button type="button"
                       key={c.value}
                       onClick={() => setCategory(c.value)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
@@ -384,7 +384,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               )}
 
               {/* Save */}
-              <button
+              <button type="button"
                 onClick={handleSave}
                 disabled={isPending || uploading}
                 className="w-full py-3.5 rounded-lg bg-primary text-[var(--accent-on)] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.95] cursor-pointer transition-all"
@@ -399,7 +399,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               {isEdit && (
                 <div className="pt-1">
                   {!showDelete ? (
-                    <button
+                    <button type="button"
                       onClick={() => setShowDelete(true)}
                       className="w-full py-3 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/8 cursor-pointer transition-colors"
                     >
@@ -407,13 +407,13 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     </button>
                   ) : (
                     <div className="flex gap-2">
-                      <button
+                      <button type="button"
                         onClick={() => setShowDelete(false)}
                         className="flex-1 py-3 rounded-lg text-xs font-medium text-muted-foreground bg-secondary/60 hover:bg-secondary/80 cursor-pointer transition-colors"
                       >
                         Скасувати
                       </button>
-                      <button
+                      <button type="button"
                         onClick={handleDelete}
                         disabled={isPending}
                         className="flex-1 py-3 rounded-lg text-xs font-semibold text-white bg-destructive flex items-center justify-center gap-1.5 disabled:opacity-60 active:scale-[0.95] cursor-pointer transition-all"

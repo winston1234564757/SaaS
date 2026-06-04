@@ -32,7 +32,7 @@ export function SystemLogsViewer() {
   const [activeTab, setActiveTab] = useState<'notif' | 'otp'>('notif');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  
+
   const supabase = createClient();
 
   const loadLogs = async () => {
@@ -86,9 +86,10 @@ export function SystemLogsViewer() {
     <div className="space-y-6">
       {/* Search and Tab controller */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-4 shadow-sm">
-        
+
         <div className="flex gap-1 overflow-x-auto scrollbar-hide py-1">
           <button
+            type="button"
             onClick={() => {
               setActiveTab('notif');
               setSearch('');
@@ -102,6 +103,7 @@ export function SystemLogsViewer() {
             Сповіщення (logs)
           </button>
           <button
+            type="button"
             onClick={() => {
               setActiveTab('otp');
               setSearch('');
@@ -129,6 +131,7 @@ export function SystemLogsViewer() {
           </div>
 
           <button
+            type="button"
             onClick={loadLogs}
             className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 active:scale-[0.90] cursor-pointer"
           >

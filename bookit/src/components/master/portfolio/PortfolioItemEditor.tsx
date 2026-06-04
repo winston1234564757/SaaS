@@ -187,7 +187,7 @@ export function PortfolioItemEditor({
             </h2>
             <div className="flex items-center gap-2">
               {itemId && (
-                <button
+                <button type="button"
                   onClick={handleTogglePublish}
                   disabled={publishPending}
                   className={cn(
@@ -201,7 +201,7 @@ export function PortfolioItemEditor({
                   {isPublished ? 'Опублікована' : 'Прихована'}
                 </button>
               )}
-              <button
+              <button type="button"
                 onClick={handleClose}
                 disabled={closingAndSaving}
                 className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60 active:scale-[0.88] cursor-pointer transition-all"

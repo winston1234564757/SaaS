@@ -62,7 +62,6 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
 
   const filtered = bookings.filter(b => {
     if (tab === 'bookings') return b.type === 'booking';
-    // Shop tab: show standalone shop orders OR bookings that have products
     return b.type === 'shop' || (b.products && b.products.length > 0);
   });
 
@@ -82,6 +81,8 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
         {/* Tab switcher */}
         <div className="flex gap-2 mt-4 p-1 rounded-xl bg-secondary/50">
           <button
+            type="button"
+            aria-pressed={tab === 'bookings'}
             onClick={() => setTab('bookings')}
             className={cn(
               "flex-1 py-2 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer flex items-center justify-center gap-1.5",
@@ -91,6 +92,8 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
             <CalendarDays size={14} /> Записи
           </button>
           <button
+            type="button"
+            aria-pressed={tab === 'shop'}
             onClick={() => setTab('shop')}
             className={cn(
               "flex-1 py-2 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer flex items-center justify-center gap-1.5",
@@ -185,7 +188,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, type: 'spring', stiffness: 300, damping: 24 }}
+      transition={{ delay: index * 0.04, type: 'spring' as const, stiffness: 300, damping: 24 }}
       className="bento-card p-4 relative overflow-hidden"
     >
       {/* Type badge */}
@@ -194,9 +197,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
       </div>
 
       <div className="flex items-start gap-3">
-        <div
-          className="size-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 bg-accent/10"
-        >
+        <div className="size-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 bg-accent/10">
           {b.masterEmoji}
         </div>
 
@@ -228,7 +229,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                   <p className="text-[11px] font-bold text-foreground leading-tight">Місце зустрічі</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{b.masterAddress}</p>
                   <a
-                    href={b.masterLat && b.masterLng 
+                    href={b.masterLat && b.masterLng
                       ? `https://www.google.com/maps/dir/?api=1&destination=${b.masterLat},${b.masterLng}`
                       : `https://maps.google.com/?q=${encodeURIComponent(b.masterAddress)}`
                     }
@@ -292,6 +293,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
               <div>
                 {!confirmCancel ? (
                   <button
+                    type="button"
                     onClick={() => setConfirmCancel(true)}
                     className="text-[11px] text-destructive hover:underline"
                   >
@@ -301,13 +303,14 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                   <div className="flex items-center gap-2 bg-destructive/8 rounded-xl px-3 py-2">
                     <p className="text-[11px] text-destructive flex-1 font-medium">Скасувати цей запис?</p>
                     <button
+                      type="button"
                       onClick={handleCancel}
                       disabled={cancelPending}
                       className="px-3 py-1 bg-destructive text-white rounded-lg text-[10px] font-bold disabled:opacity-40 active:scale-[0.95] cursor-pointer transition-all"
                     >
                       {cancelPending ? '...' : 'Так'}
                     </button>
-                    <button onClick={() => setConfirmCancel(false)} className="text-muted-foreground/60 p-1 active:scale-[0.95] cursor-pointer">
+                    <button type="button" onClick={() => setConfirmCancel(false)} className="text-muted-foreground/60 p-1 active:scale-[0.95] cursor-pointer">
                       <X size={14} />
                     </button>
                   </div>
@@ -324,6 +327,7 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                   </div>
                 ) : !showReview ? (
                   <button
+                    type="button"
                     onClick={() => setShowReview(true)}
                     className="w-full py-2.5 rounded-lg bg-secondary text-foreground text-xs font-bold hover:bg-secondary/80 active:scale-[0.95] cursor-pointer transition-all flex items-center justify-center gap-2"
                   >
@@ -341,7 +345,10 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
                       <div className="flex items-center gap-1.5 mb-3 justify-center">
                         {[1, 2, 3, 4, 5].map(n => (
                           <button
+                            type="button"
                             key={n}
+                            aria-label={`${n} ${n === 1 ? 'зірка' : n < 5 ? 'зірки' : 'зірок'}`}
+                            aria-pressed={reviewRating === n}
                             onClick={() => setReviewRating(n)}
                             onMouseEnter={() => setHoverRating(n)}
                             onMouseLeave={() => setHoverRating(0)}
@@ -369,12 +376,14 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
 
                       <div className="flex items-center gap-3 mt-3">
                         <button
+                          type="button"
                           onClick={() => setShowReview(false)}
                           className="text-[11px] text-muted-foreground/60 font-bold active:scale-[0.95] cursor-pointer"
                         >
                           Скасувати
                         </button>
                         <button
+                          type="button"
                           onClick={handleSubmitReview}
                           disabled={reviewRating === 0 || reviewPending}
                           className="ml-auto px-5 py-2 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold disabled:opacity-50 shadow-lg shadow-primary/20 active:scale-[0.95] cursor-pointer transition-all"

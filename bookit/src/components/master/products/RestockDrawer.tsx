@@ -65,21 +65,21 @@ export function RestockDrawer({ product, open, onClose }: Props) {
                 <h2 className="text-base font-bold text-foreground">Поповнити склад</h2>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">{product.name} · зараз: {product.stock_qty} шт</p>
               </div>
-              <button onClick={handleClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button type="button" onClick={handleClose} className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>
 
             {/* Qty stepper */}
             <div className="flex items-center justify-center gap-5 my-6">
-              <button
+              <button type="button"
                 onClick={() => setQty(q => Math.max(1, q - 1))}
                 className="size-12 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all"
               >
                 <Minus size={20} />
               </button>
               <span className="text-4xl font-bold text-foreground w-16 text-center tabular-nums">{qty}</span>
-              <button
+              <button type="button"
                 onClick={() => setQty(q => q + 1)}
                 className="size-12 rounded-lg bg-primary flex items-center justify-center text-[var(--accent-on)] active:scale-[0.88] cursor-pointer transition-all"
               >
@@ -100,7 +100,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               <p className="text-xs text-destructive mb-3 px-1">{error}</p>
             )}
 
-            <button
+            <button type="button"
               onClick={handleSave}
               disabled={isPending}
               className="w-full py-3.5 rounded-lg bg-primary text-[var(--accent-on)] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.95] cursor-pointer transition-all"

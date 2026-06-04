@@ -53,7 +53,7 @@ export function ModerationHub() {
       ]);
 
       const reportsData = (reportsRes.data || []) as ReportRecord[];
-      
+
       // Load details for each report target
       const enrichedReports = await Promise.all(
         reportsData.map(async (r) => {
@@ -152,6 +152,7 @@ export function ModerationHub() {
       {/* Tab Navigation */}
       <div className="flex gap-2 rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-3.5 shadow-sm">
         <button
+          type="button"
           onClick={() => setActiveTab('reports')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             activeTab === 'reports'
@@ -162,6 +163,7 @@ export function ModerationHub() {
           Скарги ({reports.filter(r => r.status === 'pending').length})
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('reviews')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             activeTab === 'reviews'
@@ -172,6 +174,7 @@ export function ModerationHub() {
           Стрічка відгуків
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('portfolio')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             activeTab === 'portfolio'
@@ -269,6 +272,7 @@ export function ModerationHub() {
                 {report.status === 'pending' && (
                   <div className="flex gap-2 shrink-0 justify-end md:self-center">
                     <button
+                      type="button"
                       onClick={() => handleResolveReport(report, 'dismiss')}
                       disabled={!!actionLoading}
                       className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition active:scale-[0.95] cursor-pointer"
@@ -276,6 +280,7 @@ export function ModerationHub() {
                       Відхилити
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleResolveReport(report, 'hide')}
                       disabled={!!actionLoading}
                       className="flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-slate-50 hover:bg-slate-800 transition active:scale-[0.95] cursor-pointer"
@@ -308,6 +313,7 @@ export function ModerationHub() {
               </div>
 
               <button
+                type="button"
                 onClick={() => handleTogglePublishReview(review)}
                 disabled={!!actionLoading}
                 className={`flex size-8 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${
@@ -346,6 +352,7 @@ export function ModerationHub() {
               </div>
 
               <button
+                type="button"
                 onClick={() => handleTogglePublishPortfolio(item)}
                 disabled={!!actionLoading}
                 className={`flex size-8 shrink-0 items-center justify-center rounded-full border transition active:scale-[0.90] cursor-pointer ${

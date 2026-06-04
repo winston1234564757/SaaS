@@ -16,6 +16,14 @@ function toISO(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function getWeekDates(): Date[] {
+  const today = getNow();
+  const day   = today.getDay();
+  const mon   = new Date(today);
+  mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+  return Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return d; });
+}
+
 function getPrevWeekRange() {
   const today = getNow();
   const day = today.getDay();
@@ -32,15 +40,15 @@ function formatDelta(curr: number, prev: number): { label: string; positive: boo
   return { label: `${pct > 0 ? '+' : ''}${pct}%`, positive: pct > 0 };
 }
 
-interface BarTooltipProps { dayLabel: string; bookings: number; revenue: number }
+interface BarTooltipProps { dayLabel: string; date: string; bookings: number; revenue: number }
 
-function BarTooltip({ dayLabel, bookings, revenue }: BarTooltipProps) {
+function BarTooltip({ dayLabel, date, bookings, revenue }: BarTooltipProps) {
   return (
     <div
       className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-10 rounded-[4px] p-2 text-[11px] pointer-events-none whitespace-nowrap"
       style={{ background: 'rgba(8,20,24,0.97)', border: '1px solid var(--border)' }}
     >
-      <p className="font-mono font-bold mb-0.5 tracking-[0.08em] uppercase" style={{ color: 'var(--accent)' }}>{dayLabel}</p>
+      <p className="font-mono font-bold mb-0.5 tracking-[0.08em] uppercase" style={{ color: 'var(--accent)' }}>{dayLabel} · {date}</p>
       <p className="font-mono" style={{ color: 'var(--text-secondary)' }}>{bookings} зап · {revenue > 0 ? formatPrice(revenue) : '—'}</p>
     </div>
   );
@@ -51,6 +59,7 @@ export function WeeklyChartWidget() {
   const [mode, setMode]     = useState<'bookings' | 'revenue'>('bookings');
   const [activeBar, setActiveBar] = useState<number | null>(null);
   const today     = getTodayIdx();
+  const weekDates = useMemo(() => getWeekDates(), []);
   const prevRange = useMemo(() => getPrevWeekRange(), []);
   const { bookings: prevBookings } = useBookings(prevRange.from, prevRange.to);
 
@@ -92,6 +101,7 @@ export function WeeklyChartWidget() {
           {(['bookings', 'revenue'] as const).map(m => (
             <button
               key={m}
+              type="button"
               onClick={() => { setMode(m); setActiveBar(null); }}
               className="relative text-[11px] font-bold tracking-[0.14em] uppercase pb-px transition-colors duration-150"
               style={{ color: mode === m ? 'var(--accent)' : 'var(--text-tertiary)' }}
@@ -119,16 +129,20 @@ export function WeeklyChartWidget() {
             const barH     = val === 0 ? 2 : Math.max(Math.round((val / maxVal) * BAR_MAX), 6);
             const isToday  = i === today;
             const isActive = activeBar === i;
+            const d        = weekDates[i];
+            const dateStr  = d ? `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}` : '';
 
             return (
-              <div
+              <button
                 key={i}
-                className="relative flex flex-col items-center justify-end flex-1 cursor-pointer"
+                type="button"
+                className="relative flex flex-col items-center justify-end flex-1 bg-transparent border-0 p-0 min-w-0"
                 onClick={() => setActiveBar(prev => prev === i ? null : i)}
               >
                 {isActive && (
                   <BarTooltip
                     dayLabel={DAYS[i]}
+                    date={dateStr}
                     bookings={data[i]?.bookings ?? 0}
                     revenue={data[i]?.revenue ?? 0}
                   />
@@ -154,7 +168,7 @@ export function WeeklyChartWidget() {
                   animate={{ scaleY: 1, opacity: isToday || isActive ? 1 : 0.6 }}
                   transition={{ type: 'spring' as const, duration: 0.6, bounce: 0.06, delay: i * 0.05 }}
                 />
-              </div>
+              </button>
             );
           })}
         </div>

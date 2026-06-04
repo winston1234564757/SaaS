@@ -875,6 +875,7 @@ export function PublicMasterPage({
                 <div className="flex flex-col gap-2">
                   {catServices.map((service, i) => (
                     <motion.button
+                      type="button"
                       key={service.id}
                       initial={{ opacity: 0, y: 12 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -1081,6 +1082,7 @@ export function PublicMasterPage({
       <div className="fixed bottom-[88px] left-0 right-0 z-30 px-6 pointer-events-none md:bottom-8">
         <div className="max-w-lg mx-auto flex justify-center">
           <motion.button
+            type="button"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ ...SPRING, delay: 0.4 }}

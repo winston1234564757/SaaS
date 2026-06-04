@@ -23,7 +23,7 @@ export default function RootError({
         <h2 className="text-lg font-semibold text-foreground mb-1">Щось пішло не так</h2>
         <p className="text-sm text-muted-foreground">Спробуйте оновити сторінку.</p>
       </div>
-      <button
+      <button type="button"
         onClick={reset}
         className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary text-white text-sm font-medium active:scale-95 transition-transform"
       >

@@ -196,15 +196,15 @@ export function AdminSupportConsole() {
   const filteredTickets = tickets.filter(t => {
     const nameMatch = (t.profiles?.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (t.profiles?.phone || '').includes(search);
-      
+
     const statusMatch = statusFilter === 'all' || t.status === statusFilter;
-    
+
     return nameMatch && statusMatch;
   });
 
   return (
     <div className="flex-1 flex gap-6 overflow-hidden rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md shadow-sm h-[72vh]">
-      
+
       {/* Left pane: Ticket list */}
       <div className="w-[320px] shrink-0 border-r border-slate-200/60 flex flex-col overflow-hidden">
         {/* Search */}
@@ -223,6 +223,7 @@ export function AdminSupportConsole() {
             {['all', 'open', 'active', 'resolved'].map((s) => (
               <button
                 key={s}
+                type="button"
                 onClick={() => setStatusFilter(s as any)}
                 className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition cursor-pointer shrink-0 ${
                   statusFilter === s
@@ -252,6 +253,7 @@ export function AdminSupportConsole() {
               return (
                 <button
                   key={t.id}
+                  type="button"
                   onClick={() => {
                     setActiveTicketId(t.id);
                     setError(null);
@@ -319,6 +321,7 @@ export function AdminSupportConsole() {
 
               {activeTicket.status !== 'resolved' && (
                 <button
+                  type="button"
                   onClick={handleResolveTicket}
                   disabled={sending}
                   className="flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-slate-50 hover:bg-slate-800 transition active:scale-[0.95] cursor-pointer"

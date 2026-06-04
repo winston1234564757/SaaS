@@ -106,7 +106,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
             Натисни посилання — і всі записи з'являться у твоєму акаунті.
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={onSkip}
           className="text-sm text-muted-foreground/60 underline underline-offset-4 mt-1 active:scale-95 transition-all cursor-pointer"
         >
@@ -161,7 +161,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           </div>
 
           {/* Google CTA */}
-          <button
+          <button type="button"
             onClick={handleGoogle}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 h-12 rounded-lg border border-border bg-secondary/80 hover:bg-secondary backdrop-blur-sm transition-colors text-sm font-semibold text-foreground disabled:opacity-50 active:scale-95 transition-all cursor-pointer"
@@ -178,7 +178,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           </div>
 
           {/* Email option */}
-          <button
+          <button type="button"
             onClick={() => setMode('email')}
             disabled={loading}
             className="w-full flex items-center justify-center gap-2 h-12 rounded-lg bg-primary hover:opacity-90 text-primary-foreground text-sm font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all cursor-pointer"
@@ -188,7 +188,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           </button>
 
           {/* Skip */}
-          <button
+          <button type="button"
             onClick={onSkip}
             className="text-sm text-muted-foreground/60 text-center py-1 hover:text-muted-foreground transition-colors active:scale-95 transition-all cursor-pointer"
           >
@@ -208,7 +208,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           className="flex flex-col gap-4"
         >
           {/* Back */}
-          <button
+          <button type="button"
             onClick={() => { setMode('main'); setError(''); }}
             className="flex items-center gap-1.5 text-sm text-muted-foreground w-fit cursor-pointer"
           >
@@ -259,7 +259,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
             <p className="text-xs text-destructive px-1">{error}</p>
           )}
 
-          <button
+          <button type="button"
             onClick={handleEmailSignup}
             disabled={loading || !name.trim() || !email.trim() || password.length < 6}
             className="w-full h-12 rounded-lg bg-primary hover:opacity-90 text-primary-foreground text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
@@ -271,7 +271,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
             )}
           </button>
 
-          <button onClick={onSkip} className="text-sm text-muted-foreground/60 text-center active:scale-95 transition-all">
+          <button type="button" onClick={onSkip} className="text-sm text-muted-foreground/60 text-center active:scale-95 transition-all">
             Пізніше
           </button>
         </motion.div>

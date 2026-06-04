@@ -26,7 +26,7 @@ export function ImpersonationBanner() {
           Режим імітації: <strong className="font-semibold">{displayName}</strong>. Дії виконуються від його імені.
         </span>
       </div>
-      <button
+      <button type="button"
         onClick={handleExit}
         className="flex items-center gap-1.5 rounded-full bg-amber-950/15 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-amber-950 transition duration-150 hover:bg-amber-950/25 active:scale-[0.95] cursor-pointer"
       >

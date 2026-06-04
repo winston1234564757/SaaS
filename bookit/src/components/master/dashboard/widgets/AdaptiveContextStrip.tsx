@@ -71,7 +71,7 @@ function StripCard({ card, index, accent = false }: CardProps) {
           </p>
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={card.onCta}
         className="self-start text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.95] cursor-pointer"
         style={{

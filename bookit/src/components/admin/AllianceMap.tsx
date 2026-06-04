@@ -26,7 +26,7 @@ export function AllianceMap() {
   const [flatList, setFlatList] = useState<FlatRelation[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'tree' | 'table'>('tree');
-  
+
   const supabase = createClient();
 
 interface ProfileDetails {
@@ -73,11 +73,11 @@ interface ProfileMapItem {
         ]);
 
         if (alliancesRes.error) throw alliancesRes.error;
-        
+
         const alliances = (alliancesRes.data as unknown as AllianceRelation[]) || [];
         const profilesMap = new Map<string, ProfileMapItem>();
         const profilesData = (profilesRes.data as unknown as MasterProfileQuery[]) || [];
-        
+
         profilesData.forEach(p => {
           const fullName = Array.isArray(p.profiles)
             ? p.profiles[0]?.full_name
@@ -97,7 +97,7 @@ interface ProfileMapItem {
         ]);
 
         const roots: AllianceNode[] = [];
-        
+
         const buildTree = (masterId: string): AllianceNode => {
           const profile = profilesMap.get(masterId) || { name: 'Невідомий майстер', slug: '', tier: 'starter' };
           const childrenIds = alliances.filter(a => a.inviter_id === masterId).map(a => a.invitee_id);
@@ -147,6 +147,7 @@ interface ProfileMapItem {
       {/* Switcher Bar */}
       <div className="flex gap-2 justify-end rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-3.5 shadow-sm">
         <button
+          type="button"
           onClick={() => setViewMode('tree')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             viewMode === 'tree'
@@ -157,6 +158,7 @@ interface ProfileMapItem {
           Ієрархічне дерево
         </button>
         <button
+          type="button"
           onClick={() => setViewMode('table')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             viewMode === 'table'
@@ -227,13 +229,13 @@ function TreeNodeItem({ node, level }: { node: AllianceNode; level: number }) {
   return (
     <div className="relative pl-6">
       {level > 0 && (
-        <div 
+        <div
           className="absolute left-1.5 top-0 w-4.5 border-t border-slate-300"
           style={{ height: '24px', top: '16px' }}
         />
       )}
       {level > 0 && (
-        <div 
+        <div
           className="absolute left-1.5 top-0 border-l border-slate-300"
           style={{ bottom: hasChildren && isOpen ? '0px' : 'calc(100% - 16px)', height: '100%' }}
         />
@@ -242,6 +244,7 @@ function TreeNodeItem({ node, level }: { node: AllianceNode; level: number }) {
       <div className="flex items-center gap-2 py-1.5 group">
         {hasChildren ? (
           <button
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
             className="flex size-5 shrink-0 items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer active:scale-[0.90] transition"
           >

@@ -80,7 +80,7 @@ export function PublicStatusWidget({
           </div>
         </div>
         
-        <button
+        <button type="button"
           onClick={onPublishToggle}
           className={cn(
             "relative w-12 h-7 rounded-full transition-colors duration-300 shadow-inner",
@@ -126,7 +126,7 @@ export function PublicStatusWidget({
         </a>
 
         {!showQr ? (
-          <button
+          <button type="button"
             onClick={() => setShowQr(true)}
             className="w-full py-4 rounded-2xl bg-accent text-white text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-accent/20"
           >
@@ -148,7 +148,7 @@ export function PublicStatusWidget({
               />
             </div>
             <div className="flex w-full gap-2">
-              <button
+              <button type="button"
                 onClick={handleDownloadQr}
                 disabled={downloading}
                 className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-white text-[11px] font-bold shadow-md shadow-accent/10 active:scale-95 transition-all disabled:opacity-50"
@@ -156,7 +156,7 @@ export function PublicStatusWidget({
                 {downloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={14} />} 
                 Скачати
               </button>
-              <button
+              <button type="button"
                 onClick={() => setShowQr(false)}
                 className="px-4 py-3 rounded-xl bg-secondary/80 text-text-mute text-[11px] font-bold border border-border active:scale-95 transition-all"
               >

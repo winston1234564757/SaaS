@@ -88,7 +88,7 @@ export function AnchoredTooltip({
                 <p className="text-sm font-semibold text-foreground leading-snug">{title}</p>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{text}</p>
 
-                <button
+                <button type="button"
                   onClick={handlePrimary}
                   className="mt-3 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-[#6B8C8B] active:scale-95 transition-all"
                 >
@@ -96,7 +96,7 @@ export function AnchoredTooltip({
                 </button>
               </div>
 
-              <button
+              <button type="button"
                 onClick={onClose}
                 className="flex-shrink-0 size-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
               >

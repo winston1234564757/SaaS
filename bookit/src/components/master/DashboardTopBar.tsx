@@ -214,7 +214,7 @@ export function DashboardTopBar() {
 
                 <div className="w-px h-6 bg-border/30 mx-1 shrink-0" />
 
-                <button
+                <button type="button"
                   onClick={() => setActiveGroup('activity')}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-2xl text-[14px] font-semibold transition-all active:scale-95 cursor-pointer shrink-0",
@@ -227,7 +227,7 @@ export function DashboardTopBar() {
                   <ChevronDown size={14} className="opacity-50" />
                 </button>
 
-                <button
+                <button type="button"
                   onClick={() => setActiveGroup('growth')}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-2xl text-[14px] font-semibold transition-all active:scale-95 cursor-pointer shrink-0",
@@ -250,7 +250,7 @@ export function DashboardTopBar() {
                 className="flex items-center gap-3 w-full"
               >
                 {/* Back button */}
-                <button
+                <button type="button"
                   onClick={() => setActiveGroup('none')}
                   className="size-9 rounded-xl flex items-center justify-center bg-secondary/50 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary active:scale-[0.9] transition-all cursor-pointer shrink-0"
                 >
@@ -295,7 +295,7 @@ export function DashboardTopBar() {
 
           {/* Profile */}
           <div className="relative">
-            <button
+            <button type="button"
               onClick={() => setMenuOpen(p => !p)}
               className="flex items-center gap-2 pl-1 pr-2.5 py-1.5 rounded-xl transition-colors"
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--background-deep)')}

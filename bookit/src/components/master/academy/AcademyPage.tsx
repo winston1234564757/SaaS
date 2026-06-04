@@ -429,7 +429,7 @@ function ArticleItem({ article }: { article: Article }) {
 
   return (
     <div>
-      <button
+      <button type="button"
         onClick={() => setIsOpen(v => !v)}
         className="w-full flex items-start gap-3 px-4 py-3.5 text-left cursor-pointer"
         aria-expanded={isOpen}
@@ -592,7 +592,7 @@ export function AcademyPage() {
         style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)' }}
       >
         {(['functions', 'goals'] as const).map(tab => (
-          <button
+          <button type="button"
             key={tab}
             onClick={() => setActiveTab(tab)}
             className="relative flex-1 py-2.5 text-[13px] font-semibold rounded-lg cursor-pointer"
@@ -638,7 +638,7 @@ export function AcademyPage() {
       </p>
 
       {/* Restart tour */}
-      <button
+      <button type="button"
         onClick={handleRestartTour}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-semibold active:scale-[0.97] active:transition-none cursor-pointer"
         style={{

@@ -70,7 +70,7 @@ export function JoinPartnerClient({ inviter, token }: Props) {
               </p>
             )}
 
-            <button
+            <button type="button"
               onClick={handleJoin}
               disabled={loading}
               className="w-full py-4 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2"

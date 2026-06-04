@@ -81,7 +81,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
                 <h2 className="text-lg font-bold text-foreground">Увійти до Bookit</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">Всі записи в одному місці</p>
               </div>
-              <button
+              <button type="button"
                 onClick={onClose}
                 className="size-8 rounded-lg flex items-center justify-center text-muted-foreground/60 hover:bg-black/5 transition-colors flex-shrink-0 active:scale-[0.95] transition-all cursor-pointer"
                 aria-label="Закрити"
@@ -91,7 +91,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
             </div>
 
             {/* Google */}
-            <button
+            <button type="button"
               onClick={handleGoogle}
               disabled={loading}
               className="w-full flex items-center justify-center gap-3 h-12 rounded-lg border border-border bg-secondary/80 hover:bg-secondary backdrop-blur-sm text-sm font-semibold text-foreground disabled:opacity-50 transition-colors mb-4 active:scale-[0.95] transition-all cursor-pointer"

@@ -81,7 +81,7 @@ function BroadcastCard({
       style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)' }}
     >
       {/* Header row */}
-      <button
+      <button type="button"
         onClick={onToggle}
         className="w-full px-4 py-3.5 flex items-center gap-3 text-left active:scale-95 transition-all"
       >
@@ -158,7 +158,7 @@ function BroadcastCard({
 
               {/* Per-client results */}
               {b.status === 'sent' && (
-                <button
+                <button type="button"
                   onClick={onDetail}
                   className="flex items-center gap-1.5 text-xs text-primary font-medium hover:opacity-70 transition-opacity active:scale-95 transition-all"
                 >
@@ -169,7 +169,7 @@ function BroadcastCard({
 
               {/* Delete draft */}
               {b.status === 'draft' && (
-                <button
+                <button type="button"
                   onClick={() => remove.mutate(b.id)}
                   disabled={remove.isPending}
                   className="flex items-center gap-1.5 text-xs text-destructive hover:opacity-70 transition-opacity"

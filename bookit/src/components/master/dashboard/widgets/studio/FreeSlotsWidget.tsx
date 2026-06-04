@@ -92,7 +92,7 @@ export function FreeSlotsWidget() {
           {activeServices.map((svc: Service) => {
             const isActive = (selectedService?.id ?? activeServices[0]?.id) === svc.id;
             return (
-              <button
+              <button type="button"
                 key={svc.id}
                 onClick={() => setSelectedServiceId(svc.id)}
                 className="px-2.5 py-1 text-[10px] font-bold tracking-[0.14em] uppercase transition-all duration-150 cursor-pointer"

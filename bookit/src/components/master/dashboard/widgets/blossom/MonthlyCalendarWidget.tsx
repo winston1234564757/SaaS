@@ -47,7 +47,7 @@ function DayCell({ day, bookings, isCurrentMonth, isSelected, onClick }: DayProp
     : { left: '50%', transform: 'translateX(-50%)' };
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -155,7 +155,7 @@ function ViewToggle({ isExpanded, onChange }: { isExpanded: boolean; onChange: (
   return (
     <div className="flex items-center gap-3">
       {opts.map(opt => (
-        <button
+        <button type="button"
           key={String(opt.value)}
           onClick={() => onChange(opt.value)}
           className="relative text-[13px] font-medium pb-px transition-colors duration-150"
@@ -248,7 +248,7 @@ export function MonthlyCalendarWidget() {
             className="overflow-hidden"
           >
             <div className="flex items-center justify-between mb-3">
-              <button
+              <button type="button"
                 className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}
               >
@@ -266,7 +266,7 @@ export function MonthlyCalendarWidget() {
               >
                 {format(currentDate, 'LLLL yyyy', { locale: uk })}
               </span>
-              <button
+              <button type="button"
                 className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}
               >
@@ -341,7 +341,7 @@ export function MonthlyCalendarWidget() {
               >
                 {format(selectedDay, 'd MMMM', { locale: uk })}
               </p>
-              <button
+              <button type="button"
                 onClick={() => setSelectedDay(null)}
                 className="size-6 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
                 style={{ background: 'var(--border)', color: 'var(--text-secondary)' }}

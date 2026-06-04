@@ -119,7 +119,7 @@ export function DashboardTourBanner() {
                   Відкрити Академію
                 </Link>
               ) : (
-                <button
+                <button type="button"
                   onClick={handleNextStep}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.95] cursor-pointer"
                   style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
@@ -129,7 +129,7 @@ export function DashboardTourBanner() {
                 </button>
               )}
 
-              <button
+              <button type="button"
                 onClick={closeTour}
                 className="flex items-center justify-center size-10 rounded-xl transition-all active:scale-[0.95] cursor-pointer"
                 style={{

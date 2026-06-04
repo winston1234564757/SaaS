@@ -80,7 +80,7 @@ export function PushPrompt() {
             <p className="text-xs font-semibold text-foreground">Сповіщення про статус запису</p>
             <p className="text-[11px] text-muted-foreground/60 mt-0.5">Дізнайся першою, коли майстер підтвердить запис</p>
             <div className="flex gap-2 mt-2">
-              <button
+              <button type="button"
                 onClick={handleAllow}
                 disabled={state === 'loading'}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[11px] font-semibold disabled:opacity-70 active:scale-[0.95] transition-all cursor-pointer"
@@ -91,7 +91,7 @@ export function PushPrompt() {
                 }
               </button>
               {state !== 'loading' && (
-                <button
+                <button type="button"
                   onClick={handleDismiss}
                   className="flex items-center gap-1 px-3 py-1 text-muted-foreground/60 text-[11px] active:scale-[0.95] transition-all cursor-pointer"
                 >

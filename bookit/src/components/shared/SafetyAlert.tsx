@@ -87,7 +87,7 @@ export function SafetyAlert({ masterId, clientId }: Props) {
               )}
             </div>
 
-            <button
+            <button type="button"
               onClick={() => setDismissed(true)}
               className="self-start flex-shrink-0 -mr-1 p-0.5 rounded-lg opacity-50 hover:opacity-100 transition-opacity"
               style={{ color: 'var(--text-tertiary)' }}

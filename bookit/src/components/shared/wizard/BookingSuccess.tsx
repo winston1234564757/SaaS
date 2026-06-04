@@ -128,13 +128,13 @@ export function BookingSuccess({
             </p>
           </div>
           <div className="flex gap-2">
-            <button
+            <button type="button"
               onClick={handleShare}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
             >
               <Share2 size={13} /> Поділитись
             </button>
-            <button
+            <button type="button"
               onClick={handleCopy}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-secondary border border-border text-xs font-medium text-foreground hover:bg-secondary/80 active:scale-[0.95] transition-all cursor-pointer"
             >
@@ -158,7 +158,7 @@ export function BookingSuccess({
       ) : (
         <div className="w-full flex flex-col gap-3">
           <PushPrompt />
-          <button
+          <button type="button"
             onClick={onClose}
             className="w-full py-3.5 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-semibold text-sm hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
           >

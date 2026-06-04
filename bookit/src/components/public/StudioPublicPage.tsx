@@ -94,7 +94,7 @@ export function StudioPublicPage({ studio, members }: Props) {
               className="bento-card overflow-hidden"
             >
               {/* Master card header (always visible) */}
-              <button
+              <button type="button"
                 className="w-full p-4 flex items-center gap-3 text-left active:scale-[0.95] transition-all cursor-pointer"
                 onClick={() => setExpandedMaster(isExpanded ? null : master.masterId)}
               >

@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils/cn';
 import { NavLoginSheet } from '@/components/public/NavLoginSheet';
 
-// ── Client portal nav (/my/* — always authenticated) ─────────────────────────
 const MY_NAV = [
   { href: '/my/bookings',       icon: CalendarDays, label: 'Записи'      },
   { href: '/my/masters',        icon: Users,        label: 'Майстри'     },
@@ -18,7 +17,6 @@ const MY_NAV = [
   { href: '/my/profile',        icon: User,         label: 'Профіль'     },
 ];
 
-// ── Public nav – authenticated ────────────────────────────────────────────────
 const PUBLIC_AUTH_NAV = [
   { href: '/explore',     icon: Search,       label: 'Каталог' },
   { href: '/my/bookings', icon: CalendarDays, label: 'Записи'  },
@@ -45,8 +43,6 @@ export function MyBottomNav({ initialIsAuth }: Props) {
   const isMyRoute = pathname.startsWith('/my');
   const isPublic = isPublicB2CRoute(pathname);
 
-  // Subscribe to auth changes only on public B2C routes
-  // (/my is protected by B2CRouteGuard; dashboard has its own auth)
   useEffect(() => {
     if (!isPublic) return;
     const supabase = createClient();
@@ -68,17 +64,15 @@ export function MyBottomNav({ initialIsAuth }: Props) {
         className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none md:hidden"
         aria-label="Навігація"
       >
-        <div
-          className="bg-secondary/45 backdrop-blur-3xl border-t border-border flex items-center justify-around pt-2 pointer-events-auto shadow-lg pb-[max(env(safe-area-inset-bottom),12px)]"
-        >
+        <div className="bg-secondary/45 backdrop-blur-3xl border-t border-border flex items-center justify-around pt-2 pointer-events-auto shadow-lg pb-[max(env(safe-area-inset-bottom),12px)]">
 
-          {/* /my/* — full client portal nav */}
           {isMyRoute && MY_NAV.map(({ href, icon: Icon, label }) => {
             const active = pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 transition-all duration-150',
                   active ? 'text-primary' : 'text-muted-foreground/60',
@@ -90,7 +84,6 @@ export function MyBottomNav({ initialIsAuth }: Props) {
             );
           })}
 
-          {/* Public — authenticated */}
           {!isMyRoute && isAuth && PUBLIC_AUTH_NAV.map(({ href, icon: Icon, label }) => {
             const active = href === '/explore'
               ? pathname.startsWith('/explore')
@@ -99,6 +92,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
               <Link
                 key={href}
                 href={href}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 transition-all duration-150',
                   active ? 'text-primary' : 'text-muted-foreground/60',
@@ -110,11 +104,11 @@ export function MyBottomNav({ initialIsAuth }: Props) {
             );
           })}
 
-          {/* Public — guest */}
           {!isMyRoute && !isAuth && (
             <>
               <Link
                 href="/explore"
+                aria-current={pathname.startsWith('/explore') ? 'page' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 transition-all duration-150',
                   pathname.startsWith('/explore') ? 'text-primary' : 'text-muted-foreground/60',
@@ -124,6 +118,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
                 <span className="text-[10px] font-medium">Каталог</span>
               </Link>
               <button
+                type="button"
                 onClick={() => setLoginOpen(true)}
                 className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-0 flex-1 text-muted-foreground/60 transition-all duration-150"
               >

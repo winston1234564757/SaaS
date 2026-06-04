@@ -29,7 +29,7 @@ export default function GlobalError({
             <h2 style={{ color: '#2C1A14', marginBottom: 4 }}>Критична помилка</h2>
             <p style={{ color: '#6B5750', fontSize: 14 }}>Будь ласка, оновіть сторінку.</p>
           </div>
-          <button
+          <button type="button"
             onClick={reset}
             style={{
               background: '#789A99', color: '#fff', border: 'none',

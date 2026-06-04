@@ -75,7 +75,7 @@ export function BottomNav() {
 
 
           {/* More button */}
-          <button
+          <button type="button"
             onClick={() => setMoreOpen(true)}
             className={cn(
               'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl flex-1 transition-all duration-150',
@@ -119,7 +119,7 @@ export function BottomNav() {
 
               <div className="flex items-center justify-between px-5 py-3">
                 <p className="text-sm font-bold text-foreground">Розділи</p>
-                <button
+                <button type="button"
                   onClick={() => setMoreOpen(false)}
                   className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60"
                 >

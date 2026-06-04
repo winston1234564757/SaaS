@@ -60,7 +60,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[85] max-w-sm mx-auto bento-card p-6 flex flex-col gap-5"
           >
-            <button
+            <button type="button"
               onClick={onClose}
               className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
             >
@@ -108,7 +108,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
             </p>
 
             <div className="flex flex-col gap-2">
-              <button
+              <button type="button"
                 onClick={handleUpgrade}
                 className={`w-full h-12 rounded-2xl font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
                   isMarketing
@@ -119,7 +119,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
                 <Zap size={16} />
                 Перейти на Pro →
               </button>
-              <button
+              <button type="button"
                 onClick={onClose}
                 className="w-full h-10 rounded-2xl text-muted-foreground/60 text-sm hover:text-muted-foreground transition-colors active:scale-95 transition-all"
               >

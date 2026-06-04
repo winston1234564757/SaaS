@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { MyMastersPage } from '@/components/client/MyMastersPage';
 
 export const metadata = { title: 'Мої майстри' };
@@ -6,6 +7,7 @@ export const metadata = { title: 'Мої майстри' };
 export default async function MyMastersPageRoute() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
   const { data: bookings } = await supabase
     .from('bookings')

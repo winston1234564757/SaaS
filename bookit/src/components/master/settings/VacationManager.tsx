@@ -150,7 +150,7 @@ export function VacationManager() {
                     </p>
                     <p className="text-[11px] text-muted-foreground/60">{entrySubLabel(e)}</p>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => remove(e.id)}
                     className="size-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 active:scale-[0.88] cursor-pointer"
                   >
@@ -255,13 +255,13 @@ export function VacationManager() {
 
               {/* Кнопки */}
               <div className="flex gap-2">
-                <button
+                <button type="button"
                   onClick={resetForm}
                   className="flex-1 py-2 rounded-xl text-xs font-medium text-muted-foreground/60 bg-secondary/40 hover:bg-secondary/60 active:scale-[0.95] cursor-pointer transition-all"
                 >
                   Скасувати
                 </button>
-                <button
+                <button type="button"
                   onClick={handleAdd}
                   disabled={!isFormValid() || isAdding}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-1 active:scale-[0.95] cursor-pointer disabled:cursor-not-allowed"
@@ -277,7 +277,7 @@ export function VacationManager() {
 
       {/* ── Кнопка відкриття форми ────────────────────────────────────────── */}
       {!showForm && (
-        <button
+        <button type="button"
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-secondary/40 border border-dashed border-border text-xs font-medium text-muted-foreground hover:bg-secondary/60 active:scale-[0.95] cursor-pointer transition-all w-full"
         >

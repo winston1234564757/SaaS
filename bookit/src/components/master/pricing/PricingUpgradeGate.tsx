@@ -175,7 +175,7 @@ function TrialActiveView({
             Фіча працює <strong className="text-foreground">безкоштовно</strong>.
             Коли ліміт вичерпається — клієнти побачать базові ціни.
           </p>
-          <button
+          <button type="button"
             onClick={onUpgrade}
             className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors active:scale-95 transition-all cursor-pointer"
             style={{

@@ -248,7 +248,7 @@ export default function SettingsPage() {
 
         {/* System Actions */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
+          <button type="button"
             onClick={() => {
               document.cookie = 'view_mode=client; path=/; max-age=86400';
               window.location.href = '/my/bookings';
@@ -258,7 +258,7 @@ export default function SettingsPage() {
             <UserIcon size={18} /> Перейти в режим клієнта
           </button>
 
-          <button
+          <button type="button"
             onClick={async () => {
               const supabase = createClient();
               await supabase.auth.signOut();
@@ -286,14 +286,14 @@ export default function SettingsPage() {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-text-primary whitespace-nowrap">Незбережені зміни</p>
               </div>
               <div className="flex gap-1">
-                <button
+                <button type="button"
                   onClick={actions.handleCancel}
                   disabled={state.saving}
                   className="px-5 py-3 rounded-full text-xs font-bold text-text-mute hover:bg-muted/10 transition-colors whitespace-nowrap"
                 >
                   Скасувати
                 </button>
-                <button
+                <button type="button"
                   onClick={actions.handleSave}
                   disabled={state.saving || state.slugStatus === 'taken'}
                   className={cn(
@@ -336,7 +336,7 @@ function ExpandableBio({ value, onChange }: { value: string; onChange: (v: strin
         />
       </motion.div>
       {value.length > 120 && (
-        <button
+        <button type="button"
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1.5 text-[11px] font-bold text-accent hover:opacity-70 active:scale-[0.95] cursor-pointer transition-all"
         >

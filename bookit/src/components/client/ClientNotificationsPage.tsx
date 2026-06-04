@@ -120,6 +120,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                 </div>
                 <div className="flex gap-2">
                   <button
+                    type="button"
                     onClick={() => handleDecline(item.id)}
                     disabled={pending}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold text-destructive border border-destructive/30 hover:bg-destructive/8 active:scale-[0.95] cursor-pointer transition-all duration-100 disabled:opacity-50"
@@ -127,6 +128,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                     <X size={15} /> Відхилити
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleApprove(item.id)}
                     disabled={pending}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold text-primary-foreground bg-accent hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all duration-100 disabled:opacity-50"
@@ -154,7 +156,8 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
               const broadcast = isBroadcast ? parseBroadcastBody(notif.body) : null;
 
               return (
-                <motion.div
+                <motion.button
+                  type="button"
                   key={notif.id}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -168,7 +171,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                       router.push('/my/bookings');
                     }
                   }}
-                  className={`rounded-xl p-4 flex items-start gap-3 ${notif.isRead ? 'bg-secondary/55' : 'bg-secondary/80'} ${isBroadcast ? 'border border-accent/25' : 'border border-border'} ${(isBroadcast && broadcast?.url) || notif.type === 'support_user_reply' || notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type) ? 'cursor-pointer hover:opacity-90 active:scale-[0.95] transition-all duration-100' : ''}`}
+                  className={`text-left w-full rounded-xl p-4 flex items-start gap-3 ${notif.isRead ? 'bg-secondary/55' : 'bg-secondary/80'} ${isBroadcast ? 'border border-accent/25' : 'border border-border'} ${(isBroadcast && broadcast?.url) || notif.type === 'support_user_reply' || notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type) ? 'cursor-pointer hover:opacity-90 active:scale-[0.95] transition-all duration-100' : ''}`}
                 >
                   <div
                     className={`size-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/40 text-muted-foreground'}`}
@@ -199,7 +202,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                     )}
                     <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(notif.createdAt)}</p>
                   </div>
-                </motion.div>
+                </motion.button>
               );
             })}
         </div>

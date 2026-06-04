@@ -169,7 +169,7 @@ export function BillingPage() {
               <p className="text-sm font-semibold text-foreground">Оплата успішна! 🎉</p>
               <p className="text-xs text-muted-foreground">Ваш тариф оновлено. Всі функції вже активні.</p>
             </div>
-            <button onClick={() => setShowSuccess(false)} className="text-muted-foreground/60 hover:text-muted-foreground">
+            <button type="button" onClick={() => setShowSuccess(false)} className="text-muted-foreground/60 hover:text-muted-foreground">
               <X size={14} />
             </button>
           </motion.div>
@@ -186,7 +186,7 @@ export function BillingPage() {
             className="bento-card p-4 flex items-center gap-3 border border-destructive/30 bg-destructive/8"
           >
             <p className="text-sm text-destructive flex-1">{error}</p>
-            <button onClick={() => setError(null)} className="text-muted-foreground/60">
+            <button type="button" onClick={() => setError(null)} className="text-muted-foreground/60">
               <X size={14} />
             </button>
           </motion.div>
@@ -240,7 +240,7 @@ export function BillingPage() {
                         : 'Активний'}
                   </span>
                   {currentTier !== 'starter' && subscription?.status === 'active' && (
-                    <button 
+                    <button type="button" 
                       onClick={() => setShowCancelModal(true)}
                       className="text-[10px] font-medium text-muted-foreground/40 hover:text-destructive transition-colors underline underline-offset-2"
                     >
@@ -266,7 +266,7 @@ export function BillingPage() {
           {([
             { key: 'mono' as PaymentProvider, label: 'Monobank', logo: '🍋' },
           ]).map(p => (
-            <button
+            <button type="button"
               key={p.key}
               onClick={() => setProvider(p.key)}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-sm font-medium transition-all ${
@@ -378,13 +378,14 @@ export function BillingPage() {
               </div>
             ) : currentTier !== 'starter' && plan.key === 'starter' ? (
               <button
+                type="button"
                 className="w-full py-3 rounded-2xl text-sm font-semibold bg-secondary/40 border border-border text-muted-foreground/60 cursor-not-allowed transition-all"
                 disabled
               >
                 Перехід недоступний
               </button>
             ) : (
-              <button
+              <button type="button"
                 disabled={isLoading}
                 onClick={() => handleUpgrade(plan.key)}
                 className="w-full py-3 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
@@ -410,7 +411,7 @@ export function BillingPage() {
           <div>
             <p className="text-sm font-semibold text-foreground">Запроси колегу — отримай місяць безкоштовно</p>
             <p className="text-xs text-muted-foreground/60 mt-0.5">За кожного зареєстрованого майстра за твоїм посиланням — 1 місяць Pro в подарунок</p>
-            <button
+            <button type="button"
               className="mt-2 text-xs font-semibold text-primary hover:text-primary/90 transition-colors active:scale-[0.95] transition-all"
               onClick={() => router.push('/dashboard/referral')}
             >
@@ -459,7 +460,7 @@ export function BillingPage() {
           </p>
           
           <div className="flex flex-col gap-3">
-            <button
+            <button type="button"
               disabled={isCanceling}
               onClick={handleCancelSubscription}
               className="w-full py-3.5 rounded-2xl bg-destructive text-white text-sm font-semibold shadow-lg shadow-destructive/20 active:scale-[0.95] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
@@ -470,7 +471,7 @@ export function BillingPage() {
                 'Так, скасувати підписку'
               )}
             </button>
-            <button
+            <button type="button"
               disabled={isCanceling}
               onClick={() => setShowCancelModal(false)}
               className="w-full py-3.5 rounded-2xl bg-secondary text-muted-foreground text-sm font-semibold active:scale-[0.95] transition-all"

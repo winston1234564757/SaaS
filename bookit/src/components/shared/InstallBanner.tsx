@@ -65,7 +65,7 @@ export function InstallBanner() {
           </p>
         </div>
         {!isIOS && (
-          <button
+          <button type="button"
             onClick={install}
             className="flex items-center gap-1.5 bg-secondary text-foreground text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0 active:scale-95 transition-all"
           >
@@ -73,7 +73,7 @@ export function InstallBanner() {
             Додати
           </button>
         )}
-        <button onClick={dismiss} className="text-white/70 flex-shrink-0 ml-1 active:scale-95 transition-all">
+        <button type="button" onClick={dismiss} className="text-white/70 flex-shrink-0 ml-1 active:scale-95 transition-all">
           <X size={16} />
         </button>
       </div>

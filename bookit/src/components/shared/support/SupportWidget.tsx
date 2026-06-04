@@ -212,7 +212,7 @@ export function SupportWidget() {
  
           {step === 'selection' && (
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-              <button
+              <button type="button"
                 onClick={handleStartChat}
                 disabled={submitting}
                 className="relative overflow-hidden flex items-center justify-between rounded-3xl border-2 border-indigo-400 bg-gradient-to-br from-indigo-50/50 to-white p-5 text-left transition hover:from-indigo-50/80 hover:to-indigo-50/30 active:scale-[0.98] group cursor-pointer shadow-md"
@@ -236,7 +236,7 @@ export function SupportWidget() {
                 <ChevronRight className="size-5 text-indigo-500 relative z-10 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
-              <button
+              <button type="button"
                 onClick={() => {
                   setTicketType('bug');
                   setStep('form');
@@ -255,7 +255,7 @@ export function SupportWidget() {
                 <ChevronRight className="size-5 text-slate-400" />
               </button>
 
-              <button
+              <button type="button"
                 onClick={() => {
                   setTicketType('idea');
                   setStep('form');
@@ -274,7 +274,7 @@ export function SupportWidget() {
                 <ChevronRight className="size-5 text-slate-400" />
               </button>
 
-              <button
+              <button type="button"
                 onClick={() => {
                   setTicketType('feedback');
                   setStep('form');

@@ -48,7 +48,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
 
       {/* Month navigation — full width, own row */}
       <div className="flex items-center justify-between gap-2 bg-muted/20 rounded-2xl px-1 py-1 border border-white/60">
-        <button
+        <button type="button"
           onClick={handlePrev}
           className="size-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
         >
@@ -57,7 +57,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
         <span className="text-[11px] font-bold text-text-primary capitalize">
           {format(currentDate, 'LLLL yyyy', { locale: uk })}
         </span>
-        <button
+        <button type="button"
           onClick={handleNext}
           className="size-8 rounded-xl flex items-center justify-center hover:bg-white active:scale-95 transition-all"
         >

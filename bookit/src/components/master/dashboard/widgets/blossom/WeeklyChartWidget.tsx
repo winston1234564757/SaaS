@@ -123,6 +123,7 @@ export function WeeklyChartWidget() {
           {(['bookings', 'revenue'] as const).map(m => (
             <button
               key={m}
+              type="button"
               onClick={() => { setMode(m); setActiveBar(null); }}
               className="relative text-[13px] font-medium pb-px transition-colors duration-150"
               style={{ color: mode === m ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
@@ -154,9 +155,10 @@ export function WeeklyChartWidget() {
             const dateStr  = d ? `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}` : '';
 
             return (
-              <div
+              <button
                 key={i}
-                className="relative flex flex-col items-center justify-end flex-1 cursor-pointer"
+                type="button"
+                className="relative flex flex-col items-center justify-end flex-1 bg-transparent border-0 p-0 min-w-0"
                 onClick={() => setActiveBar(prev => prev === i ? null : i)}
               >
                 {isActive && (
@@ -185,7 +187,7 @@ export function WeeklyChartWidget() {
                   animate={{ scaleY: 1, opacity: isToday || isActive ? 1 : 0.55 }}
                   transition={{ type: 'spring' as const, duration: 0.7, bounce: 0.12, delay: i * 0.055 }}
                 />
-              </div>
+              </button>
             );
           })}
         </div>

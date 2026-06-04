@@ -53,7 +53,7 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+          transition={{ type: 'spring' as const, stiffness: 300, damping: 24 }}
           className="bento-card p-8 text-center"
         >
           <p className="text-sm font-medium text-foreground mb-1">
@@ -95,7 +95,7 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
+      transition={{ delay: index * 0.05, type: 'spring' as const, stiffness: 300, damping: 24 }}
       className="bento-card p-4"
     >
       <div className="flex items-center gap-3">

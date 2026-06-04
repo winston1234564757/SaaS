@@ -44,7 +44,7 @@ export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
           </div>
         </div>
         {onBook && (
-          <button
+          <button type="button"
             onClick={onBook}
             className="mt-3 w-full py-2 rounded-lg text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer bg-primary"
           >

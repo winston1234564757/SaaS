@@ -37,7 +37,7 @@ function DayCell({ day, bookings, isCurrentMonth, isSelected, onClick }: DayProp
   const tooltipPos = colIndex <= 1 ? { left: 0 } : colIndex >= 5 ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' };
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -184,7 +184,7 @@ export function MonthlyCalendarWidget() {
           {(['Тиждень', 'Місяць'] as const).map((label, idx) => {
             const val = idx === 1;
             return (
-              <button
+              <button type="button"
                 key={label}
                 onClick={() => { setDirection(0); setIsExpanded(val); setSelectedDay(null); }}
                 className="text-[11px] font-bold tracking-[0.14em] uppercase transition-colors duration-150 relative pb-px"
@@ -217,14 +217,14 @@ export function MonthlyCalendarWidget() {
             className="overflow-hidden"
           >
             <div className="flex items-center justify-between mb-3">
-              <button className="size-6 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              <button type="button" className="size-6 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}>
                 <ChevronLeft size={13} />
               </button>
               <span className="text-[12px] font-bold tracking-[0.1em] uppercase text-[var(--text-secondary)] capitalize">
                 {format(currentDate, 'LLLL yyyy', { locale: uk })}
               </span>
-              <button className="size-6 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              <button type="button" className="size-6 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}>
                 <ChevronRight size={13} />
               </button>
@@ -293,7 +293,7 @@ export function MonthlyCalendarWidget() {
               <span className="text-[12px] font-bold tracking-[0.1em] uppercase text-[var(--text-secondary)] capitalize">
                 {format(selectedDay, 'd MMMM', { locale: uk })}
               </span>
-              <button onClick={() => setSelectedDay(null)} className="opacity-40 hover:opacity-80 transition-opacity">
+              <button type="button" onClick={() => setSelectedDay(null)} className="opacity-40 hover:opacity-80 transition-opacity">
                 <X size={12} style={{ color: 'var(--text-secondary)' }} />
               </button>
             </div>

@@ -139,7 +139,7 @@ export function ProfileHero({
               )}
             </div>
 
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 if (slug) {
@@ -212,7 +212,7 @@ export function ProfileHero({
               <div className="max-w-md mx-auto">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl font-bold tracking-tight">Редагувати фото</h3>
-                  <button onClick={() => setIsDrawerOpen(false)} className="p-3 rounded-2xl bg-muted/30 hover:bg-muted transition-colors cursor-pointer">
+                  <button type="button" onClick={() => setIsDrawerOpen(false)} className="p-3 rounded-2xl bg-muted/30 hover:bg-muted transition-colors cursor-pointer">
                     <X size={20} />
                   </button>
                 </div>
@@ -222,13 +222,13 @@ export function ProfileHero({
                   )}
                 </div>
                 <div className="mt-10 flex gap-4">
-                  <button
+                  <button type="button"
                     onClick={() => setIsDrawerOpen(false)}
                     className="flex-1 py-5 rounded-3xl bg-muted/45 font-bold text-sm active:scale-[0.95] cursor-pointer transition-all border border-border"
                   >
                     Скасувати
                   </button>
-                  <button
+                  <button type="button"
                     onClick={handleUpload}
                     disabled={uploading}
                     className="flex-1 py-5 rounded-3xl bg-accent text-[var(--accent-on)] font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-accent/20 active:scale-[0.95] cursor-pointer transition-all"
@@ -263,7 +263,7 @@ function ExpandableBio({ value }: { value: string }) {
         </p>
       </motion.div>
       {value.length > 120 && (
-        <button
+        <button type="button"
           onClick={(e) => {
             e.stopPropagation();
             setExpanded(!expanded);

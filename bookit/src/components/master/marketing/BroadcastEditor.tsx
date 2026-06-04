@@ -264,7 +264,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               </p>
             )}
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-secondary transition-colors active:scale-95 transition-all">
+          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-secondary transition-colors active:scale-95 transition-all">
             <X size={18} className="text-muted-foreground" />
           </button>
         </div>
@@ -305,11 +305,11 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               {error && <p className="text-xs text-destructive px-1">{error}</p>}
 
               <div className="flex gap-3">
-                <button onClick={() => setStep('edit')}
+                <button type="button" onClick={() => setStep('edit')}
                   className="flex-1 py-3 rounded-2xl border border-[#E8D5CC] text-sm text-muted-foreground font-medium">
                   Назад
                 </button>
-                <button
+                <button type="button"
                   onClick={handleSend}
                   disabled={isSending}
                   data-testid="confirm-send-btn"
@@ -352,7 +352,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   {/* Mode switcher */}
                   <div className="flex rounded-xl overflow-hidden border border-[#E8D5CC] text-[11px] font-medium">
                     {(['tags', 'clients'] as const).map(mode => (
-                      <button
+                      <button type="button"
                         key={mode}
                         onClick={() => setTargetMode(mode)}
                         className="px-3 py-1.5 transition-all"
@@ -375,7 +375,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       {/* Tag chips */}
                       <div className="flex flex-wrap gap-2">
                         {TAG_OPTIONS.map(tag => (
-                          <button
+                          <button type="button"
                             key={tag.value}
                             onClick={() => toggleTag(tag.value)}
                             data-testid={`tag-filter-${tag.value}`}
@@ -418,14 +418,14 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                           {((tagPreview?.hasMore) || tagPage > 0) && (
                             <div className="flex gap-2 px-3 py-2 border-t border-secondary">
                               {tagPage > 0 && (
-                                <button onClick={() => setTagPage(p => p - 1)}
+                                <button type="button" onClick={() => setTagPage(p => p - 1)}
                                   className="text-[11px] text-primary flex items-center gap-1">
                                   ← Назад
                                 </button>
                               )}
                               <span className="flex-1" />
                               {tagPreview?.hasMore && (
-                                <button onClick={() => setTagPage(p => p + 1)}
+                                <button type="button" onClick={() => setTagPage(p => p + 1)}
                                   className="text-[11px] text-primary flex items-center gap-1">
                                   Ще <ChevronRight size={11} />
                                 </button>
@@ -458,7 +458,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                           <span className="text-[11px] text-primary font-medium">
                             Обрано: {selectedIds.size}
                           </span>
-                          <button onClick={() => setSelectedIds(new Set())}
+                          <button type="button" onClick={() => setSelectedIds(new Set())}
                             className="text-[11px] text-destructive underline">
                             Скинути
                           </button>
@@ -480,12 +480,12 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                           {((pickerData?.hasMore) || clientPage > 0) && (
                             <div className="flex gap-2 px-3 py-2 border-t border-secondary">
                               {clientPage > 0 && (
-                                <button onClick={() => setClientPage(p => p - 1)}
+                                <button type="button" onClick={() => setClientPage(p => p - 1)}
                                   className="text-[11px] text-primary">← Назад</button>
                               )}
                               <span className="flex-1" />
                               {pickerData?.hasMore && (
-                                <button onClick={() => setClientPage(p => p + 1)}
+                                <button type="button" onClick={() => setClientPage(p => p + 1)}
                                   className="text-[11px] text-primary flex items-center gap-1">
                                   Ще <ChevronRight size={11} />
                                 </button>
@@ -508,7 +508,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                 <label className="text-xs font-medium text-muted-foreground mb-2 block">Канали</label>
                 <div className="flex gap-2">
                   {CHANNEL_OPTIONS.map(ch => (
-                    <button
+                    <button type="button"
                       key={ch.value}
                       onClick={() => toggleChannel(ch.value)}
                       className="flex-1 py-2.5 rounded-2xl text-xs font-medium border transition-all"
@@ -540,14 +540,14 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <span className="text-[10px] text-muted-foreground/60 self-center">Вставити:</span>
                   {["{{ім'я}}", '{{кількість_візитів}}', '{{знижка}}'].map(v => (
-                    <button key={v}
+                    <button type="button" key={v}
                       onClick={() => setMessage(prev => prev + v)}
                       className="text-[10px] px-2 py-0.5 rounded-full border border-primary/40 text-primary hover:bg-primary/10 transition-colors">
                       {v}
                     </button>
                   ))}
                   {tags.length > 0 && (
-                    <button
+                    <button type="button"
                       onClick={() => setMessage(TEMPLATES[tags[0]] ?? TEMPLATES.default)}
                       className="text-[10px] px-2 py-0.5 rounded-full border border-warning/40 text-warning hover:bg-warning/10 transition-colors ml-auto">
                       Шаблон для тегу
@@ -646,7 +646,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                 </div>
               )}
 
-              <button
+              <button type="button"
                 onClick={handlePreview}
                 disabled={resolving || (isStarter && broadcastsUsed >= 3)}
                 data-testid="preview-broadcast-btn"
@@ -670,7 +670,7 @@ function ClientRow({
   client, checked, onToggle,
 }: { client: ClientPreviewItem; checked: boolean; onToggle: () => void }) {
   return (
-    <button
+    <button type="button"
       onClick={onToggle}
       className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-secondary/60 last:border-0 transition-colors hover:bg-secondary/40 text-left active:scale-95 transition-all"
     >
@@ -716,7 +716,7 @@ function CollapsibleSection({
 }) {
   return (
     <div>
-      <button onClick={onToggle} className="flex items-center gap-2 text-sm font-medium text-foreground w-full active:scale-95 transition-all">
+      <button type="button" onClick={onToggle} className="flex items-center gap-2 text-sm font-medium text-foreground w-full active:scale-95 transition-all">
         {icon}
         {label}
         <span className="ml-auto">

@@ -90,7 +90,7 @@ export function StudioJoinPage({ studio, token }: Props) {
               </div>
             )}
 
-            <button
+            <button type="button"
               onClick={handleJoin}
               disabled={isPending}
               className="w-full py-3.5 rounded-2xl bg-success text-white text-sm font-semibold disabled:opacity-60 transition-all active:scale-95 transition-all"

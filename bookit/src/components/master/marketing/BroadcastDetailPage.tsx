@@ -19,7 +19,7 @@ export function BroadcastDetailPage({ broadcastId }: Props) {
     <div className="min-h-screen pb-24">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button
+        <button type="button"
           onClick={() => router.back()}
           aria-label="Назад"
           className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors active:scale-95 transition-all"

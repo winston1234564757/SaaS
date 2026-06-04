@@ -277,7 +277,7 @@ export function BookingWizard({
                   Майстер досяг ліміту 40 записів на місяць.<br />
                   Нові записи будуть доступні з наступного місяця.
                 </p>
-                <button onClick={onClose}
+                <button type="button" onClick={onClose}
                   className="mt-4 px-8 py-4 rounded-lg bg-primary text-white text-sm font-bold uppercase tracking-widest active:scale-95 transition-all shadow-lg">
                   Зрозуміло
                 </button>

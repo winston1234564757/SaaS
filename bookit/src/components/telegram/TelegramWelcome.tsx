@@ -363,7 +363,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           </p>
 
           <div className="w-full space-y-4">
-            <button
+            <button type="button"
               onClick={handleShareContact}
               disabled={isWorking}
               className="w-full h-[64px] bg-sage text-white rounded-2xl flex items-center justify-center gap-3 font-bold text-lg active:scale-95 transition-all disabled:opacity-80 shadow-xl shadow-sage/20 border border-white/20"
@@ -403,7 +403,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
                   className="bg-error/10 border border-error/10 p-4 rounded-xl"
                 >
                   <p className="text-error text-xs font-medium mb-3">{error}</p>
-                  <button
+                  <button type="button"
                     onClick={handleRetry}
                     className="w-full h-10 bg-error/20 text-error rounded-lg text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                   >

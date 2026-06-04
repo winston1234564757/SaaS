@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { MyBookingsPage } from '@/components/client/MyBookingsPage';
 import { ClientRealtimeSync } from '@/components/client/ClientRealtimeSync';
 
@@ -7,6 +8,7 @@ export const metadata = { title: 'Мої записи' };
 export default async function MyBookings() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
   const { data: bookings } = await supabase
     .from('bookings')

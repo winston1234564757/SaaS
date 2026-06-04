@@ -97,7 +97,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
           </div>
         </div>
         
-        <button 
+        <button type="button" 
           onClick={() => setShowExplanation(true)}
           className="size-9 rounded-2xl bg-secondary border border-border/80 flex items-center justify-center text-text-mute hover:text-accent active:scale-[0.88] cursor-pointer transition-all shadow-sm"
         >
@@ -159,7 +159,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
           >
             <div className="flex items-center justify-between mb-4">
                <h4 className="font-bold text-sm uppercase tracking-widest text-accent">Як це працює?</h4>
-               <button onClick={() => setShowExplanation(false)} className="p-1 hover:bg-muted active:scale-[0.88] cursor-pointer rounded-lg">
+               <button type="button" onClick={() => setShowExplanation(false)} className="p-1 hover:bg-muted active:scale-[0.88] cursor-pointer rounded-lg">
                  <X size={16} />
                </button>
             </div>
@@ -174,7 +174,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
                  <strong className="text-text-primary">Engagement Score:</strong> Чим вищий відсоток "здоров'я", тим вище ваш профіль піднімається у загальному каталозі.
                </p>
             </div>
-            <button 
+            <button type="button" 
               onClick={() => setShowExplanation(false)}
               className="mt-auto py-3 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-bold text-[10px] uppercase tracking-widest active:scale-[0.95] cursor-pointer transition-all"
             >

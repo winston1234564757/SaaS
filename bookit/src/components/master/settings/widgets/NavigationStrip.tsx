@@ -92,7 +92,7 @@ export function NavigationStrip() {
         
         <div className="flex items-center gap-6 h-full overflow-x-auto scrollbar-hide px-6 justify-start lg:justify-center">
           {ITEMS.map((item) => (
-            <button
+            <button type="button"
               key={item.id}
               onClick={() => scrollTo(item.id)}
               className={cn(

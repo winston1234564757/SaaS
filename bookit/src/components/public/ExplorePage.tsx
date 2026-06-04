@@ -106,10 +106,7 @@ export function ExplorePage({ masters, cities }: Props) {
   const activeFiltersCount = [activeCategory, activeCity].filter(Boolean).length;
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: 'transparent' }}
-    >
+    <div className="min-h-screen bg-transparent">
       <div className="max-w-lg mx-auto px-4 pt-10 pb-20">
 
         {/* Header */}
@@ -166,7 +163,7 @@ export function ExplorePage({ masters, cities }: Props) {
             type="button"
             aria-pressed={showFilters}
             onClick={() => setShowFilters(v => !v)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all flex-shrink-0 active:scale-[0.95] ${
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold transition-all flex-shrink-0 active:scale-[0.95] ${
               activeFiltersCount > 0 || showFilters
                 ? 'bg-primary text-primary-foreground shadow-lg shadow-accent/20'
                 : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
@@ -187,7 +184,7 @@ export function ExplorePage({ masters, cities }: Props) {
               type="button"
               aria-pressed={!activeCategory}
               onClick={() => setActiveCategory(null)}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-[0.95] ${
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold transition-all active:scale-[0.95] ${
                 !activeCategory
                   ? 'bg-primary text-primary-foreground shadow-lg shadow-accent/20'
                   : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
@@ -201,7 +198,7 @@ export function ExplorePage({ masters, cities }: Props) {
                 type="button"
                 aria-pressed={activeCategory === cat.id}
                 onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-[0.95] ${
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold transition-all active:scale-[0.95] ${
                   activeCategory === cat.id
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-accent/20'
                     : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
@@ -290,7 +287,7 @@ export function ExplorePage({ masters, cities }: Props) {
                         type="button"
                         aria-pressed={sort === opt.value}
                         onClick={() => setSort(opt.value)}
-                        className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all active:scale-[0.95] ${
+                        className={`flex-1 py-2.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.95] ${
                           sort === opt.value
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary'

@@ -181,7 +181,7 @@ export function LandingPricing() {
                     ))}
                   </ul>
 
-                  <button
+                  <button type="button"
                     onClick={() => router.push('/register')}
                     className="w-full h-12 rounded-full font-semibold text-sm transition-all active:scale-[0.97]"
                     style={

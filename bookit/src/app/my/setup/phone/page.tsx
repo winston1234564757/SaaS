@@ -1,8 +1,14 @@
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { PhoneSetupForm } from '@/components/client/PhoneSetupForm';
 
 export const metadata = { title: 'Підтвердження номеру — BookIT' };
 
-export default function PhoneSetupPage() {
+export default async function PhoneSetupPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80dvh] px-4">
       <div className="w-full max-w-sm">

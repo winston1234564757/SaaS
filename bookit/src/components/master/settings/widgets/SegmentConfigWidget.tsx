@@ -74,7 +74,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
           </div>
         )}
 
-        <button
+        <button type="button"
           onClick={openNew}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold active:scale-[0.95] cursor-pointer transition-all shadow-sm"
         >

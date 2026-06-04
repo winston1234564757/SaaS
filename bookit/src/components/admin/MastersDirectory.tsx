@@ -39,7 +39,7 @@ export function MastersDirectory() {
   const [search, setSearch] = useState('');
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [selectedMaster, setSelectedMaster] = useState<MasterRecord | null>(null);
-  
+
   // Edit state
   const [editTier, setEditTier] = useState<'starter' | 'pro' | 'studio'>('starter');
   const [editExpires, setEditExpires] = useState('');
@@ -97,12 +97,12 @@ export function MastersDirectory() {
 
       // Refresh listing
       await fetchMasters();
-      setSelectedMaster(prev => prev ? { 
-        ...prev, 
-        subscription_tier: editTier, 
-        subscription_expires_at: editExpires ? new Date(editExpires).toISOString() : null 
+      setSelectedMaster(prev => prev ? {
+        ...prev,
+        subscription_tier: editTier,
+        subscription_expires_at: editExpires ? new Date(editExpires).toISOString() : null
       } : null);
-      
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -146,9 +146,9 @@ export function MastersDirectory() {
       (m.business_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (m.slug || '').toLowerCase().includes(search.toLowerCase()) ||
       (m.profiles?.phone || '').includes(search);
-      
+
     const tierMatch = tierFilter === 'all' || m.subscription_tier === tierFilter;
-    
+
     return nameMatch && tierMatch;
   });
 
@@ -171,6 +171,7 @@ export function MastersDirectory() {
           {['all', 'starter', 'pro', 'studio'].map((t) => (
             <button
               key={t}
+              type="button"
               onClick={() => setTierFilter(t)}
               className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
                 tierFilter === t
@@ -261,6 +262,7 @@ export function MastersDirectory() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
+                        type="button"
                         onClick={() => handleOpenDetails(m)}
                         className="inline-flex h-8 items-center gap-1 rounded-full border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.95] cursor-pointer"
                       >
@@ -294,6 +296,7 @@ export function MastersDirectory() {
             {/* Quick Actions Panel */}
             <div className="grid grid-cols-2 gap-3">
               <button
+                type="button"
                 onClick={() => handleImpersonate(selectedMaster)}
                 className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-xs font-bold text-slate-50 transition hover:bg-slate-800 active:scale-[0.95] cursor-pointer"
               >
@@ -302,6 +305,7 @@ export function MastersDirectory() {
               </button>
 
               <button
+                type="button"
                 onClick={handleTogglePublish}
                 disabled={saving}
                 className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-xs font-bold transition active:scale-[0.95] cursor-pointer ${
@@ -327,7 +331,7 @@ export function MastersDirectory() {
             {/* Subscription Form */}
             <div className="rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-5 space-y-4 shadow-sm">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Управління підпискою</h3>
-              
+
               <div className="space-y-3.5">
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-500 mb-1.5">Тарифний план</label>
@@ -376,12 +380,12 @@ export function MastersDirectory() {
             {/* Profile Info Details */}
             <div className="rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-5 space-y-3 shadow-sm text-xs">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Картка користувача</h3>
-              
+
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Slug сторінки:</span>
-                <a 
-                  href={`/${selectedMaster.slug}`} 
-                  target="_blank" 
+                <a
+                  href={`/${selectedMaster.slug}`}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="font-mono text-indigo-600 hover:underline flex items-center gap-1"
                 >

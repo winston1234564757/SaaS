@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Sparkles, CalendarCheck, Gem } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { BlobBackground } from '@/components/shared/BlobBackground';
 
@@ -50,6 +51,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: 'Зареєструйся та отримай бонус',
   };
 }
+
+const BENEFITS = [
+  { icon: Sparkles,      text: 'Онлайн-запис 24/7' },
+  { icon: CalendarCheck, text: 'Нагадування про сесії' },
+  { icon: Gem,           text: 'Програма лояльності' },
+] as const;
 
 export default async function InvitePage({ params }: Props) {
   const { code } = await params;
@@ -109,13 +116,9 @@ export default async function InvitePage({ params }: Props) {
 
           {/* Переваги */}
           <div className="flex flex-col gap-2 mt-5 text-left">
-            {[
-              ['✨', 'Онлайн-запис 24/7'],
-              ['📅', 'Нагадування про сесії'],
-              ['💎', 'Програма лояльності'],
-            ].map(([icon, text]) => (
+            {BENEFITS.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/60">
-                <span className="text-base">{icon}</span>
+                <Icon className="w-4 h-4 shrink-0 text-primary" />
                 <span className="text-sm text-foreground">{text}</span>
               </div>
             ))}

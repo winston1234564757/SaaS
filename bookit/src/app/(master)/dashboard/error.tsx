@@ -26,7 +26,7 @@ export default function DashboardError({
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
-        <button
+        <button type="button"
           onClick={() => reset()}
           className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all active:scale-95"
         >

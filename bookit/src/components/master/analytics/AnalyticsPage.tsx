@@ -67,7 +67,7 @@ function DateRangeBar({
     <div className="flex flex-col gap-3">
       <div className="bg-secondary/60 p-1.5 rounded-2xl flex gap-0.5 overflow-x-auto scrollbar-hide">
         {PRESETS.map(p => (
-          <button key={p.key} onClick={() => setPreset(p.key)}
+          <button type="button" key={p.key} onClick={() => setPreset(p.key)}
             className={`flex-1 flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${preset === p.key
                 ? 'bg-secondary shadow-[0_2px_10px_rgb(0,0,0,0.08)] text-foreground font-semibold'
                 : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary/30'
@@ -77,12 +77,12 @@ function DateRangeBar({
         ))}
       </div>
       <div className="flex items-center gap-2">
-        <button onClick={goPrev}
+        <button type="button" onClick={goPrev}
           className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm active:scale-95 transition-all">
           <ChevronLeft size={14} />
         </button>
         <p className="flex-1 text-center text-sm font-semibold text-foreground">{label}</p>
-        <button onClick={goNext} disabled={!canGoNext}
+        <button type="button" onClick={goNext} disabled={!canGoNext}
           className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm disabled:opacity-30 active:scale-95 transition-all">
           <ChevronRight size={14} />
         </button>
@@ -108,7 +108,7 @@ function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
   const [open, setOpen] = useState(false);
   return (
     <div>
-      <button onClick={() => setOpen(o => !o)} className="w-full text-left">
+      <button type="button" onClick={() => setOpen(o => !o)} className="w-full text-left">
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-sm font-medium text-foreground truncate pr-2">{svc.name}</span>
           <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(svc.revenue)}</span>
@@ -454,7 +454,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             <h1 className="heading-serif text-xl text-foreground mb-0.5">Аналітика</h1>
             <p className="text-sm text-muted-foreground/60">Статистика та звіти</p>
           </div>
-          <button onClick={() => refetch()} disabled={isFetching}
+          <button type="button" onClick={() => refetch()} disabled={isFetching}
             className="size-9 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.88] cursor-pointer transition-colors disabled:opacity-40">
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
@@ -478,7 +478,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       {isError && (
         <div className="bento-card p-5 text-center text-sm text-destructive">
           Помилка завантаження.{' '}
-          <button onClick={() => refetch()} className="underline">Повторити</button>
+          <button type="button" onClick={() => refetch()} className="underline">Повторити</button>
         </div>
       )}
 
@@ -785,7 +785,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             ) : bento && bento.topClients.length > 0 ? (
               <div className="flex flex-col gap-1">
                 {bento.topClients.map((c, i) => (
-                  <button key={i}
+                  <button type="button" key={i}
                     onClick={() => c.clientId ? setSelectedClient(c) : undefined}
                     disabled={!c.clientId}
                     className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-secondary/60 transition-colors cursor-pointer disabled:cursor-default text-left w-full"
@@ -966,7 +966,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 <p className="text-[11px] text-muted-foreground/60">CSV з усіма транзакціями · {range.label}</p>
               </div>
             </div>
-            <button onClick={handleExport} disabled={exporting || isLoading}
+            <button type="button" onClick={handleExport} disabled={exporting || isLoading}
               className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-semibold active:scale-[0.95] cursor-pointer transition-all disabled:opacity-50 shadow-[var(--btn-primary-shadow)] hover:opacity-90">
               {exporting
                 ? <><Loader2 size={16} className="animate-spin" /> Генеруємо...</>

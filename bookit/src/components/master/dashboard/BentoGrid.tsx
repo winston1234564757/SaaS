@@ -61,7 +61,7 @@ function BentoWidget({ id, span = "col-span-1 row-span-1" }: BentoWidgetProps) {
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-primary/5 backdrop-blur-[2px] flex items-center justify-center gap-2"
           >
-            <button
+            <button type="button"
               onClick={() => toggleWidget(id)}
               className="size-10 rounded-full bg-destructive text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
             >
@@ -110,7 +110,7 @@ export function BentoGrid() {
             <option value="business">Бізнес-фокус</option>
           </select>
 
-          <button
+          <button type="button"
             onClick={() => setCustomizing(!isCustomizing)}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all",

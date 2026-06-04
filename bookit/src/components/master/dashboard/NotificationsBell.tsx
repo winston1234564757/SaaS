@@ -51,7 +51,7 @@ export function NotificationsBell() {
 
   return (
     <>
-      <button
+      <button type="button"
         onClick={handleOpen}
         className="relative size-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
       >
@@ -94,7 +94,7 @@ export function NotificationsBell() {
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 flex-shrink-0">
                 <p className="text-base font-semibold text-foreground">Сповіщення</p>
-                <button
+                <button type="button"
                   onClick={() => setOpen(false)}
                   className="size-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-peach/60 transition-colors"
                 >
@@ -122,7 +122,7 @@ export function NotificationsBell() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.03 }}
                         >
-                          <button
+                          <button type="button"
                             onClick={() => handleClick(n)}
                             className={`flex items-start gap-3 p-3.5 rounded-xl transition-colors w-full text-left ${
                             n.isRead

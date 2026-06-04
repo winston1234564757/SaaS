@@ -14,6 +14,7 @@ export function MasterModeBanner() {
         <span className="text-xs font-medium opacity-90">Режим клієнта</span>
       </div>
       <button
+        type="button"
         onClick={backToDashboard}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent-foreground/20 hover:bg-accent-foreground/30 text-accent-foreground text-xs font-semibold transition-colors active:scale-95 transition-all"
       >

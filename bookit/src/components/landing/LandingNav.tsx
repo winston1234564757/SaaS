@@ -97,7 +97,7 @@ export function LandingNav() {
             >
               Увійти
             </Link>
-            <button
+            <button type="button"
               onClick={() => setOpen(true)}
               className="sm:hidden size-9 flex flex-col items-center justify-center gap-[5px] rounded-full transition-colors hover:bg-black/5"
               aria-label="Відкрити навігацію"
@@ -127,7 +127,7 @@ export function LandingNav() {
               >
                 bookit<span style={{ color: 'var(--l-indigo)' }}>.</span>
               </span>
-              <button
+              <button type="button"
                 onClick={() => setOpen(false)}
                 className="size-10 flex items-center justify-center rounded-full transition-colors"
                 style={{ background: 'var(--l-surface-2)', border: '1px solid var(--l-border)' }}

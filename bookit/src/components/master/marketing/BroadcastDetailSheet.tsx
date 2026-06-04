@@ -21,7 +21,7 @@ export function BroadcastDetailSheet({ broadcastId, broadcastTitle, onClose }: P
             <h2 className="font-semibold text-foreground text-base">Результати розсилки</h2>
             <p className="text-xs text-muted-foreground/60 mt-0.5 truncate max-w-[220px]">{broadcastTitle}</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-secondary transition-colors active:scale-95 transition-all">
+          <button type="button" aria-label="Закрити" onClick={onClose} className="p-2 rounded-full hover:bg-secondary transition-colors active:scale-95">
             <X size={18} className="text-muted-foreground" />
           </button>
         </div>

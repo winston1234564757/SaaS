@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -51,7 +51,6 @@ export function MyProfilePage({ profile }: Props) {
   });
 
   const [fullName, setFullName] = useState(profile.fullName);
-  // Зберігаємо як 9 цифр (без коду країни і ведучого 0) для input з +38 prefix
   const [phone, setPhone] = useState(() => e164ToInputPhone(profile.phone));
   const [medicalNotes, setMedicalNotes] = useState(profile.medicalNotes);
   const [healthNotes, setHealthNotes] = useState(profile.healthNotes);
@@ -65,14 +64,11 @@ export function MyProfilePage({ profile }: Props) {
       Cookies.set('client_theme', key, { expires: 365, path: '/' });
       document.documentElement.setAttribute('data-theme', key);
     }
-
-    // Dynamic theme-color update for B2C
     const colors = { studio: '#0E1D21', frost: '#EFF2FF', default: '#DDD5C6' };
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       meta.setAttribute('content', colors[key as 'studio' | 'frost' | 'default'] || '#DDD5C6');
     }
-
     router.refresh();
   };
 
@@ -84,9 +80,8 @@ export function MyProfilePage({ profile }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      // toFullPhone конвертує 9 цифр → 380XXXXXXXXX (action додатково нормалізує)
       const { error } = await updateClientProfile(
-        fullName, 
+        fullName,
         toFullPhone(phone),
         medicalNotes,
         healthNotes
@@ -119,6 +114,7 @@ export function MyProfilePage({ profile }: Props) {
       <div className="flex items-center gap-3">
         <Link
           href="/my/bookings"
+          aria-label="Назад до записів"
           className="size-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.88] cursor-pointer transition-all flex-shrink-0"
         >
           <ArrowLeft size={16} />
@@ -135,9 +131,7 @@ export function MyProfilePage({ profile }: Props) {
         transition={{ duration: 0.25, ease: 'easeOut' }}
         className="bento-card p-5 flex items-center gap-4"
       >
-        <div
-          className="size-16 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15 text-accent font-bold"
-        >
+        <div className="size-16 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15 text-accent font-bold">
           {fullName ? fullName.charAt(0).toUpperCase() : ''}
         </div>
         <div className="flex-1 min-w-0">
@@ -170,8 +164,9 @@ export function MyProfilePage({ profile }: Props) {
 
         <div className="flex flex-col gap-3">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{"Ім'я та прізвище"}</label>
+            <label htmlFor="profile-fullname" className="text-xs font-medium text-muted-foreground mb-1.5 block">{"Ім'я та прізвище"}</label>
             <input
+              id="profile-fullname"
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               placeholder="Ваше повне ім'я"
@@ -180,10 +175,11 @@ export function MyProfilePage({ profile }: Props) {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Телефон</label>
+            <label htmlFor="profile-phone" className="text-xs font-medium text-muted-foreground mb-1.5 block">Телефон</label>
             <div className="flex items-center gap-0 rounded-lg border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all">
               <span className="pl-4 pr-2 text-muted-foreground font-medium text-sm select-none shrink-0">+38</span>
               <input
+                id="profile-phone"
                 type="tel"
                 inputMode="numeric"
                 placeholder="0XX XXX XX XX"
@@ -196,8 +192,9 @@ export function MyProfilePage({ profile }: Props) {
 
           {!profile.email.endsWith('@bookit.app') && (
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
+              <label htmlFor="profile-email" className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
               <input
+                id="profile-email"
                 value={profile.email}
                 disabled
                 className={`${inputCls} opacity-50 cursor-not-allowed`}
@@ -215,9 +212,9 @@ export function MyProfilePage({ profile }: Props) {
         transition={{ duration: 0.25, ease: 'easeOut' }}
         className="bento-card p-5 relative overflow-hidden"
       >
-        <div 
-          className="absolute inset-0 opacity-[0.02] pointer-events-none" 
-          style={{ backgroundColor: medicalNotes ? 'var(--destructive)' : 'transparent' }} 
+        <div
+          className="absolute inset-0 opacity-[0.02] pointer-events-none"
+          style={{ backgroundColor: medicalNotes ? 'var(--destructive)' : 'transparent' }}
         />
         <div className="flex items-center gap-2 mb-4">
           <div className={`p-2 rounded-xl flex items-center justify-center ${medicalNotes ? 'bg-destructive/10 text-destructive' : 'bg-warning/10 text-warning'}`}>
@@ -231,10 +228,11 @@ export function MyProfilePage({ profile }: Props) {
 
         <div className="flex flex-col gap-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
+            <label htmlFor="profile-medical" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
               Алергії та критичні застереження
             </label>
             <textarea
+              id="profile-medical"
               value={medicalNotes}
               onChange={e => setMedicalNotes(e.target.value)}
               placeholder="Наприклад: алергія на певні компоненти фарби, діабет..."
@@ -246,10 +244,11 @@ export function MyProfilePage({ profile }: Props) {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
-              Загальні нотатки про стан здоров’я
+            <label htmlFor="profile-health" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
+              Загальні нотатки про стан здоров'я
             </label>
             <textarea
+              id="profile-health"
               value={healthNotes}
               onChange={e => setHealthNotes(e.target.value)}
               placeholder="Чутливість, особливості постави тощо..."
@@ -257,7 +256,7 @@ export function MyProfilePage({ profile }: Props) {
               className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder-muted-foreground outline-none focus:bg-secondary focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
             />
           </div>
-          
+
           <p className="text-[11px] text-muted-foreground/50 italic px-1 leading-relaxed">
             Ці дані будуть доступні майстрам, до яких ви записуєтесь, щоб вони могли забезпечити найкращий та безпечний сервіс.
           </p>
@@ -280,6 +279,7 @@ export function MyProfilePage({ profile }: Props) {
             const isSelected = themeKey === theme.key;
             return (
               <button
+                type="button"
                 key={theme.key}
                 onClick={() => handleThemeChange(theme.key)}
                 className={`flex-1 p-3 rounded-xl border transition-all text-left group cursor-pointer active:scale-[0.95] ${
@@ -317,6 +317,7 @@ export function MyProfilePage({ profile }: Props) {
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-success/10 border border-success/20">
               <span className="text-xs text-success font-medium flex-1">Підключено</span>
               <button
+                type="button"
                 onClick={handleDisconnectTelegram}
                 disabled={disconnecting}
                 className="text-[11px] text-destructive hover:underline disabled:opacity-50 active:scale-[0.88] cursor-pointer transition-all"
@@ -340,8 +341,6 @@ export function MyProfilePage({ profile }: Props) {
         </motion.div>
       )}
 
-      {/* C2C referral now lives in /my/loyalty — see "Для подруг" tab */}
-
       {/* Push notifications */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -353,16 +352,17 @@ export function MyProfilePage({ profile }: Props) {
 
       {/* Save */}
       <motion.button
+        type="button"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         onClick={handleSave}
         disabled={isPending || !fullName.trim()}
-className={`w-full py-4 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
-            saved
-              ? 'bg-success text-white animate-none'
-              : 'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.95] cursor-pointer shadow-sm'
-          } disabled:opacity-60`}
+        className={`w-full py-4 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
+          saved
+            ? 'bg-success text-white animate-none'
+            : 'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.95] cursor-pointer shadow-sm'
+        } disabled:opacity-60`}
       >
         {isPending ? (
           <><Loader2 size={16} className="animate-spin" /> Збереження...</>
@@ -403,6 +403,7 @@ className={`w-full py-4 rounded-lg font-semibold text-sm flex items-center justi
 
       {/* Вийти */}
       <motion.button
+        type="button"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}

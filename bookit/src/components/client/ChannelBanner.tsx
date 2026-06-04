@@ -91,6 +91,7 @@ export function ChannelBanner({ userId, hasTelegram, hasPush, botName }: Props) 
             </div>
             <button
               type="button"
+              aria-label="Закрити"
               onClick={() => setDismissed(true)}
               className="shrink-0 p-1 rounded-lg text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
             >

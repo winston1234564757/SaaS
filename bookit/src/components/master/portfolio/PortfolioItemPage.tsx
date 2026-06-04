@@ -199,7 +199,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <button
+        <button type="button"
           onClick={handleBack}
           className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground active:scale-[0.95] transition-all cursor-pointer"
         >
@@ -207,7 +207,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
         </button>
         <div className="flex items-center gap-2">
           {itemId && (
-            <button
+            <button type="button"
               onClick={handleTogglePublish}
               disabled={publishPending}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all active:scale-[0.95] cursor-pointer ${
@@ -305,7 +305,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                 <div className="flex items-center gap-1.5 mt-0.5">{consentBadge}</div>
               </div>
               {consentStatus === 'pending' && (
-                <button
+                <button type="button"
                   onClick={handleRemoveTag}
                   disabled={clientPending}
                   className="flex items-center gap-1 text-xs text-destructive font-medium active:scale-[0.88] cursor-pointer transition-all"
@@ -329,7 +329,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                 </select>
                 <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
               </div>
-              <button
+              <button type="button"
                 onClick={handleTagClient}
                 disabled={!selectedClientId || clientPending || !itemId}
                 className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:opacity-40 active:scale-[0.95] cursor-pointer"
@@ -361,7 +361,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                 {reviews.map(r => {
                   const isSelected = selectedReviewIds.includes(r.id);
                   return (
-                    <button
+                    <button type="button"
                       key={r.id}
                       onClick={() =>
                         setSelectedReviewIds(
@@ -393,7 +393,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                   );
                 })}
               </div>
-              <button
+              <button type="button"
                 onClick={handleSaveReviews}
                 disabled={reviewsPending || !itemId}
                 className="w-full rounded-xl py-2.5 text-xs font-semibold border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 active:scale-[0.95] cursor-pointer"
@@ -411,7 +411,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
         {/* Footer actions */}
         <div className="flex gap-2 pt-2">
           {itemId && (
-            <button
+            <button type="button"
               onClick={handleDelete}
               disabled={deletePending}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-destructive border border-destructive/30 hover:bg-destructive/10 transition-all active:scale-[0.95] cursor-pointer"
@@ -421,7 +421,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                 : <><Trash2 size={13} /> Видалити</>}
             </button>
           )}
-          <button
+          <button type="button"
             onClick={handleSave}
             disabled={saving}
             className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:opacity-60 active:scale-[0.95] cursor-pointer"

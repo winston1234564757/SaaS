@@ -56,7 +56,7 @@ export function BentoBottomNav() {
             </div>
 
             <div className="px-2 relative -top-1.5">
-              <button
+              <button type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                   "w-15 h-15 rounded-xl flex items-center justify-center transition-all duration-500 shadow-xl active:scale-90 relative overflow-hidden group",

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import { MyProfilePage } from '@/components/client/MyProfilePage';
 
 export const metadata: Metadata = { title: 'Мій профіль' };
@@ -7,6 +8,7 @@ export const metadata: Metadata = { title: 'Мій профіль' };
 export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
   const [{ data: profile }, { data: lastBooking }] = await Promise.all([
     supabase

@@ -97,7 +97,7 @@ export function ScheduleWidget({
             </div>
           </div>
 
-          <button
+          <button type="button"
             onClick={() => setExpanded(v => !v)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-secondary border border-border text-[11px] font-bold text-muted-foreground hover:bg-accent/5 hover:text-accent hover:border-accent/20 active:scale-[0.88] cursor-pointer transition-all shadow-sm"
           >
@@ -237,7 +237,7 @@ export function ScheduleWidget({
                     )}
                   >
                     {/* Toggle */}
-                    <button
+                    <button type="button"
                       onClick={() => toggleDay(day)}
                       className={cn(
                         'relative rounded-full transition-colors shrink-0 active:scale-[0.88] cursor-pointer',
@@ -285,7 +285,7 @@ export function ScheduleWidget({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {[0, 5, 10, 15, 20, 30, 45, 60].map((min) => (
-                    <button
+                    <button type="button"
                       key={min}
                       onClick={() => onBufferChange(min)}
                       className={cn(
@@ -312,7 +312,7 @@ export function ScheduleWidget({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[14, 21, 30, 45, 60, 90].map((days) => (
-                    <button
+                    <button type="button"
                       key={days}
                       onClick={() => onRetentionCycleDaysChange(days)}
                       className={cn(
@@ -335,7 +335,7 @@ export function ScheduleWidget({
                     <Info size={14} className="text-muted-foreground/50" />
                     <h4 className="text-sm font-bold">Перерви</h4>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
                     className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
                   >
@@ -372,7 +372,7 @@ export function ScheduleWidget({
                           }}
                           className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 outline-none text-sm font-medium"
                         />
-                        <button
+                        <button type="button"
                           onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
                           className="size-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
                         >

@@ -108,6 +108,7 @@ export function ReviewsPage() {
         <div className="flex gap-2">
           {filterPills.map(pill => (
             <button
+              type="button"
               key={pill.key}
               onClick={() => setFilter(pill.key)}
               className={cn(
@@ -195,6 +196,7 @@ export function ReviewsPage() {
 
                   {/* Visibility toggle */}
                   <button
+                    type="button"
                     onClick={() => togglePublish(r.id, r.is_published)}
                     disabled={isToggling === r.id}
                     title={r.is_published ? 'Сховати від клієнтів' : 'Показати на сторінці'}

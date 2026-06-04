@@ -174,7 +174,7 @@ function BookingRow({
             <AlertCircle size={11} />
             <span className="text-[12px] font-semibold">Очікує завершення</span>
           </div>
-          <button
+          <button type="button"
             onClick={() => onComplete(b.id)}
             disabled={isCompleting}
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--warning)] text-white text-[10px] font-bold tracking-[0.06em] uppercase disabled:opacity-50 transition-opacity"
@@ -346,7 +346,7 @@ function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m
   return (
     <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-[var(--border)]">
       {DISPLAY_TABS.map(tab => (
-        <button
+        <button type="button"
           key={tab.id}
           onClick={() => onChange(tab.id)}
           className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[12px] font-semibold active:scale-[0.95] transition-transform duration-100"
@@ -457,7 +457,7 @@ export function TodaySchedule() {
       <div className="flex items-center justify-between gap-2 px-4 pb-3 min-w-0">
         <div className="flex items-center gap-0.5 p-0.5 rounded-full flex-shrink-0" style={{ background: 'var(--border)' }}>
           {DATE_TABS.map(tab => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setView(tab.id)}
               className="relative px-2.5 py-1.5 rounded-full whitespace-nowrap text-[12px] font-semibold active:scale-[0.97] transition-transform duration-100"

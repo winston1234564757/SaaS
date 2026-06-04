@@ -71,7 +71,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => router.push('/dashboard/portfolio?drawer=story_generator')}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all active:scale-95"
           >
@@ -87,7 +87,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
               <ExternalLink size={14} /> Перегляд
             </a>
           )}
-          <button
+          <button type="button"
             onClick={handleCreate}
             disabled={atLimit || isCreating}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-white transition-all disabled:opacity-50 active:scale-95 shadow-sm"
@@ -142,7 +142,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
               Додайте свої роботи, щоб клієнти бачили ваш стиль і рівень
             </p>
           </div>
-          <button
+          <button type="button"
             onClick={handleCreate}
             disabled={isCreating}
             className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white active:scale-95 transition-all disabled:opacity-50"
@@ -189,7 +189,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
                 {/* Add card — shown when not at limit */}
                 {!atLimit && (
                   <div className="w-[calc(50%-0.375rem)] md:w-[calc(33.333%-0.5rem)]">
-                    <button
+                    <button type="button"
                       onClick={handleCreate}
                       disabled={isCreating}
                       className="w-full rounded-3xl aspect-[4/3] flex flex-col items-center justify-center gap-2 text-muted-foreground/60 hover:text-primary transition-colors active:scale-95 transition-all disabled:opacity-50"

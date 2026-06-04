@@ -120,7 +120,7 @@ function ToastItem({
             <p className="text-[13px] text-foreground/80 mt-1.5 leading-snug font-medium line-clamp-3">{toast.message}</p>
           )}
           {toast.action && (
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 toast.action?.onClick();
@@ -131,7 +131,7 @@ function ToastItem({
             </button>
           )}
         </div>
-        <button
+        <button type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDismiss(toast.id);
@@ -196,7 +196,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         </AnimatePresence>
 
         {isExpanded && (
-          <button 
+          <button type="button" 
             onClick={() => setIsExpanded(false)}
             className="pointer-events-auto absolute -bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-secondary/80 backdrop-blur-md text-[10px] font-bold text-muted-foreground uppercase tracking-tighter"
           >

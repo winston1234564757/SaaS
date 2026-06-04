@@ -48,7 +48,7 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
           {ALL_CATEGORIES.map((cat) => {
             const isSelected = selected.includes(cat.id);
             return (
-              <button
+              <button type="button"
                 key={cat.id}
                 onClick={() => toggle(cat.id)}
                 className={cn(

@@ -54,7 +54,7 @@ function AlertRow({ alert, index }: { alert: ClientAlert; index: number }) {
         </p>
       </div>
 
-      <button
+      <button type="button"
         onClick={() => router.push(href)}
         className="shrink-0 text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.95] cursor-pointer"
         style={{
@@ -109,7 +109,7 @@ export function ClientAlertsWidget() {
             Зверни увагу
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => router.push('/dashboard/clients')}
           className="flex items-center gap-1 text-[11px] font-semibold transition-opacity hover:opacity-70 cursor-pointer"
           style={{ color: 'var(--accent)' }}

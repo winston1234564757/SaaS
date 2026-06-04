@@ -77,6 +77,8 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
       {/* Tabs */}
       <div className="flex p-1 bg-secondary rounded-xl">
         <button
+          type="button"
+          aria-pressed={activeTab === 'loyalty'}
           onClick={() => setActiveTab('loyalty')}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
@@ -87,6 +89,8 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
           Лояльність
         </button>
         <button
+          type="button"
+          aria-pressed={activeTab === 'referral'}
           onClick={() => setActiveTab('referral')}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
@@ -149,6 +153,8 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
             {/* Sub-tabs */}
             <div className="flex p-1 bg-secondary rounded-xl">
               <button
+                type="button"
+                aria-pressed={referralSubTab === 'c2c'}
                 onClick={() => setReferralSubTab('c2c')}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
@@ -158,6 +164,8 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                 <Heart size={12} /> Для подруг
               </button>
               <button
+                type="button"
+                aria-pressed={referralSubTab === 'c2b'}
                 onClick={() => setReferralSubTab('c2b')}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
@@ -213,12 +221,14 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                         </div>
                         <div className="flex gap-2">
                           <button
+                            type="button"
                             onClick={() => handleShare(m.shareLink, m.masterName, m.c2cDiscountPct)}
                             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all animate-none"
                           >
                             <Share2 size={12} /> Поділитись
                           </button>
                           <button
+                            type="button"
                             onClick={() => copyToClipboard(m.shareLink, m.masterId)}
                             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary/80 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary active:scale-[0.95] cursor-pointer transition-all"
                           >
@@ -236,7 +246,7 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                     <div className="bg-gradient-to-br from-accent to-accent/80 p-6 text-primary-foreground relative overflow-hidden">
                       {/* Decorative background element */}
                       <div className="absolute -right-6 -top-6 size-32 bg-accent-foreground/10 rounded-full blur-2xl" />
-                      
+
                       <div className="flex justify-between items-start mb-5 relative z-10">
                         <div className="max-w-[70%]">
                           <h2 className="heading-serif text-xl mb-1.5 leading-tight">Приводь майстрів — отримуй -50% для себе</h2>
@@ -248,12 +258,13 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                           <Gift size={24} style={{ color: 'var(--accent-on)' }} />
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-2 relative z-10">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-primary-foreground/60 ml-1">Твоє посилання для майстрів</p>
                         <div className="flex items-center gap-2 bg-accent-foreground/10 backdrop-blur-md rounded-md p-2.5 border border-accent-foreground/10 shadow-inner">
                           <div className="flex-1 px-3 font-mono text-[13px] truncate text-primary-foreground/90">{inviteLink}</div>
                           <button
+                            type="button"
                             onClick={() => copyToClipboard(inviteLink, 'c2b')}
                             className="bg-primary-foreground text-accent p-2.5 rounded-lg hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all shadow-sm"
                           >
@@ -353,14 +364,12 @@ function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: nu
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, type: 'spring', stiffness: 300, damping: 24 }}
+      transition={{ delay: index * 0.06, type: 'spring' as const, stiffness: 300, damping: 24 }}
       className="bento-card p-4"
     >
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
-          <div
-            className="size-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-accent/15 text-accent"
-          >
+          <div className="size-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-accent/15 text-accent">
             {p.masterEmoji}
           </div>
           <span className="text-sm font-medium text-foreground truncate">{p.masterName}</span>
@@ -375,9 +384,7 @@ function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: nu
 
       <p className="text-sm font-bold text-foreground mb-3">{p.name}</p>
 
-      <div
-        className="w-full h-3 rounded-full overflow-hidden bg-secondary"
-      >
+      <div className="w-full h-3 rounded-full overflow-hidden bg-secondary">
         <motion.div
           className="h-full rounded-full bg-accent"
           initial={{ width: 0 }}
@@ -399,7 +406,7 @@ function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: nu
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: index * 0.06 + 0.4, type: 'spring', stiffness: 300, damping: 20 }}
+          transition={{ delay: index * 0.06 + 0.4, type: 'spring' as const, stiffness: 300, damping: 20 }}
           className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10"
         >
           <Check size={14} className="text-success shrink-0 mt-0.5" />
