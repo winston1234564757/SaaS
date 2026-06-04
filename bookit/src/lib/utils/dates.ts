@@ -9,11 +9,6 @@ export function formatDate(date: Date | string): string {
   return format(d, 'd MMMM', { locale: uk });
 }
 
-export function formatTime(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return format(d, 'HH:mm');
-}
-
 export function formatDateFull(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   return format(d, 'd MMMM yyyy', { locale: uk });
@@ -55,9 +50,4 @@ export function formatDurationFull(minutes: number): string {
   if (!h) return mStr;
   if (!m) return hStr;
   return `${hStr} ${mStr}`;
-}
-
-export function formatDayFull(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return format(d, 'EEEE', { locale: uk });
 }
