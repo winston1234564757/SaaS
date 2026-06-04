@@ -343,6 +343,7 @@ export function SupportWidget() {
                     <button
                       type="button"
                       onClick={removeFile}
+                      aria-label="Видалити файл"
                       className="absolute right-1 size-5 flex items-center justify-center rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-800 active:scale-[0.90] cursor-pointer"
                     >
                       <X className="size-3" />

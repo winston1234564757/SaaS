@@ -180,6 +180,7 @@ export function ReferralPage({
               <button
                 type="button"
                 onClick={handleCopy}
+                aria-label={copied ? 'Скопійовано' : 'Скопіювати'}
                 className="px-4 py-3 text-primary hover:bg-primary/10 transition-colors flex-shrink-0 border-l border-border active:scale-[0.88] transition-all cursor-pointer"
               >
                 {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}

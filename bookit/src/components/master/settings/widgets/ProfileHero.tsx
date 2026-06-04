@@ -147,6 +147,7 @@ export function ProfileHero({
                   showToast({ type: 'success', title: 'Посилання скопійовано' });
                 }
               }}
+              aria-label="Скопіювати посилання"
               className="size-9 rounded-xl bg-secondary/70 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:bg-surface active:scale-[0.88] cursor-pointer transition-all shrink-0 border border-border/50 shadow-sm"
             >
               <Share2 size={15} />
