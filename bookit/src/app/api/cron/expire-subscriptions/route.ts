@@ -6,6 +6,7 @@ import { calculateBillingDecision } from '@/lib/billing/pricing';
 import { syncReferralAndBounty as sharedSyncReferralAndBounty } from '@/lib/billing/syncReferralAndBounty';
 import { sendTelegramMessage } from '@/lib/telegram';
 import { notifyMasterBilling } from '@/lib/notifications';
+import { verifyCronSecret } from '@/lib/utils/verifyCronSecret';
 
 export const runtime = 'nodejs';
 
@@ -54,7 +55,7 @@ interface BillingStateRow {
 }
 
 export async function GET(req: NextRequest) {
-  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!verifyCronSecret(req.headers.get('authorization'))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

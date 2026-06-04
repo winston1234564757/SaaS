@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { NotificationOrchestrator } from '@/lib/notifications/NotificationOrchestrator';
 import { escHtml } from '@/lib/telegram';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { verifyCronSecret } from '@/lib/utils/verifyCronSecret';
 
 const DEFAULT_BUFFER_MINUTES = 20;
 
@@ -15,7 +16,7 @@ const DEFAULT_BUFFER_MINUTES = 20;
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!verifyCronSecret(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NotificationOrchestrator } from '@/lib/notifications/NotificationOrchestrator';
+import { verifyCronSecret } from '@/lib/utils/verifyCronSecret';
 
 /**
  * Vercel Cron: щогодини.
@@ -34,7 +35,7 @@ const WINDOWS: ReminderWindow[] = [
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!verifyCronSecret(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

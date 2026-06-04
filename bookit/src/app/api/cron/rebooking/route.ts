@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 import { sendTurboSMS } from '@/lib/turbosms';
+import { verifyCronSecret } from '@/lib/utils/verifyCronSecret';
 
 /**
  * Vercel Cron: щодня о 10:00 Kyiv (8:00 UTC)
@@ -11,7 +12,7 @@ import { sendTurboSMS } from '@/lib/turbosms';
  */
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!verifyCronSecret(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
