@@ -156,6 +156,7 @@ export default function ChangelogPage() {
           <button
             type="button"
             onClick={() => router.back()}
+            aria-label="Назад"
             className="size-10 rounded-xl bg-secondary/60 flex items-center justify-center mb-6 active:scale-[0.88] cursor-pointer transition-transform"
           >
             <ChevronLeft size={20} className="text-foreground" />

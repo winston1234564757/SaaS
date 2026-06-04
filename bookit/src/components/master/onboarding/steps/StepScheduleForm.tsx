@@ -156,7 +156,7 @@ export function StepScheduleForm({
                 <input type="time" value={b.start} onChange={e => onBreakFieldChange(i, 'start', e.target.value)} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary" />
                 <span className="text-xs text-muted-foreground/60">—</span>
                 <input type="time" value={b.end} onChange={e => onBreakFieldChange(i, 'end', e.target.value)} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary" />
-                <button type="button" onClick={() => onRemoveBreak(i)} className="text-muted-foreground/60 hover:text-destructive transition-colors flex-shrink-0">
+                <button type="button" onClick={() => onRemoveBreak(i)} aria-label="Видалити перерву" className="text-muted-foreground/60 hover:text-destructive transition-colors flex-shrink-0">
                   <X size={14} />
                 </button>
               </div>
