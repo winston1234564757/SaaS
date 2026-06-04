@@ -239,6 +239,8 @@ export function ScheduleWidget({
                     {/* Toggle */}
                     <button type="button"
                       onClick={() => toggleDay(day)}
+                      aria-label={schedule[day].is_working ? 'Вимкнути' : 'Увімкнути'}
+                      aria-pressed={schedule[day].is_working}
                       className={cn(
                         'relative rounded-full transition-colors shrink-0 active:scale-[0.88] cursor-pointer',
                         schedule[day].is_working ? 'bg-[var(--btn-primary-bg)]' : 'bg-muted-foreground/25',

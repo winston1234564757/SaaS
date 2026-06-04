@@ -345,6 +345,7 @@ export function MonthlyCalendarWidget() {
               </p>
               <button type="button"
                 onClick={() => setSelectedDay(null)}
+                aria-label="Закрити"
                 className="size-6 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
                 style={{ background: 'var(--border)', color: 'var(--text-secondary)' }}
               >

@@ -246,6 +246,7 @@ function TreeNodeItem({ node, level }: { node: AllianceNode; level: number }) {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? 'Згорнути' : 'Розгорнути'}
             className="flex size-5 shrink-0 items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer active:scale-[0.90] transition"
           >
             {isOpen ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}

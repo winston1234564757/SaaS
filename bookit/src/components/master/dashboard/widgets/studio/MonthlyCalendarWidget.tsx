@@ -293,7 +293,7 @@ export function MonthlyCalendarWidget() {
               <span className="text-[12px] font-bold tracking-[0.1em] uppercase text-[var(--text-secondary)] capitalize">
                 {format(selectedDay, 'd MMMM', { locale: uk })}
               </span>
-              <button type="button" onClick={() => setSelectedDay(null)} className="opacity-40 hover:opacity-80 transition-opacity">
+              <button type="button" onClick={() => setSelectedDay(null)} aria-label="Закрити" className="opacity-40 hover:opacity-80 transition-opacity">
                 <X size={12} style={{ color: 'var(--text-secondary)' }} />
               </button>
             </div>
