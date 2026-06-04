@@ -80,6 +80,7 @@ export function ImageUploader({ folder, masterId, value, onChange }: ImageUpload
           <button
             type="button"
             onClick={handleClear}
+            aria-label="Видалити зображення"
             className="absolute top-2 right-2 bg-foreground/60 text-background rounded-full size-6 flex items-center justify-center text-xs hover:bg-foreground/80 active:scale-95 transition-all"
           >
             <X size={10} />

@@ -133,6 +133,7 @@ export function SystemLogsViewer() {
           <button
             type="button"
             onClick={loadLogs}
+            aria-label="Оновити"
             className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 active:scale-[0.90] cursor-pointer"
           >
             <RefreshCw className="size-4" />

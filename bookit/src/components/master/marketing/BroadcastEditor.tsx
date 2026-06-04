@@ -264,7 +264,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               </p>
             )}
           </div>
-          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-secondary transition-colors active:scale-95 transition-all">
+          <button type="button" onClick={onClose} aria-label="Закрити" className="p-2 rounded-full hover:bg-secondary transition-colors active:scale-95 transition-all">
             <X size={18} className="text-muted-foreground" />
           </button>
         </div>

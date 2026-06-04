@@ -69,6 +69,7 @@ export function SharePageCard() {
         </button>
         <button type="button"
           onClick={() => setQrOpen(true)}
+          aria-label="Показати QR-код"
           className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-secondary/60 text-muted-foreground hover:bg-secondary/80 transition-all"
         >
           <QrCode size={13} />
@@ -108,6 +109,7 @@ export function SharePageCard() {
                   <p className="text-sm font-semibold text-foreground">QR-код сторінки</p>
                   <button type="button"
                     onClick={() => setQrOpen(false)}
+                  aria-label="Закрити"
                   className="size-7 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                   >
                     <X size={13} />

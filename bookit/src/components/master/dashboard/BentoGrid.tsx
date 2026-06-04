@@ -63,6 +63,7 @@ function BentoWidget({ id, span = "col-span-1 row-span-1" }: BentoWidgetProps) {
           >
             <button type="button"
               onClick={() => toggleWidget(id)}
+              aria-label="Прибрати віджет"
               className="size-10 rounded-full bg-destructive text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
             >
               <X size={20} />

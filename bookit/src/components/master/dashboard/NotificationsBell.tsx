@@ -96,6 +96,7 @@ export function NotificationsBell() {
                 <p className="text-base font-semibold text-foreground">Сповіщення</p>
                 <button type="button"
                   onClick={() => setOpen(false)}
+                  aria-label="Закрити"
                   className="size-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-peach/60 transition-colors"
                 >
                   <X size={15} />
