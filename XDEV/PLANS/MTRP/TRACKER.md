@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-04 (S03) · **Active phase:** Phase 0 · **Progress:** 5 closed (P0.3·P0.5·P0.10·P0.11·P3.11) · P0.6 🔄(5/~27) · 2 deferred · 3 blocked
+> **Updated:** 2026-06-04 (S04) · **Active phase:** Phase 0→1 · **Progress:** 8 closed (P0.3·P0.5·P0.6·P0.8·P0.10·P0.11·P1.13·P3.11) · 2 deferred · 3 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -9,8 +9,8 @@
 ## 🗺️ Progress by Phase
 
 ```
-Phase 0  HOT FIXES        [██████░░] ~78%  ← dead-code ✅ · P0.5 ✅(204) · P0.6 🔄(5/~27) · P0.1 🔒
-Phase 1  SECURITY & A11Y  [░░░░░░░░]   0%
+Phase 0  HOT FIXES        [████████] ~93%  ← dead-code ✅ · P0.5 ✅(204) · P0.6 ✅(72) · P0.8 ✅(3) · P0.1 🔒
+Phase 1  SECURITY & A11Y  [░░░░░░░░]   0%  ← P0.9 next (~7 a→button) → P0.1 security
 Phase 2  LIMITED DRY      [░░░░░░░░]   0%
 Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← user priority
 Phase 4  POLISH           [░░░░░░░░]   0%
@@ -34,7 +34,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | C-07 | P0.5 | ⚠️ я спершу хибно закрив (grep false-negative) | AST-парсер `tools/scan-buttons.cjs` → **204** без type (з 595). Flat ripgrep multiline ненадійний для `<button>` зі стрілками `=>` | 🔄 REOPENED |
 | C-08 | P0.11 | `dates.ts pluralize` — «видалити» | Юзає `FlashDealPage`; `pluralUk` інша сигнатура | 🔒 → P3.2 |
 | C-09 | P0.9 | `StatsMosaicWidget.tsx` — «11 `<a href onClick>` violations» | `StatsMosaicWidget` видалено в S02 dead-code. Реальних `<a onClick>` — ~7, не 11 | ⚠️ CORRECTED |
-| C-10 | P0.8 | «9 `<div onClick>` violations» | frost/studio InsightsRow, blossom/WeeklyChart, MonthlyCalendar вже `<button>` — виправлено раніше. **Лишилось 3 реальних:** `TodaySchedule.tsx:121`, `blossom/InsightsRow.tsx:89`, `SegmentConfigWidget.tsx:45`. stopPropagation-дівки (#2,#3) — P3 (не interactive) | ⚠️ CORRECTED — 3 not 9 |
+| C-10 | P0.8 | «9 `<div onClick>` violations» | frost/studio InsightsRow, blossom/WeeklyChart, MonthlyCalendar вже `<button>` — виправлено раніше. **Лишилось 3 реальних:** `TodaySchedule.tsx:121`, `blossom/InsightsRow.tsx:89`, `SegmentConfigWidget.tsx:45`. stopPropagation-дівки (#2,#3) — P3 (не interactive) | ✅ DONE S04 |
 | C-11 | P0.6 | Сканер: «~247 кандидатів, реально ~120» | Свіжий скан 2026-06-04: **210 кандидатів** (icons=[] = false-positives, Loader2 = loading states). 42 done → ~168 сканер-залишок → реально ~70-80 icon-only. Більше ніж план оцінював | ⚠️ CORRECTED — more scope |
 | C-12 | P0.2 | `auth/callback/route.ts`, `r/[code]/route.ts` — у таблиці violations | Це **route handlers** (API zone) — admin client законний. Виключити з violations. Реальних non-API порушень ~12, не 18 | ⚠️ CORRECTED — ~12 not 18 |
 
@@ -50,11 +50,12 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P0.3** | old_BookingsPage.tsx stub | root · §5.3 | 5m | ✅ **DONE** | Видалено S01 |
 | **P0.10** | root-level dead widgets | §5.10 | 30m | ✅ **DONE** | 11 видалено (S01:5 + S02:6/N-01). ScheduleWidget лишено — живий (C-02) |
 | **P0.11** | dead code (~2,400 рядків) | §5.11 | 30m | ✅ **DONE** | 9 файлів + 3 dead-експорти. broadcastUtils/pricing KEPT (C-05/C-06). pluralize→P3.2 |
-| **P0.5** | кнопки без `type="button"` (204) | §5.5 | done | ✅ **DONE** | 204 типізовано: 192 codemod (`tools/fix-button-type.cjs` brace-aware, лише onClick) + 7 ClientAuthSheet + 3 primitives + 2 NO-onClick manual (BillingPage disabled, Portfolio drag). Re-scan: **0 missing**. Лише 2 файли мають `<form>` → ризик мінімальний |
-| **P0.6** | icon-only без `aria-label` | §5.6 | done | ✅ **DONE** | 72 buttons across ~35 files (batches 1-12, S01-S04). Scanner 210→180 (180 залишок = false-positives: всі мають видимий текст) |
-| **P0.1** | linkBookingToClient booking hijack | `[slug]/actions.ts` · §5.1 | 4h | 🔒 **BLOCKED** | Рішення Q1 = phone-match + `link_attempts` + rate-limit (magic-link=future). Міграція `139_*`. Прочитати поточний код перед фіксом |
+| **P0.5** | кнопки без `type="button"` (204) | §5.5 | done | ✅ **DONE** | 204 типізовано: 192 codemod + 7 ClientAuthSheet + 3 primitives + 2 NO-onClick manual. Re-scan: **0 missing** |
+| **P0.6** | icon-only без `aria-label` | §5.6 | done | ✅ **DONE** | 72 buttons across ~35 files (batches 1-12, S01-S04). Scanner 180 залишок = false-positives |
+| **P0.8** | 3 `<div onClick>` → `<button>` (C-10) | §5.8 | done | ✅ **DONE** | TodaySchedule:121 · blossom/InsightsRow:89 · SegmentConfigWidget:45 · S04 |
+| **P0.1** | linkBookingToClient booking hijack | `[slug]/actions.ts` · §5.1 | 4h | 🔒 **BLOCKED** | Рішення Q1 = phone-match + `link_attempts` + rate-limit. Міграція `139_*`. |
 
-> **P0.5/P0.6 стратегія:** проходити батчами по файлах (read → assign type=button/submit за контекстом → + aria-label icon-only → tsc/build → commit). Сканер дає свіжий список будь-коли. Найвищий ризик — форми (submit-кнопки).
+➖ **P0.4** secrets audit — DEFERRED (§5.4)
 
 ### P0.11 — під-чеклист (done S01/S02)
 9 файлів видалено · `currency.formatPrice` ✅ · `dates.formatTime/formatDayFull` ✅ · `dates.pluralize` 🔒P3.2 · `broadcastUtils` ⚠️KEPT · `pricing` ⚠️KEPT
@@ -62,17 +63,14 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 ### P0.10 — під-чеклист (done)
 11 dead-віджетів + `blocks-test` route видалено. `ScheduleWidget` (root) ⚠️ KEEP — живий (2 importers).
 
-➖ **P0.4** secrets audit — DEFERRED (§5.4)
-
 ---
 
 ## 6. Phase 1 — SECURITY & A11Y
 
 | Item | Title | §план | Effort | Status |
 |---|---|---|---|---|
-| **P0.2** | Admin client leak (18 forbidden zones) + ESLint | §5.2 | 8h | ⏳ TODO |
+| **P0.2** | Admin client leak (~12 forbidden zones) + ESLint | §5.2 | 8h | ⏳ TODO |
 | **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | 6h | ⏳ TODO |
-| **P0.8** | 3 `<div onClick>` → `<button>` (C-10: 6 вже fixed) | §5.8 | 1h | ⏳ TODO |
 | **P0.9** | ~7 `<a href onClick>` → `<button>` (C-09: StatsMosaicWidget gone) | §5.9 | 1h | ⏳ TODO |
 | **P0.12** | Onboarding telemetry (keep both pages) | §5.12 | 4h | 🔒 user-decision |
 | **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | 1h | ⏳ TODO |
@@ -143,14 +141,14 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | Severity | Total | ✅/no-fix | 🔄 | 🔒/➖ | ⏳ |
 |---|---|---|---|---|---|
-| P0 | 13 | 4 | 1 (P0.6) | 3 (P0.1, P0.4, P0.12) | 5 |
+| P0 | 13 | 6 | 0 | 3 (P0.1, P0.4, P0.12) | 4 |
 | P1 | 26 | 1 | 0 | 1 (P1.2) | 24 |
 | P2 | 21 | 0 | 0 | 0 | 21 |
 | P3 | 11 | 1 | 0 | 0 | 10 |
 
-**Закрито повністю:** P0.3, P0.5, P0.10, P0.11, P1.13, P3.11 (+ N-01)
-**Dead code видалено:** ~2,400 рядків / 22 файли · **a11y:** 3 UI-примітиви (type+aria)
+**Закрито повністю:** P0.3, P0.5, P0.6, P0.8, P0.10, P0.11, P1.13, P3.11 (+ N-01)
+**Dead code видалено:** ~2,400 рядків / 22 файли · **a11y:** 72 aria-labels + 3 div→button
 
 ---
 
-*Updated: 2026-06-04 S04 — P0.6 ✅ DONE (72 buttons, 12 batches) · C-09..C-12 · Next: P0.8 (3 div→button) → P0.9 → P0.1*
+*Updated: 2026-06-04 S04 — P0.6 ✅ + P0.8 ✅ · Next: P0.9 (~7 a→button) → P0.1 security*
