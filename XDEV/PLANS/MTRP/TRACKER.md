@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-05 (S11) · **Active phase:** Phase 1→2→3 · **Progress:** 31 closed · 2 deferred · 2 blocked
+> **Updated:** 2026-06-05 (S12) · **Active phase:** Phase 1→2→3 · **Progress:** 32 closed · 2 deferred · 2 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -12,7 +12,7 @@
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
 Phase 1  SECURITY & A11Y  [███████░]  ~87%  ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
 Phase 2  LIMITED DRY      [███░░░░░]  ~20%  ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
-Phase 3  TESTS & TYPES ⭐ [██░░░░░░]  ~20%  ← P1.11 ✅ · P1.10 ✅ | next: P2.1 (as any → types)
+Phase 3  TESTS & TYPES ⭐ [███░░░░░]  ~25%  ← P1.11 ✅ · P1.10 ✅ · P2.1 ✅ | next: P2.6 або P3.2
 Phase 4  POLISH           [░░░░░░░░]   0%
 ```
 
@@ -119,7 +119,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 |---|---|---|---|---|
 | **P1.11** | Тести createBooking.ts (20+) + referrals.ts (15+) | §6.11 | 20h | ✅ **DONE S11** |
 | **P1.10** | Тести top-5 hooks | §6.10 | 8h | ✅ **DONE S11** |
-| **P2.1** | 100+ `as any` → типи + `src/types/database.ts` | §7.1 | 12h | ⏳ TODO |
+| **P2.1** | 100+ `as any` → типи + `src/types/database.ts` | §7.1 | 12h | ✅ **DONE S12** | 70 occurrences in 21 files. Promise<never> pattern for races; inline interface types for Supabase joins; window type extension for gm_authFailure. tsc 0 · build clean. |
 
 ---
 
@@ -148,11 +148,11 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | P2 | 21 | 4 | 0 | 17 |
 | P3 | 11 | 1 | 0 | 10 |
 
-**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01 = **29 items**
+**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01 = **32 items**
 **Dead code видалено:** ~2,400 рядків / 22 файли
 **A11y fixed:** 72 aria-labels + 5 div→button + heatmap roving tabindex (91 cells) + touch targets 13 files
 **Security:** P0.1 booking hijack (phone-match + audit table) · P1.12 CRON HMAC sha256
-**Types:** P1.15 MasterData interface — 18+ as any removed from [slug]/page.tsx
+**Types:** P1.15 MasterData interface — 18+ as any removed from [slug]/page.tsx · P2.1 ✅ — 70 `as any` → explicit types in 21 files (Promise<never> race pattern; inline Supabase join types; window type extension)
 
 ---
 

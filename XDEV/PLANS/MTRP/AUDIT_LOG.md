@@ -5,6 +5,49 @@
 
 ---
 
+## 2026-06-05 · Session 12 · P2.1 — 70 `as any` → explicit TypeScript types (21 files)
+
+**Контекст:** MTRP Phase 3 (TYPES). Повна ліквідація всіх `as any` у production src (excluding tests).
+
+### Зроблено
+
+1. **bookings/actions.ts** (Write) — 12 as any. `BookingStatus` import; `BookingService`/`MasterProfileNested` local types; `as unknown as MasterProfileNested` for Supabase join.
+2. **invite/[code]/page.tsx** (Write) — 7 as any. `MasterData` interface + `InviteProfile` type + `extractProfile()` helper for union join shape.
+3. **settings/LocationPicker.tsx** (Write) — 6 as any. `declare global { interface Window { gm_authFailure? } }`; `GoogleMapMarker` interface; `as unknown as { marker?: ... }` for google.maps namespace (not a value in TS).
+4. **my/bookings/actions.ts** (Write) — 4 as any. `PushSubscriptionData`/`CancelMasterProfile`/`CancelBookingService` local types.
+5. **middleware.ts** (Write) — 3 as any. `Promise<never>` timeout → `Promise.race([T, never])` resolves to `T`, cast eliminated.
+6. **(master)/layout.tsx** (Write) — 4 as any. Same `Promise<never>` pattern for 4 db-timeout races; removed `as any[]` from `Promise.all`.
+7. **studio/[slug]/page.tsx** (Write) — 3 as any. `StudioRow`/`MemberMasterProfile`/`MemberProfile` inline interfaces.
+8. **createBooking.ts** (Edit) — 1 as any. `mp.timezone` direct (type already includes it).
+9. **BookingDetailsModal.tsx** (Edit×3) — 3 as any. `tplRes.data ?? []`, `excRes.data ?? []`, `bookRes.data ?? []` — no cast needed.
+10. **TelegramProvider.tsx** (Edit×2) — 2 as any. `Promise<never>` for session + profile timeouts.
+11. **AnalyticsPage.tsx** (Edit×2) — 2 as any. `bRes.data ?? []`, `rRes.data`.
+12. **SystemLogsViewer.tsx** (Edit×2) — 2 as any. `data || []` direct.
+13. **ModerationHub.tsx** (Edit×2) — 2 as any. `data || []` direct.
+14. **MastersDirectory.tsx** (Edit×2) — 2 as any. `data || []`; `t as 'starter' | 'pro' | 'studio'`.
+15. **AdminSupportConsole.tsx** (Edit×2) — 2 as any. `data || []`; `s as 'all' | 'open' | 'active' | 'resolved'`.
+16. **DashboardDrawers.tsx** (Edit) — 1 as any. `as PricingRules` (import from dynamicPricing).
+17. **BentoGrid.tsx** (Edit) — 1 as any. `as DashboardLayout` (import from useDashboardStore).
+18. **ManualBookingForm.tsx** (Edit) — 1 as any. `(s as { imageUrl? }).imageUrl`.
+19. **referrals.ts** (Edit) — 1 as any. `(incrRes.error as { message: string }).message`.
+20. **useBookingScheduleData.ts** (Edit) — 1 as any. `d` from `Object.entries` is already `string`.
+
+### Критичні уроки
+- `Promise<never>` для timeout → `Promise.race([Promise<T>, Promise<never>])` = `Promise<T>`. Жодного cast не потрібно. Використовувати скрізь де є race з timeout.
+- Google Maps `marker` — це TypeScript namespace, не value. Доступ тільки через `as unknown as { marker?: ... }`. Прямий `google.maps.marker` = TS помилка.
+- `declare global { interface Window }` — єдиний спосіб безпечно розширити `window` (без `(window as any)`).
+- Supabase join results — тип з `.select()` string не завжди зберігається. Inline `type` alias + `as unknown as T` — затверджений патерн.
+- `Object.entries(obj).map(([k, v]) => ...)` — `k` вже `string`, `as any` зайвий.
+- Admin `useState` + `data || []` — якщо тип `useState<T[]>` та `data: T[] | null` → `data || []` без cast.
+
+### VERIFY
+tsc 0 · build clean · 867 tests pass (без змін до тестів).
+
+### Commit
+`feat(types): P2.1 — 70 as any → explicit types (21 files)`
+
+---
+
 ## 2026-06-05 · Session 11 · P1.10 Vitest hook tests (useBusyness + useReviews + useAnalytics)
 
 **Контекст:** MTRP Phase 3 (TESTS & TYPES). Продовження P1.10 — top-5 React Query hooks.

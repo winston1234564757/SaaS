@@ -1,25 +1,21 @@
 # 🧭 MAP.md — «Де я зупинився» (resume-pointer)
 
 > **Читати ПЕРШИМ на старті сесії** (після mempalace_status + SYSTEM_MAP). Повний контекст → [HANDOFF.md](./HANDOFF.md).
-> **Updated:** 2026-06-05 (Session 10)
+> **Updated:** 2026-06-05 (Session 12)
 
 ---
 
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ~87% · PHASE 2 ~20% · PHASE 3 ~20% · P1.10 ✅ · NEXT → P2.1 (as any → types)
+PHASE 1 ~87% · PHASE 2 ~20% · PHASE 3 ~25% · P2.1 ✅ · NEXT → P2.6 (.select('*') cleanup)
 ```
 
-**Phase 3 — Tests (USER PRIORITY):**
-- **P2.1** — 100+ `as any` → типи (12h) — частково вже зроблено через P1.15
-- **P2.6** — `.select('*')` cleanup (2h)
-- **P3.2** — `pluralize`→`pluralUk` (30m)
-
-**Або Phase 2 (швидкі wins):**
+**Phase 2 / 3 — Quick wins:**
 - **P2.6** — `.select('*')` cleanup (2h)
 - **P3.2** — `pluralize`→`pluralUk` (30m)
 - **P3.10** — unused `WAYFORPAY_*` env (5m)
+- **P2.11** — contrast `text-muted/30-50` → WCAG AA (4h)
 
 **Pending (потрібен ще supabase db push):**
 ```bash
@@ -44,7 +40,7 @@ cd bookit && npx supabase db push  # P0.1 (link_attempts) + migration 140 (FK in
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
 ► Phase 1  SECURITY & A11Y [███████░]  ~87% ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
 ► Phase 2  LIMITED DRY     [███░░░░░]  ~20% ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
-★ Phase 3  TESTS & TYPES   [░░░░░░░░]   0%  ← USER PRIORITY → P1.11 createBooking tests
+★ Phase 3  TESTS & TYPES   [███░░░░░]  ~25% ← P1.11 ✅ · P1.10 ✅ · P2.1 ✅ | next: P2.6
   Phase 4  POLISH          [░░░░░░░░]   0%
 ```
 
@@ -62,6 +58,7 @@ cd bookit && npx supabase db push  # P0.1 (link_attempts) + migration 140 (FK in
 **S09:** P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.14 ✅ · P2.2 ✅ · P2.13 ✅ · P2.14 ✅
 **S10:** P2.10 ✅ (sanitizePhone cron) · P1.15 ✅ (MasterData types, 18+ as any removed)
 **S11:** P1.11 ✅ (createBooking+referrals 44 tests) · P1.10 ✅ (top-5 hooks 32 tests, 867 total)
+**S12:** P2.1 ✅ (70 `as any` → explicit types, 21 files; Promise<never> race pattern; tsc 0; build clean)
 
 ---
 
@@ -88,11 +85,11 @@ grep -rn "\.select\('\*'\)" bookit/src/lib/ bookit/src/app/ | grep -v node_modul
 ## 📊 Лічильник
 
 ```
-Items closed: 31 / 71
+Items closed: 32 / 71
 P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11
 P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16
-P2.2·P2.10·P2.13·P2.14·P3.11 + N-01
-Next: P2.1 (100+ as any → types, 12h) або P2.6 (.select('*') cleanup, 2h)
+P2.1·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01
+Next: P2.6 (.select('*') cleanup, 2h) або P3.2 (pluralUk, 30m)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
