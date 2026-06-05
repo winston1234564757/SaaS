@@ -91,7 +91,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P1.8** | StoryGenerator empty-deps → хуки | §6.8 | done | ✅ **DONE** | 3 inline hooks → useQuery: `story-services`, `story-flash-deals`, `story-star-reviews`. staleTime 60/30/60s. |
 | **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | 1h | ⏳ TODO |  |
 | **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |  |
-| **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | 30m | ⏳ TODO |  |
+| **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | done | ✅ **DONE** | `zustand/shallow` useShallow на 3 selector calls (BentoGrid×2 + WidgetLibraryModal). |
 | **P1.15** | Типи замість `working_hours as any` | §6.15 | 4h+ | ⏳ TODO |  |
 | **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | 30m | ⏳ TODO |  |
 | **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | 5m | ⏳ TODO |  |

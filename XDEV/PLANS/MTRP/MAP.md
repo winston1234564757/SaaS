@@ -8,14 +8,17 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1→2 ACTIVE · P1.8 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.9 (PublicMasterPage C2C→useQuery) ← NEXT
+PHASE 1→2 ACTIVE · P1.9 ✅ · P1.14 ✅ · P1.15 (working_hours types) ← NEXT
 ```
 
-**P1.9 — PublicMasterPage C2C balance [1h]:**
-`src/components/public/PublicMasterPage.tsx:362-375` — manual `useEffect` fetch for C2C balance.
-Потрібно: обернути в `useQuery` з `staleTime: 5 * 60 * 1000`.
+**P1.15 — Inline `working_hours as any` [4h+]:**
+`src/app/[slug]/page.tsx` — 18× `as any` for working_hours field. Define proper types.
+Scope великий — можливо відкласти до Phase 3.
 
-**Після P1.9:** P1.14 (useDashboardStore→useShallow, 30m) → P1.15 (working_hours types, 4h+)
+**Або перейти до Phase 2:**
+- **P2.2** (30m): Видалити 6 unused npm deps (~440KB)
+- **P2.13** (5m): `<th scope="col">` (5 файлів)
+- **P2.14** (1h): FK index `c2c_referrals.master_id`
 
 **Pending (потрібен ще supabase db push):**
 ```bash
@@ -38,7 +41,7 @@ cd bookit && npx supabase db push  # P0.1 migration: link_attempts table
 
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
-► Phase 1  SECURITY & A11Y [██████░░]  ~66% ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 ✅ · P1.4 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 NEXT
+► Phase 1  SECURITY & A11Y [███████░]  ~73% ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.14 ✅ · P1.16 ✅ · P1.3 ✅ · P1.4 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.15 NEXT
   Phase 2  LIMITED DRY     [░░░░░░░░]   0%
   Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY
   Phase 4  POLISH          [░░░░░░░░]   0%
@@ -55,7 +58,7 @@ cd bookit && npx supabase db push  # P0.1 migration: link_attempts table
 **S06:** P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ (WeeklyChart aria-pressed, 3 themes)
 **S07:** P1.16 ✅ (touch targets ≥44px, 13 files)
 **S08:** P1.3 ✅ (heatmap roving tabindex, 3 themes)
-**S09:** P1.5 ✅ · P1.6 ✅ (false alarm) · P1.7 ✅ · P1.8 ✅ (StoryGenerator useQuery)
+**S09:** P1.5 ✅ · P1.6 ✅ (false alarm) · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.14 ✅ (useShallow)
 
 ---
 
@@ -76,11 +79,11 @@ Read XDEV/PLANS/MTRP/TRACKER.md
 ## 📊 Лічильник
 
 ```
-Items closed: 22 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.12·P1.13·P1.16·P3.11 + N-01 corrected)
-Next: P1.9 (PublicMasterPage C2C→useQuery)
+Items closed: 24 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.16·P3.11 + N-01 corrected)
+Next: P1.15 (working_hours as any) or P2.2 (unused deps 30m)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S09 · P1.8 ✅ StoryGenerator useEffect→useQuery (3 hooks) · Next: P1.9 C2C balance*
+*Updated: 2026-06-05 S09 · P1.9 ✅ C2C useQuery · P1.14 ✅ useShallow (3 selectors) · Next: P1.15 or P2.2*
