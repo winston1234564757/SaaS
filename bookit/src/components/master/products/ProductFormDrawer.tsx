@@ -153,7 +153,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
       }
 
       // Persist service links via server action (admin client, no RLS issues)
-      const linksRes = await saveProductLinks(productId, recommendAlways ? [] : linkedServiceIds);
+      const linksRes = await saveProductLinks(productId, recommendAlways ? [] : linkedServiceIds.map(id => ({ serviceId: id, quantity: 1 })));
       if (linksRes.error) { setError(linksRes.error); return; }
       invalidateLinks();
 

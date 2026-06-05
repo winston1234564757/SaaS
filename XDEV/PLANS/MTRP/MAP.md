@@ -1,20 +1,24 @@
 # 🧭 MAP.md — «Де я зупинився» (resume-pointer)
 
 > **Читати ПЕРШИМ на старті сесії** (після mempalace_status + SYSTEM_MAP). Повний контекст → [HANDOFF.md](./HANDOFF.md).
-> **Updated:** 2026-06-05 (Session 06)
+> **Updated:** 2026-06-05 (Session 08)
 
 ---
 
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ACTIVE · P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 ✅ · P1.3 (heatmap roving tabindex 168 cells) ← NEXT
+PHASE 1 ACTIVE · P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 (Tour docs) ← NEXT
 ```
 
-**P1.3 — Heatmap roving tabindex [3h]:**
-PeakHours widget: 168 cells (24h×7d). Зараз всі cells = tabindex=0 → 168 tab stops. Потрібно: roving tabindex (лише 1 cell tabindex=0, решта -1, arrow keys рухають фокус).
+**P1.5 — Tour system: 2 паралельні → задокументувати [3h]:**
+§6.5. Є 2 паралельні tour системи в проєкті. Потрібно задокументувати різницю/overlap та план уніфікації.
 
-**Після P1.3:** P1.3 done → Phase 2 or Phase 3 (tests priority)
+**Швидкі виграші перед P1.5 (розглянути):**
+- P1.7: Дубль нумерації міграцій 137×2 — 5м
+- P1.6: Mojibake у 4+ міграціях — 1h
+
+**Після P1.5:** Phase 2 or Phase 3 (tests priority)
 
 **Pending (потрібен ще supabase db push):**
 ```bash
@@ -37,7 +41,7 @@ cd bookit && npx supabase db push  # P0.1 migration: link_attempts table
 
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
-► Phase 1  SECURITY & A11Y [████░░░░]  54%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 NEXT
+► Phase 1  SECURITY & A11Y [█████░░░]  57%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 NEXT
   Phase 2  LIMITED DRY     [░░░░░░░░]   0%
   Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY
   Phase 4  POLISH          [░░░░░░░░]   0%

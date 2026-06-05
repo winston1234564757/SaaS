@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { subDays, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
@@ -21,8 +21,12 @@ export function PeakHoursWidget() {
   const from = toISO(subDays(now, 30));
   const to   = toISO(now);
   const { bookings, isLoading } = useBookings(from, to);
-  const [activeCell, setActiveCell] = useState<ActiveCell | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<TooltipPos | null>(null);
+  const [activeCell,  setActiveCell]  = useState<ActiveCell | null>(null);
+  const [tooltipPos,  setTooltipPos]  = useState<TooltipPos | null>(null);
+  const [focusedCell, setFocusedCell] = useState<ActiveCell>({ dIdx: 0, hIdx: 0 });
+  const cellRefs = useRef<(HTMLButtonElement | null)[][]>(
+    Array.from({ length: 7 }, () => Array(HOURS.length).fill(null))
+  );
 
   const { grid, max } = useMemo<{ grid: number[][]; max: number }>(() => {
     const g: number[][] = Array.from({ length: 7 }, () => Array(HOURS.length).fill(0));
@@ -58,6 +62,23 @@ export function PeakHoursWidget() {
       top: flipDown ? rect.bottom + GAP : rect.top - TOOLTIP_H - GAP,
       flipDown,
     });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, dIdx: number, hIdx: number) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCell(dIdx, hIdx, e.currentTarget);
+      return;
+    }
+    let nd = dIdx, nh = hIdx;
+    if      (e.key === 'ArrowRight') nd = (dIdx + 1) % 7;
+    else if (e.key === 'ArrowLeft')  nd = (dIdx + 6) % 7;
+    else if (e.key === 'ArrowDown')  nh = (hIdx + 1) % HOURS.length;
+    else if (e.key === 'ArrowUp')    nh = (hIdx + HOURS.length - 1) % HOURS.length;
+    else return;
+    e.preventDefault();
+    setFocusedCell({ dIdx: nd, hIdx: nh });
+    cellRefs.current[nd]?.[nh]?.focus();
   };
 
   const tooltipInfo = useMemo(() => {
@@ -133,10 +154,13 @@ export function PeakHoursWidget() {
                 {HOURS.map((_, hIdx) => {
                   const intensity = max > 0 ? grid[dIdx][hIdx] / max : 0;
                   const isActive  = activeCell?.dIdx === dIdx && activeCell?.hIdx === hIdx;
+                  const isFocused = focusedCell.dIdx === dIdx && focusedCell.hIdx === hIdx;
                   return (
                     <button
                       key={hIdx}
                       type="button"
+                      ref={(el) => { cellRefs.current[dIdx][hIdx] = el; }}
+                      tabIndex={isFocused ? 0 : -1}
                       className="flex-1 cursor-pointer min-h-[10px] w-full bg-transparent border-0 p-0"
                       aria-label={`${DAYS[dIdx]} ${HOURS[hIdx]}:00`}
                       aria-pressed={isActive}
@@ -150,6 +174,8 @@ export function PeakHoursWidget() {
                       }}
                       onMouseEnter={(e) => handleCell(dIdx, hIdx, e.currentTarget)}
                       onClick={(e) => handleCell(dIdx, hIdx, e.currentTarget)}
+                      onFocus={() => setFocusedCell({ dIdx, hIdx })}
+                      onKeyDown={(e) => handleKeyDown(e, dIdx, hIdx)}
                     />
                   );
                 })}

@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-06-05 · Session 08 · P1.3 Heatmap roving tabindex (3 themes)
+
+**Контекст:** MTRP Phase 1 A11y. Задача: PeakHoursWidget — roving tabindex + div→button.
+
+### Зроблено
+1. **Studio PeakHoursWidget** — `div[role="button"]` → `button[type="button"]` + roving tabindex + arrow key nav (handleKeyDown).
+2. **Frost PeakHoursWidget** — вже мав `button`, додано roving tabindex + `onKeyDown` + `onFocus`.
+3. **Blossom PeakHoursWidget** — `div[role="button"]` → `button[type="button"]` + roving tabindex + arrow key nav.
+4. **BONUS fix** — `ProductFormDrawer.tsx:156` pre-existing tsc error: `saveProductLinks` очікувало `{serviceId,quantity}[]` але стан `string[]` → маппінг на call site `.map(id => ({ serviceId: id, quantity: 1 }))`.
+
+### Plan Correction (C-17)
+- C-17: Plan said 168 cells (24h×7 days). Реально 91 cells: `HOURS = [8..20]` = 13h × 7d = 91.
+
+### Roving tabindex pattern
+```
+focusedCell = { dIdx: 0, hIdx: 0 }  // initial top-left
+cellRefs = useRef<(HTMLButtonElement|null)[][]>(7×13 grid)
+tabIndex={isFocused ? 0 : -1}
+onFocus={() => setFocusedCell({dIdx, hIdx})}
+onKeyDown: ArrowRight/Left→dIdx±1%7, ArrowDown/Up→hIdx±1%13, Enter/Space→handleCell, wraps
+```
+
+### VERIFY
+tsc 0 · build clean · commit pending.
+Drawer: `35e71ca2f16c1955a6a3ae00`
+
+---
 ## 2026-06-05 · Session 07 · P1.16 Touch targets ≥44px (13 files)
 
 **Контекст:** MTRP Phase 1 A11y. Задача: всі кнопки мобільного ≥44px (WCAG 2.5.5).

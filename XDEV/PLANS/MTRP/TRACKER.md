@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-05 (S07) · **Active phase:** Phase 1 · **Progress:** 17 closed · 2 deferred · 2 blocked
+> **Updated:** 2026-06-05 (S08) · **Active phase:** Phase 1 · **Progress:** 18 closed · 2 deferred · 2 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -10,7 +10,7 @@
 
 ```
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
-Phase 1  SECURITY & A11Y  [████░░░░]  ~54%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.4 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 next
+Phase 1  SECURITY & A11Y  [█████░░░]  ~57%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.4 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 next
 Phase 2  LIMITED DRY      [░░░░░░░░]   0%
 Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← user priority
 Phase 4  POLISH           [░░░░░░░░]   0%
@@ -39,6 +39,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | C-14 | P1.16 | Studio/Frost close buttons мали size-* | Були без жодного size-класу (ghost buttons) → size-11 + flex added | ✅ fixed |
 | C-15 | P1.16 | AnalyticsPage L457 = size-8 | Реально size-9 (все одно виправлено) | ⚠️ CORRECTED |
 | C-16 | P1.16 | WidgetLibraryModal=size-8, VacationManager=size-8 | Були size-10 та size-6 відповідно | ⚠️ CORRECTED |
+| C-17 | P1.3 | Plan said 168 cells (24h×7d) | Реально 91 cells: HOURS=[8..20] = 13h × 7d | ⚠️ CORRECTED |
 
 > **Урок 1:** видалення роуту → `rm -rf .next && npm run build` (stale types).
 > **Урок 2:** `<button>` атрибути → `tools/scan-buttons.cjs` (AST), не ripgrep.
@@ -71,7 +72,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | done | ✅ **DONE** | Dialog.Content asChild on modal box (not wrapper) — focus trap + backdrop click. tsc 0 · build clean. |
 | **P0.12** | Onboarding telemetry (keep both pages) | §5.12 | 4h | 🔒 user-decision |  |
 | **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | done | ✅ **DONE** | matchMedia canonical у src/lib/hooks/. src/hooks/ deleted. 10 Landing* + 2 app consumers — 12 total. tsc 0. |
-| **P1.3** | Heatmap roving tabindex (168 cells) | §6.3 | 3h | ⏳ TODO |  |
+| **P1.3** | Heatmap roving tabindex (91 cells) | §6.3 | done | ✅ **DONE** | div→button (Studio+Blossom) + roving tabindex. 91 cells (not 168 — HOURS=[8..20] = 13h×7d). Arrow keys wrap. tsc 0. |
 | **P1.4** | WeeklyChart `aria-pressed` (8 toggles) | §6.4 | done | ✅ **DONE** | mode tab aria-pressed (3 themes) + bar aria-label+aria-pressed (Studio+Blossom). tsc 0. |
 | **P1.12** | `timingSafeEqual` для CRON_SECRET (5 routes) | §6.12 | done | ✅ **DONE** | New: verifyCronSecret.ts (HMAC sha256). 5 routes patched. tsc 0. |
 | **P1.16** | Touch targets ≥44px | §6.16 | done | ✅ **DONE** | 13 files: size-6/7/8/9/10→size-11, h-7→h-11. Studio/Frost ghost close buttons fixed. tsc 0. |
@@ -141,9 +142,9 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | P2 | 21 | 0 | 0 | 21 |
 | P3 | 11 | 1 | 0 | 10 |
 
-**Закрито повністю:** P0.1, P0.3, P0.5, P0.6, P0.8, P0.9, P0.10, P0.11, P1.13, P3.11 (+ N-01)
+**Закрито повністю:** P0.1, P0.2, P0.3, P0.5, P0.6, P0.7, P0.8, P0.9, P0.10, P0.11, P1.1, P1.3, P1.4, P1.12, P1.13, P1.16, P3.11 (+ N-01)
 **Dead code видалено:** ~2,400 рядків / 22 файли
-**A11y fixed:** 72 aria-labels + 3 div→button
+**A11y fixed:** 72 aria-labels + 5 div→button (TodaySchedule · InsightsRow · SegmentConfig · PeakHours×2)
 **Security:** P0.1 booking hijack fixed (phone-match + audit table)
 
 ---
