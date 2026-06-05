@@ -41,7 +41,7 @@ export function ManualBookingForm({
       duration:    s.duration,
       popular:     s.popular,
       description: s.description || null,
-      image_url:   (s as any).imageUrl || null,
+      image_url:   (s as { imageUrl?: string | null }).imageUrl ?? null,
     }));
   const availableProducts: WizardProduct[] = allProducts
     .filter(p => p.is_active && p.stock_qty > 0)

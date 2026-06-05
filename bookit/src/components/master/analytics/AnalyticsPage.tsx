@@ -1,121 +1,204 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQueryState, parseAsString } from 'nuqs';
 import {
-  BarChart2, TrendingUp, TrendingDown, Users,
-  Minus, Download, Loader2, RefreshCw,
-  ChevronLeft, ChevronRight, Clock, Zap,
-  Star, ChevronDown, Crown, ShoppingBag
+  BarChart2, Download, Loader2, RefreshCw,
+  Crown, Star, Users, TrendingUp, TrendingDown,
+  AlertTriangle, Clock, ShoppingBag, ShieldAlert,
+  ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
+
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
-import { formatPrice } from '@/components/master/services/types';
-import { useDateRange, type Preset } from '@/lib/supabase/hooks/useDateRange';
-import {
-  useAnalytics, exportAnalyticsCsv, linearRegression,
-  type TopService, type TopClient,
-} from '@/lib/supabase/hooks/useAnalytics';
-import { Tooltip } from '@/components/ui/Tooltip';
+import { formatPrice } from '@/lib/utils/currency';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { useDateRange } from '@/lib/supabase/hooks/useDateRange';
+import { useAnalytics, exportAnalyticsCsv, linearRegression } from '@/lib/supabase/hooks/useAnalytics';
+import { useAnalyticsExtras } from '@/lib/supabase/hooks/useAnalyticsExtras';
+import { useQuery } from '@tanstack/react-query';
+
+// Компоненти-сегменти Bento
+import { PeriodControls } from './sections/PeriodControls';
+import { KpiTicker } from './sections/KpiTicker';
+import { HeroStory, type StoryItem } from './sections/HeroStory';
+import { BentoSecondary } from './sections/BentoSecondary';
+import { GrowthLists } from './sections/GrowthLists';
+import { BusinessHealthScoreWidget } from './sections/BusinessHealthScoreWidget';
+import { MorningBriefing } from './sections/MorningBriefing';
+import { SmartPricingOptimizer } from './sections/SmartPricingOptimizer';
+
+// Графіки
+import { RevenueLineChart } from './charts/RevenueLineChart';
+import { CohortHeatmap } from './charts/CohortHeatmap';
+import { HeatmapGrid } from './charts/HeatmapGrid';
+
+// Вкладки drill-down
+import { ReviewsTab } from './sections/tabs/ReviewsTab';
+import { NoShowTab } from './sections/tabs/NoShowTab';
+import { LeadTimeTab } from './sections/tabs/LeadTimeTab';
+import { VacationTab } from './sections/tabs/VacationTab';
+import { SourceTab } from './sections/tabs/SourceTab';
+import { FinancesTab } from './sections/tabs/FinancesTab';
+import { StockTab } from './sections/tabs/StockTab';
+
+// Примітиви
+import { BentoCell } from './primitives/BentoCell';
+import { SkeletonCell } from './primitives/SkeletonCell';
+import { EmptyCell } from './primitives/EmptyCell';
+import { ErrorCell } from './primitives/ErrorCell';
+import { ProUpgradeCard } from './primitives/ProUpgradeCard';
+
+// Деталі клієнта
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { ClientRow } from '@/components/master/clients/ClientsPage';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
-interface AnalyticsPageProps { isPro: boolean }
+interface AnalyticsPageProps {
+  isPro: boolean;
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const PRESETS: { key: Preset; label: string }[] = [
-  { key: 'day', label: 'День' },
-  { key: 'week', label: 'Тиждень' },
-  { key: 'month', label: 'Місяць' },
-  { key: 'year', label: 'Рік' },
-  { key: 'all', label: 'Весь час' },
-];
+const SPRING = { type: 'spring' as const, stiffness: 240, damping: 26 };
 
-const UA_MONTHS = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
-  'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
-const UA_DOW = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-const UA_DOW_FULL = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота'];
+const TABS = [
+  { key: 'overview', label: 'Огляд' },
+  { key: 'growth', label: 'Зростання' },
+  { key: 'behavior', label: 'Поведінка' },
+  { key: 'reviews', label: 'Відгуки' },
+  { key: 'source', label: 'Джерела' },
+  { key: 'finances', label: 'Фінанси' },
+  { key: 'stock', label: 'Склад' },
+] as const;
 
-const SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const;
+// ── ClientSheetById ───────────────────────────────────────────────────────────
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
-
-function Skeleton({ h = 'h-5', w = 'w-full', rounded = 'rounded-xl' }: {
-  h?: string; w?: string; rounded?: string;
-}) {
-  return <div className={`animate-pulse bg-muted/25 ${h} ${w} ${rounded}`} />;
-}
-
-// ── DateRangeBar ──────────────────────────────────────────────────────────────
-
-function DateRangeBar({
-  preset, canGoNext, label,
-  setPreset, goPrev, goNext,
+function ClientSheetById({
+  clientPhone,
+  clientId,
+  masterId,
+  clientName,
+  onClose,
 }: {
-  preset: Preset; canGoNext: boolean; label: string;
-  setPreset: (p: Preset) => void; goPrev: () => void; goNext: () => void;
+  clientPhone?: string | null;
+  clientId?: string | null;
+  masterId: string;
+  clientName: string;
+  onClose: () => void;
 }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="bg-secondary/60 p-1.5 rounded-2xl flex gap-0.5 overflow-x-auto scrollbar-hide">
-        {PRESETS.map(p => (
-          <button type="button" key={p.key} onClick={() => setPreset(p.key)}
-            className={`flex-1 flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${preset === p.key
-                ? 'bg-secondary shadow-[0_2px_10px_rgb(0,0,0,0.08)] text-foreground font-semibold'
-                : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary/30'
-              }`}>
-            {p.label}
-          </button>
-        ))}
-      </div>
-      <div className="flex items-center gap-2">
-        <button type="button" onClick={goPrev} aria-label="Попередній період"
-          className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm active:scale-95 transition-all">
-          <ChevronLeft size={14} />
-        </button>
-        <p className="flex-1 text-center text-sm font-semibold text-foreground">{label}</p>
-        <button type="button" onClick={goNext} disabled={!canGoNext} aria-label="Наступний період"
-          className="size-8 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors flex-shrink-0 shadow-sm disabled:opacity-30 active:scale-95 transition-all">
-          <ChevronRight size={14} />
-        </button>
-      </div>
-    </div>
-  );
-}
+  const [row, setRow] = useState<ClientRow | null>(null);
+  const [loading, setLoading] = useState(true);
 
-// ── Section header ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!masterId) return;
+    const sb = createClient();
+    
+    async function fetchClient() {
+      try {
+        setLoading(true);
+        let resolvedClientId = clientId;
+        let resolvedPhone = clientPhone;
 
-function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+        // Пошук ID клієнта за номером телефону, якщо ID не передано
+        if (!resolvedClientId && resolvedPhone) {
+          const { data: profile } = await sb
+            .from('profiles')
+            .select('id')
+            .eq('phone', resolvedPhone)
+            .maybeSingle();
+          if (profile) {
+            resolvedClientId = profile.id;
+          }
+        }
+
+        const finalId = resolvedClientId || resolvedPhone || 'unknown';
+
+        const [bRes, rRes] = await Promise.all([
+          sb.from('bookings')
+            .select('client_phone, date, total_price, status, client_name')
+            .eq('master_id', masterId)
+            .or(`client_phone.eq.${resolvedPhone || 'none'},client_id.eq.${resolvedClientId || '00000000-0000-0000-0000-000000000000'}`)
+            .order('date', { ascending: false }),
+          sb.from('client_master_relations')
+            .select('id, is_vip, health_notes, medical_notes')
+            .eq('master_id', masterId)
+            .or(`client_id.eq.${resolvedClientId || '00000000-0000-0000-0000-000000000000'}`)
+            .maybeSingle(),
+        ]);
+
+        const bs = bRes.data ?? [];
+        const rel = rRes.data;
+        const nonCancelled = bs.filter((b: any) => b.status !== 'cancelled');
+        const completed = bs.filter((b: any) => b.status === 'completed');
+        const spent = completed.reduce((s: number, b: any) => s + Number(b.total_price), 0);
+
+        setRow({
+          id: bs[0]?.client_phone ?? finalId,
+          client_id: resolvedClientId || null,
+          client_name: bs[0]?.client_name ?? clientName,
+          client_phone: bs[0]?.client_phone ?? resolvedPhone ?? '',
+          total_visits: nonCancelled.length,
+          total_spent: spent,
+          average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
+          last_visit_at: bs[0]?.date ?? null,
+          last_service_name: null,
+          is_vip: rel?.is_vip ?? false,
+          relation_id: rel?.id ?? null,
+          retention_status: 'active' as const,
+          health_notes: rel?.health_notes ?? null,
+          medical_notes: rel?.medical_notes ?? null,
+        });
+      } catch (err) {
+        console.error('Error fetching client details:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchClient();
+  }, [clientId, clientPhone, masterId, clientName]);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <Loader2 className="animate-spin text-primary size-8" />
+      </div>
+    );
+  }
+
   return (
-    <div className="mb-4">
-      <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">{title}</p>
-      {subtitle && <p className="text-[11px] text-muted-foreground/60/70 mt-0.5">{subtitle}</p>}
-    </div>
+    <ClientDetailSheet
+      client={row}
+      onClose={onClose}
+    />
   );
 }
 
 // ── ServiceRow ────────────────────────────────────────────────────────────────
 
-function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
+function ServiceRow({ svc, maxRev }: { svc: any; maxRev: number }) {
   const [open, setOpen] = useState(false);
   return (
     <div>
-      <button type="button" onClick={() => setOpen(o => !o)} className="w-full text-left">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full text-left cursor-pointer transition-all active:scale-[0.98]"
+      >
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-sm font-medium text-foreground truncate pr-2">{svc.name}</span>
-          <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(svc.revenue)}</span>
+          <span className="text-sm font-semibold text-foreground truncate pr-2">{svc.name}</span>
+          <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(svc.revenue / 100))}</span>
         </div>
-        <div className="h-2 rounded-full bg-secondary">
+        <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-primary to-primary/50 transition-all duration-700"
+            className="h-full rounded-full bg-primary transition-all duration-700"
             style={{ width: `${Math.round((svc.revenue / maxRev) * 100)}%` }}
           />
         </div>
@@ -130,7 +213,7 @@ function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
             {[
               { label: 'Cross-sell', value: `${svc.crossSellRate}%`, className: 'text-primary' },
               { label: 'З товарами', value: `${Math.round(svc.count * svc.crossSellRate / 100)}/${svc.count}`, className: 'text-foreground' },
-              { label: 'Серед. чек', value: svc.count > 0 ? formatPrice(Math.round(svc.revenue / svc.count)) : '—', className: 'text-foreground' },
+              { label: 'Серед. чек', value: svc.count > 0 ? formatPrice(Math.round(svc.revenue / svc.count / 100)) : '—', className: 'text-foreground' },
             ].map(item => (
               <div key={item.label}>
                 <p className="text-[10px] text-muted-foreground/60 mb-0.5">{item.label}</p>
@@ -144,266 +227,142 @@ function ServiceRow({ svc, maxRev }: { svc: TopService; maxRev: number }) {
   );
 }
 
-// ── DowChart ──────────────────────────────────────────────────────────────────
-
-function DowChart({ data, bookings, bestIdx }: { data: number[]; bookings: number[]; bestIdx: number }) {
-  const max = Math.max(...data, 1);
-  const total = data.reduce((s, v) => s + v, 0);
-  const [activeBar, setActiveBar] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (activeBar === null) return;
-    const close = () => setActiveBar(null);
-    const frame = requestAnimationFrame(() => {
-      document.addEventListener('click', close, { once: true });
-      document.addEventListener('touchstart', close, { once: true, passive: true });
-    });
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener('click', close);
-      document.removeEventListener('touchstart', close);
-    };
-  }, [activeBar]);
-
-  return (
-    <div className="flex items-end gap-1.5 h-12 mt-2">
-      {data.map((v, i) => {
-        const pct = total > 0 ? Math.round((v / total) * 100) : 0;
-        return (
-          <div
-            key={i}
-            className="flex-1 flex flex-col items-center gap-1 relative"
-            onMouseEnter={() => setActiveBar(i)}
-            onMouseLeave={() => setActiveBar(null)}
-            onClick={(e) => { e.stopPropagation(); setActiveBar(prev => prev === i ? null : i); }}
-          >
-            <AnimatePresence>
-              {activeBar === i && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-                  style={{
-                    background: 'var(--surface)',
-                    backdropFilter: 'blur(16px)',
-                    border: '1px solid var(--border)',
-                    boxShadow: '0 8px 24px rgba(44,26,20,0.12)',
-                    borderRadius: 12,
-                    padding: '6px 10px',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <p className="text-sm text-muted-foreground mb-0.5">{UA_DOW_FULL[i]}</p>
-                  <p className="text-base font-bold text-foreground">{formatPrice(v)}</p>
-                  <p className="text-[11px] text-muted-foreground">{pct}% · {pluralUk(bookings[i], 'запис', 'записи', 'записів')}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: Math.max(3, Math.round((v / max) * 36)) }}
-              transition={{ delay: i * 0.04, ...SPRING }}
-              className={`w-full rounded-t-md cursor-pointer ${i === bestIdx ? 'bg-primary' : 'bg-primary/20'}`}
-            />
-            <span className={`text-[9px] leading-none ${i === bestIdx ? 'font-bold text-primary' : 'text-muted-foreground/50'}`}>
-              {UA_DOW[i]}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── ClientSheetById ───────────────────────────────────────────────────────────
-
-function ClientSheetById({ clientId, masterId, clientName, onClose }: {
-  clientId: string; masterId: string; clientName: string; onClose: () => void;
-}) {
-  const [row, setRow] = useState<ClientRow | null>(null);
-  useEffect(() => {
-    if (!clientId || !masterId) return;
-    const sb = createClient();
-    Promise.all([
-      sb.from('bookings').select('client_phone, date, total_price, status, client_name')
-        .eq('master_id', masterId).eq('client_id', clientId).order('date', { ascending: false }),
-      sb.from('client_master_relations').select('id, is_vip, health_notes, medical_notes')
-        .eq('master_id', masterId).eq('client_id', clientId).maybeSingle(),
-    ]).then(([bRes, rRes]) => {
-      const bs = (bRes.data ?? []) as any[];
-      const rel = rRes.data as any;
-      const nonCancelled = bs.filter(b => b.status !== 'cancelled');
-      const completed = bs.filter(b => b.status === 'completed');
-      const spent = completed.reduce((s: number, b: any) => s + Number(b.total_price), 0);
-      setRow({
-        id: bs[0]?.client_phone ?? clientId,
-        client_id: clientId,
-        client_name: bs[0]?.client_name ?? clientName,
-        client_phone: bs[0]?.client_phone ?? '',
-        total_visits: nonCancelled.length,
-        total_spent: spent,
-        average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
-        last_visit_at:    bs[0]?.date ?? null,
-        last_service_name: bs[0]?.service_name ?? null,
-        is_vip:           rel?.is_vip ?? false,
-        relation_id:      rel?.id ?? null,
-        retention_status: 'active' as const,
-        health_notes:     rel?.health_notes ?? null,
-        medical_notes:    rel?.medical_notes ?? null,
-      });
-    });
-  }, [clientId, masterId]);
-  return (
-    <ClientDetailSheet
-      client={row}
-      onClose={onClose}
-    />
-  );
-}
-
-// ── Pro Upgrade Card ──────────────────────────────────────────────────────────
-
-function ProUpgradeCard() {
-  return (
-    <motion.div
-      data-testid="upgrade-prompt"
-      className="bento-card p-6 relative overflow-hidden"
-      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING, delay: 0.1 }}
-    >
-      {/* Декоративні блоби */}
-      <div className="absolute -top-8 -right-8 size-32 bg-primary/15 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-6 -left-6 size-24 bg-success/10 rounded-full blur-2xl pointer-events-none" />
-
-      <div className="flex items-center gap-3 mb-5 relative">
-        <div className="size-11 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-[0_4px_14px_var(--accent-light)] flex-shrink-0">
-          <Crown size={19} className="text-white" />
-        </div>
-        <div>
-          <p className="text-sm font-bold text-foreground">Глибока аналітика</p>
-          <p className="text-[11px] text-muted-foreground/60">Доступно з Pro-тарифом</p>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 mb-6 relative">
-        {[
-          { icon: TrendingUp, label: 'Тренд виручки за 6 місяців + прогноз' },
-          { icon: Users, label: 'Нові vs постійні клієнти' },
-          { icon: Star, label: 'Топ клієнти, послуги та товари' },
-          { icon: BarChart2, label: 'Середній чек і джерела записів' },
-          { icon: Download, label: 'CSV-експорт усіх транзакцій' },
-        ].map(f => (
-          <div key={f.label} className="flex items-center gap-3">
-            <div className="size-7 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <f.icon size={13} className="text-primary" />
-            </div>
-            <p className="text-[13px] text-muted-foreground">{f.label}</p>
-          </div>
-        ))}
-      </div>
-
-      <Link href="/dashboard/billing"
-        className="relative flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-semibold shadow-[var(--btn-primary-shadow)] hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all">
-        <Crown size={15} />
-        Перейти на Pro — 700₴/міс
-      </Link>
-    </motion.div>
-  );
-}
-
-// ── MonthBarChart ─────────────────────────────────────────────────────────────
-
-function MonthBarChart({ monthStats }: { monthStats: Array<{ month: string; revenue: number; bookings: number }> }) {
-  const [activeBar, setActiveBar] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (activeBar === null) return;
-    const close = () => setActiveBar(null);
-    const frame = requestAnimationFrame(() => {
-      document.addEventListener('click', close, { once: true });
-      document.addEventListener('touchstart', close, { once: true, passive: true });
-    });
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener('click', close);
-      document.removeEventListener('touchstart', close);
-    };
-  }, [activeBar]);
-
-  const maxV = Math.max(...monthStats.map(x => x.revenue), 1);
-  return (
-    <div className="flex items-end gap-2 h-24">
-      {monthStats.map((m, i) => {
-        const h = m.revenue === 0 ? 4 : Math.round((m.revenue / maxV) * 80);
-        return (
-          <div
-            key={i}
-            className="flex-1 flex flex-col items-center gap-1 relative"
-            onMouseEnter={() => setActiveBar(i)}
-            onMouseLeave={() => setActiveBar(null)}
-            onClick={(e) => { e.stopPropagation(); setActiveBar(prev => prev === i ? null : i); }}
-          >
-            <AnimatePresence>
-              {activeBar === i && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-                  style={{
-                    background: 'var(--surface)',
-                    backdropFilter: 'blur(16px)',
-                    border: '1px solid var(--border)',
-                    boxShadow: '0 8px 24px rgba(44,26,20,0.12)',
-                    borderRadius: 12,
-                    padding: '6px 10px',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <p className="text-sm text-muted-foreground mb-0.5">{m.month}</p>
-                  <p className="text-base font-bold text-foreground">{formatPrice(m.revenue)}</p>
-                  <p className="text-[11px] text-muted-foreground">{pluralUk(m.bookings, 'запис', 'записи', 'записів')}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <motion.div
-              initial={{ height: 0 }} animate={{ height: h }}
-              transition={{ delay: 0.06 + i * 0.06, ...SPRING }}
-              className="w-full rounded-t-xl bg-gradient-to-t from-primary/60 to-primary/25"
-              style={{ minHeight: 4, cursor: 'pointer' }}
-            />
-            <span className="text-[10px] text-muted-foreground/60">{m.month}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Main Component ────────────────────────────────────────────────────────────
 
 export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
   const { masterProfile } = useMasterContext();
+  const masterId = masterProfile?.id;
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  
   const { currentStep, nextStep, closeTour } = useTour('analytics', 2, {
     initialSeen: seenTours?.analytics ?? false,
-    masterId: masterProfile?.id,
+    masterId,
   });
+
   const range = useDateRange();
   const [exporting, setExporting] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<TopClient | null>(null);
+  const [selectedClient, setSelectedClient] = useState<{ clientId?: string | null; clientName: string; clientPhone?: string | null } | null>(null);
 
-  // Starter: тільки поточний місяць безкоштовний
+  // nuqs таб-контроль
+  const [activeTab, setActiveTab] = useQueryState('tab', parseAsString.withDefault('overview'));
+
+  // Starter: обмежуємо безкоштовний доступ лише поточним місяцем
   const isLockedDateRange = !isPro && (range.preset !== 'month' || range.offset !== 0);
 
+  // 1. Основний хук аналітики
   const { data, isLoading, isError, refetch, isFetching } = useAnalytics(
     { startDate: range.startDate, endDate: range.endDate },
     isPro,
     range.preset,
-    range.offset,
+    range.offset
   );
+
+  // 2. Мега-RPC хук для Pro метрик
+  const { data: extras, isLoading: isExtrasLoading, refetch: refetchExtras } = useAnalyticsExtras({
+    start: range.startDate,
+    end: range.endDate,
+    isPro,
+    scope: 'all',
+    enabled: isPro && !!data?.summary?.bookings,
+  });
+
+  // 3. Додаткові маркетингові хуки для BentoSecondary
+  const { data: flashDealsStats } = useQuery({
+    queryKey: ['analytics-flash-deals', masterId, range.startDate, range.endDate],
+    enabled: !!masterId && isPro && !!data?.summary?.bookings,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: fd, error } = await supabase
+        .from('flash_deals')
+        .select('status')
+        .eq('master_id', masterId!)
+        .gte('slot_date', range.startDate)
+        .lte('slot_date', range.endDate);
+      if (error) throw error;
+      const total = fd?.length ?? 0;
+      const claimed = fd?.filter((d: any) => d.status === 'booked').length ?? 0;
+      return { total, claimed };
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: broadcastsStats } = useQuery({
+    queryKey: ['analytics-broadcasts', masterId, range.startDate, range.endDate],
+    enabled: !!masterId && isPro && !!data?.summary?.bookings,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: b, error } = await supabase
+        .from('broadcasts')
+        .select('id')
+        .eq('master_id', masterId!)
+        .gte('created_at', range.startDate)
+        .lte('created_at', range.endDate);
+      if (error) throw error;
+      
+      if (!b || b.length === 0) {
+        return { sent: 0, opened: 0, converted: 0 };
+      }
+      
+      const ids = b.map((item: any) => item.id);
+      const { data: recipients, error: rError } = await supabase
+        .from('broadcast_recipients')
+        .select('push_sent, telegram_sent, sms_sent, clicked_at, booked_at')
+        .in('broadcast_id', ids);
+      if (rError) throw rError;
+
+      let sent = 0;
+      let opened = 0;
+      let converted = 0;
+
+      recipients?.forEach((r: any) => {
+        if (r.push_sent || r.telegram_sent || r.sms_sent) sent++;
+        if (r.clicked_at) opened++;
+        if (r.booked_at) converted++;
+      });
+
+      return { sent, opened, converted };
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: loyaltyStats } = useQuery({
+    queryKey: ['analytics-loyalty-stats', masterId],
+    enabled: !!masterId && isPro && !!data?.summary?.bookings,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: cmr, error } = await supabase
+        .from('client_master_relations')
+        .select('total_visits')
+        .eq('master_id', masterId!);
+      if (error) throw error;
+
+      const activeMembers = cmr?.filter((c: any) => c.total_visits > 0).length ?? 0;
+      const totalPoints = cmr?.reduce((sum: number, c: any) => sum + (c.total_visits || 0), 0) ?? 0;
+
+      return { activeMembers, totalPoints };
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: referralStats } = useQuery({
+    queryKey: ['analytics-referrals', masterId],
+    enabled: !!masterId && isPro && !!data?.summary?.bookings,
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: sent, error: e1 } = await supabase
+        .from('referrals')
+        .select('status')
+        .eq('master_id', masterId!);
+      if (e1) throw e1;
+      
+      const totalSent = sent?.length ?? 0;
+      const signedUp = sent?.filter((r: any) => r.status === 'signed_up' || r.status === 'activated').length ?? 0;
+      const activated = sent?.filter((r: any) => r.status === 'activated').length ?? 0;
+      
+      return { totalSent, signedUp, activated };
+    },
+    staleTime: 5 * 60_000,
+  });
 
   const summary = data?.summary ?? { bookings: 0, orders: 0, revenue: 0, activeClients: 0, newClients: null };
   const monthStats = data?.monthStats ?? [];
@@ -415,27 +374,104 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
   const maxSvcRev = Math.max(...topServices.map(s => s.revenue), 1);
   const maxProdRev = Math.max(...topProducts.map(p => p.revenue), 1);
 
+  // Лінійна регресія та прогноз виручки
   const forecast = isPro && monthStats.length >= 2
     ? linearRegression(monthStats.map(m => m.revenue))
     : null;
+
   const lastMonthRev = monthStats[monthStats.length - 1]?.revenue ?? 0;
   const forecastDelta = forecast ? forecast.forecast - lastMonthRev : 0;
   const forecastPct = lastMonthRev > 0 ? Math.round((forecastDelta / lastMonthRev) * 100) : null;
-  const nextMonth = (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return UA_MONTHS[d.getMonth()]; })();
+  
+  const nextMonthName = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    const months = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
+    return months[d.getMonth()] ?? 'Наст. місяць';
+  }, []);
 
-  const retTotal = retention ? retention.newClients + retention.returningClients : 0;
-  const retRate = retTotal > 0 ? Math.round((retention!.returningClients / retTotal) * 100) : 0;
+  // Генерація Insight Stories
+  const storiesList = useMemo(() => {
+    const list: StoryItem[] = [];
+    if (!data) return list;
+
+    // 1. Огляд виручки
+    if (summary.bookings > 0) {
+      list.push({
+        id: 'story-rev',
+        type: 'general',
+        title: `Виручка за період: ${formatPrice(Math.round(summary.revenue / 100))}`,
+        description: `Завершено ${summary.bookings} ${pluralUk(summary.bookings, 'запис', 'записи', 'записів')}. Середній чек становить ${bento?.avgCheck?.current ? formatPrice(bento.avgCheck.current) : '—'}.`,
+        icon: <Star size={14} className="text-primary" />
+      });
+    }
+
+    // 2. Дохід від Smart Pricing
+    const pricingUplift = extras?.dynamic_pricing_uplift?.uplift_kopecks ?? 0;
+    if (pricingUplift > 0) {
+      list.push({
+        id: 'story-pricing',
+        type: 'pricing',
+        title: `Розумне ціноутворення принесло +${formatPrice(Math.round(pricingUplift / 100))}`,
+        description: `Автоматичні націнки в години пік та знижки в гарячі години підвищили ROI.`,
+        ctaLabel: 'Налаштувати ціни',
+        ctaHref: '/dashboard/revenue?tab=pricing',
+        icon: <TrendingUp size={14} className="text-success" />
+      });
+    }
+
+    // 3. Аномалія завантаженості (наступний тиждень)
+    const anomalies = extras?.anomaly_alerts ?? [];
+    if (isPro && anomalies.length > 0) {
+      const alert = anomalies[0];
+      const alertDate = new Date(alert.date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+      list.push({
+        id: 'story-anomaly',
+        type: 'anomaly',
+        title: `Прогнозується спад завантаження на ${alertDate}`,
+        description: `Кількість записів суттєво нижча за середню. Створіть флеш-акцію, щоб заповнити вільні вікна.`,
+        ctaLabel: 'Створити акцію',
+        ctaHref: '/dashboard/revenue?tab=flash',
+        icon: <AlertTriangle size={14} className="text-warning" />
+      });
+    }
+
+    // 4. LTV Концентрація (Парето)
+    const concentration = extras?.ltv_concentration?.concentration_pct ?? 0;
+    if (isPro && concentration > 0) {
+      list.push({
+        id: 'story-ltv',
+        type: 'growth',
+        title: `Топ-20% клієнтів приносять ${concentration}% вашого доходу`,
+        description: `Зосередьтеся на утриманні VIP-клієнтів та реактивуйте кандидатів на повернення.`,
+        icon: <Users size={14} className="text-primary" />
+      });
+    }
+
+    return list;
+  }, [data, extras, isPro, summary, bento, nextMonthName]);
 
   async function handleExport() {
-    if (!masterProfile?.id) return;
+    if (!masterId) return;
     setExporting(true);
-    try { await exportAnalyticsCsv(masterProfile.id, range.startDate, range.endDate); }
-    finally { setExporting(false); }
+    try {
+      await exportAnalyticsCsv(masterId, range.startDate, range.endDate);
+    } finally {
+      setExporting(false);
+    }
   }
+
+  const handleRefreshAll = () => {
+    refetch();
+    if (isPro) {
+      refetchExtras();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 pb-8 w-full max-w-full overflow-x-hidden">
-      {/* ── Header ── */}
+      
+      {/* ── Вступний заголовок та контроль періодів ── */}
       <div className={cn(
         'relative bento-card p-5 transition-all duration-500',
         currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
@@ -443,10 +479,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         <AnchoredTooltip
           isOpen={currentStep === 0}
           onClose={closeTour}
-          title="💰 Контроль доходів"
+          title="Контроль доходів"
           text="Тримайте фінанси під контролем. Тут ви побачите реальний графік ваших доходів за місяць."
           position="bottom"
-          primaryButtonText="Далі →"
+          primaryButtonText="Далі"
           onPrimaryClick={nextStep}
         />
         <div className="flex items-start justify-between mb-4">
@@ -454,533 +490,387 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             <h1 className="heading-serif text-xl text-foreground mb-0.5">Аналітика</h1>
             <p className="text-sm text-muted-foreground/60">Статистика та звіти</p>
           </div>
-          <button type="button" onClick={() => refetch()} disabled={isFetching} aria-label="Оновити"
-            className="size-9 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.88] cursor-pointer transition-colors disabled:opacity-40">
+          <button
+            type="button"
+            onClick={handleRefreshAll}
+            disabled={isFetching}
+            aria-label="Оновити дані"
+            className="size-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.90] cursor-pointer transition-all disabled:opacity-40"
+          >
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
         </div>
-        <DateRangeBar
-          preset={range.preset} canGoNext={range.canGoNext} label={range.label}
-          setPreset={range.setPreset} goPrev={range.goPrev} goNext={range.goNext}
+        <PeriodControls
+          preset={range.preset}
+          canGoNext={range.canGoNext}
+          label={range.label}
+          setPreset={range.setPreset}
+          goPrev={range.goPrev}
+          goNext={range.goNext}
         />
         {isLockedDateRange && (
-          <div className="mt-3 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-primary/8 border border-primary/20">
+          <div data-testid="locked-date-range" className="mt-3 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-primary/10 border border-primary/20">
             <Crown size={13} className="text-primary flex-shrink-0" />
             <p className="text-[12px] text-muted-foreground flex-1">Цей діапазон доступний у Pro</p>
             <Link href="/dashboard/billing" className="text-[11px] font-bold text-primary whitespace-nowrap">
-              Оновити →
+              Оновити
             </Link>
           </div>
         )}
       </div>
 
-      {/* ── Error ── */}
+      {/* ── Error State ── */}
       {isError && (
-        <div className="bento-card p-5 text-center text-sm text-destructive">
-          Помилка завантаження.{' '}
-          <button type="button" onClick={() => refetch()} className="underline">Повторити</button>
+        <BentoCell className="p-6">
+          <ErrorCell onRetry={handleRefreshAll} />
+        </BentoCell>
+      )}
+
+      {/* ── Loading State ── */}
+      {isLoading && (
+        <div data-testid="stats-loading" className="flex flex-col gap-4">
+          <SkeletonCell variant="ticker" />
+          <SkeletonCell variant="flat" className="h-[240px]" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SkeletonCell variant="square" />
+            <SkeletonCell variant="square" />
+          </div>
         </div>
       )}
 
-      {/* ── Summary ── */}
-      <motion.div
-        data-testid={isLoading ? 'stats-loading' : 'stats-ready'}
-        className="bento-card p-5"
-        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={SPRING}>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">{range.label}</p>
-            <p className="text-[11px] text-muted-foreground/60/60 mt-0.5">{range.startDate} — {range.endDate}</p>
-          </div>
-        </div>
-
-        {isLockedDateRange ? (
-          <div className="flex flex-col items-center py-6 gap-2.5" data-testid="locked-date-range">
-            <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Crown size={20} className="text-primary" data-testid="paywall-lock" />
-            </div>
-            <p className="text-sm font-bold text-foreground">Виберіть поточний місяць</p>
-            <p className="text-[12px] text-muted-foreground/60 text-center max-w-[200px]">
-              Безкоштовна аналітика доступна лише для поточного місяця
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { icon: BarChart2, label: 'Записів', value: isLoading ? null : summary.bookings, color: '#789A99' },
-              { icon: ShoppingBag, label: 'Замовлень', value: isLoading ? null : summary.orders, color: '#D4935A' },
-              { icon: TrendingUp, label: 'Виручка', value: isLoading ? null : formatPrice(summary.revenue), color: '#5C9E7A' },
-              { icon: Users, label: 'Клієнтів', value: isLoading ? null : summary.activeClients, color: '#789A99' },
-            ].map(s => (
-              <div key={s.label} className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-secondary/50 border border-border">
-                <div className="size-10 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${s.color}18` }}>
-                  <s.icon size={18} style={{ color: s.color }} />
-                </div>
-                {s.value === null
-                  ? <Skeleton h="h-7" w="w-20" />
-                  : <p className="text-2xl font-bold tracking-tight text-foreground leading-none">{s.value}</p>
-                }
-                <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
-
-      {/* ── Empty state: no bookings yet ── */}
+      {/* ── Empty State (No Bookings) ── */}
       {!isLoading && !isLockedDateRange && summary.bookings === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING, delay: 0.15 }}
-          className="bento-card p-6 flex flex-col gap-5"
-        >
-          <div className="text-center">
-            <div className="size-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <BarChart2 size={28} className="text-primary" />
-            </div>
-            <p className="text-base font-bold text-foreground">Даних ще немає</p>
-            <p className="text-sm text-muted-foreground/60 mt-1 text-balance">
-              Аналітика з'явиться після перших записів. Ось як їх отримати:
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {[
-              {
-                emoji: '🔗',
-                title: 'Поширте публічну сторінку',
-                desc: 'Ваш унікальний link in bio — надішліть в Instagram Stories, Telegram-канал або WhatsApp.',
-                href: '/dashboard/settings',
-                cta: 'Налаштування →',
-              },
-              {
-                emoji: '⚡',
-                title: 'Запустіть флеш-акцію',
-                desc: 'Знижка -20% на перший запис залучає нових клієнтів моментально.',
-                href: '/dashboard/flash',
-                cta: 'Створити акцію →',
-              },
-              {
-                emoji: '✍️',
-                title: 'Додайте запис вручну',
-                desc: 'Зафіксуйте поточних клієнтів — їхня статистика одразу з\'явиться тут.',
-                href: '/dashboard/bookings',
-                cta: 'Записи →',
-              },
-            ].map(step => (
-              <div key={step.title} className="flex gap-3 p-4 rounded-2xl bg-secondary/50">
-                <span className="text-xl flex-shrink-0 mt-0.5">{step.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{step.title}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">{step.desc}</p>
-                  <Link href={step.href} className="inline-flex mt-1.5 text-xs font-semibold text-primary hover:text-primary/90 transition-colors">
-                    {step.cta}
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+        <BentoCell className="p-6">
+          <EmptyCell
+            title="Даних ще немає"
+            description="Аналітика з'явиться після перших записів. Поширте вашу сторінку або додайте запис вручну."
+            icon={<BarChart2 size={24} />}
+            actionLabel="Поділитися посиланням"
+            onActionClick={() => window.open(`/${masterProfile?.slug || ''}`, '_blank')}
+          />
+        </BentoCell>
       )}
 
-      {/* ── Starter: одна красива картка апгрейду ── */}
-      {!isPro && !isLockedDateRange && summary.bookings > 0 && <ProUpgradeCard />}
+      {/* ── Paywall Upgrade Card for Starter Tier ── */}
+      {!isLockedDateRange && !isPro && summary.bookings > 0 && (
+        <ProUpgradeCard />
+      )}
 
-      {/* ── Pro контент ── */}
-      {isPro && (
-        <>
-          {/* Нові vs Постійні */}
-          <div className={cn(
-            'relative bento-card p-5 transition-all duration-500',
-            currentStep === 1 && 'tour-glow z-40 scale-[1.02]'
-          )}>
-            <AnchoredTooltip
-              isOpen={currentStep === 1}
-              onClose={closeTour}
-              title="📊 Когортний аналіз"
-              text="Слідкуйте за тим, скільки нових клієнтів до вас приходить, і який відсоток з них стає постійними."
-              position="top"
-              primaryButtonText="Зрозуміло"
-              onPrimaryClick={nextStep}
-            />
-            <SectionHeader title="Нові vs Постійні" />
-            {isLoading ? (
-              <div className="flex flex-col gap-3">
-                <Skeleton h="h-3" /><Skeleton h="h-3" w="w-24" />
-                <div className="grid grid-cols-3 gap-2 mt-2">
-                  {[0, 1, 2].map(i => <Skeleton key={i} h="h-16" rounded="rounded-2xl" />)}
-                </div>
-              </div>
-            ) : !retention || retTotal === 0 ? (
-              <p className="text-sm text-muted-foreground/60 text-center py-4">Недостатньо даних за цей період</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <div>
-                  <div className="flex justify-between text-[11px] text-muted-foreground/60 mb-1.5">
-                    <span>Нові · {retention.newClients}</span>
-                    <span>Постійні · {retention.returningClients}</span>
-                  </div>
-                  <div className="h-3 rounded-full bg-secondary overflow-hidden flex">
-                    <div className="h-full bg-warning/70 transition-all duration-700" style={{ width: `${100 - retRate}%` }} />
-                    <div className="h-full bg-primary/70 transition-all duration-700" style={{ width: `${retRate}%` }} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2 mt-1">
-                  {[
-                    { label: 'Нових', value: retention.newClients, color: '#D4935A' },
-                    { label: 'Постійних', value: retention.returningClients, color: '#789A99' },
-                    { label: 'Повторність', value: `${retRate}%`, color: '#5C9E7A' },
-                  ].map(item => (
-                    <div key={item.label} className="flex flex-col items-center p-3 rounded-2xl bg-secondary/50 border border-border">
-                      <p className="text-lg font-bold" style={{ color: item.color }}>{item.value}</p>
-                      <p className="text-[10px] text-muted-foreground/60 text-center leading-tight mt-0.5">{item.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* ── Main Pro / Ready Dashboard Content ── */}
+      {!isLoading && !isError && summary.bookings > 0 && (!isLockedDateRange || isPro) && (
+        <div data-testid="stats-ready" className="flex flex-col gap-4">
+          
+          {isPro && extras?.business_health && (
+            <BusinessHealthScoreWidget health={extras.business_health} />
+          )}
+
+          <MorningBriefing onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })} />
+
+          {/* KPI Ticker & stories (Pro-only insights) */}
+          <KpiTicker
+            bookings={summary.bookings}
+            orders={summary.orders}
+            revenue={summary.revenue}
+            activeClients={summary.activeClients}
+          />
+
+          {isPro && storiesList.length > 0 && (
+            <HeroStory stories={storiesList} />
+          )}
+
+          {/* ── Tabs Switcher (Sliding Pill) ── */}
+          <div className="flex bg-secondary/40 p-1 rounded-full w-max max-w-full overflow-x-auto scrollbar-hide border border-border-strong my-1">
+            {TABS.map((t) => {
+              const isLocked = !isPro && t.key !== 'overview';
+              return (
+                <button
+                  type="button"
+                  key={t.key}
+                  onClick={() => !isLocked && setActiveTab(t.key)}
+                  className={cn(
+                    'relative px-4 py-2 text-xs font-semibold select-none cursor-pointer flex items-center gap-1 active:scale-[0.95] duration-100 transition-all',
+                    isLocked && 'opacity-40 cursor-not-allowed'
+                  )}
+                >
+                  {activeTab === t.key && (
+                    <motion.div
+                      layoutId="active-tab-indicator"
+                      className="absolute inset-0 bg-primary/10 rounded-full border border-primary/20"
+                      transition={SPRING}
+                    />
+                  )}
+                  <span className={cn('relative z-10 flex items-center gap-1.5', activeTab === t.key ? 'text-primary' : 'text-muted-foreground')}>
+                    {t.label}
+                    {isLocked && <Crown size={10} className="text-primary flex-shrink-0" />}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Виручка за 6 місяців */}
-          <div className="bento-card p-5">
-            <SectionHeader title="Виручка за 6 місяців" />
-            {isLoading ? (
-              <div className="flex items-end gap-2 h-24">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <Skeleton h="h-16" rounded="rounded-t-xl" /><Skeleton h="h-2" w="w-6" />
-                  </div>
-                ))}
-              </div>
-            ) : monthStats.length === 0 ? (
-              <p className="text-sm text-muted-foreground/60 text-center py-8">Недостатньо даних</p>
-            ) : (
-              <MonthBarChart monthStats={monthStats} />
-            )}
-          </div>
-
-          {/* Bento row: Розподіл виручки + Кращий день */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bento-card p-4">
-              <SectionHeader title="Розподіл" />
-              {isLoading ? <Skeleton h="h-20" rounded="rounded-xl" /> : bento ? (() => {
-                const svcRev = bento.revenueByCategory.services;
-                const bookingProdRev = bento.revenueByCategory.bookingProducts;
-                const shopProdRev = bento.revenueByCategory.shopProducts;
-                const total = svcRev + bookingProdRev + shopProdRev;
-                
-                const svcPct = total > 0 ? Math.round((svcRev / total) * 100) : 0;
-                const bProdPct = total > 0 ? Math.round((bookingProdRev / total) * 100) : 0;
-                const sProdPct = total > 0 ? Math.max(0, 100 - svcPct - bProdPct) : 0;
-
-                return (
-                  <div className="flex flex-col gap-3">
-                    <div className="h-2 rounded-full bg-secondary overflow-hidden flex shadow-inner">
-                      <div className="h-full bg-primary transition-all duration-700" style={{ width: `${svcPct}%` }} />
-                      <div className="h-full bg-warning/60 transition-all duration-700" style={{ width: `${bProdPct}%` }} />
-                      <div className="h-full bg-success/60 transition-all duration-700 flex-1" />
+          {/* ── Tabs Render ── */}
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="w-full"
+            >
+              
+              {/* Tab 1: OVERVIEW */}
+              {activeTab === 'overview' && (
+                <div className="flex flex-col gap-4">
+                  {/* Revenue Line Chart */}
+                  <BentoCell className="p-5">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Графік виручки</p>
+                        <p className="text-[11px] text-muted-foreground/50 mt-0.5">Динаміка за період з прогнозом</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                      {[
-                        { dot: '#789A99', label: 'Послуги', pct: svcPct, rev: svcRev },
-                        { dot: '#D4935A99', label: 'Товари (Запис)', pct: bProdPct, rev: bookingProdRev },
-                        { dot: '#5C9E7A99', label: 'Товари (Магаз)', pct: sProdPct, rev: shopProdRev },
-                      ].map(item => (
-                        <Tooltip key={item.label}
-                          content={<div><p className="text-xs text-muted-foreground mb-0.5">{item.label}</p><p className="text-base font-bold text-foreground">{formatPrice(item.rev)}</p></div>}
-                        >
-                          <div className="flex items-center justify-between cursor-default">
-                            <div className="flex items-center gap-1.5">
-                              <div className="size-2 rounded-full flex-shrink-0" style={{ background: item.dot }} />
-                              <span className="text-[10px] text-muted-foreground/60 truncate max-w-[70px]">{item.label}</span>
+                    <RevenueLineChart
+                      data={monthStats}
+                      forecastRevenue={forecast?.forecast}
+                      forecastMonthName={nextMonthName}
+                      isPro={isPro}
+                    />
+                  </BentoCell>
+
+                  {isPro && (
+                    <SmartPricingOptimizer occupancyHeatmap={extras?.occupancy_heatmap} />
+                  )}
+
+                  {/* Asymmetric grid: Top Services & Products */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Top Services */}
+                    <BentoCell className="p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Найпопулярніші послуги</p>
+                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рейтинг за кількістю та доходом</p>
+                        </div>
+                      </div>
+                      {topServices.length === 0 ? (
+                        <p className="text-sm text-muted-foreground/60 text-center py-8">Послуги ще не надавалися</p>
+                      ) : (
+                        <div className="flex flex-col gap-4">
+                          {topServices.map(svc => (
+                            <ServiceRow key={svc.name} svc={svc} maxRev={maxSvcRev} />
+                          ))}
+                        </div>
+                      )}
+                    </BentoCell>
+
+                    {/* Top Products */}
+                    <BentoCell className="p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Продажі товарів</p>
+                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рейтинг продажів товарів</p>
+                        </div>
+                      </div>
+                      {topProducts.length === 0 ? (
+                        <p className="text-sm text-muted-foreground/60 text-center py-8">Товари ще не продавалися</p>
+                      ) : (
+                        <div className="flex flex-col gap-4">
+                          {topProducts.map((prod, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                              <span className="text-xs font-bold text-muted-foreground/60 w-4 flex-shrink-0">{i + 1}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between mb-1">
+                                  <span className="text-sm font-semibold text-foreground truncate pr-2">{prod.name}</span>
+                                  <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(prod.revenue / 100))}</span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                                  <div
+                                    className="h-full bg-warning/80 transition-all duration-700"
+                                    style={{ width: `${Math.round((prod.revenue / maxProdRev) * 100)}%` }}
+                                  />
+                                </div>
+                                <span className="text-[10px] text-muted-foreground/60 mt-1 block leading-none">Продано: {prod.qty} шт.</span>
+                              </div>
                             </div>
-                            <span className="text-[10px] font-bold text-foreground">{item.pct}%</span>
-                          </div>
-                        </Tooltip>
-                      ))}
-                    </div>
+                          ))}
+                        </div>
+                      )}
+                    </BentoCell>
                   </div>
-                );
-              })() : null}
-            </div>
 
-            <div className="bento-card p-4">
-              <SectionHeader title="Кращий день" />
-              {isLoading ? <Skeleton h="h-20" rounded="rounded-xl" /> : bento ? (
-                <>
-                  <div className="flex items-baseline gap-1">
-                    <p className="text-lg font-bold text-primary">{bento.bestDayOfWeek.day}</p>
-                    <p className="text-[11px] text-muted-foreground/60">· {bento.bestDayOfWeek.pct}%</p>
-                  </div>
-                  <DowChart
-                    data={bento.bestDayOfWeek.data}
-                    bookings={bento.bestDayOfWeek.bookings}
-                    bestIdx={bento.bestDayOfWeek.dayIdx}
-                  />
-                </>
-              ) : null}
-            </div>
-          </div>
+                  {/* Top Clients */}
+                  {bento?.topClients && bento.topClients.length > 0 && (
+                    <BentoCell className="p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Найактивніші клієнти</p>
+                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рейтинг за витратами та візитами</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {bento.topClients.map((c, i) => (
+                          <button
+                            type="button"
+                            key={i}
+                            onClick={() => c.clientId ? setSelectedClient({ clientId: c.clientId, clientName: c.clientName }) : undefined}
+                            disabled={!c.clientId}
+                            className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/70 border border-border/5 text-left w-full cursor-pointer transition-all active:scale-[0.98]"
+                          >
+                            <div className={cn(
+                              'size-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 select-none',
+                              i === 0 && 'bg-warning/20 text-warning',
+                              i === 1 && 'bg-primary/20 text-primary',
+                              i > 1 && 'bg-secondary text-muted-foreground/60'
+                            )}>
+                              {i + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-foreground truncate">{c.clientName}</p>
+                              <p className="text-[10px] text-muted-foreground/60">{c.visits} відвідувань</p>
+                            </div>
+                            <p className="text-xs font-bold text-success flex-shrink-0 select-none">
+                              {formatPrice(Math.round(c.revenue / 100))}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    </BentoCell>
+                  )}
 
-          {/* Bento mini: Серед. чек + Години + Джерело */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bento-card p-4 flex flex-col gap-2">
-              <BarChart2 size={15} className="text-primary" />
-              {isLoading
-                ? <Skeleton h="h-5" w="w-14" />
-                : <p className="text-base font-bold text-foreground leading-tight">
-                  {bento && bento.avgCheck.current > 0 ? formatPrice(bento.avgCheck.current) : '—'}
-                </p>
-              }
-              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider leading-tight">Серед. чек</p>
-              {bento?.avgCheck.delta !== null && bento?.avgCheck.delta !== undefined && (
-                <div className={`flex items-center gap-0.5 text-[10px] font-bold ${bento.avgCheck.delta > 0 ? 'text-success' : bento.avgCheck.delta < 0 ? 'text-destructive' : 'text-muted-foreground/60'
-                  }`}>
-                  {bento.avgCheck.delta > 0 ? <TrendingUp size={10} /> : bento.avgCheck.delta < 0 ? <TrendingDown size={10} /> : <Minus size={10} />}
-                  {bento.avgCheck.delta > 0 ? '+' : ''}{bento.avgCheck.delta}%
-                </div>
-              )}
-            </div>
-
-            <div className="bento-card p-4 flex flex-col gap-2">
-              <Clock size={15} className="text-primary" />
-              {isLoading
-                ? <Skeleton h="h-5" w="w-12" />
-                : <p className="text-base font-bold text-foreground leading-tight">{bento?.hoursBooked ?? '—'}г</p>
-              }
-              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider leading-tight">Год. заброньовано</p>
-            </div>
-
-            <div className="bento-card p-4 flex flex-col gap-2">
-              <Zap size={15} className="text-primary" />
-              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider leading-tight">Джерело</p>
-              {isLoading ? <Skeleton h="h-8" rounded="rounded-lg" /> : (
-                <div className="flex flex-col gap-1.5 mt-auto">
-                  <div className="flex justify-between">
-                    <span className="text-[10px] text-muted-foreground/60">Онлайн</span>
-                    <span className="text-[10px] font-bold text-primary">{bento?.sourceBreakdown.online ?? '—'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[10px] text-muted-foreground/60">Вручну</span>
-                    <span className="text-[10px] font-bold text-foreground">{bento?.sourceBreakdown.manual ?? '—'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[10px] text-muted-foreground/60">Магазин</span>
-                    <span className="text-[10px] font-bold text-warning">{bento?.sourceBreakdown.shop ?? '—'}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Найприбутковіші клієнти */}
-          <div className="bento-card p-5">
-            <SectionHeader title="Найприбутковіші клієнти" />
-            {isLoading ? (
-              <div className="flex flex-col gap-3">
-                {[0, 1, 2].map(i => <Skeleton key={i} h="h-12" rounded="rounded-2xl" />)}
-              </div>
-            ) : bento && bento.topClients.length > 0 ? (
-              <div className="flex flex-col gap-1">
-                {bento.topClients.map((c, i) => (
-                  <button type="button" key={i}
-                    onClick={() => c.clientId ? setSelectedClient(c) : undefined}
-                    disabled={!c.clientId}
-                    className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-secondary/60 transition-colors cursor-pointer disabled:cursor-default text-left w-full"
-                  >
-                    <div className={`size-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-warning/20 text-warning' : i === 1 ? 'bg-primary/15 text-primary' : 'bg-secondary text-muted-foreground/60'
-                      }`}>{i + 1}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{c.clientName}</p>
-                      <p className="text-[11px] text-muted-foreground/60">{c.visits} відвідувань</p>
-                    </div>
-                    <p className="text-sm font-bold text-success flex-shrink-0">{formatPrice(c.revenue)}</p>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground/60 text-center py-4">Немає даних за цей період</p>
-            )}
-          </div>
-
-          {/* Прогноз виручки */}
-          <div className="bento-card p-5">
-            <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-4">Прогноз виручки</p>
-            {isLoading ? (
-              <div className="flex flex-col gap-3">
-                <Skeleton h="h-16" rounded="rounded-2xl" />
-                <Skeleton h="h-14" />
-                <Skeleton h="h-2" />
-              </div>
-            ) : forecast ? (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-secondary/50">
-                  <div>
-                    <p className="text-xs text-muted-foreground/60 mb-1">{nextMonth} — очікувана виручка</p>
-                    <p className="text-3xl font-bold tracking-tight text-foreground">{formatPrice(forecast.forecast)}</p>
-                  </div>
-                  <div className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl ${forecastDelta > 0 ? 'bg-success/10' : forecastDelta < 0 ? 'bg-destructive/10' : 'bg-secondary'
-                    }`}>
-                    {forecastDelta > 0 ? <TrendingUp size={20} className="text-success" />
-                      : forecastDelta < 0 ? <TrendingDown size={20} className="text-destructive" />
-                        : <Minus size={20} className="text-muted-foreground/60" />}
-                    {forecastPct !== null && (
-                      <span className={`text-xs font-bold ${forecastDelta > 0 ? 'text-success' : forecastDelta < 0 ? 'text-destructive' : 'text-muted-foreground/60'
-                        }`}>{forecastDelta > 0 ? '+' : ''}{forecastPct}%</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-end gap-1.5 h-14">
-                  {monthStats.map((m, i) => {
-                    const allVals = [...monthStats.map(x => x.revenue), forecast.forecast];
-                    const maxV = Math.max(...allVals, 1);
-                    const h = Math.max(3, Math.round((m.revenue / maxV) * 48));
-                    return (
-                      <Tooltip key={i}
-                        content={<div><p className="text-sm text-muted-foreground mb-1">{m.month}</p><p className="text-lg font-bold text-foreground">{formatPrice(m.revenue)}</p></div>}
-                        className="flex-1 flex flex-col items-center gap-1"
+                  {/* CSV Export Card */}
+                  <BentoCell className="p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Експорт фінансового звіту</p>
+                        <p className="text-[11px] text-muted-foreground/60 mt-0.5">Завантажте CSV-файл з детальною історією транзакцій за {range.label}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleExport}
+                        disabled={exporting}
+                        className="flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-all disabled:opacity-50"
                       >
-                        <motion.div initial={{ height: 0 }} animate={{ height: h }}
-                          transition={{ delay: 0.04 + i * 0.05, ...SPRING }}
-                          className="w-full rounded-t-lg bg-primary/40" />
-                        <span className="text-[9px] text-muted-foreground/60">{m.month}</span>
-                      </Tooltip>
-                    );
-                  })}
-                  <Tooltip
-                    content={<div><p className="text-sm text-muted-foreground mb-1">Прогноз · {nextMonth}</p><p className="text-lg font-bold text-foreground">{formatPrice(forecast.forecast)}</p>{forecastPct !== null && <p className="text-sm text-muted-foreground">{forecastPct > 0 ? '+' : ''}{forecastPct}% до минулого місяця</p>}</div>}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
-                    <motion.div initial={{ height: 0 }}
-                      animate={{ height: Math.max(3, Math.round((forecast.forecast / Math.max(...monthStats.map(x => x.revenue), forecast.forecast, 1)) * 48)) }}
-                      transition={{ delay: monthStats.length * 0.05, ...SPRING }}
-                      className="w-full rounded-t-lg border-2 border-dashed border-primary bg-primary/15" />
-                    <span className="text-[9px] font-semibold text-primary">{nextMonth.slice(0, 3)}</span>
-                  </Tooltip>
+                        {exporting ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin" />
+                            Генеруємо...
+                          </>
+                        ) : (
+                          <>
+                            <Download size={13} />
+                            Експорт в CSV
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </BentoCell>
                 </div>
+              )}
 
-                {/* Transparent breakdown — показує логіку розрахунку */}
-                {bento && bento.avgCheck.current > 0 && summary.bookings > 0 && (
-                  <div className="flex flex-col gap-1.5 px-3 py-3 rounded-2xl bg-secondary/60">
-                    <p className="text-[11px] text-muted-foreground font-medium">Як рахується прогноз</p>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-                      <span className="font-semibold text-foreground">{summary.bookings}</span>
-                      <span>записів за цей місяць</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-                      <span>×</span>
-                      <span className="font-semibold text-foreground">{formatPrice(bento.avgCheck.current)}</span>
-                      <span>середній чек</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs border-t border-secondary/80 pt-1.5 mt-0.5">
-                      <span className="text-muted-foreground/60">=</span>
-                      <span className="font-bold text-foreground">{formatPrice(summary.bookings * bento.avgCheck.current)}</span>
-                      <span className="text-muted-foreground/60">простий прогноз</span>
-                    </div>
-                  </div>
-                )}
+              {/* Tab 2: GROWTH */}
+              {activeTab === 'growth' && isPro && (
+                <div className="flex flex-col gap-4">
+                  {/* BentoSecondary Section (Smart Pricing, Goals, LTV Concentration, Pairs) */}
+                  <BentoSecondary
+                    isPro={isPro}
+                    currentRevenue={summary.revenue}
+                    upliftKopecks={extras?.dynamic_pricing_uplift?.uplift_kopecks ?? 0}
+                    ruleCounts={extras?.dynamic_pricing_uplift?.rule_counts ?? {}}
+                    dealsCount={flashDealsStats?.total ?? 0}
+                    claimedDeals={flashDealsStats?.claimed ?? 0}
+                    sentBroadcasts={broadcastsStats?.sent ?? 0}
+                    openedBroadcasts={broadcastsStats?.opened ?? 0}
+                    convertedBroadcasts={broadcastsStats?.converted ?? 0}
+                    concentrationPct={extras?.ltv_concentration?.concentration_pct ?? 0}
+                    ltvDistribution={extras?.ltv_concentration?.ltv_distribution ?? {}}
+                    winbackCandidates={extras?.ltv_concentration?.winback_candidates ?? []}
+                    servicePairs={extras?.service_pairing ?? []}
+                    onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })}
+                  />
 
-                {forecastDelta > 0 && forecastPct !== null && forecastPct >= 5 && (
-                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-success/8 border border-success/20">
-                    <span className="text-base">🎉</span>
-                    <p className="text-xs font-semibold text-success">
-                      Ви зростаєте! Прогноз на {nextMonth} краще за минулий місяць на {forecastPct}%
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground/60 text-center py-4">Потрібно мінімум 2 місяці даних для прогнозу</p>
-            )}
-          </div>
+                  {/* GrowthLists Section (Loyalty & Referrals) */}
+                  <GrowthLists
+                    loyaltyMembersCount={loyaltyStats?.activeMembers ?? 0}
+                    loyaltyPointsEarned={loyaltyStats?.totalPoints ?? 0}
+                    referralsSent={referralStats?.totalSent ?? 0}
+                    referralsSignedUp={referralStats?.signedUp ?? 0}
+                    referralsActivated={referralStats?.activated ?? 0}
+                  />
 
-          {/* Топ послуги */}
-          <div className="bento-card p-5">
-            <SectionHeader title="Топ послуги" subtitle="Натисни для cross-sell деталей" />
-            {isLoading ? (
-              <div className="flex flex-col gap-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex flex-col gap-2">
-                    <Skeleton h="h-3" w="w-32" />
-                    <Skeleton h="h-2" rounded="rounded-full" />
-                  </div>
-                ))}
-              </div>
-            ) : topServices.length === 0 ? (
-              <p className="text-sm text-muted-foreground/60 text-center py-4">Немає завершених записів за цей період</p>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {topServices.map(svc => <ServiceRow key={svc.name} svc={svc} maxRev={maxSvcRev} />)}
-              </div>
-            )}
-          </div>
-
-          {/* Продажі товарів */}
-          <div className="bento-card p-5">
-            <SectionHeader title="Продажі товарів" />
-            {isLoading ? (
-              <div className="flex flex-col gap-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex flex-col gap-2">
-                    <Skeleton h="h-3" w="w-36" />
-                    <Skeleton h="h-2" rounded="rounded-full" />
-                  </div>
-                ))}
-              </div>
-            ) : topProducts.length === 0 ? (
-              <p className="text-sm text-muted-foreground/60 text-center py-4">Немає продажів за цей період</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {topProducts.map((prod, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-muted-foreground/60 w-4 flex-shrink-0">{i + 1}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between mb-1.5">
-                        <span className="text-sm font-medium text-foreground truncate pr-2">{prod.name}</span>
-                        <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(prod.revenue)}</span>
+                  {/* Cohort Heatmap Card */}
+                  {extras?.cohort_matrix && extras.cohort_matrix.length > 0 && (
+                    <BentoCell className="p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Когортний аналіз повернення</p>
+                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Відсоток повторних візитів нових клієнтів по місяцях</p>
+                        </div>
                       </div>
-                      <div className="h-2 rounded-full bg-secondary">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-warning/70 to-warning/30 transition-all duration-700"
-                          style={{ width: `${Math.round((prod.revenue / maxProdRev) * 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-[11px] text-muted-foreground/60 mt-0.5 block">Продано: {prod.qty} шт.</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                      <CohortHeatmap data={extras.cohort_matrix} />
+                    </BentoCell>
+                  )}
+                </div>
+              )}
 
-          {/* CSV Експорт */}
-          <div className="bento-card p-5">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="size-9 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Download size={16} className="text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Експорт звіту</p>
-                <p className="text-[11px] text-muted-foreground/60">CSV з усіма транзакціями · {range.label}</p>
-              </div>
-            </div>
-            <button type="button" onClick={handleExport} disabled={exporting || isLoading}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-semibold active:scale-[0.95] cursor-pointer transition-all disabled:opacity-50 shadow-[var(--btn-primary-shadow)] hover:opacity-90">
-              {exporting
-                ? <><Loader2 size={16} className="animate-spin" /> Генеруємо...</>
-                : <><Download size={16} /> Завантажити CSV</>}
-            </button>
-          </div>
-        </>
+              {/* Tab 3: BEHAVIOR */}
+              {activeTab === 'behavior' && isPro && (
+                <div className="flex flex-col gap-5">
+                  {/* Occupancy Heatmap */}
+                  {extras?.occupancy_heatmap && extras.occupancy_heatmap.length > 0 && (
+                    <BentoCell className="p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Теплова карта завантаження</p>
+                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рівень зайнятості по годинах та днях тижня</p>
+                        </div>
+                      </div>
+                      <HeatmapGrid data={extras.occupancy_heatmap} />
+                    </BentoCell>
+                  )}
+
+                  {/* Drill-down: Lead Time Tab */}
+                  <LeadTimeTab start={range.startDate} end={range.endDate} />
+
+                  {/* Drill-down: No-Show Tab */}
+                  <NoShowTab start={range.startDate} end={range.endDate} />
+
+                  {/* Drill-down: Vacation Impact */}
+                  <VacationTab start={range.startDate} end={range.endDate} />
+                </div>
+              )}
+
+              {/* Tab 4: REVIEWS */}
+              {activeTab === 'reviews' && (
+                <ReviewsTab start={range.startDate} end={range.endDate} />
+              )}
+
+              {/* Tab 5: SOURCE */}
+              {activeTab === 'source' && (
+                <SourceTab start={range.startDate} end={range.endDate} />
+              )}
+
+              {/* Tab 6: FINANCES */}
+              {activeTab === 'finances' && (
+                <FinancesTab start={range.startDate} end={range.endDate} isPro={isPro} />
+              )}
+
+              {/* Tab 7: STOCK */}
+              {activeTab === 'stock' && (
+                <StockTab start={range.startDate} end={range.endDate} isPro={isPro} />
+              )}
+
+            </motion.div>
+          </AnimatePresence>
+
+        </div>
       )}
 
-      {/* ── Client detail sheet ── */}
-      {selectedClient?.clientId && masterProfile?.id && (
+      {/* ── Client Detail Sheet Modal ── */}
+      {selectedClient && masterId && (
         <ClientSheetById
           clientId={selectedClient.clientId}
-          masterId={masterProfile.id}
+          clientPhone={selectedClient.clientPhone}
+          masterId={masterId}
           clientName={selectedClient.clientName}
           onClose={() => setSelectedClient(null)}
         />

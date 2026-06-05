@@ -60,7 +60,7 @@ export function MastersDirectory() {
         .order('created_at', { ascending: false });
 
       if (fetchErr) throw fetchErr;
-      setMasters((data as any) || []);
+      setMasters(data || []);
     } catch (err: any) {
       console.error('[AdminMasters] Fetch error:', err.message);
     } finally {
@@ -340,7 +340,7 @@ export function MastersDirectory() {
                       <button
                         key={t}
                         type="button"
-                        onClick={() => setEditTier(t as any)}
+                        onClick={() => setEditTier(t as 'starter' | 'pro' | 'studio')}
                         className={`flex-1 rounded-xl py-2 text-xs font-bold uppercase tracking-wide border transition cursor-pointer ${
                           editTier === t
                             ? 'bg-indigo-50 border-indigo-300 text-indigo-700'

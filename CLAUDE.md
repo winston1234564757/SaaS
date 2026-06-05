@@ -43,12 +43,11 @@
 Весь детальний опис архітектури, правил кодування та дизайну знаходиться в папці `XDEV/` (шлях: `C:\Users\Vitossik\SaaS\XDEV\`). **Без прочитання XDEV — жодного коду.**
 
 ### Ключові документи XDEV:
-- [AI_DEVELOPER.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_DEVELOPER.md) — **Конституція розробника:** tech stack, coding standards, database RLS, three themes (Blossom, Studio, Frost), pre-deploy checklist.
+- [AI_MASTER_GUIDE.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_MASTER_GUIDE.md) — **Майстер-Конституція розробника та вхідний брифінг:** tech stack, coding standards, database RLS, three themes (Blossom, Studio, Frost), pre-deploy checklist, DB-to-DOM мислення та протоколи верифікації.
 - [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md) — **Майстер-інструкція по скілах:** Decision Tree для вибору ролі перед будь-якою ітерацією розробки чи дизайну, Clarification Framework (3-5 питань).
 - [UX_STANDARDS.md](file:///C:/Users/Vitossik/SaaS/XDEV/UX_STANDARDS.md) — **UX стандарти:** No-Emoji Policy, Vaul BottomSheets, анімаційні правила Emil Kowalski, колірні токени.
 - [SYSTEM_MAP.md](file:///C:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md) — **Архітектурна мапа:** єдине джерело технічної структури (роути, таблиці, RPC, хуки, утиліти).
 - [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md) — **Профіль продукту:** візія, бізнес-логіка, реферальна та бонусна системи, Smart Slots.
-- [AI_ONBOARDING.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_ONBOARDING.md) — **Вхідний брифінг:** DB-to-DOM мислення та протоколи верифікації змін (SQL, Manual, Playwright E2E).
 
 ---
 
@@ -165,4 +164,25 @@ npx supabase db push # Застосувати локальні міграції 
 
 ---
 
-*Останнє оновлення: 2026-05-30 · Версія: 8.3.0*
+## ⛔ IMPECCABLE SKILL WORKFLOW (IRON — завжди через скіл, не вручну)
+
+**Кожен impeccable аудит виконувати через скіл-воркфло, не sequential in-head.**
+
+```
+critique → spawn sub-agent для Assessment A (LLM Design Review)
+         → npx impeccable detect --json <target> для Assessment B
+         → об'єднати → звіт
+
+audit / animate / overdrive / polish / layout / optimize
+         → npx impeccable <cmd> <target> (якщо CLI)
+         → АБО завантажити reference скіла
+         → АБО spawn sub-agent
+
+mempalace_add_drawer → після кожного завершеного аудиту
+```
+
+**Заборонено:** ручний аналіз "в голові", пропуск `npx impeccable detect`, heuristic scoring без split assessment.
+
+---
+
+*Останнє оновлення: 2026-06-01 · Версія: 8.4.0*

@@ -21,10 +21,10 @@
 - **Коли читати:** На початку виконання конкретної поточної задачі.
 - **Що там:** Опис поточної цілі спринту та критерії успіху.
 
-#### 2. `AI_DEVELOPER.md` (Constitution of BookIT)
-- **Шлях:** [AI_DEVELOPER.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_DEVELOPER.md)
-- **Коли читати:** Перед кожною роботою з кодом, базою даних чи дизайном.
-- **Що там:** Стек, правила кодування, RLS, 3 теми (Blossom, Studio, Frost), антипатерни, правила економії токенів, деплой-чекліст.
+#### 2. `AI_MASTER_GUIDE.md` (Constitution & Onboarding Guide)
+- **Шлях:** [AI_MASTER_GUIDE.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_MASTER_GUIDE.md)
+- **Коли читати:** Перед будь-якою роботою з кодом, базою даних чи дизайном та на початку нової сесії.
+- **Що там:** Стек, правила кодування, RLS, 3 теми (Blossom, Studio, Frost), антипатерни, послідовність онбордингу, DB-to-DOM мислення та протоколи верифікації.
 
 #### 3. `SYSTEM_MAP.md` (Architecture Source of Truth)
 - **Шлях:** [SYSTEM_MAP.md](file:///C:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md)
@@ -39,11 +39,6 @@
 - **Шлях:** [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md)
 - **Коли читати:** На старті нової бізнес-фічі або зміни бізнес-логіки.
 - **Що там:** Опис філософії продукту, монетизації, реферальної системи, логіки Smart Slots.
-
-#### 5. `AI_ONBOARDING.md` (Project Briefing)
-- **Шлях:** [AI_ONBOARDING.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_ONBOARDING.md)
-- **Коли читати:** На старті роботи з проєктом у новій сесії.
-- **Що там:** Послідовність онбордингу, DB-to-DOM мислення та протокол верифікації змін.
 
 ---
 
@@ -67,10 +62,10 @@
 [Trigger Task] 
       │
       ▼
-1. Read TASK.md & AI_ONBOARDING.md ➔ Зрозумій задачу та контекст сесії
+1. Read TASK.md & AI_MASTER_GUIDE.md ➔ Зрозумій задачу та контекст сесії
       │
       ▼
-2. Read AI_DEVELOPER.md & SYSTEM_MAP.md ➔ Знайди суміжні файли та перевір правила коду
+2. Read AI_MASTER_GUIDE.md & SYSTEM_MAP.md ➔ Знайди суміжні файли та перевір правила коду
       │
       ▼
 3. Read SKILL_PROTOCOL.md ➔ Знайди потрібний скіл за допомогою Decision Tree

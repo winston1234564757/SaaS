@@ -5,6 +5,7 @@ import { createClient } from '../client';
 
 export interface ProductLink {
   serviceId: string;
+  quantity:  number;
 }
 
 const KEY = (productId: string | null) => ['product-links', productId] as const;
@@ -17,10 +18,13 @@ export function useProductLinks(productId: string | null) {
     queryFn: async (): Promise<ProductLink[]> => {
       const { data, error } = await createClient()
         .from('product_service_links')
-        .select('service_id')
+        .select('service_id, quantity')
         .eq('product_id', productId!);
       if (error) throw error;
-      return (data as { service_id: string }[]).map(r => ({ serviceId: r.service_id }));
+      return (data as { service_id: string; quantity: number }[]).map(r => ({
+        serviceId: r.service_id,
+        quantity:  r.quantity,
+      }));
     },
     enabled: !!productId,
     staleTime: 60_000,
@@ -33,8 +37,11 @@ export function useProductLinks(productId: string | null) {
   };
 }
 
-// Full-replace links for a product (used by ProductFormDrawer after save)
-export async function setProductLinks(productId: string, serviceIds: string[]): Promise<void> {
+// Full-replace links for a product (used by ProductEditor after save)
+export async function setProductLinks(
+  productId: string,
+  links: { serviceId: string; quantity: number }[],
+): Promise<void> {
   const supabase = createClient();
 
   const { error: delErr } = await supabase
@@ -43,10 +50,14 @@ export async function setProductLinks(productId: string, serviceIds: string[]): 
     .eq('product_id', productId);
   if (delErr) throw delErr;
 
-  if (serviceIds.length > 0) {
+  if (links.length > 0) {
     const { error: insErr } = await supabase
       .from('product_service_links')
-      .insert(serviceIds.map(sid => ({ product_id: productId, service_id: sid })));
+      .insert(links.map(l => ({
+        product_id: productId,
+        service_id: l.serviceId,
+        quantity:   l.quantity,
+      })));
     if (insErr) throw insErr;
   }
 }

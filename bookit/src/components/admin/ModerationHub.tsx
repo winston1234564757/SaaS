@@ -70,8 +70,8 @@ export function ModerationHub() {
       );
 
       setReports(enrichedReports);
-      setReviews((reviewsRes.data as any) || []);
-      setPortfolioItems((portfolioRes.data as any) || []);
+      setReviews(reviewsRes.data || []);
+      setPortfolioItems(portfolioRes.data || []);
     } catch (err) {
       console.error('[AdminModeration] Load error:', err);
     } finally {

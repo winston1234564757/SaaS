@@ -73,19 +73,19 @@ export async function middleware(request: NextRequest) {
     let user = null;
     try {
       const userPromise = supabase.auth.getUser();
-      const timeoutPromise = new Promise((_, reject) =>
+      const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('timeout')), 3000)
       );
 
-      const { data: { user: u } } = await (Promise.race([userPromise, timeoutPromise]) as Promise<any>);
+      const { data: { user: u } } = await Promise.race([userPromise, timeoutPromise]);
       user = u;
     } catch (err) {
       console.warn('[Middleware] getUser timed out or failed, falling back to getSession', err);
       try {
         const { data: { session } } = await Promise.race([
           supabase.auth.getSession(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('session-timeout')), 3000))
-        ]) as any;
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('session-timeout')), 3000))
+        ]);
         user = session?.user ?? null;
       } catch {
         user = null;
@@ -100,9 +100,9 @@ export async function middleware(request: NextRequest) {
             .select('role')
             .eq('id', user.id)
             .single(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 3000))
-        ]) as any;
-        
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 3000))
+        ]);
+
         if (profileRes?.data?.role) {
           role = profileRes.data.role as string;
           const isProduction = process.env.NODE_ENV === 'production';
@@ -163,4 +163,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon\\.ico|icons/|sw\\.js|manifest\\.json|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
-

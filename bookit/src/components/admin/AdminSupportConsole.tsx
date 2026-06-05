@@ -60,7 +60,7 @@ export function AdminSupportConsole() {
         .order('updated_at', { ascending: false });
 
       if (fetchErr) throw fetchErr;
-      setTickets((data as any) || []);
+      setTickets(data || []);
     } catch (err) {
       console.error('[AdminSupport] Fetch tickets error:', err);
     } finally {
@@ -224,7 +224,7 @@ export function AdminSupportConsole() {
               <button
                 key={s}
                 type="button"
-                onClick={() => setStatusFilter(s as any)}
+                onClick={() => setStatusFilter(s as 'all' | 'open' | 'active' | 'resolved')}
                 className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition cursor-pointer shrink-0 ${
                   statusFilter === s
                     ? 'bg-slate-900 text-slate-50'

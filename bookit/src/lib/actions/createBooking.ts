@@ -171,7 +171,7 @@ export async function createBooking(
   }
 
   // Bug 4 Fix: Pass master's timezone (fallback to Kyiv)
-  const masterTimezone = (mp as any).timezone || 'Europe/Kyiv';
+  const masterTimezone = mp.timezone || 'Europe/Kyiv';
 
   // 4. Starter booking limit (40/month)
   if (mp.subscription_tier === 'starter') {

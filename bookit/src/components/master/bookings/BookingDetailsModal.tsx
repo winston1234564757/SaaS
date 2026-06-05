@@ -107,7 +107,7 @@ function ReschedulePanel({
       if (bookRes.error) throw bookRes.error;
 
       const templates: ScheduleStore['templates'] = {};
-      for (const t of (tplRes.data ?? []) as any[]) {
+      for (const t of tplRes.data ?? []) {
         if (t.is_working) {
           templates[t.day_of_week as string] = {
             start_time:  (t.start_time  as string).slice(0, 5),
@@ -119,7 +119,7 @@ function ReschedulePanel({
       }
 
       const exceptions: ScheduleStore['exceptions'] = {};
-      for (const e of (excRes.data ?? []) as any[]) {
+      for (const e of excRes.data ?? []) {
         exceptions[e.date as string] = {
           is_day_off:  e.is_day_off  as boolean,
           start_time:  e.start_time  ? (e.start_time  as string).slice(0, 5) : null,
@@ -128,7 +128,7 @@ function ReschedulePanel({
       }
 
       const bookingsByDate: ScheduleStore['bookingsByDate'] = {};
-      for (const b of (bookRes.data ?? []) as any[]) {
+      for (const b of bookRes.data ?? []) {
         const dk = b.date as string;
         if (!bookingsByDate[dk]) bookingsByDate[dk] = [];
         bookingsByDate[dk].push({

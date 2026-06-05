@@ -7,9 +7,13 @@ import {
   notifyClientOnStatusChange,
   notifyClientOnReschedule,
 } from '@/lib/notifications';
+import type { BookingStatus } from '@/types/database';
 
 const CANCELLABLE_STATUSES = ['pending', 'confirmed'] as const;
 const MUTABLE_STATUSES = ['pending', 'confirmed'] as const;
+
+type BookingService = { service_name: string };
+type MasterProfileNested = { profiles: { full_name: string } | null } | null;
 
 export async function confirmBooking(bookingId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
@@ -39,8 +43,8 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
     revalidatePath('/my/bookings');
 
     if (booking.client_id) {
-      const services = (booking.booking_services as any[]).map(s => s.service_name).join(', ');
-      const masterName = (booking.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+      const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
+      const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
       notifyClientOnStatusChange({
         clientId: booking.client_id,
         masterId: booking.master_id,
@@ -91,8 +95,8 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
     revalidatePath('/my/bookings');
 
     if (booking.client_id) {
-      const services = (booking.booking_services as any[]).map(s => s.service_name).join(', ');
-      const masterName = (booking.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+      const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
+      const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
       notifyClientOnStatusChange({
         clientId: booking.client_id,
         masterId: booking.master_id,
@@ -145,8 +149,8 @@ export async function rescheduleBooking(
     revalidatePath('/my/bookings');
 
     if (booking.client_id) {
-      const services = (booking.booking_services as any[]).map(s => s.service_name).join(', ');
-      const masterName = (booking.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+      const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
+      const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
       notifyClientOnReschedule({
         clientId: booking.client_id,
         masterId: booking.master_id,
@@ -190,7 +194,7 @@ export async function updateBookingStatus(
 
     const { error } = await admin
       .from('bookings')
-      .update({ status: status as any, status_changed_at: new Date().toISOString() })
+      .update({ status: status as BookingStatus, status_changed_at: new Date().toISOString() })
       .eq('id', bookingId);
 
     if (error) throw error;
@@ -199,8 +203,8 @@ export async function updateBookingStatus(
     revalidatePath('/my/bookings');
 
     if ((status === 'confirmed' || status === 'cancelled') && booking.client_id) {
-      const services = (booking.booking_services as any[]).map(s => s.service_name).join(', ');
-      const masterName = (booking.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+      const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
+      const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
       notifyClientOnStatusChange({
         clientId: booking.client_id,
         masterId: booking.master_id,
@@ -209,7 +213,7 @@ export async function updateBookingStatus(
         date: booking.date,
         startTime: booking.start_time,
         services,
-        status: status as any,
+        status: status as 'confirmed' | 'cancelled',
       }).catch(err => console.error('[updateBookingStatus] Notification failed:', err));
     }
 
@@ -248,8 +252,8 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
     revalidatePath('/my/bookings');
 
     if (booking.client_id) {
-      const services = (booking.booking_services as any[]).map(s => s.service_name).join(', ');
-      const masterName = (booking.master_profiles as any)?.profiles?.full_name ?? 'Майстра';
+      const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
+      const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
       notifyClientOnStatusChange({
         clientId: booking.client_id,
         masterId: booking.master_id,

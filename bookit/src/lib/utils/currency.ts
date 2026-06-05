@@ -8,3 +8,7 @@ const fmt = new Intl.NumberFormat('uk-UA', {
 export function formatCurrency(amount: number): string {
   return fmt.format(amount);
 }
+
+export function formatPrice(amount: number): string {
+  return amount.toLocaleString('uk-UA') + ' ₴';
+}

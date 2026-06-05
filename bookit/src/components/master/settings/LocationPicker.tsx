@@ -3,6 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Search, Loader2, MapPin } from 'lucide-react';
 
+declare global {
+  interface Window {
+    gm_authFailure?: () => void;
+  }
+}
+
 export interface LatLng {
   lat: number;
   lng: number;
@@ -16,6 +22,11 @@ interface Props {
   onChange: (coords: LatLng, city: string, streetAddress: string) => void;
 }
 
+interface GoogleMapMarker {
+  position: google.maps.LatLng | google.maps.LatLngLiteral | null;
+  addListener(event: string, handler: () => void): google.maps.MapsEventListener;
+}
+
 const DEFAULT_CENTER: LatLng = { lat: 50.4501, lng: 30.5234 }; // Kyiv
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 const HAS_MAPS_KEY = !!MAPS_API_KEY;
@@ -25,7 +36,7 @@ let scriptPromise: Promise<void> | null = null;
 
 function loadGoogleMaps(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve();
-  if ((window as any).google?.maps) return Promise.resolve();
+  if (typeof google !== 'undefined' && google.maps) return Promise.resolve();
   if (scriptPromise) return scriptPromise;
 
   scriptPromise = new Promise((resolve, reject) => {
@@ -91,11 +102,11 @@ function LocationPickerMap({ value, address, onChange }: Props) {
 
   // Catch Google Maps billing/auth failures (BillingNotEnabledMapError, InvalidKeyMapError, etc)
   useEffect(() => {
-    (window as any).gm_authFailure = () => {
+    window.gm_authFailure = () => {
       setError('Google Maps: помилка авторизації (перевірте API ключ або білінг)');
       setLoading(false);
     };
-    return () => { delete (window as any).gm_authFailure; };
+    return () => { delete window.gm_authFailure; };
   }, []);
 
   // Initialize map + autocomplete after Google Maps loads
@@ -118,9 +129,12 @@ function LocationPickerMap({ value, address, onChange }: Props) {
         });
 
         // Advanced Marker for better performance + customisation
-        const { AdvancedMarkerElement } = (google.maps as any).marker ?? {};
+        const mapsWithMarker = google.maps as unknown as {
+          marker?: { AdvancedMarkerElement?: typeof google.maps.marker.AdvancedMarkerElement };
+        };
+        const AdvancedMarkerElement = mapsWithMarker.marker?.AdvancedMarkerElement;
 
-        let marker: any = null;
+        let marker: GoogleMapMarker | null = null;
 
         /** Reverse geocodes a LatLng and fires onChange(coords, city, streetAddress). */
         function geocodeLatLng(latLng: google.maps.LatLng) {
@@ -142,21 +156,28 @@ function LocationPickerMap({ value, address, onChange }: Props) {
 
         function placeMarker(pos: google.maps.LatLng) {
           if (marker) {
-            marker.position = pos;
+            (marker as any).position = pos;
           } else if (AdvancedMarkerElement) {
-            marker = new AdvancedMarkerElement({ map, position: pos, gmpDraggable: true });
-            marker.addListener('dragend', () => {
-              const p = marker.position as google.maps.LatLngLiteral;
-              geocodeLatLng(new google.maps.LatLng(p.lat, p.lng));
+            const advMarker = new AdvancedMarkerElement({ map, position: pos, gmpDraggable: true });
+            marker = advMarker as any;
+            advMarker.addListener('dragend', () => {
+              const p = advMarker.position as google.maps.LatLngLiteral;
+              if (p) {
+                geocodeLatLng(new google.maps.LatLng(p.lat, p.lng));
+              }
             });
           } else {
             // Fallback to legacy Marker
-            marker = new google.maps.Marker({ map, position: pos, draggable: true });
-            marker.addListener('dragend', () => {
-              geocodeLatLng((marker as google.maps.Marker).getPosition()!);
+            const legacyMarker = new google.maps.Marker({ map, position: pos, draggable: true });
+            marker = legacyMarker as any;
+            legacyMarker.addListener('dragend', () => {
+              const p = legacyMarker.getPosition();
+              if (p) {
+                geocodeLatLng(p);
+              }
             });
           }
-          markerRef.current = marker;
+          markerRef.current = marker as google.maps.marker.AdvancedMarkerElement;
         }
 
         if (value) placeMarker(new google.maps.LatLng(value.lat, value.lng));
@@ -182,9 +203,7 @@ function LocationPickerMap({ value, address, onChange }: Props) {
 
           const loc = place.geometry.location;
           const coords = { lat: +loc.lat().toFixed(6), lng: +loc.lng().toFixed(6) };
-          const components = (place as any).address_components as
-            | google.maps.GeocoderAddressComponent[]
-            | undefined;
+          const components = place.address_components;
 
           const { city: c, streetAddress: a } = components?.length
             ? parseAddressComponents(components)
@@ -217,7 +236,7 @@ function LocationPickerMap({ value, address, onChange }: Props) {
     const pos = new google.maps.LatLng(value.lat, value.lng);
     mapRef.current.setCenter(pos);
     if (markerRef.current) {
-      (markerRef.current as any).position = pos;
+      markerRef.current.position = pos;
     }
   }, [value]);
 

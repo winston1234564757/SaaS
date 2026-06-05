@@ -184,4 +184,31 @@ files_changed = files_read (завжди рівні)
 
 ---
 
-*Версія: 8.6.0 · Оновлено: 2026-05-30*
+---
+
+## RULE 8 — Impeccable Skill Workflow (обов'язково для всіх аудитів)
+
+**Кожен impeccable аудит ВИКОНУВАТИ через скіл-воркфло, не вручну.**
+
+```
+ФАЗА 1 — critique:
+  → Assessment A: sub-agent (LLM Design Review + Heuristic Scoring + Cognitive Load)
+  → Assessment B: npx impeccable detect --json <target>
+  → Об'єднати результати у звіт
+
+ФАЗА 2-X — кожна наступна команда:
+  → npx impeccable <command> <target> (якщо CLI існує)
+  → АБО завантажити reference файл скіла і слідувати методології
+  → АБО spawn sub-agent для complex analysis
+
+ФАЗА N — mempalace_add_drawer після завершення
+```
+
+**Заборонено:**
+- Sequential in-head analysis (без sub-agents, без CLI)
+- Manual heuristic scoring без Assessment A/B split
+- Пропуск `npx impeccable detect` коли він доступний
+
+**Винятки:** тільки якщо середовище фізично не може spawn sub-agents (задокументувати причину).
+
+*Версія: 8.7.0 · Оновлено: 2026-06-01*

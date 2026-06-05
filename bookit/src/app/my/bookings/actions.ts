@@ -4,6 +4,15 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegramMessage, buildCancellationMessage, buildReviewMessage } from '@/lib/telegram';
 import { revalidatePath } from 'next/cache';
+
+type PushSubscriptionData = { endpoint: string; keys: { p256dh: string; auth: string } };
+type CancelMasterProfile = {
+  id: string;
+  telegram_chat_id: string | null;
+  profiles: { full_name: string } | null;
+} | null;
+type CancelBookingService = { service_name: string };
+
 export async function cancelBooking(bookingId: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -38,8 +47,8 @@ export async function cancelBooking(bookingId: string): Promise<void> {
 
   if (!booking) return;
 
-  const mp = booking.master_profiles as any;
-  const chatId = mp?.telegram_chat_id as string | null;
+  const mp = booking.master_profiles as unknown as CancelMasterProfile;
+  const chatId = mp?.telegram_chat_id ?? null;
   if (!chatId) return;
 
   const clientProfile = await supabase
@@ -49,8 +58,8 @@ export async function cancelBooking(bookingId: string): Promise<void> {
     .single();
   const clientName = clientProfile.data?.full_name ?? 'Клієнт';
 
-  const services = ((booking.booking_services as any[]) ?? [])
-    .map((s: any) => s.service_name as string)
+  const services = (booking.booking_services as CancelBookingService[])
+    .map(s => s.service_name)
     .join(', ');
 
   const text = buildCancellationMessage({
@@ -73,7 +82,7 @@ export async function cancelBooking(bookingId: string): Promise<void> {
   if (pushSubs && pushSubs.length > 0) {
     const { sendPush } = await import('@/lib/push');
     await Promise.allSettled(
-      pushSubs.map(sub => sendPush(sub.subscription as any, {
+      pushSubs.map(sub => sendPush(sub.subscription as unknown as PushSubscriptionData, {
         title: 'Запис скасовано ❌',
         body: `Клієнт ${clientName} скасував свій запис на ${booking.date}`,
         url: `/dashboard/bookings?bookingId=${bookingId}`,
@@ -94,7 +103,7 @@ export async function submitReview(params: {
   if (!user) throw new Error('Unauthorized');
 
   let finalMasterId = params.masterId;
-  
+
   if (params.bookingId) {
     const { data: booking } = await supabase
       .from('bookings')
@@ -167,10 +176,10 @@ export async function submitReview(params: {
     const replyMarkup = { inline_keyboard: [[{ text: 'Переглянути', url: `${SITE_URL}/dashboard/reviews` }]] };
     await sendTelegramMessage(
       chatId,
-      buildReviewMessage({ 
-        clientName, 
-        rating: params.rating, 
-        comment: `${params.orderId ? '[Замовлення] ' : ''}${params.comment || ''}`.trim() 
+      buildReviewMessage({
+        clientName,
+        rating: params.rating,
+        comment: `${params.orderId ? '[Замовлення] ' : ''}${params.comment || ''}`.trim()
       }),
       replyMarkup
     ).catch(() => {});
@@ -184,7 +193,7 @@ export async function submitReview(params: {
   if (pushSubs && pushSubs.length > 0) {
     const { sendPush } = await import('@/lib/push');
     await Promise.allSettled(
-      pushSubs.map(sub => sendPush(sub.subscription as any, {
+      pushSubs.map(sub => sendPush(sub.subscription as unknown as PushSubscriptionData, {
         title: 'Новий відгук ⭐',
         body: `${clientName} залишив відгук: ${params.rating}/5`,
         url: `/dashboard/reviews`,

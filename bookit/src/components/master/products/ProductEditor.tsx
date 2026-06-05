@@ -16,6 +16,9 @@ import {
   Loader2,
   Infinity as InfinityIcon,
   Hash,
+  Zap,
+  ZapOff,
+  DollarSign,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
@@ -63,11 +66,14 @@ export function ProductEditor({ id }: Props) {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<ProductCategory>('other');
   const [priceStr, setPriceStr] = useState('');
+  const [costStr, setCostStr] = useState('');        // собівартість (для consumable)
   const [stockStr, setStockStr] = useState('0');
   const [photos, setPhotos] = useState<string[]>([]);
   const [recommendAlways, setRecommendAlways] = useState(true);
   const [linkedServiceIds, setLinkedServiceIds] = useState<string[]>([]);
+  const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
   const [productType, setProductType] = useState<'retail' | 'consumable'>('retail');
+  const [autoDeduct, setAutoDeduct] = useState(true);  // автосписання при booking
   const [iconName, setIconName] = useState<ProductIconName>('package');
   const [uploading, setUploading] = useState(false);
   const [, setError] = useState<string | null>(null);
@@ -86,11 +92,13 @@ export function ProductEditor({ id }: Props) {
       setDescription(product.description ?? '');
       setCategory(product.category);
       setPriceStr(String(product.price_kopecks / 100));
+      setCostStr(product.cost_kopecks ? String(product.cost_kopecks / 100) : '');
       setStockStr(String(product.stock_qty));
       setPhotos(product.photos ?? []);
       setRecommendAlways(product.recommend_always !== false);
-      setIconName((product as Product & { icon_name?: ProductIconName }).icon_name ?? 'package');
-      setProductType((product as Product & { product_type?: 'retail' | 'consumable' }).product_type ?? 'retail');
+      setIconName(product.icon_name ?? 'package');
+      setProductType(product.product_type ?? 'retail');
+      setAutoDeduct(product.auto_deduct !== false);
       setShowStockLimit(true);
     }
     setError(null);
@@ -100,12 +108,21 @@ export function ProductEditor({ id }: Props) {
   if (prevLinks !== links && id && links.length > 0) {
     setPrevLinks(links);
     setLinkedServiceIds(links.map(l => l.serviceId));
+    const qMap: Record<string, number> = {};
+    links.forEach(l => { qMap[l.serviceId] = l.quantity; });
+    setServiceQuantities(qMap);
   }
 
   function toggleService(serviceId: string) {
     setLinkedServiceIds(prev =>
-      prev.includes(serviceId) ? prev.filter(s => s !== serviceId) : [...prev, serviceId]
+      prev.includes(serviceId)
+        ? prev.filter(s => s !== serviceId)
+        : [...prev, serviceId]
     );
+    // default quantity = 1 when linking new service
+    if (!linkedServiceIds.includes(serviceId)) {
+      setServiceQuantities(prev => ({ ...prev, [serviceId]: prev[serviceId] ?? 1 }));
+    }
   }
 
   async function handlePhotoUpload(files: FileList | null) {
@@ -156,6 +173,7 @@ export function ProductEditor({ id }: Props) {
         description: description.trim() || null,
         category,
         price_kopecks: Math.round(price * 100),
+        cost_kopecks: costStr.trim() ? Math.round(parseFloat(costStr) * 100) : null,
         photos,
         stock_qty: showStockLimit ? Math.max(0, parseInt(stockStr, 10) || 0) : 0,
         is_active: true,
@@ -163,6 +181,7 @@ export function ProductEditor({ id }: Props) {
         sort_order: 0,
         product_type: productType,
         icon_name: iconName,
+        auto_deduct: autoDeduct,
       };
 
       let productId = id;
@@ -175,7 +194,11 @@ export function ProductEditor({ id }: Props) {
         productId = res.id;
       }
 
-      const linksRes = await saveProductLinks(productId, recommendAlways ? [] : linkedServiceIds);
+      const serviceLinks = recommendAlways
+        ? []
+        : linkedServiceIds.map(sid => ({ serviceId: sid, quantity: serviceQuantities[sid] ?? 1 }));
+
+      const linksRes = await saveProductLinks(productId, serviceLinks);
       if (linksRes.error) { setError(linksRes.error); return; }
 
       invalidateLinks();
@@ -372,16 +395,19 @@ export function ProductEditor({ id }: Props) {
             <h3 className="text-[13px] font-semibold text-foreground">Ціна та стратегія</h3>
 
             <div className="space-y-4">
-              <div>
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Ціна (₴)</label>
-                <input
-                  type="number"
-                  value={priceStr}
-                  onChange={e => setPriceStr(e.target.value)}
-                  placeholder="0"
-                  className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
-                />
-              </div>
+              {productType !== 'consumable' && (
+                <div>
+                  <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Ціна (₴)</label>
+                  <input
+                    type="number"
+                    value={priceStr}
+                    onChange={e => setPriceStr(e.target.value)}
+                    placeholder="0"
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
+                  />
+                </div>
+              )}
+
 
               <div>
                 <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Тип товару</label>
@@ -402,6 +428,66 @@ export function ProductEditor({ id }: Props) {
                   ))}
                 </div>
               </div>
+
+              {/* Consumable-specific: cost + auto_deduct */}
+              {productType === 'consumable' && (
+                <div className="flex flex-col gap-3 p-4 rounded-xl bg-primary/5 border border-primary/15">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Налаштування розхідника</p>
+
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1.5 block ml-1">Ціна продажу (₴)</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={priceStr}
+                          onChange={e => setPriceStr(e.target.value)}
+                          placeholder="0"
+                          className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1.5 block ml-1">Собівартість (₴)</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <DollarSign size={14} className="text-muted-foreground/50" />
+                        </span>
+                        <input
+                          type="number"
+                          value={costStr}
+                          onChange={e => setCostStr(e.target.value)}
+                          placeholder="0"
+                          className="w-full pl-8 pr-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    aria-pressed={autoDeduct}
+                    onClick={() => setAutoDeduct(v => !v)}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
+                      autoDeduct ? 'bg-success/10 border-success/20' : 'bg-secondary/40 border-border'
+                    }`}
+                  >
+                    <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      autoDeduct ? 'bg-success/20 text-success' : 'bg-muted/40 text-muted-foreground'
+                    }`}>
+                      {autoDeduct ? <Zap size={18} /> : <ZapOff size={18} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-foreground leading-tight">
+                        {autoDeduct ? 'Автосписання увімкнено' : 'Автосписання вимкнено'}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5">
+                        {autoDeduct ? 'Списується зі складу при завершенні запису' : 'Склад не змінюється автоматично'}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="h-px bg-border" />
@@ -469,18 +555,32 @@ export function ProductEditor({ id }: Props) {
                   ) : (
                     <div className="flex gap-1.5 flex-wrap">
                       {activeServices.map(s => (
-                        <button
-                          key={s.id}
-                          type="button"
-                          onClick={() => toggleService(s.id)}
-                          className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
-                            linkedServiceIds.includes(s.id)
-                              ? 'bg-primary text-white'
-                              : 'bg-secondary text-muted-foreground hover:bg-muted/80'
-                          }`}
-                        >
-                          {s.name}
-                        </button>
+                        <div key={s.id} className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => toggleService(s.id)}
+                            className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
+                              linkedServiceIds.includes(s.id)
+                                ? 'bg-primary text-white'
+                                : 'bg-secondary text-muted-foreground hover:bg-muted/80'
+                            }`}
+                          >
+                            {s.name}
+                          </button>
+                          {linkedServiceIds.includes(s.id) && productType === 'consumable' && (
+                            <input
+                              type="number"
+                              min="1"
+                              value={serviceQuantities[s.id] ?? 1}
+                              onChange={e => setServiceQuantities(prev => ({
+                                ...prev,
+                                [s.id]: Math.max(1, parseInt(e.target.value, 10) || 1),
+                              }))}
+                              className="w-12 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary text-center outline-none focus:ring-1 focus:ring-primary/30"
+                              title="Кількість на сеанс"
+                            />
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}

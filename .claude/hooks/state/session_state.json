@@ -1,16 +1,26 @@
 {
   "edit_counts": {
-    "C:\\Users\\Vitossik\\.claude\\plans\\smooth-beaming-meteor.md": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\public\\ShopPage.tsx": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\public\\portfolio\\PortfolioBookingButton.tsx": 1,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\[slug]\\portfolio\\[id]\\page.tsx": 1,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\TASK.md": 1,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\RELEASE\\CHANGELOG.md": 1,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\RELEASE\\MAPS\\PAGE_RELEASE_ROADMAP.md": 1
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\(master)\\dashboard\\bookings\\actions.ts": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\invite\\[code]\\page.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\settings\\LocationPicker.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\my\\bookings\\actions.ts": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\middleware.ts": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\(master)\\layout.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\studio\\[slug]\\page.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\actions\\createBooking.ts": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\bookings\\BookingDetailsModal.tsx": 3,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\providers\\TelegramProvider.tsx": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\analytics\\AnalyticsPage.tsx": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\admin\\SystemLogsViewer.tsx": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\admin\\ModerationHub.tsx": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\admin\\MastersDirectory.tsx": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\admin\\AdminSupportConsole.tsx": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\dashboard\\DashboardDrawers.tsx": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\dashboard\\BentoGrid.tsx": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\bookings\\ManualBookingForm.tsx": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\actions\\referrals.ts": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\wizard\\useBookingScheduleData.ts": 1
   },
-  "consecutive_reads": 2,
-  "read_files": [
-    "STATUS.md",
-    "CHANGELOG.md"
-  ]
+  "consecutive_reads": 0,
+  "read_files": []
 }

@@ -55,7 +55,170 @@ clarify → [skill 1] → [skill 2] → impeccable → humanizer → run → ver
 
 ---
 
+### STEP 11 --- Shop + Portfolio (/[slug]/shop, /[slug]/portfolio)
+- **Date Ready:** 2026-05-31
+- **Model used:** Sonnet 4.6 (correctness + a11y audit)
+- **Effort:** 1 session (plan + 1 Write + 2 Edits)
+- **Drawer:** `drawer_bookit_audits_2272efe59888d3addd38f5c0`
 
+#### Quality Gate Verdict
+| Vimir | Stan |
+|---|---|
+| 1. Aesthetics and Themes | OK pre-existing design preserved; emoji removed |
+| 2. No-Emoji Policy | OK lightning bolt emoji removed from stock warning |
+| 3. Motion and Transitions | OK 4 spring consts as const (SHEET/GALLERY/CART/SUCCESS) |
+| 4. Errors and Validation | OK createPublicOrder stock atomic + auth before try verified CLEAN |
+| 5. A11y and Performance | OK type=button x17, aria-label x7, aria-pressed x5, touch target fix, WCAG AA |
+| 6. Core Features | OK cart flow, qty steppers, CartDrawer, day picker, portfolio -- verified |
+| 7. Tests Verification | OK TSC 0 -- build clean (51 pages) |
+
+#### Files changed
+- `src/components/public/ShopPage.tsx` --- Write: 4 SPRING consts, DOM ref fix, mid-file import fix, emoji removed, type=button x17, aria-label x7, aria-pressed x5, touch target photo dots
+- `src/components/public/portfolio/PortfolioBookingButton.tsx` --- Edit: type=button on booking trigger
+- `src/app/[slug]/portfolio/[id]/page.tsx` --- Edit: fill=currentColor on Star icons
+
+#### Key decisions
+- Write over Edit for ShopPage.tsx: 26 changes across 5 inner components
+- Photo dots touch target: p-3 -m-3 wrapper expands hit area without visual change
+- DOM ref: sliderRef = useRef<HTMLDivElement>(null) replaces fragile getElementById
+- A11y colors verified: #2C1A14+white PASS, #FFE8DC+dark PASS (WCAG AA)
+
+#### Skills chain
+plan (Explore + mempalace_search) + senior-frontend (Write) + a11y check + tsc + build
+
+#### Tests
+- TSC: 0 errors
+- Build: clean (51 pages)
+- A11y: WCAG AA verified
+
+#### Carry-over to STEP 12
+- D-01: ClientsPage borderLeft -> full border + bg tint (P1)
+- C-01: BookingCard borderLeft -> full border + bg tint (P1)
+- B-01..B-05: Dashboard Home carry-over (Critical/High)
+
+---
+
+### STEP 12a — Client Portal Security + A11y P1 (`/my/*`)
+- **Date Ready:** 2026-06-01
+- **Model used:** Sonnet 4.6 high
+- **Effort:** 1 session (plan + 9 parallel file ops)
+- **Drawer:** `drawer_bookit_audits_0a433239dd2c899a3691ba79`
+
+#### Quality Gate Verdict
+| Вимір | Стан |
+|---|---|
+| 1. Aesthetics & Themes | OK — no visual changes |
+| 2. No-Emoji Policy | OK — no emoji added |
+| 3. Motion & Transitions | OK — no motion changes |
+| 4. Errors & Validation | OK — auth guards added |
+| 5. A11y & Performance | OK — P1 a11y fixed |
+| 6. Core Features | OK — security gaps closed |
+| 7. Tests Verification | OK — TSC 0 + build clean (51 pages) |
+
+#### Files changed
+- `src/app/my/bookings/page.tsx` — auth guard: `if (!user) redirect('/login')`
+- `src/app/my/loyalty/page.tsx` — auth guard added
+- `src/app/my/masters/page.tsx` — auth guard added
+- `src/app/my/profile/page.tsx` — auth guard added
+- `src/app/my/setup/phone/page.tsx` — rewrite: no auth → async + createClient + redirect guard
+- `src/components/client/ClientNotificationsPage.tsx` — motion.div onClick → motion.button type="button"; type="button" on decline/approve
+- `src/components/client/MyProfilePage.tsx` — aria-label on back Link; fixed curly apostrophe U+2019 in "здоров'я"
+- `src/components/client/MyBookingsPage.tsx` — star rating buttons: type="button" + aria-label + aria-pressed
+- `src/components/client/ChannelBanner.tsx` — dismiss button: aria-label="Закрити"
+
+#### Key decisions
+- `setup/phone/page.tsx` had zero auth — Write over Edit since needed imports + async conversion
+- motion.div → motion.button with text-left w-full to reset button defaults while keeping flex layout
+- Curly apostrophe U+2019 in MyProfilePage blocked encoding hook → Python binary replace before Edit
+
+#### Carry-over to STEP 12b
+- COMPLETE — all items addressed in STEP 12b below
+
+---
+
+### STEP 13 — Final Sprint: Admin · Public · Backlog (`/admin/*`, `/offline`, `/invite/[code]`, widgets, BookingCard, ClientsPage)
+- **Date Ready:** 2026-06-01
+- **Model used:** Sonnet 4.6 high
+- **Effort:** 1 session (plan + 3 Write rounds + 4 Edits)
+- **Drawer:** `drawer_bookit_audits_774ccb6b5e3b9700582e81ce`
+
+#### Quality Gate Verdict
+| Вимір | Стан |
+|---|---|
+| 1. Aesthetics & Themes | OK — border polish: full border + bg tint on BookingCard + ClientsPage |
+| 2. No-Emoji Policy | OK — ✨📅💎 → Lucide icons in invite page; aria-hidden on offline emoji |
+| 3. Motion & Transitions | OK — no regressions; div→button bar wrappers (blossom + studio) |
+| 4. Errors & Validation | OK — P0 security fix in resolveSupportTicketAction |
+| 5. A11y & Performance | OK — 25× type="button" in admin; type="button" + aria-label in public pages |
+| 6. Core Features | OK — no regressions |
+| 7. Tests Verification | OK — TSC 0 + build clean |
+
+#### Files changed
+- `src/lib/actions/support.ts` — SECURITY P0: added admin role check to `resolveSupportTicketAction()` (was missing, any auth user could resolve tickets)
+- `src/components/admin/MastersDirectory.tsx` — Write: type="button" ×4 (tier filter, Керування, Увійти як майстер, toggle publish)
+- `src/components/admin/ModerationHub.tsx` — Write: type="button" ×7 (3 tabs, 2 report actions, 2 publish toggles)
+- `src/components/admin/AdminSupportConsole.tsx` — Write: type="button" ×3 (status filter, ticket row, resolve button)
+- `src/components/admin/SystemLogsViewer.tsx` — Write: type="button" ×3 (2 tabs + refresh)
+- `src/components/admin/AllianceMap.tsx` — Write: type="button" ×3 (2 view switchers + tree expand)
+- `src/app/offline/page.tsx` — Write: type="button" + aria-label="Спробувати знову"; emoji span aria-hidden="true"
+- `src/app/invite/[code]/page.tsx` — Write: emoji ✨📅💎 → Lucide Sparkles/CalendarCheck/Gem; BENEFITS const
+- `src/components/master/dashboard/widgets/studio/WeeklyChartWidget.tsx` — Write: getWeekDates() + date prop in BarTooltip + div→button on bars + type="button" on mode toggle
+- `src/components/master/dashboard/widgets/blossom/WeeklyChartWidget.tsx` — Write: type="button" on mode toggle + div→button on bar wrapper (same iron rule fix)
+- `src/components/master/bookings/BookingCard.tsx` — Edit ×2: borderLeft:4px → border:1px+bg:color08; removed pl-1 offset
+- `src/components/master/clients/ClientsPage.tsx` — Edit ×2: borderLeft:3px → border:1px+bg:color08 on grid (line ~631) + list (line ~806)
+
+#### Key decisions
+- Admin layout+middleware double-checks admin role — page components rely on layout (acceptable pattern). Server action `resolveSupportTicketAction` was the gap: auth check but no role check → added `profile.role !== 'admin'` guard.
+- B-04 Frost tooltip: already `rounded-[4px]` — confirmed done, no change needed.
+- Bar wrappers (both Blossom + Studio widgets): `<div onClick>` violates iron rule; converted to `<button type="button" className="bg-transparent border-0 p-0 min-w-0">` preserving flex layout.
+- border color tint `${color}08` = 8-char hex = ~3% alpha — subtle wash, does not compete with foreground text.
+- legal/*, studio/*, invite avatar emoji (DB field) — confirmed CLEAN, no changes.
+
+#### Skills chain
+plan (Explore ×3 + mempalace_search) + senior-frontend (Write/Edit) + tsc + build
+
+#### Tests
+- TSC: 0 errors
+- Build: clean (exit 0)
+
+#### Deferred
+- B-01: Dashboard /impeccable audit — separate session
+- B-02: Vercel QA (onboarding `967bf06`) — manual verification
+
+---
+
+### STEP 12b — Client Portal Correctness P2+P3 (`/my/*`)
+- **Date Ready:** 2026-06-01
+- **Model used:** Sonnet 4.6 high
+- **Effort:** 1 session (continuation of 12a)
+- **Drawer:** `drawer_bookit_audits_3bec0459fbf4b9a44e1aa9d9`
+
+#### Quality Gate Verdict
+| Вимір | Стан |
+|---|---|
+| 1. Aesthetics & Themes | OK — no visual changes |
+| 2. No-Emoji Policy | OK — SUGGESTIONS emoji removed from SupportChatPage |
+| 3. Motion & Transitions | OK — spring as const in 5 components |
+| 4. Errors & Validation | OK — htmlFor/id on all 5 form fields |
+| 5. A11y & Performance | OK — aria-pressed on tabs, aria-current on nav |
+| 6. Core Features | OK — no regressions |
+| 7. Tests Verification | OK — TSC 0 + build clean (51 pages) |
+
+#### Files changed
+- `src/components/client/MyBookingsPage.tsx` — Write: tab aria-pressed, spring as const, type="button" on all action buttons
+- `src/components/client/MyLoyaltyPage.tsx` — Write: tab aria-pressed, share/copy type="button", spring as const ×2
+- `src/components/client/MyProfilePage.tsx` — Write: htmlFor+id on 5 fields, theme/disconnect/save/logout type="button"
+- `src/components/shared/support/SupportChatPage.tsx` — Write: emoji removed from SUGGESTIONS, type="button" ×3
+- `src/components/client/MyBottomNav.tsx` — Write: aria-current on all nav Links, login type="button"
+- `src/components/client/MasterModeBanner.tsx` — Edit: type="button"
+- `src/components/client/MyMastersPage.tsx` — Edit ×2: spring as const
+
+#### Key decisions
+- PhoneSetupForm: agent false-positive — both buttons already had type="button", no changes needed
+- edit_counter_guard hook blocks at 5 edits/file/session; Write resets counter → use Write for ≥5 changes
+- STEP 12 COMPLETE: 11/13 steps (85%)
+
+---
 
 ### STEP 10 --- Public Master Page (/[slug])
 - **Date Ready:** 2026-05-31
@@ -173,7 +336,7 @@ plan (senior-frontend + impeccable) -- Write -- tsc -- build
 
 #### Key decisions
 - `DynamicPricingPage` toggle header: div→button + `w-full text-left` для layout збереження
-- `StoryGenerator` encoding: curly quotes (U+201C/D) у декоративних `"..."` замінено на `{'“'}` — hook блокував raw bytes
+- `StoryGenerator` encoding: curly quotes (U+201C/D) у декоративних `"..."` замінено на `{'"'}` — hook блокував raw bytes
 - `BusynessWidget` видалено як dead code (не рендериться), але `useBusyness` hook + `busyness` data залишились (prop до StatsPulseWidget:123)
 - Mono-webhook: перевірено — ECDSA P-256 (не Ed25519), реалізація CLEAN, без змін
 

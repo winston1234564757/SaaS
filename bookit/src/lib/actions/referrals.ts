@@ -312,7 +312,7 @@ export async function applyReferralRewards(
     if (promoRes.error && promoRes.error.code !== '23505')
       console.error('[referrals] C2B client_promocodes failed:', promoRes.error.message);
     if ('error' in incrRes && incrRes.error)
-      console.error('[referrals] C2B increment_client_master_invite_count failed:', (incrRes.error as any).message);
+      console.error('[referrals] C2B increment_client_master_invite_count failed:', (incrRes.error as { message: string }).message);
     if (grantRes.error && grantRes.error.code !== '23505')
       console.error('[referrals] C2B grant insert failed:', grantRes.error.message);
   }

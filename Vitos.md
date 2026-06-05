@@ -52,7 +52,7 @@ C:\Users\Vitossik\SaaS\
 ├── XDEV/                  ← Вся робоча технічна документація
 │   ├── TASK.md            ← Задачі поточного спринту (ти оновлюєш)
 │   ├── SKILL_PROTOCOL.md  ← Майстер-інструкція по скілах (Decision Tree, ланцюжки)
-│   ├── AI_ONBOARDING.md   ← Брифінг та верифікаційні тести (SQL, E2E)
+│   ├── AI_MASTER_GUIDE.md ← Майстер-Конституція розробника та вхідний брифінг
 │   └── MAPS/              ← Архітектурні мапи (SYSTEM_MAP, UI_MAP...)
 └── bookit/
     ├── src/app/globals.css ← Джерело колірних змінних для Blossom/Studio/Frost

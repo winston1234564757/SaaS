@@ -1,0 +1,259 @@
+{
+  "meta": {
+    "phase": "P",
+    "assessment": "A — LLM Design Review / Critique",
+    "scope": "11 public pages",
+    "project": "BookIT",
+    "date": "2026-06-01",
+    "scoring": {
+      "scale": "0-40 (higher is better)",
+      "severity": { "P0": "blocking", "P1": "major", "P2": "minor", "P3": "polish" }
+    }
+  },
+
+  "per_file": [
+    {
+      "file": "src/components/public/ExplorePage.tsx",
+      "score": 32,
+      "verdict": "Well-structured client component with proper a11y patterns (aria-pressed, aria-label, aria-expanded), good empty state, useMemo filtering. Filtering logic is clean. Touch targets slightly below 44px threshold on chips. No loading skeleton for master list.",
+      "issues": [
+        {"severity": "P2", "line": 128, "tag": "touch-target", "message": "Filter chips use py-2.5 = ~34px total height, below 44px mobile minimum. Bump to py-3."},
+        {"severity": "P2", "line": 182, "tag": "touch-target", "message": "Category chips same pattern as filter chips — ~34px total height, below 44px minimum."},
+        {"severity": "P2", "line": 353, "tag": "animation", "message": "MasterCard active:scale-[0.95] on bento-card inside <Link> — animation can cause layout shift during navigation."},
+        {"severity": "P2", "line": 325, "tag": "loading", "message": "No loading skeleton for masters list. If masters prop arrives empty-then-filled, users see abrupt content flash."},
+        {"severity": "P3", "line": 13, "tag": "optimization", "message": "getCategoryIcon called per-render for every card and chip — should be extracted to a constant map or memoized."},
+        {"severity": "P3", "line": 258, "tag": "keyboard", "message": "City dropdown options animate out with framer-motion but keyboard navigation through listbox isn't fully ARIA-compliant (no active-descendant)."}
+      ]
+    },
+    {
+      "file": "src/components/public/PublicMasterPage.tsx",
+      "score": 22,
+      "verdict": "Severe monolith (1127 lines) combining availability, flash deals, schedule grid, shop banner, portfolio gallery, services, products, reviews, loyalty, C2C, booking flow, social sharing. Hardcoded Blossom-specific colors (#6B5750, #A8928D, #F5E8E3, rgba(255,210,194,0.55)) break Studio/Frost themes. Extensive isDark branching instead of CSS variable theming. Dependency array suppression. Full-page side-effect on document.body.backgroundColor.",
+      "issues": [
+        {"severity": "P1", "line": 317, "tag": "monolith", "message": "1127-line component. Contains: Availability (hook), FlashDeals strip, schedule grid, shop banner, portfolio, services, products preview, reviews, trusted partners, loyalty, C2C banners, share button, booking flow + skeleton. Must be extracted into page-level composition (server + 5-6 leaf components)."},
+        {"severity": "P1", "line": 445, "tag": "theming", "message": "Hardcoded textSecondary = '#6B5750', textTertiary = '#A8928D' — Blossom-specific, breaks on Studio dark theme (text becomes invisible on dark bg) and Frost theme."},
+        {"severity": "P1", "line": 448, "tag": "theming", "message": "Hardcoded avatarBg = 'rgba(255, 210, 194, 0.55)' — Blossom pink, invisible on Studio dark teal background."},
+        {"severity": "P1", "line": 450, "tag": "theming", "message": "Hardcoded socialBtnBg = '#F5E8E3' — Blossom-specific taupe, no contrast on Studio dark surfaces."},
+        {"severity": "P1", "line": 753, "tag": "theming", "message": "Schedule day bg: isWorking ? 'rgba(255,255,255,0.5)' — white overlay on already-light Blossom surface creates no visual distinction. On Studio dark theme, white overlay contradicts the dark design language."},
+        {"severity": "P2", "line": 215, "tag": "theming", "message": "text-[var(--accent-on)] — should use Tailwind token text-primary-foreground which already maps to --accent-on."},
+        {"severity": "P2", "line": 374, "tag": "code-quality", "message": "eslint-disable-next-line react-hooks/exhaustive-deps suppresses dependency warnings for C2C balance fetch. Indicates missing deps in the dependency array."},
+        {"severity": "P2", "line": 378, "tag": "side-effect", "message": "useEffect sets document.body.style.backgroundColor — imperatively mutating DOM outside React tree. Can conflict with theme switching."},
+        {"severity": "P2", "line": 25, "tag": "accessibility", "message": "BookingFlowSkeleton has no role='status' or aria-label for screen readers — loading state is invisible to assistive tech."},
+        {"severity": "P2", "line": 347, "tag": "hydratation", "message": "Double-render strategy (hydrated state) causes content flash on every visit. Intentional for SSR date mismatch prevention but jarring UX."},
+        {"severity": "P3", "line": 742, "tag": "code-quality", "message": "Non-null assertion master.schedule! — if schedule changes causes a re-render where schedule is null, this crashes."}
+      ]
+    },
+    {
+      "file": "src/components/public/ShopPage.tsx",
+      "score": 26,
+      "verdict": "Solid commerce experience with cart logic, stepper controls, delivery picker, and empty/success states. Type quality suffers (any types for workingHours/schedule). Hardcoded category colors and black gradient overlays break theming. Inline price formatting duplicated across components.",
+      "issues": [
+        {"severity": "P1", "line": 182, "tag": "theming", "message": "CATEGORY_COLORS: hardcoded hex colors (#A87C5C, #C2739A, #5FA89A, etc.) not theme-aware. On Studio/Frost themes, these clash with the palette."},
+        {"severity": "P2", "line": 40, "tag": "type-safety", "message": "workingHours?: any — should be typed. Using any defeats TypeScript benefits."},
+        {"severity": "P2", "line": 41, "tag": "type-safety", "message": "schedule?: any[] — same issue. Any-typed array."},
+        {"severity": "P2", "line": 206, "tag": "theming", "message": "from-black/25 gradient overlay on product images — hardcoded black, not theme-aware. On dark themes, black-on-dark lacks contrast."},
+        {"severity": "P2", "line": 368, "tag": "theming", "message": "style={{ background: 'var(--text-tertiary)' }} — --text-tertiary is not registered as a Tailwind alias. Should use text-muted-foreground (which maps to --text-tertiary)."},
+        {"severity": "P2", "line": 135, "tag": "layout", "message": "Sticky cart button uses pb-28 (112px) — hardcoded to match --bottom-nav-height: 76px + padding. Doesn't account for safe-area-inset-bottom on notched phones."},
+        {"severity": "P2", "line": 82, "tag": "touch-target", "message": "FilterChip uses py-1.5 = ~32px total, below 44px mobile minimum."},
+        {"severity": "P2", "line": 287, "tag": "touch-target", "message": "ProductTile has no min-height guarantee on touch targets for small screens."},
+        {"severity": "P3", "line": 155, "tag": "duplication", "message": "Price formatting (val / 100).toFixed(0) repeated at least 6 times in file — extract to a formatPrice helper (already used in PublicMasterPage)."}
+      ]
+    },
+    {
+      "file": "src/components/public/portfolio/PublicPortfolioGallery.tsx",
+      "score": 30,
+      "verdict": "Small focused component with proper empty handling and horizontal scroll snap. Hardcoded reference color #789A99 in 'see all' dashed border breaks theming. Surface reference uses CSS variable but Tailwind alias available.",
+      "issues": [
+        {"severity": "P2", "line": 94, "tag": "theming", "message": "dashed border color 'rgba(120,154,153,0.4)' uses hardcoded #789A99 — this sage green is Blossom-specific. On Studio/Frost this color doesn't exist in the palette."},
+        {"severity": "P2", "line": 52, "tag": "code-style", "message": "style={{ background: 'var(--surface)' }} — should use bg-secondary Tailwind alias. Same for border: should be border-border."},
+        {"severity": "P2", "line": 64, "tag": "theming", "message": "photo_count badge bg-black/40 — hardcoded black, not theme-aware. On Frost theme, black overlay on indigo-tinted images looks muddy."},
+        {"severity": "P2", "line": 55, "tag": "layout", "message": "Cover image container size-44 assumes square crops — will distort non-square portfolio images."},
+        {"severity": "P3", "line": 50, "tag": "animation", "message": "initial={{ opacity: 0, x: 16 }} — subtle entrance animation, but items slide in from right which can feel disconnected in a horizontal scroll context."}
+      ]
+    },
+    {
+      "file": "src/app/[slug]/portfolio/[id]/page.tsx",
+      "score": 28,
+      "verdict": "Strong server component pattern with parallel data fetching, proper metadata, and notFound. Handles all consent statuses (approved/pending). But hardcoded Blossom-only colors (#FFE8DC, #FFD4BE, #2C1A14) make this page broken on Studio/Frost themes. Type-unsafe profile cast.",
+      "issues": [
+        {"severity": "P1", "line": 135, "tag": "theming", "message": "Hardcoded background '#FFE8DC' — Blossom-only peach. On Studio theme, this is extremely light against dark teal header. On Frost, the warm peach clashes with lavender palette."},
+        {"severity": "P1", "line": 139, "tag": "theming", "message": "Hardcoded gradient '#FFD4BE' — Blossom-specific pink-peach. Full background replacement needed per theme."},
+        {"severity": "P1", "line": 279, "tag": "theming", "message": "Hardcoded CTA background '#2C1A14' — dark brown. On Studio theme, should be --accent (gold); on Frost, should be --accent (near-black). Text 'text-white' also hardcoded."},
+        {"severity": "P2", "line": 69, "tag": "type-safety", "message": "as unknown as { full_name: string; avatar_url: string | null } — double cast bypasses type checking. If Supabase schema changes, this silently breaks."},
+        {"severity": "P2", "line": 48, "tag": "timezone", "message": "bookings count uses new Date() for month start — server timezone, not client. Could show wrong count for edge-of-month times."},
+        {"severity": "P2", "line": 143, "tag": "theming", "message": "Back header uses color-mix(in srgb, var(--background) 92%, transparent) — creative use but fragile. Should be a well-defined token."},
+        {"severity": "P3", "line": 10, "tag": "caching", "message": "revalidate=300 suitable for ISR, but portfolio item descriptions could change without immediate propagation."}
+      ]
+    },
+    {
+      "file": "src/components/public/StudioPublicPage.tsx",
+      "score": 33,
+      "verdict": "Clean accordion-style studio member listing with proper empty state for services. CSS grid-template-rows animation has limited browser support (Safari). Minor dupes with formatPrice/formatDuration but overall well-scoped.",
+      "issues": [
+        {"severity": "P2", "line": 141, "tag": "browser-compat", "message": "grid-template-rows: 0fr → 1fr transition is not supported in Safari (webkit bug). The accordion collapse is instant on Safari instead of animated."},
+        {"severity": "P2", "line": 42, "tag": "duplication", "message": "formatPrice function duplicates PublicMasterPage line 135-137. Extract to shared utility."},
+        {"severity": "P2", "line": 46, "tag": "duplication", "message": "formatDuration function duplicates similar formatting logic elsewhere. Extract to shared utility."},
+        {"severity": "P3", "line": 178, "tag": "animation", "message": "Link with active:scale-[0.95] — visual feedback works but animation is defined on anchor, which may cause layout thrash on navigation."},
+        {"severity": "P3", "line": 74, "tag": "accessibility", "message": "Studio badge backdrop-blur is decorative only — fine, but no visible label for screen readers distinguishing studio type."}
+      ]
+    },
+    {
+      "file": "src/app/studio/join/page.tsx",
+      "score": 30,
+      "verdict": "Tight server component with proper token hashing and expiry check. Missing error boundary — unhandled Supabase query exception propagates to 500 page. No loading state.",
+      "issues": [
+        {"severity": "P2", "line": 21, "tag": "error-handling", "message": "No try/catch around supabase query. Network failure or RLS error causes unhandled rejection → 500 page."},
+        {"severity": "P2", "line": 21, "tag": "edge-case", "message": "No fallback when token is provided but expired or invalid. Renders StudioJoinPage with studio=null but the token still shows in the URL — confusing UX."},
+        {"severity": "P2", "line": 25, "tag": "timezone", "message": "new Date().toISOString() uses server time. If server is UTC and client is UTC+3, tokens created near midnight could appear expired prematurely."},
+        {"severity": "P2", "line": 1, "tag": "loading", "message": "No loading.tsx error boundary or Suspense fallback for this page."}
+      ]
+    },
+    {
+      "file": "src/app/invite/[code]/page.tsx",
+      "score": 20,
+      "verdict": "Functional multi-strategy inviter lookup with metadata, but critically undermined by pervasive `as any` type casts across the entire component. Hardcoded Blossom colors (rgba(255,210,194,0.55)), bg-white/60, and text-white instead of theme tokens. These are not style preferences — they break the application on Studio/Frost themes.",
+      "issues": [
+        {"severity": "P1", "line": 47, "tag": "type-safety", "message": "(result.data.profiles as any)?.full_name — as any cast bypasses all TypeScript safety. If Supabase schema changes, this fails silently at runtime."},
+        {"severity": "P1", "line": 66, "tag": "type-safety", "message": "const name = (profileRaw as any)?.full_name — same unchecked cast pattern."},
+        {"severity": "P1", "line": 68, "tag": "type-safety", "message": "((result!.data as any).avatar_emoji as string) — chained as any casts lose all type information. Non-null assertion result! also dangerous if result is null."},
+        {"severity": "P1", "line": 69, "tag": "type-safety", "message": "((result!.data as any).bio as string) || null — same pattern. After the null check at line 64, this shouldn't reach, but the as any is still unsafe."},
+        {"severity": "P1", "line": 89, "tag": "theming", "message": "rgba(255, 210, 194, 0.55) — hardcoded Blossom pink/peach. On Studio dark theme, this creates a pink spot against teal background. On Frost, it clashes with lavender."},
+        {"severity": "P1", "line": 120, "tag": "theming", "message": "bg-white/60 — hardcoded white background. On Studio theme, white has 60% opacity against dark teal — looks washed out. Should be bg-secondary/60."},
+        {"severity": "P1", "line": 130, "tag": "theming", "message": "text-white — should be text-primary-foreground. On Blossom theme, primary-foreground is #F5EDE0 (creamy), not pure white. On Studio, white is almost correct but should use the token for consistency."},
+        {"severity": "P2", "line": 131, "tag": "code-quality", "message": "h-13 is set via className then overridden with style={{ height: '3.25rem' }} — redundant duplicated value."},
+        {"severity": "P2", "line": 70, "tag": "null-safety", "message": "bio and city accessed with non-null assertion on result! — when !result (null block at line 107-115), these lines aren't reached because of the early return in the ternary. But the non-null assertion pattern is fragile."}
+      ]
+    },
+    {
+      "file": "src/app/(public)/legal/page.tsx (+ [slug]/page.tsx)",
+      "score": 32,
+      "verdict": "Clean static generation with generateStaticParams, proper metadata, noindex on legal pages, and notFound for unknown slugs. dangerouslySetInnerHTML is justified for pre-rendered static content. Missing layout wrapper (no header/footer). Hardcoded border color #E8D0C8.",
+      "issues": [
+        {"severity": "P2", "line": 122, "tag": "theming", "message": "prose-hr:border-[#E8D0C8] — hardcoded warm border color. Breaks on Studio (dark teal bg needs lighter borders) and Frost (indigo palette)."},
+        {"severity": "P2", "line": 127, "tag": "theming", "message": "border-t border-[#E8D0C8] — same hardcoded border color for footer separator."},
+        {"severity": "P2", "line": 1, "tag": "layout", "message": "No layout.tsx in (public)/legal/ — page renders without site header, footer, or navigation. User can't easily return to main app."},
+        {"severity": "P2", "line": 124, "tag": "security", "message": "dangerouslySetInnerHTML — Acceptable risk for pre-rendered static HTML, but if LEGAL_HTML ever accepts user input, this becomes an XSS vector."},
+        {"severity": "P3", "line": 97, "tag": "build", "message": "generateStaticParams generates 4 pages at build time. If new legal docs are added, they won't appear until next build."}
+      ]
+    },
+    {
+      "file": "src/app/offline/page.tsx",
+      "score": 28,
+      "verdict": "Small and simple offline fallback. Emoji used as visual indicator has no role="img" or aria-label — screen readers interpret it as text character. text-white should be text-primary-foreground. window.location.reload() on offline page could create redirect loop.",
+      "issues": [
+        {"severity": "P1", "line": 6, "tag": "accessibility", "message": "Emoji 📵 used as visual indicator without role='img' or aria-label. Screen readers read the Unicode description ('mobile phone with no signal') which is inconsistent across platforms. Should be <span role='img' aria-label='Немає сигналу'>📵</span>"},
+        {"severity": "P1", "line": 6, "tag": "offline-logic", "message": "onClick={() => window.location.reload()} — if the user is genuinely offline, this creates a reload loop. Should check navigator.onLine before reloading, or use a service worker message."},
+        {"severity": "P1", "line": 15, "tag": "theming", "message": "text-white — should be text-primary-foreground. On Blossom theme, accent-on is creamy #F5EDE0. Pure white stands out."},
+        {"severity": "P2", "line": 1, "tag": "offline", "message": "Page has no service worker registration or caching strategy — this is a basic offline page but browsers won't show it unless it's pre-cached by a service worker."}
+      ]
+    },
+    {
+      "file": "src/app/r/[code]/route.ts",
+      "score": 24,
+      "verdict": "Clean route handler with proper error boundary (try/catch) and atomic operations (click increment + recipient update in parallel). Critical open redirect vulnerability: link.target_url is user-supplied and redirected to without validation. Non-null assertion on SITE_URL env var will crash if unset.",
+      "issues": [
+        {"severity": "P1", "line": 40, "tag": "security", "message": "OPEN REDIRECT: link.target_url is a database-supplied URL with NO validation or allowlist. An attacker who can create a broadcast_links row can redirect users to any URL (phishing, malware). Must validate against an allowlist of allowed domains or ensure it's a relative path."},
+        {"severity": "P1", "line": 40, "tag": "security", "message": "new URL(link.target_url) — if target_url is a relative path (e.g., '/shop'), new URL() throws because there's no base URL. Only absolute URLs work. This silently crashes the route for relative target URLs."},
+        {"severity": "P2", "line": 25, "tag": "env", "message": "process.env.NEXT_PUBLIC_SITE_URL! — non-null assertion. In dev or preview deploys where this env var is not set, the redirect to '/' crashes with 'Cannot read properties of undefined (reading 'origin')'."},
+        {"severity": "P2", "line": 20, "tag": "error-handling", "message": "Catch block silently swallows all errors. If the broadcast_links table doesn't exist (pre-migration), it's fine. But if there's a RLS or permission error, it silently falls through to the not-found redirect with no logging."},
+        {"severity": "P2", "line": 24, "tag": "http-status", "message": "Missing link redirects to '/' with 302 instead of returning 404. Better UX would be 404 or a dedicated 'Link not found' page."}
+      ]
+    }
+  ],
+
+  "consolidated_issues": {
+    "P0_blocking": [
+      {
+        "id": "P0-001",
+        "severity": "P0",
+        "component": "Multiple files",
+        "message": "THEMING CRISIS: 6 of 11 files contain hardcoded Blossom-specific colors (#6B5750, #A8928D, #FFE8DC, #2C1A14, rgba(255,210,194,0.55), #F5E8E3, #789A99, #E8D0C8, white overlays). These colors are invisible or visually broken on Studio (dark teal) and Frost (lavender slate) themes. Every hardcoded color must be replaced with a CSS variable or Tailwind theme token."
+      },
+      {
+        "id": "P0-002",
+        "severity": "P0",
+        "component": "r/[code]/route.ts",
+        "message": "OPEN REDIRECT VULNERABILITY: link.target_url is redirected to without validation. Attacker-controlled database entry can redirect users to arbitrary external URLs (phishing risk). Must validate against an allowlist or ensure relative-path-only redirect."
+      },
+      {
+        "id": "P0-003",
+        "severity": "P0",
+        "component": "invite/[code]/page.tsx",
+        "message": "TYPE SAFETY: Pervasive 'as any' casts (4+ instances) around Supabase join results. Any schema change silently propagates undefined values. Must fix the Supabase type generation or use proper type guards instead of type assertions."
+      }
+    ],
+    "P1_major": [
+      {
+        "id": "P1-001",
+        "severity": "P1",
+        "component": "PublicMasterPage.tsx",
+        "message": "MONOLITH (1127 lines): Combines availability, flash deals, schedule, shop banner, portfolio gallery, services, products, reviews, trusted partners, loyalty, C2C, share, booking flow. Must decompose into page-level composition pattern."
+      },
+      {
+        "id": "P1-002",
+        "severity": "P1",
+        "component": "PublicMasterPage.tsx",
+        "message": "isDark branching pattern: Uses manual if/else for every color instead of CSS variables. This duplicates every style decision per theme and is fragile when adding new themes."
+      },
+      {
+        "id": "P1-003",
+        "severity": "P1",
+        "component": "ShopPage.tsx",
+        "message": "CATEGORY_COLORS hardcoded hex palette not theme-aware."
+      },
+      {
+        "id": "P1-004",
+        "severity": "P1",
+        "component": "portfolio/[id]/page.tsx",
+        "message": "Full-page background (#FFE8DC) and blob gradient (#FFD4BE) hardcoded Blossom-only. No fallback for other themes."
+      },
+      {
+        "id": "P1-005",
+        "severity": "P1",
+        "component": "offline/page.tsx",
+        "message": "Emoji used as visual indicator without role='img' aria-label. Reload-on-click creates potential infinite reload loop."
+      },
+      {
+        "id": "P1-006",
+        "severity": "P1",
+        "component": "invite/[code]/page.tsx",
+        "message": "Hardcoded bg-white/60 and text-white — must use bg-secondary/60 and text-primary-foreground."
+      }
+    ],
+    "P2_minor": [
+      {"message": "Touch targets below 44px: ExplorePage filter/category chips (py-2.5), ShopPage filter chips (py-1.5). Bump to py-3 minimum.", "files": ["ExplorePage.tsx", "ShopPage.tsx"]},
+      {"message": "Missing loading skeletons: ExplorePage no skeleton for masters list; ShopPage no skeleton for product grid.", "files": ["ExplorePage.tsx", "ShopPage.tsx"]},
+      {"message": "Any-typed props: ShopPage workingHours?: any, schedule?: any[] — should be properly typed.", "files": ["ShopPage.tsx"]},
+      {"message": "eslint-disable for dependency array: PublicMasterPage suppresses exhaustive-deps warning for C2C balance fetch.", "files": ["PublicMasterPage.tsx"]},
+      {"message": "Duplicated helpers: formatPrice and formatDuration defined in PublicMasterPage and StudioPublicPage separately. Extract to shared utils.", "files": ["PublicMasterPage.tsx", "StudioPublicPage.tsx"]},
+      {"message": "CSS variable usage via inline styles instead of Tailwind aliases: var(--surface) should be bg-secondary, var(--text-tertiary) should be text-muted-foreground, var(--accent-on) should be text-primary-foreground.", "files": ["PublicPortfolioGallery.tsx", "ShopPage.tsx", "PublicMasterPage.tsx"]},
+      {"message": "Legal pages missing layout wrapper — no header/footer navigation.", "files": ["legal/page.tsx", "legal/[slug]/page.tsx"]},
+      {"message": "Safari incompatibility: StudioPublicPage uses grid-template-rows animation which Safari doesn't support.", "files": ["StudioPublicPage.tsx"]},
+      {"message": "Server timezone: studio/join and portfolio use new Date() for expiry/count queries. Server may be UTC while client is UTC+3.", "files": ["studio/join/page.tsx", "portfolio/[id]/page.tsx"]},
+      {"message": "Non-null assertions: PublicMasterPage schedule!, invite page result!. Fragile if data shapes change.", "files": ["PublicMasterPage.tsx", "invite/[code]/page.tsx"]},
+      {"message": "env var non-null assertion: r/[code]/route.ts uses NEXT_PUBLIC_SITE_URL! without fallback.", "files": ["r/[code]/route.ts"]},
+      {"message": "42x duplicate text-white instead of text-primary-foreground: offline/page.tsx, invite/[code]/page.tsx.", "files": ["offline/page.tsx", "invite/[code]/page.tsx"]}
+    ],
+    "P3_polish": [
+      {"message": "getCategoryIcon recreated per render — extract to constant map.", "files": ["ExplorePage.tsx"]},
+      {"message": "non-null assertion master.schedule! — add optional chaining.", "files": ["PublicMasterPage.tsx"]},
+      {"message": "Portfolio card aspect-ratio hardcoded square (size-44) — use object-contain for non-square images.", "files": ["PublicPortfolioGallery.tsx"]},
+      {"message": "generateStaticParams lock-in — new legal docs need build to appear.", "files": ["legal/[slug]/page.tsx"]}
+    ]
+  },
+
+  "summary": {
+    "overall_score": "27.7 / 40 (average across 11 files)",
+    "best_file": "StudioPublicPage.tsx (33/40) — clean scope, good empty state, proper accordion pattern",
+    "worst_file": "invite/[code]/page.tsx (20/40) — pervasive as any casts, hardcoded colors breaking theming",
+    "key_actions": [
+      "1. THEMING: Audit all 6 files with hardcoded Blossom colors → replace with CSS variables/Tailwind tokens (P0)",
+      "2. SECURITY: Fix open redirect in r/[code]/route.ts with URL validation (P0)",
+      "3. TYPES: Fix all as any casts in invite/[code]/page.tsx with proper Supabase types or type guards (P0)",
+      "4. DECOMPOSE: Extract PublicMasterPage (1127 lines) into page-level composition (P1)",
+      "5. A11Y: Fix offline page emoji, add loading skeletons, bump touch targets to 44px (P1-P2)",
+      "6. I18N/TZ: Replace server new Date() in time-sensitive queries with client-aware timestamp (P2)"
+    ],
+    "html_emoji_note": "globals.css shows UCS-2 encoded placeholder emoji blocks (rendered as �) — verify file encoding is UTF-8 without BOM in the CSS file."
+  }
+}

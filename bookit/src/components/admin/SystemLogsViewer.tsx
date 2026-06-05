@@ -49,7 +49,7 @@ export function SystemLogsViewer() {
           .limit(50);
 
         if (error) throw error;
-        setNotifLogs((data as any) || []);
+        setNotifLogs(data || []);
       } else {
         const { data, error } = await supabase
           .from('sms_otps')
@@ -58,7 +58,7 @@ export function SystemLogsViewer() {
           .limit(50);
 
         if (error) throw error;
-        setOtpLogs((data as any) || []);
+        setOtpLogs(data || []);
       }
     } catch (err) {
       console.error('[AdminLogs] Load error:', err);

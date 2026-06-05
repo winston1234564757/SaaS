@@ -48,7 +48,7 @@ export function useBookingScheduleData({
   const offDayDates = useMemo(() => {
     if (!scheduleStore) return new Set<string>();
     return buildOffDaySet(
-      Object.entries(scheduleStore.templates).map(([d, t]) => ({ day_of_week: d as any, is_working: t.is_working })),
+      Object.entries(scheduleStore.templates).map(([d, t]) => ({ day_of_week: d, is_working: t.is_working })),
       Object.entries(scheduleStore.exceptions).filter(([_, e]) => e.is_day_off).map(([d]) => ({ date: d })),
       days
     );

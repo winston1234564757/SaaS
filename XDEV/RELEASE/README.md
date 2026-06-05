@@ -25,11 +25,10 @@
 | Документ | Зміст |
 |---|---|
 | [../IRON_RULES.md](../IRON_RULES.md) | 5 абсолютних правил сесії (encoding, humanizer, QA-GATE, skills, post-change, framer) |
-| [../AI_DEVELOPER.md](../AI_DEVELOPER.md) | Конституція розробника: stack, RLS, anti-patterns, 3 теми |
+| [../AI_MASTER_GUIDE.md](../AI_MASTER_GUIDE.md) | Майстер-Конституція розробника: stack, RLS, 3 теми, pre-deploy, DB-to-DOM |
 | [../SKILL_PROTOCOL.md](../SKILL_PROTOCOL.md) | Decision Tree вибору скіла перед кожною ітерацією |
 | [../UX_STANDARDS.md](../UX_STANDARDS.md) | No-Emoji, Vaul, animation rules, color tokens |
 | [../BOOKIT.md](../BOOKIT.md) | Бізнес-логіка, тарифи, ключові модулі |
-| [../AI_ONBOARDING.md](../AI_ONBOARDING.md) | DB-to-DOM thinking, протоколи верифікації |
 | [../MAPS/PAGE_RELEASE_ROADMAP.md](../MAPS/PAGE_RELEASE_ROADMAP.md) | Детальні чек-листи всіх 13 сторінок (джерело правди для scope) |
 | [../MAPS/SYSTEM_MAP.md](../MAPS/SYSTEM_MAP.md) | Архітектурна мапа: routes, components, hooks, DB, API |
 | [../../bookit/.claude/CLARIFICATION_FRAMEWORK.md](../../bookit/.claude/CLARIFICATION_FRAMEWORK.md) | 3-5 питань перед кожним скілом |
@@ -167,9 +166,9 @@ npm run test:e2e -- --grep "<step>" # Playwright green for step
 
 - **Перед скілом:** [../SKILL_PROTOCOL.md](../SKILL_PROTOCOL.md) Decision Tree
 - **Перед UI текстом:** `/humanizer` skill
-- **Перед DB зміною:** [../AI_DEVELOPER.md](../AI_DEVELOPER.md) RLS section
+- **Перед DB зміною:** [../AI_MASTER_GUIDE.md](../AI_MASTER_GUIDE.md) RLS section
 - **Перед animation:** [../UX_STANDARDS.md](../UX_STANDARDS.md) Motion Patterns
-- **Перед releasem:** pre-deploy checklist у [../AI_DEVELOPER.md](../AI_DEVELOPER.md)
+- **Перед releasem:** pre-deploy checklist у [../AI_MASTER_GUIDE.md](../AI_MASTER_GUIDE.md)
 
 ---
 

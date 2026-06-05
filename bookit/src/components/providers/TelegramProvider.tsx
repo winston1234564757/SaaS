@@ -171,8 +171,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         // 1. Existing session? Verify profile, redirect if on guest page.
         const { data: { session } } = await Promise.race([
           supabase.auth.getSession(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('session-timeout')), 5000))
-        ]) as any;
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('session-timeout')), 5000))
+        ]);
 
         if (session) {
           const { data: profile } = await Promise.race([
@@ -181,8 +181,8 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
               .select('id, role')
               .eq('id', session.user.id)
               .maybeSingle(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 5000))
-          ]) as any;
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 5000))
+          ]);
 
           if (profile) {
             setIsAuthenticated(true);

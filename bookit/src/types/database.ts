@@ -280,16 +280,19 @@ export interface Product {
   category: ProductCategory;
   product_type: 'retail' | 'consumable';
   price_kopecks: number;
+  cost_kopecks: number | null;        // собівартість (для consumable — важливо; retail — опційно)
   photos: string[];
-  stock_qty:        number;
-  is_active:        boolean;
+  stock_qty: number;
+  stock_alert_threshold: number | null; // поріг сповіщення (міграція 136)
+  is_active: boolean;
+  is_archived: boolean;               // м'яке видалення (міграція 139)
   recommend_always: boolean;
-  is_archived:      boolean;
-  sort_order:       number;
-  created_at:       string;
-  updated_at:       string;
-  // Joined relation — present when query includes product_service_links(service_id)
-  product_service_links?: { service_id: string }[];
+  auto_deduct: boolean;               // автосписання при booking completed (consumable)
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  // Joined relation — present when query includes product_service_links(service_id, quantity)
+  product_service_links?: { service_id: string; quantity: number }[];
 }
 
 export interface Order {

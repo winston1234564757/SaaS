@@ -27,7 +27,7 @@
 | `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching | `bookings/page.tsx` | `bookings/actions.ts` | `BookingsPage.tsx`, `BookingCard.tsx`, `PeriodAnalyticsView.tsx` |
 | `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` | `master/clients/ClientsPage.tsx`, `ClientDetailSheet.tsx`, `ClientWidgets.tsx` |
 | `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` |
-| `/dashboard/analytics` | Аналітика Pro: виручка, топ-послуги, retention-когорти, CSV | `analytics/page.tsx` | — | `master/analytics/AnalyticsPage.tsx` |
+| `/dashboard/analytics` | Аналітика Pro v2.1 (Editorial Bento з MoM порівнянням та PNG/SVG експортом): виручка, когорти, бізнес-здоров'я, фінанси, прогнози складів, розумна націнка, ранковий брифінг, CSV | `analytics/page.tsx` | — | `master/analytics/AnalyticsPage.tsx` (включає `MorningBriefing.tsx`, `BusinessHealthScoreWidget.tsx`, `SmartPricingOptimizer.tsx`, та вкладки: `FinancesTab.tsx`, `StockTab.tsx`, `ReviewsTab.tsx`, `NoShowTab.tsx`, `LeadTimeTab.tsx`, `VacationTab.tsx`, `SourceTab.tsx`) |
 | `/dashboard/flash` | Redirect Gateway to `/dashboard/revenue?tab=flash_deals` | `flash/page.tsx` | — | Redirect Gateway |
 | `/dashboard/pricing` | Redirect Gateway to `/dashboard/revenue?tab=dynamic_pricing` | `pricing/page.tsx` | — | Redirect Gateway |
 | `/dashboard/billing` | Підписки Monobank: tier, оплата, checkout | `billing/page.tsx` | `billing/actions.ts` | `master/billing/BillingPage.tsx` |
@@ -435,8 +435,8 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 |---|---|
 | `services` | Послуги: `duration` (хв), `price` (копійки), `category`, `position`, `is_active`, `icon_name` |
 | `service_categories` | Кастомні категорії послуг |
-| `products` | Товари: `price`, `stock`, `is_active`, `stock_alert_threshold INT DEFAULT 3`, `icon_name`, `product_type` |
-| `product_service_links` | Рекомендовані товари до послуги |
+| `products` | Товари: `name`, `price_kopecks`, `cost_kopecks` (nullable), `stock_qty` (integer), `stock_alert_threshold` INT DEFAULT 3, `is_active`, `is_archived` (m'яке видалення), `recommend_always`, `auto_deduct` (boolean, consumable автосписання), `product_type` ('retail'\|'consumable'), `icon_name`, `sort_order` — міграція 139 |
+| `product_service_links` | Рекомендовані товари до послуги: `product_id`, `service_id`, `quantity` INT DEFAULT 1 (скільки одиниць consumable на 1 сеанс) — міграція 139 |
 
 ### Schedule
 | Таблиця | Призначення |
@@ -540,7 +540,8 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `126_segment_config.sql` — `segment_config jsonb` на `master_profiles` (Custom CRM Segments)
 - `136_notification_logs.sql` — `notification_logs` таблиця + `products.stock_alert_threshold INT DEFAULT 3`
 - `137_client_health_notes.sql` / `20260516000000_client_health_system_update.sql` — Unified client health & medical notes
-- `137_product_type_and_emoji.sql` — `icon_name`, `product_type` columns on `products`
-- `138_service_icon_name.sql` — `icon_name` column on `services` with category-based backfill
+- `137_product_type_and_emoji.sql` — `icon_name`, `product_type` columns on `products` (NOT applied to live DB — fixed by 139)
+- `138_service_icon_name.sql` — `icon_name` column on `services`
+- `139_products_full_fix.sql` — Повний фікс `products`: `product_type`, `icon_name`, `is_archived`, `cost_kopecks`, `auto_deduct`; `stock_qty` numeric→integer; `product_service_links.quantity`; partial index; оновлення тригера списання (consumable + auto_deduct only) with category-based backfill
 - `20260524124500_get_master_referral_history.sql` — `get_master_referral_history` RPC function
 - `20260605000000_analytics_system.sql` — Mega analytics functions and orchestrator `get_analytics_extras` RPC

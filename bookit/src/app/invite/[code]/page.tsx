@@ -8,6 +8,24 @@ interface Props {
   params: Promise<{ code: string }>;
 }
 
+interface MasterData {
+  id: string;
+  slug: string | null;
+  bio: string | null;
+  city: string | null;
+  avatar_emoji: string | null;
+  profiles: { full_name: string } | { full_name: string }[] | null;
+}
+
+type InviteProfile = { full_name: string } | null;
+
+function extractProfile(
+  profiles: { full_name: string } | { full_name: string }[] | null | undefined
+): InviteProfile {
+  if (!profiles) return null;
+  return Array.isArray(profiles) ? profiles[0] ?? null : profiles;
+}
+
 async function getInviter(code: string) {
   const supabase = await createClient();
 
@@ -43,9 +61,10 @@ async function getInviter(code: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params;
   const result = await getInviter(code);
-  const name = result
-    ? (Array.isArray(result.data.profiles) ? result.data.profiles[0] : result.data.profiles as any)?.full_name ?? 'Майстер'
-    : 'Майстер';
+  const profileItem = result
+    ? extractProfile((result.data as MasterData).profiles)
+    : null;
+  const name = profileItem?.full_name ?? 'Майстер';
   return {
     title: `${name} запрошує тебе до Bookit`,
     description: 'Зареєструйся та отримай бонус',
@@ -63,11 +82,14 @@ export default async function InvitePage({ params }: Props) {
   const result = await getInviter(code);
 
   const isMaster = result?.type === 'master';
-  const profileRaw = result ? (Array.isArray(result.data.profiles) ? result.data.profiles[0] : result.data.profiles) : null;
-  const name = (profileRaw as any)?.full_name ?? null;
-  const emoji = isMaster ? ((result!.data as any).avatar_emoji as string) || '💅' : '👤';
-  const bio = isMaster ? ((result!.data as any).bio as string) || null : null;
-  const city = isMaster ? ((result!.data as any).city as string) || null : null;
+  const masterData = isMaster ? (result!.data as MasterData) : null;
+  const profileRaw: InviteProfile = result
+    ? extractProfile((result.data as MasterData).profiles)
+    : null;
+  const name = profileRaw?.full_name ?? null;
+  const emoji = masterData?.avatar_emoji || '💅';
+  const bio = masterData?.bio ?? null;
+  const city = masterData?.city ?? null;
 
   return (
     <div className="min-h-dvh flex items-center justify-center px-4 py-12">
@@ -133,9 +155,9 @@ export default async function InvitePage({ params }: Props) {
             Зареєструватися безкоштовно
           </Link>
 
-          {isMaster && (result!.data as any).slug && (
+          {isMaster && masterData?.slug && (
             <Link
-              href={`/${(result!.data as any).slug}`}
+              href={`/${masterData.slug}`}
               className="mt-3 block text-sm text-primary hover:text-primary/90 transition-colors"
             >
               Переглянути сторінку {name} →

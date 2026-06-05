@@ -20,34 +20,36 @@ async function getMasterId(): Promise<string | null> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface ProductPayload {
-  icon_name?: ProductIconName;
-  name: string;
-  description?: string | null;
-  category: ProductCategory;
-  product_type?: 'retail' | 'consumable';
-  price_kopecks: number;
-  photos?: string[];
-  stock_qty?: number;
-  is_active?: boolean;
+  icon_name?:        ProductIconName;
+  name:              string;
+  description?:      string | null;
+  category:          ProductCategory;
+  product_type?:     'retail' | 'consumable';
+  price_kopecks:     number;
+  cost_kopecks?:     number | null;  // собівартість (nullable — для обох типів)
+  photos?:           string[];
+  stock_qty?:        number;
+  is_active?:        boolean;
   recommend_always?: boolean;
-  sort_order?: number;
+  auto_deduct?:      boolean;        // автосписання consumable при booking completed
+  sort_order?:       number;
 }
 
 export interface OrderItemPayload {
   product_id: string;
-  qty: number;
+  qty:        number;
 }
 
 export interface CreateOrderPayload {
-  master_id: string;
-  items: OrderItemPayload[];
-  delivery_type: 'pickup' | 'nova_poshta';
-  client_name?: string | null;
-  client_phone?: string | null;
+  master_id:         string;
+  items:             OrderItemPayload[];
+  delivery_type:     'pickup' | 'nova_poshta';
+  client_name?:      string | null;
+  client_phone?:     string | null;
   delivery_address?: string | null;
-  note?: string | null;
-  pickup_at?: string | null;
-  booking_id?: string | null;
+  note?:             string | null;
+  pickup_at?:        string | null;
+  booking_id?:       string | null;
 }
 
 export async function createProduct(
@@ -63,17 +65,19 @@ export async function createProduct(
     const { data, error } = await createAdminClient()
       .from('products')
       .insert({
-        master_id:    masterId,
-        icon_name:    payload.icon_name ?? 'package',
-        name:         payload.name.trim(),
-        description:  payload.description ?? null,
-        category:     payload.category,
-        product_type: payload.product_type ?? 'retail',
-        price_kopecks: payload.price_kopecks,
-        photos:       payload.photos ?? [],
+        master_id:        masterId,
+        icon_name:        payload.icon_name ?? 'package',
+        name:             payload.name.trim(),
+        description:      payload.description ?? null,
+        category:         payload.category,
+        product_type:     payload.product_type ?? 'retail',
+        price_kopecks:    payload.price_kopecks,
+        cost_kopecks:     payload.cost_kopecks ?? null,
+        photos:           payload.photos ?? [],
         stock_qty:        payload.stock_qty ?? 0,
         is_active:        payload.is_active ?? true,
         recommend_always: payload.recommend_always ?? true,
+        auto_deduct:      payload.auto_deduct ?? true,
         sort_order:       payload.sort_order ?? 0,
       })
       .select('id')
@@ -117,15 +121,17 @@ export async function updateProduct(
     const { error } = await createAdminClient()
       .from('products')
       .update({
-        ...(payload.name        !== undefined && { name:          payload.name.trim() }),
-        ...(payload.icon_name   !== undefined && { icon_name:     payload.icon_name }),
-        ...(payload.description !== undefined && { description:   payload.description }),
-        ...(payload.category    !== undefined && { category:      payload.category }),
-        ...(payload.product_type !== undefined && { product_type: payload.product_type }),
+        ...(payload.name          !== undefined && { name:          payload.name.trim() }),
+        ...(payload.icon_name     !== undefined && { icon_name:     payload.icon_name }),
+        ...(payload.description   !== undefined && { description:   payload.description }),
+        ...(payload.category      !== undefined && { category:      payload.category }),
+        ...(payload.product_type  !== undefined && { product_type:  payload.product_type }),
         ...(payload.price_kopecks !== undefined && { price_kopecks: payload.price_kopecks }),
+        ...(payload.cost_kopecks  !== undefined && { cost_kopecks:  payload.cost_kopecks }),
         ...(payload.photos           !== undefined && { photos:           payload.photos }),
         ...(payload.is_active        !== undefined && { is_active:        payload.is_active }),
         ...(payload.recommend_always !== undefined && { recommend_always: payload.recommend_always }),
+        ...(payload.auto_deduct      !== undefined && { auto_deduct:      payload.auto_deduct }),
         ...(payload.sort_order       !== undefined && { sort_order:       payload.sort_order }),
       })
       .eq('id', id)
@@ -341,9 +347,9 @@ export async function createOrder(
       .from('order_items')
       .insert(
         payload.items.map(item => ({
-          order_id:     order.id,
-          product_id:   item.product_id,
-          qty:          item.qty,
+          order_id:      order.id,
+          product_id:    item.product_id,
+          qty:           item.qty,
           price_kopecks: productMap.get(item.product_id)!.price_kopecks,
         }))
       );
@@ -372,15 +378,15 @@ export async function createOrder(
           order_id:   order.id,
         });
 
-      const { data: product } = await admin
+      const { data: productData } = await admin
         .from('products')
         .select('name, stock_alert_threshold')
         .eq('id', item.product_id)
         .single();
 
-      const threshold = (product?.stock_alert_threshold as number | null) ?? 3;
+      const threshold = productData?.stock_alert_threshold ?? 3;
       if (newStock <= threshold && newStock >= 0) {
-        void notifyMasterStockAlert(payload.master_id, product?.name ?? p.name as string, newStock);
+        void notifyMasterStockAlert(payload.master_id, productData?.name ?? p.name, newStock);
       }
     }
 
@@ -402,7 +408,7 @@ export async function createOrder(
 
 export async function saveProductLinks(
   productId: string,
-  serviceIds: string[],
+  links: { serviceId: string; quantity: number }[],
 ): Promise<{ error: string | null }> {
   const masterId = await getMasterId();
   if (!masterId) return { error: 'Не авторизований' };
@@ -423,10 +429,14 @@ export async function saveProductLinks(
       .eq('product_id', productId);
     if (delErr) throw delErr;
 
-    if (serviceIds.length > 0) {
+    if (links.length > 0) {
       const { error: insErr } = await admin
         .from('product_service_links')
-        .insert(serviceIds.map(sid => ({ product_id: productId, service_id: sid })));
+        .insert(links.map(l => ({
+          product_id: productId,
+          service_id: l.serviceId,
+          quantity:   l.quantity,
+        })));
       if (insErr) throw insErr;
     }
 

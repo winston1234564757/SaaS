@@ -9,8 +9,10 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(),
 }));
 vi.mock('@/lib/push', () => ({ sendPush: vi.fn() }));
-vi.mock('@/lib/telegram', () => ({ sendTelegramMessage: vi.fn() }));
+vi.mock('@/lib/telegram', () => ({ sendTelegramMessage: vi.fn(), escHtml: (s: string) => s }));
 vi.mock('@/lib/turbosms', () => ({ sendTurboSMS: vi.fn() }));
+
+const EMPTY_RESOLVED = { data: [], error: null };
 
 describe('NotificationOrchestrator', () => {
   let mockAdmin: any;
@@ -25,6 +27,9 @@ describe('NotificationOrchestrator', () => {
       insert: vi.fn().mockResolvedValue({ error: null }),
       delete: vi.fn().mockReturnThis(),
       in: vi.fn().mockResolvedValue({ error: null }),
+      // Make the query directly awaitable (for push_subscriptions query in Promise.all)
+      then: Promise.resolve(EMPTY_RESOLVED).then.bind(Promise.resolve(EMPTY_RESOLVED)),
+      catch: Promise.resolve(EMPTY_RESOLVED).catch.bind(Promise.resolve(EMPTY_RESOLVED)),
     };
     mockAdmin = {
       from: vi.fn().mockReturnValue(mockQuery),
@@ -33,11 +38,9 @@ describe('NotificationOrchestrator', () => {
   });
 
   it('cascades correctly', async () => {
-    // Mock profiles check
-    mockQuery.maybeSingle.mockResolvedValueOnce({ data: { phone: '123', telegram_chat_id: 'tg' }, error: null }); // profile
-    mockQuery.maybeSingle.mockResolvedValueOnce({ data: null, error: null }); // master_profile
-    mockQuery.eq.mockResolvedValueOnce({ data: [], error: null }); // push_subscriptions (none)
-    
+    mockQuery.maybeSingle.mockResolvedValueOnce({ data: { phone: '123', telegram_chat_id: 'tg' }, error: null });
+    mockQuery.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+
     (sendTelegramMessage as any).mockResolvedValue(true);
 
     await NotificationOrchestrator.send({

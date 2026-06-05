@@ -99,9 +99,9 @@ GATE OK: search✓ | QA✓ | Skill: [name] | Humanizer: [confirmed/N/A]
 ```
 
 ### Інструменти на ходу
-- **Token Efficiency:** Grep before Read, з offset (RULE із AI_DEVELOPER.md)
+- **Token Efficiency:** Grep before Read, з offset (RULE із AI_MASTER_GUIDE.md)
 - **MemPalace search:** перед прийняттям рішень (RULE -1)
-- **DB-to-DOM thinking:** DB Layer → Server Action → UI (з AI_ONBOARDING.md)
+- **DB-to-DOM thinking:** DB Layer → Server Action → UI (з AI_MASTER_GUIDE.md)
 
 ### Збереження прогресу
 - Після кожного значущого фрагменту коду — короткий commit (не амальгамувати дні).

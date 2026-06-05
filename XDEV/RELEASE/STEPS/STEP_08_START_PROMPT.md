@@ -362,7 +362,7 @@ POST-CHANGE PROTOCOL (RULE 3 — обов'язково):
 - Drawers: vaul BottomSheet ТІЛЬКИ — не bare framer-motion drawer
 
 XDEV ДОКУМЕНТИ (читати перед кодом):
-- C:\Users\Vitossik\SaaS\XDEV\AI_DEVELOPER.md — stack, RLS, anti-patterns
+- C:\Users\Vitossik\SaaS\XDEV\AI_MASTER_GUIDE.md — stack, RLS, anti-patterns, onboarding
 - C:\Users\Vitossik\SaaS\XDEV\UX_STANDARDS.md — No-Emoji, Vaul, animation
 - C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md — routes, tables, RPCs
 

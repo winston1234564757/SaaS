@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useDashboardStore, WidgetId } from '@/lib/stores/useDashboardStore';
+import { useDashboardStore, type DashboardLayout, WidgetId } from '@/lib/stores/useDashboardStore';
 import { useShallow } from 'zustand/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
@@ -114,7 +114,7 @@ export function BentoGrid() {
         <div className="flex items-center gap-3">
           <select 
             value={layout} 
-            onChange={(e) => setLayout(e.target.value as any)}
+            onChange={(e) => setLayout(e.target.value as DashboardLayout)}
             className="bg-secondary/40 border border-border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="balanced">Збалансований</option>

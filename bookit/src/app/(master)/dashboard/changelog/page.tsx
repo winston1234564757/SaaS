@@ -15,6 +15,51 @@ import { cn } from '@/lib/utils/cn';
 
 const UPDATES = [
   {
+    title: 'CRM Analytics Pro v2.1 — MoM & Export',
+    icon: Sparkles,
+    color: 'sage',
+    description: 'Оновлено аналітичну екосистему майстра до версії v2.1. Додано інтерактивні графіки Month-over-Month та нативний клієнтський експорт звітів.',
+    details: [
+      'Month-over-Month Overlay: швидке порівняння доходів поточного місяця з попереднім періодом у вигляді пунктирної лінії',
+      'Interactive Tooltip: детальне відображення поточного значення, попереднього періоду та відсоткової дельти росту/спаду з кольоровим індикатором',
+      'Native Chart Export: нативне завантаження графіків у форматах PNG або SVG з авто-конвертацією CSS-змінних теми для коректного показу',
+      'Accessibility & Animations: 100% відповідність вимогам a11y, нативні кнопки type="button", фокусні стани та плавні spring-переходи'
+    ],
+    link: '/dashboard/analytics',
+    linkText: 'Відкрити аналітику'
+  },
+  {
+    title: '100% Test Coverage — All 40 Suites Green',
+    icon: CheckCircle2,
+    color: 'sage',
+    description: 'Повне тестове покриття всіх доменів BookIT: 811 тестів у 40 файлах, 0 помилок. TypeScript та production build — чисті.',
+    details: [
+      'Auth: 118 тестів — phone, send-sms, verify-sms-schema, OAuth callback',
+      'Booking Wizard: 90 тестів — discount engine, smartSlots, dynamicPricing',
+      'Referrals + Billing: 50+ тестів — server actions з chain mocks, pricing, sync',
+      'Cron + Notifications: 230+ тестів — HMAC, reminders, notifMap 23 подій × 4 канали',
+      'Partners + Support + Waitlist: 30+ тестів — інвайти, тікети, черги з моками',
+      'Utils: 100+ тестів — phone, dates, slug, errors, token, url, currency, telegram'
+    ],
+    link: '/dashboard',
+    linkText: 'Переглянути дашборд'
+  },
+  {
+    title: 'CRM Analytics Redesign (Variant β)',
+    icon: Sparkles,
+    color: 'sage',
+    description: 'Масштабний редизайн аналітичної системи майстра. Перехід на журнальну Bento-сітку з кастомними SVG-графіками, розумними інсайтами та глибоким аналізом клієнтів.',
+    details: [
+      'Editorial Bento Grid: асиметрична журнальна сітка з чіткими межами та гармонійними кольорами',
+      'Custom SVG Charts: власні інтерактивні графіки виручки, когортного утримання та теплової карти завантаженості без важких бібліотек',
+      'Insight Stories: автоматична генерація персональних stories-інсайтів на основі динаміки доходів та аномалій',
+      'Unified RPC: оптимізація бази даних — об\'єднання 6 складних запитів у єдиний get_analytics_extras для миттєвого завантаження',
+      'Drill-down Tabs: вкладки детального аналізу NPS/відгуків, скасувань, часу попереднього запису та впливу відпусток'
+    ],
+    link: '/dashboard/analytics',
+    linkText: 'Відкрити аналітику'
+  },
+  {
     title: 'B2B Premiumization & Stabilization',
     icon: Sparkles,
     color: 'sage',

@@ -11,8 +11,14 @@ export type { Product };
 // ── Query key factory ─────────────────────────────────────────────────────────
 const KEY = (masterId: string | undefined) => ['products', masterId] as const;
 
+const PRODUCT_SELECT =
+  'id, master_id, icon_name, name, description, category, product_type, ' +
+  'price_kopecks, cost_kopecks, photos, stock_qty, stock_alert_threshold, ' +
+  'is_active, is_archived, recommend_always, auto_deduct, sort_order, ' +
+  'created_at, updated_at, product_service_links(service_id, quantity)';
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Read hook
+// Read hook (master dashboard)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function useProducts() {
@@ -26,7 +32,7 @@ export function useProducts() {
     queryFn: async () => {
       const { data, error } = await createClient()
         .from('products')
-        .select('id, master_id, icon_name, name, description, category, product_type, price_kopecks, photos, stock_qty, is_active, recommend_always, sort_order, created_at, updated_at, product_service_links(service_id)')
+        .select(PRODUCT_SELECT)
         .eq('master_id', masterId!)
         .eq('is_archived', false)
         .order('sort_order', { ascending: true })
@@ -72,17 +78,17 @@ export function useProducts() {
   });
 
   return {
-    products:      query.data ?? [],
-    isLoading:     query.isPending,
-    error:         query.error,
-    refetch:       () => qc.invalidateQueries({ queryKey: key }),
-    toggleActive:  (id: string, is_active: boolean) => toggleMutation.mutate({ id, is_active }),
+    products:        query.data ?? [],
+    isLoading:       query.isPending,
+    error:           query.error,
+    refetch:         () => qc.invalidateQueries({ queryKey: key }),
+    toggleActive:    (id: string, is_active: boolean) => toggleMutation.mutate({ id, is_active }),
     reorderProducts: reorderMutation.mutateAsync,
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Public shop hook (client-side, no auth)
+// Public shop hook (client-side, no auth required)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function usePublicProducts(masterId: string | undefined, category?: ProductCategory) {
@@ -91,7 +97,7 @@ export function usePublicProducts(masterId: string | undefined, category?: Produ
     queryFn: async () => {
       let q = createClient()
         .from('products')
-        .select('id, master_id, icon_name, name, description, category, product_type, price_kopecks, photos, stock_qty, is_active, recommend_always, sort_order, created_at, updated_at, product_service_links(service_id)')
+        .select(PRODUCT_SELECT)
         .eq('master_id', masterId!)
         .eq('is_active', true)
         .eq('is_archived', false)

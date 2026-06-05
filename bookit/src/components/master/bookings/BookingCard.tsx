@@ -167,6 +167,21 @@ export function BookingCard({
               <p className="text-xs lg:text-sm text-muted-foreground/60 truncate mt-1 font-medium">
                 {serviceNames}
               </p>
+              {(() => {
+                const bDate = new Date(booking.date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const diffDays = Math.ceil((bDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                const isHighRisk = diffDays >= 20 && (booking.status === 'confirmed' || booking.status === 'pending');
+                if (isHighRisk) {
+                  return (
+                    <p className="text-[10px] text-destructive font-bold mt-1.5 flex items-center gap-1">
+                      ⚠️ Ризик неявки: запис заздалегідь (+{diffDays} дн.). Підтвердіть візит!
+                    </p>
+                  );
+                }
+                return null;
+              })()}
             </div>
 
             {/* Status pill + Price — isolated on the right, no badge here */}
