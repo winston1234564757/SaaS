@@ -8,22 +8,19 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 2 ACTIVE · P2.13 ✅ · P2.14 (FK index c2c_referrals.master_id) ← NEXT
+PHASE 2 ACTIVE · P2.14 ✅ · P1.15 (working_hours as any, 4h+) ← NEXT or → Phase 3 (тести)
 ```
 
-**P2.14 — FK index `c2c_referrals.master_id` [1h]:**
-Migration `141_c2c_referrals_master_id_index.sql`:
-```sql
-CREATE INDEX IF NOT EXISTS idx_c2c_referrals_master_id 
-  ON public.c2c_referrals(master_id);
-```
-Лише composite `(referrer_id, master_id)` є — bare `master_id` queries = full table scan.
+**P1.15 — Inline `working_hours as any` [4h+]:**
+`src/app/[slug]/page.tsx` — 18× `as any` cast. Визначити `MasterPublicPageData` тип.
+Scope великий — розглянути як початок Phase 3.
 
-**Після P2.14:** P1.15 (working_hours types, 4h+) → Phase 3 (тести — user priority)
+**АБО Phase 3 (USER PRIORITY):**
+- **P3.1** (P1.11): `createBooking.ts` + `referrals.ts` tests (top priority)
 
 **Pending (потрібен ще supabase db push):**
 ```bash
-cd bookit && npx supabase db push  # P0.1 + P2.14 migrations
+cd bookit && npx supabase db push  # P0.1 + migration 140 pending
 ```
 
 ---
@@ -43,7 +40,7 @@ cd bookit && npx supabase db push  # P0.1 + P2.14 migrations
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
 ► Phase 1  SECURITY & A11Y [███████░]  ~73% ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.14·P1.16 | next: P1.15
-► Phase 2  LIMITED DRY     [██░░░░░░]  ~10% ← P2.2 ✅ · P2.13 ✅ | P2.14 NEXT
+► Phase 2  LIMITED DRY     [██░░░░░░]  ~13% ← P2.2 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.10 (30m)
   Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY
   Phase 4  POLISH          [░░░░░░░░]   0%
 ```
@@ -59,7 +56,7 @@ cd bookit && npx supabase db push  # P0.1 + P2.14 migrations
 **S06:** P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ (WeeklyChart aria-pressed, 3 themes)
 **S07:** P1.16 ✅ (touch targets ≥44px, 13 files)
 **S08:** P1.3 ✅ (heatmap roving tabindex, 3 themes)
-**S09:** P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.14 ✅ · P2.2 ✅ · P2.13 ✅
+**S09:** P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.14 ✅ · P2.2 ✅ · P2.13 ✅ · P2.14 ✅
 
 ---
 
@@ -71,8 +68,9 @@ Read XDEV/MAPS/SYSTEM_MAP.md (last 50)
 Read XDEV/PLANS/MTRP/MAP.md
 Read XDEV/PLANS/MTRP/TRACKER.md
 
-# P2.14: create bookit/supabase/migrations/141_c2c_referrals_master_id_index.sql
-# BEFORE: npx supabase db push (P0.1 + P2.14 migrations pending)
+# Option A: P1.15 types → grep -n "as any" bookit/src/app/\[slug\]/page.tsx | head -20
+# Option B: Phase 3 tests → grep -rn "createBooking\|referrals" bookit/src/lib/actions/ -l
+# PENDING: npx supabase db push (P0.1 + migration 140)
 ```
 
 ---
@@ -80,11 +78,11 @@ Read XDEV/PLANS/MTRP/TRACKER.md
 ## 📊 Лічильник
 
 ```
-Items closed: 26 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.16·P2.2·P2.13·P3.11 + N-01 corrected)
-Next: P2.14 (FK index, 1h)
+Items closed: 27 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.16·P2.2·P2.13·P2.14·P3.11 + N-01 corrected)
+Next: P1.15 (working_hours types) OR Phase 3 (tests — user priority)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S09 · P2.13 ✅ th scope (3 admin tables, C-19) · Next: P2.14 FK index*
+*Updated: 2026-06-05 S09 · P2.14 ✅ FK index migration 140 · Next: P1.15 or Phase 3*
