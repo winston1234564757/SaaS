@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-05 (S08) · **Active phase:** Phase 1→2 · **Progress:** 21 closed · 2 deferred · 2 blocked
+> **Updated:** 2026-06-05 (S10) · **Active phase:** Phase 1→2→3 · **Progress:** 29 closed · 2 deferred · 2 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -10,9 +10,9 @@
 
 ```
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
-Phase 1  SECURITY & A11Y  [██████░░]  ~63%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.4 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 next
-Phase 2  LIMITED DRY      [░░░░░░░░]   0%
-Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← user priority
+Phase 1  SECURITY & A11Y  [███████░]  ~87%  ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
+Phase 2  LIMITED DRY      [███░░░░░]  ~20%  ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
+Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY — next: P1.11 createBooking tests
 Phase 4  POLISH           [░░░░░░░░]   0%
 ```
 
@@ -43,11 +43,13 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | C-18 | P1.6 | «Mojibake у 4+ міграціях» (cp1251 garble) | Файли вже UTF-8, `═══` = Unicode box-drawing U+2550 (навмисний арт) | ✅ FALSE ALARM — no fix needed |
 | C-19 | P2.13 | `LandingBentoFeatures.tsx` `<th>` без scope | `<table role="presentation">` — scope семантично нерелевантний | ⚠️ SKIP — no fix needed |
 | C-20 | P2.10 | `reminders/route.ts:57` — phone PII у JSON.stringify | `results` містить тільки counts `{client,master,failed}`. `client_phone` вибирається з DB але не логується | ✅ FALSE ALARM — no fix needed |
+| C-21 | P1.15 | `workingHours: data.working_hours` — тип `WorkingHoursConfig` | `WorkingHoursConfig` не має index signature → не assignable до `Record<string,unknown>`. Залишив cast | ⚠️ Cast OK — follow-up: оновити prop type у PublicMasterPage |
 
 > **Урок 1:** видалення роуту → `rm -rf .next && npm run build` (stale types).
 > **Урок 2:** `<button>` атрибути → `tools/scan-buttons.cjs` (AST), не ripgrep.
 > **Урок 3 (P0.1):** phone-match verification — порівнювати last 10 digits (нормалізація E.164 варіюється).
 > **Урок 4 (P1.6):** `═══` в SQL-файлах = box-drawing Unicode (U+2550), не mojibake. `file` команда = UTF-8.
+> **Урок 5 (P1.15):** `interface` без index signature не assignable до `Record<string,unknown>`. Потребує або cast, або `[key: string]: unknown` у типі.
 
 ---
 
@@ -72,14 +74,23 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | Item | Title | §план | Effort | Status | Нотатка |
 |---|---|---|---|---|---|
 | **P0.1** | linkBookingToClient booking hijack | §5.1 | done | ✅ **DONE** | phone-match + link_attempts audit + rate-limit (5/15хв). Migration `20260604000000_booking_link_security.sql`. ⚠️ `npx supabase db push` потрібен |
-| **P0.2** | Admin client leak (~12 zones) + ESLint | §5.2 | done | ✅ **DONE** | 17 files fixed: publicClient (public pages) + createClient (dashboard/client pages) + growth/actions.ts (cross-user). New: src/lib/supabase/public.ts + ESLint rule in eslint.config.mjs. tsc 0 + lint 0. |
-| **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | done | ✅ **DONE** | Dialog.Content asChild on modal box (not wrapper) — focus trap + backdrop click. tsc 0 · build clean. |
+| **P0.2** | Admin client leak (~12 zones) + ESLint | §5.2 | done | ✅ **DONE** | 17 files fixed: publicClient + createClient + growth/actions.ts. New: `src/lib/supabase/public.ts` + ESLint rule. |
+| **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | done | ✅ **DONE** | Dialog.Content asChild on modal box — focus trap + backdrop click. |
 | **P0.12** | Onboarding telemetry (keep both pages) | §5.12 | 4h | 🔒 user-decision |  |
-| **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | done | ✅ **DONE** | matchMedia canonical у src/lib/hooks/. src/hooks/ deleted. 10 Landing* + 2 app consumers — 12 total. tsc 0. |
-| **P1.3** | Heatmap roving tabindex (91 cells) | §6.3 | done | ✅ **DONE** | div→button (Studio+Blossom) + roving tabindex. 91 cells (not 168 — HOURS=[8..20] = 13h×7d). Arrow keys wrap. tsc 0. |
-| **P1.4** | WeeklyChart `aria-pressed` (8 toggles) | §6.4 | done | ✅ **DONE** | mode tab aria-pressed (3 themes) + bar aria-label+aria-pressed (Studio+Blossom). tsc 0. |
-| **P1.12** | `timingSafeEqual` для CRON_SECRET (5 routes) | §6.12 | done | ✅ **DONE** | New: verifyCronSecret.ts (HMAC sha256). 5 routes patched. tsc 0. |
-| **P1.16** | Touch targets ≥44px | §6.16 | done | ✅ **DONE** | 13 files: size-6/7/8/9/10→size-11, h-7→h-11. Studio/Frost ghost close buttons fixed. tsc 0. |
+| **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | done | ✅ **DONE** | matchMedia canonical у `src/lib/hooks/`. `src/hooks/` deleted. 12 consumers. |
+| **P1.3** | Heatmap roving tabindex (91 cells) | §6.3 | done | ✅ **DONE** | div→button + roving tabindex + Arrow keys. 91 cells (HOURS=[8..20]). |
+| **P1.4** | WeeklyChart `aria-pressed` (8 toggles) | §6.4 | done | ✅ **DONE** | mode tab + bar aria-label+aria-pressed (3 themes). |
+| **P1.12** | `timingSafeEqual` для CRON_SECRET | §6.12 | done | ✅ **DONE** | NEW: `verifyCronSecret.ts` (HMAC sha256). 5 routes patched. |
+| **P1.16** | Touch targets ≥44px | §6.16 | done | ✅ **DONE** | 13 files: size-6/7/8/9/10→size-11. Ghost close buttons fixed. |
+| **P1.5** | Tour system documentation | §6.5 | done | ✅ **DONE** | Задокументовано в SYSTEM_MAP.md. useTour vs DashboardTourContext — правило вибору. |
+| **P1.6** | Mojibake у 4+ міграціях | §6.6 | — | ✅ **FALSE ALARM** | `═══` = U+2550 box-drawing art (C-18). |
+| **P1.7** | Дубль нумерації міграцій (137×2) | §6.7 | done | ✅ **DONE** | `137_` → `137a_`. |
+| **P1.8** | StoryGenerator empty-deps → hooks | §6.8 | done | ✅ **DONE** | 3 inline hooks → useQuery (`story-services`, `story-flash-deals`, `story-star-reviews`). |
+| **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | done | ✅ **DONE** | `queryKey ['c2c-balance', master.id]`. User fetched inside queryFn. `enabled` guard. staleTime 5min. |
+| **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | done | ✅ **DONE** | `zustand/shallow` useShallow: BentoWidget + BentoGrid(5-val) + WidgetLibraryModal. |
+| **P1.15** | Типи замість `as any` у `[slug]/page.tsx` | §6.15 | done | ✅ **DONE** | `MasterData`+`MasterServiceRow` у data.ts (+ timezone у SELECT). 7 row types у page.tsx (ProductRow, ReviewRow, ScheduleRow, LoyaltyRow, FlashDealRow, AllianceRow, PortfolioRow). opengraph-image.tsx теж. 0 `as any` залишилось. C-21: `workingHours as Record<string,unknown>` — WorkingHoursConfig lacks index signature. |
+| **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |  |
+| ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |  |
 
 ---
 
@@ -87,18 +98,18 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | Item | Title | §план | Effort | Status | Нотатка |
 |---|---|---|---|---|---|
-| **P1.5** | Tour system: 2 паралельні → документувати | §6.5 | done | ✅ **DONE** | Задокументовано в SYSTEM_MAP.md. useTour (generic, 6 pages) vs DashboardTourContext (8-step context, 4 consumers). Правило вибору додано. |
-| **P1.6** | Mojibake у 4+ міграціях | §6.6 | — | ✅ **FALSE ALARM** | Файли вже UTF-8. `═══` = U+2550 box-drawing art (C-18). Жодних змін не потрібно. |
-| **P1.7** | Дубль нумерації міграцій (137×2) | §6.7 | done | ✅ **DONE** | `137_product_type_and_emoji.sql` → `137a_product_type_and_emoji.sql`. Примітка в файлі. |
-| **P1.8** | StoryGenerator empty-deps → хуки | §6.8 | done | ✅ **DONE** | 3 inline hooks → useQuery: `story-services`, `story-flash-deals`, `story-star-reviews`. staleTime 60/30/60s. |
-| **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | 1h | ⏳ TODO |  |
-| **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |  |
-| **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | done | ✅ **DONE** | `zustand/shallow` useShallow на 3 selector calls (BentoGrid×2 + WidgetLibraryModal). |
-| **P1.15** | Типи замість `working_hours as any` | §6.15 | 4h+ | ⏳ TODO |  |
-| **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | done | ✅ **DONE** | `npm uninstall` marked+isomorphic-dompurify+html-to-image+sonner+@radix-ui/react-slot+class-variance-authority → 50 pkgs removed. |
-| **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | done | ✅ **DONE** | 3 admin tables patched (AllianceMap+MastersDir+SystemLogs). LandingBentoFeatures skipped: `role="presentation"` table (C-19). |
-| **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | done | ✅ **DONE** | `140_c2c_referrals_master_id_index.sql` — `CREATE INDEX IF NOT EXISTS idx_c2c_referrals_master_id`. Pending `db push`. |
-| ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |  |
+| **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | done | ✅ **DONE** | marked+isomorphic-dompurify+html-to-image+sonner+@radix-ui/react-slot+class-variance-authority → 50 pkgs removed. |
+| **P2.10** | Sanitize phone у cron логах | §7.10 | done | ✅ **DONE** | `sanitizePhone()` у rebooking/route.ts:110,113. reminders/route.ts — no PII in logs (C-20). |
+| **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | done | ✅ **DONE** | 3 admin tables (AllianceMap+MastersDir+SystemLogs). LandingBentoFeatures skipped — `role="presentation"` (C-19). |
+| **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | done | ✅ **DONE** | `140_c2c_referrals_master_id_index.sql`. ⚠️ Pending `npx supabase db push`. |
+| **P2.6** | `.select('*')` cleanup (10 queries) | §7.6 | 2h | ⏳ TODO |  |
+| **P2.7** | Modal/Sheet consolidation | §7.7 | 6h | ⏳ TODO |  |
+| **P2.11** | Контраст `text-muted/30-50` → WCAG AA | §7.11 | 4h | ⏳ TODO |  |
+| **P2.12** | 79 inputs без labels | §7.12 | 6h | ⏳ TODO |  |
+| **P2.15** | `useBookings` refetch cascade (6 keys) | §7.15 | 2h | ⏳ TODO |  |
+| **P2.3** | Split top-5 файлів >500 рядків | §7.3 | 16h | ⏳ TODO |  |
+| **P2.4** | `@tanstack/react-virtual` довгі списки | §7.4 | 6h | ⏳ TODO |  |
+| **P2.5** | `React.memo` list-картки | §7.5 | 4h | ⏳ TODO |  |
 
 ---
 
@@ -112,19 +123,10 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 ---
 
-## 9. Phase 4 — POLISH
+## 9. Phase 4 — POLISH (a11y tail)
 
 | Item | Title | §план | Effort | Status |
 |---|---|---|---|---|
-| **P2.3** | Split top-5 файлів >500 рядків | §7.3 | 16h | ⏳ TODO |
-| **P2.4** | `@tanstack/react-virtual` довгі списки | §7.4 | 6h | ⏳ TODO |
-| **P2.5** | `React.memo` list-картки | §7.5 | 4h | ⏳ TODO |
-| **P2.6** | `.select('*')` cleanup (10) | §7.6 | 2h | ⏳ TODO |
-| **P2.7** | Modal/Sheet consolidation | §7.7 | 6h | ⏳ TODO |
-| **P2.10** | Sanitize phone у cron логах | §7.10 | 30m | ✅ **DONE** | `sanitizePhone()` у rebooking/route.ts:110,113. reminders/route.ts — no PII in logs (C-20) |
-| **P2.11** | Контраст `text-muted/30-50` → WCAG AA | §7.11 | 4h | ⏳ TODO |
-| **P2.12** | 79 inputs без labels | §7.12 | 6h | ⏳ TODO |
-| **P2.15** | `useBookings` refetch cascade (6 keys) | §7.15 | 2h | ⏳ TODO |
 | **P3.2** | `pluralize`→`pluralUk` (FlashDealPage) | §8.2 | 30m | ⏳ TODO |
 | **P3.3** | Decorative `<svg aria-hidden>` | §8.3 | 1h | ⏳ TODO |
 | **P3.4** | BottomSheet drag handle `role` | §8.4 | 15m | ⏳ TODO |
@@ -139,18 +141,19 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 ## 📈 Підрахунок
 
-| Severity | Total | ✅/no-fix | 🔒/➖ | ⏳ |
+| Severity | Total | ✅/done | 🔒/➖ | ⏳ |
 |---|---|---|---|---|
-| P0 | 13 | 7 | 2 (P0.4, P0.12) | 4 |
-| P1 | 26 | 9 | 1 (P1.2) | 16 |
-| P2 | 21 | 0 | 0 | 21 |
+| P0 | 13 | 9 | 2 (P0.4, P0.12) | 2 |
+| P1 | 26 | 17 | 1 (P1.2) | 8 |
+| P2 | 21 | 4 | 0 | 17 |
 | P3 | 11 | 1 | 0 | 10 |
 
-**Закрито повністю:** P0.1, P0.2, P0.3, P0.5, P0.6, P0.7, P0.8, P0.9, P0.10, P0.11, P1.1, P1.3, P1.4, P1.5, P1.6, P1.7, P1.12, P1.13, P1.16, P3.11 (+ N-01)
+**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01 = **29 items**
 **Dead code видалено:** ~2,400 рядків / 22 файли
-**A11y fixed:** 72 aria-labels + 5 div→button (TodaySchedule · InsightsRow · SegmentConfig · PeakHours×2)
-**Security:** P0.1 booking hijack fixed (phone-match + audit table)
+**A11y fixed:** 72 aria-labels + 5 div→button + heatmap roving tabindex (91 cells) + touch targets 13 files
+**Security:** P0.1 booking hijack (phone-match + audit table) · P1.12 CRON HMAC sha256
+**Types:** P1.15 MasterData interface — 18+ as any removed from [slug]/page.tsx
 
 ---
 
-*Updated: 2026-06-05 S08 — P1.3 ✅ · P1.5 ✅ · P1.6 ✅ (false alarm) · P1.7 ✅ · Next: P1.8 StoryGenerator*
+*Updated: 2026-06-05 S10 — P1.15 ✅ MasterData types · P2.10 ✅ sanitizePhone · Next: Phase 3 tests (user priority) або P2.6*

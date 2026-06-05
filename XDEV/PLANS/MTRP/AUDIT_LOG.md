@@ -5,6 +5,23 @@
 
 ---
 
+## 2026-06-05 · Session 10 · P1.15 MasterData types + zero as any
+
+**Контекст:** MTRP Phase 1→2. Повне усунення `as any` у `src/app/[slug]/`.
+
+### Зроблено
+1. **P1.15 ✅** — `data.ts`: визначено та експортовано `MasterData` + `MasterServiceRow`. Додано `timezone` до SELECT. Повернення: `data as unknown as MasterData` (замість `as any`). Імпорти: `WorkingHoursConfig`, `SubscriptionTier` з `@/types/database`, `PricingRules` з `@/lib/utils/dynamicPricing`.
+2. **`page.tsx`**: 7 локальних row types (`ProductRow`, `ReviewRow`, `ScheduleRow`, `LoyaltyRow`, `FlashDealRow`, `AllianceRow`/`AlliancePartner`, `PortfolioRow`). Видалено 18+ `(data as any).field` та `(p: any)` map casts. Залишився 1 cast: `workingHours as Record<string,unknown>|null` — C-21.
+3. **`opengraph-image.tsx`**: видалено `master.profiles as unknown as {...}` та `master.categories as string[]`.
+
+### Plan Correction (C-21)
+- C-21: `WorkingHoursConfig` interface не має `[key: string]: unknown` → не assignable до `Record<string, unknown>` (вимога `PublicMasterPage` prop). Cast залишено. Follow-up: оновити `Master` type у PublicMasterPage.
+
+### VERIFY
+tsc 0 · build clean (exit 0).
+
+---
+
 ## 2026-06-05 · Session 10 · P2.10 sanitizePhone cron logs
 
 **Контекст:** MTRP Phase 2. PII sanitization в cron console.warn.

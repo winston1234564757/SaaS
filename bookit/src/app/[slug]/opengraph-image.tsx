@@ -26,11 +26,11 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       );
     }
 
-    const profile = master.profiles as unknown as { full_name: string; avatar_url: string | null };
+    const profile = master.profiles;
     const displayName = master.business_name || profile.full_name;
     const avatarUrl = profile.avatar_url;
-    
-    const specialties = (master.categories as string[] ?? [])
+
+    const specialties = master.categories
       .map(val => {
         const template = CATEGORY_TEMPLATES[val];
         return template ? `${template.emoji} ${template.label}` : val;

@@ -8,19 +8,22 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 2 ACTIVE · P2.10 ✅ · P1.15 (working_hours as any, 4h+) ← NEXT or → Phase 3 (тести)
+PHASE 1 ~87% · PHASE 2 ~20% · P1.15 ✅ · NEXT → Phase 3 (USER PRIORITY)
 ```
 
-**P1.15 — Inline `working_hours as any` [4h+]:**
-`src/app/[slug]/page.tsx` — 18× `as any` cast. Визначити `MasterPublicPageData` тип.
-Scope великий — розглянути як початок Phase 3.
+**Phase 3 — Tests (USER PRIORITY):**
+- **P1.11** — `createBooking.ts` + `referrals.ts` tests (20h, найвища пріоритетність)
+- **P1.10** — Тести top-5 hooks (8h)
+- **P2.1** — 100+ `as any` → типи (12h) — частково вже зроблено через P1.15
 
-**АБО Phase 3 (USER PRIORITY):**
-- **P3.1** (P1.11): `createBooking.ts` + `referrals.ts` tests (top priority)
+**Або Phase 2 (швидкі wins):**
+- **P2.6** — `.select('*')` cleanup (2h)
+- **P3.2** — `pluralize`→`pluralUk` (30m)
+- **P3.10** — unused `WAYFORPAY_*` env (5m)
 
 **Pending (потрібен ще supabase db push):**
 ```bash
-cd bookit && npx supabase db push  # P0.1 + migration 140 pending
+cd bookit && npx supabase db push  # P0.1 (link_attempts) + migration 140 (FK index)
 ```
 
 ---
@@ -39,9 +42,9 @@ cd bookit && npx supabase db push  # P0.1 + migration 140 pending
 
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
-► Phase 1  SECURITY & A11Y [███████░]  ~73% ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.14·P1.16 | next: P1.15
-► Phase 2  LIMITED DRY     [███░░░░░]  ~17% ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
-  Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY
+► Phase 1  SECURITY & A11Y [███████░]  ~87% ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
+► Phase 2  LIMITED DRY     [███░░░░░]  ~20% ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
+★ Phase 3  TESTS & TYPES   [░░░░░░░░]   0%  ← USER PRIORITY → P1.11 createBooking tests
   Phase 4  POLISH          [░░░░░░░░]   0%
 ```
 
@@ -57,7 +60,7 @@ cd bookit && npx supabase db push  # P0.1 + migration 140 pending
 **S07:** P1.16 ✅ (touch targets ≥44px, 13 files)
 **S08:** P1.3 ✅ (heatmap roving tabindex, 3 themes)
 **S09:** P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.14 ✅ · P2.2 ✅ · P2.13 ✅ · P2.14 ✅
-**S10:** P2.10 ✅ (sanitizePhone cron logs)
+**S10:** P2.10 ✅ (sanitizePhone cron) · P1.15 ✅ (MasterData types, 18+ as any removed)
 
 ---
 
@@ -69,8 +72,13 @@ Read XDEV/MAPS/SYSTEM_MAP.md (last 50)
 Read XDEV/PLANS/MTRP/MAP.md
 Read XDEV/PLANS/MTRP/TRACKER.md
 
-# Option A: P1.15 types → grep -n "as any" bookit/src/app/\[slug\]/page.tsx | head -20
-# Option B: Phase 3 tests → grep -rn "createBooking\|referrals" bookit/src/lib/actions/ -l
+# Phase 3 — createBooking tests:
+Read bookit/src/lib/actions/createBooking.ts
+Read bookit/src/lib/actions/referrals.ts
+
+# Phase 2 quick wins:
+grep -rn "\.select\('\*'\)" bookit/src/lib/ bookit/src/app/ | grep -v node_modules
+
 # PENDING: npx supabase db push (P0.1 + migration 140)
 ```
 
@@ -79,11 +87,14 @@ Read XDEV/PLANS/MTRP/TRACKER.md
 ## 📊 Лічильник
 
 ```
-Items closed: 28 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.16·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01)
-Next: P1.15 (working_hours types) OR Phase 3 (tests — user priority)
+Items closed: 29 / 71
+P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11
+P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16
+P2.2·P2.10·P2.13·P2.14·P3.11 + N-01
+Next: Phase 3 (P1.11 createBooking tests) або P2.6 (.select('*') cleanup)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S10 · P2.10 ✅ sanitizePhone cron · Next: P1.15 or Phase 3*
+*Updated: 2026-06-05 S10 · P1.15 ✅ MasterData types · 29/71 closed · Next: Phase 3 tests*
