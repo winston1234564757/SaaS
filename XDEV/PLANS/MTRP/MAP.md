@@ -1,14 +1,14 @@
 # 🧭 MAP.md — «Де я зупинився» (resume-pointer)
 
 > **Читати ПЕРШИМ на старті сесії** (після mempalace_status + SYSTEM_MAP). Повний контекст → [HANDOFF.md](./HANDOFF.md).
-> **Updated:** 2026-06-05 (Session 09)
+> **Updated:** 2026-06-05 (Session 10)
 
 ---
 
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 2 ACTIVE · P2.14 ✅ · P1.15 (working_hours as any, 4h+) ← NEXT or → Phase 3 (тести)
+PHASE 2 ACTIVE · P2.10 ✅ · P1.15 (working_hours as any, 4h+) ← NEXT or → Phase 3 (тести)
 ```
 
 **P1.15 — Inline `working_hours as any` [4h+]:**
@@ -40,7 +40,7 @@ cd bookit && npx supabase db push  # P0.1 + migration 140 pending
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
 ► Phase 1  SECURITY & A11Y [███████░]  ~73% ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.14·P1.16 | next: P1.15
-► Phase 2  LIMITED DRY     [██░░░░░░]  ~13% ← P2.2 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.10 (30m)
+► Phase 2  LIMITED DRY     [███░░░░░]  ~17% ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
   Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY
   Phase 4  POLISH          [░░░░░░░░]   0%
 ```
@@ -57,6 +57,7 @@ cd bookit && npx supabase db push  # P0.1 + migration 140 pending
 **S07:** P1.16 ✅ (touch targets ≥44px, 13 files)
 **S08:** P1.3 ✅ (heatmap roving tabindex, 3 themes)
 **S09:** P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.14 ✅ · P2.2 ✅ · P2.13 ✅ · P2.14 ✅
+**S10:** P2.10 ✅ (sanitizePhone cron logs)
 
 ---
 
@@ -78,11 +79,11 @@ Read XDEV/PLANS/MTRP/TRACKER.md
 ## 📊 Лічильник
 
 ```
-Items closed: 27 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.16·P2.2·P2.13·P2.14·P3.11 + N-01 corrected)
+Items closed: 28 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.16·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01)
 Next: P1.15 (working_hours types) OR Phase 3 (tests — user priority)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S09 · P2.14 ✅ FK index migration 140 · Next: P1.15 or Phase 3*
+*Updated: 2026-06-05 S10 · P2.10 ✅ sanitizePhone cron · Next: P1.15 or Phase 3*

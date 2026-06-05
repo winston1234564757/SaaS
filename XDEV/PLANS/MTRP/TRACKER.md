@@ -41,6 +41,8 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | C-16 | P1.16 | WidgetLibraryModal=size-8, VacationManager=size-8 | Були size-10 та size-6 відповідно | ⚠️ CORRECTED |
 | C-17 | P1.3 | Plan said 168 cells (24h×7d) | Реально 91 cells: HOURS=[8..20] = 13h × 7d | ⚠️ CORRECTED |
 | C-18 | P1.6 | «Mojibake у 4+ міграціях» (cp1251 garble) | Файли вже UTF-8, `═══` = Unicode box-drawing U+2550 (навмисний арт) | ✅ FALSE ALARM — no fix needed |
+| C-19 | P2.13 | `LandingBentoFeatures.tsx` `<th>` без scope | `<table role="presentation">` — scope семантично нерелевантний | ⚠️ SKIP — no fix needed |
+| C-20 | P2.10 | `reminders/route.ts:57` — phone PII у JSON.stringify | `results` містить тільки counts `{client,master,failed}`. `client_phone` вибирається з DB але не логується | ✅ FALSE ALARM — no fix needed |
 
 > **Урок 1:** видалення роуту → `rm -rf .next && npm run build` (stale types).
 > **Урок 2:** `<button>` атрибути → `tools/scan-buttons.cjs` (AST), не ripgrep.
@@ -119,7 +121,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P2.5** | `React.memo` list-картки | §7.5 | 4h | ⏳ TODO |
 | **P2.6** | `.select('*')` cleanup (10) | §7.6 | 2h | ⏳ TODO |
 | **P2.7** | Modal/Sheet consolidation | §7.7 | 6h | ⏳ TODO |
-| **P2.10** | Sanitize phone у cron логах | §7.10 | 30m | ⏳ TODO |
+| **P2.10** | Sanitize phone у cron логах | §7.10 | 30m | ✅ **DONE** | `sanitizePhone()` у rebooking/route.ts:110,113. reminders/route.ts — no PII in logs (C-20) |
 | **P2.11** | Контраст `text-muted/30-50` → WCAG AA | §7.11 | 4h | ⏳ TODO |
 | **P2.12** | 79 inputs без labels | §7.12 | 6h | ⏳ TODO |
 | **P2.15** | `useBookings` refetch cascade (6 keys) | §7.15 | 2h | ⏳ TODO |

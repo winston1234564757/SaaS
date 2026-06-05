@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-06-05 · Session 10 · P2.10 sanitizePhone cron logs
+
+**Контекст:** MTRP Phase 2. PII sanitization в cron console.warn.
+
+### Зроблено
+1. **P2.10 ✅** — `rebooking/route.ts`: додано `sanitizePhone(phone: string)` helper (`slice(0,4)+'****'+slice(-2)`). Замінено lines 110+113: `phone` → `sanitizePhone(phone)` у `console.warn`.
+
+### Plan Correction (C-20)
+- C-20: P2.10 — `reminders/route.ts:57` FALSE ALARM. `results` = `Record<string,{client,master,failed}>` (counts only). `client_phone` вибирається з DB але в logs не потрапляє. `expire-subscriptions/route.ts` — без phone logging взагалі.
+
+### VERIFY
+tsc 0 · build clean.
+
+---
+
 ## 2026-06-05 · Session 09 · P1.9 · P1.14 · P2.2 · P2.13
 
 **Контекст:** MTRP Phase 1→2. 4 items закрито.

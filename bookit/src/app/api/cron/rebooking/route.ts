@@ -10,6 +10,11 @@ import { verifyCronSecret } from '@/lib/utils/verifyCronSecret';
  * Anti-spam: пропускає клієнтів з майбутніми записами.
  * Idempotency: RPC перевіряє чи вже надсилали сьогодні.
  */
+function sanitizePhone(phone: string): string {
+  if (!phone) return '';
+  return phone.slice(0, 4) + '****' + phone.slice(-2);
+}
+
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
   if (!verifyCronSecret(authHeader)) {
@@ -107,10 +112,10 @@ export async function GET(req: Request) {
         if (ok) {
           smsSent++;
         } else {
-          console.warn('[cron/rebooking] TurboSMS error for', phone, code);
+          console.warn('[cron/rebooking] TurboSMS error for', sanitizePhone(phone), code);
         }
       } catch (e) {
-        console.warn('[cron/rebooking] SMS fetch error for', phone, e);
+        console.warn('[cron/rebooking] SMS fetch error for', sanitizePhone(phone), e);
       }
     }),
   );
