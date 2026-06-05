@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Loader2, Check, ToggleLeft, ToggleRight, X,
@@ -93,54 +94,65 @@ function formatUA(dateStr: string): string {
 interface ServiceSlim { id: string; name: string; duration_minutes: number; buffer_minutes: number; emoji: string | null; }
 
 function useServices(masterId: string | null) {
-  const [services, setServices] = useState<ServiceSlim[]>([]);
-  useEffect(() => {
-    if (!masterId) return;
-    createClient()
-      .from('services')
-      .select('id,name,duration_minutes,buffer_minutes,emoji')
-      .eq('master_id', masterId)
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
-      .then((res: { data: unknown }) => setServices((res.data as ServiceSlim[]) ?? []));
-  }, [masterId]);
-  return services;
+  const { data = [] } = useQuery<ServiceSlim[]>({
+    queryKey: ['story-services', masterId],
+    queryFn: async () => {
+      const { data } = await createClient()
+        .from('services')
+        .select('id,name,duration_minutes,buffer_minutes,emoji')
+        .eq('master_id', masterId!)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      return (data as ServiceSlim[]) ?? [];
+    },
+    enabled: !!masterId,
+    staleTime: 60_000,
+  });
+  return data;
 }
 
 interface FlashDealRow { id: string; service_name: string; original_price: number; discount_pct: number; slot_date: string; slot_time: string; }
 
 function useActiveFlashDeals(masterId: string | null) {
-  const [deals, setDeals] = useState<FlashDealRow[]>([]);
-  useEffect(() => {
-    if (!masterId) return;
-    createClient()
-      .from('flash_deals')
-      .select('id,service_name,original_price,discount_pct,slot_date,slot_time')
-      .eq('master_id', masterId).eq('status', 'active')
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false }).limit(12)
-      .then((res: { data: unknown }) => setDeals((res.data as FlashDealRow[]) ?? []));
-  }, [masterId]);
-  return deals;
+  const { data = [] } = useQuery<FlashDealRow[]>({
+    queryKey: ['story-flash-deals', masterId],
+    queryFn: async () => {
+      const { data } = await createClient()
+        .from('flash_deals')
+        .select('id,service_name,original_price,discount_pct,slot_date,slot_time')
+        .eq('master_id', masterId!)
+        .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(12);
+      return (data as FlashDealRow[]) ?? [];
+    },
+    enabled: !!masterId,
+    staleTime: 30_000,
+  });
+  return data;
 }
 
 interface StarReview { id: string; comment: string; client_name: string; }
 
 function useStarReviews(masterId: string | null) {
-  const [reviews, setReviews] = useState<StarReview[]>([]);
-  useEffect(() => {
-    if (!masterId) return;
-    createClient()
-      .from('reviews')
-      .select('id,comment,client_name')
-      .eq('master_id', masterId)
-      .eq('rating', 5)
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(20)
-      .then((res: { data: unknown }) => setReviews((res.data as StarReview[]) ?? []));
-  }, [masterId]);
-  return reviews;
+  const { data = [] } = useQuery<StarReview[]>({
+    queryKey: ['story-star-reviews', masterId],
+    queryFn: async () => {
+      const { data } = await createClient()
+        .from('reviews')
+        .select('id,comment,client_name')
+        .eq('master_id', masterId!)
+        .eq('rating', 5)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      return (data as StarReview[]) ?? [];
+    },
+    enabled: !!masterId,
+    staleTime: 60_000,
+  });
+  return data;
 }
 
 /* ═══════════════════════════════════════════════════════

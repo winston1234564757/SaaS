@@ -5,6 +5,23 @@
 
 ---
 
+## 2026-06-05 · Session 09 · P1.8 StoryGenerator useEffect→useQuery
+
+**Контекст:** MTRP Phase 1. Anti-pattern: manual useEffect+useState для data fetching.
+
+### Зроблено
+1. **P1.8 ✅** — `StoryGenerator.tsx` 3 inline hooks → useQuery:
+   - `useServices(masterId)` → `queryKey: ['story-services', masterId]`, staleTime 60s
+   - `useActiveFlashDeals(masterId)` → `queryKey: ['story-flash-deals', masterId]`, staleTime 30s
+   - `useStarReviews(masterId)` → `queryKey: ['story-star-reviews', masterId]`, staleTime 60s
+   - Import: `useQuery` від `@tanstack/react-query` додано
+   - Не перетинається з існуючими query keys (`story-` prefix)
+
+### VERIFY
+tsc 0 · build clean · Drawer: `drawer_bookit_technical_7d236b69d8ec959112153ec4`
+
+---
+
 ## 2026-06-05 · Session 09 · P1.5 Tour docs · P1.6 Mojibake audit · P1.7 Migration rename
 
 **Контекст:** MTRP Phase 1. 3 items закрито.

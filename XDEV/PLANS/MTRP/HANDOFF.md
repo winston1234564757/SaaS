@@ -9,8 +9,8 @@
 ## 0. TL;DR — звідки продовжувати
 
 ```
-PHASE 0 ✅ COMPLETE. PHASE 1 ~63% (P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅)
-НАСТУПНА ДІЯ: P1.8 — StoryGenerator empty useEffect deps [3h]
+PHASE 0 ✅ COMPLETE. PHASE 1 ~66% (P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅)
+НАСТУПНА ДІЯ: P1.9 — PublicMasterPage C2C balance → useQuery [1h]
 ```
 
 **Перший хід наступного чату:**
@@ -24,8 +24,8 @@ Read XDEV/PLANS/MTRP/MAP.md
 # 2. optional: deploy P0.1 migration
 cd bookit && npx supabase db push
 
-# 3. P1.8 — StoryGenerator empty deps
-grep -n "useEffect" bookit/src/components/master/marketing/StoryGenerator.tsx
+# 3. P1.9 — PublicMasterPage C2C balance
+grep -n "useEffect\|c2c\|C2C" bookit/src/components/public/PublicMasterPage.tsx | head -20
 ```
 
 ---
@@ -110,21 +110,31 @@ grep -n "useEffect" bookit/src/components/master/marketing/StoryGenerator.tsx
   - `137_product_type_and_emoji.sql` → `137a_product_type_and_emoji.sql`
   - Fallback note: `UPDATE supabase_migrations SET version='137a_...' WHERE version='137_...'`
 
+- **P1.8 ✅** — StoryGenerator useEffect→useQuery (S09):
+  - 3 inline module-level hooks at lines 95-148 converted
+  - `useServices` → `queryKey ['story-services', masterId]`, staleTime 60s
+  - `useActiveFlashDeals` → `queryKey ['story-flash-deals', masterId]`, staleTime 30s
+  - `useStarReviews` → `queryKey ['story-star-reviews', masterId]`, staleTime 60s
+  - `story-` prefix avoids collision with existing cache keys
+
 ---
 
 ## 4. НАСТУПНІ КРОКИ (у порядку)
 
-### 4.1 P1.8 — StoryGenerator empty useEffect deps [3h] ← NEXT
+### 4.1 P1.9 — PublicMasterPage C2C balance → useQuery [1h] ← NEXT
 
-**MTRP §6.8.** `src/components/master/marketing/StoryGenerator.tsx:95-144` — empty deps array `[]` in useEffect.
-Потрібно: замінити на useCallback + правильний deps array, або useEvent pattern.
+**MTRP §6.9.** `src/components/public/PublicMasterPage.tsx:362-375` — manual `useEffect` fetch for C2C balance.
 
-```bash
-grep -n "useEffect" bookit/src/components/master/marketing/StoryGenerator.tsx
+```ts
+const { data: c2cBalance } = useQuery({
+  queryKey: ['c2c-balance', user?.id, master.id],
+  queryFn: async () => { ... sb.rpc('get_c2c_balance', ...) },
+  enabled: hydrated && !!user && masterC2cEnabled,
+  staleTime: 5 * 60 * 1000,
+});
 ```
 
-### 4.2 Після P1.8
-- **P1.9** (1h): PublicMasterPage C2C→useQuery
+### 4.2 Після P1.9
 - **P1.14** (30m): `useDashboardStore`→`useShallow`
 
 ### 4.3 Phase 2-4
@@ -208,4 +218,4 @@ npm test                       # якщо торкнувся логіки
 
 ---
 
-*Оновлено: 2026-06-05 · Sessions 01-09 · Наступне: P1.8 StoryGenerator empty deps*
+*Оновлено: 2026-06-05 · Sessions 01-09 · P1.8 ✅ StoryGenerator useQuery · Наступне: P1.9 C2C balance*

@@ -88,7 +88,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P1.5** | Tour system: 2 паралельні → документувати | §6.5 | done | ✅ **DONE** | Задокументовано в SYSTEM_MAP.md. useTour (generic, 6 pages) vs DashboardTourContext (8-step context, 4 consumers). Правило вибору додано. |
 | **P1.6** | Mojibake у 4+ міграціях | §6.6 | — | ✅ **FALSE ALARM** | Файли вже UTF-8. `═══` = U+2550 box-drawing art (C-18). Жодних змін не потрібно. |
 | **P1.7** | Дубль нумерації міграцій (137×2) | §6.7 | done | ✅ **DONE** | `137_product_type_and_emoji.sql` → `137a_product_type_and_emoji.sql`. Примітка в файлі. |
-| **P1.8** | StoryGenerator empty-deps → хуки | §6.8 | 3h | ⏳ TODO |  |
+| **P1.8** | StoryGenerator empty-deps → хуки | §6.8 | done | ✅ **DONE** | 3 inline hooks → useQuery: `story-services`, `story-flash-deals`, `story-star-reviews`. staleTime 60/30/60s. |
 | **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | 1h | ⏳ TODO |  |
 | **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |  |
 | **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | 30m | ⏳ TODO |  |
