@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-05 (S11) · **Active phase:** Phase 1→2→3 · **Progress:** 30 closed · 2 deferred · 2 blocked
+> **Updated:** 2026-06-05 (S11) · **Active phase:** Phase 1→2→3 · **Progress:** 31 closed · 2 deferred · 2 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -12,7 +12,7 @@
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
 Phase 1  SECURITY & A11Y  [███████░]  ~87%  ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
 Phase 2  LIMITED DRY      [███░░░░░]  ~20%  ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
-Phase 3  TESTS & TYPES ⭐ [█░░░░░░░]  ~12%  ← P1.11 ✅ | next: P1.10 hooks tests (8h)
+Phase 3  TESTS & TYPES ⭐ [██░░░░░░]  ~20%  ← P1.11 ✅ · P1.10 ✅ | next: P2.1 (as any → types)
 Phase 4  POLISH           [░░░░░░░░]   0%
 ```
 
@@ -118,7 +118,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | Item | Title | §план | Effort | Status |
 |---|---|---|---|---|
 | **P1.11** | Тести createBooking.ts (20+) + referrals.ts (15+) | §6.11 | 20h | ✅ **DONE S11** |
-| **P1.10** | Тести top-5 hooks | §6.10 | 8h | ⏳ TODO |
+| **P1.10** | Тести top-5 hooks | §6.10 | 8h | ✅ **DONE S11** |
 | **P2.1** | 100+ `as any` → типи + `src/types/database.ts` | §7.1 | 12h | ⏳ TODO |
 
 ---

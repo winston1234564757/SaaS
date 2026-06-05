@@ -5,6 +5,31 @@
 
 ---
 
+## 2026-06-05 · Session 11 · P1.10 Vitest hook tests (useBusyness + useReviews + useAnalytics)
+
+**Контекст:** MTRP Phase 3 (TESTS & TYPES). Продовження P1.10 — top-5 React Query hooks.
+
+### Зроблено
+1. **hookTestUtils.tsx** — shared utils: `makeChain`, `makeBrowserClient` (per-table queue + rpcResults queue), `createWrapper`, `MASTER_ID`, `makeDbError`.
+2. **useBookings.test.tsx** ✅ — 14 tests: rowToBooking mapping, HH:MM:SS→HH:MM slice, updateStatus optimistic+rollback, useMonthlyBookingCount (isAtLimit/remaining logic).
+3. **useClients.test.tsx** ✅ — 8 tests: RPC call verification, numeric coercions, id=client_phone, defaults for null values.
+4. **useBusyness.test.tsx** ✅ — 6 tests: disabled, today entry (rate=11%), break deduction, day-off exception, week aggregate (54 slots), DB error.
+5. **useReviews.test.tsx** ✅ — 10 tests: mapRow, dual queries on 'reviews' table, togglePublish optimistic+rollback+toast, approveReview optimistic+success toast+rollback.
+6. **useAnalytics.test.tsx** ✅ — 12 tests: linearRegression (5 pure cases), hook disabled, revenue only completed, topServices sorted, bento null/populated, retention RPC, topProducts merged, error.
+7. **vitest.config.ts** — updated `include` to cover `*.test.tsx` (was only `*.test.ts`).
+
+### Критичні уроки
+- `waitFor(() => bool)` resolves immediately on `false` (no throw). ЗАВЖДИ `await waitFor(() => expect(x).toBe(y))`.
+- TanStack Query v5: `enabled=false` → `data = placeholderData` (не `undefined`). Перевірка: `fetchStatus === 'idle'`.
+- `vi.hoisted(() => vi.fn())`: обов'язковий для cross-mock references (showToast, approveReview).
+- `useBusyness`: `getNow` → `new Date(2026, 0, 15, ...)` (local, не UTC) щоб уникнути timezone drift у `getDay()`.
+- `useAnalytics` isPro=false: 1× bookings + 1× orders + 1× rpc. isPro=true: 2× bookings + 1× orders + 1× rpc. Mock `getPrevPeriodRange → null`.
+
+### VERIFY
+tsc 0 · build clean · 32 new hook tests pass · **867 total pass** (45 test files).
+
+---
+
 ## 2026-06-05 · Session 11 · P1.11 Vitest integration tests (createBooking + referrals)
 
 **Контекст:** MTRP Phase 3 (TESTS & TYPES). Першочергове завдання від користувача.

@@ -8,13 +8,13 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ~87% · PHASE 2 ~20% · P1.15 ✅ · NEXT → Phase 3 (USER PRIORITY)
+PHASE 1 ~87% · PHASE 2 ~20% · PHASE 3 ~20% · P1.10 ✅ · NEXT → P2.1 (as any → types)
 ```
 
 **Phase 3 — Tests (USER PRIORITY):**
-- **P1.11** — `createBooking.ts` + `referrals.ts` tests (20h, найвища пріоритетність)
-- **P1.10** — Тести top-5 hooks (8h)
 - **P2.1** — 100+ `as any` → типи (12h) — частково вже зроблено через P1.15
+- **P2.6** — `.select('*')` cleanup (2h)
+- **P3.2** — `pluralize`→`pluralUk` (30m)
 
 **Або Phase 2 (швидкі wins):**
 - **P2.6** — `.select('*')` cleanup (2h)
@@ -61,6 +61,7 @@ cd bookit && npx supabase db push  # P0.1 (link_attempts) + migration 140 (FK in
 **S08:** P1.3 ✅ (heatmap roving tabindex, 3 themes)
 **S09:** P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 ✅ · P1.9 ✅ · P1.14 ✅ · P2.2 ✅ · P2.13 ✅ · P2.14 ✅
 **S10:** P2.10 ✅ (sanitizePhone cron) · P1.15 ✅ (MasterData types, 18+ as any removed)
+**S11:** P1.11 ✅ (createBooking+referrals 44 tests) · P1.10 ✅ (top-5 hooks 32 tests, 867 total)
 
 ---
 
@@ -87,14 +88,14 @@ grep -rn "\.select\('\*'\)" bookit/src/lib/ bookit/src/app/ | grep -v node_modul
 ## 📊 Лічильник
 
 ```
-Items closed: 30 / 71
+Items closed: 31 / 71
 P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11
-P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16
+P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16
 P2.2·P2.10·P2.13·P2.14·P3.11 + N-01
-Next: P1.10 hooks tests (8h) або P2.6 (.select('*') cleanup, 2h)
+Next: P2.1 (100+ as any → types, 12h) або P2.6 (.select('*') cleanup, 2h)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S11 · P1.11 ✅ createBooking+referrals tests · 30/71 closed · Next: P1.10 hooks tests*
+*Updated: 2026-06-05 S11 · P1.10 ✅ top-5 hooks 32 tests (867 total) · 31/71 closed · Next: P2.1 as any → types*
