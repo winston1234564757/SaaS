@@ -34,8 +34,12 @@ export function BottomSheet({ isOpen, onClose, title, children, className, conte
             className
           )}
         >
-          {/* iOS Handle Area */}
-          <div className="flex justify-center pt-3 pb-4 cursor-grab active:cursor-grabbing shrink-0">
+          {/* iOS Handle Area — decorative, not focusable */}
+          <div
+            role="presentation"
+            aria-hidden="true"
+            className="flex justify-center pt-3 pb-4 cursor-grab active:cursor-grabbing shrink-0"
+          >
             <div className="w-12 h-1.5 bg-muted/30 rounded-full" />
           </div>
 
