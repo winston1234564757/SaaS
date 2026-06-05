@@ -1,6 +1,7 @@
 'use client';
 
 import { WidgetId, useDashboardStore } from '@/lib/stores/useDashboardStore';
+import { useShallow } from 'zustand/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, LayoutDashboard, Calendar, BarChart, Users, Star, MessageSquare, Zap } from 'lucide-react';
 
@@ -17,7 +18,9 @@ const WIDGET_INFO: Record<WidgetId, { label: string; desc: string; icon: any }> 
 import { ImagePlay as ImagePlayIcon } from 'lucide-react';
 
 export function WidgetLibraryModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { activeWidgets, toggleWidget } = useDashboardStore();
+  const { activeWidgets, toggleWidget } = useDashboardStore(
+    useShallow((s) => ({ activeWidgets: s.activeWidgets, toggleWidget: s.toggleWidget }))
+  );
   
   const available = (Object.keys(WIDGET_INFO) as WidgetId[]).filter(id => !activeWidgets.includes(id));
 

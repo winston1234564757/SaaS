@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useDashboardStore, WidgetId } from '@/lib/stores/useDashboardStore';
+import { useShallow } from 'zustand/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 import { X, GripVertical, Settings2, Plus } from 'lucide-react';
@@ -28,7 +29,9 @@ interface BentoWidgetProps {
 }
 
 function BentoWidget({ id, span = "col-span-1 row-span-1" }: BentoWidgetProps) {
-  const { isCustomizing, toggleWidget } = useDashboardStore();
+  const { isCustomizing, toggleWidget } = useDashboardStore(
+    useShallow((s) => ({ isCustomizing: s.isCustomizing, toggleWidget: s.toggleWidget }))
+  );
   const Component = WIDGET_COMPONENTS[id];
 
   return (
@@ -81,7 +84,15 @@ function BentoWidget({ id, span = "col-span-1 row-span-1" }: BentoWidgetProps) {
 import { WidgetLibraryModal } from './WidgetLibraryModal';
 
 export function BentoGrid() {
-  const { activeWidgets, isCustomizing, setCustomizing, layout, setLayout } = useDashboardStore();
+  const { activeWidgets, isCustomizing, setCustomizing, layout, setLayout } = useDashboardStore(
+    useShallow((s) => ({
+      activeWidgets: s.activeWidgets,
+      isCustomizing: s.isCustomizing,
+      setCustomizing: s.setCustomizing,
+      layout: s.layout,
+      setLayout: s.setLayout,
+    }))
+  );
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
   // Widget sizing logic
