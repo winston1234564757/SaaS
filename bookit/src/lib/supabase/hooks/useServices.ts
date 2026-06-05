@@ -98,7 +98,7 @@ export function useServices() {
           supabase
             .from('services')
             .insert(serviceToRow(data, masterId!))
-            .select()
+            .select('id, name, icon_name, category, price, duration_minutes, is_popular, is_active, is_archived, description, image_url')
             .single()
       );
       if (result.error || !result.data) {

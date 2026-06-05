@@ -119,7 +119,7 @@ export async function sendSupportMessageAction(
       message,
       attachment_url: attachmentUrl ?? null
     })
-    .select('*')
+    .select('id, ticket_id, sender_id, message, attachment_url, created_at')
     .single();
 
   if (msgErr || !newMsg) {

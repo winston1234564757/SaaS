@@ -8,13 +8,13 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ~87% · PHASE 2 ~20% · PHASE 3 ~25% · P2.1 ✅ · NEXT → P2.6 (.select('*') cleanup)
+PHASE 1 ~87% · PHASE 2 ~30% · PHASE 3 ~30% · P2.6 ✅ · P3.2 ✅ · P3.10 ✅ · NEXT → P3.4 (BottomSheet drag handle)
 ```
 
-**Phase 2 / 3 — Quick wins:**
-- **P2.6** — `.select('*')` cleanup (2h)
-- **P3.2** — `pluralize`→`pluralUk` (30m)
-- **P3.10** — unused `WAYFORPAY_*` env (5m)
+**Phase 3 — Next quick wins:**
+- **P3.4** — BottomSheet drag handle `role="presentation"` (15m)
+- **P3.3** — decorative `<svg aria-hidden>` (1h)
+- **P3.5** — `outline-none` → `focus:ring` (30m)
 - **P2.11** — contrast `text-muted/30-50` → WCAG AA (4h)
 
 **Pending (потрібен ще supabase db push):**
@@ -59,6 +59,7 @@ cd bookit && npx supabase db push  # P0.1 (link_attempts) + migration 140 (FK in
 **S10:** P2.10 ✅ (sanitizePhone cron) · P1.15 ✅ (MasterData types, 18+ as any removed)
 **S11:** P1.11 ✅ (createBooking+referrals 44 tests) · P1.10 ✅ (top-5 hooks 32 tests, 867 total)
 **S12:** P2.1 ✅ (70 `as any` → explicit types, 21 files; Promise<never> race pattern; tsc 0; build clean)
+**S13:** P2.6 ✅ (9 queries: hooks+actions+RSC explicit fields) · P3.2 ✅ (pluralize unused import) · P3.10 ✅ (WAYFORPAY env) · MorningBriefing types fix · .env.local created
 
 ---
 
@@ -85,14 +86,14 @@ grep -rn "\.select\('\*'\)" bookit/src/lib/ bookit/src/app/ | grep -v node_modul
 ## 📊 Лічильник
 
 ```
-Items closed: 32 / 71
+Items closed: 35 / 71
 P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11
 P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16
-P2.1·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01
-Next: P2.6 (.select('*') cleanup, 2h) або P3.2 (pluralUk, 30m)
+P2.1·P2.2·P2.6·P2.10·P2.13·P2.14·P3.2·P3.10·P3.11 + N-01
+Next: P3.4 (BottomSheet drag handle role="presentation", 15m)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S11 · P1.10 ✅ top-5 hooks 32 tests (867 total) · 31/71 closed · Next: P2.1 as any → types*
+*Updated: 2026-06-05 S13 · P2.6 ✅ · P3.2 ✅ · P3.10 ✅ · 35/71 closed · Next: P3.4 BottomSheet drag handle*

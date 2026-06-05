@@ -80,7 +80,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
         () =>
           supabase
             .from('bookings')
-            .select('*, booking_services(service_name, service_price, duration_minutes)')
+            .select('id, client_name, client_phone, date, start_time, end_time, status, total_price, notes, master_notes, source, dynamic_pricing_label, dynamic_extra_kopecks, booking_services(service_name, service_price, duration_minutes)')
             .eq('master_id', masterId!)
             .gte('date', dateFrom)
             .lte('date', dateTo)

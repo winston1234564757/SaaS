@@ -23,7 +23,7 @@ export async function linkBookingToClient(bookingId: string): Promise<void> {
   const windowStart = new Date(Date.now() - LINK_RATE_WINDOW_MS).toISOString();
   const { count } = await admin
     .from('link_attempts')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)
     .gte('created_at', windowStart);
 

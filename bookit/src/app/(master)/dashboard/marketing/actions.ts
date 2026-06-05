@@ -246,7 +246,7 @@ export async function sendBroadcast(broadcastId: string, clientIds: string[]) {
 
   // ── 1. Load broadcast + master profile ───────────────────────────────────
   const [broadcastRes, mpRes, masterProfileRes] = await Promise.all([
-    admin.from('broadcasts').select('*')
+    admin.from('broadcasts').select('id, master_id, status, title, message_template, channels, service_link_id, product_link_id, discount_percent, discount_expires_days, discount_service_id')
       .eq('id', broadcastId).eq('master_id', user.id).eq('status', 'draft').single(),
     admin.from('master_profiles').select('subscription_tier, broadcasts_used, slug')
       .eq('id', user.id).single(),
@@ -411,7 +411,7 @@ export async function getBroadcasts() {
 
   const { data } = await admin
     .from('broadcasts')
-    .select('*')
+    .select('id, title, status, sent_at, created_at, recipients_count')
     .eq('master_id', user.id)
     .order('created_at', { ascending: false });
 

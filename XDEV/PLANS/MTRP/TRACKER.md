@@ -102,7 +102,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P2.10** | Sanitize phone у cron логах | §7.10 | done | ✅ **DONE** | `sanitizePhone()` у rebooking/route.ts:110,113. reminders/route.ts — no PII in logs (C-20). |
 | **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | done | ✅ **DONE** | 3 admin tables (AllianceMap+MastersDir+SystemLogs). LandingBentoFeatures skipped — `role="presentation"` (C-19). |
 | **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | done | ✅ **DONE** | `140_c2c_referrals_master_id_index.sql`. ⚠️ Pending `npx supabase db push`. |
-| **P2.6** | `.select('*')` cleanup (10 queries) | §7.6 | 2h | ⏳ TODO |  |
+| **P2.6** | `.select('*')` cleanup (10 queries) | §7.6 | 2h | ✅ **DONE S13** | 9 queries: useBookings · useBookingById · useServices (insert) · support.ts · marketing×2 · [slug]/actions · [slug]/page · shop/page (schedule). MorningBriefing.tsx template literal → explicit string + TodayBookingRow type (bonus fix). |
 | **P2.7** | Modal/Sheet consolidation | §7.7 | 6h | ⏳ TODO |  |
 | **P2.11** | Контраст `text-muted/30-50` → WCAG AA | §7.11 | 4h | ⏳ TODO |  |
 | **P2.12** | 79 inputs без labels | §7.12 | 6h | ⏳ TODO |  |
@@ -127,14 +127,14 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | Item | Title | §план | Effort | Status |
 |---|---|---|---|---|
-| **P3.2** | `pluralize`→`pluralUk` (FlashDealPage) | §8.2 | 30m | ⏳ TODO |
+| **P3.2** | `pluralize`→`pluralUk` (FlashDealPage) | §8.2 | 30m | ✅ **DONE S13** | `pluralize` imported but never used — removed from import. No `pluralUk` needed. |
 | **P3.3** | Decorative `<svg aria-hidden>` | §8.3 | 1h | ⏳ TODO |
 | **P3.4** | BottomSheet drag handle `role` | §8.4 | 15m | ⏳ TODO |
 | **P3.5** | `outline-none` → `focus:ring` | §8.5 | 30m | ⏳ TODO |
 | **P3.6** | admin/loyalty tabs `aria-pressed` | §8.6 | 2h | ⏳ TODO |
 | **P3.7** | StepServices tabs `aria-controls` | §8.7 | 30m | ⏳ TODO |
 | **P3.8** | File inputs trigger label | §8.8 | 15m | ⏳ TODO |
-| **P3.10** | Видалити unused `WAYFORPAY_*` env | §8.10 | 5m | ⏳ TODO |
+| **P3.10** | Видалити unused `WAYFORPAY_*` env | §8.10 | 5m | ✅ **DONE S13** | Removed from .env.local.tmp · .env.prod · .env.vercel. Not referenced in src/. |
 | ✅ **P3.11** | 0 down migrations — N/A | §8.11 | — | ✅ no-fix |
 
 ---
@@ -145,7 +145,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 |---|---|---|---|---|
 | P0 | 13 | 9 | 2 (P0.4, P0.12) | 2 |
 | P1 | 26 | 17 | 1 (P1.2) | 8 |
-| P2 | 21 | 4 | 0 | 17 |
+| P2 | 21 | 5 | 0 | 16 |
 | P3 | 11 | 1 | 0 | 10 |
 
 **Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01 = **32 items**
@@ -156,4 +156,4 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 ---
 
-*Updated: 2026-06-05 S10 — P1.15 ✅ MasterData types · P2.10 ✅ sanitizePhone · Next: Phase 3 tests (user priority) або P2.6*
+*Updated: 2026-06-05 S12 — P2.1 ✅ 70 as any → explicit types (21 files) · Next: P2.6 (.select('*') cleanup)*

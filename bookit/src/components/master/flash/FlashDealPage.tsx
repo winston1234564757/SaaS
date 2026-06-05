@@ -16,7 +16,7 @@ import {
   Zap, Clock, X, Send, ChevronDown, Users,
   CheckCircle2, AlertCircle, Crown, Sparkles, Loader2, CalendarX,
 } from 'lucide-react';
-import { formatDurationFull, pluralize } from '@/lib/utils/dates';
+import { formatDurationFull } from '@/lib/utils/dates';
 import Link from 'next/link';
 
 interface Props {

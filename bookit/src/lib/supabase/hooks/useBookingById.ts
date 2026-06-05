@@ -101,7 +101,7 @@ export function useBookingById(id: string | null) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('bookings')
-        .select('*, booking_services(service_name, service_price, duration_minutes), booking_products(product_name, product_price, quantity)')
+        .select('id, client_id, client_name, client_phone, date, start_time, end_time, status, total_price, notes, master_notes, source, dynamic_pricing_label, dynamic_extra_kopecks, booking_services(service_name, service_price, duration_minutes), booking_products(product_name, product_price, quantity)')
         .eq('id', id!)
         .single();
       if (error) throw error;

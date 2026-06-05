@@ -74,7 +74,7 @@ export default async function Page(
   // Fetch schedule
   const { data: schedule } = await pub
     .from('schedule_templates')
-    .select('*')
+    .select('day_of_week, is_working, start_time, end_time')
     .eq('master_id', master.id);
 
   return (

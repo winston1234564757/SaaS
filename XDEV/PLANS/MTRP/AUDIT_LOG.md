@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-06-05 · Session 13 · P2.6 + P3.2 + P3.10 + MorningBriefing types
+
+**Контекст:** MTRP Phase 2/3. Explicit Supabase selects + env cleanup + TS fixes.
+
+### Зроблено
+
+1. **P2.6** — `.select('*')` → explicit fields, 9 queries:
+   - `useBookings.ts` — explicit BookingRow fields (13 cols)
+   - `useBookingById.ts` — same + `client_id` (for LTV query)
+   - `useServices.ts` — `insert().select()` → ServiceRow fields
+   - `support.ts` — `*` → `id,ticket_id,sender_id,message,attachment_url,created_at` (SupportMessageResult)
+   - `marketing/actions.ts` sendBroadcast — explicit broadcast fields (11 cols)
+   - `marketing/actions.ts` getBroadcasts — `id,title,status,sent_at,created_at,recipients_count`
+   - `[slug]/actions.ts` — `*, head:true` → `id, head:true`
+   - `[slug]/page.tsx` — `*, head:true` → `id, head:true`
+   - `[slug]/shop/page.tsx` — schedule_templates `*` → `day_of_week,is_working,start_time,end_time`
+2. **MorningBriefing.tsx** (bonus) — template literal `.select()` → single string; `TodayBookingRow` + `BookingServiceRow` local types; fixed 6× TS7006 implicit any.
+3. **P3.2** — FlashDealPage.tsx: `pluralize` was imported but never used → removed from import.
+4. **P3.10** — WAYFORPAY_* removed from .env.local.tmp · .env.prod · .env.vercel. Not in src/.
+5. **TRACKER.md meta** — P2 counter 4→5 (P2.1 S12 fix), P2.6/P3.2/P3.10 → ✅.
+6. **.env.local** — Created from .env.local.tmp (was missing → caused local build failure).
+
+### CHECK
+- **tsc:** 0 errors
+- **build:** clean (51/51 pages)
+- **Drawer:** `drawer_bookit_decisions_0a4a068bf81c4aaf95b7ddbc`
+
+### PENDING (edit_counter_guard blocked)
+- TRACKER.md counter P2: 5→6, P3: 1→3
+- TRACKER.md "Закрито повністю" list → add P2.6·P3.2·P3.10
+
+---
+
 ## 2026-06-05 · Session 12 · P2.1 — 70 `as any` → explicit TypeScript types (21 files)
 
 **Контекст:** MTRP Phase 3 (TYPES). Повна ліквідація всіх `as any` у production src (excluding tests).

@@ -263,7 +263,7 @@ export default async function MasterPublicPage(
     user
       ? supabase
           .from('bookings')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('master_id', data.id)
           .eq('client_id', user.id)
           .eq('status', 'completed')
