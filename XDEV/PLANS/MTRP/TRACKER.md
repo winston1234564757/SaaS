@@ -94,7 +94,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | done | ✅ **DONE** | `zustand/shallow` useShallow на 3 selector calls (BentoGrid×2 + WidgetLibraryModal). |
 | **P1.15** | Типи замість `working_hours as any` | §6.15 | 4h+ | ⏳ TODO |  |
 | **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | done | ✅ **DONE** | `npm uninstall` marked+isomorphic-dompurify+html-to-image+sonner+@radix-ui/react-slot+class-variance-authority → 50 pkgs removed. |
-| **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | 5m | ⏳ TODO |  |
+| **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | done | ✅ **DONE** | 3 admin tables patched (AllianceMap+MastersDir+SystemLogs). LandingBentoFeatures skipped: `role="presentation"` table (C-19). |
 | **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | 1h | ⏳ TODO |  |
 | ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |  |
 

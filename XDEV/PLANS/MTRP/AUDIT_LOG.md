@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-06-05 · Session 09 · P1.9 · P1.14 · P2.2 · P2.13
+
+**Контекст:** MTRP Phase 1→2. 4 items закрито.
+
+### Зроблено
+1. **P1.9 ✅** — `PublicMasterPage.tsx` C2C balance: `useState+useEffect` → `useQuery` (staleTime 5min, enabled guard).
+2. **P1.14 ✅** — `useDashboardStore` → `useShallow`: BentoWidget + BentoGrid (5-val) + WidgetLibraryModal. Import: `zustand/shallow`.
+3. **P2.2 ✅** — 6 unused npm deps видалено: marked+isomorphic-dompurify+html-to-image+sonner+@radix-ui/react-slot+class-variance-authority → 50 pkgs removed, ~440KB.
+4. **P2.13 ✅** — `<th scope="col">` на 15 `<th>` у 3 admin tables. LandingBentoFeatures пропущено: `role="presentation"` (C-19).
+
+### Plan Correction (C-19)
+- C-19: P2.13 — LandingBentoFeatures.tsx має `role="presentation"` на table → `scope="col"` семантично не потрібен.
+
+### VERIFY
+tsc 0 · build clean · 4 commits.
+
+---
+
 ## 2026-06-05 · Session 09 · P1.8 StoryGenerator useEffect→useQuery
 
 **Контекст:** MTRP Phase 1. Anti-pattern: manual useEffect+useState для data fetching.
