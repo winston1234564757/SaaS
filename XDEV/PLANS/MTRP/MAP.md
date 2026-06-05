@@ -87,14 +87,14 @@ grep -rn "\.select\('\*'\)" bookit/src/lib/ bookit/src/app/ | grep -v node_modul
 ## 📊 Лічильник
 
 ```
-Items closed: 29 / 71
+Items closed: 30 / 71
 P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11
-P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16
+P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16
 P2.2·P2.10·P2.13·P2.14·P3.11 + N-01
-Next: Phase 3 (P1.11 createBooking tests) або P2.6 (.select('*') cleanup)
+Next: P1.10 hooks tests (8h) або P2.6 (.select('*') cleanup, 2h)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
 ---
 
-*Updated: 2026-06-05 S10 · P1.15 ✅ MasterData types · 29/71 closed · Next: Phase 3 tests*
+*Updated: 2026-06-05 S11 · P1.11 ✅ createBooking+referrals tests · 30/71 closed · Next: P1.10 hooks tests*

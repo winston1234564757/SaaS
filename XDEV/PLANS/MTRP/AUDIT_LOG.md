@@ -5,6 +5,30 @@
 
 ---
 
+## 2026-06-05 · Session 11 · P1.11 Vitest integration tests (createBooking + referrals)
+
+**Контекст:** MTRP Phase 3 (TESTS & TYPES). Першочергове завдання від користувача.
+
+### Зроблено
+1. **P1.11 ✅** — `createBooking.action.test.ts`: 20 integration tests для `createBooking()` server action.
+2. **P1.11 ✅** — `referrals.action.test.ts`: 19 integration tests для referral functions.
+3. **vitest.config.ts** — новий файл: `@` alias + `include: ['src/**/*.test.ts']` (виключає e2e Playwright spec).
+4. **Фікс TS**: `applyDynamicPricing` mock → `mockImplementation((p) => ({adjustedPrice:p, modifier:0, label:null}))`.
+5. **Фікс TS**: `isTurboSmsSuccess` в route.test.ts → `!!` wrap для `isAltSuccess`.
+
+### Архітектура mock (makeChain + makeAdmin)
+- `makeChain(result)` — thenable chain: всі методи `.mockReturnValue(chain)`, `.then = p.then.bind(p)`, `.single()/.maybeSingle()` → `mockResolvedValue`.
+- `makeAdmin(tables)` — per-table queue: `idx[table]` counter, queue[last] reuse.
+- Урок: `vi.mock('@/...')` без real import перехоплюється Vite. Але real transitive imports потребують `vitest.config.ts` alias.
+
+### VERIFY
+tsc 0 · build clean · 44 new tests pass · 732 total pass, 1 pre-existing fail (NotificationOrchestrator).
+
+### Commit
+`feat(tests): P1.11 createBooking+referrals integration tests (39 cases) + vitest.config`
+
+---
+
 ## 2026-06-05 · Session 10 · P1.15 MasterData types + zero as any
 
 **Контекст:** MTRP Phase 1→2. Повне усунення `as any` у `src/app/[slug]/`.
