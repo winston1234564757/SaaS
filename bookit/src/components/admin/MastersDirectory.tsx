@@ -200,12 +200,12 @@ export function MastersDirectory() {
             <table className="w-full border-collapse text-left text-xs text-slate-600">
               <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="px-6 py-4">Майстер / Бізнес</th>
-                  <th className="px-6 py-4">Контакти</th>
-                  <th className="px-6 py-4">Тарифний План</th>
-                  <th className="px-6 py-4">Статус</th>
-                  <th className="px-6 py-4">Дата реєстрації</th>
-                  <th className="px-6 py-4 text-right">Дії</th>
+                  <th scope="col" className="px-6 py-4">Майстер / Бізнес</th>
+                  <th scope="col" className="px-6 py-4">Контакти</th>
+                  <th scope="col" className="px-6 py-4">Тарифний План</th>
+                  <th scope="col" className="px-6 py-4">Статус</th>
+                  <th scope="col" className="px-6 py-4">Дата реєстрації</th>
+                  <th scope="col" className="px-6 py-4 text-right">Дії</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-150">

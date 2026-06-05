@@ -188,10 +188,10 @@ interface ProfileMapItem {
             <table className="w-full border-collapse text-left text-xs text-slate-600">
               <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="px-6 py-4">Хто запросив (Inviter)</th>
-                  <th className="px-6 py-4">Кого запрошено (Referee)</th>
-                  <th className="px-6 py-4">Статус оплат</th>
-                  <th className="px-6 py-4">Дата запрошення</th>
+                  <th scope="col" className="px-6 py-4">Хто запросив (Inviter)</th>
+                  <th scope="col" className="px-6 py-4">Кого запрошено (Referee)</th>
+                  <th scope="col" className="px-6 py-4">Статус оплат</th>
+                  <th scope="col" className="px-6 py-4">Дата запрошення</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-150">

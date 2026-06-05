@@ -153,11 +153,11 @@ export function SystemLogsViewer() {
             <table className="w-full border-collapse text-left text-xs text-slate-600">
               <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="px-6 py-4">Тип події / Отримувач</th>
-                  <th className="px-6 py-4">Канал</th>
-                  <th className="px-6 py-4">Статус</th>
-                  <th className="px-6 py-4">Помилка</th>
-                  <th className="px-6 py-4">Час відправки</th>
+                  <th scope="col" className="px-6 py-4">Тип події / Отримувач</th>
+                  <th scope="col" className="px-6 py-4">Канал</th>
+                  <th scope="col" className="px-6 py-4">Статус</th>
+                  <th scope="col" className="px-6 py-4">Помилка</th>
+                  <th scope="col" className="px-6 py-4">Час відправки</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-150">
@@ -204,10 +204,10 @@ export function SystemLogsViewer() {
             <table className="w-full border-collapse text-left text-xs text-slate-600">
               <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="px-6 py-4">Номер телефону</th>
-                  <th className="px-6 py-4">Згенерований OTP</th>
-                  <th className="px-6 py-4">Статус</th>
-                  <th className="px-6 py-4">Створено</th>
+                  <th scope="col" className="px-6 py-4">Номер телефону</th>
+                  <th scope="col" className="px-6 py-4">Згенерований OTP</th>
+                  <th scope="col" className="px-6 py-4">Статус</th>
+                  <th scope="col" className="px-6 py-4">Створено</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-150">
