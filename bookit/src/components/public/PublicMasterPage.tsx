@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -341,7 +342,19 @@ export function PublicMasterPage({
   const [actionTime, setActionTime] = useState<string | undefined>();
   // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
   const [todayDow, setTodayDow] = useState('');
-  const [c2cReferrerBalance, setC2cReferrerBalance] = useState<number>(0);
+  const { data: c2cReferrerBalance = 0 } = useQuery<number>({
+    queryKey: ['c2c-balance', master.id],
+    queryFn: async () => {
+      const sb = createClient();
+      const { data: authData } = await sb.auth.getUser();
+      const user = authData?.user;
+      if (!user) return 0;
+      const { data } = await sb.rpc('get_c2c_balance', { p_referrer_id: user.id, p_master_id: master.id });
+      return typeof data === 'number' ? data : 0;
+    },
+    enabled: hydrated && masterC2cEnabled && !!master.id && !c2cRefCode,
+    staleTime: 5 * 60 * 1000,
+  });
   const didAutoOpen = useRef(false);
   const availability = useAvailability(master.schedule ?? null);
 
@@ -358,21 +371,6 @@ export function PublicMasterPage({
     } catch { /* localStorage blocked in private mode — safe to ignore */ }
   }, [c2cRefCode, c2cDiscountPct]);
 
-  // Fetch C2C referrer balance for logged-in clients (shows accumulated bonus from referred friends)
-  useEffect(() => {
-    if (!hydrated || !masterC2cEnabled || !master.id || c2cRefCode) return;
-    const sb = createClient();
-    sb.auth.getUser().then((authRes: Awaited<ReturnType<typeof sb.auth.getUser>>) => {
-      const user = authRes.data?.user;
-      if (!user) return;
-      sb.rpc('get_c2c_balance', { p_referrer_id: user.id, p_master_id: master.id })
-        .then((rpcRes: { data: unknown; error: unknown }) => {
-          if (typeof rpcRes.data === 'number') setC2cReferrerBalance(rpcRes.data);
-        })
-        .catch(() => {});
-    }).catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, master.id, masterC2cEnabled]);
 
   useEffect(() => {
     document.body.style.backgroundColor = theme.background;
