@@ -1,5 +1,7 @@
 -- ============================================================
--- Migration 137: product_type on products + icon_name backfill
+-- Migration 137a: product_type on products + icon_name backfill
+-- NOTE: renamed from 137_ to 137a_ (P1.7) — duplicate prefix with 137_client_health_notes.sql
+-- If supabase db push fails, run: UPDATE supabase_migrations SET version='137a_product_type_and_emoji' WHERE version='137_product_type_and_emoji';
 -- ============================================================
 
 ALTER TABLE products

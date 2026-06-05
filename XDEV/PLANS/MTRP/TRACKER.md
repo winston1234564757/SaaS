@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-05 (S08) · **Active phase:** Phase 1 · **Progress:** 18 closed · 2 deferred · 2 blocked
+> **Updated:** 2026-06-05 (S08) · **Active phase:** Phase 1→2 · **Progress:** 21 closed · 2 deferred · 2 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -10,7 +10,7 @@
 
 ```
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
-Phase 1  SECURITY & A11Y  [█████░░░]  ~57%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.4 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 next
+Phase 1  SECURITY & A11Y  [██████░░]  ~63%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.4 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 next
 Phase 2  LIMITED DRY      [░░░░░░░░]   0%
 Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← user priority
 Phase 4  POLISH           [░░░░░░░░]   0%
@@ -20,7 +20,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 ## ⚠️ Plan Corrections & New Findings
 
-| # | Item | План казав | Реальність (verified 2026-06-04) | Дія |
+| # | Item | План казав | Реальність (verified 2026-06-05) | Дія |
 |---|---|---|---|---|
 | C-01 | P0.10 | «11 root widgets, 0 importers, видалити всі» | Лише **5** мертві | ✅ видалено 5 (S01) |
 | C-02 | P0.10 | `ScheduleWidget` (root) — мертвий | **ЖИВИЙ**: `SettingsPage.tsx` + `BentoGrid.tsx` | ⚠️ лишено |
@@ -40,10 +40,12 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | C-15 | P1.16 | AnalyticsPage L457 = size-8 | Реально size-9 (все одно виправлено) | ⚠️ CORRECTED |
 | C-16 | P1.16 | WidgetLibraryModal=size-8, VacationManager=size-8 | Були size-10 та size-6 відповідно | ⚠️ CORRECTED |
 | C-17 | P1.3 | Plan said 168 cells (24h×7d) | Реально 91 cells: HOURS=[8..20] = 13h × 7d | ⚠️ CORRECTED |
+| C-18 | P1.6 | «Mojibake у 4+ міграціях» (cp1251 garble) | Файли вже UTF-8, `═══` = Unicode box-drawing U+2550 (навмисний арт) | ✅ FALSE ALARM — no fix needed |
 
 > **Урок 1:** видалення роуту → `rm -rf .next && npm run build` (stale types).
 > **Урок 2:** `<button>` атрибути → `tools/scan-buttons.cjs` (AST), не ripgrep.
 > **Урок 3 (P0.1):** phone-match verification — порівнювати last 10 digits (нормалізація E.164 варіюється).
+> **Урок 4 (P1.6):** `═══` в SQL-файлах = box-drawing Unicode (U+2550), не mojibake. `file` команда = UTF-8.
 
 ---
 
@@ -81,20 +83,20 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 ## 7. Phase 2 — LIMITED DRY
 
-| Item | Title | §план | Effort | Status |
-|---|---|---|---|---|
-| **P1.5** | Tour system: 2 паралельні → документувати | §6.5 | 3h | ⏳ TODO |
-| **P1.6** | Mojibake у 4+ міграціях | §6.6 | 1h | ⏳ TODO |
-| **P1.7** | Дубль нумерації міграцій (137×2) | §6.7 | 5m | ⏳ TODO |
-| **P1.8** | StoryGenerator empty-deps → хуки | §6.8 | 3h | ⏳ TODO |
-| **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | 1h | ⏳ TODO |
-| **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |
-| **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | 30m | ⏳ TODO |
-| **P1.15** | Типи замість `working_hours as any` | §6.15 | 4h+ | ⏳ TODO |
-| **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | 30m | ⏳ TODO |
-| **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | 5m | ⏳ TODO |
-| **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | 1h | ⏳ TODO |
-| ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |
+| Item | Title | §план | Effort | Status | Нотатка |
+|---|---|---|---|---|---|
+| **P1.5** | Tour system: 2 паралельні → документувати | §6.5 | done | ✅ **DONE** | Задокументовано в SYSTEM_MAP.md. useTour (generic, 6 pages) vs DashboardTourContext (8-step context, 4 consumers). Правило вибору додано. |
+| **P1.6** | Mojibake у 4+ міграціях | §6.6 | — | ✅ **FALSE ALARM** | Файли вже UTF-8. `═══` = U+2550 box-drawing art (C-18). Жодних змін не потрібно. |
+| **P1.7** | Дубль нумерації міграцій (137×2) | §6.7 | done | ✅ **DONE** | `137_product_type_and_emoji.sql` → `137a_product_type_and_emoji.sql`. Примітка в файлі. |
+| **P1.8** | StoryGenerator empty-deps → хуки | §6.8 | 3h | ⏳ TODO |  |
+| **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | 1h | ⏳ TODO |  |
+| **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |  |
+| **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | 30m | ⏳ TODO |  |
+| **P1.15** | Типи замість `working_hours as any` | §6.15 | 4h+ | ⏳ TODO |  |
+| **P2.2** | Видалити 6 unused npm deps (~440KB) | §7.2 | 30m | ⏳ TODO |  |
+| **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | 5m | ⏳ TODO |  |
+| **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | 1h | ⏳ TODO |  |
+| ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |  |
 
 ---
 
@@ -138,15 +140,15 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | Severity | Total | ✅/no-fix | 🔒/➖ | ⏳ |
 |---|---|---|---|---|
 | P0 | 13 | 7 | 2 (P0.4, P0.12) | 4 |
-| P1 | 26 | 1 | 1 (P1.2) | 24 |
+| P1 | 26 | 9 | 1 (P1.2) | 16 |
 | P2 | 21 | 0 | 0 | 21 |
 | P3 | 11 | 1 | 0 | 10 |
 
-**Закрито повністю:** P0.1, P0.2, P0.3, P0.5, P0.6, P0.7, P0.8, P0.9, P0.10, P0.11, P1.1, P1.3, P1.4, P1.12, P1.13, P1.16, P3.11 (+ N-01)
+**Закрито повністю:** P0.1, P0.2, P0.3, P0.5, P0.6, P0.7, P0.8, P0.9, P0.10, P0.11, P1.1, P1.3, P1.4, P1.5, P1.6, P1.7, P1.12, P1.13, P1.16, P3.11 (+ N-01)
 **Dead code видалено:** ~2,400 рядків / 22 файли
 **A11y fixed:** 72 aria-labels + 5 div→button (TodaySchedule · InsightsRow · SegmentConfig · PeakHours×2)
 **Security:** P0.1 booking hijack fixed (phone-match + audit table)
 
 ---
 
-*Updated: 2026-06-04 S04 — P0.1 ✅ security fixed · Phase 0 100% · Next: `npx supabase db push` → P0.2 admin leaks*
+*Updated: 2026-06-05 S08 — P1.3 ✅ · P1.5 ✅ · P1.6 ✅ (false alarm) · P1.7 ✅ · Next: P1.8 StoryGenerator*

@@ -8,17 +8,14 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ACTIVE · P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 ✅ · P1.3 ✅ · P1.5 (Tour docs) ← NEXT
+PHASE 1→2 ACTIVE · P1.3 ✅ · P1.5 ✅ · P1.6 ✅ · P1.7 ✅ · P1.8 (StoryGenerator empty deps) ← NEXT
 ```
 
-**P1.5 — Tour system: 2 паралельні → задокументувати [3h]:**
-§6.5. Є 2 паралельні tour системи в проєкті. Потрібно задокументувати різницю/overlap та план уніфікації.
+**P1.8 — StoryGenerator empty useEffect deps [3h]:**
+`src/components/master/marketing/StoryGenerator.tsx:95-144` — empty deps array `[]` in useEffect.
+Потрібно: замінити на useCallback + правильний deps array, або useEvent pattern.
 
-**Швидкі виграші перед P1.5 (розглянути):**
-- P1.7: Дубль нумерації міграцій 137×2 — 5м
-- P1.6: Mojibake у 4+ міграціях — 1h
-
-**Після P1.5:** Phase 2 or Phase 3 (tests priority)
+**Після P1.8:** P1.9 (PublicMasterPage C2C→useQuery, 1h) → P1.14 (useDashboardStore→useShallow, 30m)
 
 **Pending (потрібен ще supabase db push):**
 ```bash

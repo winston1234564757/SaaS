@@ -5,6 +5,26 @@
 
 ---
 
+## 2026-06-05 · Session 09 · P1.5 Tour docs · P1.6 Mojibake audit · P1.7 Migration rename
+
+**Контекст:** MTRP Phase 1. 3 items закрито.
+
+### Зроблено
+1. **P1.5 ✅** — Tour system documented in `XDEV/MAPS/SYSTEM_MAP.md`:
+   - `useTour.ts` — single-component hook, 6 consumers (AnalyticsPage + 5 сторінок)
+   - `DashboardTourContext.tsx` — React Context (8 кроків), 4 components, mounted by DashboardLayout
+   - Правило вибору: одна сторінка → `useTour`; multi-widget → `DashboardTourContext`
+2. **P1.6 ✅ FALSE ALARM (C-18)** — `═══` в SQL файлах = Unicode box-drawing chars (U+2550), не mojibake. `file` cmd: all UTF-8. No fix needed.
+3. **P1.7 ✅** — `137_product_type_and_emoji.sql` → `137a_product_type_and_emoji.sql` (duplicate prefix з `137_client_health_notes.sql`). Comment + DB fallback note додано.
+
+### Plan Correction (C-18)
+- C-18: P1.6 "mojibake" = valid Unicode box-drawing. U+2550 `═` в SQL comments — intentional art. False alarm.
+
+### VERIFY
+tsc 0 · build clean · commit pending (SYSTEM_MAP + 137a migration + TRACKER + MAP).
+
+---
+
 ## 2026-06-05 · Session 08 · P1.3 Heatmap roving tabindex (3 themes)
 
 **Контекст:** MTRP Phase 1 A11y. Задача: PeakHoursWidget — roving tabindex + div→button.

@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-31 · Джерело: живий код (v8.6.0 "STEP 10 — Public Master Page: SPRING ×15, type=button ×3, img→Image, success tokens, carousel nav 44px, C2C race fix, OTP touch") · Commit: `184b2eb+`
+> Оновлено: 2026-05-30 · Джерело: живий код (v8.3.0 "STEP 04 — Dashboard tour overlay, Academy v2, empty states, deep links fixed") · Commit: `65acf29`
 
 ---
 
@@ -94,7 +94,7 @@
 
 | Route | Відповідальність | Page | Actions | Key Component |
 |---|---|---|---|---|
-| `/admin` | Панель огляду: фінансові та операційні метрики BookIT, Bento Grid метрик та Recharts графіки | `admin/page.tsx` | — | `AdminOverviewChartsWrapper.tsx` (Loader) → `AdminOverviewCharts.tsx` |
+| `/admin` | Панель огляду: фінансові та операційні метрики BookIT, Bento Grid метрик та Recharts графіки | `admin/page.tsx` | — | `AdminOverviewCharts.tsx` |
 | `/admin/masters` | CRM майстрів: пошук, фільтрація, зміна тарифних планів та тригер "Увійти як майстер" (impersonation) | `admin/masters/page.tsx` | — | `MastersDirectory.tsx` |
 | `/admin/alliances` | B2B Альянси: візуальний граф партнерських мереж на Framer Motion та списки рефералів | `admin/alliances/page.tsx` | — | `AllianceMap.tsx` |
 | `/admin/moderation` | Модераційний хаб: перевірка скарг на контент (відгуки, портфоліо), блокування та налаштування лімітів | `admin/moderation/page.tsx` | — | `ModerationHub.tsx` |
@@ -198,16 +198,6 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - **Vaul Engine (Standard)**: Всі модалки та шторки на мобілці використовують `@/components/ui/BottomSheet`.
 - Booking Entry Point: `src/components/shared/BookingWizard.tsx`
 - Кроки: послуги → товари → дата → слот → підтвердження → SMS OTP (guest)
-- Sub-components (`src/components/shared/wizard/`):
-  - `ServiceSelector.tsx` — горизонтальний carousel per-category (портретні картки, `w-[67%]` mobile / `sm:w-[40%]` desktop); `CategoryCarousel` sub-component; dot nav + стрілки; `svc.image_url` → `<img>` / fallback `<ServiceIcon>`; sticky CTA `from-secondary`
-  - `StepProgress.tsx` — тактильні dots: active scale×1.75 + ring, done `accent/50`, upcoming `foreground/15` (заповнені)
-  - `DateTimePicker.tsx` — slot physics: selected slot `layout` FLIP expand + `09:00 ──── 10:00` progress bar; `onBack` prop → рекап-кнопка; sticky CTA `from-secondary`
-  - `ClientCombobox.tsx` — ARIA combobox pattern; `isPreSelected` bug fix (clear-only useEffect)
-  - `ClientDetails.tsx` — disabled button: `border border-border` без `opacity-50`; sticky CTA `from-secondary`
-  - `ProductCart.tsx` — sticky CTA `from-secondary`
-  - `types.ts` — `WizardService.image_url?: string | null`
-- `WizardService.image_url` pipeline: `data.ts` select → `slug/page.tsx` map → `ManualBookingForm.tsx` map (`s.imageUrl → image_url`) → `ServiceSelector` render
-- Sticky CTA gradient rule: `from-secondary via-secondary/90 to-transparent` (modal bg = `--secondary`, не `--background`)
 - Server Action: `src/lib/actions/createBooking.ts`
 - Ціноутворення: `src/lib/actions/computeBookingPrice.ts`
 - Auth після букінгу: `src/components/public/PostBookingAuth.tsx` — кроки: `choose → phone → otp → channels`; **channels** (Фаза 4): TG deep-link + Push subscribe до редиректу в `/my/bookings`; отримує `masterId`, `masterC2cEnabled`, `masterC2cDiscountPct`; рендерить loyalty card / C2C teaser / BookIT fallback
@@ -308,11 +298,21 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `useDateRange.ts` | — | Аналітика за діапазоном дат |
 | `useBusyness.ts` | 1 хв | Завантаженість майстра (today, week, month) |
 | `useSlotsFromStore.ts` | — | Розрахунок слотів на клієнті на основі кешованого розкладу |
+| `useAnalyticsExtras.ts` | 5 хв | Мега-RPC аналітики (LTV, когорти, Smart Pricing, завантаженість) |
+| `useReviewsMetrics.ts` | 10 хв | Метрики та останні відгуки для drill-down |
+| `useNoShowMetrics.ts` | 10 хв | Статистика скасувань та неявок |
+| `useLeadTimeDistribution.ts` | 10 хв | Розподіл часу попереднього запису клієнтів |
+| `useVacationImpact.ts` | 10 хв | Аналіз втраченого доходу через відпустки |
+| `useSourceAttribution.ts` | 10 хв | Статистика джерел залучення клієнтів |
 
 ### Session / PWA Hooks (`src/lib/hooks/`)
 - `useSessionWakeup.ts` — visibility change → `resetFetchController` → `invalidateQueries` (усуває нескінченні скелетони після переключення вкладок)
 - `useDeepSleepWakeup.ts` — JS freeze detection → `onlineManager` + `invalidateQueries`
-- `useTour.ts` — онбординг-тур (has_seen_tour)
+- `useTour.ts` — Generic per-page tour hook: step state + localStorage cache + optional DB persist via `markTourSeen`. 6 consumers: AnalyticsPage · FlashDealPage · LoyaltyPage · DynamicPricingPage · ReferralPage · ReviewsPage (1-2 кроки кожна).
+- **Tour Architecture (P1.5)** — 2 системи, різний scope:
+  - **`useTour.ts`** — single-component tours. Кожна сторінка сама управляє станом. Коли потрібна ізольована підказка без координації між компонентами.
+  - **`DashboardTourContext.tsx`** — React Context + Provider (8 кроків). Дашборд-wide тур де кілька компонентів реагують на той самий крок: `DashboardTourBanner` + `TodayScheduleWithHint` + `QuickActionsWithHint` + `ShareCardWithHint`. Mounted by `DashboardLayout`. `AcademyPage` може запустити тур через `useTourStep().startTour()`. НЕ будується на `useTour` — незалежне управління станом. DB persist: `useMutation(markTourSeen)` + `refresh()`.
+  - **Правило вибору:** одна сторінка → `useTour`. Кілька компонентів одночасно → `DashboardTourContext` pattern.
 - `useLiveChat.ts` — real-time чат підтримки через Supabase Realtime з можливістю надсилання тексту та медіа-вкладень
 - Provider: `src/lib/providers/QueryProvider.tsx`
 
@@ -527,6 +527,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `increment_referral_bounty` | Atomic bounty increment |
 | `get_master_referral_history` | Швидке отримання історії рефералів без waterfall на клієнті (міграція 20260524124500) |
 | `get_retention_status` | Retention dashboard — міграція 076 |
+| `get_analytics_extras` | Об'єднаний мега-RPC аналітики (зайнятість, когорти, LTV, аномалії, ROI Smart Pricing та зв'язки послуг) — міграція 20260605000000 |
 
 ### Міграції
 140+ міграцій застосовано в продакшн.
@@ -542,3 +543,4 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `137_product_type_and_emoji.sql` — `icon_name`, `product_type` columns on `products`
 - `138_service_icon_name.sql` — `icon_name` column on `services` with category-based backfill
 - `20260524124500_get_master_referral_history.sql` — `get_master_referral_history` RPC function
+- `20260605000000_analytics_system.sql` — Mega analytics functions and orchestrator `get_analytics_extras` RPC
