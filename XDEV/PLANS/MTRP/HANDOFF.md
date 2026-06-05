@@ -1,7 +1,7 @@
 # 🤝 HANDOFF — MTRP Execution (для наступного чату)
 
 > **Прочитай це ПЕРШИМ** (разом з [MAP.md](./MAP.md)). Повний контекст виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Дата handoff:** 2026-06-05 (Sessions 01-06) · **Гілка:** `main` · **Стан:** tsc 0 · build 0 · lint 0. Все закомічено.
+> **Дата handoff:** 2026-06-05 (Sessions 01-07) · **Гілка:** `main` · **Стан:** tsc 0 · build 0 · lint 0. Все закомічено.
 > ⚠️ **PENDING:** `npx supabase db push` для P0.1 (міграція `link_attempts` ще не задеплоєна в cloud)
 
 ---
@@ -9,8 +9,8 @@
 ## 0. TL;DR — звідки продовжувати
 
 ```
-PHASE 0 ✅ COMPLETE. PHASE 1 ~46% (P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅)
-НАСТУПНА ДІЯ: P1.16 — Touch targets ≥44px (14+ файлів)
+PHASE 0 ✅ COMPLETE. PHASE 1 ~54% (P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 ✅)
+НАСТУПНА ДІЯ: P1.3 — Heatmap roving tabindex (168 cells)
 ```
 
 **Перший хід наступного чату:**
@@ -83,6 +83,12 @@ grep -rn "size-6\|size-7\|size-8\|h-7\|h-6" bookit/src --include="*.tsx" | grep 
   - 5 cron routes patched
 
 - **P1.4 ✅** — WeeklyChart aria-pressed (S06):
+
+- **P1.16 ✅** — Touch targets ≥44px (S07):
+  - 13 files: size-6/7/8/9/10→size-11, h-7→h-11 (BookingCard 4 action buttons)
+  - Studio/Frost close buttons: ghost (no size-*) → size-11 flex items-center justify-center rounded-full
+  - БОНУС: 7 analytics files formatPrice from currency → services/types (pre-existing build error)
+  - ⚠️ AnalyticsPage паралельно переписано аналітика-агентом (окремий scope)
   - Mode tabs: `aria-pressed={mode === m}` (3 теми)
   - Bar buttons: `aria-label` + `aria-pressed={isActive}` (Studio + Blossom; Frost вже мав)
 
@@ -90,9 +96,9 @@ grep -rn "size-6\|size-7\|size-8\|h-7\|h-6" bookit/src --include="*.tsx" | grep 
 
 ## 4. НАСТУПНІ КРОКИ (у порядку)
 
-### 4.1 P1.16 — Touch targets ≥44px [3h] ← NEXT
+### 4.1 P1.3 — Heatmap roving tabindex [3h] ← NEXT
 
-**MTRP §6.16.** Файли з `size-6`/`size-7`/`size-8`/`h-7` кнопками < 44px.
+**MTRP §6.3.** PeakHoursWidget — 168 cells (24h × 7 days). Зараз tabindex=0 на всіх → 168 tab stops. Потрібно: roving tabindex (1 cell tabindex=0, решта -1, arrow keys).
 
 | Файл | Рядки | Поточний | Цільовий |
 |---|---|---|---|
@@ -197,4 +203,4 @@ npm test                       # якщо торкнувся логіки
 
 ---
 
-*Оновлено: 2026-06-05 · Sessions 01-06 · Наступне: P1.16 touch targets ≥44px (14+ файлів)*
+*Оновлено: 2026-06-05 · Sessions 01-07 · Наступне: P1.3 heatmap roving tabindex (168 cells)*

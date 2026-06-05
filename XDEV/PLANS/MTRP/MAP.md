@@ -8,13 +8,13 @@
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ACTIVE · P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 (touch targets ≥44px) ← NEXT
+PHASE 1 ACTIVE · P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.4 ✅ · P1.16 ✅ · P1.3 (heatmap roving tabindex 168 cells) ← NEXT
 ```
 
-**P1.16 — Touch targets ≥44px (14+ files) [3h]:**
-Перевірити всі compact pills/chips/slots: `py-2` мінімум (не `py-1`/`py-0.5`). Slot chips: `py-2.5`.
+**P1.3 — Heatmap roving tabindex [3h]:**
+PeakHours widget: 168 cells (24h×7d). Зараз всі cells = tabindex=0 → 168 tab stops. Потрібно: roving tabindex (лише 1 cell tabindex=0, решта -1, arrow keys рухають фокус).
 
-**Після P1.16:** P1.3 (heatmap roving tabindex 168 cells)
+**Після P1.3:** P1.3 done → Phase 2 or Phase 3 (tests priority)
 
 **Pending (потрібен ще supabase db push):**
 ```bash
@@ -37,7 +37,7 @@ cd bookit && npx supabase db push  # P0.1 migration: link_attempts table
 
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
-► Phase 1  SECURITY & A11Y [████░░░░]  38%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 NEXT
+► Phase 1  SECURITY & A11Y [████░░░░]  54%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 NEXT
   Phase 2  LIMITED DRY     [░░░░░░░░]   0%
   Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← USER PRIORITY
   Phase 4  POLISH          [░░░░░░░░]   0%
@@ -72,7 +72,7 @@ Read XDEV/PLANS/MTRP/TRACKER.md
 ## 📊 Лічильник
 
 ```
-Items closed: 16 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.4·P1.12·P1.13·P3.11 + N-01 corrected)
+Items closed: 17 / 71  (P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.4·P1.12·P1.13·P1.16·P3.11 + N-01 corrected)
 Next: P1.16 (touch targets ≥44px)
 Deleted: src/hooks/useIsDesktop.ts (+ empty dir)
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
@@ -80,4 +80,4 @@ Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 
 ---
 
-*Updated: 2026-06-05 S06 · P1.12 ✅ timingSafeEqual CRON (5 routes) · Next: P1.4 WeeklyChart aria-pressed*
+*Updated: 2026-06-05 S07 · P1.16 ✅ touch targets ≥44px (13 files) · Next: P1.3 heatmap roving tabindex*

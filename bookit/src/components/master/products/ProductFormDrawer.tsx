@@ -197,7 +197,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               <h2 className="text-base font-bold text-foreground">
                 {isEdit ? 'Редагувати товар' : 'Новий товар'}
               </h2>
-              <button type="button" onClick={handleClose} aria-label="Закрити" className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button type="button" onClick={handleClose} aria-label="Закрити" className="size-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>

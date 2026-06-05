@@ -217,14 +217,14 @@ export function MonthlyCalendarWidget() {
             className="overflow-hidden"
           >
             <div className="flex items-center justify-between mb-3">
-              <button type="button" aria-label="Попередній місяць" className="size-6 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              <button type="button" aria-label="Попередній місяць" className="size-11 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}>
                 <ChevronLeft size={13} />
               </button>
               <span className="text-[12px] font-bold tracking-[0.1em] uppercase text-[var(--text-secondary)] capitalize">
                 {format(currentDate, 'LLLL yyyy', { locale: uk })}
               </span>
-              <button type="button" aria-label="Наступний місяць" className="size-6 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              <button type="button" aria-label="Наступний місяць" className="size-11 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}>
                 <ChevronRight size={13} />
               </button>
@@ -293,7 +293,7 @@ export function MonthlyCalendarWidget() {
               <span className="text-[12px] font-bold tracking-[0.1em] uppercase text-[var(--text-secondary)] capitalize">
                 {format(selectedDay, 'd MMMM', { locale: uk })}
               </span>
-              <button type="button" onClick={() => setSelectedDay(null)} aria-label="Закрити" className="opacity-40 hover:opacity-80 transition-opacity">
+              <button type="button" onClick={() => setSelectedDay(null)} aria-label="Закрити" className="size-11 flex items-center justify-center rounded-full opacity-40 hover:opacity-80 transition-opacity">
                 <X size={12} style={{ color: 'var(--text-secondary)' }} />
               </button>
             </div>

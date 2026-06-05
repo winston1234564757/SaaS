@@ -65,7 +65,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
                 <h2 className="text-base font-bold text-foreground">Поповнити склад</h2>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">{product.name} · зараз: {product.stock_qty} шт</p>
               </div>
-              <button type="button" onClick={handleClose} aria-label="Закрити" className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button type="button" onClick={handleClose} aria-label="Закрити" className="size-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>

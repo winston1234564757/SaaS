@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-04 (S04) · **Active phase:** Phase 1 · **Progress:** 10 closed · 2 deferred · 2 blocked
+> **Updated:** 2026-06-05 (S07) · **Active phase:** Phase 1 · **Progress:** 17 closed · 2 deferred · 2 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -10,7 +10,7 @@
 
 ```
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
-Phase 1  SECURITY & A11Y  [█░░░░░░░]  ~8%  ← P0.1 ✅ · P0.2 next · P0.7 · P1.x
+Phase 1  SECURITY & A11Y  [████░░░░]  ~54%  ← P0.1 ✅ · P0.2 ✅ · P0.7 ✅ · P1.1 ✅ · P1.4 ✅ · P1.12 ✅ · P1.16 ✅ · P1.3 next
 Phase 2  LIMITED DRY      [░░░░░░░░]   0%
 Phase 3  TESTS & TYPES ⭐ [░░░░░░░░]   0%  ← user priority
 Phase 4  POLISH           [░░░░░░░░]   0%
@@ -35,6 +35,10 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | C-10 | P0.8 | «9 `<div onClick>` violations» | 3 реальних залишилось (решта вже fixed). | ✅ DONE S04 |
 | C-11 | P0.6 | Сканер: «~247 кандидатів, реально ~120» | 210 кандидатів → 72 реальних icon-only → решта false-positives | ✅ DONE S04 |
 | C-12 | P0.2 | `auth/callback/route.ts`, `r/[code]/route.ts` — violations | Route handlers (API zone) — законно. Реальних ~12 non-API | ⚠️ CORRECTED — ~12 not 18 |
+| C-13 | P1.16 | Root MonthlyCalendarWidget.tsx (L273,288) | Файл не існує — план-помилка | ⚠️ CORRECTED |
+| C-14 | P1.16 | Studio/Frost close buttons мали size-* | Були без жодного size-класу (ghost buttons) → size-11 + flex added | ✅ fixed |
+| C-15 | P1.16 | AnalyticsPage L457 = size-8 | Реально size-9 (все одно виправлено) | ⚠️ CORRECTED |
+| C-16 | P1.16 | WidgetLibraryModal=size-8, VacationManager=size-8 | Були size-10 та size-6 відповідно | ⚠️ CORRECTED |
 
 > **Урок 1:** видалення роуту → `rm -rf .next && npm run build` (stale types).
 > **Урок 2:** `<button>` атрибути → `tools/scan-buttons.cjs` (AST), не ripgrep.
@@ -70,7 +74,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P1.3** | Heatmap roving tabindex (168 cells) | §6.3 | 3h | ⏳ TODO |  |
 | **P1.4** | WeeklyChart `aria-pressed` (8 toggles) | §6.4 | done | ✅ **DONE** | mode tab aria-pressed (3 themes) + bar aria-label+aria-pressed (Studio+Blossom). tsc 0. |
 | **P1.12** | `timingSafeEqual` для CRON_SECRET (5 routes) | §6.12 | done | ✅ **DONE** | New: verifyCronSecret.ts (HMAC sha256). 5 routes patched. tsc 0. |
-| **P1.16** | Touch targets ≥44px (14+ файлів) | §6.16 | 3h | ⏳ TODO |  |
+| **P1.16** | Touch targets ≥44px | §6.16 | done | ✅ **DONE** | 13 files: size-6/7/8/9/10→size-11, h-7→h-11. Studio/Frost ghost close buttons fixed. tsc 0. |
 
 ---
 

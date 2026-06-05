@@ -250,7 +250,7 @@ export function MonthlyCalendarWidget() {
             <div className="flex items-center justify-between mb-3">
               <button type="button"
                 aria-label="Попередній місяць"
-                className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
+                className="size-11 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(-1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() - 1); return n; }); setSelectedDay(null); }}
               >
                 <ChevronLeft size={15} />
@@ -269,7 +269,7 @@ export function MonthlyCalendarWidget() {
               </span>
               <button type="button"
                 aria-label="Наступний місяць"
-                className="size-7 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
+                className="size-11 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--border)] active:scale-[0.88] transition-all duration-100"
                 onClick={() => { setDirection(1); setCurrentDate(d => { const n = new Date(d); n.setMonth(d.getMonth() + 1); return n; }); setSelectedDay(null); }}
               >
                 <ChevronRight size={15} />
@@ -346,7 +346,7 @@ export function MonthlyCalendarWidget() {
               <button type="button"
                 onClick={() => setSelectedDay(null)}
                 aria-label="Закрити"
-                className="size-6 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
+                className="size-11 rounded-full flex items-center justify-center active:scale-[0.88] transition-transform duration-100"
                 style={{ background: 'var(--border)', color: 'var(--text-secondary)' }}
               >
                 <X size={12} />

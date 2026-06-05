@@ -153,7 +153,7 @@ export function VacationManager() {
                   <button type="button"
                     onClick={() => remove(e.id)}
                     aria-label="Видалити"
-                    className="size-6 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 active:scale-[0.88] cursor-pointer"
+                    className="size-11 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 active:scale-[0.88] cursor-pointer"
                   >
                     <X size={12} />
                   </button>

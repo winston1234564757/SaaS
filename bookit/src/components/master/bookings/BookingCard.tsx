@@ -210,7 +210,7 @@ export function BookingCard({
                   type="button"
                   onClick={handleConfirm}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-primary/12 text-primary hover:bg-primary/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-primary/12 text-primary hover:bg-primary/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingConfirm
                     ? <Loader2 size={11} className="animate-spin" />
@@ -222,7 +222,7 @@ export function BookingCard({
                 type="button"
                 onClick={handleComplete}
                 disabled={isAnyPending}
-                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-success/12 text-success hover:bg-success/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-success/12 text-success hover:bg-success/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
               >
                 {isPendingComplete
                   ? <Loader2 size={11} className="animate-spin" />
@@ -234,7 +234,7 @@ export function BookingCard({
                   type="button"
                   onClick={handleNoShow}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-muted-foreground/10 text-muted-foreground/60 hover:bg-muted-foreground/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-muted-foreground/10 text-muted-foreground/60 hover:bg-muted-foreground/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingNoShow
                     ? <Loader2 size={11} className="animate-spin" />
@@ -246,7 +246,7 @@ export function BookingCard({
                 type="button"
                 onClick={handleCancel}
                 disabled={isAnyPending}
-                className="flex items-center gap-1.5 px-3 h-7 rounded-lg bg-error/10 text-error hover:bg-error/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-error/10 text-error hover:bg-error/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
               >
                 {isPendingCancel
                   ? <Loader2 size={11} className="animate-spin" />

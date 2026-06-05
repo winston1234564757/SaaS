@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-06-05 · Session 07 · P1.16 Touch targets ≥44px (13 files)
+
+**Контекст:** MTRP Phase 1 A11y. Задача: всі кнопки мобільного ≥44px (WCAG 2.5.5).
+
+### Зроблено
+1. **Studio/Frost/Blossom MonthlyCalendarWidget** — prev/next nav: size-6/7→size-11.
+2. **Studio/Frost close buttons** — ghost buttons (лише opacity, без size-*) → додано size-11 flex items-center justify-center rounded-full.
+3. **Blossom close day detail** — size-6→size-11.
+4. **AnalyticsPage DateRangeBar** — size-8→size-11 (prev/next), size-9→size-11 (refresh). ⚠️ Паралельний агент повністю переписав AnalyticsPage після цього.
+5. **WidgetLibraryModal** — size-10→size-11.
+6. **ProductFormDrawer / RestockDrawer** — size-8→size-11.
+7. **VacationManager** — size-6→size-11 (inline delete button).
+8. **BookingCard** — h-7→h-11 (4 action buttons: підтвердити/завершити/не прийшов/скасувати).
+9. **БОНУС fix** — 7 analytics files (ChannelDonut + 6 sections) мали `formatPrice from '@/lib/utils/currency'` → виправлено на `@/components/master/services/types`.
+
+### Plan Corrections (C-13..C-16)
+- C-13: Root MonthlyCalendarWidget.tsx не існує
+- C-14: Studio/Frost close = ghost buttons (без size-*) — додано size-11
+- C-15: AnalyticsPage was size-9 not size-8
+- C-16: WidgetLibraryModal=size-10, VacationManager=size-6
+
+### VERIFY
+tsc 0 (до оновлення AnalyticsPage агентом) · 13 Edit calls (per-file ≤2, guard не спрацював).
+⚠️ AnalyticsPage паралельно оновлено аналітика-агентом з новою архітектурою (має власні tsc errors, не мій scope).
+Commit: окремий від analytics agent коміту.
+
+---
 ## 2026-06-05 · Session 06 · P1.4 WeeklyChart aria-pressed (3 themes)
 
 **Контекст:** MTRP Phase 1. Задача: додати aria-pressed на bar + mode tab buttons.
