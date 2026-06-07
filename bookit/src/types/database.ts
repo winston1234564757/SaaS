@@ -17,6 +17,7 @@ export interface BreakWindow {
 }
 
 export interface WorkingHoursConfig {
+  [key: string]: unknown;
   /** Minutes of empty time required between the end of one booking and the start of the next */
   buffer_time_minutes: number;
   /** Break windows applied to every working day (e.g. lunch 13:00–14:00) */
