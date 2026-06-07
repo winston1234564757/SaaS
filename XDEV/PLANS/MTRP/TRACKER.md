@@ -67,7 +67,7 @@ Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4�
 | **P0.8** | 3 `<div onClick>` → `<button>` | §5.8 | done | ✅ **DONE** | TodaySchedule · blossom/InsightsRow · SegmentConfigWidget |
 | **P0.9** | `<a href onClick>` → `<button>` | §5.9 | done | ✅ **DONE** | 0 real violations — all legit links (tel:, TG, legal) |
 
-➖ **P0.4** secrets audit — DEFERRED (§5.4)
+✅ **P0.4** secrets audit — DONE S21 · RESEND_API_KEY unused (placeholder) · APP_URL=localhost (needs prod value) · all others active
 
 ---
 
@@ -78,7 +78,7 @@ Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4�
 | **P0.1** | linkBookingToClient booking hijack | §5.1 | done | ✅ **DONE** | phone-match + link_attempts audit + rate-limit (5/15хв). Migration `20260604000000_booking_link_security.sql`. ⚠️ `npx supabase db push` потрібен |
 | **P0.2** | Admin client leak (~12 zones) + ESLint | §5.2 | done | ✅ **DONE** | 17 files fixed: publicClient + createClient + growth/actions.ts. New: `src/lib/supabase/public.ts` + ESLint rule. |
 | **P0.7** | MicaModal → Radix Dialog (focus trap) | §5.7 | done | ✅ **DONE** | Dialog.Content asChild on modal box — focus trap + backdrop click. |
-| **P0.12** | Onboarding telemetry (keep both pages) | §5.12 | 4h | 🔒 user-decision |  |
+| **P0.12** | Onboarding telemetry (keep both pages) | §5.12 | — | ✅ **DONE S21** | `/dashboard/onboarding` is active (auth/callback + master layout both redirect there). Standalone `/onboarding` is dead route. |
 | **P1.1** | Merge подвійний `useIsDesktop` | §6.1 | done | ✅ **DONE** | matchMedia canonical у `src/lib/hooks/`. `src/hooks/` deleted. 12 consumers. |
 | **P1.3** | Heatmap roving tabindex (91 cells) | §6.3 | done | ✅ **DONE** | div→button + roving tabindex + Arrow keys. 91 cells (HOURS=[8..20]). |
 | **P1.4** | WeeklyChart `aria-pressed` (8 toggles) | §6.4 | done | ✅ **DONE** | mode tab + bar aria-label+aria-pressed (3 themes). |
@@ -92,7 +92,7 @@ Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4�
 | **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | done | ✅ **DONE** | `zustand/shallow` useShallow: BentoWidget + BentoGrid(5-val) + WidgetLibraryModal. |
 | **P1.15** | Типи замість `as any` у `[slug]/page.tsx` | §6.15 | done | ✅ **DONE** | `MasterData`+`MasterServiceRow` у data.ts (+ timezone у SELECT). 7 row types у page.tsx. 0 `as any` залишилось. C-21: `workingHours as Record<string,unknown>` — WorkingHoursConfig lacks index signature. |
 | **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |  |
-| ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |  |
+| ✅ **P1.2** | Widget dedup ×3 теми (Frost) | §6.2 | 2h | ✅ **DONE S21** | 4 shared hooks (useCancellationRate·useTopServices·useNextFreeDays·useChannelHealth) + toISODate+getWeekRange in dates.ts. 5 Frost widgets updated. Blossom/Studio → future. |
 
 ---
 
@@ -146,12 +146,12 @@ Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4�
 
 | Severity | Total | ✅/done | 🔒/➖ | ⏳ |
 |---|---|---|---|---|
-| P0 | 13 | 10 | 2 (P0.4, P0.12) | 1 |
-| P1 | 26 | 15 | 1 (P1.2) | 10 |
+| P0 | 13 | 12 | 0 | 1 |
+| P1 | 26 | 16 | 0 | 10 |
 | P2 | 21 | 13 | 0 | 8 |
 | P3 | 11 | 9 | 0 | 2 |
 
-**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15·P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 + N-01 = **48 items**
+**Закрито повністю:** P0.1·P0.2·P0.3·P0.4·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P0.12·P1.1·P1.2·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15·P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 + N-01 = **51 items**
 **Dead code видалено:** ~2,400 рядків / 22 файли
 **A11y fixed:** 72 aria-labels + 5 div→button + heatmap roving tabindex (91 cells) + touch targets 13 files + focus:ring 11 files + file input a11y 11 files + aria-pressed 4 files + tab pattern 1 file + SVG aria 9 files + WCAG contrast 25 files
 **Security:** P0.1 booking hijack (phone-match + audit table) · P1.12 CRON HMAC sha256

@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Send, Bell, Users } from 'lucide-react';
 import Link from 'next/link';
-import { getChannelHealth, type ChannelHealth } from '@/app/(master)/dashboard/actions';
+import { useChannelHealth } from '../shared/hooks/useChannelHealth';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 function pct(count: number, total: number) {
@@ -12,12 +11,7 @@ function pct(count: number, total: number) {
 }
 
 export function ChannelHealthWidget() {
-  const [data, setData] = useState<ChannelHealth | null>(null);
-
-  useEffect(() => {
-    getChannelHealth().then(setData);
-  }, []);
-
+  const data   = useChannelHealth();
   const tgPct  = data ? pct(data.tg,   data.total) : 0;
   const pshPct = data ? pct(data.push, data.total) : 0;
   const showCta = data && data.total > 0 && (tgPct < 60 || pshPct < 40);
@@ -73,7 +67,7 @@ export function ChannelHealthWidget() {
         <div className="space-y-2.5 flex-1">
           {[
             { Icon: Send, label: 'Telegram', value: tgPct, healthy: tgPct >= 60 },
-            { Icon: Bell, label: 'Push', value: pshPct, healthy: pshPct >= 40 },
+            { Icon: Bell, label: 'Push',     value: pshPct, healthy: pshPct >= 40 },
           ].map(({ Icon, label, value, healthy }) => (
             <div
               key={label}

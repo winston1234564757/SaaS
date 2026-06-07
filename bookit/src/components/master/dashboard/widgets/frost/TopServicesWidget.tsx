@@ -1,47 +1,17 @@
 'use client';
 
-import { useMemo } from 'react';
 import Link from 'next/link';
 import { Scissors, Tag, Zap } from 'lucide-react';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { useTopServices } from '../shared/hooks/useTopServices';
 
 const SVC_ACTIONS = [
   { href: '/dashboard/services', label: 'Послуги', Icon: Scissors, primary: false },
   { href: '/dashboard/pricing',  label: 'Прайс',   Icon: Tag,      primary: false },
   { href: '/dashboard/flash',    label: 'Промо',   Icon: Zap,      primary: true  },
 ] as const;
-import { uk } from 'date-fns/locale';
-import { useBookings } from '@/lib/supabase/hooks/useBookings';
-import { getNow } from '@/lib/utils/now';
-
-function toISO(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
 
 export function TopServicesWidget() {
-  const now  = getNow();
-  const from = toISO(startOfMonth(now));
-  const to   = toISO(endOfMonth(now));
-  const { bookings, isLoading } = useBookings(from, to);
-  const monthLabel = format(now, 'LLLL', { locale: uk });
-
-  const top = useMemo(() => {
-    if (!bookings) return [];
-    const map = new Map<string, { count: number }>();
-    bookings.forEach(b => {
-      if (b.status === 'cancelled') return;
-      const name = b.services[0]?.name;
-      if (!name) return;
-      const prev = map.get(name) ?? { count: 0 };
-      map.set(name, { count: prev.count + 1 });
-    });
-    return Array.from(map.entries())
-      .map(([name, data]) => ({ name, ...data }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 3);
-  }, [bookings]);
-
-  const maxCount = top[0]?.count ?? 1;
+  const { top, maxCount, monthLabel, isLoading } = useTopServices();
 
   return (
     <div className="bento-card p-4 flex flex-col">
@@ -81,7 +51,6 @@ export function TopServicesWidget() {
                     {svc.count}×
                   </span>
                 </div>
-                {/* Relative bar */}
                 <div className="h-[3px] rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
                   <div
                     className="h-full rounded-full transition-all duration-500"

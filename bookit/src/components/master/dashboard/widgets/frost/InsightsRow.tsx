@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
-import { getNow } from '@/lib/utils/now';
+import { getWeekRange } from '@/lib/utils/dates';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { TrendingUp, TrendingDown, Users, ChevronRight } from 'lucide-react';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
@@ -15,20 +15,6 @@ function fmtClientName(name: string): string {
   return `${parts[0]} ${parts[1][0].toUpperCase()}.`;
 }
 
-function toISO(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function getWeekRange(offsetWeeks = 0) {
-  const now = getNow();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offsetWeeks * 7);
-  monday.setHours(0, 0, 0, 0);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  return { from: toISO(monday), to: toISO(sunday) };
-}
 
 function TopClientCard({ onOpen }: { onOpen: (c: ClientRow) => void }) {
   const { from, to } = getWeekRange(0);

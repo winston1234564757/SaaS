@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-06-07 · Session 21 · P0.4 + P0.12 + P1.2 Frost dedup
+
+**Контекст:** Final MTRP cleanup — secrets audit, onboarding routing, Frost widget dedup.
+
+### Зроблено
+
+1. **P0.4 Secrets Audit** — documented all env vars:
+   - ❌ `RESEND_API_KEY` — placeholder `"re_your_api_key_here"`, 0 usages in src/ (email not implemented)
+   - ⚠️ `NEXT_PUBLIC_APP_URL` = `"http://localhost:3000"` — used in 4 files (rebooking cron, billing, clients/flash actions). Needs prod value on Vercel (has fallback `'https://bookit.com.ua'`)
+   - ✅ `NEXT_PUBLIC_SITE_URL` — heavily used (~15+ files), set to Vercel preview URL
+   - ✅ `MONO_API_KEY` — MonoProvider.ts + billing webhook + billing actions
+   - ✅ All others: SUPABASE_*, TG, VAPID, TURBOSMS, CRON_SECRET, E2E_* — all active
+
+2. **P0.12 Onboarding Routing** — resolved without code change:
+   - `auth/callback/route.ts:205` → redirects to `/dashboard/onboarding`
+   - `(master)/layout.tsx:89` → redirects to `/dashboard/onboarding`
+   - **Active page:** `/(master)/dashboard/onboarding/page.tsx` (step `'BASIC'` → normalized to `'PROFILE'` via LEGACY_STEP_MAP)
+   - **Dead route:** `/onboarding/page.tsx` — not reachable from any auth flow
+   - Both pages last touched same commit `967bf06 2026-05-29`
+
+3. **P1.2 Frost widget dedup** — 4 shared hooks + 5 widget updates:
+   - `widgets/shared/hooks/useCancellationRate.ts` — dual useBookings + calcRate
+   - `widgets/shared/hooks/useTopServices.ts` — useBookings(month) + top-3 map
+   - `widgets/shared/hooks/useNextFreeDays.ts` — useBookings(14d) + free days
+   - `widgets/shared/hooks/useChannelHealth.ts` — server action wrapper
+   - `lib/utils/dates.ts` — added `toISODate()` + `getWeekRange()` (uses getNow for timezone safety)
+   - Frost widgets updated: CancellationRate, TopServices, NextFreeDays, ChannelHealth, InsightsRow
+   - Blossom/Studio: unchanged (deferred)
+
+**VERIFY:** tsc 0 new errors (pre-existing ServiceWorkerRegistration.tsx) · build compiled OK · 51/71 closed
+
+---
+
 ## 2026-06-07 · Session 20 · C-21 + P3.6 StoryGenerator
 
 **Контекст:** MTRP cleanups. C-21 follow-up (WorkingHoursConfig index signature) + P3.6 partial remainder (StoryGenerator mode tabs).

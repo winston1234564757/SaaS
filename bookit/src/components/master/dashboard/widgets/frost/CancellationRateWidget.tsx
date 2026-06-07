@@ -1,48 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowUp, ArrowDown, Minus, Send, Zap } from 'lucide-react';
+import { useCancellationRate } from '../shared/hooks/useCancellationRate';
 
 const CANCEL_ACTIONS = [
-  { href: '/dashboard/marketing', label: 'Розсилка',   Icon: Send, primary: false },
-  { href: '/dashboard/revenue?drawer=flash_deals', label: 'Пропозиція', Icon: Zap, primary: true },
+  { href: '/dashboard/marketing',                   label: 'Розсилка',   Icon: Send, primary: false },
+  { href: '/dashboard/revenue?drawer=flash_deals',  label: 'Пропозиція', Icon: Zap,  primary: true  },
 ] as const;
-import { useBookings } from '@/lib/supabase/hooks/useBookings';
-import { getNow } from '@/lib/utils/now';
-
-function getWeekRange(offsetWeeks: number) {
-  const now = getNow();
-  const day = now.getDay();
-  const mon = new Date(now);
-  mon.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offsetWeeks * 7);
-  mon.setHours(0, 0, 0, 0);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  return { from: fmt(mon), to: fmt(sun) };
-}
-
-function calcRate(bookings: { status: string }[]): number | null {
-  const valid = bookings.filter(b =>
-    ['confirmed', 'pending', 'completed', 'cancelled'].includes(b.status),
-  );
-  if (!valid.length) return null;
-  return Math.round((valid.filter(b => b.status === 'cancelled').length / valid.length) * 100);
-}
 
 export function CancellationRateWidget() {
-  const thisWeek = getWeekRange(0);
-  const lastWeek = getWeekRange(-1);
-  const { bookings: thisBk, isLoading: l1 } = useBookings(thisWeek.from, thisWeek.to);
-  const { bookings: lastBk, isLoading: l2 } = useBookings(lastWeek.from, lastWeek.to);
+  const { thisRate, delta, improved, isLoading } = useCancellationRate();
 
-  const thisRate = (thisBk ? calcRate(thisBk) : null);
-  const lastRate = (lastBk ? calcRate(lastBk) : null);
-  const delta    = thisRate !== null && lastRate !== null ? thisRate - lastRate : null;
-  const improved = delta !== null ? delta < 0 : null;
-
-  if (l1 || l2) {
+  if (isLoading) {
     return (
       <div className="bento-card p-4">
         <div className="skeleton-shimmer h-4 w-24 rounded-full mb-2" />

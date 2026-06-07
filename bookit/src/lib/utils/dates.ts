@@ -1,4 +1,5 @@
 import { format, isToday, isTomorrow, isYesterday, formatDistanceToNow } from 'date-fns';
+import { getNow } from './now';
 import { uk } from 'date-fns/locale';
 
 export function formatDate(date: Date | string): string {
@@ -50,4 +51,19 @@ export function formatDurationFull(minutes: number): string {
   if (!h) return mStr;
   if (!m) return hStr;
   return `${hStr} ${mStr}`;
+}
+
+export function toISODate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function getWeekRange(offsetWeeks = 0): { from: string; to: string } {
+  const now = getNow();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offsetWeeks * 7);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return { from: toISODate(monday), to: toISODate(sunday) };
 }

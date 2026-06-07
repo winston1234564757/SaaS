@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
 import Link from 'next/link';
 import { Zap, Sparkles, FileText, Send } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { useNextFreeDays } from '../shared/hooks/useNextFreeDays';
 
 const DAY_ACTIONS = [
   { href: '/dashboard/revenue?drawer=flash_deals', label: 'Flash',    Icon: Zap,      primary: true  },
@@ -11,38 +10,9 @@ const DAY_ACTIONS = [
   { href: '/dashboard/marketing?mode=templates',   label: 'Шаблони',  Icon: FileText, primary: false },
   { href: '/dashboard/marketing',                  label: 'Розсилки', Icon: Send,     primary: false },
 ] as const;
-import { uk } from 'date-fns/locale';
-import { useBookings } from '@/lib/supabase/hooks/useBookings';
-import { getNow } from '@/lib/utils/now';
-
-function toISO(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-const DOW_UA: Record<number, string> = { 1: 'Пн', 2: 'Вт', 3: 'Ср', 4: 'Чт', 5: 'Пт', 6: 'Сб' };
 
 export function NextFreeDaysWidget() {
-  const now  = getNow();
-  const from = toISO(addDays(now, 1));
-  const to   = toISO(addDays(now, 14));
-  const { bookings, isLoading } = useBookings(from, to);
-
-  const freeDays = useMemo(() => {
-    const booked = new Set<string>();
-    (bookings ?? []).forEach(b => { if (b.status !== 'cancelled') booked.add(b.date); });
-    const result: { iso: string; dayLabel: string; dateLabel: string }[] = [];
-    for (let i = 1; i <= 14 && result.length < 5; i++) {
-      const d = addDays(now, i);
-      const dow = d.getDay();
-      if (dow === 0) continue;
-      const iso = toISO(d);
-      if (!booked.has(iso)) {
-        result.push({ iso, dayLabel: DOW_UA[dow] ?? '', dateLabel: format(d, 'd MMM', { locale: uk }) });
-      }
-    }
-    return result;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookings]);
+  const { freeDays, isLoading } = useNextFreeDays();
 
   if (!isLoading && freeDays.length === 0) return null;
 
