@@ -11,7 +11,7 @@
 ```
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
 Phase 1  SECURITY & A11Y  [███████░]  ~87%  ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
-Phase 2  LIMITED DRY      [████████]  ~95%  ← P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15 ✅ | next: Phase 2 COMPLETE
+Phase 2  LIMITED DRY      [████████]  ~95%  ← P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15 ✅ | COMPLETE
 Phase 3  TESTS & TYPES ⭐  [████████] 100%  ← P1.11 ✅ · P1.10 ✅ · P2.1 ✅ — COMPLETE
 Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 ALL DONE ✅
 ```
@@ -111,8 +111,8 @@ Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4�
 | **P2.12** | 79 inputs без labels | §7.12 | 6h | ✅ **DONE S16** | aria-label додано на всі 79 inputs (30+ файлів). Verified: grep `<input` without aria-label → тільки base Input.tsx component (spread props). |
 | **P2.15** | `useBookings` refetch cascade (6 keys) | §7.15 | 2h | ✅ DONE S15 | `invalidateBookingQueries.ts` — 6 keys, 7 sites patched |
 | **P2.3** | Split top-5 файлів >500 рядків | §7.3 | 16h | ✅ **DONE S18** | StoryGenerator.tsx 1545L→617L; story/ subfolder: StoryCanvas.tsx(187L·React.memo) + storyTypes.ts(95L) + storyConstants.ts(90L) + useStoryData.ts(58L) + storyExport.ts(30L). canvasSharedProps→useMemo. tsc 0 · build clean. |
-| **P2.4** | `@tanstack/react-virtual` довгі списки | §7.4 | 6h | ⏳ TODO |  |
-| **P2.5** | `React.memo` list-картки | §7.5 | 4h | ⏳ TODO |  |
+| **P2.4** | `@tanstack/react-virtual` довгі списки | §7.4 | 6h | ✅ **DONE S19** | `useWindowVirtualizer` (window-scroll) на ClientsPage list view; `measureElement` dynamic height (ResizeObserver); `scrollMargin` via `useLayoutEffect`+`useReducer` forceRerender. `clientsUtils.tsx` leaf module (RETENTION_CONFIG, getAutoTags, ClientIconStack, formatClientName, SmartSegment). tsc 0 · build clean. |
+| **P2.5** | `React.memo` list-картки | §7.5 | 4h | ✅ **DONE S19** | `ClientListRow` + `ClientGridCard` — React.memo з локальним note state (editing/noteValue/saving); backward compat re-exports у ClientsPage.tsx для 5 consumers (ClientDetailSheet, ClientWidgets, AnalyticsPage, SegmentBuilder, SegmentConfigWidget). tsc 0 · build clean. |
 
 ---
 
@@ -134,7 +134,7 @@ Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4�
 | **P3.3** | Decorative `<svg aria-hidden>` | §8.3 | 1h | ✅ **DONE S14** | 9 SVGs: 7 aria-hidden (decorative) + 2 role="img"+aria-label (charts). tsc 0. |
 | **P3.4** | BottomSheet drag handle `role` | §8.4 | 15m | ✅ **DONE S14** | role="presentation" на drag handle span. |
 | **P3.5** | `outline-none` → `focus:ring` | §8.5 | 30m | ✅ **DONE S14** | 11 files: focus:ring-2 focus:ring-primary/20. Skip: Vaul/Radix modal containers (intentional), bg-transparent composed inputs. |
-| **P3.6** | admin/loyalty tabs `aria-pressed` | §8.6 | 2h | ✅ **DONE S14** | 4 files: AnalyticsPage · ModerationHub (3 tabs) · AcademyPage · SystemLogsViewer (2 tabs). |
+| **P3.6** | admin/loyalty tabs `aria-pressed` | §8.6 | 2h | ✅ **DONE S14+S20** | 4 files: AnalyticsPage · ModerationHub (3 tabs) · AcademyPage · SystemLogsViewer (2 tabs). +S20: StoryGenerator MODES toggle buttons. FlashDealPage — no tab-toggle pattern (plan stale). |
 | **P3.7** | StepServices tabs `aria-controls` | §8.7 | 30m | ✅ **DONE S14** | role="tab" + id + aria-controls="services-panel"; tabpanel + aria-labelledby. |
 | **P3.8** | File inputs trigger label | §8.8 | 15m | ✅ **DONE S14** | 11 files: aria-hidden="true" + tabIndex={-1} на hidden file inputs. |
 | **P3.10** | Видалити unused `WAYFORPAY_*` env | §8.10 | 5m | ✅ **DONE S13** | Removed from .env.local.tmp · .env.prod · .env.vercel. Not referenced in src/. |
@@ -148,15 +148,16 @@ Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4�
 |---|---|---|---|---|
 | P0 | 13 | 10 | 2 (P0.4, P0.12) | 1 |
 | P1 | 26 | 15 | 1 (P1.2) | 10 |
-| P2 | 21 | 11 | 0 | 10 |
+| P2 | 21 | 13 | 0 | 8 |
 | P3 | 11 | 9 | 0 | 2 |
 
-**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.3·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15·P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 + N-01 = **46 items**
+**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15·P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 + N-01 = **48 items**
 **Dead code видалено:** ~2,400 рядків / 22 файли
 **A11y fixed:** 72 aria-labels + 5 div→button + heatmap roving tabindex (91 cells) + touch targets 13 files + focus:ring 11 files + file input a11y 11 files + aria-pressed 4 files + tab pattern 1 file + SVG aria 9 files + WCAG contrast 25 files
 **Security:** P0.1 booking hijack (phone-match + audit table) · P1.12 CRON HMAC sha256
 **Types:** P1.15 MasterData interface — 18+ as any removed from [slug]/page.tsx · P2.1 ✅ — 70 `as any` → explicit types in 21 files
+**Performance:** P2.4 useWindowVirtualizer (virtual scrolling, dynamic height) · P2.5 React.memo ClientListRow+ClientGridCard
 
 ---
 
-*Updated: 2026-06-06 S18 — P2.3 ✅ StoryGenerator split (story/ subfolder, React.memo+useMemo) · P2.7 ✅ Sheet.tsx · P2.12 ✅ 79 inputs · 46/71 closed · Next: P2.4 (react-virtual) / P2.5 (React.memo cards)*
+*Updated: 2026-06-07 S19 — P2.4 ✅ useWindowVirtualizer+clientsUtils · P2.5 ✅ ClientListRow+ClientGridCard React.memo · 48/71 closed · Next: Phase 1 залишок (P0.12 blocked) або Phase 2 untracked*

@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-06-07 · Session 20 · C-21 + P3.6 StoryGenerator
+
+**Контекст:** MTRP cleanups. C-21 follow-up (WorkingHoursConfig index signature) + P3.6 partial remainder (StoryGenerator mode tabs).
+
+### Зроблено
+
+1. **C-21 fix** — `[key: string]: unknown` index signature до `WorkingHoursConfig` (`src/types/database.ts`):
+   - Тепер assignable до `Json = Record<string, unknown>` без явного cast
+   - Named properties `buffer_time_minutes: number` і `breaks: BreakWindow[]` зберігають конкретні типи
+   - Існуючі casts залишились (технічно optional, але не шкодять)
+   - C-21 з HANDOFF §9 — RESOLVED
+2. **P3.6 StoryGenerator** — `aria-pressed={active}` на MODES toggle buttons (`StoryGenerator.tsx:393`):
+   - FlashDealPage — grep не виявив tab-toggle pattern (план-запис стейл)
+   - P3.6 fully closed (all mentioned files addressed)
+
+**VERIFY:** tsc 0 · build clean · commit `46fb9f3`
+
+---
+
 ## 2026-06-07 · Session 19 · P2.4 + P2.5 — react-virtual + React.memo ClientsPage
 
 **Контекст:** MTRP Phase 2. Virtualізація списку клієнтів + React.memo extraction.

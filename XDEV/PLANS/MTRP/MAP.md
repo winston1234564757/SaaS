@@ -1,14 +1,14 @@
 # 🧭 MAP.md — «Де я зупинився» (resume-pointer)
 
 > **Читати ПЕРШИМ на старті сесії** (після mempalace_status + SYSTEM_MAP). Повний контекст → [HANDOFF.md](./HANDOFF.md).
-> **Updated:** 2026-06-06 (Session 18)
+> **Updated:** 2026-06-07 (Session 19)
 
 ---
 
 ## ▶️ НАСТУПНА ДІЯ (точка входу)
 
 ```
-PHASE 1 ~87% · PHASE 2 ~95% ✅ · PHASE 4 ✅ 100% · NEXT → P2.8/P2.9 або Phase 1 залишок (P0.12 blocked)
+PHASE 1 ~87% · PHASE 2 ~95% ✅ · PHASE 4 ✅ 100% · NEXT → Phase 1 залишок або P2.8/P2.9
 ```
 
 **Phase 2 — залишилось:**
@@ -40,7 +40,7 @@ cd bookit && npx supabase db push  # P0.1 (link_attempts) + migration 140 (FK in
 ```
   Phase 0  HOT FIXES       [████████] 100% ← ✅ COMPLETE
 ► Phase 1  SECURITY & A11Y [███████░]  ~87% ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
-► Phase 2  LIMITED DRY     [███████░]  ~80% ← P2.1·P2.2·P2.3·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15 ✅ | next: P2.4/P2.5
+► Phase 2  LIMITED DRY     [████████]  ~95% ✅ ← P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15 ✅ | COMPLETE
   Phase 3  TESTS & TYPES   [████████] 100% ← P1.11 ✅ · P1.10 ✅ · P2.1 ✅ — COMPLETE
 ✅ Phase 4  POLISH          [████████] 100% ← P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 ALL DONE
 ```
@@ -77,9 +77,13 @@ mempalace_status
 Read XDEV/MAPS/SYSTEM_MAP.md (last 50)
 Read XDEV/PLANS/MTRP/MAP.md
 
-# Phase 2 next:
-# P2.4 — react-virtual (virtual lists, 6h)
-# P2.5 — React.memo ClientCard+BookingRow (4h)
+# Phase 1 залишок:
+# P0.12 — onboarding telemetry (blocked — user-decision)
+# P1.2  — widget dedup x3 теми (deferred)
+# P0.4  — secrets audit (deferred)
+
+# Phase 2 untracked (перевірити MTRP-2026-06-02.md):
+# P2.8 / P2.9 — if defined
 
 # PENDING: npx supabase db push (P0.1 + migration 140)
 ```
@@ -92,9 +96,9 @@ Read XDEV/PLANS/MTRP/MAP.md
 Items closed: 48 / 71
 P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11
 P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16
-P2.1·P2.2·P2.3·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15
+P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15
 P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 + N-01
-Next: P2.4 (react-virtual, 6h) · P2.5 (React.memo cards, 4h)
+Next: Phase 1 залишок (P0.12 blocked) або Phase 2 untracked items
 Deferred: 2 (P0.4, P1.2) · Blocked: 1 (P0.12)
 ```
 
