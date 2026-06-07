@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils/cn';
 import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
 import { useToast } from '@/lib/toast/context';
 import type { MoodThemeKey } from '@/lib/constants/themes';
+import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
 
 interface TechnicalIslandProps {
   instagram: string;
@@ -42,6 +43,7 @@ export function TechnicalIsland({
 }: TechnicalIslandProps) {
   const { showToast } = useToast();
   const [connectingBot, setConnectingBot] = useState(false);
+  const [waitingForBot, setWaitingForBot] = useState(false);
 
   const canChangeTheme = tier === 'pro' || tier === 'studio';
   // If Starter has a non-frost theme stored, show frost as selected
@@ -57,7 +59,32 @@ export function TechnicalIsland({
       return;
     }
     if (token) {
-      window.open(`https://t.me/bookit_notify_bot?start=${token}`, '_blank');
+      const botName = (process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'BookIT_APP_bot').replace('@', '').trim();
+      window.open(`https://t.me/${botName}?start=${token}`, '_blank');
+
+      // Poll for DB update every 3s after user opens the bot, up to 60s
+      setWaitingForBot(true);
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        try {
+          const res = await fetch('/api/settings/telegram-status');
+          if (res.ok) {
+            const json = await res.json() as { connected: boolean; chatId: string | null };
+            if (json.connected && json.chatId) {
+              clearInterval(poll);
+              setWaitingForBot(false);
+              onTelegramChatIdChange(json.chatId);
+              showToast({ type: 'success', title: 'Підключено!', message: 'Telegram бот активовано.' });
+              return;
+            }
+          }
+        } catch {}
+        if (attempts >= 20) {
+          clearInterval(poll);
+          setWaitingForBot(false);
+        }
+      }, 3000);
     }
   };
 
@@ -75,6 +102,7 @@ export function TechnicalIsland({
               value={instagram}
               onChange={(e) => onInstagramChange(e.target.value)}
               placeholder="Посилання на Instagram"
+              aria-label="Посилання на Instagram"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
             />
           </div>
@@ -84,6 +112,7 @@ export function TechnicalIsland({
               value={telegram}
               onChange={(e) => onTelegramChange(e.target.value)}
               placeholder="Username в Telegram"
+              aria-label="Username в Telegram"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
             />
           </div>
@@ -119,12 +148,17 @@ export function TechnicalIsland({
           {!telegramChatId && (
             <button type="button"
               onClick={handleConnectTelegram}
-              disabled={connectingBot}
+              disabled={connectingBot || waitingForBot}
               className="w-full py-3 rounded-xl bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.95] transition-all shadow-md shadow-accent/10 cursor-pointer"
             >
-              {connectingBot ? <Loader2 size={14} className="animate-spin" /> : "Підключити бота"}
+              {(connectingBot || waitingForBot) && <Loader2 size={14} className="animate-spin" />}
+              {!connectingBot && (waitingForBot ? "Очікуємо з'єднання..." : "Підключити бота")}
             </button>
           )}
+        </div>
+
+        <div className="mt-3">
+          <PushSubscribeCard />
         </div>
       </div>
 

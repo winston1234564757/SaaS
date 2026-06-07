@@ -118,7 +118,7 @@ export class NotificationOrchestrator {
       });
 
       if (expiredEndpoints.length > 0) {
-        void admin.from('push_subscriptions').delete().in('endpoint', expiredEndpoints);
+        await admin.from('push_subscriptions').delete().in('endpoint', expiredEndpoints);
       }
 
       log('push', pushDelivered ? 'success' : 'failed');
@@ -127,8 +127,11 @@ export class NotificationOrchestrator {
 
     await Promise.all([inAppPromise, pushPromise]);
 
-    // ── 2. Telegram (if push didn't deliver) ──────────────────────────────────
-    if (!pushDelivered) {
+    // ── 2. Telegram (if push didn't deliver or all subs are Apple APNs) ─────────
+    // Apple APNs returns HTTP 201 even when the device doesn't receive the notification,
+    // so pushDelivered=true can be a false positive when all subs are Safari Web Push.
+    const hasApplePush = pushSubs.some(s => s.endpoint.includes('web.push.apple.com'));
+    if (!pushDelivered || hasApplePush) {
       if (def.telegram && telegramChatId) {
         const { text, buttons } = def.telegram(data);
         const replyMarkup = buttons ? { inline_keyboard: buttons } : undefined;

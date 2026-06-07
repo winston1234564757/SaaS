@@ -414,6 +414,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `/api/cron/expire-subscriptions` | GET | Dunning: charge recurrent, free month, dunning → `notifyMasterBilling` (`0 2 * * *`) | CRON_SECRET |
 | `/api/cron/check-uncompleted` | GET | Per-master buffer_minutes, ідемпотентність 55 хв → Orchestrator (`0 * * * *`) | CRON_SECRET |
 | `/api/push/subscribe` | POST/DELETE | CRUD Web Push підписок | Auth |
+| `/api/settings/telegram-status` | GET | Polling endpoint: перевірка `master_profiles.telegram_chat_id` після підключення бота → `{ connected, chatId }` | Auth |
 | `/api/notify` | — | (порожня директорія) | — |
 | `/api/telegram` | — | Telegram webhook (внутрішній) | — |
 | `/api/flash` | — | Flash deal API | — |

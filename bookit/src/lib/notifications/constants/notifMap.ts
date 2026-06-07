@@ -1,4 +1,5 @@
 import { escHtml } from '@/lib/telegram';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua';
 
@@ -309,12 +310,12 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
   master_day_briefing: {
     isCritical: false,
     inApp: (d) => ({
-      title: `Сьогодні ${d.count} ${d.count === 1 ? 'запис' : 'записів'}`,
+      title: `Сьогодні ${pluralUk(d.count!, 'запис', 'записи', 'записів')}`,
       body: d.bookingItems ?? 'Гарного дня!',
     }),
     push: (d) => ({
       title: `☀️ Розклад на сьогодні`,
-      body: `${d.count} ${d.count === 1 ? 'запис' : 'записів'} — деталі в додатку`,
+      body: `${pluralUk(d.count!, 'запис', 'записи', 'записів')} — деталі в додатку`,
       url: '/dashboard/bookings',
     }),
     telegram: (d) => ({
