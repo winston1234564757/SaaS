@@ -21,14 +21,15 @@ interface BentoItem {
   desktop: string;
 }
 
+// Frost palette — all colors verified WCAG AA ≥ 4.5:1 on Frost surface (#EFF0FF)
 const ITEMS: BentoItem[] = [
   {
     href:    '/dashboard/flash',
     icon:    Zap,
     label:   'Флеш-акції',
     desc:    'Заповни вільний слот — сповісти клієнтів миттєво зі знижкою',
-    accent:  '#D4935A',
-    bg:      'rgba(212,147,90,0.08)',
+    accent:  '#4338CA', // indigo-700 · 6.99:1
+    bg:      'rgba(67,56,202,0.07)',
     mobile:  'col-span-2',
     desktop: 'md:col-span-4 md:row-span-2',
   },
@@ -37,8 +38,8 @@ const ITEMS: BentoItem[] = [
     icon:    TrendingUp,
     label:   'Ціноутворення',
     desc:    'Пік, тихий час, рання бронь, остання хвилина',
-    accent:  '#789A99',
-    bg:      'rgba(120,154,153,0.08)',
+    accent:  '#7C3AED', // violet-700 · 5.04:1
+    bg:      'rgba(124,58,237,0.07)',
     mobile:  'col-span-1',
     desktop: 'md:col-span-2 md:row-span-2',
   },
@@ -47,8 +48,8 @@ const ITEMS: BentoItem[] = [
     icon:    Gift,
     label:   'Лояльність',
     desc:    'Програма знижок та бонусів для постійних клієнтів',
-    accent:  '#5C9E7A',
-    bg:      'rgba(92,158,122,0.08)',
+    accent:  '#0E7490', // cyan-700 · 4.74:1
+    bg:      'rgba(14,116,144,0.07)',
     mobile:  'col-span-1',
     desktop: 'md:col-span-3',
   },
@@ -57,8 +58,8 @@ const ITEMS: BentoItem[] = [
     icon:    Share2,
     label:   'Запроси друга',
     desc:    'Запрошуй колег — обидва отримуєте місяць Pro',
-    accent:  '#789A99',
-    bg:      'rgba(120,154,153,0.06)',
+    accent:  '#0369A1', // sky-700 · 5.25:1
+    bg:      'rgba(3,105,161,0.06)',
     mobile:  'col-span-2',
     desktop: 'md:col-span-3',
   },
@@ -68,8 +69,8 @@ const ITEMS: BentoItem[] = [
     label:   'Студія',
     desc:    'Команда майстрів, зведена аналітика та управління персоналом',
     soon:    true,
-    accent:  '#6B5750',
-    bg:      'rgba(107,87,80,0.06)',
+    accent:  '#475569', // slate-600
+    bg:      'rgba(71,85,105,0.05)',
     mobile:  'col-span-2',
     desktop: 'md:col-span-4',
   },
@@ -78,8 +79,8 @@ const ITEMS: BentoItem[] = [
     icon:    CreditCard,
     label:   'Тариф та оплата',
     desc:    'Керування підпискою та платіжними методами',
-    accent:  '#2C1A14',
-    bg:      'rgba(44,26,20,0.04)',
+    accent:  '#334155', // slate-700
+    bg:      'rgba(51,65,85,0.04)',
     mobile:  'col-span-2',
     desktop: 'md:col-span-2',
   },

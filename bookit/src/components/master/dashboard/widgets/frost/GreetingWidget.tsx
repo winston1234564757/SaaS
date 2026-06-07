@@ -35,7 +35,7 @@ function NextBookingRow({ booking, todayStr }: { booking: BookingWithServices; t
       className="mt-4 rounded-[var(--card-radius)] overflow-hidden relative"
       style={{ background: 'var(--hero-card-bg)', boxShadow: 'var(--hero-card-shadow)' }}
     >
-      <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background: 'rgba(255,255,255,0.07)' }} />
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background: 'color-mix(in srgb, var(--accent-on) 7%, transparent)' }} />
       <p
         className="px-5 pt-4 pb-0 text-[10px] font-bold tracking-[0.2em] uppercase"
         style={{ color: 'var(--accent-on)', opacity: 0.42 }}

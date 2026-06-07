@@ -283,7 +283,7 @@ export function MonthlyCalendarWidget() {
               style={{ background: 'var(--hero-card-bg)' }}
             >
             <div className="flex items-center justify-between px-4 pt-3 pb-2"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              style={{ borderBottom: '1px solid color-mix(in srgb, var(--accent-on) 7%, transparent)' }}>
               <p className="font-mono text-[12px] font-bold tracking-[0.08em] uppercase capitalize"
                 style={{ color: 'var(--accent-on)' }}>
                 {format(selectedDay, 'd MMMM', { locale: uk })}

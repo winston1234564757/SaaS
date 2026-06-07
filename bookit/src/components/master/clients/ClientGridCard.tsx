@@ -80,13 +80,13 @@ export const ClientGridCard = React.memo(function ClientGridCard({
           </p>
           <div className="flex items-center gap-1.5 mt-2">
             <span
-              className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full"
+              className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full"
               style={{ color: ret.color, background: ret.bg }}
             >
               {ret.label}
             </span>
             {client.is_vip && (
-              <span className="text-[9px] font-bold text-warning border border-warning/30 px-1.5 py-0.5 rounded-lg flex-shrink-0">
+              <span className="text-[11px] font-bold text-warning border border-[var(--accent-on)]/30 px-1.5 py-1 rounded-lg flex-shrink-0">
                 VIP
               </span>
             )}

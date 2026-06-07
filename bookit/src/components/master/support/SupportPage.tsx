@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  ChevronDown, 
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ChevronDown,
   MessageCircle, 
   BookOpen, 
   Zap, 
@@ -184,20 +185,34 @@ const FAQ_ITEMS = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-white/30 last:border-0">
+    <div className="border-b border-[var(--border)] last:border-0">
       <button type="button"
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-3 text-left text-sm font-medium text-foreground gap-3"
       >
         <span>{q}</span>
-        <ChevronDown
-          size={16}
-          className={`shrink-0 text-primary transition-transform ${open ? 'rotate-180' : ''}`}
-        />
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
+          className="shrink-0"
+        >
+          <ChevronDown size={16} className="text-primary" />
+        </motion.div>
       </button>
-      {open && (
-        <p className="pb-3 text-sm text-muted-foreground leading-relaxed">{a}</p>
-      )}
+      <AnimatePresence mode="popLayout">
+        {open && (
+          <motion.p
+            key="answer"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
+            className="overflow-hidden pb-3 text-sm text-muted-foreground leading-relaxed"
+          >
+            {a}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -230,7 +245,7 @@ export function SupportPage() {
           >
             <MessageSquare size={14} />
             Чат підтримки
-            <span className="flex size-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+            <span className="flex size-1.5 rounded-full bg-[var(--success)] animate-pulse ml-0.5" />
           </button>
         </div>
       </div>
@@ -249,7 +264,7 @@ export function SupportPage() {
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <button type="button"
               onClick={handleGoToChat}
-              className="flex-1 sm:flex-none px-4.5 py-2 bg-primary text-white text-sm font-bold rounded-2xl hover:bg-[#6a8a89] active:scale-[0.96] transition-all cursor-pointer text-center"
+              className="flex-1 sm:flex-none px-4.5 py-2 bg-primary text-white text-sm font-bold rounded-2xl hover:opacity-90 active:scale-[0.96] transition-all cursor-pointer text-center"
             >
               Почати чат
             </button>

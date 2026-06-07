@@ -39,7 +39,7 @@ export function StudioJoinPage({ studio, token }: Props) {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #FFD2C2 0%, #F0EAE8 50%, #D4E8E7 100%)' }}
+      style={{ background: 'var(--background)' }}
     >
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.97 }}
@@ -53,7 +53,7 @@ export function StudioJoinPage({ studio, token }: Props) {
               <CheckCircle size={30} className="text-success" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground mb-1">Ви у команді! 🎉</p>
+              <p className="text-lg font-bold text-foreground mb-1">Ви у команді!</p>
               <p className="text-sm text-muted-foreground/60">Переходимо до кабінету студії...</p>
             </div>
           </>
@@ -93,7 +93,7 @@ export function StudioJoinPage({ studio, token }: Props) {
             <button type="button"
               onClick={handleJoin}
               disabled={isPending}
-              className="w-full py-3.5 rounded-2xl bg-success text-white text-sm font-semibold disabled:opacity-60 transition-all active:scale-95 transition-all"
+              className="w-full py-3.5 rounded-full bg-success text-white text-sm font-semibold disabled:opacity-60 active:scale-95 transition-all"
               style={{ boxShadow: '0 4px 16px rgba(92,158,122,0.35)' }}
             >
               {isPending ? 'Приєднуємось...' : 'Приєднатися до студії →'}

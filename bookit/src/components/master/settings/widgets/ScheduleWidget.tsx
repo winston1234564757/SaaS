@@ -99,7 +99,7 @@ export function ScheduleWidget({
 
           <button type="button"
             onClick={() => setExpanded(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-secondary border border-border text-[11px] font-bold text-muted-foreground hover:bg-accent/5 hover:text-accent hover:border-accent/20 active:scale-[0.88] cursor-pointer transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-secondary border border-border text-[11px] font-bold text-muted-foreground hover:bg-accent/5 hover:text-accent hover:border-accent/20 active:scale-[0.88] cursor-pointer transition-all shadow-sm"
           >
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             {expanded ? 'Згорнути' : 'Налаштувати'}
@@ -133,7 +133,7 @@ export function ScheduleWidget({
             const statusColor = occupancy > 80 ? 'bg-error' : occupancy > 50 ? 'bg-warning' : 'bg-success';
             return (
               <div key={day} className="flex flex-col items-center gap-1.5">
-                <span className={cn('text-[10px] font-black uppercase tracking-tighter', isToday ? 'text-accent' : 'text-text-mute/30')}>
+                <span className={cn('text-[10px] font-bold uppercase tracking-tighter', isToday ? 'text-accent' : 'text-text-mute/30')}>
                   {DAYS_UA_SHORT[day]}
                 </span>
                 <div className={cn(

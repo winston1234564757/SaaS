@@ -84,13 +84,13 @@ export const ClientListRow = React.memo(function ClientListRow({
             <p className="text-sm font-bold text-foreground truncate">{client.client_name}</p>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <span
-                className="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter"
+                className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full"
                 style={{ color: ret.color, background: ret.bg }}
               >
                 {ret.label}
               </span>
               {client.is_vip && (
-                <span className="text-[8px] font-bold text-warning border border-warning/30 px-1.5 py-0.5 rounded-lg uppercase">
+                <span className="text-[11px] font-bold text-warning border border-[var(--accent-on)]/30 px-1.5 py-1 rounded-lg">
                   VIP
                 </span>
               )}
