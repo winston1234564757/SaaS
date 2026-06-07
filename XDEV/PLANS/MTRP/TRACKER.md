@@ -1,7 +1,7 @@
 # 📋 TRACKER.md — Live Status (71 items)
 
 > Live джерело правди про прогрес виконання [MTRP-2026-06-02](../MTRP-2026-06-02.md).
-> **Updated:** 2026-06-05 (S12) · **Active phase:** Phase 1→2→3 · **Progress:** 32 closed · 2 deferred · 2 blocked
+> **Updated:** 2026-06-07 (S19) · **Active phase:** Phase 2 COMPLETE · **Progress:** 48 closed · 2 deferred · 1 blocked
 > Легенда: ⏳ TODO · 🔄 IN PROGRESS · ✅ DONE · 🔒 BLOCKED · ⚠️ CORRECTED · ➖ DEFERRED
 
 ---
@@ -11,9 +11,9 @@
 ```
 Phase 0  HOT FIXES        [████████] 100%  ← all done ✅
 Phase 1  SECURITY & A11Y  [███████░]  ~87%  ← done: P0.1·P0.2·P0.7·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.12·P1.13·P1.14·P1.15·P1.16 | blocked: P0.12
-Phase 2  LIMITED DRY      [███░░░░░]  ~20%  ← P2.2 ✅ · P2.10 ✅ · P2.13 ✅ · P2.14 ✅ | next: P2.6 (2h)
-Phase 3  TESTS & TYPES ⭐ [███░░░░░]  ~25%  ← P1.11 ✅ · P1.10 ✅ · P2.1 ✅ | next: P2.6 або P3.2
-Phase 4  POLISH           [░░░░░░░░]   0%
+Phase 2  LIMITED DRY      [████████]  ~95%  ← P2.1·P2.2·P2.3·P2.4·P2.5·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15 ✅ | next: Phase 2 COMPLETE
+Phase 3  TESTS & TYPES ⭐  [████████] 100%  ← P1.11 ✅ · P1.10 ✅ · P2.1 ✅ — COMPLETE
+Phase 4  POLISH           [████████] 100%  ← P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 ALL DONE ✅
 ```
 
 ---
@@ -44,12 +44,14 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | C-19 | P2.13 | `LandingBentoFeatures.tsx` `<th>` без scope | `<table role="presentation">` — scope семантично нерелевантний | ⚠️ SKIP — no fix needed |
 | C-20 | P2.10 | `reminders/route.ts:57` — phone PII у JSON.stringify | `results` містить тільки counts `{client,master,failed}`. `client_phone` вибирається з DB але не логується | ✅ FALSE ALARM — no fix needed |
 | C-21 | P1.15 | `workingHours: data.working_hours` — тип `WorkingHoursConfig` | `WorkingHoursConfig` не має index signature → не assignable до `Record<string,unknown>`. Залишив cast | ⚠️ Cast OK — follow-up: оновити prop type у PublicMasterPage |
+| C-22 | P2.11 | «/30-/50 opacity fails WCAG» | Decorative icons, placeholders, disabled states — скіп. Readable text labels: /30→/60, /40→/70, /50→/70-/80 | ✅ DONE S15 — 25 files |
 
 > **Урок 1:** видалення роуту → `rm -rf .next && npm run build` (stale types).
 > **Урок 2:** `<button>` атрибути → `tools/scan-buttons.cjs` (AST), не ripgrep.
 > **Урок 3 (P0.1):** phone-match verification — порівнювати last 10 digits (нормалізація E.164 варіюється).
 > **Урок 4 (P1.6):** `═══` в SQL-файлах = box-drawing Unicode (U+2550), не mojibake. `file` команда = UTF-8.
 > **Урок 5 (P1.15):** `interface` без index signature не assignable до `Record<string,unknown>`. Потребує або cast, або `[key: string]: unknown` у типі.
+> **Урок 6 (P2.11):** WCAG contrast — skip decorative icons/placeholders/disabled states; only fix readable text. replace_all safe for opacity patterns.
 
 ---
 
@@ -88,7 +90,7 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P1.8** | StoryGenerator empty-deps → hooks | §6.8 | done | ✅ **DONE** | 3 inline hooks → useQuery (`story-services`, `story-flash-deals`, `story-star-reviews`). |
 | **P1.9** | PublicMasterPage C2C → useQuery | §6.9 | done | ✅ **DONE** | `queryKey ['c2c-balance', master.id]`. User fetched inside queryFn. `enabled` guard. staleTime 5min. |
 | **P1.14** | `useDashboardStore` → `useShallow` | §6.14 | done | ✅ **DONE** | `zustand/shallow` useShallow: BentoWidget + BentoGrid(5-val) + WidgetLibraryModal. |
-| **P1.15** | Типи замість `as any` у `[slug]/page.tsx` | §6.15 | done | ✅ **DONE** | `MasterData`+`MasterServiceRow` у data.ts (+ timezone у SELECT). 7 row types у page.tsx (ProductRow, ReviewRow, ScheduleRow, LoyaltyRow, FlashDealRow, AllianceRow, PortfolioRow). opengraph-image.tsx теж. 0 `as any` залишилось. C-21: `workingHours as Record<string,unknown>` — WorkingHoursConfig lacks index signature. |
+| **P1.15** | Типи замість `as any` у `[slug]/page.tsx` | §6.15 | done | ✅ **DONE** | `MasterData`+`MasterServiceRow` у data.ts (+ timezone у SELECT). 7 row types у page.tsx. 0 `as any` залишилось. C-21: `workingHours as Record<string,unknown>` — WorkingHoursConfig lacks index signature. |
 | **P1.13** | Remove `formatPrice` dup | §6.13 | — | ✅ done (= P0.11) |  |
 | ➖ **P1.2** | Widget dedup ×3 теми | §6.2 | — | ➖ DEFERRED (user) |  |
 
@@ -102,18 +104,19 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 | **P2.10** | Sanitize phone у cron логах | §7.10 | done | ✅ **DONE** | `sanitizePhone()` у rebooking/route.ts:110,113. reminders/route.ts — no PII in logs (C-20). |
 | **P2.13** | `<th scope="col">` (5 файлів) | §7.13 | done | ✅ **DONE** | 3 admin tables (AllianceMap+MastersDir+SystemLogs). LandingBentoFeatures skipped — `role="presentation"` (C-19). |
 | **P2.14** | FK index `c2c_referrals.master_id` | §7.14 | done | ✅ **DONE** | `140_c2c_referrals_master_id_index.sql`. ⚠️ Pending `npx supabase db push`. |
-| **P2.6** | `.select('*')` cleanup (10 queries) | §7.6 | 2h | ✅ **DONE S13** | 9 queries: useBookings · useBookingById · useServices (insert) · support.ts · marketing×2 · [slug]/actions · [slug]/page · shop/page (schedule). MorningBriefing.tsx template literal → explicit string + TodayBookingRow type (bonus fix). |
-| **P2.7** | Modal/Sheet consolidation | §7.7 | 6h | ⏳ TODO |  |
-| **P2.11** | Контраст `text-muted/30-50` → WCAG AA | §7.11 | 4h | ⏳ TODO |  |
-| **P2.12** | 79 inputs без labels | §7.12 | 6h | ⏳ TODO |  |
-| **P2.15** | `useBookings` refetch cascade (6 keys) | §7.15 | 2h | ⏳ TODO |  |
-| **P2.3** | Split top-5 файлів >500 рядків | §7.3 | 16h | ⏳ TODO |  |
+| **P2.6** | `.select('*')` cleanup (10 queries) | §7.6 | 2h | ✅ **DONE S13** | 9 queries: useBookings · useBookingById · useServices (insert) · support.ts · marketing×2 · [slug]/actions · [slug]/page · shop/page (schedule). MorningBriefing.tsx template literal → explicit string + TodayBookingRow type. |
+| **P2.1** | 100+ `as any` → типи + `src/types/database.ts` | §7.1 | 12h | ✅ **DONE S12** | 70 occurrences in 21 files. Promise<never> pattern for races; inline interface types for Supabase joins; window type extension for gm_authFailure. tsc 0 · build clean. |
+| **P2.11** | Контраст `text-muted/30-50` → WCAG AA | §7.11 | 4h | ✅ **DONE S15** | 25 files: /30→/60, /40→/70, /50→/70. Skip: decorative icons, placeholders, disabled/off states. tsc 0. |
+| **P2.7** | Modal/Sheet consolidation | §7.7 | 6h | ✅ **DONE S17** | Sheet.tsx (adaptive/dialog/bottom); deleted MicaModal+PopUpModal+BottomSheet; migrated 13 PopUpModal + 2 MicaModal + 5 BottomSheet across all consumers. tsc 0 · build clean. |
+| **P2.12** | 79 inputs без labels | §7.12 | 6h | ✅ **DONE S16** | aria-label додано на всі 79 inputs (30+ файлів). Verified: grep `<input` without aria-label → тільки base Input.tsx component (spread props). |
+| **P2.15** | `useBookings` refetch cascade (6 keys) | §7.15 | 2h | ✅ DONE S15 | `invalidateBookingQueries.ts` — 6 keys, 7 sites patched |
+| **P2.3** | Split top-5 файлів >500 рядків | §7.3 | 16h | ✅ **DONE S18** | StoryGenerator.tsx 1545L→617L; story/ subfolder: StoryCanvas.tsx(187L·React.memo) + storyTypes.ts(95L) + storyConstants.ts(90L) + useStoryData.ts(58L) + storyExport.ts(30L). canvasSharedProps→useMemo. tsc 0 · build clean. |
 | **P2.4** | `@tanstack/react-virtual` довгі списки | §7.4 | 6h | ⏳ TODO |  |
 | **P2.5** | `React.memo` list-картки | §7.5 | 4h | ⏳ TODO |  |
 
 ---
 
-## 8. Phase 3 — TESTS & TYPES ⭐ (user priority)
+## 8. Phase 3 — TESTS & TYPES ⭐ ✅ COMPLETE
 
 | Item | Title | §план | Effort | Status |
 |---|---|---|---|---|
@@ -123,19 +126,19 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 ---
 
-## 9. Phase 4 — POLISH (a11y tail)
+## 9. Phase 4 — POLISH (a11y tail) ✅ COMPLETE
 
-| Item | Title | §план | Effort | Status |
-|---|---|---|---|---|
+| Item | Title | §план | Effort | Status | Нотатка |
+|---|---|---|---|---|---|
 | **P3.2** | `pluralize`→`pluralUk` (FlashDealPage) | §8.2 | 30m | ✅ **DONE S13** | `pluralize` imported but never used — removed from import. No `pluralUk` needed. |
-| **P3.3** | Decorative `<svg aria-hidden>` | §8.3 | 1h | ⏳ TODO |
-| **P3.4** | BottomSheet drag handle `role` | §8.4 | 15m | ⏳ TODO |
-| **P3.5** | `outline-none` → `focus:ring` | §8.5 | 30m | ⏳ TODO |
-| **P3.6** | admin/loyalty tabs `aria-pressed` | §8.6 | 2h | ⏳ TODO |
-| **P3.7** | StepServices tabs `aria-controls` | §8.7 | 30m | ⏳ TODO |
-| **P3.8** | File inputs trigger label | §8.8 | 15m | ⏳ TODO |
+| **P3.3** | Decorative `<svg aria-hidden>` | §8.3 | 1h | ✅ **DONE S14** | 9 SVGs: 7 aria-hidden (decorative) + 2 role="img"+aria-label (charts). tsc 0. |
+| **P3.4** | BottomSheet drag handle `role` | §8.4 | 15m | ✅ **DONE S14** | role="presentation" на drag handle span. |
+| **P3.5** | `outline-none` → `focus:ring` | §8.5 | 30m | ✅ **DONE S14** | 11 files: focus:ring-2 focus:ring-primary/20. Skip: Vaul/Radix modal containers (intentional), bg-transparent composed inputs. |
+| **P3.6** | admin/loyalty tabs `aria-pressed` | §8.6 | 2h | ✅ **DONE S14** | 4 files: AnalyticsPage · ModerationHub (3 tabs) · AcademyPage · SystemLogsViewer (2 tabs). |
+| **P3.7** | StepServices tabs `aria-controls` | §8.7 | 30m | ✅ **DONE S14** | role="tab" + id + aria-controls="services-panel"; tabpanel + aria-labelledby. |
+| **P3.8** | File inputs trigger label | §8.8 | 15m | ✅ **DONE S14** | 11 files: aria-hidden="true" + tabIndex={-1} на hidden file inputs. |
 | **P3.10** | Видалити unused `WAYFORPAY_*` env | §8.10 | 5m | ✅ **DONE S13** | Removed from .env.local.tmp · .env.prod · .env.vercel. Not referenced in src/. |
-| ✅ **P3.11** | 0 down migrations — N/A | §8.11 | — | ✅ no-fix |
+| **P3.11** | 0 down migrations — N/A | §8.11 | — | ✅ no-fix |  |
 
 ---
 
@@ -143,17 +146,17 @@ Phase 4  POLISH           [░░░░░░░░]   0%
 
 | Severity | Total | ✅/done | 🔒/➖ | ⏳ |
 |---|---|---|---|---|
-| P0 | 13 | 9 | 2 (P0.4, P0.12) | 2 |
-| P1 | 26 | 17 | 1 (P1.2) | 8 |
-| P2 | 21 | 5 | 0 | 16 |
-| P3 | 11 | 1 | 0 | 10 |
+| P0 | 13 | 10 | 2 (P0.4, P0.12) | 1 |
+| P1 | 26 | 15 | 1 (P1.2) | 10 |
+| P2 | 21 | 11 | 0 | 10 |
+| P3 | 11 | 9 | 0 | 2 |
 
-**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.10·P2.13·P2.14·P3.11 + N-01 = **32 items**
+**Закрито повністю:** P0.1·P0.2·P0.3·P0.5·P0.6·P0.7·P0.8·P0.9·P0.10·P0.11·P1.1·P1.3·P1.4·P1.5·P1.6·P1.7·P1.8·P1.9·P1.10·P1.11·P1.12·P1.13·P1.14·P1.15·P1.16·P2.1·P2.2·P2.3·P2.6·P2.7·P2.10·P2.11·P2.12·P2.13·P2.14·P2.15·P3.2·P3.3·P3.4·P3.5·P3.6·P3.7·P3.8·P3.10·P3.11 + N-01 = **46 items**
 **Dead code видалено:** ~2,400 рядків / 22 файли
-**A11y fixed:** 72 aria-labels + 5 div→button + heatmap roving tabindex (91 cells) + touch targets 13 files
+**A11y fixed:** 72 aria-labels + 5 div→button + heatmap roving tabindex (91 cells) + touch targets 13 files + focus:ring 11 files + file input a11y 11 files + aria-pressed 4 files + tab pattern 1 file + SVG aria 9 files + WCAG contrast 25 files
 **Security:** P0.1 booking hijack (phone-match + audit table) · P1.12 CRON HMAC sha256
-**Types:** P1.15 MasterData interface — 18+ as any removed from [slug]/page.tsx · P2.1 ✅ — 70 `as any` → explicit types in 21 files (Promise<never> race pattern; inline Supabase join types; window type extension)
+**Types:** P1.15 MasterData interface — 18+ as any removed from [slug]/page.tsx · P2.1 ✅ — 70 `as any` → explicit types in 21 files
 
 ---
 
-*Updated: 2026-06-05 S12 — P2.1 ✅ 70 as any → explicit types (21 files) · Next: P2.6 (.select('*') cleanup)*
+*Updated: 2026-06-06 S18 — P2.3 ✅ StoryGenerator split (story/ subfolder, React.memo+useMemo) · P2.7 ✅ Sheet.tsx · P2.12 ✅ 79 inputs · 46/71 closed · Next: P2.4 (react-virtual) / P2.5 (React.memo cards)*

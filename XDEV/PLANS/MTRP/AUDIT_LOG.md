@@ -5,6 +5,115 @@
 
 ---
 
+## 2026-06-07 · Session 19 · P2.4 + P2.5 — react-virtual + React.memo ClientsPage
+
+**Контекст:** MTRP Phase 2. Virtualізація списку клієнтів + React.memo extraction.
+
+### Зроблено
+
+1. **P2.4** — `useWindowVirtualizer` (@tanstack/react-virtual) на list view ClientsPage:
+   - `listRef` + `forceRerender` (useReducer) + `useLayoutEffect` для correct scrollMargin post-mount
+   - `estimateSize: () => 88` + `measureElement` ref → ResizeObserver для dynamic heights
+   - `paddingBottom: 12` у wrapper div замість CSS gap
+   - Grid view без virtualizer (2-col layout складний, React.memo достатньо)
+2. **P2.5** — React.memo extraction:
+   - `clientsUtils.tsx` (NEW) — RETENTION_CONFIG, AutoTag, getAutoTags, SmartSegment, getSmartAction, formatClientName, ClientIconStack (leaf файл, no hooks)
+   - `ClientListRow.tsx` (NEW) — React.memo list row; local note state (editing/noteValue/saving); hooks: useToast, useClientNoteInvalidate, useRouter
+   - `ClientGridCard.tsx` (NEW) — React.memo grid card; local note state; prop: onSmartAction callback
+   - `ClientsPage.tsx` — re-exports RETENTION_CONFIG/getAutoTags/ClientIconStack/formatClientName/AutoTag для backward compat (5 consumers)
+   - Removed from ClientsPage: editingNoteId, noteValue, savingNoteId, handleQuickNoteSave, useToast, saveClientNote, useClientNoteInvalidate, parseError, formatPrice
+3. **@tanstack/react-virtual** installed
+
+### Verify
+- tsc: 0 errors ✅
+- build: clean ✅
+- Backward compat: ClientDetailSheet, ClientWidgets, AnalyticsPage, SegmentBuilder, SegmentConfigWidget import від ClientsPage — не зламано ✅
+
+---
+
+## 2026-06-07 · Session 18 · P2.3 — StoryGenerator split + P2.5 partial
+
+**Контекст:** MTRP Phase 2. Split монолітного StoryGenerator.tsx (1545L) на story/ subfolder.
+
+### Зроблено
+
+1. **P2.3** — StoryGenerator.tsx 1545L → 617L; створено story/ subfolder:
+   - `story/storyTypes.ts` (95L) — Mode, Palette, GridCfg, ServiceSlim, FlashDealRow, StarReview, UpgradeCopy, CanvasProps, StoryGeneratorProps
+   - `story/storyConstants.ts` (101L) — PALETTES (6), MODES, PREMIUM_MODES, VALID_MODES, MODE_UPGRADE_COPY, formatUA(), getGridConfig(), INPUT_STYLE
+   - `story/useStoryData.ts` (58L) — useServices, useActiveFlashDeals, useStarReviews hooks
+   - `story/storyExport.ts` (30L) — exportCanvasPng() (modern-screenshot + file-saver)
+   - `story/StoryCanvas.tsx` (187L) — React.memo canvas renderer, 7 modes
+2. **P2.5 partial** — React.memo(StoryCanvasInner) + useMemo(canvasSharedProps) — prevents re-renders on exporting/exported/blurActive/showUpgradeModal state changes
+
+### CHECK
+- **tsc:** 0 errors
+- **build:** clean
+
+---
+
+## 2026-06-06 · Session 17 · P2.7 — Sheet.tsx unified primitive
+
+**Контекст:** MTRP Phase 2. Consolidate 3 modal primitives into Sheet.tsx.
+
+### Зроблено
+
+1. **P2.7** — Sheet.tsx unified primitive:
+   - 3 old files deleted: PopUpModal.tsx, MicaModal.tsx, BottomSheet.tsx (deprecated wrappers)
+   - 13 PopUpModal + 2 MicaModal + 5 BottomSheet consumers migrated
+   - Single Sheet component з size/variant/draggable props
+
+### CHECK
+- **tsc:** 0 errors · **build:** clean
+
+---
+
+## 2026-06-06 · Session 16 · P2.12 — 79 inputs aria-label/htmlFor
+
+**Контекст:** MTRP Phase 1 / A11y. Inputs without accessible labels.
+
+### Зроблено
+
+1. **P2.12** — 79 inputs, aria-label/htmlFor на всіх:
+   - 30+ файлів оновлено
+   - Всi `<input>`, `<textarea>`, `<select>` мають aria-label або htmlFor+id паri
+
+### CHECK
+- **tsc:** 0 errors · **build:** clean
+
+---
+
+## 2026-06-05 · Session 15 · P2.11 + P2.15
+
+**Контекст:** MTRP Phase 2. WCAG AA contrast + query invalidation cascade.
+
+### Зроблено
+
+1. **P2.11** — WCAG AA contrast: 25 файлiв, /30-50→/60-80 на readable text labels
+2. **P2.15** — `invalidateBookingQueries.ts` створено; 7 сайтiв рефетчу унiфiковано
+
+### CHECK
+- **tsc:** 0 errors · **build:** clean
+
+---
+
+## 2026-06-05 · Session 14 · P3.3/P3.4/P3.5/P3.6/P3.7/P3.8 — Phase 4 ARIA Polish
+
+**Контекст:** MTRP Phase 4. ARIA polish batch — 6 items.
+
+### Зроблено
+
+1. **P3.4** — BottomSheet drag handle: `role="presentation"`
+2. **P3.3** — 9 SVGs: 7 `aria-hidden` + 2 `role="img"`
+3. **P3.5** — `focus:ring`, 11 файлiв
+4. **P3.7** — StepServices tabs: `aria-controls` + tabpanel
+5. **P3.8** — file inputs: `aria-hidden` + `tabIndex`, 11 файлiв
+6. **P3.6** — `aria-pressed` tabs, 4 файли: AnalyticsPage/ModerationHub/AcademyPage/SystemLogsViewer
+
+### CHECK
+- **tsc:** 0 errors · **build:** clean
+
+---
+
 ## 2026-06-05 · Session 13 · P2.6 + P3.2 + P3.10 + MorningBriefing types
 
 **Контекст:** MTRP Phase 2/3. Explicit Supabase selects + env cleanup + TS fixes.
