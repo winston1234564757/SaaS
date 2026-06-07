@@ -216,6 +216,7 @@ export function AdminSupportConsole() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Пошук користувача..."
+              aria-label="Пошук користувача"
               className="w-full rounded-full border border-slate-200 bg-white pl-9 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 transition"
             />
           </div>
@@ -409,6 +410,8 @@ export function AdminSupportConsole() {
                     onChange={handleFileChange}
                     accept="image/*"
                     className="hidden"
+                    aria-hidden="true"
+                    tabIndex={-1}
                   />
                   <button
                     type="button"
@@ -424,6 +427,7 @@ export function AdminSupportConsole() {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder="Напишіть відповідь підтримки..."
+                    aria-label="Текст відповіді"
                     className="flex-1 text-xs bg-transparent outline-none text-slate-900 placeholder-slate-400"
                   />
 

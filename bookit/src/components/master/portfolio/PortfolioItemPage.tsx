@@ -236,6 +236,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
             onChange={e => { setTitle(e.target.value); if (errors.title) setErrors({}); }}
             maxLength={120}
             placeholder="Наприклад: Весільний образ Марини"
+            aria-label="Назва роботи"
             className={`w-full rounded-xl border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all ${
               errors.title ? 'border-error bg-error/5' : 'border-border bg-secondary/40 focus:border-primary'
             }`}
@@ -254,7 +255,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
             maxLength={1000}
             rows={3}
             placeholder="Розкажіть про цю роботу..."
-            className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary resize-none"
+            className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
           />
         </div>
 
@@ -267,7 +268,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
             <select
               value={serviceId}
               onChange={e => setServiceId(e.target.value)}
-              className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground outline-none focus:border-primary appearance-none"
+              className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none"
             >
               <option value="">Не вказано</option>
               {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -320,7 +321,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                 <select
                   value={selectedClientId}
                   onChange={e => setSelectedClientId(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary appearance-none"
+                  className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none"
                 >
                   <option value="">
                     {clients.length === 0 ? 'Немає зареєстрованих клієнтів' : 'Оберіть клієнта'}

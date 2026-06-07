@@ -103,14 +103,16 @@ export function StepScheduleForm({
                   type="time"
                   value={schedule[day].start_time}
                   onChange={e => onScheduleTimeChange(day, 'start_time', e.target.value)}
-                  className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary"
+                  aria-label={`Початок роботи — ${DAYS_UA[day]}`}
+                  className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
                 <span className="text-xs text-muted-foreground/60">—</span>
                 <input
                   type="time"
                   value={schedule[day].end_time}
                   onChange={e => onScheduleTimeChange(day, 'end_time', e.target.value)}
-                  className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary"
+                  aria-label={`Кінець роботи — ${DAYS_UA[day]}`}
+                  className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             ) : (
@@ -153,9 +155,9 @@ export function StepScheduleForm({
           <div className="flex flex-col gap-2">
             {breaks.map((b, i) => (
               <div key={i} className="flex items-center gap-2">
-                <input type="time" value={b.start} onChange={e => onBreakFieldChange(i, 'start', e.target.value)} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary" />
+                <input type="time" value={b.start} onChange={e => onBreakFieldChange(i, 'start', e.target.value)} aria-label={`Початок перерви ${i + 1}`} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
                 <span className="text-xs text-muted-foreground/60">—</span>
-                <input type="time" value={b.end} onChange={e => onBreakFieldChange(i, 'end', e.target.value)} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary" />
+                <input type="time" value={b.end} onChange={e => onBreakFieldChange(i, 'end', e.target.value)} aria-label={`Кінець перерви ${i + 1}`} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
                 <button type="button" onClick={() => onRemoveBreak(i)} aria-label="Видалити перерву" className="text-muted-foreground/60 hover:text-destructive transition-colors flex-shrink-0">
                   <X size={14} />
                 </button>

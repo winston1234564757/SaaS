@@ -306,6 +306,7 @@ export function StepProfilePreview({
           value={businessName}
           onChange={e => onBusinessNameChange(e.target.value)}
           maxLength={60}
+          aria-label="Назва кабінету або студії"
           className={inputCls}
         />
         <p className="text-[11px] text-muted-foreground/60 mt-1.5">

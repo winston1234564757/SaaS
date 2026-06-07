@@ -27,7 +27,7 @@ export default async function LoyaltyRoute() {
         id, name, target_visits, reward_type, reward_value, is_active,
         master_profiles!inner (
           id, slug, avatar_emoji,
-          profiles!inner ( full_name )
+          profiles!inner ( full_name, avatar_url )
         )
       `)
       .in('master_id', masterIds)
@@ -54,6 +54,7 @@ export default async function LoyaltyRoute() {
       masterSlug: mp?.slug as string,
       masterName: profile?.full_name as string ?? 'Майстер',
       masterEmoji: (mp?.avatar_emoji as string) ?? '💅',
+      masterAvatarUrl: (profile?.avatar_url as string) ?? null,
     };
   });
 
@@ -71,7 +72,7 @@ export default async function LoyaltyRoute() {
       id, discount_percentage, is_used, created_at,
       master_profiles (
         id, slug, avatar_emoji,
-        profiles ( full_name )
+        profiles ( full_name, avatar_url )
       )
     `)
     .eq('client_id', user!.id)
@@ -88,6 +89,7 @@ export default async function LoyaltyRoute() {
       masterName: profile?.full_name || 'Майстер',
       masterSlug: mp?.slug,
       masterEmoji: mp?.avatar_emoji || '💅',
+      masterAvatarUrl: profile?.avatar_url || null,
       createdAt: pc.created_at,
     };
   });
@@ -99,7 +101,7 @@ export default async function LoyaltyRoute() {
       id, status, discount_pct,
       master_profiles (
         id, slug, avatar_emoji, c2c_discount_pct,
-        profiles ( full_name )
+        profiles ( full_name, avatar_url )
       )
     `)
     .eq('referrer_id', user!.id)
@@ -107,7 +109,7 @@ export default async function LoyaltyRoute() {
 
   // Build per-master C2C stats
   const c2cByMaster = new Map<string, {
-    masterId: string; masterSlug: string; masterName: string; masterEmoji: string;
+    masterId: string; masterSlug: string; masterName: string; masterEmoji: string; masterAvatarUrl: string | null;
     c2cDiscountPct: number; invited: number; completed: number;
   }>();
 
@@ -117,7 +119,7 @@ export default async function LoyaltyRoute() {
     const profile = Array.isArray(mp.profiles) ? mp.profiles[0] : mp.profiles;
     const existing = c2cByMaster.get(mp.id) ?? {
       masterId: mp.id, masterSlug: mp.slug, masterName: profile?.full_name || 'Майстер',
-      masterEmoji: mp.avatar_emoji || '💅', c2cDiscountPct: mp.c2c_discount_pct ?? 10,
+      masterEmoji: mp.avatar_emoji || '💅', masterAvatarUrl: profile?.avatar_url || null, c2cDiscountPct: mp.c2c_discount_pct ?? 10,
       invited: 0, completed: 0,
     };
     existing.invited += 1;
@@ -125,11 +127,20 @@ export default async function LoyaltyRoute() {
     c2cByMaster.set(mp.id, existing);
   }
 
-  const c2cMasters = Array.from(c2cByMaster.values()).map(m => ({
-    ...m,
-    balance: m.completed * m.c2cDiscountPct,
-    shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${referralCode}`,
-  }));
+  const c2cMasters = await Promise.all(
+    Array.from(c2cByMaster.values()).map(async (m) => {
+      const { data: balance } = await supabase.rpc('get_c2c_balance', {
+        p_referrer_id: user!.id,
+        p_master_id: m.masterId,
+      });
+
+      return {
+        ...m,
+        balance: typeof balance === 'number' ? balance : 0,
+        shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${referralCode}`,
+      };
+    })
+  );
 
   return (
     <MyLoyaltyPage

@@ -356,6 +356,7 @@ export function ClientDetails({
                 step={1}
                 value={c2cBonusToUse}
                 onChange={e => setC2cBonusToUse(Number(e.target.value))}
+                aria-label="Відсоток реферального бонусу"
                 className="flex-1 accent-primary"
               />
               <span className="text-sm font-bold text-primary w-10 text-right">{c2cBonusToUse}%</span>

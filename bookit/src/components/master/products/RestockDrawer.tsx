@@ -95,7 +95,8 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               placeholder="Примітка (необов'язково)"
               value={note}
               onChange={e => setNote(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary mb-4"
+              aria-label="Примітка до поповнення"
+              className="w-full px-4 py-3 rounded-lg bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 mb-4"
             />
 
             {error && (

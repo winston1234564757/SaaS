@@ -257,7 +257,7 @@ export function MyProfilePage({ profile }: Props) {
             />
           </div>
 
-          <p className="text-[11px] text-muted-foreground/50 italic px-1 leading-relaxed">
+          <p className="text-[11px] text-muted-foreground/70 italic px-1 leading-relaxed">
             Ці дані будуть доступні майстрам, до яких ви записуєтесь, щоб вони могли забезпечити найкращий та безпечний сервіс.
           </p>
         </div>

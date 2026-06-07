@@ -90,6 +90,7 @@ export function SystemLogsViewer() {
         <div className="flex gap-1 overflow-x-auto scrollbar-hide py-1">
           <button
             type="button"
+            aria-pressed={activeTab === 'notif'}
             onClick={() => {
               setActiveTab('notif');
               setSearch('');
@@ -104,6 +105,7 @@ export function SystemLogsViewer() {
           </button>
           <button
             type="button"
+            aria-pressed={activeTab === 'otp'}
             onClick={() => {
               setActiveTab('otp');
               setSearch('');
@@ -126,6 +128,7 @@ export function SystemLogsViewer() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Пошук по логах..."
+              aria-label="Пошук по логах"
               className="w-full rounded-full border border-slate-200 bg-white pl-9 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 transition"
             />
           </div>

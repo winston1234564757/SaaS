@@ -153,6 +153,7 @@ export function ModerationHub() {
       <div className="flex gap-2 rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-3.5 shadow-sm">
         <button
           type="button"
+          aria-pressed={activeTab === 'reports'}
           onClick={() => setActiveTab('reports')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             activeTab === 'reports'
@@ -164,6 +165,7 @@ export function ModerationHub() {
         </button>
         <button
           type="button"
+          aria-pressed={activeTab === 'reviews'}
           onClick={() => setActiveTab('reviews')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             activeTab === 'reviews'
@@ -175,6 +177,7 @@ export function ModerationHub() {
         </button>
         <button
           type="button"
+          aria-pressed={activeTab === 'portfolio'}
           onClick={() => setActiveTab('portfolio')}
           className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition active:scale-[0.95] cursor-pointer ${
             activeTab === 'portfolio'

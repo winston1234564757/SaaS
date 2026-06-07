@@ -18,14 +18,17 @@ function KpiPill({ icon, label, value, delta, onClick }: KpiPillProps) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-3 px-4 py-2.5 rounded-full bg-secondary/50 hover:bg-secondary border border-border-strong text-left active:scale-[0.95] duration-100 transition-all flex-shrink-0 cursor-pointer shadow-sm select-none"
+      className="flex items-center gap-3.5 px-5 py-3.5 rounded-[20px] bg-surface/60 backdrop-blur-md hover:bg-surface/80 hover:shadow-[0_8px_24px_rgb(0,0,0,0.06)] border border-white/30 text-left active:scale-[0.95] duration-200 transition-all flex-shrink-0 cursor-pointer shadow-sm select-none relative overflow-hidden group min-w-[140px]"
     >
-      <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+      {/* М'який підсвітка на ховер */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      
+      <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner group-hover:scale-105 transition-transform duration-300 flex-shrink-0 relative z-10">
         {icon}
       </div>
-      <div>
-        <div className="flex items-baseline gap-1.5 leading-none">
-          <p className="metric-value text-2xl font-bold text-foreground !text-base">{value}</p>
+      <div className="relative z-10">
+        <div className="flex items-baseline gap-1.5 leading-none mb-1">
+          <p className="metric-value text-xl font-bold text-foreground tracking-tight drop-shadow-sm">{value}</p>
           {delta !== undefined && delta !== null && (
             <span
               className={cn(
@@ -40,7 +43,7 @@ function KpiPill({ icon, label, value, delta, onClick }: KpiPillProps) {
             </span>
           )}
         </div>
-        <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mt-0.5">
+        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider block">
           {label}
         </span>
       </div>
@@ -48,10 +51,10 @@ function KpiPill({ icon, label, value, delta, onClick }: KpiPillProps) {
   );
 }
 
-interface KpiTickerProps {
+export interface KpiTickerProps {
   bookings: number;
   orders: number;
-  revenue: number; // в копійках
+  revenue: number; // у гривнях
   activeClients: number;
   deltas?: {
     bookings?: number | null;
@@ -74,7 +77,7 @@ export function KpiTicker({
         <KpiPill
           icon={<DollarSign size={16} />}
           label="Виручка"
-          value={formatPrice(Math.round(revenue / 100))}
+          value={formatPrice(Math.round(revenue))}
           delta={deltas.revenue}
         />
         <KpiPill

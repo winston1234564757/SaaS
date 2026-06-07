@@ -20,7 +20,7 @@ import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
 import { cn } from '@/lib/utils/cn';
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 
 interface ClientDetailSheetProps {
   client: ClientRow | null;
@@ -131,9 +131,9 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
   };
 
   return (
-    <PopUpModal
-      isOpen={!!client}
-      onClose={onClose}
+    <Sheet
+      open={!!client}
+      onOpenChange={(v) => !v && onClose()}
       title={client?.client_name ?? 'Iнформацiя про клiєнта'}
     >
       <div className="flex flex-col gap-5">
@@ -477,6 +477,6 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
           )}
         </div>
       </div>
-    </PopUpModal>
+    </Sheet>
   );
 }

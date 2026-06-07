@@ -7,7 +7,7 @@ import {
   Star, Crown, Gem, Heart, Zap, Target, TrendingUp, TrendingDown,
   AlertTriangle, Clock, UserCheck, UserX, Flame, Shield, Gift, Info,
 } from 'lucide-react';
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 import { cn } from '@/lib/utils/cn';
 import type { ClientRow } from './ClientsPage';
 import type {
@@ -266,6 +266,7 @@ function ConditionRow({
               value={cond.value as number | string}
               onChange={e => onChange({ ...cond, value: e.target.value === '' ? '' : Number(e.target.value) })}
               placeholder={placeholder}
+              aria-label="Значення умови сегмента"
               className="w-24 shrink-0 px-3 py-2 rounded-xl bg-muted/15 border border-transparent text-sm font-bold text-right outline-none focus:bg-secondary focus:border-accent/30"
             />
           </div>
@@ -422,9 +423,9 @@ export function SegmentBuilder({
     );
 
   return (
-    <PopUpModal
-      isOpen={isOpen}
-      onClose={onClose}
+    <Sheet
+      open={isOpen}
+      onOpenChange={(v) => !v && onClose()}
       title={step === 'template' ? 'Оберіть шаблон або створіть свій' : (initial ? 'Редагувати сегмент' : 'Новий сегмент')}
     >
       <AnimatePresence mode="popLayout">
@@ -460,7 +461,7 @@ export function SegmentBuilder({
                   </div>
                   <div>
                     <p className="text-xs font-bold text-foreground leading-tight">{t.name}</p>
-                    <p className="text-[10px] text-muted-foreground/50 mt-0.5 leading-tight">{t.hint}</p>
+                    <p className="text-[10px] text-muted-foreground/70 mt-0.5 leading-tight">{t.hint}</p>
                   </div>
                 </motion.button>
               ))}
@@ -508,6 +509,7 @@ export function SegmentBuilder({
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Назва сегмента..."
+                aria-label="Назва сегмента"
                 className="flex-1 px-4 py-3 rounded-2xl bg-secondary border border-border focus:border-accent/40 focus:ring-2 focus:ring-accent/10 outline-none text-sm font-bold"
                 autoFocus={step === 'edit' && !initial}
               />
@@ -525,7 +527,7 @@ export function SegmentBuilder({
                 >
                   <div className="flex flex-col gap-3 p-4 rounded-2xl bg-muted/10 border border-muted/20">
                     <div>
-                      <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2">Іконка</p>
+                      <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">Іконка</p>
                       {/* 6-col grid with 44px buttons for touch compliance */}
                       <div className="grid grid-cols-6 gap-2">
                         {SEGMENT_PRESET_ICONS.map(ic => (
@@ -548,7 +550,7 @@ export function SegmentBuilder({
                       </div>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2">Колір</p>
+                      <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">Колір</p>
                       <div className="flex gap-2 flex-wrap">
                         {SEGMENT_PRESET_COLORS.map(c => (
                           <button
@@ -574,7 +576,7 @@ export function SegmentBuilder({
             {/* Conditions */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Умови фільтрації</p>
+                <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Умови фільтрації</p>
                 <div
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
                   style={{ background: `${color}15`, color }}
@@ -657,6 +659,6 @@ export function SegmentBuilder({
         )}
 
       </AnimatePresence>
-    </PopUpModal>
+    </Sheet>
   );
 }

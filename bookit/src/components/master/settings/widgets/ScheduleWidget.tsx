@@ -227,7 +227,7 @@ export function ScheduleWidget({
 
               {/* Weekly schedule rows */}
               <div className="flex flex-col gap-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-1">Дні та години</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-1">Дні та години</p>
                 {DAYS_ORDER.map((day) => (
                   <div
                     key={day}
@@ -262,18 +262,20 @@ export function ScheduleWidget({
                           type="time"
                           value={schedule[day].start_time}
                           onChange={(e) => setDayTime(day, 'start_time', e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 outline-none text-xs font-medium text-center"
+                          aria-label={`Початок роботи ${DAYS_UA_SHORT[day]}`}
+                          className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium text-center"
                         />
                         <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
                         <input
                           type="time"
                           value={schedule[day].end_time}
                           onChange={(e) => setDayTime(day, 'end_time', e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 outline-none text-xs font-medium text-center"
+                          aria-label={`Кінець роботи ${DAYS_UA_SHORT[day]}`}
+                          className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium text-center"
                         />
                       </div>
                     ) : (
-                      <span className="text-[11px] text-muted-foreground/50 flex-1">Вихідний</span>
+                      <span className="text-[11px] text-muted-foreground/70 flex-1">Вихідний</span>
                     )}
                   </div>
                 ))}
@@ -361,7 +363,8 @@ export function ScheduleWidget({
                             nb[i] = { ...nb[i], start: e.target.value };
                             onBreaksChange(nb);
                           }}
-                          className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 outline-none text-sm font-medium"
+                          aria-label={`Початок перерви ${i + 1}`}
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-sm font-medium"
                         />
                         <span className="text-muted-foreground/30">—</span>
                         <input
@@ -372,7 +375,8 @@ export function ScheduleWidget({
                             nb[i] = { ...nb[i], end: e.target.value };
                             onBreaksChange(nb);
                           }}
-                          className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 outline-none text-sm font-medium"
+                          aria-label={`Кінець перерви ${i + 1}`}
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-sm font-medium"
                         />
                         <button type="button"
                           onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}

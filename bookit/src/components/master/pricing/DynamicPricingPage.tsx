@@ -325,10 +325,11 @@ const PricingRuleCard = React.memo(({ icon: Icon, color, title, hint, isEnabled,
 const RuleInput = ({ label, value, onChange }: any) => (
   <div>
     <p className="text-[10px] font-medium text-muted-foreground mb-1">{label}</p>
-    <input 
-      type="number" 
-      value={value} 
+    <input
+      type="number"
+      value={value}
       onChange={e => onChange(Number(e.target.value))}
+      aria-label={label}
       className="w-full px-3 py-2 rounded-xl border border-border bg-secondary/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
     />
   </div>

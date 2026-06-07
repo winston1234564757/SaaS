@@ -334,6 +334,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   onChange={e => setTitle(e.target.value)}
                   data-testid="broadcast-title-input"
                   placeholder="Напр. «Повернення сплячих клієнтів»"
+                  aria-label="Назва розсилки"
                   className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-[#E8D5CC] focus:border-primary transition-colors"
                   style={{ background: 'rgba(255,255,255,0.68)' }}
                 />
@@ -447,6 +448,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                           value={searchInput}
                           onChange={e => handleSearchInput(e.target.value)}
                           placeholder="Пошук за ім'ям або телефоном"
+                          aria-label="Пошук клієнта за ім'ям або телефоном"
                           className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-[#E8D5CC] focus:border-primary"
                           style={{ background: 'rgba(255,255,255,0.68)' }}
                         />
@@ -571,6 +573,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                         value={discountPct}
                         onChange={e => setDiscountPct(e.target.value === '' ? '' : Number(e.target.value))}
                         placeholder="20"
+                        aria-label="Знижка у відсотках"
                         className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-[#E8D5CC] focus:border-primary"
                         style={{ background: 'rgba(255,255,255,0.68)' }}
                       />

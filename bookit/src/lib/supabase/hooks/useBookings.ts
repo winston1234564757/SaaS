@@ -5,6 +5,7 @@ import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import type { BookingStatus } from '@/types/database';
 import { safeQuery, safeMutation } from '../safeQuery';
+import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 
 const STARTER_LIMIT = 40;
 
@@ -131,12 +132,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
       if (ctx?.prev) qc.setQueryData(key, ctx.prev);
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ['bookings', masterId] });
-      qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
-      qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      qc.invalidateQueries({ queryKey: ['weekly-overview'] });
-      qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
-      qc.invalidateQueries({ queryKey: ['unified-sales'] });
+      invalidateBookingQueries(qc);
     },
   });
 

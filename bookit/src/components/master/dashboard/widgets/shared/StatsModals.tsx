@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Phone, MessageCircle } from 'lucide-react';
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
@@ -22,7 +22,7 @@ export function RevenueModal({
   const completed = bookings.filter((b) => b.status === 'completed');
 
   return (
-    <PopUpModal isOpen={isOpen} onClose={onClose} title="Виручка сьогодні">
+    <Sheet open={isOpen} onOpenChange={(v) => !v && onClose()} title="Виручка сьогодні">
       <div className="flex flex-col">
         {completed.length === 0 ? (
           <p className="text-sm text-[var(--text-tertiary)] text-center py-6">
@@ -56,7 +56,7 @@ export function RevenueModal({
           </>
         )}
       </div>
-    </PopUpModal>
+    </Sheet>
   );
 }
 
@@ -98,7 +98,7 @@ export function ClientsModal({
 
   return (
     <>
-      <PopUpModal isOpen={isOpen} onClose={onClose} title="Клієнти тижня">
+      <Sheet open={isOpen} onOpenChange={(v) => !v && onClose()} title="Клієнти тижня">
         <div className="flex flex-col">
           {uniqueClients.length === 0 ? (
             <p className="text-sm text-[var(--text-tertiary)] text-center py-6">
@@ -162,7 +162,7 @@ export function ClientsModal({
             </div>
           )}
         </div>
-      </PopUpModal>
+      </Sheet>
 
       <ClientDetailSheet client={selectedClient} onClose={() => setSelectedClient(null)} />
     </>

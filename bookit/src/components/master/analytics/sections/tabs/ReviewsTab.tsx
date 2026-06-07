@@ -7,6 +7,7 @@ import { ErrorCell } from '../../primitives/ErrorCell';
 import { EmptyCell } from '../../primitives/EmptyCell';
 import { Star, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface ReviewsTabProps {
   start: string;
@@ -42,7 +43,7 @@ export function ReviewsTab({ start, end }: ReviewsTabProps) {
         <div className="bento-card p-4 flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">NPS лояльність</p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">Net Promoter Score</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">Net Promoter Score</p>
           </div>
           <div className="mt-4 flex items-baseline gap-1.5 select-none">
             <span className="metric-value text-3xl font-bold text-foreground">{data.npsScore}</span>
@@ -54,14 +55,14 @@ export function ReviewsTab({ start, end }: ReviewsTabProps) {
         <div className="bento-card p-4 flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Середня оцінка</p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">Загальний бал відгуків</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">Загальний бал відгуків</p>
           </div>
           <div className="mt-4 flex items-baseline gap-1.5 select-none">
             <span className="metric-value text-3xl font-bold text-warning flex items-center gap-1">
               <Star size={24} fill="var(--warning)" className="text-warning" />
               {data.averageRating}
             </span>
-            <span className="text-[10px] text-muted-foreground/60 font-semibold">на основі {data.totalCount} відгуків</span>
+            <span className="text-[10px] text-muted-foreground/60 font-semibold">на основі {data.totalCount} {pluralUk(data.totalCount, 'відгуку', 'відгуків', 'відгуків')}</span>
           </div>
         </div>
 

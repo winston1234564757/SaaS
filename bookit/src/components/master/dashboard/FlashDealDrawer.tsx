@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic';
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 
 const DynamicFlashDealPage = dynamic(
   () => import('@/components/master/flash/FlashDealPage').then(m => m.FlashDealPage),
@@ -13,10 +13,8 @@ interface Props {
 
 export function FlashDealDrawer({ isOpen, onClose }: Props) {
   return (
-    <PopUpModal isOpen={isOpen} onClose={onClose} title="Флеш-акції" keepMounted={true}>
-      {isOpen && (
-        <DynamicFlashDealPage isDrawer={true} />
-      )}
-    </PopUpModal>
+    <Sheet open={isOpen} onOpenChange={(v) => !v && onClose()} title="Флеш-акції">
+      {isOpen && <DynamicFlashDealPage isDrawer={true} />}
+    </Sheet>
   );
 }

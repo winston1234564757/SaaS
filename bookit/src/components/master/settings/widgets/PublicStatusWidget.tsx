@@ -102,6 +102,7 @@ export function PublicStatusWidget({
           <input
             value={slug}
             onChange={(e) => onSlugChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+            aria-label="Ваша унікальна адреса"
             className="flex-1 bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-mute/30"
             placeholder="your-name"
           />

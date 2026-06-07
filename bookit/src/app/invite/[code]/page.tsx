@@ -14,13 +14,13 @@ interface MasterData {
   bio: string | null;
   city: string | null;
   avatar_emoji: string | null;
-  profiles: { full_name: string } | { full_name: string }[] | null;
+  profiles: { full_name: string; avatar_url: string | null } | { full_name: string; avatar_url: string | null }[] | null;
 }
 
-type InviteProfile = { full_name: string } | null;
+type InviteProfile = { full_name: string; avatar_url: string | null } | null;
 
 function extractProfile(
-  profiles: { full_name: string } | { full_name: string }[] | null | undefined
+  profiles: { full_name: string; avatar_url: string | null } | { full_name: string; avatar_url: string | null }[] | null | undefined
 ): InviteProfile {
   if (!profiles) return null;
   return Array.isArray(profiles) ? profiles[0] ?? null : profiles;
@@ -32,7 +32,7 @@ async function getInviter(code: string) {
   // 1. Try to match a published master's slug
   const { data: master } = await supabase
     .from('master_profiles')
-    .select('id, slug, bio, city, avatar_emoji, profiles!inner ( full_name )')
+    .select('id, slug, bio, city, avatar_emoji, profiles!inner ( full_name, avatar_url )')
     .eq('slug', code)
     .eq('is_published', true)
     .maybeSingle();
@@ -41,7 +41,7 @@ async function getInviter(code: string) {
   // 2. Try to match a master's referral_code
   const { data: masterByCode } = await supabase
     .from('master_profiles')
-    .select('id, slug, bio, city, avatar_emoji, profiles!inner ( full_name )')
+    .select('id, slug, bio, city, avatar_emoji, profiles!inner ( full_name, avatar_url )')
     .eq('referral_code', code)
     .eq('is_published', true)
     .maybeSingle();
@@ -50,7 +50,7 @@ async function getInviter(code: string) {
   // 3. Try to match a client's referral_code
   const { data: client } = await supabase
     .from('client_profiles')
-    .select('id, profiles ( full_name )')
+    .select('id, profiles ( full_name, avatar_url )')
     .eq('referral_code', code)
     .maybeSingle();
   if (client) return { type: 'client' as const, data: client };
@@ -87,6 +87,7 @@ export default async function InvitePage({ params }: Props) {
     ? extractProfile((result.data as MasterData).profiles)
     : null;
   const name = profileRaw?.full_name ?? null;
+  const avatarUrl = profileRaw?.avatar_url ?? null;
   const emoji = masterData?.avatar_emoji || '💅';
   const bio = masterData?.bio ?? null;
   const city = masterData?.city ?? null;
@@ -107,10 +108,14 @@ export default async function InvitePage({ params }: Props) {
         <div className="bento-card p-7 text-center">
           {/* Avatar */}
           <div
-            className="size-20 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4"
+            className="size-20 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4 overflow-hidden relative"
             style={{ background: 'rgba(255, 210, 194, 0.55)' }}
           >
-            {emoji}
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={name || 'Аватар'} className="w-full h-full object-cover" />
+            ) : (
+              emoji
+            )}
           </div>
 
           {name ? (

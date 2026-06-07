@@ -635,6 +635,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                         placeholder="Ваше ім'я"
                         value={name}
                         onChange={e => setName(e.target.value)}
+                        aria-label="Ваше ім'я"
                         className="w-full pl-11 pr-4 py-3 rounded-md bg-secondary border border-border text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm transition-all"
                       />
                     </div>
@@ -645,6 +646,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                         placeholder="Номер телефону"
                         value={phone}
                         onChange={e => handlePhoneChange(e.target.value)}
+                        aria-label="Номер телефону"
                         className="w-full pl-11 pr-4 py-3 rounded-md bg-secondary border border-border text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm transition-all"
                       />
                     </div>
@@ -744,6 +746,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                     placeholder="Місто, відділення або адреса"
                     value={address}
                     onChange={e => setAddress(e.target.value)}
+                    aria-label="Адреса доставки"
                     className="w-full px-4 py-3 rounded-md bg-secondary border border-border text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm transition-all"
                   />
                 )}
@@ -755,6 +758,7 @@ function CartDrawer({ open, cart, masterId, masterSlug, shipsNovaPoshta, isAuth,
                 placeholder="Примітка (необов'язково)"
                 value={note}
                 onChange={e => setNote(e.target.value)}
+                aria-label="Примітка до замовлення"
                 className="w-full px-4 py-3 rounded-md bg-secondary border border-border text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm transition-all"
               />
 

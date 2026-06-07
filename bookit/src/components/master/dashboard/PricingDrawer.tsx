@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic';
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 
 const DynamicPricingPage = dynamic(
@@ -15,10 +15,10 @@ interface Props {
 
 export function PricingDrawer({ isOpen, onClose, pricingRules }: Props) {
   return (
-    <PopUpModal isOpen={isOpen} onClose={onClose} title="Ціноутворення" keepMounted={true}>
+    <Sheet open={isOpen} onOpenChange={(v) => !v && onClose()} title="Ціноутворення">
       <div className="md:p-2">
         {isOpen && <DynamicPricingPage initial={pricingRules} isDrawer={true} />}
       </div>
-    </PopUpModal>
+    </Sheet>
   );
 }

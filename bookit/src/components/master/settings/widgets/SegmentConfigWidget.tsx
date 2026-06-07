@@ -67,7 +67,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground truncate">{seg.name}</p>
-                  <p className="text-[10px] text-muted-foreground/50">{seg.conditions.length} умов</p>
+                  <p className="text-[10px] text-muted-foreground/70">{seg.conditions.length} умов</p>
                 </div>
                 <Pencil size={11} className="text-muted-foreground/30 shrink-0" />
               </motion.button>

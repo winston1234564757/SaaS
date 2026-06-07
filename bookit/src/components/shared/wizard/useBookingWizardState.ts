@@ -153,6 +153,9 @@ export function useBookingWizardState({
   }
   function closeWizard() { onClose(); setTimeout(() => go('services'), 350); }
 
+  const c2cPropsRef = useRef({ c2cDiscountPct, c2cRefCode });
+  c2cPropsRef.current = { c2cDiscountPct, c2cRefCode };
+
   // ── Reset + fetch client history on open ──────────────────────────────────
   useEffect(() => {
     // Race condition guard: prevents stale async callbacks from updating state
@@ -184,7 +187,9 @@ export function useBookingWizardState({
       setLoyaltyDiscount(null);
       setC2cReferrerBalance(0);
       setC2cBonusToUse(0);
-      setActiveC2cDiscountPct(c2cDiscountPct ?? null);
+      
+      const currentC2cPct = c2cPropsRef.current.c2cDiscountPct ?? (typeof window !== 'undefined' ? Number(localStorage.getItem('bookit_ref_pct')) || null : null);
+      setActiveC2cDiscountPct(currentC2cPct);
       setC2cAlreadyUsed(false);
       c2cCheckRef.current = '';
       setSuggestedProductIds(new Set());
@@ -217,7 +222,7 @@ export function useBookingWizardState({
           sb.from('client_master_relations').select('total_visits').eq('client_id', userId).eq('master_id', masterId).maybeSingle(),
           sb.from('loyalty_programs').select('name, target_visits, reward_type, reward_value').eq('master_id', masterId).eq('is_active', true),
           sb.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
-          sb.from('master_partners').select('partner_id, status, master_profiles!master_partners_partner_id_fkey(id, slug, avatar_emoji, categories, profiles(full_name))').eq('master_id', masterId).eq('status', 'accepted').limit(5),
+          sb.from('master_partners').select('partner_id, status, master_profiles!master_partners_partner_id_fkey(id, slug, avatar_emoji, categories, profiles(full_name, avatar_url))').eq('master_id', masterId).eq('status', 'accepted').limit(5),
           sb.rpc('get_c2c_balance', { p_referrer_id: userId, p_master_id: masterId }),
         ]).then(([relRes, progRes, histRes, partRes, c2cBalRes]) => {
           if (cancelled) return;
@@ -238,17 +243,18 @@ export function useBookingWizardState({
             type PartnerRow = {
               partner_id: string;
               status: string;
-              master_profiles: { id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null } | null } | Array<{ id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null } | null }> | null;
+              master_profiles: { id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null; avatar_url: string | null } | null } | Array<{ id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null; avatar_url: string | null } | null }> | null;
             };
             setPartners(partRes.data.map((p: PartnerRow) => {
               const mp = Array.isArray(p.master_profiles) ? p.master_profiles[0] : p.master_profiles;
               const profile = Array.isArray(mp?.profiles) ? mp.profiles[0] : mp?.profiles;
               return {
-                id: mp?.id,
-                slug: mp?.slug,
-                emoji: mp?.avatar_emoji || '',
-                name: profile?.full_name || 'Майстер',
-                category: mp?.categories?.[0] || 'Beauty',
+                id: mp?.id || p.partner_id,
+                name: profile?.full_name || 'Партнер',
+                slug: mp?.slug || '',
+                emoji: mp?.avatar_emoji || '✨',
+                avatarUrl: profile?.avatar_url || null,
+                category: mp?.categories?.[0] || 'Б\'юті-послуги'
               };
             }));
           }

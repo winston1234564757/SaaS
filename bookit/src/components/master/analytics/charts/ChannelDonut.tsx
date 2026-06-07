@@ -65,6 +65,8 @@ export function ChannelDonut({ data }: ChannelDonutProps) {
         <svg
           viewBox="0 0 100 100"
           className="w-full h-full transform -rotate-90 overflow-visible"
+          role="img"
+          aria-label="Канали залучення клієнтів"
         >
           {segments.map((s, idx) => {
             const isHovered = hoveredIdx === idx;

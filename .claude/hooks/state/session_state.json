@@ -1,9 +1,14 @@
 {
   "edit_counts": {
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\MTRP\\TRACKER.md": 5,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\MTRP\\MAP.md": 5,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\MTRP\\AUDIT_LOG.md": 1
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\notifications\\NotificationOrchestrator.ts": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\api\\settings\\telegram-status\\route.ts": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\settings\\widgets\\TechnicalIsland.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\notifications\\constants\\notifMap.ts": 2,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\MAPS\\SYSTEM_MAP.md": 1,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\api\\debug\\fire-notifs\\route.ts": 3
   },
-  "consecutive_reads": 0,
-  "read_files": []
+  "consecutive_reads": 2,
+  "read_files": [
+    "boupd4ten.output"
+  ]
 }

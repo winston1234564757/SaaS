@@ -474,6 +474,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                 onChange={e => handlePhoneChange(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSendSms()}
                 autoFocus
+                aria-label="Номер телефону"
                 className="flex-1 py-3.5 pr-3.5 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground"
               />
             </div>
@@ -522,6 +523,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                   onKeyDown={e => handleDigitKeyDown(i, e)}
                   onPaste={i === 0 ? handlePaste : undefined}
                   autoFocus={i === 0}
+                  aria-label={`Цифра ${i + 1} коду`}
                   className="w-11 h-12 text-center text-lg font-bold text-foreground rounded-md border-2 border-border bg-secondary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
               ))}
@@ -648,7 +650,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
             <button
               type="button"
               onClick={() => { router.refresh(); router.push('/my/bookings'); }}
-              className="text-[11px] text-muted-foreground/40 text-center py-1 hover:text-muted-foreground/60 transition-colors cursor-pointer"
+              className="text-[11px] text-muted-foreground/60 text-center py-1 hover:text-muted-foreground/80 transition-colors cursor-pointer"
             >
               пропустити
             </button>

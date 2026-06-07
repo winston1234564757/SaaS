@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
@@ -171,6 +171,7 @@ export function useAnalyticsExtras({
     queryKey: ['analytics-extras', masterId, start, end, isPro, scope],
     enabled: !!masterId && enabled,
     staleTime: 5 * 60_000, // 5 min
+    placeholderData: keepPreviousData,
     queryFn: async (): Promise<AnalyticsExtras> => {
       const supabase = createClient();
       const { data, error } = await supabase.rpc('get_analytics_extras', {

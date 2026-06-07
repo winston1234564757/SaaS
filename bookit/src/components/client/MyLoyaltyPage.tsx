@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, Copy, Check, Users, Ticket, ArrowRight, Share2, Heart } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -18,6 +19,7 @@ interface LoyaltyProgram {
   masterSlug: string;
   masterName: string;
   masterEmoji: string;
+  masterAvatarUrl?: string | null;
 }
 
 interface BarterPromocode {
@@ -27,6 +29,7 @@ interface BarterPromocode {
   masterName: string;
   masterSlug: string;
   masterEmoji: string;
+  masterAvatarUrl?: string | null;
   createdAt: string;
 }
 
@@ -35,6 +38,7 @@ interface C2cMasterStat {
   masterSlug: string;
   masterName: string;
   masterEmoji: string;
+  masterAvatarUrl?: string | null;
   c2cDiscountPct: number;
   invited: number;
   completed: number;
@@ -204,13 +208,17 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                         className="bento-card p-4 flex flex-col gap-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="size-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">
-                            {m.masterEmoji}
+                          <div className="size-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0 overflow-hidden relative">
+                            {m.masterAvatarUrl ? (
+                              <Image src={m.masterAvatarUrl} alt={m.masterName} fill className="object-cover" />
+                            ) : (
+                              m.masterEmoji
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground">{m.masterName}</p>
                             <p className="text-xs text-muted-foreground/60">
-                              Запрошено: {m.invited} · Завершили: {m.completed} · Баланс: {m.balance}%
+                              Запрошено: {m.invited} · Завершили: {m.completed} · Отримано: {m.completed * m.c2cDiscountPct}% · Баланс: {m.balance}%
                             </p>
                           </div>
                           {m.balance > 0 && (
@@ -312,8 +320,12 @@ export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, pro
                           )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="size-11 rounded-lg bg-secondary/30 flex items-center justify-center text-xl shrink-0 shadow-inner">
-                              {pc.masterEmoji}
+                            <div className="size-11 rounded-lg bg-secondary/30 flex items-center justify-center text-xl shrink-0 shadow-inner overflow-hidden relative">
+                              {pc.masterAvatarUrl ? (
+                                <Image src={pc.masterAvatarUrl} alt={pc.masterName} fill className="object-cover" />
+                              ) : (
+                                pc.masterEmoji
+                              )}
                             </div>
                             <div>
                               <p className="text-sm font-bold text-foreground">{pc.masterName}</p>
@@ -370,8 +382,12 @@ function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: nu
     >
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="size-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-accent/15 text-accent">
-            {p.masterEmoji}
+          <div className="size-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-accent/15 text-accent overflow-hidden relative">
+            {p.masterAvatarUrl ? (
+              <Image src={p.masterAvatarUrl} alt={p.masterName} fill className="object-cover" />
+            ) : (
+              p.masterEmoji
+            )}
           </div>
           <span className="text-sm font-medium text-foreground truncate">{p.masterName}</span>
         </div>

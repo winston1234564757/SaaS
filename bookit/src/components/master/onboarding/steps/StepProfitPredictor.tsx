@@ -123,6 +123,7 @@ export function StepProfitPredictor({
             step={1}
             value={emptySlots}
             onChange={e => onEmptySlotsChange(Number(e.target.value))}
+            aria-label="Кількість вільних слотів"
             className="absolute inset-x-0 w-full h-2 opacity-0 cursor-pointer z-10"
           />
           {/* Custom thumb */}

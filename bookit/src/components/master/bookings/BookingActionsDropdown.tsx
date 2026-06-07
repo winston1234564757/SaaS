@@ -13,6 +13,7 @@ import {
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { parseError } from '@/lib/utils/errors';
+import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 
 type BookingSlice = Pick<
   BookingWithServices,
@@ -32,15 +33,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const defaultInvalidate = async () => {
-    await Promise.all([
-      qc.invalidateQueries({ queryKey: ['bookings'] }),
-      qc.invalidateQueries({ queryKey: ['dashboard-stats'] }),
-      qc.invalidateQueries({ queryKey: ['weekly-overview'] }),
-      qc.invalidateQueries({ queryKey: ['monthly-booking-count'] }),
-      qc.invalidateQueries({ queryKey: ['unified-sales'] }),
-    ]);
-  };
+  const defaultInvalidate = () => invalidateBookingQueries(qc);
 
   const run = (
     action: () => Promise<{ error: string | null }>,

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Crown, Building2, Zap, Loader2, X, PartyPopper, CreditCard, Gift } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createMonoInvoice, recoverCardToken, cancelSubscription } from '@/app/(master)/dashboard/billing/actions';
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 import { cn } from '@/lib/utils/cn';
 
 type PaymentProvider = 'mono';
@@ -242,13 +242,13 @@ export function BillingPage() {
                   {currentTier !== 'starter' && subscription?.status === 'active' && (
                     <button type="button" 
                       onClick={() => setShowCancelModal(true)}
-                      className="text-[10px] font-medium text-muted-foreground/40 hover:text-destructive transition-colors underline underline-offset-2"
+                      className="text-[10px] font-medium text-muted-foreground/70 hover:text-destructive transition-colors underline underline-offset-2"
                     >
                       Скасувати підписку
                     </button>
                   )}
                   {currentTier !== 'starter' && !subscription && !isLoading && (
-                    <p className="text-[9px] text-muted-foreground/40 text-right max-w-[120px]">
+                    <p className="text-[9px] text-muted-foreground/70 text-right max-w-[120px]">
                       Картка не прив'язана, автоматичного списання не буде
                     </p>
                   )}
@@ -449,9 +449,9 @@ export function BillingPage() {
         </p>
       </div>
 
-      <PopUpModal
-        isOpen={showCancelModal}
-        onClose={() => !isCanceling && setShowCancelModal(false)}
+      <Sheet
+        open={showCancelModal}
+        onOpenChange={(v) => !v && !isCanceling && setShowCancelModal(false)}
         title="Скасувати підписку?"
       >
         <div className="p-6">
@@ -480,7 +480,7 @@ export function BillingPage() {
             </button>
           </div>
         </div>
-      </PopUpModal>
+      </Sheet>
     </div>
   );
 }

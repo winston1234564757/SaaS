@@ -18,7 +18,7 @@ export function useSourceAttribution({ start, end }: { start: string; end: strin
   return useQuery({
     queryKey: ['analytics-tab-source', masterId, start, end],
     enabled: !!masterId,
-    staleTime: 3 * 60_000, // 3 min
+    staleTime: 5 * 60_000, // 5 min
     queryFn: async (): Promise<SourceAttributionPoint[]> => {
       const supabase = createClient();
       const { data, error } = await supabase

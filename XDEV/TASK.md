@@ -14,6 +14,35 @@
 
 ---
 
+## STEP 14-15 — ✅ COMPLETE (2026-06-05)
+
+**MTRP Phase 4 DONE + Phase 2 P2.11**
+- **Scope:** A11y tail (Phase 4 всі items) + WCAG AA contrast
+- **TSC:** 0 | **Items closed:** 37→42/71
+
+### Що зроблено (S14 — Phase 4 complete)
+- **P3.3** — 9 SVGs: 7 `aria-hidden="true"` (decorative) + 2 `role="img" aria-label` (charts)
+- **P3.4** — BottomSheet drag handle `role="presentation"`
+- **P3.5** — `outline-none` → `focus:ring-2 focus:ring-primary/20` (11 files); skip: Vaul/Radix containers, bg-transparent composed inputs
+- **P3.6** — `aria-pressed` на tab toggles: AnalyticsPage · ModerationHub (3) · AcademyPage · SystemLogsViewer (2)
+- **P3.7** — StepServices: `role="tab"` + `id` + `aria-controls="services-panel"`; `role="tabpanel"` + `aria-labelledby`
+- **P3.8** — Hidden file inputs `aria-hidden="true" tabIndex={-1}` (11 files: ProfileHero, ImageUploader, ProductFormDrawer, ProductEditor, PortfolioPhotoUploader, StepProfile, StepBasic, StoryGenerator, SupportWidget, AdminSupportConsole, SupportChatPage)
+
+### Що зроблено (S15 — P2.11 WCAG AA contrast)
+- **P2.11** — 25 files: `/30→/60`, `/40→/70`, `/50→/70` на readable text labels
+  - Analytics tabs: VacationTab · ReviewsTab · NoShowTab · LeadTimeTab · StockTab
+  - Analytics sections: ServicePairing · LtvConcentration · GrowthLists · FlashDealsCard · DynamicPricingUplift · GoalProgress
+  - Booking: BookingDetailsModal (×3 labels) · BookingsPage (×3: 2 section labels + date header)
+  - Clients: SegmentBuilder (×4 labels) · SegmentConfigWidget · ClientWidgets (×3)
+  - Profile: ProfileHero · MyProfilePage
+  - Skip: decorative icons, `placeholder:` text, `isOff`/disabled state classes, line-through prices
+
+### Закриті items
+**Phase 4 ✅ COMPLETE:** P3.3 · P3.4 · P3.5 · P3.6 · P3.7 · P3.8
+**Phase 2:** P2.11
+
+---
+
 ## STEP 13 — ✅ COMPLETE (2026-06-01)
 
 **Final Sprint — Legal · Offline · Invite · Studio · Admin · Backlog B/C/D**

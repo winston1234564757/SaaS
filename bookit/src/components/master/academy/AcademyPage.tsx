@@ -594,6 +594,7 @@ export function AcademyPage() {
         {(['functions', 'goals'] as const).map(tab => (
           <button type="button"
             key={tab}
+            aria-pressed={activeTab === tab}
             onClick={() => setActiveTab(tab)}
             className="relative flex-1 py-2.5 text-[13px] font-semibold rounded-lg cursor-pointer"
             style={{

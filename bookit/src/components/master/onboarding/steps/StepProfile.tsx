@@ -106,6 +106,8 @@ export function StepProfile({
           type="file"
           accept="image/*"
           className="hidden"
+          aria-hidden="true"
+          tabIndex={-1}
           onChange={onAvatarChange}
         />
         <p className="text-[11px] mt-2" style={{ color: 'var(--text-secondary)' }}>
@@ -124,9 +126,10 @@ export function StepProfile({
             value={fullName}
             onChange={e => { onFullNameChange(e.target.value); setShowErrors(false); }}
             placeholder="Ксенія Коваль"
-            className={inputCls}
+            aria-label="Ім'я та прізвище"
             aria-invalid={showErrors && !fullName.trim()}
             aria-describedby={showErrors && !fullName.trim() ? 'name-error' : undefined}
+            className={inputCls}
           />
           {showErrors && !fullName.trim() && (
             <p className="text-destructive text-[11px] mt-1.5 ml-1 font-medium" id="name-error">
@@ -151,8 +154,9 @@ export function StepProfile({
                 placeholder="0XX XXX XX XX"
                 value={formatPhoneDisplay(phone)}
                 onChange={e => { onPhoneChange(normalizePhoneInput(e.target.value)); setShowErrors(false); }}
-                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
+                aria-label="Мобільний телефон"
                 aria-invalid={showErrors && phone.replace(/\D/g, '').length < 9}
+                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
               />
             </div>
             {showErrors && phone.replace(/\D/g, '').length < 9 && (

@@ -190,6 +190,7 @@ export function ServiceEditor({ id }: Props) {
                     if (errors.name) setErrors(p => ({ ...p, name: undefined }));
                   }}
                   placeholder="Наприклад: Манікюр + покриття"
+                  aria-label="Назва послуги"
                   className={cn(
                     'w-full px-4 py-3 rounded-xl bg-background border text-lg font-medium placeholder-muted-foreground outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border',
                     errors.name ? 'border-destructive/50' : ''
@@ -296,6 +297,7 @@ export function ServiceEditor({ id }: Props) {
                     if (errors.price) setErrors(p => ({ ...p, price: undefined }));
                   }}
                   placeholder="0"
+                  aria-label="Ціна в гривнях"
                   className={cn(
                     'w-full px-4 py-3 rounded-xl bg-background border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border',
                     errors.price ? 'border-destructive/50' : ''
@@ -317,6 +319,7 @@ export function ServiceEditor({ id }: Props) {
                       setCustomDurationStr(e.target.value);
                       if (!Number.isNaN(v)) setForm(f => ({ ...f, duration: v }));
                     }}
+                    aria-label="Тривалість у хвилинах"
                     className="w-full px-4 py-3 rounded-xl bg-background border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
                   />
                   <div className="flex-shrink-0 flex items-center px-4 bg-secondary/20 rounded-xl text-xs font-semibold text-muted-foreground border border-border">

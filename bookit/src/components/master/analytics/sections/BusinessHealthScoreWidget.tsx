@@ -59,7 +59,7 @@ export function BusinessHealthScoreWidget({ health }: BusinessHealthScoreWidgetP
       <div className="flex items-center gap-5">
         {/* Анімований SVG Progress Ring */}
         <div className="relative size-20 flex-shrink-0 flex items-center justify-center">
-          <svg className="size-full -rotate-90">
+          <svg className="size-full -rotate-90" aria-hidden="true">
             <circle
               cx="40"
               cy="40"

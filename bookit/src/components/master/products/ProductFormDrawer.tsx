@@ -240,6 +240,8 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                   accept="image/*"
                   multiple
                   className="hidden"
+                  aria-hidden="true"
+                  tabIndex={-1}
                   onChange={e => handlePhotoUpload(e.target.files)}
                 />
               </div>
@@ -251,6 +253,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Наприклад: Маска для волосся Kerastase"
+                  aria-label="Назва товару"
                   className={INPUT_CLS}
                 />
               </Field>
@@ -284,6 +287,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     onChange={e => setPriceStr(e.target.value)}
                     placeholder="0"
                     min="0"
+                    aria-label="Ціна товару в гривнях"
                     className={INPUT_CLS}
                   />
                 </Field>
@@ -296,6 +300,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                       onChange={e => setStockStr(e.target.value)}
                       placeholder="0"
                       min="0"
+                      aria-label="Кількість на складі"
                       className={INPUT_CLS}
                     />
                   </Field>
@@ -435,7 +440,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const INPUT_CLS = 'w-full px-4 py-3 rounded-lg bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/50 transition-colors';
+const INPUT_CLS = 'w-full px-4 py-3 rounded-lg bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-colors';
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (

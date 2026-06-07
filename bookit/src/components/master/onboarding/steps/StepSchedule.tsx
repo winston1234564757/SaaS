@@ -176,7 +176,7 @@ export function StepSchedule({
                           type="time"
                           value={d.start_time}
                           onChange={e => updateDayTime(day, 'start_time', e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border text-[12px] text-foreground outline-none transition-all text-center"
+                          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border text-[12px] text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all text-center"
                           style={{
                             background: 'var(--secondary)',
                             borderColor: 'var(--border)',
@@ -189,7 +189,7 @@ export function StepSchedule({
                           type="time"
                           value={d.end_time}
                           onChange={e => updateDayTime(day, 'end_time', e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border text-[12px] text-foreground outline-none transition-all text-center"
+                          className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border text-[12px] text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all text-center"
                           style={{
                             background: 'var(--secondary)',
                             borderColor: 'var(--border)',

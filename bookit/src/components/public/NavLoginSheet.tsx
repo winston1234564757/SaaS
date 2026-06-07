@@ -115,6 +115,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
                   placeholder="Email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  aria-label="Email адреса"
                   className={`${inputCls} pl-10`}
                   autoComplete="email"
                 />
@@ -126,6 +127,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
                   placeholder="Пароль"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  aria-label="Пароль"
                   className={`${inputCls} pl-10`}
                   autoComplete="current-password"
                 />

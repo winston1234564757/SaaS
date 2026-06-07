@@ -108,6 +108,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
             data-testid="wizard-name-input"
             type="text"
             role="combobox"
+            aria-label="Пошук клієнта"
             aria-expanded={showDropdown}
             aria-autocomplete="list"
             aria-controls={listboxId}

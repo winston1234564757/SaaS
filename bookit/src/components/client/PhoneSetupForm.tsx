@@ -158,6 +158,7 @@ export function PhoneSetupForm() {
               onKeyDown={e => e.key === 'Enter' && handleSendSms()}
               autoFocus
               autoComplete="tel-national"
+              aria-label="Номер телефону"
               className="flex-1 py-4 pr-4 text-foreground text-base bg-transparent outline-none placeholder:text-muted-foreground/60"
             />
           </div>
@@ -210,6 +211,7 @@ export function PhoneSetupForm() {
                 onKeyDown={e => handleDigitKeyDown(i, e)}
                 onPaste={handlePaste}
                 autoFocus={i === 0}
+                aria-label={`Цифра ${i + 1} коду`}
                 className="w-11 h-14 text-center text-xl font-bold text-foreground rounded-md border-2 border-border bg-secondary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             ))}

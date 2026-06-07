@@ -7,6 +7,7 @@ import { useProducts } from '@/lib/supabase/hooks/useProducts';
 import { useMasterContext } from '@/lib/supabase/context';
 import { BookingWizard, type WizardService, type WizardProduct } from '@/components/shared/BookingWizard';
 import type { WorkingHoursConfig } from '@/types/database';
+import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 
 interface ManualBookingFormProps {
   isOpen: boolean;
@@ -64,11 +65,7 @@ export function ManualBookingForm({
   );
 
   function handleSuccess() {
-    qc.invalidateQueries({ queryKey: ['bookings'] });
-    qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
-    qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
-    qc.invalidateQueries({ queryKey: ['weekly-overview'] });
-    qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
+    invalidateBookingQueries(qc);
     if (availableProducts.length > 0) qc.invalidateQueries({ queryKey: ['products'] });
     onSuccess?.();
   }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/lib/toast/context';
 import { Bell, CheckCircle2, Loader2, BellOff, Smartphone, RefreshCw } from 'lucide-react';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
@@ -54,6 +55,7 @@ interface Props {
 
 export function PushSubscribeCard({ userRole = 'master' }: Props) {
   const [state, setState] = useState<State>('checking');
+  const { showToast } = useToast();
 
   useEffect(() => {
     const initialState = detectInitialState();
@@ -154,42 +156,38 @@ export function PushSubscribeCard({ userRole = 'master' }: Props) {
 
       {state === 'checking' && null}
 
-      {state === 'subscribed' && (
-        <motion.div key="subscribed"
-          initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
-          className="bento-card p-4 flex items-center gap-3"
-        >
-          <div className="size-9 rounded-lg bg-success/15 flex items-center justify-center shrink-0">
-            <CheckCircle2 size={18} className="text-success" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-success">Сповіщення підключені</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">
-              {isMaster
-                ? 'Нові записи та нагадування — миттєво'
-                : 'Нагадування про записи та акції від майстрів'}
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {(state === 'prompt' || state === 'subscribing') && (
-        <motion.button key="prompt"
+      {(state === 'prompt' || state === 'subscribing' || state === 'subscribed') && (
+        <motion.button key="prompt-subscribed"
           type="button"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          onClick={subscribe}
+          onClick={() => {
+            if (state === 'subscribed') {
+              syncSubscriptionSilently();
+              showToast({
+                type: 'success',
+                title: 'Сповіщення вже працюють',
+                message: 'Ми оновили ваш токен для надійності',
+              });
+            } else {
+              subscribe();
+            }
+          }}
           disabled={state === 'subscribing'}
           className="bento-card p-4 flex items-center gap-3 w-full text-left active:scale-[0.98] transition-transform disabled:opacity-70"
         >
-          <div className="size-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+          <div className={`size-9 rounded-lg ${state === 'subscribed' ? 'bg-success/15' : 'bg-primary/15'} flex items-center justify-center shrink-0 transition-colors`}>
             {state === 'subscribing'
               ? <Loader2 size={18} className="text-primary animate-spin" />
-              : <Bell size={18} className="text-primary" />
+              : state === 'subscribed'
+                ? <CheckCircle2 size={18} className="text-success" />
+                : <Bell size={18} className="text-primary" />
             }
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Увімкнути сповіщення</p>
-            <p className="text-xs text-muted-foreground/60">
+            <p className={`text-sm font-semibold ${state === 'subscribed' ? 'text-success' : 'text-foreground'}`}>
+              {state === 'subscribed' ? 'Сповіщення підключені' : 'Увімкнути сповіщення'}
+            </p>
+            <p className="text-xs text-muted-foreground/60 mt-0.5">
               {state === 'subscribing'
                 ? 'Підключаємо...'
                 : isMaster
@@ -197,8 +195,8 @@ export function PushSubscribeCard({ userRole = 'master' }: Props) {
                   : 'Нагадування про записи та пропозиції майстрів'}
             </p>
           </div>
-          <div className="w-8 h-5 rounded-full bg-secondary/80 relative shrink-0">
-            <div className="absolute top-0 left-0 size-5 rounded-full bg-accent-on" />
+          <div className={`w-8 h-5 rounded-full relative shrink-0 transition-colors ${state === 'subscribed' ? 'bg-primary' : 'bg-secondary/80'}`}>
+            <div className={`absolute top-0 size-5 rounded-full bg-accent-on transition-all duration-300 ease-spring ${state === 'subscribed' ? 'left-3' : 'left-0'}`} />
           </div>
         </motion.button>
       )}

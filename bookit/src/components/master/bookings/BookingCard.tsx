@@ -13,6 +13,7 @@ import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
 import { parseError } from '@/lib/utils/errors';
+import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 import {
   confirmBooking,
   cancelBooking,
@@ -55,16 +56,7 @@ export function BookingCard({
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  const invalidateAll = async () => {
-    await Promise.all([
-      qc.invalidateQueries({ queryKey: ['bookings'] }),
-      qc.invalidateQueries({ queryKey: ['wizard-schedule'] }),
-      qc.invalidateQueries({ queryKey: ['dashboard-stats'] }),
-      qc.invalidateQueries({ queryKey: ['weekly-overview'] }),
-      qc.invalidateQueries({ queryKey: ['monthly-booking-count'] }),
-      qc.invalidateQueries({ queryKey: ['unified-sales'] }),
-    ]);
-  };
+  const invalidateAll = () => invalidateBookingQueries(qc);
 
   const [isPendingConfirm, startConfirm] = useTransition();
   const [isPendingCancel, startCancel] = useTransition();

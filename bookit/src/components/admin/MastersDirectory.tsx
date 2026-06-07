@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { createClient } from '@/lib/supabase/client';
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { Sheet } from '@/components/ui/Sheet';
 import {
   Search,
   Zap,
@@ -163,6 +163,7 @@ export function MastersDirectory() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Пошук майстра за ім'ям, телефоном..."
+            aria-label="Пошук майстра"
             className="w-full rounded-full border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 transition"
           />
         </div>
@@ -279,9 +280,10 @@ export function MastersDirectory() {
       )}
 
       {/* Details Sheet */}
-      <BottomSheet
-        isOpen={!!selectedMaster}
-        onClose={() => setSelectedMaster(null)}
+      <Sheet
+        variant="bottom"
+        open={!!selectedMaster}
+        onOpenChange={(v) => !v && setSelectedMaster(null)}
         title={selectedMaster?.profiles?.full_name || 'Дії над майстром'}
         className="bg-[#EFF2FF] border-slate-200"
       >
@@ -359,6 +361,7 @@ export function MastersDirectory() {
                     type="date"
                     value={editExpires}
                     onChange={(e) => setEditExpires(e.target.value)}
+                    aria-label="Дата закінчення підписки"
                     className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 transition"
                   />
                 </div>
@@ -411,7 +414,7 @@ export function MastersDirectory() {
             </div>
           </div>
         )}
-      </BottomSheet>
+      </Sheet>
     </div>
   );
 }

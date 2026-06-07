@@ -17,7 +17,7 @@ export function FlashDealsCard({ dealsCount, claimedDeals }: FlashDealsCardProps
       <div className="flex justify-between items-start mb-2">
         <div>
           <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Флеш-акції</p>
-          <span className="text-xs text-muted-foreground/50">Гарячі пропозиції з дисконтом</span>
+          <span className="text-xs text-muted-foreground/70">Гарячі пропозиції з дисконтом</span>
         </div>
 
         <div className="size-8 rounded-xl bg-warning/10 flex items-center justify-center text-warning flex-shrink-0">
@@ -47,7 +47,7 @@ export function FlashDealsCard({ dealsCount, claimedDeals }: FlashDealsCardProps
             </div>
           </div>
         ) : (
-          <p className="text-[10px] text-muted-foreground/50 mt-3 italic select-none">
+          <p className="text-[10px] text-muted-foreground/70 mt-3 italic select-none">
             У цьому періоді ви ще не запускали гарячі пропозиції.
           </p>
         )}

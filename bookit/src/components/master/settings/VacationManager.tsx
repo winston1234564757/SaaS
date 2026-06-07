@@ -94,7 +94,7 @@ export function VacationManager() {
   }
 
   const inputClass =
-    'w-full px-3 py-2 rounded-xl bg-secondary/40 border border-border text-xs text-foreground outline-none focus:border-primary transition-colors';
+    'w-full px-3 py-2 rounded-xl bg-secondary/40 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors';
   const labelClass = 'text-[11px] font-medium text-muted-foreground mb-1 block';
 
   // ── Типи ──────────────────────────────────────────────────────────────────
@@ -204,6 +204,7 @@ export function VacationManager() {
                     <input
                       type="date" value={startDate} min={today}
                       onChange={e => setStartDate(e.target.value)}
+                      aria-label="Початок відпустки"
                       className={inputClass}
                     />
                   </div>
@@ -212,6 +213,7 @@ export function VacationManager() {
                     <input
                       type="date" value={endDate} min={startDate || today}
                       onChange={e => setEndDate(e.target.value)}
+                      aria-label="Кінець відпустки"
                       className={inputClass}
                     />
                   </div>
@@ -222,6 +224,7 @@ export function VacationManager() {
                   <input
                     type="date" value={startDate} min={today}
                     onChange={e => setStartDate(e.target.value)}
+                    aria-label="Дата вихідного"
                     className={inputClass}
                   />
                 </div>
@@ -235,6 +238,7 @@ export function VacationManager() {
                     <input
                       type="time" value={startTime}
                       onChange={e => setStartTime(e.target.value)}
+                      aria-label="Початок скороченого дня"
                       className={inputClass}
                     />
                   </div>
@@ -243,6 +247,7 @@ export function VacationManager() {
                     <input
                       type="time" value={endTime}
                       onChange={e => setEndTime(e.target.value)}
+                      aria-label="Кінець скороченого дня"
                       className={inputClass}
                     />
                   </div>

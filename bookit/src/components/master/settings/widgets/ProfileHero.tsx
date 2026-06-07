@@ -172,7 +172,7 @@ export function ProfileHero({
               <div className="flex items-center gap-1.5">
                 <MessageSquare size={13} className="text-muted-foreground/50" />
                 <span className="text-sm font-bold text-foreground">{ratingCount}</span>
-                <span className="text-[11px] text-muted-foreground/50">
+                <span className="text-[11px] text-muted-foreground/70">
                   {pluralUk(ratingCount, 'відгук', 'відгуки', 'відгуків')}
                 </span>
               </div>
@@ -200,6 +200,8 @@ export function ProfileHero({
         type="file"
         accept="image/*"
         className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
         onChange={handleFileChange}
       />
 

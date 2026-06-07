@@ -10,8 +10,9 @@ interface LoyaltyTier {
 }
 
 interface Props {
-  isAuth: boolean;
-  currentVisits: number;
+  masterId: string;
+  serverIsAuth: boolean;
+  serverCurrentVisits: number;
   tiers: LoyaltyTier[];
   onBook?: () => void;
 }
@@ -22,7 +23,32 @@ function formatReward(tier: LoyaltyTier): string {
   return 'Подарунок';
 }
 
-export function LoyaltyWidget({ isAuth, currentVisits, tiers, onBook }: Props) {
+import { createClient } from '@/lib/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+
+export function LoyaltyWidget({ masterId, serverIsAuth, serverCurrentVisits, tiers, onBook }: Props) {
+  const { data: clientAuth } = useQuery({
+    queryKey: ['loyalty-visits', masterId],
+    queryFn: async () => {
+      const sb = createClient();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return { isAuth: false, visits: 0 };
+      
+      const { count } = await sb
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('master_id', masterId)
+        .eq('client_id', user.id)
+        .eq('status', 'completed');
+        
+      return { isAuth: true, visits: count ?? 0 };
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const isAuth = clientAuth ? clientAuth.isAuth : serverIsAuth;
+  const currentVisits = clientAuth ? clientAuth.visits : serverCurrentVisits;
+
   if (tiers.length === 0) return null;
 
   const firstTier = tiers[0];

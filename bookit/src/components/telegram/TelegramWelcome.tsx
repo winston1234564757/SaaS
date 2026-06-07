@@ -332,7 +332,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             </div>
           </motion.button>
 
-          <p className="text-[10px] text-muted-foreground/30 mt-6 uppercase tracking-[0.2em] font-bold">
+          <p className="text-[10px] text-muted-foreground/60 mt-6 uppercase tracking-[0.2em] font-bold">
             Ви зможете змінити роль пізніше
           </p>
         </div>
@@ -381,7 +381,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
               ) : showSuccess ? (
                 <>
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                    <svg className="size-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="size-6 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </motion.div>
@@ -429,7 +429,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             </AnimatePresence>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground/40 mt-12 uppercase tracking-widest font-bold">
+          <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground/70 mt-12 uppercase tracking-widest font-bold">
             <ShieldCheck size={12} />
             <span>Захищено Telegram</span>
           </div>

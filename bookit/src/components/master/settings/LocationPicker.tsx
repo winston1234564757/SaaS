@@ -250,6 +250,7 @@ function LocationPickerMap({ value, address, onChange }: Props) {
           type="text"
           defaultValue={address}
           placeholder="Пошук адреси..."
+          aria-label="Пошук адреси"
           className="w-full pl-8 pr-3 py-2 rounded-xl text-sm text-foreground placeholder-[#A8928D] bg-secondary/70 border border-border backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
       </div>

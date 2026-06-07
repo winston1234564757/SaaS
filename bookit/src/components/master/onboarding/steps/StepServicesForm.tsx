@@ -322,6 +322,7 @@ export function StepServicesForm({
                   onChange={e => onServiceBasePriceChange(e.target.value)}
                   placeholder="500"
                   min="0"
+                  aria-label="Ціна за послугу в гривнях"
                   className={inputCls}
                 />
                 <p className="text-[10px] text-muted-foreground/60 mt-1">

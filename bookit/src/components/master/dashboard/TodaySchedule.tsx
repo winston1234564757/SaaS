@@ -19,6 +19,7 @@ import { getNow } from '@/lib/utils/now';
 import { parseError } from '@/lib/utils/errors';
 import { format, parseISO } from 'date-fns';
 import { uk } from 'date-fns/locale';
+import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 
 type ViewMode = 'today' | 'tomorrow' | 'week';
 type DisplayMode = 'list' | 'stats';
@@ -293,7 +294,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
       {bookings.length > 0 && (
         <div className="flex items-center gap-4">
           <div className="relative flex-shrink-0 w-[52px] h-[52px]">
-            <svg viewBox="0 0 52 52" width={52} height={52}>
+            <svg viewBox="0 0 52 52" width={52} height={52} aria-hidden="true">
               <circle cx="26" cy="26" r="21" fill="none" strokeWidth="5"
                 stroke="var(--border)" />
               <circle cx="26" cy="26" r="21" fill="none" strokeWidth="5"
@@ -392,14 +393,7 @@ export function TodaySchedule() {
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  const invalidateAll = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['bookings', masterId] }),
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats', masterId] }),
-      queryClient.invalidateQueries({ queryKey: ['weekly-overview', masterId] }),
-      queryClient.invalidateQueries({ queryKey: ['monthly-booking-count', masterId] }),
-    ]);
-  };
+  const invalidateAll = () => invalidateBookingQueries(queryClient);
 
   const handleQuickComplete = (id: string) => {
     setCompletingId(id);

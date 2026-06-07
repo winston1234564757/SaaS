@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, Clock, ExternalLink, X, Star, ChevronRight, Check, MapPin, Navigation } from 'lucide-react';
 import { cancelBooking, submitReview } from '@/app/my/bookings/actions';
@@ -33,6 +34,7 @@ interface UnifiedOrder {
   masterName: string;
   masterSlug: string;
   masterEmoji: string;
+  masterAvatarUrl?: string | null;
   hasReview: boolean;
   services?: BookingService[];
   products?: OrderProduct[];
@@ -197,8 +199,12 @@ function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) 
       </div>
 
       <div className="flex items-start gap-3">
-        <div className="size-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 bg-accent/10">
-          {b.masterEmoji}
+        <div className="size-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 bg-accent/10 overflow-hidden relative">
+          {b.masterAvatarUrl ? (
+            <Image src={b.masterAvatarUrl} alt={b.masterName} fill className="object-cover" />
+          ) : (
+            b.masterEmoji
+          )}
         </div>
 
         <div className="flex-1 min-w-0">

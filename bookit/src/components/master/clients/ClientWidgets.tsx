@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown, Target } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { formatPrice } from '@/components/master/services/types';
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 import type { ClientRow } from './ClientsPage';
 import { RETENTION_CONFIG } from './ClientsPage';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -80,7 +80,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Утримання бази</p>
             <h3 className="text-2xl font-display font-bold text-foreground">
               {Math.round((activeCount / clients.length) * 100 || 0)}%
-              <span className="text-xs font-medium text-muted-foreground/40 ml-2">здоровий стан</span>
+              <span className="text-xs font-medium text-muted-foreground/70 ml-2">здоровий стан</span>
             </h3>
           </div>
           <Users className="text-sage opacity-10" size={40} />
@@ -137,7 +137,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
           <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-success">
             <TrendingUp size={10} />
             <span>+4.2%</span>
-            <span className="text-muted-foreground/40 font-normal ml-0.5">цього місяця</span>
+            <span className="text-muted-foreground/70 font-normal ml-0.5">цього місяця</span>
           </div>
         </div>
       </motion.button>
@@ -295,23 +295,23 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
       )}
 
       {/* Average Check Details */}
-      <PopUpModal isOpen={showCheckDetails} onClose={() => setShowCheckDetails(false)} title="Середній чек">
+      <Sheet open={showCheckDetails} onOpenChange={(v) => !v && setShowCheckDetails(false)} title="Середній чек">
         <AvgCheckModal clients={clients} analytics={analytics} isPro={isPro} onClose={() => setShowCheckDetails(false)} />
-      </PopUpModal>
+      </Sheet>
 
       {/* Referral Details */}
-      <PopUpModal isOpen={showReferralDetails} onClose={() => setShowReferralDetails(false)} title="Реферальна мережа">
+      <Sheet open={showReferralDetails} onOpenChange={(v) => !v && setShowReferralDetails(false)} title="Реферальна мережа">
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-2 gap-3">
             <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
               <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Приведено</p>
               <p className="text-3xl font-display font-bold text-foreground">12</p>
-              <p className="text-[10px] text-muted-foreground/40 mt-1">клієнтів</p>
+              <p className="text-[10px] text-muted-foreground/70 mt-1">клієнтів</p>
             </div>
             <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
               <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Дохід</p>
               <p className="text-3xl font-display font-bold text-foreground">8.4к</p>
-              <p className="text-[10px] text-muted-foreground/40 mt-1">₴ за весь час</p>
+              <p className="text-[10px] text-muted-foreground/70 mt-1">₴ за весь час</p>
             </div>
           </div>
 
@@ -382,7 +382,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
             Зрозумів
           </button>
         </div>
-      </PopUpModal>
+      </Sheet>
     </div>
   );
 }

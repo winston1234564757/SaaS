@@ -42,7 +42,7 @@ export function NoShowTab({ start, end }: NoShowTabProps) {
         <div className="bento-card p-4 flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Неявки (No-Show)</p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">Клієнти, які не прийшли на запис</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">Клієнти, які не прийшли на запис</p>
           </div>
           <div className="mt-4 flex items-baseline gap-1.5 select-none">
             <span className="metric-value text-3xl font-bold text-destructive">{data.noShowCount}</span>
@@ -55,12 +55,12 @@ export function NoShowTab({ start, end }: NoShowTabProps) {
         <div className="bento-card p-4 flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Скасування</p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">Записи, скасовані клієнтами</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">Записи, скасовані клієнтами</p>
           </div>
           <div className="mt-4 flex items-baseline gap-1.5 select-none">
             <span className="metric-value text-3xl font-bold text-warning">{data.cancellationCount}</span>
             <span className="text-[10px] text-warning/80 font-bold">({data.cancellationPct}%)</span>
-            <span className="text-[10px] text-muted-foreground/60 font-semibold">від загальних {data.totalBookings}  зап.</span>
+            <span className="text-[10px] text-muted-foreground/60 font-semibold">від загальних {data.totalBookings} зап.</span>
           </div>
         </div>
       </div>
@@ -100,7 +100,7 @@ export function NoShowTab({ start, end }: NoShowTabProps) {
             ))}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground/50 text-center py-4 italic">
+          <p className="text-xs text-muted-foreground/70 text-center py-4 italic">
             Інцидентів скасувань або неявок за цей період не зафіксовано.
           </p>
         )}

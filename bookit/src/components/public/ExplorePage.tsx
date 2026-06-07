@@ -137,6 +137,7 @@ export function ExplorePage({ masters, cities }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Ім'я, місто або спеціалізація..."
+            aria-label="Пошук майстра"
             className="w-full pl-10 pr-10 py-3 rounded-md bg-secondary/70 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:bg-secondary focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
           />
           {search && (

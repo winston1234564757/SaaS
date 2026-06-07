@@ -290,6 +290,7 @@ export function ProductEditor({ id }: Props) {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Введіть назву..."
+                  aria-label="Назва товару"
                   className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-lg font-medium placeholder-muted-foreground outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
                 />
               </div>
@@ -386,6 +387,8 @@ export function ProductEditor({ id }: Props) {
               accept="image/*"
               multiple
               className="hidden"
+              aria-hidden="true"
+              tabIndex={-1}
               onChange={e => handlePhotoUpload(e.target.files)}
             />
           </div>
@@ -403,6 +406,7 @@ export function ProductEditor({ id }: Props) {
                     value={priceStr}
                     onChange={e => setPriceStr(e.target.value)}
                     placeholder="0"
+                    aria-label="Ціна товару в гривнях"
                     className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
                   />
                 </div>
@@ -443,6 +447,7 @@ export function ProductEditor({ id }: Props) {
                           value={priceStr}
                           onChange={e => setPriceStr(e.target.value)}
                           placeholder="0"
+                          aria-label="Ціна продажу в гривнях"
                           className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
                         />
                       </div>
@@ -458,6 +463,7 @@ export function ProductEditor({ id }: Props) {
                           value={costStr}
                           onChange={e => setCostStr(e.target.value)}
                           placeholder="0"
+                          aria-label="Собівартість в гривнях"
                           className="w-full pl-8 pr-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
                         />
                       </div>
@@ -518,6 +524,7 @@ export function ProductEditor({ id }: Props) {
                   onChange={e => setStockStr(e.target.value)}
                   placeholder="Введіть кількість..."
                   min="0"
+                  aria-label="Кількість на складі"
                   className="w-full px-4 py-3 rounded-xl bg-secondary/40 border border-border text-sm text-foreground outline-none transition-all focus:bg-secondary focus:border-primary font-bold"
                 />
               )}

@@ -177,9 +177,11 @@ export function StepServices({
           {availableTabs.map(tab => (
             <button
               key={tab.catId}
+              id={`tab-${tab.catId}`}
               type="button"
               role="tab"
               aria-selected={activeTabCatId === tab.catId}
+              aria-controls="services-panel"
               onClick={() => { setActiveTabCatId(tab.catId); setEditingField(null); setPriceError(false); }}
               className={cn(
                 'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer active:scale-[0.96]',
@@ -196,7 +198,12 @@ export function StepServices({
         </div>
       )}
 
-      {template ? (
+      <div
+        role="tabpanel"
+        id="services-panel"
+        aria-labelledby={`tab-${activeTabCatId}`}
+      >
+        {template ? (
         <>
           <div className="mb-4">
             <label htmlFor="base-price" className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>
@@ -368,6 +375,7 @@ export function StepServices({
           </p>
         </div>
       )}
+      </div>
 
       <div className="flex flex-col gap-2 mt-5">
         <button

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
@@ -21,7 +21,7 @@ import { pluralUk } from '@/lib/utils/pluralUk';
 import { useDateRange } from '@/lib/supabase/hooks/useDateRange';
 import { useAnalytics, exportAnalyticsCsv, linearRegression } from '@/lib/supabase/hooks/useAnalytics';
 import { useAnalyticsExtras } from '@/lib/supabase/hooks/useAnalyticsExtras';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 
 // Компоненти-сегменти Bento
 import { PeriodControls } from './sections/PeriodControls';
@@ -78,6 +78,23 @@ const TABS = [
   { key: 'stock', label: 'Склад' },
 ] as const;
 
+// ── Types for ClientSheetById ─────────────────────────────────────────────────
+
+interface BookingForSheet {
+  client_phone: string | null;
+  date: string | null;
+  total_price: number;
+  status: string;
+  client_name: string | null;
+}
+
+interface RelationForSheet {
+  id: string;
+  is_vip: boolean;
+  health_notes: string | null;
+  medical_notes: string | null;
+}
+
 // ── ClientSheetById ───────────────────────────────────────────────────────────
 
 function ClientSheetById({
@@ -93,79 +110,76 @@ function ClientSheetById({
   clientName: string;
   onClose: () => void;
 }) {
-  const [row, setRow] = useState<ClientRow | null>(null);
-  const [loading, setLoading] = useState(true);
+  const sb = createClient();
 
-  useEffect(() => {
-    if (!masterId) return;
-    const sb = createClient();
-    
-    async function fetchClient() {
-      try {
-        setLoading(true);
-        let resolvedClientId = clientId;
-        let resolvedPhone = clientPhone;
+  const { data: row, isLoading } = useQuery<ClientRow | null>({
+    queryKey: ['client-sheet-detail', masterId, clientId ?? clientPhone],
+    enabled: !!masterId && (!!clientId || !!clientPhone),
+    staleTime: 2 * 60_000,
+    placeholderData: keepPreviousData,
+    queryFn: async (): Promise<ClientRow | null> => {
+      let resolvedClientId: string | null = clientId ?? null;
+      const resolvedPhone: string | null = clientPhone ?? null;
 
-        // Пошук ID клієнта за номером телефону, якщо ID не передано
-        if (!resolvedClientId && resolvedPhone) {
-          const { data: profile } = await sb
-            .from('profiles')
-            .select('id')
-            .eq('phone', resolvedPhone)
-            .maybeSingle();
-          if (profile) {
-            resolvedClientId = profile.id;
-          }
+      // Пошук ID клієнта за номером телефону, якщо ID не передано
+      if (!resolvedClientId && resolvedPhone) {
+        const { data: profile } = await sb
+          .from('profiles')
+          .select('id')
+          .eq('phone', resolvedPhone)
+          .maybeSingle();
+        if (profile) {
+          resolvedClientId = (profile as { id: string }).id;
         }
-
-        const finalId = resolvedClientId || resolvedPhone || 'unknown';
-
-        const [bRes, rRes] = await Promise.all([
-          sb.from('bookings')
-            .select('client_phone, date, total_price, status, client_name')
-            .eq('master_id', masterId)
-            .or(`client_phone.eq.${resolvedPhone || 'none'},client_id.eq.${resolvedClientId || '00000000-0000-0000-0000-000000000000'}`)
-            .order('date', { ascending: false }),
-          sb.from('client_master_relations')
-            .select('id, is_vip, health_notes, medical_notes')
-            .eq('master_id', masterId)
-            .or(`client_id.eq.${resolvedClientId || '00000000-0000-0000-0000-000000000000'}`)
-            .maybeSingle(),
-        ]);
-
-        const bs = bRes.data ?? [];
-        const rel = rRes.data;
-        const nonCancelled = bs.filter((b: any) => b.status !== 'cancelled');
-        const completed = bs.filter((b: any) => b.status === 'completed');
-        const spent = completed.reduce((s: number, b: any) => s + Number(b.total_price), 0);
-
-        setRow({
-          id: bs[0]?.client_phone ?? finalId,
-          client_id: resolvedClientId || null,
-          client_name: bs[0]?.client_name ?? clientName,
-          client_phone: bs[0]?.client_phone ?? resolvedPhone ?? '',
-          total_visits: nonCancelled.length,
-          total_spent: spent,
-          average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
-          last_visit_at: bs[0]?.date ?? null,
-          last_service_name: null,
-          is_vip: rel?.is_vip ?? false,
-          relation_id: rel?.id ?? null,
-          retention_status: 'active' as const,
-          health_notes: rel?.health_notes ?? null,
-          medical_notes: rel?.medical_notes ?? null,
-        });
-      } catch (err) {
-        console.error('Error fetching client details:', err);
-      } finally {
-        setLoading(false);
       }
-    }
 
-    fetchClient();
-  }, [clientId, clientPhone, masterId, clientName]);
+      const finalId = resolvedClientId || resolvedPhone || 'unknown';
 
-  if (loading) {
+      // Будуємо OR-умову тільки з наявними ідентифікаторами
+      const orParts: string[] = [];
+      if (resolvedPhone) orParts.push(`client_phone.eq.${resolvedPhone}`);
+      if (resolvedClientId) orParts.push(`client_id.eq.${resolvedClientId}`);
+      if (orParts.length === 0) return null;
+
+      const [bRes, rRes] = await Promise.all([
+        sb.from('bookings')
+          .select('client_phone, date, total_price, status, client_name')
+          .eq('master_id', masterId)
+          .or(orParts.join(','))
+          .order('date', { ascending: false }),
+        sb.from('client_master_relations')
+          .select('id, is_vip, health_notes, medical_notes')
+          .eq('master_id', masterId)
+          .or(resolvedClientId ? `client_id.eq.${resolvedClientId}` : `client_id.eq.00000000-0000-0000-0000-000000000000`)
+          .maybeSingle(),
+      ]);
+
+      const bs = (bRes.data ?? []) as BookingForSheet[];
+      const rel = rRes.data as RelationForSheet | null;
+      const nonCancelled = bs.filter((b) => b.status !== 'cancelled');
+      const completed = bs.filter((b) => b.status === 'completed');
+      const spent = completed.reduce((s, b) => s + Number(b.total_price), 0);
+
+      return {
+        id: bs[0]?.client_phone ?? finalId,
+        client_id: resolvedClientId || null,
+        client_name: bs[0]?.client_name ?? clientName,
+        client_phone: bs[0]?.client_phone ?? resolvedPhone ?? '',
+        total_visits: nonCancelled.length,
+        total_spent: spent,
+        average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
+        last_visit_at: bs[0]?.date ?? null,
+        last_service_name: null,
+        is_vip: rel?.is_vip ?? false,
+        relation_id: rel?.id ?? null,
+        retention_status: 'active' as const,
+        health_notes: rel?.health_notes ?? null,
+        medical_notes: rel?.medical_notes ?? null,
+      };
+    },
+  });
+
+  if (isLoading) {
     return (
       <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <Loader2 className="animate-spin text-primary size-8" />
@@ -175,7 +189,7 @@ function ClientSheetById({
 
   return (
     <ClientDetailSheet
-      client={row}
+      client={row ?? null}
       onClose={onClose}
     />
   );
@@ -190,11 +204,11 @@ function ServiceRow({ svc, maxRev }: { svc: any; maxRev: number }) {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full text-left cursor-pointer transition-all active:scale-[0.98]"
+        className="w-full text-left cursor-pointer transition-all active:scale-[0.98] hover:bg-secondary/40 rounded-xl p-2 -mx-2"
       >
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-sm font-semibold text-foreground truncate pr-2">{svc.name}</span>
-          <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(svc.revenue / 100))}</span>
+          <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(svc.revenue))}</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div
@@ -213,7 +227,7 @@ function ServiceRow({ svc, maxRev }: { svc: any; maxRev: number }) {
             {[
               { label: 'Cross-sell', value: `${svc.crossSellRate}%`, className: 'text-primary' },
               { label: 'З товарами', value: `${Math.round(svc.count * svc.crossSellRate / 100)}/${svc.count}`, className: 'text-foreground' },
-              { label: 'Серед. чек', value: svc.count > 0 ? formatPrice(Math.round(svc.revenue / svc.count / 100)) : '—', className: 'text-foreground' },
+              { label: 'Серед. чек', value: svc.count > 0 ? formatPrice(Math.round(svc.revenue / svc.count)) : '—', className: 'text-foreground' },
             ].map(item => (
               <div key={item.label}>
                 <p className="text-[10px] text-muted-foreground/60 mb-0.5">{item.label}</p>
@@ -400,7 +414,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       list.push({
         id: 'story-rev',
         type: 'general',
-        title: `Виручка за період: ${formatPrice(Math.round(summary.revenue / 100))}`,
+        title: `Виручка за період: ${formatPrice(Math.round(summary.revenue))}`,
         description: `Завершено ${summary.bookings} ${pluralUk(summary.bookings, 'запис', 'записи', 'записів')}. Середній чек становить ${bento?.avgCheck?.current ? formatPrice(bento.avgCheck.current) : '—'}.`,
         icon: <Star size={14} className="text-primary" />
       });
@@ -449,7 +463,8 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     }
 
     return list;
-  }, [data, extras, isPro, summary, bento, nextMonthName]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, extras, isPro, summary, bento]);
 
   async function handleExport() {
     if (!masterId) return;
@@ -586,9 +601,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                 <button
                   type="button"
                   key={t.key}
+                  aria-pressed={activeTab === t.key}
                   onClick={() => !isLocked && setActiveTab(t.key)}
                   className={cn(
-                    'relative px-4 py-2 text-xs font-semibold select-none cursor-pointer flex items-center gap-1 active:scale-[0.95] duration-100 transition-all',
+                    'relative px-4 py-2 text-xs font-semibold select-none cursor-pointer flex items-center gap-1 active:scale-[0.95] duration-100 transition-all hover:bg-foreground/5 rounded-full',
                     isLocked && 'opacity-40 cursor-not-allowed'
                   )}
                 >
@@ -681,7 +697,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between mb-1">
                                   <span className="text-sm font-semibold text-foreground truncate pr-2">{prod.name}</span>
-                                  <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(prod.revenue / 100))}</span>
+                                  <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(prod.revenue))}</span>
                                 </div>
                                 <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                                   <div
@@ -726,10 +742,10 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-foreground truncate">{c.clientName}</p>
-                              <p className="text-[10px] text-muted-foreground/60">{c.visits} відвідувань</p>
+                              <p className="text-[10px] text-muted-foreground/60">{c.visits} {pluralUk(c.visits, 'відвідування', 'відвідування', 'відвідувань')}</p>
                             </div>
                             <p className="text-xs font-bold text-success flex-shrink-0 select-none">
-                              {formatPrice(Math.round(c.revenue / 100))}
+                              {formatPrice(Math.round(c.revenue))}
                             </p>
                           </button>
                         ))}
@@ -748,19 +764,22 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                         type="button"
                         onClick={handleExport}
                         disabled={exporting}
-                        className="flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-all disabled:opacity-50"
+                        className="group relative overflow-hidden flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-all disabled:opacity-50"
                       >
-                        {exporting ? (
-                          <>
-                            <Loader2 size={13} className="animate-spin" />
-                            Генеруємо...
-                          </>
-                        ) : (
-                          <>
-                            <Download size={13} />
-                            Експорт в CSV
-                          </>
-                        )}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" style={{ background: 'color-mix(in srgb, var(--accent-on) 12%, transparent)' }} />
+                        <span className="relative z-10 flex items-center gap-2">
+                          {exporting ? (
+                            <>
+                              <Loader2 size={13} className="animate-spin" />
+                              Генеруємо...
+                            </>
+                          ) : (
+                            <>
+                              <Download size={13} />
+                              Експорт в CSV
+                            </>
+                          )}
+                        </span>
                       </button>
                     </div>
                   </BentoCell>

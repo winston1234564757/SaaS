@@ -55,6 +55,7 @@ function ProgramForm({
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Наприклад: Постійний клієнт"
+            aria-label="Назва програми лояльності"
             className="w-full px-3 py-2.5 rounded-xl bg-secondary/80 border border-border text-sm text-foreground placeholder-[#A8928D] outline-none focus:border-primary transition-colors"
           />
         </div>
@@ -67,6 +68,7 @@ function ProgramForm({
               min="1"
               value={targetVisits}
               onChange={e => setTargetVisits(e.target.value)}
+              aria-label="Кількість візитів для нагороди"
               className="w-full px-3 py-2.5 rounded-xl bg-secondary/80 border border-border text-sm text-foreground outline-none focus:border-primary transition-colors"
             />
           </div>
@@ -78,6 +80,7 @@ function ProgramForm({
               max="100"
               value={rewardValue}
               onChange={e => setRewardValue(e.target.value)}
+              aria-label="Знижка у відсотках"
               className="w-full px-3 py-2.5 rounded-xl bg-secondary/80 border border-border text-sm text-foreground outline-none focus:border-primary transition-colors"
             />
           </div>
@@ -459,6 +462,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                   max={50}
                   value={c2cDiscount}
                   onChange={e => setC2cDiscount(Number(e.target.value))}
+                  aria-label="Знижка для реферала у відсотках"
                   className="w-full px-3 py-2.5 rounded-xl bg-secondary/80 border border-border text-sm text-foreground outline-none focus:border-primary transition-colors"
                 />
                 <p className="text-xs text-muted-foreground/60 mt-1">

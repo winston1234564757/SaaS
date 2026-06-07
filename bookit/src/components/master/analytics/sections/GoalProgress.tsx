@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Target, Edit2 } from 'lucide-react';
+import { Target, Edit2, PartyPopper } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { motion } from 'framer-motion';
 
@@ -52,6 +52,7 @@ export function GoalProgress({ currentRevenue, initialTarget = 50000 }: GoalProg
                 type="text"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
+                aria-label="Ціль місяця в гривнях"
                 className="w-20 px-2 py-0.5 text-xs border border-border-strong rounded-md bg-secondary text-foreground focus:outline-none"
                 autoFocus
               />
@@ -84,7 +85,7 @@ export function GoalProgress({ currentRevenue, initialTarget = 50000 }: GoalProg
       <div className="flex items-center gap-4 mt-2">
         {/* SVG Ring Progress */}
         <div className="relative size-20 flex-shrink-0">
-          <svg viewBox="0 0 80 80" className="w-full h-full transform -rotate-90">
+          <svg viewBox="0 0 80 80" className="w-full h-full transform -rotate-90" aria-hidden="true">
             <circle
               cx="40"
               cy="40"
@@ -98,7 +99,7 @@ export function GoalProgress({ currentRevenue, initialTarget = 50000 }: GoalProg
               cy="40"
               r={radius}
               fill="transparent"
-              stroke="rgba(78, 152, 112, 0.8)" // success
+              stroke="var(--success)"
               strokeWidth={5}
               strokeDasharray={circumference}
               initial={{ strokeDashoffset: circumference }}
@@ -116,9 +117,11 @@ export function GoalProgress({ currentRevenue, initialTarget = 50000 }: GoalProg
           <p className="text-muted-foreground/60 leading-normal">Виконано:</p>
           <p className="font-bold text-foreground text-sm mt-0.5">{formatPrice(currentRevenueUah)}</p>
           {pct >= 100 ? (
-            <p className="text-[10px] font-bold text-success mt-1 leading-tight">Ціль досягнута! 🎉</p>
+            <p className="text-[10px] font-bold text-success mt-1 leading-tight flex items-center gap-1">
+              Ціль досягнута! <PartyPopper size={12} />
+            </p>
           ) : (
-            <p className="text-[10px] text-muted-foreground/50 mt-1 leading-tight">
+            <p className="text-[10px] text-muted-foreground/70 mt-1 leading-tight">
               Залишилось: {formatPrice(Math.max(0, target - currentRevenueUah))}
             </p>
           )}

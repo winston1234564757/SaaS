@@ -10,6 +10,7 @@ import { Plus, Moon, Check, X, Loader2, Coffee } from 'lucide-react';
 import { useToast } from '@/lib/toast/context';
 import { rescheduleBooking } from '@/app/(master)/dashboard/bookings/actions';
 import { cn } from '@/lib/utils/cn';
+import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 
 interface BreakWindow { start: string; end: string }
 
@@ -86,10 +87,7 @@ function DraggableBookingBlock({
         showToast({ type: 'error', title: 'Помилка', message: error });
       } else {
         showToast({ type: 'success', title: `Перенесено на ${pendingTime.newStart}` });
-        await Promise.all([
-          qc.invalidateQueries({ queryKey: ['bookings'] }),
-          qc.invalidateQueries({ queryKey: ['dashboard-stats'] }),
-        ]);
+        await invalidateBookingQueries(qc);
       }
     });
   };
@@ -327,7 +325,7 @@ export function VerticalTimeline({
           <Moon size={22} className="text-muted-foreground/30" />
         </div>
         <p className="text-sm font-semibold text-muted-foreground/60">Вихідний день</p>
-        <p className="text-xs text-muted-foreground/40">Робочий графік не заплановано</p>
+        <p className="text-xs text-muted-foreground/70">Робочий графік не заплановано</p>
       </div>
     );
   }

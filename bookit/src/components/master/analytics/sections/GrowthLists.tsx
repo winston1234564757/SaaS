@@ -26,7 +26,7 @@ export function GrowthLists({
         <div className="flex justify-between items-start mb-2">
           <div>
             <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Клуб лояльності</p>
-            <span className="text-xs text-muted-foreground/50">Учасники та накопичені бали</span>
+            <span className="text-xs text-muted-foreground/70">Учасники та накопичені бали</span>
           </div>
           <div className="size-8 rounded-xl bg-success/10 flex items-center justify-center text-success flex-shrink-0">
             <Award size={16} />
@@ -53,7 +53,7 @@ export function GrowthLists({
         <div className="flex justify-between items-start mb-2">
           <div>
             <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Реферальна мережа</p>
-            <span className="text-xs text-muted-foreground/50">Воронка Life-Time запрошень</span>
+            <span className="text-xs text-muted-foreground/70">Воронка Life-Time запрошень</span>
           </div>
           <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
             <UserPlus size={16} />

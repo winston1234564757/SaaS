@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MapPin, Search } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -10,6 +11,7 @@ interface Master {
   slug: string;
   name: string;
   avatarEmoji: string;
+  avatarUrl: string | null;
   categories: string[];
   city: string | null;
   visitCount: number;
@@ -99,11 +101,15 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
       className="bento-card p-4"
     >
       <div className="flex items-center gap-3">
-        {/* Emoji avatar */}
+        {/* Avatar */}
         <div
-          className="size-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15"
+          className="size-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15 overflow-hidden relative"
         >
-          {master.avatarEmoji}
+          {master.avatarUrl ? (
+            <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" />
+          ) : (
+            master.avatarEmoji
+          )}
         </div>
 
         {/* Info */}

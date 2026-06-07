@@ -15,7 +15,7 @@ interface ServiceSelectorProps {
   selectedServices: WizardService[];
   onToggle: (sv: WizardService) => void;
   mode: 'client' | 'master';
-  partners: Array<{ id: string; name: string; slug: string; emoji: string; category?: string }>;
+  partners: Array<{ id: string; name: string; slug: string; emoji: string; avatarUrl?: string | null; category?: string }>;
   direction: number;
   durationOverride: number | null;
   totalDuration: number;
@@ -270,7 +270,7 @@ export function ServiceSelector({
           <div className="flex flex-col gap-6">
             {categories.map(cat => (
               <div key={cat}>
-                <p className="text-[11px] font-bold text-muted-foreground/50 uppercase tracking-[0.12em] mb-3">
+                <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.12em] mb-3">
                   {cat}
                 </p>
                 <CategoryCarousel
@@ -288,7 +288,7 @@ export function ServiceSelector({
         {partners.length > 0 && (
           <div className="mt-8 mb-2">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[11px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+              <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
                 Рекомендуємо також
               </p>
               <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
@@ -302,8 +302,14 @@ export function ServiceSelector({
                   href={`/${p.slug}`}
                   className="flex-shrink-0 w-[140px] bento-card p-3 flex flex-col items-center text-center gap-2 hover:bg-secondary/90 active:scale-[0.95] transition-transform duration-100 cursor-pointer"
                 >
-                  <div className="size-12 rounded-xl bg-secondary flex items-center justify-center">
-                    <Sparkles size={18} className="text-primary" />
+                  <div className="size-12 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                    {p.avatarUrl ? (
+                      <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                    ) : p.emoji ? (
+                      <span className="text-2xl">{p.emoji}</span>
+                    ) : (
+                      <Sparkles size={18} className="text-primary" />
+                    )}
                   </div>
                   <div className="min-w-0 w-full">
                     <p className="text-xs font-bold text-foreground truncate">{p.name}</p>
@@ -350,6 +356,7 @@ export function ServiceSelector({
                       onClearTime();
                     }}
                     placeholder={String(totalDuration)}
+                    aria-label="Нестандартна тривалість у хвилинах"
                     className="w-24 px-3 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                   {durationOverride !== null && (

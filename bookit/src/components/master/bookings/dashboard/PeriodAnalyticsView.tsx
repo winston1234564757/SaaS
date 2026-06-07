@@ -58,7 +58,7 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] lg:text-[11px] font-black uppercase text-muted-foreground/40 tracking-[0.2em] mb-1">
+              <span className="text-[10px] lg:text-[11px] font-black uppercase text-muted-foreground/70 tracking-[0.2em] mb-1">
                 {format(stat.date, 'EEEE', { locale: uk })}
               </span>
               <span className="text-lg lg:text-xl font-black text-foreground group-hover:text-primary transition-colors">
@@ -92,14 +92,14 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
 
           <div className="grid grid-cols-2 gap-2 mt-1">
             <div className="flex flex-col">
-              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">
+              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
                 <TrendingUp size={10} />
                 <span>Виручка</span>
               </div>
               <span className="text-xs font-black text-foreground">{formatPrice(stat.revenue)}</span>
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">
+              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
                 <Users size={10} />
                 <span>Записи</span>
               </div>

@@ -169,8 +169,27 @@ export async function applyReferralRewards(
 
     const isMasterRef = !!masterRefRes.data;
     const trialDays = isMasterRef ? 14 : 30;
-    const expiresAt = new Date(existingGrant.granted_at);
+    
+    const { data: currentMaster } = await admin
+      .from('master_profiles')
+      .select('created_at')
+      .eq('id', newMasterId)
+      .maybeSingle();
+
+    const grantDate = new Date(existingGrant.granted_at);
+    let baseDate = grantDate;
+    
+    if (currentMaster?.created_at) {
+      const masterCreated = new Date(currentMaster.created_at);
+      if (masterCreated.getTime() - grantDate.getTime() > 24 * 60 * 60 * 1000) {
+        baseDate = masterCreated;
+        await admin.from('referral_grants').update({ granted_at: masterCreated.toISOString() }).eq('id', existingGrant.id);
+      }
+    }
+
+    const expiresAt = new Date(baseDate);
     expiresAt.setDate(expiresAt.getDate() + trialDays);
+    const isExpired = expiresAt < new Date();
 
     if (isMasterRef && masterRefRes.data) {
       // M2M: відновлюємо master_referrals / master_alliances якщо відсутні
@@ -221,8 +240,8 @@ export async function applyReferralRewards(
     }
 
     return {
-      subscriptionTier: 'pro',
-      subscriptionExpiresAt: expiresAt.toISOString(),
+      subscriptionTier: isExpired ? 'starter' : 'pro',
+      subscriptionExpiresAt: isExpired ? null : expiresAt.toISOString(),
       finalReferredBy: existingGrant.ref_code,
     };
   }

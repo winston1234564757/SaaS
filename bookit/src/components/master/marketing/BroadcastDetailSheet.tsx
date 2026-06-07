@@ -1,6 +1,6 @@
 'use client';
 
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 import { X, Bell, Send, Phone, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useBroadcastDeliveryResults } from '@/lib/supabase/hooks/useBroadcasts';
 
@@ -14,7 +14,7 @@ export function BroadcastDetailSheet({ broadcastId, broadcastTitle, onClose }: P
   const { data: results, isLoading } = useBroadcastDeliveryResults(broadcastId);
 
   return (
-    <PopUpModal isOpen={true} title="Результати розсилки" onClose={onClose}>
+    <Sheet open={true} onOpenChange={(v) => !v && onClose()} title="Результати розсилки">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-secondary shrink-0">
           <div>
@@ -81,7 +81,7 @@ export function BroadcastDetailSheet({ broadcastId, broadcastTitle, onClose }: P
             </div>
           </div>
         )}
-    </PopUpModal>
+    </Sheet>
   );
 }
 

@@ -15,7 +15,7 @@ export default async function MyMastersPageRoute() {
       master_id, date, status,
       master_profiles (
         slug, avatar_emoji, categories, city,
-        profiles ( full_name )
+        profiles ( full_name, avatar_url )
       )
     `)
     .eq('client_id', user!.id)
@@ -28,6 +28,7 @@ export default async function MyMastersPageRoute() {
     slug: string;
     name: string;
     avatarEmoji: string;
+    avatarUrl: string | null;
     categories: string[];
     city: string | null;
     visitCount: number;
@@ -47,6 +48,7 @@ export default async function MyMastersPageRoute() {
         slug: mp.slug,
         name: (mp.profiles as any)?.full_name ?? 'Майстер',
         avatarEmoji: mp.avatar_emoji ?? '💅',
+        avatarUrl: (mp.profiles as any)?.avatar_url ?? null,
         categories: (mp.categories as string[]) ?? [],
         city: mp.city ?? null,
         visitCount: 1,

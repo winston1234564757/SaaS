@@ -22,7 +22,7 @@ export function DynamicPricingUplift({
       <div className="flex justify-between items-start mb-2">
         <div>
           <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Розумні ціни</p>
-          <span className="text-xs text-muted-foreground/50">Додатковий заробіток (Uplift)</span>
+          <span className="text-xs text-muted-foreground/70">Додатковий заробіток (Uplift)</span>
         </div>
 
         <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
@@ -60,7 +60,7 @@ export function DynamicPricingUplift({
             </div>
           </div>
         ) : (
-          <p className="text-[10px] text-muted-foreground/50 mt-3 italic select-none">
+          <p className="text-[10px] text-muted-foreground/70 mt-3 italic select-none">
             Правила розумного ціноутворення ще не спрацьовували за цей період.
           </p>
         )}

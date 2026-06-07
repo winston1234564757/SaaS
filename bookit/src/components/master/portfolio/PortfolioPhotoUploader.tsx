@@ -213,6 +213,8 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
         accept="image/jpeg,image/jpg,image/png,image/webp,image/heic"
         multiple
         className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
         onChange={handleUpload}
       />
     </div>

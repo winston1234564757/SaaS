@@ -1,6 +1,6 @@
 'use client';
 
-import { PopUpModal } from '@/components/ui/PopUpModal';
+import { Sheet } from '@/components/ui/Sheet';
 
 interface Props {
   isOpen: boolean;
@@ -11,8 +11,8 @@ interface Props {
 
 export function DashboardDrawer({ isOpen, onClose, title, children }: Props) {
   return (
-    <PopUpModal isOpen={isOpen} onClose={onClose} title={title}>
+    <Sheet open={isOpen} onOpenChange={(v) => !v && onClose()} title={title}>
       {children}
-    </PopUpModal>
+    </Sheet>
   );
 }

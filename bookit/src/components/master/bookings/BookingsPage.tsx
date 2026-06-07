@@ -358,7 +358,7 @@ export function BookingsPage() {
 
           <div className="widget-card p-6 flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-1">
+              <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest px-1">
                 Пошук клієнта
               </p>
               <div className="relative group">
@@ -375,7 +375,7 @@ export function BookingsPage() {
             </div>
 
             <div className="flex flex-col gap-2 relative">
-              <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-1">
+              <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest px-1">
                 Статус запису
               </p>
               <DropdownMenu
@@ -539,7 +539,7 @@ export function BookingsPage() {
                       {groupedBookings.map(([date, dayBookings]) => (
                         <div key={date} className="flex flex-col gap-5">
                           <div className="flex items-center gap-4 px-2">
-                            <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] whitespace-nowrap">
+                            <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] whitespace-nowrap">
                               {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
                             </span>
                             <div className="h-[0.5px] w-full bg-foreground/5" />

@@ -342,6 +342,11 @@ export function PublicMasterPage({
   const [actionTime, setActionTime] = useState<string | undefined>();
   // '' on SSR to avoid day-of-week mismatch (server UTC vs client UTC+3)
   const [todayDow, setTodayDow] = useState('');
+
+  const urlRefCode = searchParams.get('ref');
+  const effectiveRefCode = c2cRefCode || (masterC2cEnabled ? urlRefCode : null);
+  const effectiveDiscountPct = c2cDiscountPct ?? (effectiveRefCode && masterC2cEnabled ? (masterC2cDiscountPct ?? 10) : null);
+
   const { data: c2cReferrerBalance = 0 } = useQuery<number>({
     queryKey: ['c2c-balance', master.id],
     queryFn: async () => {
@@ -352,7 +357,7 @@ export function PublicMasterPage({
       const { data } = await sb.rpc('get_c2c_balance', { p_referrer_id: user.id, p_master_id: master.id });
       return typeof data === 'number' ? data : 0;
     },
-    enabled: hydrated && masterC2cEnabled && !!master.id && !c2cRefCode,
+    enabled: hydrated && masterC2cEnabled && !!master.id && !effectiveRefCode,
     staleTime: 5 * 60 * 1000,
   });
   const didAutoOpen = useRef(false);
@@ -364,12 +369,12 @@ export function PublicMasterPage({
 
   // Persist C2C ref to localStorage so it survives navigation (e.g. user registers then returns)
   useEffect(() => {
-    if (typeof window === 'undefined' || !c2cRefCode) return;
+    if (typeof window === 'undefined' || !effectiveRefCode) return;
     try {
-      localStorage.setItem('bookit_ref', c2cRefCode);
-      if (c2cDiscountPct != null) localStorage.setItem('bookit_ref_pct', String(c2cDiscountPct));
+      localStorage.setItem('bookit_ref', effectiveRefCode);
+      if (effectiveDiscountPct != null) localStorage.setItem('bookit_ref_pct', String(effectiveDiscountPct));
     } catch { /* localStorage blocked in private mode — safe to ignore */ }
-  }, [c2cRefCode, c2cDiscountPct]);
+  }, [effectiveRefCode, effectiveDiscountPct]);
 
 
   useEffect(() => {
@@ -454,7 +459,7 @@ export function PublicMasterPage({
       <div className="relative z-0 max-w-lg mx-auto px-4 pb-32 pt-6" data-hydrated={hydrated}>
         {/* ── Referral Banner (friend discount — incoming ref link) ── */}
         <AnimatePresence>
-          {c2cRefCode && c2cDiscountPct && (
+          {effectiveRefCode && effectiveDiscountPct && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -474,7 +479,7 @@ export function PublicMasterPage({
                 <div className="flex-1">
                   <h3 className="text-sm font-bold text-foreground">Привіт від подруги!</h3>
                   <p className="text-xs" style={{ color: textSecondary }}>
-                    Твій візит до {master.name} буде зі знижкою <span className="font-bold" style={{ color: theme.accent }}>-{c2cDiscountPct}%</span>
+                    Твій візит до {master.name} буде зі знижкою <span className="font-bold" style={{ color: theme.accent }}>-{effectiveDiscountPct}%</span>
                   </p>
                 </div>
                 <button
@@ -492,7 +497,7 @@ export function PublicMasterPage({
 
         {/* ── Referrer Balance Banner (accumulated bonus from referred friends) ── */}
         <AnimatePresence>
-          {hydrated && c2cReferrerBalance > 0 && !c2cRefCode && (
+          {hydrated && c2cReferrerBalance > 0 && !effectiveRefCode && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -715,8 +720,9 @@ export function PublicMasterPage({
         >
           {master.loyalty && (
             <LoyaltyWidget
-              isAuth={master.loyalty.isAuth}
-              currentVisits={master.loyalty.currentVisits}
+              masterId={master.id}
+              serverIsAuth={master.loyalty.isAuth}
+              serverCurrentVisits={master.loyalty.currentVisits}
               tiers={master.loyalty.tiers}
               onBook={() => openBooking()}
             />
@@ -1114,8 +1120,8 @@ export function PublicMasterPage({
         flashDeal={activeFlashDeal}
         initialDate={actionDate}
         initialTime={actionTime}
-        c2cRefCode={c2cRefCode}
-        c2cDiscountPct={c2cDiscountPct}
+        c2cRefCode={effectiveRefCode}
+        c2cDiscountPct={effectiveDiscountPct}
         masterC2cEnabled={masterC2cEnabled}
         masterC2cDiscountPct={masterC2cDiscountPct}
       />

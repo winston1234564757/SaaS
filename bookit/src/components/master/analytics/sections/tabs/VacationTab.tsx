@@ -5,9 +5,10 @@ import { useVacationImpact } from '@/lib/supabase/hooks/useVacationImpact';
 import { SkeletonCell } from '../../primitives/SkeletonCell';
 import { ErrorCell } from '../../primitives/ErrorCell';
 import { EmptyCell } from '../../primitives/EmptyCell';
-import { ShieldAlert, Calendar } from 'lucide-react';
+import { ShieldAlert, Calendar, LifeBuoy } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { useToast } from '@/lib/toast/context';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface VacationTabProps {
   start: string;
@@ -59,14 +60,14 @@ export function VacationTab({ start, end }: VacationTabProps) {
               <ShieldAlert size={12} />
               Втрачена вигода (Оцінка)
             </p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">Сума, яку ви могли заробити у ці дні</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">Сума, яку ви могли заробити у ці дні</p>
           </div>
           <div className="mt-4 flex items-baseline gap-1.5 select-none">
             <span className="metric-value text-3xl font-bold text-destructive">
               {formatPrice(Math.round(data.estimatedLostRevenue / 100))}
             </span>
             <span className="text-[10px] text-muted-foreground/60 font-semibold">
-              за {data.totalOffDays} вихідних днів
+              за {data.totalOffDays} {pluralUk(data.totalOffDays, 'вихідний день', 'вихідні дні', 'вихідних днів')}
             </span>
           </div>
         </div>
@@ -75,7 +76,7 @@ export function VacationTab({ start, end }: VacationTabProps) {
         <div className="bento-card p-4 flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Середній дохід за робочий день</p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">На основі виконаних бронювань у періоді</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">На основі виконаних бронювань у періоді</p>
           </div>
           <div className="mt-4 flex items-baseline gap-1.5 select-none">
             <span className="metric-value text-3xl font-bold text-foreground">
@@ -91,7 +92,9 @@ export function VacationTab({ start, end }: VacationTabProps) {
         <div className="bento-card p-5 bg-primary/5 border border-primary/15 flex flex-col gap-4 relative overflow-hidden">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div>
-              <p className="text-xs font-bold text-primary uppercase tracking-wider">🏝️ Рятувальник відпустки</p>
+              <p className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                <LifeBuoy size={14} /> Рятувальник відпустки
+              </p>
               <h3 className="text-sm font-semibold text-foreground mt-1.5">
                 {rescueActive 
                   ? 'Розклад успішно оптимізовано!' 

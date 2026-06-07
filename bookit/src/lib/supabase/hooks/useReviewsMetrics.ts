@@ -26,7 +26,7 @@ export function useReviewsMetrics({ start, end }: { start: string; end: string }
   return useQuery({
     queryKey: ['analytics-tab-reviews', masterId, start, end],
     enabled: !!masterId,
-    staleTime: 3 * 60_000, // 3 min
+    staleTime: 5 * 60_000, // 5 min
     queryFn: async (): Promise<ReviewsMetrics> => {
       const supabase = createClient();
       const { data, error } = await supabase

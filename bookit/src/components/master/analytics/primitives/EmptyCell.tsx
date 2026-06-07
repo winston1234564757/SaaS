@@ -27,17 +27,20 @@ export function EmptyCell({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center text-center p-6 min-h-[200px] h-full w-full bg-secondary/20 rounded-[20px] border border-dashed border-border-strong',
+        'flex flex-col items-center justify-center text-center p-6 min-h-[200px] h-full w-full bg-secondary/30 backdrop-blur-sm rounded-[24px] border border-white/40 shadow-sm relative overflow-hidden',
         className
       )}
       {...props}
     >
-      <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-3">
-        {icon ?? <Sparkles size={20} />}
+      {/* М'який декоративний глоу на фоні клітинки */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 pointer-events-none" />
+
+      <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4 drop-shadow-sm border border-primary/20 relative z-10">
+        {icon ?? <Sparkles size={24} />}
       </div>
       
-      <p className="text-sm font-semibold text-foreground mb-1">{title}</p>
-      <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed mb-4">
+      <p className="text-base font-bold text-foreground mb-1.5 relative z-10">{title}</p>
+      <p className="text-xs text-muted-foreground max-w-[260px] leading-relaxed mb-5 relative z-10">
         {description}
       </p>
 

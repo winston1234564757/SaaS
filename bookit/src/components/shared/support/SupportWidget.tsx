@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import { Sheet } from '@/components/ui/Sheet';
 import {
   createSupportTicketAction
 } from '@/lib/actions/support';
@@ -33,14 +33,14 @@ export function SupportWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<'selection' | 'form' | 'success'>('selection');
   const [ticketType, setTicketType] = useState<TicketType>('feedback');
-  
+
   // Form fields
   const [messageText, setMessageText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -155,7 +155,7 @@ export function SupportWidget() {
   const getStepTitle = () => {
     if (step === 'selection') return 'Центр підтримки BookIT';
     if (step === 'success') return 'Звернення надіслано';
-    
+
     switch (ticketType) {
       case 'bug': return 'Повідомити про помилку';
       case 'idea': return 'Запропонувати ідею';
@@ -180,7 +180,7 @@ export function SupportWidget() {
       >
         {/* Ambient light pulse effect */}
         <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500/5 via-[var(--accent-light)] to-emerald-500/5 opacity-60 animate-pulse pointer-events-none" />
-        
+
         <div className="relative flex items-center justify-center">
           <MessageCircle className="size-6 relative z-10 text-[var(--accent)] group-hover:rotate-6 transition-transform duration-200" />
           {/* Status green dot */}
@@ -191,25 +191,28 @@ export function SupportWidget() {
         </div>
       </motion.button>
 
-      <BottomSheet
-        isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false);
-          removeFile();
-          setMessageText('');
-          setSubmitError(null);
+      <Sheet
+        variant="bottom"
+        open={isOpen}
+        onOpenChange={(v) => {
+          if (!v) {
+            setIsOpen(false);
+            removeFile();
+            setMessageText('');
+            setSubmitError(null);
+          }
         }}
         title={getStepTitle()}
         className="bg-[#EFF2FF] border-slate-200"
       >
         <div className="text-slate-900 flex flex-col h-full max-h-[70vh]">
-          
+
           {submitError && (
             <div className="mb-4 rounded-xl bg-red-50 p-3.5 text-xs text-red-600 border border-red-100 shrink-0">
               {submitError}
             </div>
           )}
- 
+
           {step === 'selection' && (
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               <button type="button"
@@ -323,6 +326,8 @@ export function SupportWidget() {
                     onChange={handleFileChange}
                     accept="image/*"
                     className="hidden"
+                    aria-hidden="true"
+                    tabIndex={-1}
                   />
                   <button
                     type="button"
@@ -394,7 +399,7 @@ export function SupportWidget() {
           )}
 
         </div>
-      </BottomSheet>
+      </Sheet>
     </>
   );
 }

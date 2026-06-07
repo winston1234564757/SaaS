@@ -336,9 +336,7 @@ function ReschedulePanel({
 
 // ── Main Modal ────────────────────────────────────────────────────────────────
 
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { MicaModal } from '@/components/ui/MicaModal';
-import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
+import { Sheet } from '@/components/ui/Sheet';
 
 export function BookingDetailsModal() {
   const router = useRouter();
@@ -346,8 +344,6 @@ export function BookingDetailsModal() {
   const bookingId = searchParams.get('bookingId');
   const { masterProfile } = useMasterContext();
   const qc = useQueryClient();
-  const isDesktop = useIsDesktop();
-
   const {
     booking, isLoading,
     clientLtv,
@@ -419,12 +415,10 @@ export function BookingDetailsModal() {
   const canAct = displayBooking && ['pending', 'confirmed'].includes(displayBooking.status);
   const durationMinutes = displayBooking?.services.reduce((acc: number, s: any) => acc + s.duration, 0) || 0;
 
-  const ModalComponent = isDesktop ? MicaModal : BottomSheet;
-
   return (
-    <ModalComponent
-      isOpen={isModalOpen}
-      onClose={handleClose}
+    <Sheet
+      open={isModalOpen}
+      onOpenChange={(v) => !v && handleClose()}
       title="Деталі запису"
     >
       {isLoading && !displayBooking ? (
@@ -507,15 +501,15 @@ export function BookingDetailsModal() {
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter mb-1">Візитів</p>
+                  <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tighter mb-1">Візитів</p>
                   <p className="text-xl font-extrabold text-foreground">{displayLtv.total_visits}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter mb-1">Виручка</p>
+                  <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tighter mb-1">Виручка</p>
                   <p className="text-xl font-extrabold text-foreground">{formatPrice(displayLtv.total_spent)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter mb-1">Сер. чек</p>
+                  <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tighter mb-1">Сер. чек</p>
                   <p className="text-xl font-extrabold text-foreground">{formatPrice(displayLtv.average_check)}</p>
                 </div>
               </div>
@@ -694,6 +688,6 @@ export function BookingDetailsModal() {
           )}
         </div>
       )}
-    </ModalComponent>
+    </Sheet>
   );
 }

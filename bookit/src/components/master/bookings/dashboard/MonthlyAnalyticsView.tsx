@@ -138,7 +138,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all',
               subView === 'calendar'
                 ? 'bg-secondary shadow-sm text-primary'
-                : 'text-muted-foreground/50 hover:text-muted-foreground',
+                : 'text-muted-foreground/80 hover:text-muted-foreground',
             )}
           >
             <CalendarDays size={11} />
@@ -151,7 +151,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all',
               subView === 'weeks'
                 ? 'bg-secondary shadow-sm text-primary'
-                : 'text-muted-foreground/50 hover:text-muted-foreground',
+                : 'text-muted-foreground/80 hover:text-muted-foreground',
             )}
           >
             <LayoutList size={11} />

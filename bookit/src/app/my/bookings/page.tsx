@@ -16,7 +16,7 @@ export default async function MyBookings() {
       id, date, start_time, end_time, status, total_price, notes, master_id,
       master_profiles (
         slug, avatar_emoji, business_name, address, city, latitude, longitude,
-        profiles ( full_name )
+        profiles ( full_name, avatar_url )
       ),
       booking_services ( service_id, service_name, service_price, duration_minutes ),
       booking_products ( product_id, product_name, product_price, quantity ),
@@ -31,7 +31,7 @@ export default async function MyBookings() {
       id, created_at, status, total_kopecks, delivery_type, pickup_at,
       master_profiles (
         slug, avatar_emoji, business_name, address, city, latitude, longitude,
-        profiles ( full_name )
+        profiles ( full_name, avatar_url )
       ),
       order_items (
         product_id, qty,
@@ -55,6 +55,7 @@ export default async function MyBookings() {
     masterName: b.master_profiles?.business_name || b.master_profiles?.profiles?.full_name || 'Майстер',
     masterSlug: b.master_profiles?.slug || '',
     masterEmoji: b.master_profiles?.avatar_emoji || '💅',
+    masterAvatarUrl: b.master_profiles?.profiles?.avatar_url || null,
     masterAddress: b.master_profiles?.address,
     masterCity: b.master_profiles?.city,
     masterLat: b.master_profiles?.latitude,
@@ -86,6 +87,7 @@ export default async function MyBookings() {
     masterName: o.master_profiles?.business_name || o.master_profiles?.profiles?.full_name || 'Майстер',
     masterSlug: o.master_profiles?.slug || '',
     masterEmoji: o.master_profiles?.avatar_emoji || '🛍',
+    masterAvatarUrl: o.master_profiles?.profiles?.avatar_url || null,
     masterAddress: o.master_profiles?.address,
     masterCity: o.master_profiles?.city,
     masterLat: o.master_profiles?.latitude,

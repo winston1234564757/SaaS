@@ -75,7 +75,7 @@ function WidgetCard({ title, value, label, icon, delay, isLoading, color = 'prim
     <div
       className="bento-card p-5 lg:p-7 relative overflow-hidden group transition-all"
     >
-      <p className="text-[10px] lg:text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] leading-tight mb-3 lg:mb-4">{title}</p>
+      <p className="text-[10px] lg:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] leading-tight mb-3 lg:mb-4">{title}</p>
 
       <div className="min-h-[58px] lg:min-h-[66px] flex flex-col justify-end">
         {isLoading ? (
@@ -88,7 +88,7 @@ function WidgetCard({ title, value, label, icon, delay, isLoading, color = 'prim
             <h3 className="heading-serif text-3xl lg:text-4xl text-foreground leading-tight transition-all">
               {value}
             </h3>
-            <p className="text-[11px] lg:text-[13px] text-muted-foreground/50 mt-1.5 lg:mt-2 font-medium line-clamp-1">{label}</p>
+            <p className="text-[11px] lg:text-[13px] text-muted-foreground/70 mt-1.5 lg:mt-2 font-medium line-clamp-1">{label}</p>
           </>
         )}
       </div>

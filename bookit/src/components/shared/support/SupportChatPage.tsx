@@ -244,7 +244,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
             </div>
           )}
           <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -258,7 +258,8 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Напишіть повідомлення..."
-              className="flex-1 text-sm bg-[var(--surface-hover)] border border-[var(--border)] rounded-full px-4 py-2.5 outline-none focus:bg-[var(--surface)] transition text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
+              aria-label="Текст повідомлення"
+              className="flex-1 text-sm bg-[var(--surface-hover)] border border-[var(--border)] rounded-full px-4 py-2.5 outline-none focus:bg-[var(--surface)] focus:ring-2 focus:ring-primary/20 transition text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
             />
             <button
               type="submit"

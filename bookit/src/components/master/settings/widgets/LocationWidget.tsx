@@ -48,7 +48,8 @@ export function LocationWidget({
               value={city}
               onChange={(e) => onCityChange(e.target.value)}
               placeholder="Київ"
-              className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 outline-none text-sm transition-all shadow-inner-sm"
+              aria-label="Місто"
+              className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all shadow-inner-sm"
             />
           </div>
 
@@ -59,7 +60,8 @@ export function LocationWidget({
                 value={address}
                 onChange={(e) => onAddressChange(e.target.value)}
                 placeholder="Вулиця, номер будинку"
-                className="w-full pl-4 pr-10 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 outline-none text-sm transition-all shadow-inner-sm"
+                aria-label="Адреса"
+                className="w-full pl-4 pr-10 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all shadow-inner-sm"
               />
               <Navigation size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-mute/30" />
             </div>
@@ -72,7 +74,8 @@ export function LocationWidget({
                 value={floor}
                 onChange={(e) => onFloorChange(e.target.value)}
                 placeholder="3"
-                className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 outline-none text-sm transition-all shadow-inner-sm"
+                aria-label="Поверх"
+                className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all shadow-inner-sm"
               />
             </div>
             <div className="space-y-1.5">
@@ -81,7 +84,8 @@ export function LocationWidget({
                 value={cabinet}
                 onChange={(e) => onCabinetChange(e.target.value)}
                 placeholder="402"
-                className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 outline-none text-sm transition-all shadow-inner-sm"
+                aria-label="Кабінет"
+                className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all shadow-inner-sm"
               />
             </div>
           </div>

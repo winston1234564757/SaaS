@@ -228,6 +228,7 @@ export function PortfolioItemEditor({
                   onChange={e => setTitle(e.target.value)}
                   maxLength={120}
                   placeholder="Наприклад: Весільний образ Марини"
+                  aria-label="Назва роботи"
                   className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>

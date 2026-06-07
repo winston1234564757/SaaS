@@ -21,8 +21,7 @@ import { X, ChevronLeft, Loader2, Lock } from 'lucide-react';
 import { createBooking } from '@/lib/actions/createBooking';
 import { createPublicOrder } from '@/app/[slug]/actions';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { MicaModal } from '@/components/ui/MicaModal';
+import { Sheet } from '@/components/ui/Sheet';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { cn } from '@/lib/utils/cn';
 import { getActivePhoneDiscount } from '@/app/(master)/dashboard/marketing/actions';
@@ -233,13 +232,11 @@ export function BookingWizard({
 
   if (!isOpen) return null;
 
-  const ModalComponent = isDesktop ? MicaModal : BottomSheet;
-
   return (
     <>
-      <ModalComponent
-        isOpen={isOpen}
-        onClose={onClose}
+      <Sheet
+        open={isOpen}
+        onOpenChange={(v) => !v && onClose()}
         title={step !== 'success' ? (mode === 'master' ? 'Новий запис' : masterName) : ''}
         maxWidth="xl"
       >
@@ -432,7 +429,7 @@ export function BookingWizard({
             )}
           </div>
         </div>
-      </ModalComponent>
+      </Sheet>
 
       <UpgradePromptModal
         isOpen={upgradePromptOpen}

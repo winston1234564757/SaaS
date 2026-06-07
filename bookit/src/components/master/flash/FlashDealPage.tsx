@@ -459,6 +459,7 @@ const FlashDealForm = React.memo(({
         value={slotDate}
         min={todayStr()}
         onChange={e => handleDateChange(e.target.value)}
+        aria-label="Дата слоту"
         className="w-full px-3.5 py-2.5 rounded-2xl border border-secondary/80 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 transition-colors bg-secondary/60"
         required
       />

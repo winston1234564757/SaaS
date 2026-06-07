@@ -9,8 +9,9 @@ import {
     rescheduleBooking, 
     updateBookingStatus, 
     completeBooking,
-    updateMasterNotes 
+    updateMasterNotes
 } from '@/app/(master)/dashboard/bookings/actions';
+import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 
 export interface BookingProduct {
   name: string;
@@ -152,12 +153,7 @@ export function useBookingById(id: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      qc.invalidateQueries({ queryKey: ['bookings', masterId] });
-      qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
-      qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      qc.invalidateQueries({ queryKey: ['weekly-overview'] });
-      qc.invalidateQueries({ queryKey: ['monthly-booking-count'] });
-      qc.invalidateQueries({ queryKey: ['unified-sales'] });
+      invalidateBookingQueries(qc);
     },
   });
 
@@ -190,9 +186,7 @@ export function useBookingById(id: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      qc.invalidateQueries({ queryKey: ['bookings', masterId] });
-      qc.invalidateQueries({ queryKey: ['wizard-schedule'] });
-      qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      invalidateBookingQueries(qc);
     },
   });
 

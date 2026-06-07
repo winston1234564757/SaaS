@@ -51,7 +51,7 @@ export function HeroStory({ stories }: HeroStoryProps) {
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [stories, currentIdx, isExpanded]);
+  }, [stories, isExpanded]);
 
   if (stories.length === 0) return null;
 
@@ -72,18 +72,18 @@ export function HeroStory({ stories }: HeroStoryProps) {
           <motion.div
             key="expanded-story"
             layoutId="hero-story-container"
-            className="bento-card p-6 relative overflow-hidden bg-gradient-to-br from-primary/[0.08] via-secondary/70 to-secondary border border-border-strong select-none flex flex-col justify-between min-h-[220px] md:min-h-[240px]"
+            className="bento-card p-6 relative overflow-hidden bg-surface/60 backdrop-blur-md border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] select-none flex flex-col justify-between min-h-[220px] md:min-h-[240px]"
             transition={SPRING}
           >
             {/* Декоративні фонові круги */}
             <div className="absolute -top-12 -right-12 size-36 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-8 -left-8 size-28 bg-warning/8 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-8 -left-8 size-28 bg-accent/10 rounded-full blur-2xl pointer-events-none" />
 
             {/* Прогрес-бары зверху */}
             {stories.length > 1 && (
               <div className="flex gap-1.5 w-full mb-5 relative z-10">
                 {stories.map((_, i) => (
-                  <div key={i} className="h-1 flex-1 bg-secondary rounded-full overflow-hidden">
+                  <div key={i} className="h-1 flex-1 bg-secondary/50 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary transition-all duration-75"
                       style={{
@@ -109,7 +109,7 @@ export function HeroStory({ stories }: HeroStoryProps) {
                   <div className="flex flex-col gap-2">
                     {/* Eyebrow & Icon */}
                     <div className="flex items-center gap-2">
-                      <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                      <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 shadow-sm">
                         {activeStory.icon ?? <Sparkles size={14} />}
                       </div>
                       <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
@@ -122,7 +122,15 @@ export function HeroStory({ stories }: HeroStoryProps) {
 
                     {/* Headline */}
                     <h2 className="heading-serif text-lg md:text-xl font-bold text-foreground leading-snug mt-1 max-w-[90%]">
-                      {activeStory.title}
+                      {/* Парсинг для уникнення бага зі шрифтом (Cormorant Garamond не має ₴) */}
+                      {(() => {
+                        const match = activeStory.title.match(/([\d\s]+[₴|грн]+)/);
+                        if (match) {
+                          const parts = activeStory.title.split(match[0]);
+                          return <>{parts[0]}<span className="font-sans text-primary">{match[0]}</span>{parts[1]}</>;
+                        }
+                        return activeStory.title;
+                      })()}
                     </h2>
 
                     {/* Description */}

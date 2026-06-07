@@ -425,9 +425,9 @@ export function StepPreview({
                 autoFocus
                 maxLength={32}
                 placeholder="твій-нік"
+                aria-label="Нікнейм для посилання"
                 className="flex-1 text-[13px] font-mono bg-transparent outline-none border-b text-foreground min-w-0"
                 style={{ borderColor: slugError ? 'var(--destructive)' : 'var(--accent)' }}
-                aria-label="Адреса публічної сторінки"
               />
               {slugChecking ? (
                 <Loader2 size={15} className="animate-spin flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />

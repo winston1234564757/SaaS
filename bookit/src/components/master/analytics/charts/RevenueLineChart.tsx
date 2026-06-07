@@ -63,6 +63,7 @@ export function RevenueLineChart({
 
   const width = 500;
   const height = 150;
+  const containerHeight = 160; // matches h-[160px] CSS class
   const paddingX = 30;
   const paddingY = 20;
 
@@ -313,6 +314,8 @@ export function RevenueLineChart({
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-full overflow-visible"
           preserveAspectRatio="none"
+          role="img"
+          aria-label="Графік доходу за обраний період"
         >
           <defs>
             {/* Градієнт під лінією */}
@@ -465,7 +468,7 @@ export function RevenueLineChart({
               className="absolute bg-secondary border border-border rounded-xl p-3 shadow-lg text-[11px] leading-tight pointer-events-none z-10 min-w-[140px]"
               style={{
                 left: `${(coords[hoveredIdx].x / width) * 100}%`,
-                top: `${(coords[hoveredIdx].y / height) * 100 - 55}%`,
+                top: `${Math.round((coords[hoveredIdx].y / height) * containerHeight) - 60}px`,
                 transform: 'translateX(-50%)',
               }}
             >
