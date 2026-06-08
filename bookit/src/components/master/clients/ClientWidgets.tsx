@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
@@ -46,25 +46,31 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
     );
   }
 
-  const activeCount   = clients.filter(c => c.retention_status === 'active').length;
-  const sleepingCount = clients.filter(c => c.retention_status === 'sleeping').length;
-  const atRiskCount   = clients.filter(c => c.retention_status === 'at_risk').length;
-  const lostCount     = clients.filter(c => c.retention_status === 'lost').length;
+  const {
+    activeCount, sleepingCount, atRiskCount, lostCount,
+    totalRevenue, avgCheck, lostTreasures, newbiesAtRisk, archiveCount,
+  } = useMemo(() => {
+    const activeCount   = clients.filter(c => c.retention_status === 'active').length;
+    const sleepingCount = clients.filter(c => c.retention_status === 'sleeping').length;
+    const atRiskCount   = clients.filter(c => c.retention_status === 'at_risk').length;
+    const lostCount     = clients.filter(c => c.retention_status === 'lost').length;
 
-  const totalRevenue = clients.reduce((s, c) => s + c.total_spent, 0);
-  const avgCheck     = clients.length > 0 ? totalRevenue / clients.length : 0;
+    const totalRevenue = clients.reduce((s, c) => s + c.total_spent, 0);
+    const avgCheck     = clients.length > 0 ? totalRevenue / clients.length : 0;
 
-  const lostTreasures = clients.filter(c => c.is_vip && (c.retention_status === 'at_risk' || c.retention_status === 'lost'));
-  const newbiesAtRisk = clients.filter(c => c.total_visits === 1 && c.retention_status === 'at_risk');
+    const lostTreasures = clients.filter(c => c.is_vip && (c.retention_status === 'at_risk' || c.retention_status === 'lost'));
+    const newbiesAtRisk = clients.filter(c => c.total_visits === 1 && c.retention_status === 'at_risk');
 
-  const cycle = masterProfile?.retention_cycle_days || 60;
-  const archiveThreshold = new Date();
-  archiveThreshold.setDate(archiveThreshold.getDate() - (cycle * 2));
+    const cycle = masterProfile?.retention_cycle_days || 60;
+    const archiveThreshold = new Date();
+    archiveThreshold.setDate(archiveThreshold.getDate() - (cycle * 2));
+    const archiveCount = clients.filter(c => {
+      if (!c.last_visit_at) return false;
+      return new Date(c.last_visit_at) < archiveThreshold;
+    }).length;
 
-  const archiveCount = clients.filter(c => {
-    if (!c.last_visit_at) return false;
-    return new Date(c.last_visit_at) < archiveThreshold;
-  }).length;
+    return { activeCount, sleepingCount, atRiskCount, lostCount, totalRevenue, avgCheck, lostTreasures, newbiesAtRisk, archiveCount };
+  }, [clients, masterProfile?.retention_cycle_days]);
 
   const ambassadorData = ambassadorResult?.success ? ambassadorResult.data : null;
 

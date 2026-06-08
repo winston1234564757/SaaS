@@ -383,6 +383,8 @@ export function ClientsPage() {
                   type="button"
                   onClick={() => setSortOpen(p => !p)}
                   aria-label="Сортування"
+                  aria-expanded={sortOpen}
+                  aria-haspopup="listbox"
                   className="h-full px-4 py-3 rounded-xl bg-secondary/60 border border-border text-sm font-bold text-foreground hover:bg-secondary transition-all active:scale-[0.88] flex items-center gap-2 whitespace-nowrap shadow-sm"
                 >
                   <span className="hidden sm:inline">{SORT_OPTIONS.find(o => o.value === sort)?.label}</span>
