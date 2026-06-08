@@ -109,17 +109,17 @@
 
 ---
 
-## Carry-over (відкладено, не блокують IRP)
+## Carry-over — ✅ DONE (2026-06-08)
 
 ### STEP 06 — CRM Clients
-| ID | Issue | Пріоритет | Файл |
-|---|---|---|---|
-| D-02 | ClientWidgets: useMemo для 6 body computations | 🟡 P2 | `ClientWidgets.tsx:47-66` |
-| D-03 | Grid action buttons size-10 → size-11 | 🟡 P2 | `ClientsPage.tsx:750-777` |
-| D-04 | Sort button: aria-expanded + aria-haspopup | 🟡 P2 | `ClientsPage.tsx:478` |
+| ID | Issue | Статус |
+|---|---|---|
+| D-02 | ClientWidgets: useMemo для 9 body computations | ✅ `d2166c2` |
+| D-03 | Grid action buttons size-10 → size-11 | ✅ FALSE POSITIVE (файл 655 рядків, кнопок немає) |
+| D-04 | Sort button: aria-expanded + aria-haspopup="listbox" | ✅ `d2166c2` |
 
 ### Pending (post-deploy)
 | ID | Issue | Пріоритет |
 |---|---|---|
-| B-01 | `/impeccable audit` health score (baseline 22/40 → target 34+) | 🔴 Critical → Phase H |
 | B-02 | Vercel QA: onboarding flow | 🔴 Critical |
+| — | Vercel Pro → cron `0 * * * *` для check-uncompleted | post-deploy |

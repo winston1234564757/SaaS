@@ -74,6 +74,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/env_guard_hook.py",
+            "statusMessage": "Checking sensitive file protection..."
+          },
+          {
+            "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/edit_rules_hook.py"
           },
           {
