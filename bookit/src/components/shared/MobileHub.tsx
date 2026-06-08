@@ -205,7 +205,7 @@ function HubSection({ title, align = 'left', children }: { title: string; align?
     <motion.section variants={itemVariants} className="mb-10">
       <h3
         className={cn(
-          'text-[10px] font-black uppercase tracking-[0.4em] mb-4 opacity-50',
+          'text-[10px] font-bold uppercase tracking-[0.4em] mb-4 opacity-50',
           align === 'right' && 'text-right',
           align === 'center' && 'text-center'
         )}
@@ -359,7 +359,7 @@ export function MobileHub() {
               <motion.div variants={itemVariants} className="mb-10">
                 <div className="flex items-center justify-between mb-1">
                   <div
-                    className="text-[10px] font-black uppercase tracking-[0.3em]"
+                    className="text-[10px] font-bold uppercase tracking-[0.3em]"
                     style={{ color: 'var(--accent)' }}
                   >
                     bookit

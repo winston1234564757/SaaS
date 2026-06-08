@@ -79,7 +79,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
             <div key={service.name} className="space-y-2">
               <div className="flex items-center justify-between px-1">
                 <span className="text-[11px] font-bold text-text-primary truncate max-w-[70%]">{service.name}</span>
-                <span className="text-[10px] font-black text-accent bg-accent/5 px-2 py-0.5 rounded-lg border border-accent/10">{service.count}</span>
+                <span className="text-[10px] font-bold text-accent bg-accent/5 px-2 py-0.5 rounded-lg border border-accent/10">{service.count}</span>
               </div>
               <div className="relative w-full h-2 bg-muted/40 rounded-full overflow-hidden shadow-inner-sm">
                 <motion.div

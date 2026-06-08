@@ -380,7 +380,7 @@ export function DateTimePicker({
           disabled={!canProceedDatetime}
           onClick={onContinue}
           data-testid="wizard-next-btn"
-          className={`w-full py-4 rounded-lg font-bold text-sm uppercase tracking-widest transition-all shadow-lg cursor-pointer ${
+          className={`w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-all shadow-lg cursor-pointer ${
             canProceedDatetime
               ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]'
               : 'bg-secondary/80 text-muted-foreground/40 cursor-not-allowed opacity-50'

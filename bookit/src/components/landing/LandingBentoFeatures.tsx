@@ -1,45 +1,19 @@
 ﻿'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import {
   motion,
   useInView,
-  useMotionValue,
-  useMotionValueEvent,
-  useSpring,
   useTransform,
   useScroll,
 } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
+import { CountUp } from '@/components/landing/shared/CountUp';
 
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
-  const nodeRef = useRef<HTMLSpanElement>(null);
-  const inView = useInView(nodeRef, { once: true, margin: '-40px' });
-  const mv = useMotionValue(0);
-  const sv = useSpring(mv, { stiffness: 60, damping: 14 });
-  const [text, setText] = useState(`0${suffix}`);
-
-  useMotionValueEvent(sv, 'change', (v) => setText(`${Math.round(v)}${suffix}`));
-
-  useEffect(() => {
-    if (inView) mv.set(to);
-  }, [inView, mv, to]);
-
-  return (
-    <motion.span
-      ref={nodeRef}
-      initial={{ opacity: 0 }}
-      animate={inView ? { opacity: 1 } : {}}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-    >
-      {text}
-    </motion.span>
-  );
-}
 
 const DAYS = ['РџРЅ', 'Р’С‚', 'РЎСЂ', 'Р§С‚', 'РџС‚', 'РЎР±'];
 const TIMES = ['09:00', '10:30', '12:00', '13:30', '15:00', '16:30', '18:00'];
@@ -234,7 +208,7 @@ export function LandingBentoFeatures() {
                               background: slot?.status === 'booked'
                                 ? 'rgba(99,102,241,0.30)'
                                 : slot?.status === 'smart'
-                                ? '#4338CA'
+                                ? 'var(--l-indigo)'
                                 : 'rgba(248,250,252,0.04)',
                               border: slot?.status === 'smart'
                                 ? '1px solid rgba(99,102,241,0.6)'
@@ -245,7 +219,7 @@ export function LandingBentoFeatures() {
                             }}
                           >
                             {slot?.status === 'smart' && (
-                              <span style={{ fontSize: 8, color: '#E0E7FF', fontWeight: 700 }}>
+                              <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.88)', fontWeight: 700 }}>
                                 {slot.label}
                               </span>
                             )}

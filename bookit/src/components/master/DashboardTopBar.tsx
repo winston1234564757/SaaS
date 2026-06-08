@@ -261,7 +261,7 @@ export function DashboardTopBar() {
                 <div className="w-px h-6 bg-border/30 mx-1 shrink-0" />
 
                 {/* Submenu category indicator */}
-                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-accent/60 mr-2 shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-accent/60 mr-2 shrink-0">
                   {activeGroup === 'activity' ? 'Діяльність' : 'Розвиток'}
                 </span>
 

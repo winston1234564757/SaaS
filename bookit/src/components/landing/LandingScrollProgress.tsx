@@ -17,7 +17,7 @@ export function LandingScrollProgress() {
         height: 2,
         scaleX,
         transformOrigin: '0%',
-        background: 'linear-gradient(to right, #4338CA, #7C3AED)',
+        background: 'linear-gradient(to right, var(--l-indigo), var(--l-indigo-glow))',
         zIndex: 200,
         pointerEvents: 'none',
       }}

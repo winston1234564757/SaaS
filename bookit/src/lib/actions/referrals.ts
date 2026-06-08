@@ -507,3 +507,107 @@ export async function checkAmbassadorStatus(
     return { isAmbassador: false };
   }
 }
+
+// ── getTopAmbassadors ─────────────────────────────────────────────
+
+export interface AmbassadorData {
+  id: string;
+  name: string;
+  completedCount: number;
+  revenue: number;
+  referrals: Array<{ name: string; date: string }>;
+}
+
+export interface TopAmbassadorsResult {
+  totalReferrals: number;
+  completedReferrals: number;
+  totalRevenue: number;
+  ambassadors: AmbassadorData[];
+}
+
+export async function getTopAmbassadors(
+  masterId: string,
+): Promise<{ success: true; data: TopAmbassadorsResult } | { success: false; error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id !== masterId) return { success: false, error: 'Unauthorized' };
+
+  const admin = createAdminClient();
+
+  const [refsRes, statsRes] = await Promise.all([
+    admin
+      .from('c2c_referrals')
+      .select('referrer_id, referred_id, booking_id, created_at')
+      .eq('master_id', masterId)
+      .eq('status', 'completed')
+      .order('created_at', { ascending: false }),
+    supabase.rpc('get_c2c_stats_for_master', { p_master_id: masterId }),
+  ]);
+
+  if (refsRes.error) return { success: false, error: refsRes.error.message };
+
+  const refs = refsRes.data ?? [];
+  const stats = (statsRes.data as { total_referrals: number; completed_referrals: number } | null)
+    ?? { total_referrals: 0, completed_referrals: 0 };
+
+  const ambassadors: AmbassadorData[] = [];
+  let totalRevenue = 0;
+
+  if (refs.length > 0) {
+    const clientIds = [...new Set([...refs.map(r => r.referrer_id), ...refs.map(r => r.referred_id)])];
+    const bookingIds = refs.map(r => r.booking_id).filter(Boolean) as string[];
+
+    const [clientsRes, bookingsRes] = await Promise.all([
+      admin.from('client_profiles').select('id, full_name').in('id', clientIds),
+      bookingIds.length
+        ? admin.from('bookings').select('id, total_price').in('id', bookingIds)
+        : null,
+    ]);
+
+    const clientNames = new Map((clientsRes.data ?? []).map(c => [c.id, c.full_name ?? 'Клієнт']));
+    const bookingPrices = new Map(
+      (bookingsRes?.data ?? []).map(b => [b.id, Number(b.total_price ?? 0)]),
+    );
+
+    const ambMap = new Map<string, AmbassadorData>();
+
+    for (const ref of refs) {
+      const d = new Date(ref.created_at);
+      const date = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const price = ref.booking_id ? (bookingPrices.get(ref.booking_id) ?? 0) : 0;
+      const referredName = clientNames.get(ref.referred_id) ?? 'Клієнт';
+
+      if (!ambMap.has(ref.referrer_id)) {
+        ambMap.set(ref.referrer_id, {
+          id: ref.referrer_id,
+          name: clientNames.get(ref.referrer_id) ?? 'Клієнт',
+          completedCount: 0,
+          revenue: 0,
+          referrals: [],
+        });
+      }
+
+      const amb = ambMap.get(ref.referrer_id)!;
+      amb.completedCount++;
+      amb.revenue += price;
+      amb.referrals.push({ name: referredName, date });
+      totalRevenue += price;
+    }
+
+    ambassadors.push(
+      ...Array.from(ambMap.values())
+        .sort((a, b) => b.completedCount - a.completedCount)
+        .slice(0, 5),
+    );
+  }
+
+  return {
+    success: true,
+    data: {
+      totalReferrals: Number(stats.total_referrals ?? 0),
+      completedReferrals: Number(stats.completed_referrals ?? 0),
+      totalRevenue,
+      ambassadors,
+    },
+  };
+}

@@ -137,6 +137,13 @@
 
 > ⚠️ `LandingTestimonials.tsx` — file exists (untracked), **NOT yet integrated** into `LandingPageContent.tsx`. Planned between Economy (#11) and Pricing (#12).
 
+### Landing Shared Utilities — `src/components/landing/shared/`
+
+| File | Used By | Description |
+|------|---------|-------------|
+| `CountUp.tsx` | TrustBar, BentoFeatures | Spring-animated number counter (stiffness:70, damping:15, useInView once, margin:-60px) |
+| `WordLine.tsx` | Economy, Process | Word-by-word reveal animation (y:110%→0, easeOut stagger: lineIndex×200ms + word×70ms) |
+
 **Shared utility components (`src/components/landing/`):**
 - `LandingScrollProgress.tsx` — thin indigo progress bar pinned at top (`position: fixed, z-index: 100`)
 - `LandingSplitHeading.tsx` — animated heading utility: word-by-word mask reveal per line; props: `text`, `stagger`, `lineDelay`, `as` (h1/h2/h3/h4)
@@ -297,6 +304,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `useOrders.ts` | — | Замовлення товарів майстра (orders + order_items) |
 | `useDateRange.ts` | — | Аналітика за діапазоном дат |
 | `useBusyness.ts` | 1 хв | Завантаженість майстра (today, week, month) |
+| `useTopAmbassadors.ts` | 5 хв | Топ C2C амбасадори майстра (via getTopAmbassadors server action) |
 | `useSlotsFromStore.ts` | — | Розрахунок слотів на клієнті на основі кешованого розкладу |
 | `useAnalyticsExtras.ts` | 5 хв | Мега-RPC аналітики (LTV, когорти, Smart Pricing, завантаженість) |
 | `useReviewsMetrics.ts` | 10 хв | Метрики та останні відгуки для drill-down |

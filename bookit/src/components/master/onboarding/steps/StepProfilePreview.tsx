@@ -288,7 +288,7 @@ export function StepProfilePreview({
         </button>
 
         <h2 className="font-display text-2xl font-semibold text-foreground leading-tight mb-1">
-          Твоя сторінка готова 🎉
+          Твоя сторінка готова
         </h2>
         <p className="text-sm text-muted-foreground/60">
           Так клієнти бачитимуть тебе у Bookit

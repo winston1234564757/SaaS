@@ -153,7 +153,7 @@ export function BookingCard({
 
             {/* Name + Service */}
             <div className="flex-1 min-w-0">
-              <p className="font-display text-base lg:text-xl text-foreground truncate font-black group-hover:text-primary transition-colors">
+              <p className="font-display text-base lg:text-xl text-foreground truncate font-bold group-hover:text-primary transition-colors">
                 {booking.client_name}
               </p>
               <p className="text-xs lg:text-sm text-muted-foreground/60 truncate mt-1 font-medium">
@@ -180,12 +180,12 @@ export function BookingCard({
             {!compact && (
               <div className="shrink-0 flex flex-col items-end gap-2 ml-1">
                 <span
-                  className="text-[10px] lg:text-[11px] font-black px-3 py-1 rounded-full whitespace-nowrap uppercase tracking-wider"
+                  className="text-[10px] lg:text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap uppercase tracking-wider"
                   style={{ color: cfg.color, background: cfg.bg }}
                 >
                   {cfg.label}
                 </span>
-                <p className="text-sm lg:text-lg font-black text-foreground tabular-nums">
+                <p className="text-sm lg:text-lg font-bold text-foreground tabular-nums">
                   {formatPrice(booking.total_price)}
                 </p>
               </div>

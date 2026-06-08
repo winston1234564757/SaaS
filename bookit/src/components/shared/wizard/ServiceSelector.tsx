@@ -420,7 +420,7 @@ export function ServiceSelector({
           disabled={!canGoToDatetime}
           onClick={onContinue}
           data-testid="wizard-next-btn"
-          className={`w-full py-4 rounded-lg font-bold text-sm uppercase tracking-widest transition-all shadow-lg cursor-pointer ${
+          className={`w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-all shadow-lg cursor-pointer ${
             canGoToDatetime
               ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]'
               : 'bg-secondary/60 border border-border text-muted-foreground/60 cursor-not-allowed shadow-none'
@@ -434,7 +434,7 @@ export function ServiceSelector({
           <button
             type="button"
             onClick={onSkipToProducts}
-            className="w-full mt-3 py-3 rounded-lg text-[11px] font-bold uppercase tracking-widest text-primary border-2 border-primary/20 hover:bg-primary/5 active:scale-[0.95] transition-all bg-secondary/40 cursor-pointer"
+            className="w-full mt-3 py-3 rounded-[100px] text-[11px] font-bold uppercase tracking-widest text-primary border-2 border-primary/20 hover:bg-primary/5 active:scale-[0.95] transition-all bg-secondary/40 cursor-pointer"
           >
             Тільки товари
           </button>

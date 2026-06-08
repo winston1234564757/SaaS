@@ -11,8 +11,6 @@ export default async function MasterLayout({ children }: { children: React.React
   const supabase = await createClient();
   const cookieStore = await cookies();
   const impersonatedId = cookieStore.get('impersonate_master_id')?.value;
-  const role = cookieStore.get('user_role')?.value;
-  const isImpersonating = role === 'admin' && !!impersonatedId;
 
   // getUser() re-validates the session, but can hang on cold starts.
   // We use a tight 3s timeout then fallback to getSession().
@@ -38,6 +36,23 @@ export default async function MasterLayout({ children }: { children: React.React
   }
 
   if (!user) redirect('/login');
+
+  // Verify admin role from DB — never trust client-controllable 'user_role' cookie.
+  // Only add the extra round-trip when impersonate cookie is actually present.
+  let isImpersonating = false;
+  if (impersonatedId) {
+    try {
+      const { data: roleRow } = await Promise.race([
+        supabase.from('profiles').select('role').eq('id', user.id).single(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('role-timeout')), 2000)
+        ),
+      ]);
+      isImpersonating = roleRow?.role === 'admin';
+    } catch {
+      isImpersonating = false;
+    }
+  }
 
   let profile = null;
   let masterProfile = null;

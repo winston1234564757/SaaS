@@ -190,7 +190,7 @@ function DraggableBookingBlock({
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <p className="text-[11px] font-black tabular-nums text-foreground">
+              <p className="text-[11px] font-bold tabular-nums text-foreground">
                 {pendingTime.newStart}
                 <span className="mx-1 opacity-40">→</span>
                 {pendingTime.newEnd}

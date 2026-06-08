@@ -2,11 +2,23 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { ArrowRight, Camera, Loader2, User } from 'lucide-react';
+import { ArrowRight, Camera, Loader2, User, Sparkles, Scissors, Eye, Sparkle, Smile } from 'lucide-react';
 import { formatPhoneDisplay, normalizePhoneInput } from '@/lib/utils/phone';
 import { serviceCategories } from '@/lib/constants/categories';
 import { cn } from '@/lib/utils/cn';
 import { inputCls } from './types';
+
+function getCatIcon(id: string) {
+  switch (id) {
+    case 'nails':   return <Sparkles size={11} />;
+    case 'hair':    return <Scissors size={11} />;
+    case 'brows':   return <Eye size={11} />;
+    case 'makeup':  return <Sparkle size={11} fill="currentColor" />;
+    case 'massage': return <Smile size={11} />;
+    case 'barber':  return <Scissors size={11} className="rotate-90" />;
+    default:        return <Sparkles size={11} />;
+  }
+}
 
 interface StepBasicProps {
   direction: number;
@@ -156,7 +168,7 @@ export function StepBasic({
                       : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/30"
                   )}
                 >
-                  <span>{cat.emoji}</span>
+                  {getCatIcon(cat.id)}
                   {cat.label}
                 </button>
               );

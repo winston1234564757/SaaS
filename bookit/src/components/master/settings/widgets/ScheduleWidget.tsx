@@ -293,7 +293,7 @@ export function ScheduleWidget({
                       key={min}
                       onClick={() => onBufferChange(min)}
                       className={cn(
-                        'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
+                        'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
                         bufferTime === min
                           ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
                           : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
@@ -320,7 +320,7 @@ export function ScheduleWidget({
                       key={days}
                       onClick={() => onRetentionCycleDaysChange(days)}
                       className={cn(
-                        'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
+                        'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
                         retentionCycleDays === days
                           ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
                           : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
@@ -341,7 +341,7 @@ export function ScheduleWidget({
                   </div>
                   <button type="button"
                     onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
+                    className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
                   >
                     <Plus size={13} /> Додати
                   </button>

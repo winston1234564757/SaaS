@@ -161,7 +161,7 @@ export function ClientDetails({
                   type="text"
                   placeholder="Твоє імʼя та прізвище"
                   {...register('clientName')}
-                  className={`w-full h-12 px-4 rounded-md bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
+                  className={`w-full h-12 px-4 rounded-[100px] bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
                     errors.clientName ? 'border-destructive focus:ring-destructive/20' : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/20'
                   }`}
                 />
@@ -189,7 +189,7 @@ export function ClientDetails({
                   const final = '+' + digitsOnly;
                   setValue('clientPhone', final, { shouldValidate: true });
                 }}
-                className={`w-full h-12 px-4 rounded-md bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
+                className={`w-full h-12 px-4 rounded-[100px] bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
                   errors.clientPhone ? 'border-destructive focus:ring-destructive/20' : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/20'
                 }`}
               />
@@ -211,7 +211,7 @@ export function ClientDetails({
               id="wizard-notes"
               placeholder={mode === 'master' ? 'Нотатки для себе...' : 'Алергія, особливості, побажання...'}
               value={clientNotes} onChange={e => setClientNotes(e.target.value)} rows={2}
-              className="w-full px-4 py-3 rounded-md bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+              className="w-full px-4 py-3 rounded-[100px] bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
             />
           </div>
 
@@ -227,7 +227,7 @@ export function ClientDetails({
                     setDiscountPercent(isNaN(v) ? 0 : Math.min(100, Math.max(0, v)));
                   }}
                   placeholder="0"
-                  className="w-24 h-12 px-4 rounded-md bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-24 h-12 px-4 rounded-[100px] bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
                 <span className="text-xs text-muted-foreground/60">
                   {discountPercent > 0 ? `−${masterDiscountAmount.toLocaleString('uk-UA')} ₴` : 'без знижки'}
@@ -392,7 +392,7 @@ export function ClientDetails({
           data-testid="wizard-submit-btn"
           disabled={!canSubmit || saving}
           onClick={onSubmit}
-          className={`w-full py-4 rounded-lg font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
+          className={`w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
             canSubmit && !saving
               ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]'
               : 'bg-secondary/60 border border-border text-muted-foreground/60 cursor-not-allowed shadow-none'

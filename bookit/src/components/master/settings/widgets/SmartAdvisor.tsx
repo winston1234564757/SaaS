@@ -110,7 +110,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-2">
            <span className="text-[11px] font-bold text-text-mute uppercase tracking-widest px-1">Здоров'я профілю</span>
-           <span className="text-sm font-black text-accent">{progress}%</span>
+           <span className="text-sm font-bold text-accent">{progress}%</span>
         </div>
         <div className="w-full h-2 bg-muted/40 rounded-full overflow-hidden shadow-inner-sm">
            <motion.div 

@@ -86,7 +86,7 @@ export function LegalHubPage() {
                     >
                       <Icon size={18} style={{ color: doc.accent }} />
                     </div>
-                    <ExternalLink size={13} className="text-[#C4A89E] mt-1 group-hover:text-muted-foreground/60 transition-colors" />
+                    <ExternalLink size={13} className="text-muted-foreground/50 mt-1 group-hover:text-muted-foreground/60 transition-colors" />
                   </div>
 
                   <div className="flex-1">

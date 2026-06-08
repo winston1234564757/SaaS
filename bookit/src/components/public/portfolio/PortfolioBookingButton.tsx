@@ -65,7 +65,7 @@ export function PortfolioBookingButton({
         type="button"
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold text-foreground"
-        style={{ background: '#FFE8DC' }}
+        style={{ background: 'var(--surface)' }}
       >
         Записатись <ChevronRight size={14} />
       </button>

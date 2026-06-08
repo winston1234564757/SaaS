@@ -58,10 +58,10 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] lg:text-[11px] font-black uppercase text-muted-foreground/70 tracking-[0.2em] mb-1">
+              <span className="text-[10px] lg:text-[11px] font-bold uppercase text-muted-foreground/70 tracking-[0.2em] mb-1">
                 {format(stat.date, 'EEEE', { locale: uk })}
               </span>
-              <span className="text-lg lg:text-xl font-black text-foreground group-hover:text-primary transition-colors">
+              <span className="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                 {format(stat.date, 'd MMMM', { locale: uk })}
               </span>
             </div>
@@ -96,14 +96,14 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
                 <TrendingUp size={10} />
                 <span>Виручка</span>
               </div>
-              <span className="text-xs font-black text-foreground">{formatPrice(stat.revenue)}</span>
+              <span className="text-xs font-bold text-foreground">{formatPrice(stat.revenue)}</span>
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
                 <Users size={10} />
                 <span>Записи</span>
               </div>
-              <span className="text-xs font-black text-foreground">{stat.count}</span>
+              <span className="text-xs font-bold text-foreground">{stat.count}</span>
             </div>
           </div>
 
@@ -119,7 +119,7 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
                 </div>
               ))}
               {stat.count > 4 && (
-                <div className="size-7 rounded-full bg-muted/20 border-2 border-peach flex items-center justify-center text-[8px] font-black text-muted-foreground">
+                <div className="size-7 rounded-full bg-muted/20 border-2 border-peach flex items-center justify-center text-[8px] font-bold text-muted-foreground">
                   +{stat.count - 4}
                 </div>
               )}

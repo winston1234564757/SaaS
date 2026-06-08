@@ -124,7 +124,7 @@ export function ProductCart({
           type="button"
           onClick={cart.length > 0 ? onBack : onContinue}
           data-testid="wizard-skip-products-btn"
-          className="flex-1 py-4 rounded-lg border-2 border-primary/20 bg-secondary/40 text-[11px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 active:scale-[0.95] transition-all cursor-pointer"
+          className="flex-1 py-4 rounded-[100px] border-2 border-primary/20 bg-secondary/40 text-[11px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 active:scale-[0.95] transition-all cursor-pointer"
         >
           {cart.length > 0 ? 'Назад' : 'Пропустити'}
         </button>
@@ -132,7 +132,7 @@ export function ProductCart({
           type="button"
           onClick={onContinue}
           data-testid="wizard-next-btn"
-          className="flex-[2] py-4 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.95] transition-all shadow-lg cursor-pointer"
+          className="flex-[2] py-4 rounded-[100px] bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.95] transition-all shadow-lg cursor-pointer"
         >
           {cart.length > 0 ? `Далі · ${fmt(totalProductsPrice)}` : 'Далі'}
         </button>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown, Target } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { formatPrice } from '@/components/master/services/types';
 import { Sheet } from '@/components/ui/Sheet';
@@ -10,6 +10,7 @@ import type { ClientRow } from './ClientsPage';
 import { RETENTION_CONFIG } from './ClientsPage';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
+import { useTopAmbassadors } from '@/lib/supabase/hooks/useTopAmbassadors';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 const SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const;
@@ -33,6 +34,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   const [showReferralDetails, setShowReferralDetails] = useState(false);
   const [expandedAmbassadorId, setExpandedAmbassadorId] = useState<string | null>(null);
   const [widgetIndex, setWidgetIndex] = useState(0);
+  const { data: ambassadorResult } = useTopAmbassadors(masterProfile?.id);
 
   if (isLoading) {
     return (
@@ -54,7 +56,6 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
 
   const lostTreasures = clients.filter(c => c.is_vip && (c.retention_status === 'at_risk' || c.retention_status === 'lost'));
   const newbiesAtRisk = clients.filter(c => c.total_visits === 1 && c.retention_status === 'at_risk');
-  const topReferrers  = [...clients].sort((a, b) => b.total_visits - a.total_visits).slice(0, 3);
 
   const cycle = masterProfile?.retention_cycle_days || 60;
   const archiveThreshold = new Date();
@@ -64,6 +65,8 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
     if (!c.last_visit_at) return false;
     return new Date(c.last_visit_at) < archiveThreshold;
   }).length;
+
+  const ambassadorData = ambassadorResult?.success ? ambassadorResult.data : null;
 
   return (
     <div className="grid grid-cols-2 gap-3">
@@ -134,11 +137,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
           <p className="text-2xl font-bold text-foreground whitespace-nowrap">
             {formatPrice(avgCheck)}
           </p>
-          <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-success">
-            <TrendingUp size={10} />
-            <span>+4.2%</span>
-            <span className="text-muted-foreground/70 font-normal ml-0.5">цього місяця</span>
-          </div>
+          <p className="text-[10px] text-muted-foreground/60 mt-1">за весь час</p>
         </div>
       </motion.button>
 
@@ -228,7 +227,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Амбасадори</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-display font-bold text-sage">{topReferrers.length}</p>
+                  <p className="text-2xl font-display font-bold text-sage">{ambassadorData?.ambassadors.length ?? 0}</p>
                   <p className="text-[10px] text-sage/70 mt-1 font-medium italic">топ-реферали</p>
                 </div>
               </motion.div>
@@ -302,77 +301,93 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
       {/* Referral Details */}
       <Sheet open={showReferralDetails} onOpenChange={(v) => !v && setShowReferralDetails(false)} title="Реферальна мережа">
         <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
-              <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Приведено</p>
-              <p className="text-3xl font-display font-bold text-foreground">12</p>
-              <p className="text-[10px] text-muted-foreground/70 mt-1">клієнтів</p>
-            </div>
-            <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
-              <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Дохід</p>
-              <p className="text-3xl font-display font-bold text-foreground">8.4к</p>
-              <p className="text-[10px] text-muted-foreground/70 mt-1">₴ за весь час</p>
-            </div>
-          </div>
+          {ambassadorData && ambassadorData.ambassadors.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
+                  <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Приведено</p>
+                  <p className="text-3xl font-display font-bold text-foreground">{ambassadorData.totalReferrals}</p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-1">клієнтів</p>
+                </div>
+                <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
+                  <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Дохід</p>
+                  <p className="text-3xl font-display font-bold text-foreground">{formatPrice(ambassadorData.totalRevenue)}</p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-1">за весь час</p>
+                </div>
+              </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Users size={16} className="text-sage" />
-              <h4 className="text-sm font-bold text-foreground">Топ амбасадори</h4>
-            </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Users size={16} className="text-sage" />
+                  <h4 className="text-sm font-bold text-foreground">Топ амбасадори</h4>
+                </div>
 
-            <div className="space-y-2">
-              {[
-                { id: '1', name: 'Олена Коваль',      count: 4, revenue: '3.2к ₴', friends: ['Ігор О. · 12.04', 'Світлана Д. · 05.05', 'Ольга К. · 20.02', 'Максим Р. · 01.01'] },
-                { id: '2', name: 'Марія Сидоренко',   count: 3, revenue: '2.1к ₴', friends: ['Антон П. · 10.03', 'Юлія С. · 15.04', 'Дмитро В. · 02.05'] },
-                { id: '3', name: 'Анна Павлова',       count: 2, revenue: '1.4к ₴', friends: ['Наталія Л. · 11.01', 'Сергій М. · 22.03'] },
-              ].map((adv) => {
-                const isExpanded = expandedAmbassadorId === adv.id;
-                return (
-                  <button
-                    key={adv.id}
-                    type="button"
-                    onClick={() => setExpandedAmbassadorId(isExpanded ? null : adv.id)}
-                    aria-expanded={isExpanded}
-                    className={`w-full flex flex-col gap-3 p-3.5 rounded-xl border active:scale-[0.95] transition-all text-left ${isExpanded ? 'bg-secondary shadow-sm border-sage/30' : 'bg-secondary/60 border-border'}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-full bg-sage/10 flex items-center justify-center text-sage font-bold text-xs">
-                          {adv.name[0]}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-foreground">{adv.name}</p>
-                          <p className="text-[10px] text-muted-foreground/60">{adv.count} рекомендації</p>
-                        </div>
-                      </div>
-                      <div className="text-right flex items-center gap-2">
-                        <p className="text-sm font-bold text-sage">{adv.revenue}</p>
-                        <ChevronRight size={14} className={`text-sage/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                      </div>
-                    </div>
-
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        transition={SPRING}
-                        className="pl-4 border-l-2 border-sage/10 space-y-2 py-1"
+                <div className="space-y-2">
+                  {ambassadorData.ambassadors.map((amb) => {
+                    const isExpanded = expandedAmbassadorId === amb.id;
+                    return (
+                      <button
+                        key={amb.id}
+                        type="button"
+                        onClick={() => setExpandedAmbassadorId(isExpanded ? null : amb.id)}
+                        aria-expanded={isExpanded}
+                        className={`w-full flex flex-col gap-3 p-3.5 rounded-xl border active:scale-[0.95] transition-all text-left ${isExpanded ? 'bg-secondary shadow-sm border-sage/30' : 'bg-secondary/60 border-border'}`}
                       >
-                        <p className="text-[9px] font-bold text-sage uppercase tracking-widest mb-1">Запрошені друзі:</p>
-                        {adv.friends.map((friend, j) => (
-                          <div key={j} className="flex items-center gap-2 text-xs text-muted-foreground/70">
-                            <div className="size-1.5 rounded-full bg-sage/30" />
-                            {friend}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="size-9 rounded-full bg-sage/10 flex items-center justify-center text-sage font-bold text-xs">
+                              {amb.name[0]}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-foreground">{amb.name}</p>
+                              <p className="text-[10px] text-muted-foreground/60">
+                                {amb.completedCount} {pluralUk(amb.completedCount, 'рекомендація', 'рекомендації', 'рекомендацій')}
+                              </p>
+                            </div>
                           </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </button>
-                );
-              })}
+                          <div className="text-right flex items-center gap-2">
+                            {amb.revenue > 0 && (
+                              <p className="text-sm font-bold text-sage">{formatPrice(amb.revenue)}</p>
+                            )}
+                            <ChevronRight size={14} className={`text-sage/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                          </div>
+                        </div>
+
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            transition={SPRING}
+                            className="pl-4 border-l-2 border-sage/10 space-y-2 py-1"
+                          >
+                            <p className="text-[9px] font-bold text-sage uppercase tracking-widest mb-1">Запрошені друзі:</p>
+                            {amb.referrals.map((ref, j) => (
+                              <div key={j} className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                                <div className="size-1.5 rounded-full bg-sage/30" />
+                                {ref.name} · {ref.date}
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+              <div className="size-14 rounded-2xl bg-sage/10 flex items-center justify-center">
+                <Share2 size={24} className="text-sage/40" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Реферальна програма</p>
+                <p className="text-xs text-muted-foreground/60 mt-1 max-w-[220px]">
+                  Поки що немає активних амбасадорів. Поділіться посиланням із клієнтами — вони приведуть нових.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           <button
             type="button"

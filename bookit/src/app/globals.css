@@ -101,6 +101,15 @@
   --topbar-height:     60px;
   --bottom-nav-height: 76px;
   --sidebar-width:     280px;
+
+  /* Product category colors — static brand identity */
+  --cat-hair:  #A87C5C;
+  --cat-nails: #C2739A;
+  --cat-skin:  #5FA89A;
+  --cat-brows: #8A7EC2;
+  --cat-body:  #6DAB7F;
+  --cat-tools: #7F8FAB;
+  --cat-other: #A89F7C;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -288,6 +297,11 @@
   --l-shadow-sm:  0 2px 20px rgba(15, 23, 42, 0.04);
   --l-shadow-card: 0 4px 24px rgba(15, 23, 42, 0.08);
   --l-shadow-xl:  0 8px 32px rgba(0, 0, 0, 0.35);
+
+  /* Testimonial avatar backgrounds — decorative */
+  --l-avatar-1: #7A9A8A;
+  --l-avatar-2: #9A8A6A;
+  --l-avatar-3: #8A7A9A;
 }
 
 /* Landing page: fix html/body overscroll bg showing theme color */

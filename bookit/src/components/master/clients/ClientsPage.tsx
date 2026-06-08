@@ -461,7 +461,7 @@ export function ClientsPage() {
 
           {/* Click-away for sort */}
           {sortOpen && (
-            <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
+            <button type="button" className="fixed inset-0 z-20 bg-transparent" onClick={() => setSortOpen(false)} aria-label="Закрити меню сортування" />
           )}
 
           {isLoading ? (

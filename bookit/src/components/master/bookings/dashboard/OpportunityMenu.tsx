@@ -33,7 +33,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-black text-foreground">Вільне вікно</h3>
+                <h3 className="text-lg font-bold text-foreground">Вільне вікно</h3>
                 <p className="text-xs text-muted-foreground/60">Оберіть дію на {time}</p>
               </div>
               <button

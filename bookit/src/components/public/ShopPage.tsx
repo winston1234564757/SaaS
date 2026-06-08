@@ -180,15 +180,15 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
 // ── ProductTile — клік відкриває DetailSheet ──────────────────────────────────
 
 const CATEGORY_COLORS: Record<string, string> = {
-  hair: '#A87C5C', nails: '#C2739A', skin: '#5FA89A',
-  brows: '#8A7EC2', body: '#6DAB7F', tools: '#7F8FAB', other: '#A89F7C',
+  hair: 'var(--cat-hair)', nails: 'var(--cat-nails)', skin: 'var(--cat-skin)',
+  brows: 'var(--cat-brows)', body: 'var(--cat-body)', tools: 'var(--cat-tools)', other: 'var(--cat-other)',
 };
 
 function ProductTile({ product: p, qty, onOpen }: {
   product: Product; qty: number; onOpen: () => void;
 }) {
   const photo    = p.photos[0] ?? null;
-  const catColor = CATEGORY_COLORS[p.category] ?? '#A89F7C';
+  const catColor = CATEGORY_COLORS[p.category] ?? 'var(--cat-other)';
 
   return (
     <motion.button
@@ -204,7 +204,7 @@ function ProductTile({ product: p, qty, onOpen }: {
           : <div className="w-full h-full flex items-center justify-center"><ProductIcon name={p.icon_name} size={32} className="text-muted-foreground" /></div>
         }
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: `${catColor}dd`, backdropFilter: 'blur(4px)' }}>
+        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: `color-mix(in srgb, ${catColor} 87%, transparent)`, backdropFilter: 'blur(4px)' }}>
           {CATEGORY_LABELS[p.category as ProductCategory]}
         </div>
         {p.stock_qty <= 0 && (
@@ -246,7 +246,7 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
   if (!p) return null;
 
   const photos   = p.photos.length > 0 ? p.photos : [];
-  const catColor = CATEGORY_COLORS[p.category] ?? '#A89F7C';
+  const catColor = CATEGORY_COLORS[p.category] ?? 'var(--cat-other)';
   const price    = (p.price_kopecks / 100).toFixed(0);
   const inCart   = qty > 0;
 
@@ -347,7 +347,7 @@ function ProductDetailSheet({ product: p, qty, onClose, onAdd, onQtyChange }: {
                 )}
 
                 {/* Category badge */}
-                <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold text-white z-20" style={{ background: `${catColor}ee`, backdropFilter: 'blur(6px)' }}>
+                <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold text-white z-20" style={{ background: `color-mix(in srgb, ${catColor} 93%, transparent)`, backdropFilter: 'blur(6px)' }}>
                   {CATEGORY_LABELS[p.category as ProductCategory]}
                 </div>
 

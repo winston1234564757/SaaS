@@ -26,7 +26,7 @@ export function ImageCropper({ image, onCropComplete, aspect = 3 / 4 }: ImageCro
   };
 
   return (
-    <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/5">
+    <div className="relative w-full max-w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/5">
       <Cropper
         image={image}
         crop={crop}

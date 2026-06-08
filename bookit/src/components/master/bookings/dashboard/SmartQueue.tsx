@@ -80,7 +80,7 @@ export function SmartQueue({ bookings }: Props) {
               {group.items.map((b, i) => (
                 <div key={b.id} className="flex flex-col gap-0.5">
                   {group.id === 'complete' && b.date !== todayStr && (
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 px-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 px-3">
                       {format(parseISO(b.date), 'd MMMM', { locale: uk })}
                     </span>
                   )}

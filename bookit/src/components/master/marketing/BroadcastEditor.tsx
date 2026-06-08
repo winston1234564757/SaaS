@@ -247,13 +247,13 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
 
       <motion.div
         className="relative w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl flex flex-col"
-        style={{ background: 'rgba(255,232,220,0.98)', backdropFilter: 'blur(20px)' }}
+        style={{ background: 'var(--surface)', backdropFilter: 'blur(20px)' }}
         initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         exit={{ y: 60, opacity: 0 }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-secondary sticky top-0 z-10"
-          style={{ background: 'rgba(255,232,220,0.98)' }}>
+          style={{ background: 'var(--surface)' }}>
           <div>
             <h2 className="font-semibold text-foreground text-base">
               {step === 'confirm' ? 'Підтвердження розсилки' : 'Нова розсилка'}
@@ -276,7 +276,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               exit={{ opacity: 0, x: -20 }}
               className="px-5 py-4 flex flex-col gap-4"
             >
-              <div className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.68)' }}>
+              <div className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--surface)' }}>
                 <ConfirmRow icon={<MessageSquare size={15} />} label="Повідомлення" value={message} multiline />
                 <ConfirmRow icon={<Users size={15} />} label="Отримувачів" value={`${resolvedClientIds.length} клієнтів`} />
                 <ConfirmRow
@@ -306,7 +306,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
 
               <div className="flex gap-3">
                 <button type="button" onClick={() => setStep('edit')}
-                  className="flex-1 py-3 rounded-2xl border border-[#E8D5CC] text-sm text-muted-foreground font-medium">
+                  className="flex-1 py-3 rounded-2xl border border-border text-sm text-muted-foreground font-medium">
                   Назад
                 </button>
                 <button type="button"
@@ -314,7 +314,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   disabled={isSending}
                   data-testid="confirm-send-btn"
                   className="flex-[2] py-3 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-60 active:scale-95 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #2C1A14, #4A2E24)' }}
+                  style={{ background: 'var(--btn-primary-bg)' }}
                 >
                   {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                   {isSending ? 'Відправляємо...' : `Відправити (${resolvedClientIds.length})`}
@@ -335,8 +335,8 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   data-testid="broadcast-title-input"
                   placeholder="Напр. «Повернення сплячих клієнтів»"
                   aria-label="Назва розсилки"
-                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-[#E8D5CC] focus:border-primary transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.68)' }}
+                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-border focus:border-primary transition-colors"
+                  style={{ background: 'var(--surface)' }}
                 />
               </div>
 
@@ -351,15 +351,15 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                     )}
                   </label>
                   {/* Mode switcher */}
-                  <div className="flex rounded-xl overflow-hidden border border-[#E8D5CC] text-[11px] font-medium">
+                  <div className="flex rounded-xl overflow-hidden border border-border text-[11px] font-medium">
                     {(['tags', 'clients'] as const).map(mode => (
                       <button type="button"
                         key={mode}
                         onClick={() => setTargetMode(mode)}
                         className="px-3 py-1.5 transition-all"
                         style={targetMode === mode
-                          ? { background: '#2C1A14', color: '#fff' }
-                          : { background: 'rgba(255,255,255,0.5)', color: '#6B5750' }}
+                          ? { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)' }
+                          : { background: 'var(--background)', color: 'var(--muted-foreground)' }}
                       >
                         {mode === 'tags' ? 'За тегом' : 'Клієнти'}
                       </button>
@@ -383,7 +383,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                             className="text-xs font-bold px-3 py-1.5 rounded-full border transition-all"
                             style={tags.includes(tag.value)
                               ? { color: tag.color, background: tag.bg, borderColor: tag.color + '40' }
-                              : { color: '#A8928D', background: 'rgba(255,255,255,0.5)', borderColor: '#E8D5CC' }}
+                              : { color: 'var(--muted-foreground)', background: 'var(--background)', borderColor: 'var(--border)' }}
                           >
                             {tag.label}
                           </button>
@@ -395,8 +395,8 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
 
                       {/* Tag client list with toggles */}
                       {tagClients.length > 0 && (
-                        <div className="rounded-2xl overflow-hidden border border-[#E8D5CC]"
-                          style={{ background: 'rgba(255,255,255,0.5)' }}>
+                        <div className="rounded-2xl overflow-hidden border border-border"
+                          style={{ background: 'var(--background)' }}>
                           <div className="px-3 py-2 border-b border-secondary flex items-center justify-between">
                             <span className="text-[11px] text-muted-foreground/60">
                               Клієнти за фільтром · {tagPreview?.count ?? 0}
@@ -449,8 +449,8 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                           onChange={e => handleSearchInput(e.target.value)}
                           placeholder="Пошук за ім'ям або телефоном"
                           aria-label="Пошук клієнта за ім'ям або телефоном"
-                          className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-[#E8D5CC] focus:border-primary"
-                          style={{ background: 'rgba(255,255,255,0.68)' }}
+                          className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-border focus:border-primary"
+                          style={{ background: 'var(--surface)' }}
                         />
                       </div>
 
@@ -469,8 +469,8 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
 
                       {/* Client list */}
                       {pickerClients.length > 0 && (
-                        <div className="rounded-2xl overflow-hidden border border-[#E8D5CC]"
-                          style={{ background: 'rgba(255,255,255,0.5)' }}>
+                        <div className="rounded-2xl overflow-hidden border border-border"
+                          style={{ background: 'var(--background)' }}>
                           {pickerClients.map(c => (
                             <ClientRow
                               key={c.clientId}
@@ -515,8 +515,8 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       onClick={() => toggleChannel(ch.value)}
                       className="flex-1 py-2.5 rounded-2xl text-xs font-medium border transition-all"
                       style={channels.includes(ch.value)
-                        ? { background: '#2C1A14', color: '#fff', borderColor: '#2C1A14' }
-                        : { background: 'rgba(255,255,255,0.5)', color: '#6B5750', borderColor: '#E8D5CC' }}
+                        ? { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', borderColor: 'var(--btn-primary-bg)' }
+                        : { background: 'var(--background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}
                     >
                       {ch.icon} {ch.label}
                     </button>
@@ -536,8 +536,8 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   data-testid="broadcast-message-textarea"
                   rows={4}
                   placeholder="Напишіть повідомлення або оберіть тег — ми підкажемо шаблон"
-                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-[#E8D5CC] focus:border-primary transition-colors resize-none"
-                  style={{ background: 'rgba(255,255,255,0.68)' }}
+                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-border focus:border-primary transition-colors resize-none"
+                  style={{ background: 'var(--surface)' }}
                 />
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <span className="text-[10px] text-muted-foreground/60 self-center">Вставити:</span>
@@ -574,22 +574,22 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                         onChange={e => setDiscountPct(e.target.value === '' ? '' : Number(e.target.value))}
                         placeholder="20"
                         aria-label="Знижка у відсотках"
-                        className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-[#E8D5CC] focus:border-primary"
-                        style={{ background: 'rgba(255,255,255,0.68)' }}
+                        className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border focus:border-primary"
+                        style={{ background: 'var(--surface)' }}
                       />
                     </div>
                     <div className="flex-1">
                       <label className="text-xs text-muted-foreground/60 mb-1 block">Діє</label>
                       <select value={discountDays} onChange={e => setDiscountDays(Number(e.target.value))}
-                        className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-[#E8D5CC]"
-                        style={{ background: 'rgba(255,255,255,0.68)' }}>
+                        className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                        style={{ background: 'var(--surface)' }}>
                         {EXPIRY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </select>
                     </div>
                   </div>
                   <select value={discountServiceId} onChange={e => setDiscountServiceId(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-[#E8D5CC]"
-                    style={{ background: 'rgba(255,255,255,0.68)' }}>
+                    className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                    style={{ background: 'var(--surface)' }}>
                     <option value="">Будь-яка послуга</option>
                     {(services ?? []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
@@ -612,8 +612,8 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       <Scissors size={11} /> Послуга
                     </label>
                     <select value={serviceLinkId} onChange={e => setServiceLinkId(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-[#E8D5CC]"
-                      style={{ background: 'rgba(255,255,255,0.68)' }}>
+                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                      style={{ background: 'var(--surface)' }}>
                       <option value="">Не обрано</option>
                       {(services ?? []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
@@ -623,25 +623,19 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       <ShoppingBag size={11} /> Товар
                     </label>
                     <select value={productLinkId} onChange={e => setProductLinkId(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-[#E8D5CC]"
-                      style={{ background: 'rgba(255,255,255,0.68)' }}>
+                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                      style={{ background: 'var(--surface)' }}>
                       <option value="">Не обрано</option>
                       {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                   </div>
-                  {(serviceLinkId || productLinkId) && (
-                    <p className="text-[11px] text-success">
-                      Клієнт перейде одразу в форму запису{productLinkId ? ' з товаром' : ''}.
-                    </p>
-                  )}
                 </div>
               </CollapsibleSection>
 
               {error && <p className="text-xs text-destructive">{error}</p>}
 
               {isStarter && broadcastsUsed >= 3 && (
-                <div className="rounded-2xl p-4 text-sm"
-                  style={{ background: 'linear-gradient(135deg, rgba(212,147,90,0.12), rgba(120,154,153,0.10))', border: '1px solid rgba(212,147,90,0.28)' }}>
+                <div className="rounded-2xl p-4 text-sm bg-warning/8 border border-warning/20">
                   <p className="font-semibold text-foreground mb-1">Ліміт вичерпано</p>
                   <p className="text-xs text-muted-foreground">
                     У Starter плані доступно 3 безкоштовні розсилки. Перейди на Pro для необмежених.
@@ -654,7 +648,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                 disabled={resolving || (isStarter && broadcastsUsed >= 3)}
                 data-testid="preview-broadcast-btn"
                 className="w-full py-4 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #2C1A14, #4A2E24)' }}
+                style={{ background: 'var(--btn-primary-bg)' }}
               >
                 {resolving ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />}
                 {resolving ? 'Формуємо список...' : 'Переглянути і відправити'}
@@ -680,8 +674,8 @@ function ClientRow({
       <div
         className="size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
         style={checked
-          ? { background: '#789A99', borderColor: '#789A99' }
-          : { background: 'transparent', borderColor: '#E8D5CC' }}
+          ? { background: 'var(--accent)', borderColor: 'var(--accent)' }
+          : { background: 'transparent', borderColor: 'var(--border)' }}
       >
         {checked && <Check size={11} color="#fff" strokeWidth={3} />}
       </div>
@@ -700,7 +694,7 @@ function ClientRow({
             {client.retentionStatus}
           </span>
         )}
-        <UserCheck size={13} className={checked ? 'text-primary' : 'text-[#E8D5CC]'} />
+        <UserCheck size={13} className={checked ? 'text-primary' : 'text-muted-foreground/40'} />
       </div>
     </button>
   );

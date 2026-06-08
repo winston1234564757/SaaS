@@ -30,8 +30,8 @@ export function WaitlistButton({ featureSlug }: { featureSlug: string }) {
     <button type="button"
       onClick={handleJoin}
       disabled={joined || isPending}
-      className="w-full max-w-xs py-3.5 rounded-2xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-70 transition-all active:scale-95 transition-all"
-      style={{ boxShadow: joined ? 'none' : '0 4px 16px rgba(120,154,153,0.35)' }}
+      className="w-full max-w-xs py-3.5 rounded-2xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-70 transition-all active:scale-95"
+      style={{ boxShadow: joined ? 'none' : 'var(--btn-primary-shadow)' }}
     >
       {joined ? (
         <>

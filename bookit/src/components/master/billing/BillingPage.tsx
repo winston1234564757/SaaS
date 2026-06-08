@@ -166,7 +166,7 @@ export function BillingPage() {
               <PartyPopper size={18} className="text-success" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Оплата успішна! 🎉</p>
+              <p className="text-sm font-semibold text-foreground">Оплата успішна!</p>
               <p className="text-xs text-muted-foreground">Ваш тариф оновлено. Всі функції вже активні.</p>
             </div>
             <button type="button" onClick={() => setShowSuccess(false)} aria-label="Закрити" className="text-muted-foreground/60 hover:text-muted-foreground">

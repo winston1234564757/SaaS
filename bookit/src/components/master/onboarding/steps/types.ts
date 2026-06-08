@@ -11,7 +11,6 @@ export const DAYS_UA: Record<string, string> = {
 };
 
 export interface SpecializationItem {
-  emoji: string;
   label: string;
   group: string;
 }
@@ -22,41 +21,41 @@ export interface SpecializationGroup {
 }
 
 export const SPECIALIZATION_GROUPS: SpecializationGroup[] = [
-  { id: 'nails',  label: 'Нігті'       },
-  { id: 'hair',   label: 'Волосся'     },
-  { id: 'face',   label: 'Обличчя'     },
-  { id: 'body',   label: 'Тіло'        },
-  { id: 'art',    label: 'Тату/Пірс'   },
-  { id: 'other',  label: 'Інше'        },
+  { id: 'nails',  label: 'Нігті'      },
+  { id: 'hair',   label: 'Волосся'    },
+  { id: 'face',   label: 'Обличчя'    },
+  { id: 'body',   label: 'Тіло'       },
+  { id: 'art',    label: 'Тату/Пірс'  },
+  { id: 'other',  label: 'Інше'       },
 ];
 
 export const SPECIALIZATIONS: SpecializationItem[] = [
   // Нігті
-  { emoji: '💅',  label: 'Манікюр',         group: 'nails' },
-  { emoji: '🦶',  label: 'Педикюр',         group: 'nails' },
-  { emoji: '🎨',  label: 'Нейл-арт',        group: 'nails' },
-  { emoji: '💎',  label: 'Нарощення',       group: 'nails' },
+  { label: 'Манікюр',        group: 'nails' },
+  { label: 'Педикюр',        group: 'nails' },
+  { label: 'Нейл-арт',       group: 'nails' },
+  { label: 'Нарощення',      group: 'nails' },
   // Волосся
-  { emoji: '✂️',  label: 'Стрижки',         group: 'hair'  },
-  { emoji: '🌈',  label: 'Фарбування',      group: 'hair'  },
-  { emoji: '💈',  label: 'Барбершоп',       group: 'hair'  },
-  { emoji: '✨',  label: 'Кератин/Ботокс',  group: 'hair'  },
+  { label: 'Стрижки',        group: 'hair'  },
+  { label: 'Фарбування',     group: 'hair'  },
+  { label: 'Барбершоп',      group: 'hair'  },
+  { label: 'Кератин/Ботокс', group: 'hair'  },
   // Обличчя
-  { emoji: '🌿',  label: 'Брови',           group: 'face'  },
-  { emoji: '👁️',  label: 'Вії (Lash)',      group: 'face'  },
-  { emoji: '💄',  label: 'Макіяж',          group: 'face'  },
-  { emoji: '🧖',  label: 'Косметологія',    group: 'face'  },
-  { emoji: '🖌️',  label: 'ПМ Макіяж',      group: 'face'  },
+  { label: 'Брови',          group: 'face'  },
+  { label: 'Вії (Lash)',     group: 'face'  },
+  { label: 'Макіяж',         group: 'face'  },
+  { label: 'Косметологія',   group: 'face'  },
+  { label: 'ПМ Макіяж',     group: 'face'  },
   // Тіло
-  { emoji: '💆',  label: 'Масаж',           group: 'body'  },
-  { emoji: '🌊',  label: 'Депіляція',       group: 'body'  },
-  { emoji: '🛁',  label: 'SPA',             group: 'body'  },
-  { emoji: '🏋️',  label: 'Фітнес',         group: 'body'  },
+  { label: 'Масаж',          group: 'body'  },
+  { label: 'Депіляція',      group: 'body'  },
+  { label: 'SPA',            group: 'body'  },
+  { label: 'Фітнес',        group: 'body'  },
   // Тату / Пірсинг
-  { emoji: '🖋️',  label: 'Татуювання',     group: 'art'   },
-  { emoji: '💠',  label: 'Пірсинг',         group: 'art'   },
+  { label: 'Татуювання',    group: 'art'   },
+  { label: 'Пірсинг',        group: 'art'   },
   // Інше
-  { emoji: '🌸',  label: 'Інше',            group: 'other' },
+  { label: 'Інше',           group: 'other' },
 ];
 
 export const BUFFER_PRESETS = [0, 5, 10, 15, 20, 30];
@@ -71,4 +70,4 @@ export const TEMPLATE_SCHEDULE = Object.fromEntries(
   DAYS_ORDER.map(d => [d, { is_working: d !== 'sun', start_time: '10:00', end_time: '19:00' }])
 ) as Record<DayKey, DaySchedule>;
 
-export const inputCls = 'w-full px-4 py-3 rounded-lg bg-secondary/70 border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:bg-secondary focus:border-sage focus:ring-2 focus:ring-sage/20 transition-all';
+export const inputCls = 'w-full px-4 py-3 rounded-lg bg-secondary/70 border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:bg-secondary focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all';

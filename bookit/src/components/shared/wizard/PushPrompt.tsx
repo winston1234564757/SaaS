@@ -83,7 +83,7 @@ export function PushPrompt() {
               <button type="button"
                 onClick={handleAllow}
                 disabled={state === 'loading'}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[11px] font-semibold disabled:opacity-70 active:scale-[0.95] transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-[100px] bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[11px] font-semibold disabled:opacity-70 active:scale-[0.95] transition-all cursor-pointer"
               >
                 {state === 'loading'
                   ? <><Loader2 size={11} className="animate-spin" /> Підключаємо...</>

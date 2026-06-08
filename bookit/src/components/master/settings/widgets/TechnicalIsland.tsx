@@ -24,9 +24,9 @@ interface TechnicalIslandProps {
   onThemeChange: (key: MoodThemeKey) => void;
 }
 
-const THEMES: { key: MoodThemeKey; label: string; color: string; requiresPro: boolean }[] = [
-  { key: 'default', label: 'Blossom', color: '#DDD5C6', requiresPro: true },
-  { key: 'studio',  label: 'Studio',  color: '#0E1D21', requiresPro: true },
+const THEMES: { key: MoodThemeKey; label: string; color: string; requiresPro: boolean; wip?: boolean }[] = [
+  { key: 'default', label: 'Blossom', color: '#DDD5C6', requiresPro: true,  wip: true },
+  { key: 'studio',  label: 'Studio',  color: '#0E1D21', requiresPro: true,  wip: true },
   { key: 'frost',   label: 'Frost',   color: '#A5B4FC', requiresPro: false },
 ];
 
@@ -46,8 +46,8 @@ export function TechnicalIsland({
   const [waitingForBot, setWaitingForBot] = useState(false);
 
   const canChangeTheme = tier === 'pro' || tier === 'studio';
-  // If Starter has a non-frost theme stored, show frost as selected
-  const effectiveThemeKey = canChangeTheme ? themeKey : 'frost';
+  const wipTheme = THEMES.find(t => t.key === themeKey)?.wip ?? false;
+  const effectiveThemeKey = (canChangeTheme && !wipTheme) ? themeKey : 'frost';
 
   const handleConnectTelegram = async () => {
     setConnectingBot(true);
@@ -176,6 +176,10 @@ export function TechnicalIsland({
               <button type="button"
                 key={theme.key}
                 onClick={() => {
+                  if (theme.wip) {
+                    showToast({ type: 'info', title: 'Незабаром', message: 'Ця тема зараз у розробці' });
+                    return;
+                  }
                   if (isLocked) {
                     showToast({ type: 'info', title: 'Тільки Pro', message: 'Ця тема відкривається на Pro' });
                     return;
@@ -183,20 +187,22 @@ export function TechnicalIsland({
                   onThemeChange(theme.key);
                 }}
                 className={cn(
-                  "flex-1 p-3 rounded-2xl border transition-all text-left group",
-                  isLocked
-                    ? "cursor-not-allowed opacity-50"
+                  "flex-1 p-3 rounded-2xl border transition-all text-left",
+                  theme.wip || isLocked
+                    ? "cursor-not-allowed"
                     : "cursor-pointer active:scale-[0.95]",
-                  isActive && !isLocked
-                    ? "bg-surface border-accent shadow-sm"
-                    : "bg-secondary/40 border-border grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60"
+                  isActive && !isLocked && !theme.wip
+                    ? "bg-surface border-accent shadow-sm opacity-100"
+                    : theme.wip
+                    ? "bg-secondary/40 border-border opacity-35"
+                    : "bg-secondary/40 border-border grayscale opacity-50 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60"
                 )}
               >
                 <div
                   className="w-full h-12 rounded-xl mb-3 shadow-inner relative overflow-hidden"
                   style={{ backgroundColor: theme.color }}
                 >
-                  {isLocked && (
+                  {isLocked && !theme.wip && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
                       <Lock size={14} className="text-white" />
                     </div>
@@ -204,7 +210,11 @@ export function TechnicalIsland({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold">{theme.label}</span>
-                  {isLocked ? (
+                  {theme.wip ? (
+                    <span className="text-[9px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full leading-none">
+                      Розробка
+                    </span>
+                  ) : isLocked ? (
                     <span className="text-[9px] font-bold text-accent bg-accent/10 px-1.5 py-0.5 rounded-full leading-none">
                       Pro
                     </span>

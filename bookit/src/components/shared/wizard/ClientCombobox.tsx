@@ -95,7 +95,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
             type="button"
             onClick={clearPreSelected}
             aria-label="Змінити клієнта"
-            className="p-1 rounded-lg hover:bg-accent-on/6 text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+            className="p-1 rounded-[100px] hover:bg-accent-on/6 text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
           >
             <X size={14} />
           </button>
@@ -118,7 +118,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
             onChange={e => handleChange(e.target.value)}
             onFocus={() => setOpen(true)}
             placeholder="Олена Петрова або +380..."
-            className={`w-full h-12 pl-9 pr-4 rounded-xl bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
+            className={`w-full h-12 pl-9 pr-4 rounded-[100px] bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
               errors.clientName
                 ? 'border-destructive focus:ring-destructive/20'
                 : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/20'

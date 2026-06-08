@@ -93,8 +93,7 @@ export function StudioJoinPage({ studio, token }: Props) {
             <button type="button"
               onClick={handleJoin}
               disabled={isPending}
-              className="w-full py-3.5 rounded-full bg-success text-white text-sm font-semibold disabled:opacity-60 active:scale-95 transition-all"
-              style={{ boxShadow: '0 4px 16px rgba(92,158,122,0.35)' }}
+              className="w-full py-3.5 rounded-full bg-success text-white text-sm font-semibold disabled:opacity-60 active:scale-95 transition-all shadow-lg"
             >
               {isPending ? 'Приєднуємось...' : 'Приєднатися до студії →'}
             </button>

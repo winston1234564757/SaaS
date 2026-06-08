@@ -113,7 +113,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
                 onClick={handleUpgrade}
                 className={`w-full h-12 rounded-2xl font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
                   isMarketing
-                    ? 'bg-gradient-to-r from-[#D4935A] to-[#C07840] text-white hover:opacity-90 shadow-[0_4px_16px_rgba(212,147,90,0.35)]'
+                    ? 'bg-[var(--warning)] text-white hover:opacity-90 shadow-md'
                     : 'bg-primary text-white hover:bg-primary/90 shadow-[0_4px_16px_rgba(120,154,153,0.35)]'
                 } active:scale-95 transition-all`}
               >

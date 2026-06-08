@@ -8,7 +8,9 @@
 
 | ID | Назва | Статус | Scope | Created |
 |---|---|---|---|---|
-| [MTRP-2026-06-02](./MTRP-2026-06-02.md) | Master Technical Remediation Plan | AWAITING APPROVAL | 71 items · 5 phases · 15-22 days | 2026-06-02 |
+| [MTRP-2026-06-02](./MTRP-2026-06-02.md) | Master Technical Remediation Plan | ✅ COMPLETE | 71 items · 5 phases · 42/71 closed | 2026-06-02 |
+| [FROST-POLISH-2026-06-07](./FROST-POLISH-2026-06-07.md) | Frost Theme Polish Sprint | ✅ COMPLETE | 9 files · 8 sprints · WCAG AA · animations | 2026-06-07 |
+| [IRP-2026-06-07](./IRP-2026-06-07.md) | Impeccable Remediation Plan | ✅ COMPLETE | 8 phases · A-H · Security+Theme+Wizard+Arch+Audit | 2026-06-07 |
 
 ---
 

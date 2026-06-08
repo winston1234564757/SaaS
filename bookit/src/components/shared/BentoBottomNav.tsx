@@ -76,7 +76,7 @@ export function BentoBottomNav() {
                   ) : (
                     <motion.div key="hub" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex flex-col items-center">
                       <ChevronUp size={22} className={cn("transition-transform duration-700", isBentoActive && "animate-bounce")} />
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] mt-[-2px]">Hub</span>
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] mt-[-2px]">Hub</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -117,7 +117,7 @@ export function BentoBottomNav() {
                     className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/40 border border-border backdrop-blur-xl active:scale-90 transition-all group"
                   >
                     <div className="size-1.5 rounded-full bg-sage animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-text-main/80">v5.2.0 Vaul</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main/80">v5.2.0 Vaul</span>
                     <ChevronUp size={10} className="rotate-90 opacity-40 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                   <span className="text-[10px] font-bold text-text-mute/40 uppercase tracking-widest">Квітень 2026</span>
@@ -128,7 +128,7 @@ export function BentoBottomNav() {
 
               {/* --- GROUP 1: OPERATIONS (Asymmetric Left) --- */}
               <section className="mb-14">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-sage mb-6 opacity-60">Операції</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-sage mb-6 opacity-60">Операції</h3>
                 <div className="grid grid-cols-5 grid-rows-3 gap-3.5 h-[420px]">
                   <BentoTile href="/dashboard/analytics" icon={BarChart2} label="Аналітика" size="2x2" className="row-span-2 col-span-3" pathname={pathname} delay={0.1} />
                   <BentoTile href="/dashboard/products" icon={ShoppingBag} label="Магазин" size="1x1" className="col-span-2" pathname={pathname} delay={0.2} />
@@ -139,7 +139,7 @@ export function BentoBottomNav() {
 
               {/* --- GROUP 2: MARKETING (Asymmetric Right) --- */}
               <section className="mb-14">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-sage mb-6 opacity-60 text-right">Маркетинг</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-sage mb-6 opacity-60 text-right">Маркетинг</h3>
                 <div className="grid grid-cols-5 grid-rows-3 gap-3.5 h-[420px]">
                   <BentoTile href="/dashboard/marketing" icon={Sparkles} label="Маркетинг" size="1x1" className="col-span-2" pathname={pathname} delay={0.5} />
                   <BentoTile href="/dashboard/portfolio" icon={GalleryVerticalEnd} label="Портфоліо" size="2x2" className="row-span-2 col-span-3" pathname={pathname} delay={0.6} />
@@ -150,7 +150,7 @@ export function BentoBottomNav() {
 
               {/* --- GROUP 3: SYSTEM (Geometric Utility) --- */}
               <section>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-text-mute mb-6 text-center opacity-40">Система</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-text-mute mb-6 text-center opacity-40">Система</h3>
                 <div className="grid grid-cols-5 gap-3.5">
                   <BentoTile href="/dashboard/billing" icon={CreditCard} label="Тариф" size="wide" className="col-span-5" pathname={pathname} delay={0.9} />
                   <BentoTile href="/dashboard/studio" icon={Building2} label="Студія" size="1x1" className="col-span-3" pathname={pathname} delay={1.0} />

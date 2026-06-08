@@ -19,6 +19,8 @@ import { formatPrice } from '@/components/master/services/types';
 import { cn } from '@/lib/utils/cn';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
+const SPRING = { type: 'spring' as const, duration: 0.35, bounce: 0 };
+
 interface Props {
   bookings: BookingWithServices[];
   month: Date;
@@ -124,7 +126,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
       {/* Summary + toggle */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex flex-col">
-          <span className="text-xl lg:text-3xl font-black text-foreground heading-serif tracking-tight">{formatPrice(totalRevenue)}</span>
+          <span className="text-xl lg:text-3xl font-bold text-foreground heading-serif tracking-tight">{formatPrice(totalRevenue)}</span>
           <span className="text-[10px] lg:text-[12px] font-bold text-muted-foreground/60 uppercase tracking-widest mt-1">
             {totalBookings} {pluralUk(totalBookings, 'запис', 'записи', 'записів')}
           </span>
@@ -177,7 +179,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
               {SHORT_DAYS.map((d, i) => (
                 <div
                   key={d}
-                  className="text-center text-[9px] font-black uppercase tracking-[0.12em] py-2.5"
+                  className="text-center text-[9px] font-bold uppercase tracking-[0.12em] py-2.5"
                   style={{ color: i >= 5 ? 'var(--accent)' : 'var(--text-tertiary)' }}
                 >
                   {d}
@@ -186,7 +188,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
             </div>
 
             {/* Week rows */}
-            <div className="flex flex-col">
+            <motion.div layout transition={SPRING} className="flex flex-col">
               {calendarGrid.map((week, wi) => (
                 <div
                   key={wi}
@@ -225,7 +227,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                             />
                           )}
                           <span
-                            className="relative z-10 text-[14px] font-black tabular-nums leading-none"
+                            className="relative z-10 text-[14px] font-bold tabular-nums leading-none"
                             style={{
                               color: day.isToday
                                 ? '#ffffff'
@@ -298,7 +300,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                   })}
                 </div>
               ))}
-            </div>
+            </motion.div>
           </motion.div>
         )}
 
@@ -331,7 +333,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                   <div className="flex items-start justify-between">
                     <div className="flex flex-col gap-0.5">
                       <span
-                        className="text-[9px] font-black uppercase tracking-widest"
+                        className="text-[9px] font-bold uppercase tracking-widest"
                         style={{ color: 'var(--text-tertiary)' }}
                       >
                         Тиждень {wi + 1}
@@ -343,7 +345,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                       </span>
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
-                      <span className="text-sm font-black text-foreground">
+                      <span className="text-sm font-bold text-foreground">
                         {week.totalRevenue > 0 ? formatPrice(week.totalRevenue) : '—'}
                       </span>
                       <span
@@ -406,7 +408,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                       style={{ borderTop: '0.5px solid var(--border)' }}
                     >
                       <span
-                        className="text-[9px] font-black uppercase tracking-widest"
+                        className="text-[9px] font-bold uppercase tracking-widest"
                         style={{ color: 'var(--text-tertiary)' }}
                       >
                         Топ-день

@@ -90,7 +90,7 @@ export function AnchoredTooltip({
 
                 <button type="button"
                   onClick={handlePrimary}
-                  className="mt-3 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-[#6B8C8B] active:scale-95 transition-all"
+                  className="mt-3 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/80 active:scale-95 transition-all"
                 >
                   {primaryButtonText}
                 </button>

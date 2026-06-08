@@ -160,7 +160,7 @@ export function BookingSuccess({
           <PushPrompt />
           <button type="button"
             onClick={onClose}
-            className="w-full py-3.5 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-semibold text-sm hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
+            className="w-full py-3.5 rounded-[100px] bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-semibold text-sm hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
           >
             Чудово!
           </button>
