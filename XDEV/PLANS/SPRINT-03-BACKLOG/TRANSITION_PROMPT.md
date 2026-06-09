@@ -17,16 +17,16 @@
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 9/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅
-- Наступна: T6a — Десктоп лейаут: billing + reviews + growth
+- 10/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅, T6a ✅
+- Наступна: T6b — Десктоп лейаут: revenue + marketing + products + services
 
-T6a деталі:
-- Файли: billing/page.tsx або компоненти, ReviewsPage.tsx, growth/actions.ts + відповідні компоненти
-- Проблема: desktop-specific layout для billing, reviews, growth секцій
+T6b деталі:
+- Файли: RevenuePage.tsx, MarketingTabs.tsx, ProductsPage.tsx, ServicesPage.tsx (або відповідні компоненти)
+- Проблема: desktop-specific layout для revenue, marketing, products, services секцій — ті ж що T6a але інші сторінки
 - Скіл: design-taste-frontend
 
 GATE перед кодом:
-1. mempalace_search "billing reviews growth desktop layout"
+1. mempalace_search "revenue marketing products services desktop layout"
 2. QA: 3-5 питань про desktop layout
 3. SKILL: design-taste-frontend → запусти Skill tool
 4. UI рядки → /humanizer якщо є нові
@@ -36,9 +36,9 @@ GATE перед кодом:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T6a ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T6b ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T6b
+- Повідомити юзера → він QA → наступна задача T7
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 
