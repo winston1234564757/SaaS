@@ -1,10 +1,10 @@
-﻿'use client';
+'use client';
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Loader2, Check, ToggleLeft, ToggleRight, X,
-  Megaphone, Lock, Plus, Send
+  Megaphone, Lock, Plus, Send, ChevronDown
 } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
@@ -26,16 +26,27 @@ import { useServices, useActiveFlashDeals, useStarReviews } from './story/useSto
 import { exportCanvasPng } from './story/storyExport';
 import type { Mode, StoryGeneratorProps } from './story/storyTypes';
 
-export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug, initialMode }: StoryGeneratorProps = {}) {
+export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug, initialMode, initialPortfolioId }: StoryGeneratorProps = {}) {
   const { profile, masterProfile } = useMasterContext();
   const { showToast } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Detect TMA once on mount — avoids repeated inline typeof window checks
+  const [isTMA, setIsTMA] = useState(false);
+  useEffect(() => { setIsTMA(!!window.Telegram?.WebApp?.initData); }, []);
 
   const startMode: Mode = (initialMode && VALID_MODES.has(initialMode as Mode)) ? initialMode as Mode : 'announcement';
 
   const [palIdx, setPalIdx] = useState(0);
   const [mode, setMode] = useState<Mode>(startMode);
   const [showAvatar, setShowAvatar] = useState(true);
+  const [showSticker, setShowSticker] = useState(true);
+  const [ctaText, setCtaText] = useState('Записатися онлайн');
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
 
@@ -59,7 +70,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
-  const [selectedBgPhotoId, setSelectedBgPhotoId] = useState<string | null>(null);
+  const [selectedBgPhotoId, setSelectedBgPhotoId] = useState<string | null>(initialPortfolioId ?? null);
   const bgPhotoUrlRaw = useMemo(() => {
     if (selectedBgPhotoId) {
       const it = portfolioItems.find(i => i.id === selectedBgPhotoId);
@@ -99,11 +110,17 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const isStarterPlan = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
 
   const onControlChange = useCallback(() => {
+    if (!hasInteracted) {
+      setHasInteracted(true);
+      setShowScrollHint(true);
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      hintTimerRef.current = setTimeout(() => setShowScrollHint(false), 4_000);
+    }
     if (!PREMIUM_MODES.has(mode) || !isStarterPlan) return;
     if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
     setBlurActive(false);
     blurTimerRef.current = setTimeout(() => setBlurActive(true), 3_000);
-  }, [mode, isStarterPlan]);
+  }, [mode, isStarterPlan, hasInteracted]);
 
   const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -180,6 +197,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   }, [services, selectedSvcId, flashWinSvcId]);
   useEffect(() => { if (starReviews.length > 0 && !selectedReviewId) setSelectedReviewId(starReviews[0].id); }, [starReviews, selectedReviewId]);
   useEffect(() => { setFlashWinTime(null); }, [flashWinDate, flashWinSvcId]);
+
   const handleDownload = useCallback(async () => {
     if (!canvasRef.current || exporting) return;
     if (isPhotoLoading) {
@@ -188,7 +206,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     }
     setExporting(true);
     const node = canvasRef.current;
-    const isTMA = typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData;
     await new Promise(r => setTimeout(r, 1500));
     try {
       const filename = `bookit-story-${mode}-${Date.now()}.jpg`;
@@ -217,7 +234,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     } finally {
       setExporting(false);
     }
-  }, [exporting, mode, showToast, isPhotoLoading, bgPhotoUrl, avatarBlob, platePos, textAlign, transparency, showAvatar, palIdx]);
+  }, [exporting, mode, showToast, isPhotoLoading, isTMA]);
 
   const handleDownloadOrUpgrade = useCallback(async () => {
     if (PREMIUM_MODES.has(mode) && isStarterPlan) { setShowUpgradeModal(true); return; }
@@ -240,14 +257,16 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     portfolioTitle: customBgPhoto ? 'Ваше фото' : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.title ?? null),
     portfolioDesc: customBgPhoto ? null : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.description ?? null),
     platePos, textAlign, transparency,
+    showSticker, ctaText,
   }), [
     pal, mode, showAvatar, avatarBlob, displayName, slug,
     annoText, slotsDate, slots, slotsLoading,
     selectedSvc, vacStart, vacEnd, selectedDeal,
     selectedReview, flashWinSvc, flashWinDate, flashWinTime, flashWinDiscount,
     bgPhotoUrl, customBgPhoto, portfolioItems, selectedBgPhotoId,
-    platePos, textAlign, transparency,
+    platePos, textAlign, transparency, showSticker, ctaText,
   ]);
+
   const controls = (
     <div className="space-y-3">
       {mode === 'announcement' && (
@@ -255,7 +274,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст публікації</label>
           <textarea value={annoText} onChange={e => { setAnnoText(e.target.value); onControlChange(); }}
             rows={5} maxLength={200} placeholder="Ваш текст..."
-            className="resize-none outline-none text-sm transition-all" style={{ ...INPUT_STYLE, height: 'auto' }} />
+            className="resize-none outline-none text-sm transition-colors duration-150" style={{ ...INPUT_STYLE, height: 'auto' }} />
           <div className="flex justify-end mt-1">
             <span className="text-[10px] text-muted-foreground/60">{annoText.length}/200</span>
           </div>
@@ -356,7 +375,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 <div className="flex flex-wrap gap-2">
                   {flashWinSlots.map(s => (
                     <button key={s} type="button" onClick={() => { setFlashWinTime(s); onControlChange(); }}
-                      className={cn("px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-[0.88]",
+                      className={cn("px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer active:scale-[0.88]",
                         flashWinTime === s ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)]" : "bg-secondary/70 text-text-secondary border border-border")}>
                       {s}
                     </button>
@@ -369,7 +388,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Знижка: <span className="text-destructive font-bold">−{flashWinDiscount}%</span></label>
             <input type="range" min={5} max={70} step={5} value={flashWinDiscount}
               onChange={e => { setFlashWinDiscount(Number(e.target.value)); onControlChange(); }}
-              aria-label="Відсоток знижки флеш-пропозиції" className="w-full cursor-pointer" style={{ accentColor: '#C05B5B' }} />
+              aria-label="Відсоток знижки флеш-пропозиції" className="w-full cursor-pointer" style={{ accentColor: 'var(--accent)' }} />
             <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5"><span>5%</span><span>70%</span></div>
           </div>
         </div>
@@ -391,12 +410,14 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
           const Icon = m.Icon;
           return (
             <button key={m.id} type="button" aria-pressed={active} onClick={() => setMode(m.id)}
-              className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 active:scale-[0.88]",
-                active ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_rgba(120,154,153,0.35)]" : "bg-secondary/70 text-text-secondary border border-border")}>
+              className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer shrink-0 active:scale-[0.88]",
+                active
+                  ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
+                  : "bg-secondary/70 text-text-secondary border border-border")}>
               <Icon size={13} strokeWidth={2.5} />
               {m.label}
               {m.premium && (
-                <span className={cn("ml-0.5 text-[9px] font-bold px-1 py-0.5 rounded-md", active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
+                <span className={cn("ml-0.5 text-[10px] font-bold px-1 py-0.5 rounded-md", active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
               )}
             </button>
           );
@@ -415,12 +436,12 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
-                className={`relative size-12 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
+                className={`relative size-12 rounded-xl flex items-center justify-center border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
                 <X size={18} />
               </button>
               {customBgPhoto && (
                 <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
-                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'}`}>
+                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'}`}>
                   <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
                   {(!selectedBgPhotoId && customBgPhoto) && (
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={14} className="text-white" strokeWidth={3} /></div>
@@ -430,7 +451,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               {portfolioItems.map(item => (
                 <button key={item.id} type="button" onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
                   aria-label={item.title ?? 'Фото з портфоліо'}
-                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'}`}>
+                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'}`}>
                   <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
                 </button>
               ))}
@@ -441,9 +462,18 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
             <div className="flex gap-2.5 flex-wrap">
               {PALETTES.map((p, i) => (
-                <button key={p.id} type="button" title={p.label} onClick={() => setPalIdx(i)}
-                  className="relative size-8 rounded-full transition-all cursor-pointer"
-                  style={{ background: p.bg, border: i === palIdx ? '2.5px solid #789A99' : `2px solid ${p.muted}`, boxShadow: i === palIdx ? '0 0 0 2px rgba(120,154,153,0.28)' : undefined }}>
+                <button
+                  key={p.id}
+                  type="button"
+                  aria-label={p.label}
+                  aria-pressed={i === palIdx}
+                  onClick={() => setPalIdx(i)}
+                  className="relative size-8 rounded-full transition-colors duration-150 cursor-pointer"
+                  style={{
+                    background: p.bg,
+                    border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
+                    boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
+                  }}>
                   {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={12} style={{ color: p.text }} strokeWidth={3} /></span>}
                 </button>
               ))}
@@ -458,22 +488,22 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Налаштування плашки</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[9px] text-muted-foreground block mb-1">Позиція</label>
+                  <label className="text-[10px] text-muted-foreground block mb-1">Позиція</label>
                   <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
                     {(['top', 'center', 'bottom'] as const).map(pos => (
                       <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
-                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-all active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
                         {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground block mb-1">Текст</label>
+                  <label className="text-[10px] text-muted-foreground block mb-1">Текст</label>
                   <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
                     {(['left', 'center', 'right'] as const).map(a => (
                       <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
-                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-all active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
                         {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
                       </button>
                     ))}
@@ -483,32 +513,34 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             </div>
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">Прозорість скла</label>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Прозорість скла</label>
                 <span className="text-[10px] font-bold text-primary">{transparency}%</span>
               </div>
               <input type="range" min={0} max={100} step={1} value={transparency}
                 onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
-                aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: '#789A99' }} />
+                aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
             </div>
           </div>
+
           <AnimatePresence>
             {isPremiumLocked && upgradeCopy && (
               <motion.button type="button"
                 initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22 }}
                 className="w-full rounded-2xl px-4 py-3.5 flex items-start gap-3 text-left"
-                style={{ background: 'linear-gradient(135deg,rgba(212,147,90,0.10),rgba(120,154,153,0.08))', border: '1px solid rgba(212,147,90,0.30)' }}
+                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
                 onClick={() => setShowUpgradeModal(true)}>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground mb-0.5">{upgradeCopy.teaserTitle}</p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">{upgradeCopy.teaserDesc}</p>
                 </div>
-                <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl self-center" style={{ background: 'rgba(212,147,90,0.18)', color: '#D4935A' }}>PRO →</span>
+                <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl self-center"
+                  style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
               </motion.button>
             )}
           </AnimatePresence>
 
           <button type="button" onClick={() => setShowAvatar(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all cursor-pointer bg-secondary/68 border border-border active:scale-[0.88]">
+            className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
             <div className="text-left">
               <p className="text-sm font-semibold text-foreground">Показувати фото</p>
               <p className="text-[11px] text-muted-foreground/60">Аватар та ім&apos;я майстра</p>
@@ -516,13 +548,37 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             {showAvatar ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
           </button>
 
+          <button type="button" onClick={() => setShowSticker(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
+            <div className="text-left">
+              <p className="text-sm font-semibold text-foreground">Кнопка запису</p>
+              <p className="text-[11px] text-muted-foreground/60">Стікер з текстом внизу сторіс</p>
+            </div>
+            {showSticker ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+          </button>
+
+          {showSticker && (
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
+              <input
+                value={ctaText}
+                onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
+                maxLength={28}
+                placeholder="Записатися онлайн"
+                className="outline-none text-sm"
+                style={INPUT_STYLE}
+              />
+              <div className="flex justify-end mt-1">
+                <span className="text-[10px] text-muted-foreground/60">{ctaText.length}/28</span>
+              </div>
+            </div>
+          )}
+
           <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
-            className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-50 cursor-pointer"
-            style={isBlurLocked
-              ? { background: 'linear-gradient(135deg,#D4935A,#C07840)', color: '#fff', boxShadow: '0 6px 20px rgba(212,147,90,0.38)' }
-              : exported
-                ? { background: 'linear-gradient(135deg,#5C9E7A,#4A8A68)', color: '#fff', boxShadow: '0 6px 20px rgba(92,158,122,0.35)' }
-                : { background: 'linear-gradient(135deg,#2C1A14,#4A2E26)', color: '#fff', boxShadow: '0 6px 20px rgba(44,26,20,0.28)' }}>
+            className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
+            style={exported
+              ? { background: 'var(--success)', color: '#fff', boxShadow: '0 6px 20px color-mix(in srgb, var(--success) 30%, transparent)' }
+              : { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', boxShadow: '0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)' }}>
             <AnimatePresence mode="popLayout" initial={false}>
               {exporting ? (
                 <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
@@ -534,15 +590,15 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 </motion.span>
               ) : isPremiumLocked ? (
                 <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Download size={16} /> {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData ? 'Отримати в Telegram' : 'Завантажити'}
+                  <Download size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити'}
                 </motion.span>
               ) : exported ? (
                 <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Check size={16} strokeWidth={3} /> {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData ? 'Відправлено!' : 'Збережено!'}
+                  <Check size={16} strokeWidth={3} /> {isTMA ? 'Відправлено!' : 'Збережено!'}
                 </motion.span>
               ) : (
                 <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Megaphone size={16} /> {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
+                  <Megaphone size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
                 </motion.span>
               )}
             </AnimatePresence>
@@ -553,10 +609,45 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
           </p>
         </div>
 
-        <div className="shrink-0 mx-auto md:mx-0">
+        <AnimatePresence>
+          {showScrollHint && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="flex justify-center md:hidden w-full -mt-1 mb-1"
+            >
+              <motion.button
+                type="button"
+                aria-label="Перейти до попереднього перегляду"
+                onClick={() => {
+                  previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  setShowScrollHint(false);
+                }}
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 1.0, repeat: Infinity, ease: 'easeInOut' }}
+                className="flex flex-col items-center gap-1 px-4 py-2 rounded-full active:scale-95"
+                style={{
+                  background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+                  color: 'var(--accent)',
+                }}
+              >
+                <span className="text-[11px] font-semibold leading-none">Перегляд</span>
+                <ChevronDown size={20} strokeWidth={2.5} />
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div ref={previewRef} className="shrink-0 mx-auto md:mx-0">
           <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2 text-center">Попередній перегляд</p>
           <div style={{ position: 'relative', width: 252, height: 448 }}>
-            <div style={{ width: 252, height: 448, overflow: 'hidden', borderRadius: 20, filter: isBlurLocked ? 'blur(10px)' : 'none', transition: 'filter 0.6s ease', boxShadow: '0 16px 48px rgba(44,26,20,0.22)' }}>
+            <div style={{
+              width: 252, height: 448, overflow: 'hidden', borderRadius: 20,
+              filter: isBlurLocked ? 'blur(10px)' : 'none',
+              transition: 'filter 0.6s ease',
+              boxShadow: '0 16px 48px color-mix(in srgb, var(--accent) 15%, transparent)',
+            }}>
               <div style={{ transform: 'scale(0.7)', transformOrigin: 'top left', pointerEvents: 'none' }}>
                 <StoryCanvas {...canvasSharedProps} />
               </div>
@@ -565,20 +656,22 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               {isBlurLocked && (
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                  className="absolute inset-0 flex items-center justify-center rounded-[20px]" style={{ background: 'rgba(44,26,20,0.12)' }}>
+                  className="absolute inset-0 flex items-center justify-center rounded-[20px]"
+                  style={{ background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
                   <div className="flex flex-col items-center gap-2 px-5 py-4 rounded-2xl text-center"
-                    style={{ background: 'rgba(44,26,20,0.84)', backdropFilter: 'blur(4px)', maxWidth: 200 }}>
-                    <Lock size={18} strokeWidth={2.5} style={{ color: '#D4935A' }} />
-                    <span className="text-white text-[11px] font-bold tracking-wide leading-tight">{upgradeCopy?.overlayTitle ?? 'Доступно в PRO'}</span>
-                    <span className="text-white/55 text-[10px] leading-snug">{upgradeCopy?.overlayHint ?? '700 грн/міс'}</span>
-                    <span className="text-[10px] font-bold px-3 py-1 rounded-full mt-0.5" style={{ background: 'rgba(212,147,90,0.25)', color: '#F5C08A' }}>Перейти на PRO →</span>
+                    style={{ background: 'color-mix(in srgb, var(--text-primary) 90%, transparent)', backdropFilter: 'blur(4px)', maxWidth: 200 }}>
+                    <Lock size={18} strokeWidth={2.5} style={{ color: 'var(--accent-on)' }} />
+                    <span className="text-[11px] font-bold tracking-wide leading-tight" style={{ color: 'var(--accent-on)' }}>{upgradeCopy?.overlayTitle ?? 'Доступно в PRO'}</span>
+                    <span className="text-[10px] leading-snug" style={{ color: 'color-mix(in srgb, var(--accent-on) 55%, transparent)' }}>{upgradeCopy?.overlayHint ?? '700 грн/міс'}</span>
+                    <span className="text-[10px] font-bold px-3 py-1 rounded-full mt-0.5"
+                      style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>Перейти на PRO</span>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
             {isPremiumLocked && !blurActive && (
               <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                <span className="text-[9px] text-muted-foreground/60 bg-white/80 rounded-full px-2 py-0.5">Перегляд · 10 сек</span>
+                <span className="text-[9px] text-muted-foreground/60 bg-background/80 rounded-full px-2 py-0.5">Перегляд · 10 сек</span>
               </div>
             )}
           </div>
@@ -588,6 +681,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       <UpgradePromptModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} source="marketing" feature={upgradeCopy?.modalTitle} description={upgradeCopy?.modalDesc} />
     </div>
   );
+
   const sharedBottom = (
     <>
       <AnimatePresence>
@@ -607,10 +701,10 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               <div className="space-y-2">
                 <h3 className="font-display text-xl font-bold text-foreground">Створюємо магію...</h3>
                 <p className="text-sm text-muted-foreground/60 max-w-[240px]">
-                  {typeof window !== 'undefined' && !!window.Telegram?.WebApp?.initData ? 'Готуємо Ultra-HD файл для вашого Telegram' : 'Готуємо преміум-зображення для вашої галереї'}
+                  {isTMA ? 'Готуємо Ultra-HD файл для вашого Telegram' : 'Готуємо преміум-зображення для вашої галереї'}
                 </p>
               </div>
-              <div className="w-48 h-1.5 bg-white/40 rounded-full overflow-hidden border border-white/60">
+              <div className="w-48 h-1.5 bg-background/40 rounded-full overflow-hidden border border-border">
                 <motion.div initial={{ x: "-100%" }} animate={{ x: "100%" }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   className="w-1/2 h-full bg-gradient-to-r from-transparent via-primary to-transparent" />
               </div>
