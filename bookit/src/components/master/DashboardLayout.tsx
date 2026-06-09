@@ -17,7 +17,7 @@ import type { Profile, MasterProfile } from '@/types/database';
 
 function ThemeApplier() {
   const { masterProfile } = useMasterContext();
-  const rawTheme = masterProfile?.mood_theme ?? '';
+  const rawTheme = masterProfile?.mood_theme ?? 'frost';
   const tier = masterProfile?.subscription_tier ?? 'starter';
   // Starter tier is locked to Frost regardless of stored mood_theme
   const canChangeTheme = tier === 'pro' || tier === 'studio';

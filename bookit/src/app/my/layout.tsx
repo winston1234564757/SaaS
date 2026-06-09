@@ -79,7 +79,7 @@ export default async function MyLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <div className="min-h-dvh pt-[env(safe-area-inset-top)] md:pt-20">
+    <div data-theme="frost" className="min-h-dvh pt-[env(safe-area-inset-top)] md:pt-20">
       <PublicNavbar />
       <SmartBackButton floating />
       <BlobBackground />

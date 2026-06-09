@@ -8,7 +8,7 @@ import { DashboardDrawers } from './DashboardDrawers';
 
 export function DashboardView() {
   const { masterProfile } = useMasterContext();
-  const rawTheme = masterProfile?.mood_theme ?? 'default';
+  const rawTheme = masterProfile?.mood_theme ?? 'frost';
   const tier = masterProfile?.subscription_tier ?? 'starter';
   // Mirror ThemeApplier: Starter is locked to Frost layout
   const canChangeTheme = tier === 'pro' || tier === 'studio';
