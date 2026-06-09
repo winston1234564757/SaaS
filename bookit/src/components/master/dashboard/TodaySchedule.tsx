@@ -141,7 +141,7 @@ function BookingRow({
             {b.start_time}
           </p>
           {active && (
-            <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-[var(--accent)] mt-0.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--accent)] mt-0.5">
               зараз
             </p>
           )}
@@ -213,8 +213,8 @@ function StatTile({
       onMouseEnter={() => hasContent && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <p className="metric-value text-[14px] font-semibold text-[var(--text-primary)]">{value}</p>
-      <p className="text-[8px] font-bold tracking-[0.12em] uppercase text-[var(--text-tertiary)]">{label}</p>
+      <p className="metric-value text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
+      <p className="text-[10px] font-bold tracking-[0.06em] uppercase text-[var(--text-tertiary)]">{label}</p>
       {hovered && hasContent && (
         <div
           className="absolute z-50 bottom-full mb-1.5 pointer-events-none rounded-lg px-2.5 py-2"
@@ -322,7 +322,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
         <div className="flex items-center justify-between py-2.5 border-t border-[var(--border)]">
           <div>
             <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)]">Топ послуга</p>
-            <p className="font-service text-[15px] text-[var(--text-primary)] mt-0.5">{topService.name}</p>
+            <p className="font-service text-[13px] text-[var(--text-primary)] mt-0.5">{topService.name}</p>
           </div>
           <p className="metric-value text-[15px] font-semibold text-[var(--accent)]">{topService.count}×</p>
         </div>
@@ -351,21 +351,14 @@ function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m
         <button type="button"
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[12px] font-semibold active:scale-[0.95] transition-transform duration-100"
-          style={{ color: tab.id === active ? 'var(--accent-on)' : 'var(--text-tertiary)' }}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[12px] font-semibold active:scale-[0.95] transition duration-150 ease-out"
+          style={{
+            color: tab.id === active ? 'var(--accent-on)' : 'var(--text-tertiary)',
+            background: tab.id === active ? 'var(--hero-card-bg)' : 'transparent',
+          }}
         >
-          {tab.id === active && (
-            <motion.div
-              layoutId="schedule-display-tab"
-              className="absolute inset-0 rounded-full"
-              style={{ background: 'var(--hero-card-bg)' }}
-              transition={{ type: 'spring' as const, duration: 0.35, bounce: 0 }}
-            />
-          )}
-          <span className="relative z-10 flex items-center gap-1">
-            <tab.Icon size={10} />
-            <span className="hidden sm:inline">{tab.label}</span>
-          </span>
+          <tab.Icon size={10} />
+          <span className="hidden sm:inline">{tab.label}</span>
         </button>
       ))}
     </div>
@@ -429,11 +422,11 @@ export function TodaySchedule() {
     .reduce((s, b) => s + b.total_price, 0);
 
   return (
-    <div className="bento-card">
+    <div className="bento-card h-full">
       {/* Header — title + link */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <h2 className="heading-serif text-base font-medium text-[var(--text-primary)]">Записи</h2>
+          <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)]">Записи</p>
           {!isLoading && (
             <span className="px-2 py-0.5 rounded-full bg-[var(--border)] metric-value text-[12px] font-bold text-[var(--text-tertiary)]">
               {filtered.length}
@@ -455,18 +448,13 @@ export function TodaySchedule() {
             <button type="button"
               key={tab.id}
               onClick={() => setView(tab.id)}
-              className="relative px-2.5 py-1.5 rounded-full whitespace-nowrap text-[12px] font-semibold active:scale-[0.97] transition-transform duration-100"
-              style={{ color: view === tab.id ? 'var(--accent-on)' : 'var(--text-tertiary)' }}
+              className="px-2.5 py-1.5 rounded-full whitespace-nowrap text-[12px] font-semibold active:scale-[0.97] transition duration-150 ease-out"
+              style={{
+                color: view === tab.id ? 'var(--accent-on)' : 'var(--text-tertiary)',
+                background: view === tab.id ? 'var(--accent)' : 'transparent',
+              }}
             >
-              {view === tab.id && (
-                <motion.div
-                  layoutId="schedule-date-tab"
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: 'var(--accent)' }}
-                  transition={{ type: 'spring' as const, duration: 0.35, bounce: 0 }}
-                />
-              )}
-              <span className="relative z-10">{tab.label}</span>
+              {tab.label}
             </button>
           ))}
         </div>

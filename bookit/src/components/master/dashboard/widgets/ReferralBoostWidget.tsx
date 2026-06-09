@@ -6,13 +6,14 @@ import { Gift, Copy, ChevronRight, Users } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useToast } from '@/lib/toast/context';
 import { getActiveReferralCount } from '@/app/(master)/dashboard/actions';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import Link from 'next/link';
 
 // Milestone: [threshold, label, shortLabel]
 const MILESTONES = [
   [1,  '-10% щомісяця',      '1 реферал'],
   [3,  '-20% щомісяця',      '3 реферали'],
-  [5,  'безкоштовний місяць','5 рефералів'],
+  [5,  'місяць безкоштовно', '5 рефералів'],
   [10, '-30% назавжди',      '10 рефералів'],
 ] as const;
 
@@ -47,11 +48,11 @@ function ProgressBar({ count }: { count: number }) {
       </div>
       <div className="flex justify-between">
         <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
-          {count} {count === 1 ? 'реферал' : count < 5 ? 'реферали' : 'рефералів'}
+          {count} {pluralUk(count, 'реферал', 'реферали', 'рефералів')}
         </span>
         {next && (
           <span className="text-[10px] font-semibold" style={{ color: 'var(--accent)' }}>
-            до {next[1]}: {next[0] - count} ще
+            ще {next[0] - count} до {next[1]}
           </span>
         )}
       </div>
@@ -78,7 +79,7 @@ export function ReferralBoostWidget() {
   function copyLink() {
     if (!referralUrl) return;
     navigator.clipboard.writeText(referralUrl).then(() => {
-      showToast({ type: 'success', title: 'Скопійовано', message: 'Реферальне посилання у буфері' });
+      showToast({ type: 'success', title: 'Скопійовано', message: 'Лінк у буфері обміну' });
     });
   }
 
@@ -101,12 +102,12 @@ export function ReferralBoostWidget() {
           </span>
           <div>
             <p className="text-[14px] font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
-              Запроси колег — заробляй знижки
+              Запрошуй колег, платиш менше
             </p>
             <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
               {current
-                ? `Твій бонус зараз: ${current[1]}`
-                : 'Перший реферал дає -10% щомісяця'}
+                ? `Знижка зараз: ${current[1]}`
+                : 'Один колега вже мінус 10% щомісяця'}
             </p>
           </div>
         </div>
@@ -171,7 +172,7 @@ export function ReferralBoostWidget() {
           }}
         >
           <Copy size={13} strokeWidth={2} />
-          Скопіювати посилання
+          Скопіювати лінк
         </button>
 
         <Link

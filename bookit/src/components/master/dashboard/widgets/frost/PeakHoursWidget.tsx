@@ -138,7 +138,7 @@ export function PeakHoursWidget() {
           <div className="flex flex-col gap-[3px] pt-[18px] pr-1 shrink-0">
             {HOURS.map(h => (
               <div key={h} className="flex-1 flex items-center min-h-[10px]">
-                <span className="font-mono text-[8px] font-bold tabular-nums text-[var(--text-tertiary)] opacity-45 w-5 text-right">
+                <span className="font-mono text-[8px] lg:text-[10px] font-bold tabular-nums text-[var(--text-tertiary)] opacity-45 w-5 text-right">
                   {h}
                 </span>
               </div>
@@ -148,7 +148,7 @@ export function PeakHoursWidget() {
           <div className="flex gap-[3px] flex-1">
             {DAYS.map((day, dIdx) => (
               <div key={day} className="flex flex-col gap-[3px] flex-1 min-w-0">
-                <div className="font-mono text-[9px] font-bold text-[var(--text-tertiary)] text-center leading-none mb-[2px] opacity-55">
+                <div className="font-mono text-[9px] lg:text-[11px] font-bold text-[var(--text-tertiary)] text-center leading-none mb-[2px] opacity-55">
                   {day}
                 </div>
                 {HOURS.map((_, hIdx) => {
