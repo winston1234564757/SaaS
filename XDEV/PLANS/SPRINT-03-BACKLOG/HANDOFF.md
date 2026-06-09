@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 6/18 виконано ✅
-**Останній deploy:** очікується vercel --prod для T2 (commit: 1de90ec)
-**Наступна задача:** **T5 — Конструктор сторіс: анімована стрілка** (ітерація 7)
+**Прогрес:** 8/18 виконано ✅
+**Останній deploy:** очікується vercel --prod для T8 (commit: 620473f)
+**Наступна задача:** **T6c — Аналітика десктоп: навігація дат + слайдер** (ітерація 9)
 
 ---
 
@@ -19,9 +19,9 @@
 | 3 | **T10** | Клієнти: пігулки перекривають текст | ✅ DONE | code-reviewer | 86aa48a |
 | 4 | **T4** | Studio білінг: форма + баг сабміту | ✅ DONE | code-reviewer + humanizer | cb41655 + 8f2ee05 |
 | 5 | **T3** | Налаштування профілю: горизонт. скрол | ✅ DONE | code-reviewer | cdc410a |
-| 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ✅ DONE | impeccable + humanizer | 1de90ec |
-| 7 | **T5** | Конструктор сторіс: анімована стрілка | ⬜ TODO | impeccable | — |
-| 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ⬜ TODO | design-taste-frontend | — |
+| 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ✅ DONE | impeccable + humanizer | 1de90ec + bee63a0 |
+| 7 | **T5** | Конструктор сторіс: анімована стрілка | ✅ DONE | impeccable | 3ed6e4b |
+| 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ✅ DONE | design-taste-frontend | f3107c4 + 620473f |
 | 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ⬜ TODO | design-taste-frontend + impeccable | — |
 | 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ⬜ TODO | design-taste-frontend | — |
 | 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ⬜ TODO | design-taste-frontend | — |
@@ -153,13 +153,16 @@ Flexbox `min-width: auto` не обмежує ширину → три кнопк
 
 ---
 
-## ⬜ T8 — Навбар (3 підпроблеми)
+## ✅ T8 — Навбар: профіль праворуч + FAB + сповіщення — ВИКОНАНО (f3107c4 + 620473f)
 
-1. Профіль → крайній правий. **Увага:** середня кнопка = «Твій кабінет», не «Ще»!
-2. Сповіщення → системний розділ; стікі-бейдж біля FAB при непрочитаних
-3. FAB «Центр підтримки BookIT» над навбаром по центру
-
-**Файли:** `BottomNav.tsx`, `NotificationsBell.tsx`, `DashboardLayout.tsx`
+**Зроблено:**
+- `MobileHub.tsx`: NavBar layout → `[Огляд][Записи] | [FAB Твій кабінет] | [Клієнти][Профіль]`
+- Bell видалено з center cluster, перетворено на floating right-side FAB (`fixed right-4 z-[76]`)
+- Bell `fab=true`: відображається тільки коли `unreadCount > 0`, інакше `null` (доступ через Hub → Система)
+- Bell позиція: `bottom: calc(env(safe-area-inset-bottom) + 80px)` — над навбаром
+- SupportWidget: `right-4 lg:right-8` — виправлено з bottom-left на bottom-right на десктопі
+- Mobile стек (знизу): Navbar → Bell (80px, тільки при unread) → Support (132px, завжди)
+- z-index ієрархія: overlay `z-[70]`, navbar `z-[75]`, bell `z-[76]`, support `z-[99]`
 
 ---
 
