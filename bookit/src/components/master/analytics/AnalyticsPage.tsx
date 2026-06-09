@@ -4,13 +4,13 @@ import React, { useState, useMemo } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import { useQueryState, parseAsString } from 'nuqs';
 import {
   BarChart2, Download, Loader2, RefreshCw,
   Crown, Star, Users, TrendingUp, TrendingDown,
   AlertTriangle, Clock, ShoppingBag, ShieldAlert,
-  ChevronDown
+  ChevronDown, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -65,8 +65,6 @@ interface AnalyticsPageProps {
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-
-const SPRING = { type: 'spring' as const, stiffness: 240, damping: 26 };
 
 const TABS = [
   { key: 'overview', label: 'Огляд' },
@@ -204,7 +202,7 @@ function ServiceRow({ svc, maxRev }: { svc: any; maxRev: number }) {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full text-left cursor-pointer transition-all active:scale-[0.98] hover:bg-secondary/40 rounded-xl p-2 -mx-2"
+        className="w-full text-left cursor-pointer transition-colors duration-150 active:scale-[0.98] hover:bg-secondary/40 rounded-xl p-2 -mx-2"
       >
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-sm font-semibold text-foreground truncate pr-2">{svc.name}</span>
@@ -212,7 +210,7 @@ function ServiceRow({ svc, maxRev }: { svc: any; maxRev: number }) {
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div
-            className="h-full rounded-full bg-primary transition-all duration-700"
+            className="h-full rounded-full bg-primary transition-[width] duration-700"
             style={{ width: `${Math.round((svc.revenue / maxRev) * 100)}%` }}
           />
         </div>
@@ -255,6 +253,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
   const range = useDateRange();
   const [exporting, setExporting] = useState(false);
+  const [direction, setDirection] = useState(0);
   const [selectedClient, setSelectedClient] = useState<{ clientId?: string | null; clientName: string; clientPhone?: string | null } | null>(null);
 
   // nuqs таб-контроль
@@ -483,12 +482,36 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     }
   };
 
+  const TAB_KEYS = TABS.map(t => t.key as string);
+
+  const tabSpring = { type: 'spring', stiffness: 300, damping: 30 } as const;
+
+  const slideVariants = {
+    enter: (d: number) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? -60 : 60, opacity: 0 }),
+  };
+
+  const handleTabChange = (key: string) => {
+    const ci = TAB_KEYS.indexOf(activeTab);
+    const ni = TAB_KEYS.indexOf(key);
+    setDirection(ni > ci ? 1 : -1);
+    setActiveTab(key);
+  };
+
+  const handleDragEnd = (_: PointerEvent, { offset, velocity }: PanInfo) => {
+    const power = Math.abs(offset.x) * velocity.x;
+    const ci = TAB_KEYS.indexOf(activeTab);
+    if (power < -8000 && ci < TABS.length - 1) handleTabChange(TAB_KEYS[ci + 1]);
+    else if (power > 8000 && ci > 0) handleTabChange(TAB_KEYS[ci - 1]);
+  };
+
   return (
     <div className="flex flex-col gap-4 pb-8 w-full max-w-full overflow-x-hidden">
       
       {/* ── Вступний заголовок та контроль періодів ── */}
       <div className={cn(
-        'relative bento-card p-5 transition-all duration-500',
+        'relative bento-card p-5 transition duration-500',
         currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
       )}>
         <AnchoredTooltip
@@ -510,7 +533,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             onClick={handleRefreshAll}
             disabled={isFetching}
             aria-label="Оновити дані"
-            className="size-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.90] cursor-pointer transition-all disabled:opacity-40"
+            className="size-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.90] cursor-pointer transition-colors duration-150 disabled:opacity-40"
           >
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
@@ -593,46 +616,75 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
             <HeroStory stories={storiesList} />
           )}
 
-          {/* ── Tabs Switcher (Sliding Pill) ── */}
-          <div className="flex bg-secondary/40 p-1 rounded-full w-max max-w-full overflow-x-auto scrollbar-hide border border-border-strong my-1">
-            {TABS.map((t) => {
-              const isLocked = !isPro && t.key !== 'overview';
-              return (
-                <button
-                  type="button"
-                  key={t.key}
-                  aria-pressed={activeTab === t.key}
-                  onClick={() => !isLocked && setActiveTab(t.key)}
-                  className={cn(
-                    'relative px-4 py-2 text-xs font-semibold select-none cursor-pointer flex items-center gap-1 active:scale-[0.95] duration-100 transition-all hover:bg-foreground/5 rounded-full',
-                    isLocked && 'opacity-40 cursor-not-allowed'
-                  )}
-                >
-                  {activeTab === t.key && (
-                    <motion.div
-                      layoutId="active-tab-indicator"
-                      className="absolute inset-0 bg-primary/10 rounded-full border border-primary/20"
-                      transition={SPRING}
-                    />
-                  )}
-                  <span className={cn('relative z-10 flex items-center gap-1.5', activeTab === t.key ? 'text-primary' : 'text-muted-foreground')}>
-                    {t.label}
+          {/* ── Tabs Strip ── */}
+          <div className="flex items-center gap-0 border-b border-border/40">
+            <button
+              type="button"
+              aria-label="Попередня вкладка"
+              onClick={() => { const ci = TAB_KEYS.indexOf(activeTab); if (ci > 0) handleTabChange(TAB_KEYS[ci - 1]); }}
+              disabled={TAB_KEYS.indexOf(activeTab) === 0}
+              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
+            >
+              <ChevronLeft size={14} />
+            </button>
+
+            <div className="flex flex-1 overflow-x-auto scrollbar-hide">
+              {TABS.map((t) => {
+                const isLocked = !isPro && t.key !== 'overview';
+                const isActive = activeTab === t.key;
+                return (
+                  <button
+                    type="button"
+                    key={t.key}
+                    aria-pressed={isActive}
+                    onClick={() => !isLocked && handleTabChange(t.key)}
+                    className={cn(
+                      'relative flex-shrink-0 px-4 py-3 text-xs font-semibold select-none cursor-pointer flex items-center gap-1.5 active:scale-[0.95] transition-colors duration-150 whitespace-nowrap',
+                      isLocked && 'opacity-40 cursor-not-allowed'
+                    )}
+                  >
+                    <span className={cn(isActive ? 'text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground')}>
+                      {t.label}
+                    </span>
                     {isLocked && <Crown size={10} className="text-primary flex-shrink-0" />}
-                  </span>
-                </button>
-              );
-            })}
+                    {isActive && (
+                      <motion.div
+                        layoutId="analytics-tab-underline"
+                        transition={tabSpring}
+                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              aria-label="Наступна вкладка"
+              onClick={() => { const ci = TAB_KEYS.indexOf(activeTab); if (ci < TABS.length - 1) handleTabChange(TAB_KEYS[ci + 1]); }}
+              disabled={TAB_KEYS.indexOf(activeTab) === TABS.length - 1}
+              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
+            >
+              <ChevronRight size={14} />
+            </button>
           </div>
 
           {/* ── Tabs Render ── */}
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" custom={direction}>
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="w-full"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={tabSpring}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={handleDragEnd}
+              className="w-full cursor-grab active:cursor-grabbing"
             >
               
               {/* Tab 1: OVERVIEW */}
@@ -701,7 +753,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                                 </div>
                                 <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                                   <div
-                                    className="h-full bg-warning/80 transition-all duration-700"
+                                    className="h-full bg-warning/80 transition-[width] duration-700"
                                     style={{ width: `${Math.round((prod.revenue / maxProdRev) * 100)}%` }}
                                   />
                                 </div>
@@ -730,7 +782,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                             key={i}
                             onClick={() => c.clientId ? setSelectedClient({ clientId: c.clientId, clientName: c.clientName }) : undefined}
                             disabled={!c.clientId}
-                            className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/70 border border-border/5 text-left w-full cursor-pointer transition-all active:scale-[0.98]"
+                            className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/70 border border-border/5 text-left w-full cursor-pointer transition-colors duration-150 active:scale-[0.98]"
                           >
                             <div className={cn(
                               'size-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 select-none',
@@ -764,7 +816,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                         type="button"
                         onClick={handleExport}
                         disabled={exporting}
-                        className="group relative overflow-hidden flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-all disabled:opacity-50"
+                        className="group relative overflow-hidden flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-colors duration-150 disabled:opacity-50"
                       >
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" style={{ background: 'color-mix(in srgb, var(--accent-on) 12%, transparent)' }} />
                         <span className="relative z-10 flex items-center gap-2">
@@ -880,6 +932,28 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
             </motion.div>
           </AnimatePresence>
+
+          {/* Dots */}
+          <div className="flex items-center justify-center gap-1.5 pt-2">
+            {TABS.map((t) => {
+              const isLocked = !isPro && t.key !== 'overview';
+              return (
+                <button
+                  type="button"
+                  key={t.key}
+                  onClick={() => !isLocked && handleTabChange(t.key)}
+                  aria-label={t.label}
+                  disabled={isLocked}
+                  className="cursor-pointer transition-all duration-150 active:scale-[0.85] disabled:cursor-not-allowed"
+                >
+                  <div className={cn(
+                    'rounded-full transition-all duration-300',
+                    activeTab === t.key ? 'w-4 h-1.5 bg-primary' : 'w-1.5 h-1.5 bg-muted-foreground/25 hover:bg-muted-foreground/50'
+                  )} />
+                </button>
+              );
+            })}
+          </div>
 
         </div>
       )}
