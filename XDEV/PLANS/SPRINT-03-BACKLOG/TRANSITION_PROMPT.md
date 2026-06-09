@@ -17,18 +17,17 @@
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 8/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅
-- Наступна: T6c — Аналітика десктоп: навігація дат + слайдер
+- 9/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅
+- Наступна: T6a — Десктоп лейаут: billing + reviews + growth
 
-T6c деталі:
-- Файли: AnalyticsPage.tsx, PeriodControls.tsx
-- Проблема 1: Кардинальний редизайн навігації дат (PeriodControls)
-- Проблема 2: Таби → великий горизонтальний слайдер (30% наступного видно)
-- Скіл: design-taste-frontend + impeccable
+T6a деталі:
+- Файли: billing/page.tsx або компоненти, ReviewsPage.tsx, growth/actions.ts + відповідні компоненти
+- Проблема: desktop-specific layout для billing, reviews, growth секцій
+- Скіл: design-taste-frontend
 
 GATE перед кодом:
-1. mempalace_search "AnalyticsPage PeriodControls date navigation tabs slider"
-2. QA: 5 питань про дизайн (навігація дат — що саме; слайдер — позиція активного; стрілки чи drag; desktop поведінка; пресети скорочуємо?)
+1. mempalace_search "billing reviews growth desktop layout"
+2. QA: 3-5 питань про desktop layout
 3. SKILL: design-taste-frontend → запусти Skill tool
 4. UI рядки → /humanizer якщо є нові
 5. GATE OK → код
@@ -37,9 +36,9 @@ GATE перед кодом:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T6c ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T6a ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T6a
+- Повідомити юзера → він QA → наступна задача T6b
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 

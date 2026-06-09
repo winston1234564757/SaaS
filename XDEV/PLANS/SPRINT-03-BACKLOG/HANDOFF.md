@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 8/18 виконано ✅
-**Останній deploy:** очікується vercel --prod для T8 (commit: 620473f)
-**Наступна задача:** **T6c — Аналітика десктоп: навігація дат + слайдер** (ітерація 9)
+**Прогрес:** 9/18 виконано ✅
+**Останній deploy:** vercel --prod T6c (commit: ddcf28d)
+**Наступна задача:** **T6a — Десктоп лейаут: billing + reviews + growth** (ітерація 10)
 
 ---
 
@@ -22,7 +22,7 @@
 | 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ✅ DONE | impeccable + humanizer | 1de90ec + bee63a0 |
 | 7 | **T5** | Конструктор сторіс: анімована стрілка | ✅ DONE | impeccable | 3ed6e4b |
 | 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ✅ DONE | design-taste-frontend | f3107c4 + 620473f |
-| 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ⬜ TODO | design-taste-frontend + impeccable | — |
+| 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ✅ DONE | design-taste-frontend | ddcf28d |
 | 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ⬜ TODO | design-taste-frontend | — |
 | 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ⬜ TODO | design-taste-frontend | — |
 | 12 | **T7** | Налаштування профілю десктоп | ⬜ TODO | impeccable | — |
