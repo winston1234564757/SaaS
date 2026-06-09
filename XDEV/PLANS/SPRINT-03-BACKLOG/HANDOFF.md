@@ -91,15 +91,27 @@ WHERE mood_theme IS NULL OR mood_theme != 'frost';
 
 ---
 
-## ⬜ T10 — Клієнти: пігулки «Важливі» перекривають текст (НАСТУПНА)
+## ✅ T10 — Клієнти: пігулки перекривають текст — ВИКОНАНО (commit: 86aa48a)
 
-**Проблема:** Блок «Важливі» на сторінці клієнтів — пігулки-фільтри налазять на текст картки клієнта.
-**Файли:** `ClientWidgets.tsx`, `ClientGridCard.tsx`
-**Скіл:** `code-reviewer`
+**Баг A — ClientWidgets.tsx (iOS Switcher):**
+Два `size-11` dot-кнопки горизонтально = 88px, `absolute top-2 right-1`. `pr-10` (40px) недостатньо → 36px перекриття з текстом "Важливі"/"Амбасадори".
+
+**Зроблено:**
+- Dots: `flex` → `flex-col h-full justify-center right-0` (вертикальний стек)
+- Active dot: `w-4 h-1.5` → `h-4 w-1.5` (вертикальна таблетка)
+- Content button: `pr-12` (48px clearance від dots)
+- Обидва header divs: прибрано зайвий `pr-10`
+
+**Баг B — ClientGridCard.tsx:**
+Pills-ряд (статус + VIP) без max-width → перекривав `ClientIconStack` (`absolute right-4`).
+
+**Зроблено:** Pills container: `flex-wrap max-w-[70%]`
+
+**Deploy:** vercel --prod ✅ `bookit-five-psi.vercel.app`
 
 ---
 
-## ⬜ T4 — Studio білінг (4 підпроблеми)
+## ⬜ T4 — Studio білінг (4 підпроблеми) ← НАСТУПНА
 
 1. Прибрати блок «Коли вигідніше» (рядки 393-412 в BillingPage.tsx)
 2. Текст кнопки → humanizer: co-creation «моїми руками»
