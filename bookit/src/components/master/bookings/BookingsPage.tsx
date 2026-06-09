@@ -238,7 +238,7 @@ export function BookingsPage() {
       </div>
 
       {/* 2. Controls — Mobile sticky */}
-      <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 bg-background/60 backdrop-blur-2xl border-b border-border/40 pb-4 mb-2 -mx-4 px-4 pt-2">
+      <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 bg-background/20 backdrop-blur-2xl border-b border-border/30 pb-4 mb-2 -mx-4 px-4 pt-2">
         <div className="flex flex-col gap-3">
 
           {/* Top row: Range + View + Search */}
