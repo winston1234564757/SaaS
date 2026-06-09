@@ -18,17 +18,21 @@
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 2/18 виконано: T15 ✅ DONE, T1 ✅ DONE
-- Наступна: T10 — Клієнти: пігулки перекривають текст
+- 3/18 виконано: T15 ✅ DONE, T1 ✅ DONE, T10 ✅ DONE
+- Наступна: T4 — Studio білінг: форма + баг сабміту
 
-T10 деталі:
-- Файли: ClientWidgets.tsx, ClientGridCard.tsx
-- Проблема: пігулки-фільтри «Важливі» налазять на текст картки клієнта
-- Скіл: code-reviewer
-- Humanizer: N/A
+T4 деталі:
+- Файли: BillingPage.tsx, billing/actions.ts
+- Проблема: 4 підпроблеми:
+  1. Прибрати блок «Коли вигідніше» (рядки 393-412 в BillingPage.tsx)
+  2. Текст кнопки → humanizer: co-creation «моїми руками»
+  3. Телефон підтягувати з профілю майстра (не TG/email)
+  4. submitBetaRequest() не зберігає — тільки спінер, помилка «Не вдалося зберегти»
+- Скіл: code-reviewer + humanizer
+- Humanizer: ТАК — кнопка beta-request
 
 GATE перед кодом:
-1. mempalace_search "clients grid card pills overflow text"
+1. mempalace_search "billing beta request submit studio"
 2. QA: задай 2-3 уточнення якщо потрібно
 3. SKILL: code-reviewer → запусти Skill tool
 4. GATE OK → код
@@ -37,9 +41,9 @@ GATE перед кодом:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T10 ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T4 ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T4
+- Повідомити юзера → він QA → наступна задача T3
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 
