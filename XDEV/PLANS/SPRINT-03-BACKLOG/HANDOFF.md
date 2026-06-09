@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 3/18 виконано ✅
-**Останній deploy:** очікується vercel --prod для T10 (commit: 86aa48a)
-**Наступна задача:** **T4 — Studio білінг: форма + баг сабміту** (ітерація 4)
+**Прогрес:** 4/18 виконано ✅
+**Останній deploy:** очікується vercel --prod для T4 (commits: cb41655 + 8f2ee05) + `npx supabase db push`
+**Наступна задача:** **T3 — Налаштування профілю: горизонт. скрол** (ітерація 5)
 
 ---
 
@@ -17,7 +17,7 @@
 | 1 | **T15** | Тема Frost за замовчуванням | ✅ DONE | code-reviewer | 3454e0f + 9865942 + 3e1390b |
 | 2 | **T1** | Баги сторінки Записи | ✅ DONE | code-reviewer | a3bfed2 + 06c791c + 81e75c9 |
 | 3 | **T10** | Клієнти: пігулки перекривають текст | ✅ DONE | code-reviewer | 86aa48a |
-| 4 | **T4** | Studio білінг: форма + баг сабміту | ✅ DONE | code-reviewer + humanizer | cb41655 |
+| 4 | **T4** | Studio білінг: форма + баг сабміту | ✅ DONE | code-reviewer + humanizer | cb41655 + 8f2ee05 |
 | 5 | **T3** | Налаштування профілю: горизонт. скрол | ⬜ TODO | code-reviewer | — |
 | 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ⬜ TODO | impeccable + humanizer | — |
 | 7 | **T5** | Конструктор сторіс: анімована стрілка | ⬜ TODO | impeccable | — |
@@ -111,15 +111,17 @@ Pills-ряд (статус + VIP) без max-width → перекривав `Cli
 
 ---
 
-## ✅ T4 — Studio білінг (4 підпроблеми) — ВИКОНАНО
+## ✅ T4 — Studio білінг (5 змін) — ВИКОНАНО
 
 1. ✅ Видалено блок «Коли вигідніше» (рядки 393-412)
 2. ✅ Humanizer: "Залишити заявку на бета" → "Хочу в бету" · "Відправити заявку" → "Надіслати заявку"
 3. ✅ Телефон: `profile?.phone` pre-fill → лейбл "Телефон", type="tel", placeholder "+380 XX XXX XXXX"
 4. ✅ submitBetaRequest() bug: міграція `20260609000000_beta_requests.sql` не була застосована → `npx supabase db push` перед deploy
+5. ✅ CTA кнопки вирівняні по низу картки: `flex flex-col` на `motion.div` + `flex-1` на features
 
 **⚠️ Перед deploy:** `npx supabase db push` (таблиця beta_requests)
 **Файли:** `BillingPage.tsx`
+**Commits:** cb41655 (фікси 1–4) + 8f2ee05 (CTA alignment)
 
 ---
 

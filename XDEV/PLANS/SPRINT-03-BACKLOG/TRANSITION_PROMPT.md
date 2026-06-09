@@ -18,22 +18,18 @@
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 3/18 виконано: T15 ✅ DONE, T1 ✅ DONE, T10 ✅ DONE
-- Наступна: T4 — Studio білінг: форма + баг сабміту
+- 4/18 виконано: T15 ✅ DONE, T1 ✅ DONE, T10 ✅ DONE, T4 ✅ DONE
+- Наступна: T3 — Налаштування профілю: горизонт. скрол
 
-T4 деталі:
-- Файли: BillingPage.tsx, billing/actions.ts
-- Проблема: 4 підпроблеми:
-  1. Прибрати блок «Коли вигідніше» (рядки 393-412 в BillingPage.tsx)
-  2. Текст кнопки → humanizer: co-creation «моїми руками»
-  3. Телефон підтягувати з профілю майстра (не TG/email)
-  4. submitBetaRequest() не зберігає — тільки спінер, помилка «Не вдалося зберегти»
-- Скіл: code-reviewer + humanizer
-- Humanizer: ТАК — кнопка beta-request
+T3 деталі:
+- Файл: SettingsPage.tsx або компонент в /dashboard/settings/
+- Проблема: Блок «Оформлення» викликає горизонтальне прокручування на мобайлі
+- Скіл: code-reviewer
+- Humanizer: Ні (чисто layout/overflow фікс)
 
 GATE перед кодом:
-1. mempalace_search "billing beta request submit studio"
-2. QA: задай 2-3 уточнення якщо потрібно
+1. mempalace_search "settings overflow horizontal scroll mobile"
+2. QA: знайди де саме overflow (SettingsPage або окремий компонент)
 3. SKILL: code-reviewer → запусти Skill tool
 4. GATE OK → код
 
@@ -41,9 +37,9 @@ GATE перед кодом:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T4 ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T3 ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T3
+- Повідомити юзера → він QA → наступна задача T2
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 
