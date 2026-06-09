@@ -13,6 +13,12 @@ import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useTopAmbassadors } from '@/lib/supabase/hooks/useTopAmbassadors';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
+function formatCompact(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M ₴`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, '')}k ₴`;
+  return `${n} ₴`;
+}
+
 const SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const;
 
 interface ClientWidgetsProps {
@@ -56,7 +62,8 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
     const lostCount     = clients.filter(c => c.retention_status === 'lost').length;
 
     const totalRevenue = clients.reduce((s, c) => s + c.total_spent, 0);
-    const avgCheck     = clients.length > 0 ? totalRevenue / clients.length : 0;
+    const totalVisits  = clients.reduce((s, c) => s + c.total_visits, 0);
+    const avgCheck     = totalVisits > 0 ? totalRevenue / totalVisits : 0;
 
     const lostTreasures = clients.filter(c => c.is_vip && (c.retention_status === 'at_risk' || c.retention_status === 'lost'));
     const newbiesAtRisk = clients.filter(c => c.total_visits === 1 && c.retention_status === 'at_risk');
@@ -141,7 +148,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
         </div>
         <div className="mt-2">
           <p className="text-2xl font-bold text-foreground whitespace-nowrap">
-            {formatPrice(avgCheck)}
+            {formatCompact(Math.round(avgCheck))}
           </p>
           <p className="text-[10px] text-muted-foreground/60 mt-1">за весь час</p>
         </div>
@@ -161,8 +168,8 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
         transition={{ ...SPRING, delay: 0.1 }}
         className="bento-card p-4 flex flex-col justify-between relative overflow-hidden touch-pan-y"
       >
-        {/* Switcher Dots — 44px touch targets */}
-        <div className="absolute top-2 right-1 flex z-10">
+        {/* Switcher Dots — 44px touch targets, vertical stack on right */}
+        <div className="absolute top-0 right-0 flex flex-col items-center justify-center h-full z-10">
           {[0, 1].map(i => (
             <button
               key={i}
@@ -173,7 +180,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
               className="size-11 flex items-center justify-center rounded-full"
             >
               <div
-                className={`rounded-full transition-all ${widgetIndex === i ? 'w-4 h-1.5 bg-foreground' : 'size-1.5 bg-foreground/20 hover:bg-foreground/40'}`}
+                className={`rounded-full transition-all ${widgetIndex === i ? 'h-4 w-1.5 bg-foreground' : 'size-1.5 bg-foreground/20 hover:bg-foreground/40'}`}
               />
             </button>
           ))}
@@ -182,7 +189,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
         {/* Content button */}
         <button
           type="button"
-          className="w-full h-full text-left flex flex-col justify-between pt-1"
+          className="w-full h-full text-left flex flex-col justify-between pt-1 pr-12"
           onClick={() => {
             if (widgetIndex === 1) setShowReferralDetails(true);
             else if (lostTreasures.length > 0) onSegmentSelect('lost_treasures');

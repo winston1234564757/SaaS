@@ -71,14 +71,14 @@ export const ClientGridCard = React.memo(function ClientGridCard({
       <button
         type="button"
         onClick={() => onOpen(client)}
-        className="w-full text-left flex flex-col"
+        className="w-full text-left flex flex-col cursor-pointer"
       >
         {/* Name + status */}
         <div className="mb-4">
           <p className="font-display text-lg font-bold text-foreground leading-tight tracking-tight max-w-[70%]">
             {formatClientName(client.client_name)}
           </p>
-          <div className="flex items-center gap-1.5 mt-2">
+          <div className="flex items-center flex-wrap gap-1.5 mt-2 max-w-[70%]">
             <span
               className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full"
               style={{ color: ret.color, background: ret.bg }}
@@ -112,7 +112,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-wider">
+            <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-wider">
               Останній візит
             </p>
             <div className="flex flex-col mt-0.5">
@@ -135,7 +135,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
         {client.retention_status === 'at_risk' && (
           <div className="mb-3 px-2 py-1 rounded-lg bg-primary/5 border border-primary/10 flex items-center gap-1.5">
             <Zap size={10} className="text-primary" />
-            <p className="text-[9px] font-bold text-primary/80 uppercase tracking-tighter">
+            <p className="text-[10px] font-bold text-primary/80 uppercase tracking-tighter">
               Пора нагадати про себе
             </p>
           </div>
@@ -144,11 +144,11 @@ export const ClientGridCard = React.memo(function ClientGridCard({
         {/* Stats */}
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-secondary/60">
           <div>
-            <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Візитів</p>
-            <p className="text-xl font-bold text-sage leading-none mt-1">{client.total_visits}</p>
+            <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Візитів</p>
+            <p className="text-xl font-bold text-primary leading-none mt-1">{client.total_visits}</p>
           </div>
           <div className="text-right">
-            <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Витрачено</p>
+            <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Витрачено</p>
             <p className="text-xl font-bold text-foreground leading-none mt-1">
               {formatPrice(client.total_spent).replace('₴', '')}
               <span className="text-xs font-normal text-muted-foreground/40 ml-0.5">₴</span>
@@ -174,14 +174,14 @@ export const ClientGridCard = React.memo(function ClientGridCard({
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 py-2 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[10px] font-bold active:scale-[0.88] transition-all"
+                className="flex-1 py-2 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[10px] font-bold active:scale-[0.88] transition-colors duration-150 cursor-pointer"
               >
                 {saving ? 'Збереження...' : 'Зберегти'}
               </button>
               <button
                 type="button"
                 onClick={() => setEditing(false)}
-                className="px-3 py-2 rounded-lg bg-secondary/40 text-muted-foreground text-[10px] active:scale-[0.88] transition-all"
+                className="px-3 py-2 rounded-lg bg-secondary/40 text-muted-foreground text-[10px] active:scale-[0.88] transition-colors duration-150 cursor-pointer"
               >
                 Скасувати
               </button>
@@ -193,7 +193,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
               <button
                 type="button"
                 onClick={() => { setEditing(true); setNoteValue(''); }}
-                className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-all active:scale-[0.88]"
+                className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 cursor-pointer active:scale-[0.88]"
                 aria-label="Швидка нотатка"
               >
                 <PenLine size={16} />
@@ -201,7 +201,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
               <button
                 type="button"
                 onClick={() => onSmartAction(client)}
-                className="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-all active:scale-[0.88] hover:bg-primary hover:text-white"
+                className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-colors duration-150 cursor-pointer active:scale-[0.88] hover:bg-primary hover:text-white"
                 aria-label="Smart-дія"
               >
                 <Sparkles size={16} />
@@ -209,7 +209,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
               <button
                 type="button"
                 onClick={() => { window.location.href = `tel:${client.client_phone}`; }}
-                className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-all active:scale-[0.88]"
+                className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 cursor-pointer active:scale-[0.88]"
                 aria-label="Подзвонити"
               >
                 <Phone size={16} />
@@ -218,7 +218,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
             <button
               type="button"
               onClick={() => onBooking(client)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-bold transition-all active:scale-[0.88] shadow-lg shadow-black/5"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-bold transition-colors duration-150 cursor-pointer active:scale-[0.88] shadow-lg shadow-black/5"
             >
               <Calendar size={14} />
               Записати
