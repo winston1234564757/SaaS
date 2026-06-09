@@ -31,8 +31,8 @@ interface Props {
 const inputCls = 'w-full px-4 py-3 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder-muted-foreground outline-none focus:bg-secondary focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all';
 
 const THEMES = [
-  { key: 'default', label: 'Blossom', color: '#DDD5C6', icon: Sun, iconColor: '#28201A' },
-  { key: 'studio',  label: 'Studio',  color: '#0E1D21', icon: Moon, iconColor: '#D3A376' },
+  { key: 'default', label: 'Blossom', color: '#DDD5C6', icon: Sun,      iconColor: '#28201A', wip: true },
+  { key: 'studio',  label: 'Studio',  color: '#0E1D21', icon: Moon,     iconColor: '#D3A376', wip: true },
   { key: 'frost',   label: 'Frost',   color: '#EFF2FF', icon: Sparkles, iconColor: '#0F172A' },
 ];
 
@@ -45,9 +45,9 @@ export function MyProfilePage({ profile }: Props) {
 
   const [themeKey, setThemeKey] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return Cookies.get('client_theme') || 'default';
+      return Cookies.get('client_theme') || 'frost';
     }
-    return 'default';
+    return 'frost';
   });
 
   const [fullName, setFullName] = useState(profile.fullName);
@@ -56,18 +56,23 @@ export function MyProfilePage({ profile }: Props) {
   const [healthNotes, setHealthNotes] = useState(profile.healthNotes);
 
   const handleThemeChange = (key: string) => {
+    const theme = THEMES.find(t => t.key === key);
+    if (theme?.wip) {
+      showToast({ type: 'info', title: 'Незабаром', message: 'Ця тема зараз у розробці' });
+      return;
+    }
     setThemeKey(key);
-    if (key === 'default') {
+    if (key === 'frost' || key === 'default') {
       Cookies.remove('client_theme', { path: '/' });
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'frost');
     } else {
       Cookies.set('client_theme', key, { expires: 365, path: '/' });
       document.documentElement.setAttribute('data-theme', key);
     }
-    const colors = { studio: '#0E1D21', frost: '#EFF2FF', default: '#DDD5C6' };
+    const colors = { studio: '#0E1D21', frost: '#EFF2FF', default: '#EFF2FF' };
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      meta.setAttribute('content', colors[key as 'studio' | 'frost' | 'default'] || '#DDD5C6');
+      meta.setAttribute('content', colors[key as 'studio' | 'frost' | 'default'] || '#EFF2FF');
     }
     router.refresh();
   };
@@ -282,10 +287,12 @@ export function MyProfilePage({ profile }: Props) {
                 type="button"
                 key={theme.key}
                 onClick={() => handleThemeChange(theme.key)}
-                className={`flex-1 p-3 rounded-xl border transition-all text-left group cursor-pointer active:scale-[0.95] ${
-                  isSelected
-                    ? 'bg-surface border-accent shadow-sm'
-                    : 'bg-secondary/40 border-border grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60'
+                className={`flex-1 p-3 rounded-xl border transition-all text-left ${
+                  theme.wip
+                    ? 'cursor-not-allowed opacity-35 bg-secondary/40 border-border'
+                    : isSelected
+                      ? 'bg-surface border-accent shadow-sm cursor-pointer active:scale-[0.95]'
+                      : 'bg-secondary/40 border-border grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60 cursor-pointer active:scale-[0.95]'
                 }`}
               >
                 <div
@@ -296,7 +303,13 @@ export function MyProfilePage({ profile }: Props) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground">{theme.label}</span>
-                  {isSelected && <Check size={14} className="text-accent" />}
+                  {theme.wip ? (
+                    <span className="text-[9px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full leading-none">
+                      Розробка
+                    </span>
+                  ) : isSelected ? (
+                    <Check size={14} className="text-accent" />
+                  ) : null}
                 </div>
               </button>
             );
