@@ -82,144 +82,151 @@ export function ProductsPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4 pb-24">
-      <div className="bento-card p-5">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h1 className="heading-serif text-xl text-foreground">Магазин</h1>
-            <p className="text-sm text-muted-foreground/60 mt-0.5">Товари та замовлення</p>
-          </div>
-          {newOrders > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
-              <ShoppingBag size={14} strokeWidth={2.5} />
-              <span className="text-xs font-bold">{newOrders} нових</span>
+    <div className="flex flex-col gap-4 pb-24 lg:pb-8">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[260px_1fr] lg:gap-6 lg:items-start">
+
+        {/* Left sidebar: header + stats + tabs */}
+        <div className="bento-card p-5">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h1 className="heading-serif text-xl text-foreground">Магазин</h1>
+              <p className="text-sm text-muted-foreground/60 mt-0.5">Товари та замовлення</p>
             </div>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          {tab === 'products' ? (
-            <>
-              <StatChip label="Активних" value={activeCount} />
-              <StatChip label="Всього" value={products.length} />
-              {lowStock > 0 && <StatChip label="Мало на складі" value={lowStock} warn />}
-            </>
-          ) : (
-            <>
-              <StatChip label="Сьогодні" value={todayOrdersCount} />
-              <StatChip label="Виручка (Shop)" value={`${Math.round(shopRevenue)} грн`} />
-              <StatChip label="Всього" value={totalOrders} />
-            </>
-          )}
-        </div>
-
-        <div className="flex gap-2 mt-4">
-          <TabBtn active={tab === 'products'} onClick={() => setParam('tab', 'products')}>
-            <Package size={14} /> Товари
-          </TabBtn>
-          <TabBtn active={tab === 'orders'} onClick={() => setParam('tab', 'orders')}>
-            <ShoppingBag size={14} />
-            Замовлення
             {newOrders > 0 && (
-              <span className="ml-1 size-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center">
-                {newOrders > 9 ? '9+' : newOrders}
-              </span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
+                <ShoppingBag size={14} strokeWidth={2.5} />
+                <span className="text-xs font-bold">{newOrders} нових</span>
+              </div>
             )}
-          </TabBtn>
+          </div>
+
+          <div className="flex gap-2">
+            {tab === 'products' ? (
+              <>
+                <StatChip label="Активних" value={activeCount} />
+                <StatChip label="Всього" value={products.length} />
+                {lowStock > 0 && <StatChip label="Мало на складі" value={lowStock} warn />}
+              </>
+            ) : (
+              <>
+                <StatChip label="Сьогодні" value={todayOrdersCount} />
+                <StatChip label="Виручка (Shop)" value={`${Math.round(shopRevenue)} грн`} />
+                <StatChip label="Всього" value={totalOrders} />
+              </>
+            )}
+          </div>
+
+          <div className="flex gap-2 mt-4 lg:flex-col">
+            <TabBtn active={tab === 'products'} onClick={() => setParam('tab', 'products')}>
+              <Package size={14} /> Товари
+            </TabBtn>
+            <TabBtn active={tab === 'orders'} onClick={() => setParam('tab', 'orders')}>
+              <ShoppingBag size={14} />
+              Замовлення
+              {newOrders > 0 && (
+                <span className="ml-1 size-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center">
+                  {newOrders > 9 ? '9+' : newOrders}
+                </span>
+              )}
+            </TabBtn>
+          </div>
+        </div>
+
+        {/* Right: content */}
+        <div>
+          <AnimatePresence mode="popLayout">
+            {tab === 'products' ? (
+              <motion.div
+                key="products"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                className="flex flex-col gap-3"
+              >
+                {pLoading ? (
+                  <SkeletonList />
+                ) : products.length === 0 ? (
+                  <EmptyProducts onAdd={() => router.push('/dashboard/products/new')} />
+                ) : (
+                  <DragDropContext onDragEnd={handleProductDragEnd}>
+                    <Droppable droppableId="products">
+                      {(provided) => (
+                        <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col gap-3">
+                          {products.map((p, i) => (
+                            <Draggable key={p.id} draggableId={p.id} index={i}>
+                              {(prov, snap) => (
+                                <div
+                                  ref={prov.innerRef}
+                                  {...prov.draggableProps}
+                                  style={{
+                                    ...prov.draggableProps.style,
+                                    opacity: snap.isDragging ? 0.5 : 1,
+                                  }}
+                                >
+                                  <ProductCard
+                                    product={p}
+                                    dragHandleProps={prov.dragHandleProps}
+                                    onEdit={() => openEdit(p)}
+                                    onRestock={() => openRestock(p)}
+                                    onToggle={() => toggleActive(p.id, p.is_active)}
+                                  />
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="orders"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                className="flex flex-col gap-3"
+              >
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {ORDER_FILTERS.map(f => (
+                    <button
+                      key={f.label}
+                      type="button"
+                      aria-pressed={orderFilter === f.value}
+                      onClick={() => setOrderFilter(f.value)}
+                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        orderFilter === f.value
+                          ? 'bg-primary text-white'
+                          : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                {oLoading ? (
+                  <SkeletonList />
+                ) : orders.length === 0 ? (
+                  <EmptyOrders />
+                ) : (
+                  orders.map(o => (
+                    <OrderCard
+                      key={o.id}
+                      order={o as UnifiedSale}
+                      onStatusChange={(status) => updateStatus(o.id, status, (o as UnifiedSale).source)}
+                    />
+                  ))
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-
-      <AnimatePresence mode="popLayout">
-        {tab === 'products' ? (
-          <motion.div
-            key="products"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.15 }}
-            className="flex flex-col gap-3"
-          >
-            {pLoading ? (
-              <SkeletonList />
-            ) : products.length === 0 ? (
-              <EmptyProducts onAdd={() => router.push('/dashboard/products/new')} />
-            ) : (
-              <DragDropContext onDragEnd={handleProductDragEnd}>
-                <Droppable droppableId="products">
-                  {(provided) => (
-                    <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col gap-3">
-                      {products.map((p, i) => (
-                        <Draggable key={p.id} draggableId={p.id} index={i}>
-                          {(prov, snap) => (
-                            <div
-                              ref={prov.innerRef}
-                              {...prov.draggableProps}
-                              style={{
-                                ...prov.draggableProps.style,
-                                opacity: snap.isDragging ? 0.5 : 1,
-                              }}
-                            >
-                              <ProductCard
-                                product={p}
-                                dragHandleProps={prov.dragHandleProps}
-                                onEdit={() => openEdit(p)}
-                                onRestock={() => openRestock(p)}
-                                onToggle={() => toggleActive(p.id, p.is_active)}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="orders"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.15 }}
-            className="flex flex-col gap-3"
-          >
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {ORDER_FILTERS.map(f => (
-                <button
-                  key={f.label}
-                  type="button"
-                  aria-pressed={orderFilter === f.value}
-                  onClick={() => setOrderFilter(f.value)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                    orderFilter === f.value
-                      ? 'bg-primary text-white'
-                      : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-
-            {oLoading ? (
-              <SkeletonList />
-            ) : orders.length === 0 ? (
-              <EmptyOrders />
-            ) : (
-              orders.map(o => (
-                <OrderCard
-                  key={o.id}
-                  order={o as UnifiedSale}
-                  onStatusChange={(status) => updateStatus(o.id, status, (o as UnifiedSale).source)}
-                />
-              ))
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {tab === 'products' && (
         <motion.button
@@ -263,7 +270,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all lg:flex-none lg:w-full lg:justify-start lg:px-4 ${
         active ? 'bg-primary text-white shadow-sm' : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
       } active:scale-95`}
     >

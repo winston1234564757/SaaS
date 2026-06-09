@@ -33,13 +33,11 @@ interface RevenueHubClientProps {
 }
 
 export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientProps) {
-  // nuqs states to handle tab and date/time selections
   const [drawerParam, setDrawerParam] = useQueryState('drawer', parseAsString.withOptions({ shallow: true, scroll: false }));
   const [activeTab, setActiveTab] = useQueryState('tab', parseAsString.withDefault('flash_deals').withOptions({ shallow: true, scroll: false }));
   const [date] = useQueryState('date', parseAsString);
   const [time] = useQueryState('time', parseAsString);
 
-  // Backward compatibility: map drawer parameter to the correct active tab
   useEffect(() => {
     if (drawerParam) {
       if (drawerParam === 'flash_deals' || drawerParam === 'flash') {
@@ -47,20 +45,20 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
       } else if (drawerParam === 'dynamic_pricing' || drawerParam === 'pricing') {
         setActiveTab('dynamic_pricing');
       }
-      // Clear drawer parameter from URL to clean up state
       setDrawerParam(null);
     }
   }, [drawerParam, setActiveTab, setDrawerParam]);
 
   const tabs = [
     { id: 'flash_deals', label: 'Флеш-акції', icon: Zap },
-    { id: 'dynamic_pricing', label: 'Смарт-ціни', icon: BadgePercent }
+    { id: 'dynamic_pricing', label: 'Смарт-ціни', icon: BadgePercent },
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-5">
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
+
+      {/* Left sidebar: hub header + tab navigation */}
+      <div className="bento-card p-5 flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <Wallet size={24} />
@@ -71,8 +69,11 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
           </div>
         </div>
 
-        {/* Sliding Tab Switcher */}
-        <div className="relative bg-surface/40 backdrop-blur-md border border-border/40 p-1 rounded-[100px] flex gap-1 self-start transform-gpu">
+        {/* Tabs: horizontal pill on mobile, vertical nav on desktop */}
+        <div className={cn(
+          'relative bg-surface/40 backdrop-blur-md border border-border/40 p-1 flex gap-1 rounded-[100px]',
+          'lg:flex-col lg:rounded-2xl lg:bg-transparent lg:border-0 lg:p-0 lg:gap-1'
+        )}>
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -83,14 +84,15 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
                 aria-pressed={isActive}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'relative px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-colors duration-200 cursor-pointer active:scale-[0.95] transform-gpu',
+                  'relative flex-1 px-5 py-2.5 rounded-full text-xs font-semibold flex items-center justify-center gap-2 transition-colors duration-200 cursor-pointer active:scale-[0.95] transform-gpu',
+                  'lg:flex-none lg:w-full lg:rounded-xl lg:px-4 lg:justify-start',
                   isActive ? 'text-[var(--accent-on)]' : 'text-text-secondary hover:text-foreground'
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="revenue-active-tab"
-                    className="absolute inset-0 rounded-full"
+                    className="absolute inset-0 rounded-full lg:rounded-xl"
                     style={{ background: 'var(--accent)' }}
                     transition={{ type: 'spring' as const, duration: 0.35, bounce: 0 }}
                   />
@@ -103,8 +105,8 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
         </div>
       </div>
 
-      {/* Tab Content Display */}
-      <div className="mt-2">
+      {/* Right: tab content */}
+      <div>
         <AnimatePresence mode="popLayout">
           <motion.div
             layout
