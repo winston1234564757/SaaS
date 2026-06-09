@@ -167,7 +167,7 @@ export function TechnicalIsland({
         <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
           <Palette size={12} /> Оформлення
         </h4>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {THEMES.map((theme) => {
             const isLocked = theme.requiresPro && !canChangeTheme;
             const isActive = effectiveThemeKey === theme.key;
@@ -187,7 +187,7 @@ export function TechnicalIsland({
                   onThemeChange(theme.key);
                 }}
                 className={cn(
-                  "flex-1 p-3 rounded-2xl border transition-all text-left",
+                  "p-3 rounded-2xl border transition-all text-left min-w-0",
                   theme.wip || isLocked
                     ? "cursor-not-allowed"
                     : "cursor-pointer active:scale-[0.95]",
