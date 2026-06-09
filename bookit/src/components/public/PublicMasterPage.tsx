@@ -328,8 +328,8 @@ export function PublicMasterPage({
   masterC2cEnabled?: boolean;
   masterC2cDiscountPct?: number | null;
 }) {
-  const themeKey = (master.themeKey ?? 'default') as MoodThemeKey;
-  const theme = moodThemes[themeKey] ?? moodThemes.default;
+  const themeKey = 'frost' as MoodThemeKey;
+  const theme = moodThemes[themeKey];
   const isDark = themeKey === 'darkLuxe';
 
   const searchParams = useSearchParams();
@@ -1124,6 +1124,7 @@ export function PublicMasterPage({
         c2cDiscountPct={effectiveDiscountPct}
         masterC2cEnabled={masterC2cEnabled}
         masterC2cDiscountPct={masterC2cDiscountPct}
+        trustedPartners={master.trustedPartners ?? []}
       />
 
     </div>

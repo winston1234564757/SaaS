@@ -1,70 +1,294 @@
 # Sprint-03 HANDOFF
+> Читай цей файл ПЕРШИМ на початку кожної нової сесії.
+> Тут повний стан спринту: що зроблено, що далі, всі деталі задач.
 
-**Sprint:** Sprint-03 Backlog (16 tasks → 18 iterations)
-**Started:** 2026-06-09
-**Status:** 1/18 DONE
-**Last deploy:** —
-**Next task:** T1 — Bookings page bugs (iter 2)
-
----
-
-## Task Tracker
-
-| Iter | ID | Name | Status | Skill | Vercel |
-|------|----|------|--------|-------|--------|
-| 1 | T15 | Default theme = Frost (masters + clients) | ✅ DONE | code-reviewer | pending |
-| 2 | T1 | Bookings: date off-by-1 + arrows + load% colors + mobile UI | ⬜ TODO | code-reviewer | — |
-| 3 | T10 | Clients: important pills overlap text | ⬜ TODO | code-reviewer | — |
-| 4 | T4 | Studio billing: block removal + form fix + phone + submit bug | ⬜ TODO | code-reviewer + humanizer | — |
-| 5 | T3 | Profile settings: mobile horizontal scroll | ⬜ TODO | code-reviewer | — |
-| 6 | T2 | Dashboard: mobile stats + PC peak hours + referral text | ⬜ TODO | impeccable + humanizer | — |
-| 7 | T5 | Story constructor: animated arrow scroll hint (mobile) | ⬜ TODO | impeccable | — |
-| 8 | T8 | Navbar: profile rightmost + FAB + notifs to system | ⬜ TODO | design-taste-frontend + impeccable | — |
-| 9 | T6c | Analytics desktop: date nav redesign + section slider | ⬜ TODO | design-taste-frontend + impeccable | — |
-| 10 | T6a | Desktop layout: billing + reviews + growth | ⬜ TODO | design-taste-frontend | — |
-| 11 | T6b | Desktop layout: revenue + marketing + products + services | ⬜ TODO | design-taste-frontend | — |
-| 12 | T7 | Profile settings desktop: empty space + schedule animation | ⬜ TODO | impeccable | — |
-| 13 | T9 | Portfolio → story constructor pre-selected work | ⬜ TODO | code-reviewer | — |
-| 14 | T12 | Loyalty: two DB codes (C2C+C2B) + bidirectional bonus + invite pages | ⬜ TODO | code-reviewer + create-migration | — |
-| 15 | T13 | Onboarding schedule: Configure + Continue buttons | ⬜ TODO | impeccable | — |
-| 16 | T14 | Onboarding preview: link block more prominent | ⬜ TODO | impeccable | — |
-| 17 | T11 | Flash actions: full audit + notification test | ⬜ TODO | code-reviewer + react-doctor | — |
-| 18 | T16 | Tour: spotlight/highlight elements | ⬜ TODO | design-taste-frontend + emil-design-eng | — |
+**Спринт:** Sprint-03 (16 задач → 18 ітерацій)
+**Розпочато:** 2026-06-09
+**Прогрес:** 1/18 виконано
+**Останній deploy:** pending (T15 зкомічено, чекаємо vercel --prod)
+**Наступна задача:** T1 — Баги сторінки Записи (ітерація 2)
 
 ---
 
-## T1 — Bookings Page Bugs (next)
+## Трекер задач
 
-**Files:**
-- `src/components/master/bookings/BookingsPage.tsx`
-- `src/components/master/bookings/PeriodAnalyticsView.tsx` (load % colors at ~line 87)
-
-**5 sub-issues:**
-1. Date off-by-1: `.split('T')[0]` timezone bug in navigate() ~line 166 — use UTC
-2. Day mode arrows: jumps 2 days / can't go forward — setDate() month boundary bug
-3. Load % colors inverted: >80=red, 50-80=orange, <50=green. Fix: high% = green (busy=good), low% = red, ~50% = blue
-4. Mobile day cards: remove border or standardize to project style
-5. Mobile control panel: remove white background + search icon from view/range panel
+| Іт | ID | Назва | Статус | Скіл | Vercel |
+|----|----|-------|--------|------|--------|
+| 1 | **T15** | Тема Frost за замовчуванням | ✅ DONE | code-reviewer | ⏳ deploy |
+| 2 | **T1** | Баги сторінки Записи | ⬜ TODO | code-reviewer | — |
+| 3 | **T10** | Клієнти: пігулки перекривають текст | ⬜ TODO | code-reviewer | — |
+| 4 | **T4** | Studio білінг: форма + баг сабміту | ⬜ TODO | code-reviewer + humanizer | — |
+| 5 | **T3** | Налаштування профілю: горизонт. скрол | ⬜ TODO | code-reviewer | — |
+| 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ⬜ TODO | impeccable + humanizer | — |
+| 7 | **T5** | Конструктор сторіс: анімована стрілка | ⬜ TODO | impeccable | — |
+| 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ⬜ TODO | design-taste-frontend | — |
+| 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ⬜ TODO | design-taste-frontend | — |
+| 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ⬜ TODO | design-taste-frontend | — |
+| 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ⬜ TODO | design-taste-frontend | — |
+| 12 | **T7** | Налаштування профілю десктоп | ⬜ TODO | impeccable | — |
+| 13 | **T9** | Портфоліо → конструктор сторіс | ⬜ TODO | code-reviewer | — |
+| 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ⬜ TODO | code-reviewer + create-migration | — |
+| 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ⬜ TODO | impeccable | — |
+| 16 | **T14** | Онбординг превью: виразніший блок посилання | ⬜ TODO | impeccable | — |
+| 17 | **T11** | Флеш-акції: повний аудит + тести | ⬜ TODO | code-reviewer + react-doctor | — |
+| 18 | **T16** | Тур: підсвічування елементів | ⬜ TODO | design-taste-frontend + emil-design-eng | — |
 
 ---
 
-## T15 — Done Notes
-
-**What was changed:**
-- `DashboardLayout.tsx` ThemeApplier: `?? ''` → `?? 'frost'` (Pro/Studio fallback)
-- `DashboardView.tsx`: `?? 'default'` → `?? 'frost'` (Layout selection fallback)
-- `my/layout.tsx` outer div: added `data-theme="frost"` (client area)
-
-**Why:** `register/actions.ts` already sets `mood_theme:'frost'` at registration. These fixes cover existing accounts + edge cases where mood_theme is NULL.
+## Деталі кожної задачі
 
 ---
 
-## Context for Next Session
+### ✅ T15 — Тема Frost за замовчуванням
+**Проблема:** Нові та існуючі майстри/клієнти могли бачити тему Blossom або відсутню тему замість Frost. Публічні сторінки також показували стару тему майстра.
 
-Sprint-03 started 2026-06-09. Workflow: one task → code → tsc → build → vercel --prod → user QA → next task. Read this file first to know where we are.
+**Зроблено:**
+- `DashboardLayout.tsx` ThemeApplier: `?? ''` → `?? 'frost'` (Pro/Studio без теми = Frost)
+- `DashboardView.tsx`: `?? 'default'` → `?? 'frost'` (вибір Layout компонента)
+- `my/layout.tsx`: `data-theme="frost"` на wrapper (клієнтська зона `/my/`)
+- `[slug]/page.tsx` line 414: `themeKey: 'frost'` (публічні сторінки майстра)
+- `PublicMasterPage.tsx`: `const themeKey = 'frost'` (fallback захист)
+- `supabase/migrations/20260609000001_frost_default_theme.sql`: UPDATE всіх майстрів до frost
+- `register/actions.ts` вже мав `mood_theme: 'frost'` — нові реєстрації OK
+- `TechnicalIsland.tsx` вже мав wip:true + "Розробка" бейдж для Blossom/Studio (IRP)
 
-Key architecture notes:
-- Theme applied via `data-theme` attribute on `<html>` (ThemeApplier in DashboardLayout)
-- Starter tier always gets Frost (locked in ThemeApplier)
-- Pro/Studio get their stored `mood_theme` or Frost fallback
-- Client area (/my/) now also gets Frost via `data-theme="frost"` on layout wrapper
+**Очікуваний результат:** Всі екрани (дашборд, клієнтська зона, публічні сторінки) відображають Frost тему. Blossom/Studio недоступні, помічені "Розробка".
+
+**⚠️ Потрібно після deploy:** `npx supabase db push` або SQL в Supabase Dashboard для застосування міграції `20260609000001_frost_default_theme.sql`
+
+---
+
+### ⬜ T1 — Баги сторінки Записи
+**Проблема (5 підпроблем):**
+1. **Дата зміщена на -1 день** — клік на 10 червня відкриває 9 червня. Причина: `.split('T')[0]` на ISO-рядку використовує локальний часовий пояс браузера.
+2. **Стрілки навігації в режимі «День» глючать** — натискаєш вперед = нічого, назад = стрибає на 2 дні. Баг в `navigate()` функції при зміні місяця/числа.
+3. **Кольори завантаженості інвертовані** — `PeriodAnalyticsView.tsx` ~рядок 87: >80%=червоний, 50-80%=помаранчевий, <50%=зелений. Має бути: великий % = зелений (зайнятість = добре), малий % = червоний (порожньо = погано), ~50% = синій.
+4. **Рамки карток днів на мобайлі** — або прибрати, або привести до стандарту проекту.
+5. **Панель керування видом на мобайлі** — білий фон і зайва іконка пошуку (інпут вже є).
+
+**Файли:**
+- `src/components/master/bookings/BookingsPage.tsx` — функція `navigate()` ~рядок 161-167, URL `setUrl`
+- `src/components/master/bookings/PeriodAnalyticsView.tsx` — логіка кольорів ~рядок 87
+
+**Очікуваний результат:** Клік на будь-яку дату показує правильний день. Стрілки переключають по 1 дню. Зелений = зайнятий = добре. Мобайл виглядає чисто без зайвих елементів.
+
+---
+
+### ⬜ T10 — Клієнти: пігулки «Важливі» перекривають текст
+**Проблема:** На сторінці клієнтів блок «Важливі» — пігулки/фільтри налазять на текст знизу або поруч.
+
+**Файли:**
+- `src/components/master/clients/ClientWidgets.tsx`
+- `src/components/master/clients/ClientGridCard.tsx`
+
+**Очікуваний результат:** Пігулки відображаються чисто, без перекриття тексту на будь-якому розмірі екрану.
+
+---
+
+### ⬜ T4 — Studio білінг: форма + баг + телефон
+**Проблема (4 підпроблеми):**
+1. **Блок «Коли вигідніше»** — прибрати порівняльний блок (рядки 393-412 в BillingPage.tsx).
+2. **Кнопка заявки** — замінити текст: описати, що користувачі самі творять продукт «моїми руками» (через humanizer).
+3. **Поле «Телефон»** — підтягувати з профілю майстра автоматично (не TG/email).
+4. **Баг відправки заявки** — `submitBetaRequest()` показує лише спінер, заявка не зберігається. Помилка "Не вдалося зберегти заявку".
+
+**Файли:**
+- `src/components/master/billing/BillingPage.tsx` — блок ~393-412, форма ~89-160, ~539-634
+- `src/app/(master)/dashboard/billing/actions.ts` — `submitBetaRequest()`
+
+**Очікуваний результат:** Блок прибрано. Текст кнопки описує co-creation. Телефон з профілю. Заявка надсилається успішно.
+
+---
+
+### ⬜ T3 — Налаштування профілю: горизонтальний скрол на мобайлі
+**Проблема:** Блок «Оформлення» (тема/стиль) в налаштуваннях профілю викликає горизонтальне прокручування сторінки на мобайлі.
+
+**Файли:** Знайти компонент налаштувань профілю (SettingsPage.tsx або аналогічний в `/dashboard/settings/`).
+
+**Очікуваний результат:** Сторінка налаштувань не виходить за межі екрану на мобайлі, жодного горизонтального скролу.
+
+---
+
+### ⬜ T2 — Дашборд: три підпроблеми
+**Проблема:**
+1. **Мобайл, блок записів в статистиці** — шрифти завеликі, елементи перекриваються (`TodaySchedule.tsx`).
+2. **ПК, блок пікових годин** — шрифти для годин і днів задрібні (`PeakHoursWidget.tsx`).
+3. **Блок рефералок** — текст не акцентує вигоду: «можна заробити на повну оплату Pro тарифу». Потрібен humanizer.
+
+**Файли:**
+- `src/components/master/dashboard/TodaySchedule.tsx`
+- `src/components/master/dashboard/widgets/frost/` — знайти PeakHours
+- `src/components/master/dashboard/widgets/ReferralBoostWidget.tsx`
+
+**Очікуваний результат:** Мобайл — чистий лейаут без перекриття. ПК — читабельні підписи в пік-годинах. Рефералки — яскравий текст про заробіток на Pro.
+
+---
+
+### ⬜ T5 — Конструктор сторіс: анімована стрілка
+**Проблема:** На мобайлі після першої зміни параметра превью сторіс знаходиться нижче активного екрану і юзер не знає, що треба прокрутити вниз.
+
+**Поточний стан:** `showScrollHint` + `ChevronDown` вже є в `StoryGenerator.tsx` — спрацьовує через 4 секунди. Треба перевірити: чи анімація помітна, чи стрілка анімована (не статична іконка).
+
+**Файл:** `src/components/master/marketing/StoryGenerator.tsx`
+
+**Очікуваний результат:** При першій зміні параметра на мобайлі з'являється анімована стрілка вниз, яка привертає увагу і веде до превью.
+
+---
+
+### ⬜ T8 — Навбар: реструктуризація (мобайл)
+**Проблема (3 підпроблеми):**
+1. **Профіль/налаштування** — має бути крайнім правим елементом навбару. Увага: середня кнопка — «Твій кабінет» (не «Ще»), не плутати!
+2. **Сповіщення** — перенести в «систему» в розгорнутому меню. Коли є непрочитані — стікі-бейдж біля FAB.
+3. **FAB кнопка** — закріплена над навбаром у центрі: «Центр підтримки BookIT» (швидкий зв'язок + відгуки).
+
+**Файли:**
+- `src/components/shared/BottomNav.tsx`
+- `src/components/master/dashboard/NotificationsBell.tsx`
+- `src/components/master/DashboardLayout.tsx`
+
+**Очікуваний результат:** Профіль праворуч. FAB видима над навбаром. Сповіщення прибрані з основного навбару, стікі-бейдж при непрочитаних.
+
+---
+
+### ⬜ T6c — Аналітика десктоп: навігація дат + слайдер ⭐ ПЕРША В ГРУПІ C
+**Проблема:**
+1. **Навігація дат** — поточні пігулки-кнопки незручні на десктопі, потрібен кардинальний редизайн.
+2. **Таби розділів** — замінити на великий горизонтальний слайдер де видно 30% наступного розділу (як в інтернет-магазинах одягу).
+
+**Файли:**
+- `src/components/master/analytics/AnalyticsPage.tsx`
+- `src/components/master/analytics/sections/PeriodControls.tsx`
+
+**Очікуваний результат:** Десктоп аналітика: зручна навігація дат, інтуїтивні таби з горизонтальним прокрученням і підказкою «є ще».
+
+---
+
+### ⬜ T6a — Десктоп лейаут: billing + reviews + growth
+**Проблема:** Верхні елементи сторінок (пошук, фільтри, дати) не адаптовані під десктоп. Занадто багато вертикального простору, елементи не використовують ширину екрану.
+
+**Сторінки:** `/dashboard/billing`, `/dashboard/reviews`, `/dashboard/growth` (всі 3 таби)
+
+**Очікуваний результат:** Елементи управління оптимально розташовані для широкого екрану CRM.
+
+---
+
+### ⬜ T6b — Десктоп лейаут: revenue + marketing + products + services
+**Проблема:** Те ж саме, що T6a для інших сторінок.
+
+**Сторінки:** `/dashboard/revenue`, `/dashboard/marketing`, `/dashboard/products`, `/dashboard/services`
+
+**Очікуваний результат:** Те саме — оптимальний CRM-лейаут на десктопі.
+
+---
+
+### ⬜ T7 — Налаштування профілю: десктоп
+**Проблема:**
+1. Занадто багато порожнього місця між блоками.
+2. Коли розгортається блок «Графік роботи» — сусідні блоки стрибають ненатурально.
+
+**Файл:** Знайти компонент профільних налаштувань (SettingsPage.tsx або відповідний layout).
+
+**Очікуваний результат:** Рівномірне заповнення простору. Розгортання графіку анімується плавно без стрибків сусідів.
+
+---
+
+### ⬜ T9 — Портфоліо → конструктор сторіс
+**Проблема:** Кнопка «Сторіс» на сторінці портфоліо не має прямого переходу в конструктор з вже вибраним типом «робота» і першою роботою.
+
+**Підхід:** URL-параметри `?type=work&workId=[id]`. StoryGenerator читає при монтуванні.
+
+**Файли:**
+- Компонент портфоліо майстра (`PortfolioPage.tsx` або `PortfolioItemPage.tsx`)
+- `src/components/master/marketing/StoryGenerator.tsx`
+
+**Очікуваний результат:** Одне натискання «Сторіс» → відкривається конструктор з типом «робота» і першою роботою в списку вже вибраними.
+
+---
+
+### ⬜ T12 — Лояльність: два реферальні коди + двосторонній C2B
+**Проблема:**
+1. **Один код на все** — зараз у клієнта один реферальний код. Потрібно два: `c2c_referral_code` (для друзів) і `c2b_referral_code` (для запрошення від майстра).
+2. **C2B однобічний** — коли майстер запрошує клієнта (C2B), бонус отримує тільки майстер. Клієнт нічого не отримує. Виправити: обидві сторони мають отримувати бонус.
+3. **Сторінки інвайту** — `/invite/[code]` має мати унікальний дизайн для кожного типу.
+
+**Файли:**
+- `src/app/my/loyalty/page.tsx`
+- `src/app/invite/[code]/page.tsx`
+- `src/lib/actions/referrals.ts` — `getOrGenerateProfileReferralCode()`
+- `applyReferralRewards()` — знайти і виправити C2B логіку
+- Нова міграція: додати колонки до `client_profiles` або `profiles`
+
+**Очікуваний результат:** `/my/loyalty` показує два окремі посилання. C2B дає бонус і майстру і клієнту. Сторінки інвайту мають різний дизайн.
+
+---
+
+### ⬜ T13 — Онбординг: крок графіку
+**Проблема:** На кроці «Графік роботи» без натискання «Свій графік» неможливо перейти далі — немає кнопки продовження для дефолтного стану.
+
+**Виправлення:** Додати дві кнопки на початковий стан:
+1. «Налаштувати» — розгортає редактор графіку
+2. «Продовжити» — пропускає крок (використовується дефолтний графік)
+
+**Файл:** `src/components/master/onboarding/steps/StepSchedule.tsx`
+
+**Очікуваний результат:** Майстер може одразу натиснути «Продовжити» або налаштувати графік — нема тупикової ситуації.
+
+---
+
+### ⬜ T14 — Онбординг: виразніший блок посилання
+**Проблема:** На кроці «Превью» блок редагування посилання сторінки виглядає як другорядний/незначний елемент. Юзер не розуміє, що це важливо.
+
+**Виправлення:** Збільшити візуальну вагу блоку (типографіка, рамка, акцент-колір, іконка).
+
+**Файл:** `src/components/master/onboarding/steps/StepPreview.tsx`
+
+**Очікуваний результат:** Блок посилання візуально виділяється, юзер одразу розуміє його важливість.
+
+---
+
+### ⬜ T11 — Флеш-акції: повний аудит
+**Проблема:** Потрібна ретельна перевірка всієї логіки флеш-акцій. Файл `quick-actions.ts` був видалений (git status `D`) — це окрема від флеш-акцій річ, треба розібратись що він робив і чи немає регресії.
+
+**Що перевіряти:**
+- `createFlashDeal()`, `cancelFlashDeal()` — логіка кінець-до-кінця
+- Відправка сповіщень (Push + TG) клієнтам в 48-годинному вікні
+- Ліміти Starter тарифу (5 акцій/місяць)
+- UX компонента: видимість бейджа знижки, обробка кількох акцій
+- Перевірити що видаляв `quick-actions.ts` через `git show`
+
+**Файли:**
+- `src/app/(master)/dashboard/flash/actions.ts`
+- Компонент флеш-акцій (в `/dashboard/revenue` з drawer)
+
+**Очікуваний результат:** Флеш-акції створюються, скасовуються, сповіщення доходять до клієнтів. Жодних прихованих регресій від видаленого файлу.
+
+---
+
+### ⬜ T16 — Тур: підсвічування елементів
+**Проблема:** Тур після реєстрації розповідає про елементи дашборду, але НЕ підсвічує і не виділяє їх візуально. Юзер не розуміє, про який елемент йдеться.
+
+**Виправлення:**
+- Дімити весь екран крім цільового елемента
+- Обводка/свічення навколо цільового елемента
+- Плавний перехід між кроками
+
+**Файли:**
+- `src/components/master/dashboard/DashboardTourContext.tsx`
+- `src/components/master/dashboard/DashboardTourBanner.tsx`
+
+**Очікуваний результат:** Кожен крок туру візуально підсвічує потрібний елемент. Юзер розуміє, про що мова, без зусиль.
+
+---
+
+## Протокол нової сесії
+
+```
+1. mempalace_status
+2. Read XDEV/MAPS/SYSTEM_MAP.md (останні 40 рядків)
+3. Read XDEV/PLANS/SPRINT-03-BACKLOG/HANDOFF.md
+4. Знайти наступне ⬜ TODO в трекері
+5. mempalace_search по темі задачі
+6. GATE: QA + Skill declaration + Humanizer check
+7. Код → tsc → build → vercel --prod
+8. Оновити цей файл: ⬜ → ✅, заповнити "Зроблено" і "Vercel" колонку
+```

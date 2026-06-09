@@ -60,19 +60,17 @@ type FlashDealRow = {
   expires_at: string;
 };
 
-type AlliancePartnerProfile = { full_name: string; avatar_url?: string | null };
-type AlliancePartner = {
+type PartnerProfile = { full_name: string; avatar_url?: string | null };
+type PartnerPartner = {
   id: string;
   slug: string;
   avatar_emoji: string | null;
   categories: string[];
-  profiles: AlliancePartnerProfile | AlliancePartnerProfile[];
+  profiles: PartnerProfile | PartnerProfile[];
 };
-type AllianceRow = {
-  inviter_id: string;
-  invitee_id: string;
-  inviter: AlliancePartner | null;
-  invitee: AlliancePartner | null;
+type PartnerRow = {
+  partner_id: string;
+  partner: PartnerPartner;
 };
 
 type PortfolioRow = {
@@ -219,8 +217,8 @@ export default async function MasterPublicPage(
   const monthStart = monthStartDate.toISOString();
   const monthEnd   = monthEndDate.toISOString().slice(0, 10);
 
-  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty, alliance partners, portfolio, occupancy bookings
-  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, allianceRes, portfolioRes, occupancyBookingsRes] = await Promise.all([
+  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty, partners, portfolio, occupancy bookings
+  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, partnerRes, portfolioRes, occupancyBookingsRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, name, price_kopecks, description, photos, stock_qty, category, icon_name, recommend_always, product_service_links(service_id)')
@@ -268,21 +266,18 @@ export default async function MasterPublicPage(
           .eq('client_id', user.id)
           .eq('status', 'completed')
       : Promise.resolve({ count: null, error: null }),
-    // Visible alliance partners (both directions)
+    // Accepted + visible bilateral partners for public page
     supabase
-      .from('master_alliances')
+      .from('master_partners')
       .select(`
-        inviter_id, invitee_id,
-        inviter:master_profiles!master_alliances_inviter_id_fkey (
+        partner_id,
+        partner:master_profiles!master_partners_partner_id_fkey (
           id, slug, avatar_emoji, categories,
-          profiles ( full_name )
-        ),
-        invitee:master_profiles!master_alliances_invitee_id_fkey (
-          id, slug, avatar_emoji, categories,
-          profiles ( full_name )
+          profiles ( full_name, avatar_url )
         )
       `)
-      .or(`inviter_id.eq.${data.id},invitee_id.eq.${data.id}`)
+      .eq('master_id', data.id)
+      .eq('status', 'accepted')
       .eq('is_visible', true),
     // Portfolio items (published, with first photo)
     supabase
@@ -368,24 +363,18 @@ export default async function MasterPublicPage(
     ? { tiers: loyaltyTiers, currentVisits, isAuth: !!user }
     : null;
 
-  // Build trusted partners list — pick the "other" side of each alliance row
-  const trustedPartners: TrustedPartner[] = [];
-  const seenIds = new Set<string>();
-  for (const row of (allianceRes.data ?? []) as AllianceRow[]) {
-    const other = row.inviter_id === data.id ? row.invitee : row.inviter;
-    if (!other || seenIds.has(other.id)) continue;
-    seenIds.add(other.id);
-    const partnerProfile = Array.isArray(other.profiles) ? other.profiles[0] : other.profiles;
-    const name = partnerProfile?.full_name ?? 'Майстер';
-    trustedPartners.push({
-      id:          other.id,
-      slug:        other.slug,
-      name,
-      avatarEmoji: other.avatar_emoji ?? '💅',
-      avatarUrl:   partnerProfile?.avatar_url ?? null,
-      specialty:   other.categories.join(', ') || 'Майстер краси',
-    });
-  }
+  // Build trusted partners list from accepted bilateral master_partners
+  const trustedPartners: TrustedPartner[] = (partnerRes.data ?? []).map((row: PartnerRow) => {
+    const partnerProfile = Array.isArray(row.partner.profiles) ? row.partner.profiles[0] : row.partner.profiles;
+    return {
+      id:          row.partner.id,
+      slug:        row.partner.slug,
+      name:        partnerProfile?.full_name ?? 'Майстер',
+      avatarEmoji: row.partner.avatar_emoji ?? '💅',
+      avatarUrl:   (partnerProfile as any)?.avatar_url ?? null,
+      specialty:   row.partner.categories.join(', ') || 'Майстер краси',
+    };
+  });
 
   const flashDeals = (flashDealsRes.data ?? []).map((d: FlashDealRow) => ({
     id: d.id,
@@ -422,7 +411,7 @@ export default async function MasterPublicPage(
     reviews,
     instagram: data.instagram_url ?? null,
     telegram: data.telegram_url ?? null,
-    themeKey: data.mood_theme || 'default',
+    themeKey: 'frost',
     avatarEmoji: data.avatar_emoji || '💅',
     avatarUrl: profile.avatar_url ?? null,
     schedule,
