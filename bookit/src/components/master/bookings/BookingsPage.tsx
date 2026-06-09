@@ -7,7 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  X,
   Plus,
   LayoutList,
   Clock,
@@ -57,7 +56,6 @@ export function BookingsPage() {
 
   const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
-  // URL-derived state (view, timeRange, anchor, statusFilter persist across navigation)
   const view = (searchParams.get('view') ?? 'list') as ViewMode;
   const timeRange = (searchParams.get('range') ?? 'day') as TimeRange;
   const anchor = useMemo(() => {
@@ -67,9 +65,7 @@ export function BookingsPage() {
   }, [searchParams]);
   const statusFilter = searchParams.get('status') ?? 'all';
 
-  // Local UI state (ephemeral, not persisted in URL)
   const [search, setSearch] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
   const [preselectedTime, setPreselectedTime]               = useState<string | undefined>();
@@ -78,7 +74,6 @@ export function BookingsPage() {
   const [preselectedClientName, setPreselectedClientName]   = useState<string | undefined>();
   const [preselectedClientPhone, setPreselectedClientPhone] = useState<string | undefined>();
 
-  // URL updater — merges updates into current params, preserves unrelated params
   const setUrl = (updates: Record<string, string | null>) => {
     const p = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([k, v]) => {
@@ -233,18 +228,17 @@ export function BookingsPage() {
           </div>
         </div>
 
-        {/* Top Stats Row */}
         <DashboardWidgets stats={stats} isLoading={isLoading} />
       </div>
 
       {/* 2. Controls — Mobile sticky */}
-      <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 bg-background/20 backdrop-blur-2xl border-b border-border/30 pb-4 mb-2 -mx-4 px-4 pt-2">
+      <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 border-b border-border/30 pb-4 mb-2 -mx-4 px-4 pt-2">
         <div className="flex flex-col gap-3">
 
-          {/* Top row: Range + View + Search */}
+          {/* Top row: Range + View */}
           <div className="flex items-center justify-between gap-2">
 
-            {/* Time Range Switcher (mobile) */}
+            {/* Time Range Switcher */}
             <div className="flex bg-secondary/30 border border-border p-1 rounded-xl">
               {(['day', 'week', 'month'] as const).map(r => (
                 <button
@@ -263,62 +257,43 @@ export function BookingsPage() {
               ))}
             </div>
 
-            {/* View Switcher + Search Toggle */}
-            <div className="flex items-center gap-1.5 flex-1 justify-end">
-              <div className="flex p-1 rounded-xl bg-secondary/30 border border-border backdrop-blur-sm">
-                {(
-                  [
-                    { id: 'list'     as const, icon: <LayoutList size={14} />, label: 'Список' },
-                    { id: 'timeline' as const, icon: <Clock size={14} />,      label: 'Таймлайн' },
-                    { id: 'focus'    as const, icon: <Zap size={14} />,        label: 'Фокус' },
-                  ] as const
-                ).map(m => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    aria-pressed={view === m.id}
-                    aria-label={m.label}
-                    onClick={() => setUrl({ view: m.id })}
-                    className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
-                      view === m.id ? 'bg-secondary text-primary shadow-sm' : 'text-muted-foreground/60'
-                    }`}
-                  >
-                    {m.icon}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                aria-label={searchOpen ? 'Закрити пошук' : 'Пошук клієнта'}
-                aria-expanded={searchOpen}
-                onClick={() => setSearchOpen(!searchOpen)}
-                className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl border transition-colors duration-150 active:scale-[0.88] cursor-pointer ${
-                  searchOpen
-                    ? 'bg-primary/10 border-primary/20 text-primary'
-                    : 'bg-secondary/30 border-border text-muted-foreground'
-                }`}
-              >
-                {searchOpen ? <X size={14} /> : <Search size={14} />}
-              </button>
+            {/* View Switcher */}
+            <div className="flex p-1 rounded-xl bg-secondary/30 border border-border backdrop-blur-sm">
+              {(
+                [
+                  { id: 'list'     as const, icon: <LayoutList size={14} />, label: 'Список' },
+                  { id: 'timeline' as const, icon: <Clock size={14} />,      label: 'Таймлайн' },
+                  { id: 'focus'    as const, icon: <Zap size={14} />,        label: 'Фокус' },
+                ] as const
+              ).map(m => (
+                <button
+                  key={m.id}
+                  type="button"
+                  aria-pressed={view === m.id}
+                  aria-label={m.label}
+                  onClick={() => setUrl({ view: m.id })}
+                  className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
+                    view === m.id ? 'bg-secondary text-primary shadow-sm' : 'text-muted-foreground/60'
+                  }`}
+                >
+                  {m.icon}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Search bar collapse */}
-          {searchOpen && (
-            <div className="relative">
-              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Ім'я або телефон клієнта..."
-                aria-label="Пошук клієнта за ім'ям або телефоном"
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition duration-150 outline-none font-medium"
-                autoFocus
-              />
-            </div>
-          )}
+          {/* Search input — always visible */}
+          <div className="relative">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Ім'я або телефон клієнта..."
+              aria-label="Пошук клієнта за ім'ям або телефоном"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition duration-150 outline-none font-medium"
+            />
+          </div>
 
           {/* Date Navigator */}
           <div className="flex items-center justify-between px-2">
@@ -390,7 +365,7 @@ export function BookingsPage() {
                   { label: 'Очікують',     icon: <div className="size-2 rounded-full bg-warning" />,    onClick: () => setUrl({ status: 'pending' }) },
                   { label: 'Підтверджені', icon: <div className="size-2 rounded-full bg-success" />,    onClick: () => setUrl({ status: 'confirmed' }) },
                   { label: 'Завершені',    icon: <div className="size-2 rounded-full bg-primary" />,    onClick: () => setUrl({ status: 'completed' }) },
-                  { label: 'Скасовані',   icon: <div className="size-2 rounded-full bg-error" />,      onClick: () => setUrl({ status: 'cancelled' }) },
+                  { label: 'Скасовані',   icon: <div className="size-2 rounded-full bg-destructive" />, onClick: () => setUrl({ status: 'cancelled' }) },
                 ]}
               />
             </div>

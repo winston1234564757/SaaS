@@ -85,7 +85,7 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
                 animate={{ width: `${stat.occupancy}%` }}
                 className={cn(
                   "h-full rounded-full transition-colors",
-                  stat.occupancy >= 85 ? "bg-success" : stat.occupancy > 55 ? "bg-warning" : "bg-destructive"
+                  stat.occupancy >= 85 ? "bg-success" : stat.occupancy > 60 ? "bg-warning" : stat.occupancy >= 40 ? "bg-info" : "bg-destructive"
                 )}
               />
             </div>
