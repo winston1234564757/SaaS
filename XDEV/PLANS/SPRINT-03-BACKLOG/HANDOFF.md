@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 10/18 виконано ✅
-**Останній deploy:** vercel --prod T6a (commit: d184b9e)
-**Наступна задача:** **T6b — Десктоп лейаут: revenue + marketing + products + services** (ітерація 11)
+**Прогрес:** 11/18 виконано ✅
+**Останній deploy:** vercel --prod T6b (commit: 60b980c)
+**Наступна задача:** **T7 — Налаштування профілю десктоп** (ітерація 12)
 
 ---
 
@@ -24,7 +24,7 @@
 | 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ✅ DONE | design-taste-frontend | f3107c4 + 620473f |
 | 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ✅ DONE | design-taste-frontend | ddcf28d |
 | 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ✅ DONE | design-taste-frontend | d184b9e |
-| 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ⬜ TODO | design-taste-frontend | — |
+| 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ✅ DONE | design-taste-frontend | 60b980c |
 | 12 | **T7** | Налаштування профілю десктоп | ⬜ TODO | impeccable | — |
 | 13 | **T9** | Портфоліо → конструктор сторіс | ⬜ TODO | code-reviewer | — |
 | 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ⬜ TODO | code-reviewer + create-migration | — |

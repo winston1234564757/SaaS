@@ -17,18 +17,18 @@
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 10/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅, T6a ✅
-- Наступна: T6b — Десктоп лейаут: revenue + marketing + products + services
+- 11/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅, T6a ✅, T6b ✅
+- Наступна: T7 — Налаштування профілю десктоп
 
-T6b деталі:
-- Файли: RevenuePage.tsx, MarketingTabs.tsx, ProductsPage.tsx, ServicesPage.tsx (або відповідні компоненти)
-- Проблема: desktop-specific layout для revenue, marketing, products, services секцій — ті ж що T6a але інші сторінки
-- Скіл: design-taste-frontend
+T7 деталі:
+- Файли: SettingsPage.tsx або відповідний компонент налаштувань профілю
+- Проблема: порожній простір на десктопі + стрибки сусідніх блоків при розгортанні графіку
+- Скіл: impeccable
 
 GATE перед кодом:
-1. mempalace_search "revenue marketing products services desktop layout"
-2. QA: 3-5 питань про desktop layout
-3. SKILL: design-taste-frontend → запусти Skill tool
+1. mempalace_search "settings profile desktop layout schedule"
+2. QA: 3-5 питань про layout + анімацію графіку
+3. SKILL: impeccable → запусти Skill tool
 4. UI рядки → /humanizer якщо є нові
 5. GATE OK → код
 
