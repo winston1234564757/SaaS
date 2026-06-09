@@ -18,28 +18,30 @@
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 4/18 виконано: T15 ✅ DONE, T1 ✅ DONE, T10 ✅ DONE, T4 ✅ DONE
-- Наступна: T3 — Налаштування профілю: горизонт. скрол
+- 5/18 виконано: T15 ✅ DONE, T1 ✅ DONE, T10 ✅ DONE, T4 ✅ DONE, T3 ✅ DONE
+- Наступна: T2 — Дашборд: статистика мобайл + пік-годин + рефералки
 
-T3 деталі:
-- Файл: SettingsPage.tsx або компонент в /dashboard/settings/
-- Проблема: Блок «Оформлення» викликає горизонтальне прокручування на мобайлі
-- Скіл: code-reviewer
-- Humanizer: Ні (чисто layout/overflow фікс)
+T2 деталі:
+- Файли: TodaySchedule.tsx, PeakHoursWidget.tsx, ReferralBoostWidget.tsx
+- Проблема 1: TodaySchedule — шрифти завеликі, перекриваються на мобайлі
+- Проблема 2: PeakHoursWidget — шрифти задрібні на ПК
+- Проблема 3: ReferralBoostWidget — humanizer тексту «можна заробити на повну оплату Pro тарифу»
+- Скіл: impeccable + humanizer
 
 GATE перед кодом:
-1. mempalace_search "settings overflow horizontal scroll mobile"
-2. QA: знайди де саме overflow (SettingsPage або окремий компонент)
-3. SKILL: code-reviewer → запусти Skill tool
-4. GATE OK → код
+1. mempalace_search "dashboard today schedule font size mobile"
+2. QA: знайди точні місця в TodaySchedule + PeakHoursWidget + ReferralBoostWidget
+3. SKILL: impeccable → запусти Skill tool
+4. UI рядки → /humanizer (ReferralBoostWidget)
+5. GATE OK → код
 
 Після коду:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T3 ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T2 ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T2
+- Повідомити юзера → він QA → наступна задача T5
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 
