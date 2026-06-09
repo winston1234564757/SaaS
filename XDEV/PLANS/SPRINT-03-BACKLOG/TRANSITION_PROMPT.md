@@ -10,38 +10,36 @@
 ОБОВ'ЯЗКОВИЙ STARTUP (виконай ДО будь-чого іншого):
 1. mempalace_status
 2. Read XDEV/MAPS/SYSTEM_MAP.md (offset 200, limit 60)
-
 3. Read XDEV/PLANS/SPRINT-03-BACKLOG/HANDOFF.md — знайди перший ⬜ TODO
-4. Read XDEV\PLANS\SPRINT-03-BACKLOG\initial_plan.md - для контексту
+4. Read XDEV/PLANS/SPRINT-03-BACKLOG/initial_plan.md - для контексту
 5. Тут моєю мовою описано: XDEV/PLANS/SPRINT-03-BACKLOG/BACKLOG.md
 
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 5/18 виконано: T15 ✅ DONE, T1 ✅ DONE, T10 ✅ DONE, T4 ✅ DONE, T3 ✅ DONE
-- Наступна: T2 — Дашборд: статистика мобайл + пік-годин + рефералки
+- 8/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅
+- Наступна: T6c — Аналітика десктоп: навігація дат + слайдер
 
-T2 деталі:
-- Файли: TodaySchedule.tsx, PeakHoursWidget.tsx, ReferralBoostWidget.tsx
-- Проблема 1: TodaySchedule — шрифти завеликі, перекриваються на мобайлі
-- Проблема 2: PeakHoursWidget — шрифти задрібні на ПК
-- Проблема 3: ReferralBoostWidget — humanizer тексту «можна заробити на повну оплату Pro тарифу»
-- Скіл: impeccable + humanizer
+T6c деталі:
+- Файли: AnalyticsPage.tsx, PeriodControls.tsx
+- Проблема 1: Кардинальний редизайн навігації дат (PeriodControls)
+- Проблема 2: Таби → великий горизонтальний слайдер (30% наступного видно)
+- Скіл: design-taste-frontend + impeccable
 
 GATE перед кодом:
-1. mempalace_search "dashboard today schedule font size mobile"
-2. QA: знайди точні місця в TodaySchedule + PeakHoursWidget + ReferralBoostWidget
-3. SKILL: impeccable → запусти Skill tool
-4. UI рядки → /humanizer (ReferralBoostWidget)
+1. mempalace_search "AnalyticsPage PeriodControls date navigation tabs slider"
+2. QA: 5 питань про дизайн (навігація дат — що саме; слайдер — позиція активного; стрілки чи drag; desktop поведінка; пресети скорочуємо?)
+3. SKILL: design-taste-frontend → запусти Skill tool
+4. UI рядки → /humanizer якщо є нові
 5. GATE OK → код
 
 Після коду:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T2 ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T6c ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T5
+- Повідомити юзера → він QA → наступна задача T6a
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 

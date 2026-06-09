@@ -24,12 +24,14 @@
 | 3 | T10 | Клієнти: пігулки перекривають текст | 86aa48a |
 | 4 | T4 | Studio білінг: форма + баг сабміту | cb41655 + 8f2ee05 |
 | 5 | T3 | Налаштування профілю: горизонт. скрол | cdc410a |
-| 6 | T2 | Дашборд: статистика мобайл + пік-годин + рефералки | 1de90ec |
+| 6 | T2 | Дашборд: статистика мобайл + пік-годин + рефералки | 1de90ec + bee63a0 |
+| 7 | T5 | Конструктор сторіс: анімована стрілка | 3ed6e4b |
+| 8 | T8 | Навбар: профіль праворуч + FAB + сповіщення | f3107c4 + 620473f |
 
-### Наступна: T2 — Дашборд: статистика мобайл + пік-годин + рефералки
-**Проблема:** 1) TodaySchedule — шрифти завеликі на мобайлі 2) PeakHoursWidget — шрифти задрібні на ПК 3) ReferralBoostWidget — humanizer тексту
-**Скіл:** `impeccable + humanizer`
-**Файли:** `TodaySchedule.tsx`, `PeakHoursWidget.tsx`, `ReferralBoostWidget.tsx`
+### Наступна: T6c — Аналітика десктоп: навігація дат + слайдер
+**Проблема:** 1) Кардинальний редизайн навігації дат 2) Таби → великий горизонтальний слайдер (30% наступного видно)
+**Скіл:** `design-taste-frontend + impeccable`
+**Файли:** `AnalyticsPage.tsx`, `PeriodControls.tsx`
 
 ---
 
@@ -37,7 +39,7 @@
 
 | Спринт | Дата | Результат |
 |---|---|---|
-| Sprint-03 (18 tasks) | 2026-06-09/... | 🔄 In progress (3/18) |
+| Sprint-03 (18 tasks) | 2026-06-09/... | 🔄 In progress (8/18) |
 | Sprint-02 (25 tasks) | 2026-06-08/09 | P1–P4: bugs, features, desktop, invite landings, Studio beta |
 | IRP (8 phases A–H) | 2026-06-07/08 | Security, Frost-only, wizard, no-emoji, a11y, audit |
 | Theme Polish Sprint | 2026-05-19 | Всі 3 теми відполіровані |
