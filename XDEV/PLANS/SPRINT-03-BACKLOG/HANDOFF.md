@@ -8,6 +8,20 @@
 **Останній deploy:** vercel --prod T6b (commit: 60b980c)
 **Наступна задача:** **T7 — Налаштування профілю десктоп** (ітерація 12)
 
+### ⚠️ QA-знахідки після T6b deploy (потребують фіксу)
+
+**T8 — REGRESSION: SupportWidget позиція**
+- Кнопка підтримки відображається внизу ЗЛІВА (не там)
+- Має бути: fixed НАД навбаром, такі ж властивості як навбар (bottom: над navbar)
+- Правильна позиція: `fixed bottom-24 right-4` (над навбаром), не зліва
+- Файл: `SupportWidget.tsx` або аналог — перевірити позицію/стилі
+
+**T6a — PARTIAL: reviews + growth desktop layout відсутній**
+- Billing ✅ — двоколонковий лейаут працює
+- Reviews ❌ — десктоп без змін, таби без сайдбару
+- Growth ❌ — всі 3 таби (Overview/Segments/Referral) без змін
+- Потребує: `lg:grid lg:grid-cols-[260px_1fr]` для ReviewsPage та growth-секцій в AnalyticsPage
+
 ---
 
 ## Трекер задач
@@ -21,9 +35,9 @@
 | 5 | **T3** | Налаштування профілю: горизонт. скрол | ✅ DONE | code-reviewer | cdc410a |
 | 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ✅ DONE | impeccable + humanizer | 1de90ec + bee63a0 |
 | 7 | **T5** | Конструктор сторіс: анімована стрілка | ✅ DONE | impeccable | 3ed6e4b |
-| 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ✅ DONE | design-taste-frontend | f3107c4 + 620473f |
+| 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ⚠️ REGRESSION | design-taste-frontend | f3107c4 + 620473f |
 | 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ✅ DONE | design-taste-frontend | ddcf28d |
-| 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ✅ DONE | design-taste-frontend | d184b9e |
+| 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ⚠️ PARTIAL | design-taste-frontend | d184b9e |
 | 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ✅ DONE | design-taste-frontend | 60b980c |
 | 12 | **T7** | Налаштування профілю десктоп | ⬜ TODO | impeccable | — |
 | 13 | **T9** | Портфоліо → конструктор сторіс | ⬜ TODO | code-reviewer | — |

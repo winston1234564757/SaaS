@@ -34,6 +34,12 @@
 ### Наступна: T7 — Налаштування профілю десктоп
 **Скіл:** `impeccable`
 
+### ⚠️ QA-борги (зафіксовано після T6b)
+| # | Задача | Статус | Деталі |
+|---|--------|--------|--------|
+| — | T8 REGRESSION | 🔴 BUG | SupportWidget bottom-LEFT → має бути `fixed bottom-24 right-4` |
+| — | T6a PARTIAL | 🟡 PARTIAL | Reviews + Growth desktop layout відсутній (тільки Billing ✅) |
+
 ---
 
 ## Завершені спринти
