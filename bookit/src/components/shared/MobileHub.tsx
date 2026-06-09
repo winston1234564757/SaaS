@@ -8,19 +8,19 @@ import {
   X, BarChart2, Scissors, ShoppingBag, Wallet,
   GalleryVerticalEnd, Rocket, Sparkles, MessageSquare,
   Building2, CreditCard, HelpCircle, Scale, Zap, TrendingUp,
-  ExternalLink,
+  ExternalLink, User,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useMasterContext } from '@/lib/supabase/context';
+import { NotificationsBell } from '@/components/master/dashboard/NotificationsBell';
 
 /* ─── Nav bar items ─────────────────────────────── */
 const BAR_ITEMS = [
-  { href: '/dashboard',           icon: LayoutDashboard, label: 'Огляд'   },
-  { href: '/dashboard/bookings',  icon: CalendarDays,    label: 'Записи'  },
-  { href: '/dashboard/clients',   icon: Users,           label: 'Клієнти' },
-  { href: '/dashboard/settings',  icon: Settings,        label: 'Профіль' },
+  { href: '/dashboard',          icon: LayoutDashboard, label: 'Огляд'   },
+  { href: '/dashboard/bookings', icon: CalendarDays,    label: 'Записи'  },
+  { href: '/dashboard/clients',  icon: Users,           label: 'Клієнти' },
 ];
 
 /* ─── Hub sections ───────────────────────────────── */
@@ -34,17 +34,18 @@ const OPERATIONS = [
 ];
 
 const MARKETING = [
-  { href: '/dashboard/marketing',  icon: Sparkles,     label: 'Маркетинг',     desc: 'Сторіс та розсилки'  },
-  { href: '/dashboard/revenue',    icon: Wallet,        label: 'Дохід',         desc: 'Флеш-акції та ціни'  },
-  { href: '/dashboard/growth',     icon: Rocket,        label: 'Ріст',          desc: 'Лояльність, реферали' },
-  { href: '/dashboard/reviews',    icon: MessageSquare, label: 'Відгуки',       desc: 'Керування фідбеком'  },
+  { href: '/dashboard/marketing',  icon: Sparkles,      label: 'Маркетинг',     desc: 'Сторіс та розсилки'   },
+  { href: '/dashboard/revenue',    icon: Wallet,         label: 'Дохід',         desc: 'Флеш-акції та ціни'   },
+  { href: '/dashboard/growth',     icon: Rocket,         label: 'Ріст',          desc: 'Лояльність, реферали' },
+  { href: '/dashboard/reviews',    icon: MessageSquare,  label: 'Відгуки',       desc: 'Керування фідбеком'   },
 ];
 
 const SYSTEM = [
-  { href: '/dashboard/billing',    icon: CreditCard,  label: 'Тариф'    },
-  { href: '/dashboard/studio',     icon: Building2,   label: 'Студія'   },
-  { href: '/dashboard/support',    icon: HelpCircle,  label: 'Підтримка'},
-  { href: '/dashboard/documents',  icon: Scale,       label: 'Документи'},
+  { href: '/dashboard/settings',   icon: Settings,   label: 'Налаштування' },
+  { href: '/dashboard/billing',    icon: CreditCard,  label: 'Тариф'        },
+  { href: '/dashboard/studio',     icon: Building2,   label: 'Студія'       },
+  { href: '/dashboard/support',    icon: HelpCircle,  label: 'Підтримка'    },
+  { href: '/dashboard/documents',  icon: Scale,       label: 'Документи'    },
 ];
 
 /* ─── Animations ─────────────────────────────────── */
@@ -85,6 +86,8 @@ function NavBar({
   onToggle: () => void;
 }) {
   const isSecondary = pathname.startsWith('/dashboard/') && !BAR_ITEMS.some(i => i.href === pathname);
+  const { profile } = useMasterContext();
+  const avatarUrl = profile?.avatar_url ?? null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[75] px-4 pb-safe pb-4 pointer-events-none">
@@ -100,52 +103,70 @@ function NavBar({
             ))}
           </div>
 
-          {/* Center FAB */}
-          <div className="relative -top-3 mx-2">
-            <motion.button
-              onClick={onToggle}
-              whileTap={{ scale: 0.90 }}
-              className={cn(
-                'w-[58px] h-[58px] rounded-full flex items-center justify-center transition-all duration-400 shadow-xl relative overflow-hidden',
-                isOpen
-                  ? 'bg-[var(--text-primary)]'
-                  : isSecondary
-                  ? 'bg-[var(--accent)]'
-                  : 'bg-[var(--accent)] shadow-xl'
-              )}
-            >
-              <AnimatePresence mode="popLayout">
-                {isOpen ? (
-                  <motion.div key="x" initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }}>
-                    <X size={24} style={{ color: 'var(--accent-on)' }} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="grid"
-                    initial={{ scale: 0, rotate: 90 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    exit={{ scale: 0 }}
-                    className="flex flex-col gap-[4px] items-center"
-                  >
-                    <div className="flex gap-[4px]">
-                      <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 90%, transparent)' }} />
-                      <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 90%, transparent)' }} />
-                    </div>
-                    <div className="flex gap-[4px]">
-                      <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 60%, transparent)' }} />
-                      <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 60%, transparent)' }} />
-                    </div>
-                  </motion.div>
+          {/* Center: Hub FAB */}
+          <div className="flex items-center flex-shrink-0">
+            <div className="relative -top-3">
+              <motion.button
+                onClick={onToggle}
+                whileTap={{ scale: 0.90 }}
+                className={cn(
+                  'w-[58px] h-[58px] rounded-full flex items-center justify-center transition-all duration-400 shadow-xl relative overflow-hidden',
+                  isOpen
+                    ? 'bg-[var(--text-primary)]'
+                    : isSecondary
+                    ? 'bg-[var(--accent)]'
+                    : 'bg-[var(--accent)] shadow-xl'
                 )}
-              </AnimatePresence>
-            </motion.button>
+              >
+                <AnimatePresence mode="popLayout">
+                  {isOpen ? (
+                    <motion.div key="x" initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }}>
+                      <X size={24} style={{ color: 'var(--accent-on)' }} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="grid"
+                      initial={{ scale: 0, rotate: 90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0 }}
+                      className="flex flex-col gap-[4px] items-center"
+                    >
+                      <div className="flex gap-[4px]">
+                        <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 90%, transparent)' }} />
+                        <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 90%, transparent)' }} />
+                      </div>
+                      <div className="flex gap-[4px]">
+                        <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 60%, transparent)' }} />
+                        <div className="w-[5px] h-[5px] rounded-full" style={{ background: 'color-mix(in srgb, var(--accent-on) 60%, transparent)' }} />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </div>
           </div>
 
-          {/* Right pair */}
+          {/* Right pair: Клієнти + Profile (rightmost) */}
           <div className="flex items-center gap-1 flex-1 justify-around">
-            {BAR_ITEMS.slice(2, 4).map(item => (
-              <NavItem key={item.href} {...item} pathname={pathname} pending={0} />
-            ))}
+            <NavItem href="/dashboard/clients" icon={Users} label="Клієнти" pathname={pathname} pending={0} />
+            <Link
+              href="/dashboard/settings"
+              aria-label="Профіль"
+              className="flex flex-col items-center gap-0.5 px-3 py-2 transition-colors duration-150 active:scale-90 text-[var(--text-tertiary)]"
+            >
+              <div className="relative">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="size-[22px] rounded-full object-cover" />
+                ) : (
+                  <User size={22} strokeWidth={2} />
+                )}
+              </div>
+              <span className="text-[10px] font-semibold leading-none opacity-40">Профіль</span>
+              <div
+                className="mt-0.5 rounded-full"
+                style={{ width: '3px', height: '3px', background: 'var(--accent)', opacity: 0 }}
+              />
+            </Link>
           </div>
         </motion.div>
       </div>
@@ -171,7 +192,7 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        'flex flex-col items-center gap-0.5 px-3 py-2 transition-all duration-300 active:scale-90',
+        'flex flex-col items-center gap-0.5 px-3 py-2 transition-colors duration-150 active:scale-90',
         isActive ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'
       )}
     >
@@ -187,7 +208,7 @@ function NavItem({
         {label}
       </span>
       <div
-        className="mt-0.5 rounded-full transition-all duration-300"
+        className="mt-0.5 rounded-full transition-[opacity,transform] duration-300"
         style={{
           width: '3px',
           height: '3px',
@@ -239,7 +260,7 @@ function OperationTile({
       <Link
         href={href}
         className={cn(
-          'flex items-center gap-3 px-4 py-3.5 rounded-[var(--card-radius)] border transition-all active:scale-95',
+          'flex items-center gap-3 px-4 py-3.5 rounded-[var(--card-radius)] border transition-colors duration-150 active:scale-95',
           isActive
             ? 'bg-[var(--accent)] border-[var(--accent)] text-[var(--accent-on)]'
             : 'bg-[var(--surface)] border-[var(--border-strong)] hover:border-[var(--accent)]'
@@ -289,7 +310,7 @@ function SystemPill({
     <Link
       href={href}
       className={cn(
-        'flex items-center gap-2 px-4 py-3 rounded-full border text-[12px] tracking-[0.07em] uppercase font-semibold transition-all active:scale-95',
+        'flex items-center gap-2 px-4 py-3 rounded-full border text-[12px] tracking-[0.07em] uppercase font-semibold transition-colors duration-150 active:scale-95',
         isActive
           ? 'bg-[var(--accent)] border-[var(--accent)] text-[var(--accent-on)]'
           : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
@@ -330,6 +351,16 @@ export function MobileHub() {
         isOpen={isOpen}
         onToggle={() => setIsOpen(v => !v)}
       />
+
+      {/* ── Floating notification bell — right side, above navbar ── */}
+      {!isOpen && (
+        <div
+          className="fixed right-4 z-[76] pointer-events-auto"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 80px)' }}
+        >
+          <NotificationsBell fab />
+        </div>
+      )}
 
       {/* ── Hub Overlay ── */}
       <AnimatePresence>
