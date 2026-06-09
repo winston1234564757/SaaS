@@ -186,12 +186,6 @@ export function BillingPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Header */}
-      <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-foreground mb-0.5">Тариф та оплата</h1>
-        <p className="text-sm text-muted-foreground/60">Керуйте підпискою та доступом до функцій</p>
-      </div>
-
       {/* Success banner */}
       <AnimatePresence>
         {showSuccess && (
@@ -232,257 +226,272 @@ export function BillingPage() {
         )}
       </AnimatePresence>
 
-      {/* Current plan */}
-      <div className="bento-card p-4">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Поточний тариф</p>
-        <div className="flex items-center gap-3">
-          {(() => {
-            const plan = PLANS.find(p => p.key === currentTier);
-            const PlanIcon = plan?.icon ?? Zap;
-            return (
-              <>
-                <div
-                  className="size-10 rounded-2xl flex items-center justify-center"
-                  style={{ background: `${plan?.color ?? '#789A99'}18` }}
-                >
-                  <PlanIcon size={18} style={{ color: plan?.color ?? '#789A99' }} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-foreground">
-                    {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
-                  </p>
-                  <p className="text-xs text-muted-foreground/60">
-                    {currentTier === 'starter'
-                      ? 'Безкоштовний план'
-                      : masterProfile?.subscription_expires_at
-                        ? `${subscription?.status === 'canceled' ? 'Закінчується' : 'Діє до'} ${new Date(masterProfile.subscription_expires_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })}`
-                        : 'Активна підписка'
-                    }
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1 ml-auto">
-                  <span
-                    className={cn(
-                      'text-[11px] font-bold px-2.5 py-1 rounded-full',
-                      (subscription?.status === 'canceled' || (currentTier !== 'starter' && !subscription)) && 'bg-destructive/15 text-destructive'
-                    )}
-                    style={
-                      (subscription?.status === 'canceled' || (currentTier !== 'starter' && !subscription))
-                        ? {}
-                        : { color: plan?.color, background: `${plan?.color}15` }
-                    }
-                  >
-                    {subscription?.status === 'canceled'
-                      ? 'Скасовано'
-                      : (currentTier !== 'starter' && !subscription)
-                        ? 'Автопродовження вимкнено'
-                        : 'Активний'}
-                  </span>
-                  {currentTier !== 'starter' && subscription?.status === 'active' && (
-                    <button type="button"
-                      onClick={() => setShowCancelModal(true)}
-                      className="text-[10px] font-medium text-muted-foreground/70 hover:text-destructive transition-colors underline underline-offset-2"
+      {/* Desktop two-column layout */}
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[300px_1fr] lg:gap-6 lg:items-start">
+
+        {/* Left sidebar: header + current plan + payment method */}
+        <div className="flex flex-col gap-4">
+          {/* Header */}
+          <div className="bento-card p-5">
+            <h1 className="heading-serif text-xl text-foreground mb-0.5">Тариф та оплата</h1>
+            <p className="text-sm text-muted-foreground/60">Керуйте підпискою та доступом до функцій</p>
+          </div>
+
+          {/* Current plan */}
+          <div className="bento-card p-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Поточний тариф</p>
+            <div className="flex items-center gap-3">
+              {(() => {
+                const plan = PLANS.find(p => p.key === currentTier);
+                const PlanIcon = plan?.icon ?? Zap;
+                return (
+                  <>
+                    <div
+                      className="size-10 rounded-2xl flex items-center justify-center"
+                      style={{ background: `${plan?.color ?? '#789A99'}18` }}
                     >
-                      Скасувати підписку
-                    </button>
-                  )}
-                  {currentTier !== 'starter' && !subscription && !isLoading && (
-                    <p className="text-[9px] text-muted-foreground/70 text-right max-w-[120px]">
-                      Картка не прив'язана, автоматичного списання не буде
-                    </p>
-                  )}
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* Payment provider toggle */}
-      <div className="bento-card p-4">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Спосіб оплати</p>
-        <div className="flex gap-2">
-          {([
-            { key: 'mono' as PaymentProvider, label: 'Monobank', logo: '🍋' },
-          ]).map(p => (
-            <button type="button"
-              key={p.key}
-              onClick={() => setProvider(p.key)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-sm font-medium transition-all ${
-                provider === p.key
-                  ? 'bg-primary/12 border-primary/40 text-primary/90'
-                  : 'bg-secondary/60 border-border text-muted-foreground hover:bg-secondary/80'
-              }`}
-            >
-              <span>{p.logo}</span>
-              {p.label}
-              {provider === p.key && <CreditCard size={13} className="text-primary" />}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Plans */}
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">Доступні плани</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {PLANS.map((plan, i) => {
-        const PlanIcon = plan.icon;
-        const isCurrent = plan.key === currentTier;
-        const isThisPaying = payingTier === plan.key && isLoading;
-        const isWip = 'wip' in plan && plan.wip === true;
-
-        return (
-          <motion.div
-            key={plan.key}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.07, type: 'spring' as const, stiffness: 280, damping: 24 }}
-            className="bento-card p-5 relative overflow-hidden flex flex-col"
-          >
-            {/* Badge */}
-            {isWip && !isCurrent ? (
-              <div
-                className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={{ color: plan.color, background: `${plan.color}18` }}
-              >
-                В розробці
-              </div>
-            ) : ('popular' in plan && plan.popular) && !isCurrent ? (
-              <div
-                className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={{ color: plan.color, background: `${plan.color}18` }}
-              >
-                Популярний
-              </div>
-            ) : isCurrent ? (
-              <div
-                className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={{ color: plan.color, background: `${plan.color}18` }}
-              >
-                Ваш план
-              </div>
-            ) : null}
-
-            {/* Plan header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div
-                className="size-10 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ background: `${plan.color}18` }}
-              >
-                <PlanIcon size={18} style={{ color: plan.color }} />
-              </div>
-              <div>
-                <p className="text-base font-bold text-foreground">{plan.name}</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-bold" style={{ color: plan.color }}>
-                    {plan.price === '0' ? 'Безкоштовно' : `${plan.price} ₴`}
-                  </span>
-                  {plan.price !== '0' && (
-                    <span className="text-xs text-muted-foreground/60">{plan.period}</span>
-                  )}
-                </div>
-              </div>
+                      <PlanIcon size={18} style={{ color: plan?.color ?? '#789A99' }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-foreground">
+                        {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60">
+                        {currentTier === 'starter'
+                          ? 'Безкоштовний план'
+                          : masterProfile?.subscription_expires_at
+                            ? `${subscription?.status === 'canceled' ? 'Закінчується' : 'Діє до'} ${new Date(masterProfile.subscription_expires_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })}`
+                            : 'Активна підписка'
+                        }
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 ml-auto">
+                      <span
+                        className={cn(
+                          'text-[11px] font-bold px-2.5 py-1 rounded-full',
+                          (subscription?.status === 'canceled' || (currentTier !== 'starter' && !subscription)) && 'bg-destructive/15 text-destructive'
+                        )}
+                        style={
+                          (subscription?.status === 'canceled' || (currentTier !== 'starter' && !subscription))
+                            ? {}
+                            : { color: plan?.color, background: `${plan?.color}15` }
+                        }
+                      >
+                        {subscription?.status === 'canceled'
+                          ? 'Скасовано'
+                          : (currentTier !== 'starter' && !subscription)
+                            ? 'Автопродовження вимкнено'
+                            : 'Активний'}
+                      </span>
+                      {currentTier !== 'starter' && subscription?.status === 'active' && (
+                        <button type="button"
+                          onClick={() => setShowCancelModal(true)}
+                          className="text-[10px] font-medium text-muted-foreground/70 hover:text-destructive transition-colors underline underline-offset-2"
+                        >
+                          Скасувати підписку
+                        </button>
+                      )}
+                      {currentTier !== 'starter' && !subscription && !isLoading && (
+                        <p className="text-[9px] text-muted-foreground/70 text-right max-w-[120px]">
+                          Картка не прив'язана, автоматичного списання не буде
+                        </p>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
+          </div>
 
-            {/* Features */}
-            <div className="flex flex-col gap-2 mb-4 flex-1">
-              {plan.features.map(f => (
-                <div key={f} className="flex items-start gap-2">
-                  <Check size={13} className="flex-shrink-0 mt-0.5" style={{ color: plan.color }} />
-                  <span className="text-xs text-muted-foreground">{f}</span>
-                </div>
+          {/* Payment provider toggle */}
+          <div className="bento-card p-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Спосіб оплати</p>
+            <div className="flex gap-2">
+              {([
+                { key: 'mono' as PaymentProvider, label: 'Monobank', logo: '🍋' },
+              ]).map(p => (
+                <button type="button"
+                  key={p.key}
+                  onClick={() => setProvider(p.key)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-sm font-medium transition-all ${
+                    provider === p.key
+                      ? 'bg-primary/12 border-primary/40 text-primary/90'
+                      : 'bg-secondary/60 border-border text-muted-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  <span>{p.logo}</span>
+                  {p.label}
+                  {provider === p.key && <CreditCard size={13} className="text-primary" />}
+                </button>
               ))}
             </div>
-
-            {/* CTA */}
-            {isCurrent ? (
-              <div
-                className="w-full py-3 rounded-2xl text-center text-sm font-semibold"
-                style={{ background: `${plan.color}12`, color: plan.color }}
-              >
-                Поточний план
-              </div>
-            ) : isWip ? (
-              <button type="button"
-                onClick={() => setShowBetaSheet(true)}
-                className="w-full py-3 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                style={{ background: plan.color, boxShadow: `0 4px 16px ${plan.color}40` }}
-              >
-                Хочу в бету
-              </button>
-            ) : currentTier !== 'starter' && plan.key === 'starter' ? (
-              <button
-                type="button"
-                className="w-full py-3 rounded-2xl text-sm font-semibold bg-secondary/40 border border-border text-muted-foreground/60 cursor-not-allowed transition-all"
-                disabled
-              >
-                Перехід недоступний
-              </button>
-            ) : (
-              <button type="button"
-                disabled={isLoading}
-                onClick={() => handleUpgrade(plan.key)}
-                className="w-full py-3 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
-                style={{ background: plan.color, boxShadow: `0 4px 16px ${plan.color}40` }}
-              >
-                {isThisPaying ? (
-                  <><Loader2 size={15} className="animate-spin" /> Перенаправлення...</>
-                ) : (
-                  `Перейти на ${plan.name}`
-                )}
-              </button>
-            )}
-          </motion.div>
-        );
-      })}
-      </div>
-
-      {/* Referral promo */}
-      <div className="bento-card p-4">
-        <div className="flex items-start gap-3">
-          <div className="size-10 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
-            <Gift size={20} className="text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground">Запроси колегу — отримай місяць безкоштовно</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">За кожного зареєстрованого майстра за твоїм посиланням — 1 місяць Pro в подарунок</p>
-            <button type="button"
-              className="mt-2 text-xs font-semibold text-primary hover:text-primary/90 transition-colors active:scale-[0.95] transition-all"
-              onClick={() => router.push('/dashboard/referral')}
-            >
-              Перейти до реферальної програми →
-            </button>
           </div>
         </div>
-      </div>
 
-      {/* Payment info + legal consent */}
-      <div className="flex flex-col items-center gap-1.5 px-4">
-        <p className="text-center text-xs text-muted-foreground/60">
-          Оплата через Monobank Acquiring — захищено SSL. Підписка активується автоматично.
-        </p>
-        <p className="text-center text-xs text-muted-foreground/60">
-          Здійснюючи оплату, ви погоджуєтесь з умовами{' '}
-          <a
-            href="/legal/public-offer"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            Публічної оферти
-          </a>{' '}
-          та{' '}
-          <a
-            href="/legal/refund-policy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            Правил повернення коштів
-          </a>
-          .
-        </p>
+        {/* Right content: plans + referral + legal */}
+        <div className="flex flex-col gap-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">Доступні плани</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {PLANS.map((plan, i) => {
+            const PlanIcon = plan.icon;
+            const isCurrent = plan.key === currentTier;
+            const isThisPaying = payingTier === plan.key && isLoading;
+            const isWip = 'wip' in plan && plan.wip === true;
+
+            return (
+              <motion.div
+                key={plan.key}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07, type: 'spring' as const, stiffness: 280, damping: 24 }}
+                className="bento-card p-5 relative overflow-hidden flex flex-col"
+              >
+                {/* Badge */}
+                {isWip && !isCurrent ? (
+                  <div
+                    className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ color: plan.color, background: `${plan.color}18` }}
+                  >
+                    В розробці
+                  </div>
+                ) : ('popular' in plan && plan.popular) && !isCurrent ? (
+                  <div
+                    className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ color: plan.color, background: `${plan.color}18` }}
+                  >
+                    Популярний
+                  </div>
+                ) : isCurrent ? (
+                  <div
+                    className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ color: plan.color, background: `${plan.color}18` }}
+                  >
+                    Ваш план
+                  </div>
+                ) : null}
+
+                {/* Plan header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className="size-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${plan.color}18` }}
+                  >
+                    <PlanIcon size={18} style={{ color: plan.color }} />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-foreground">{plan.name}</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg font-bold" style={{ color: plan.color }}>
+                        {plan.price === '0' ? 'Безкоштовно' : `${plan.price} ₴`}
+                      </span>
+                      {plan.price !== '0' && (
+                        <span className="text-xs text-muted-foreground/60">{plan.period}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="flex flex-col gap-2 mb-4 flex-1">
+                  {plan.features.map(f => (
+                    <div key={f} className="flex items-start gap-2">
+                      <Check size={13} className="flex-shrink-0 mt-0.5" style={{ color: plan.color }} />
+                      <span className="text-xs text-muted-foreground">{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                {isCurrent ? (
+                  <div
+                    className="w-full py-3 rounded-2xl text-center text-sm font-semibold"
+                    style={{ background: `${plan.color}12`, color: plan.color }}
+                  >
+                    Поточний план
+                  </div>
+                ) : isWip ? (
+                  <button type="button"
+                    onClick={() => setShowBetaSheet(true)}
+                    className="w-full py-3 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    style={{ background: plan.color, boxShadow: `0 4px 16px ${plan.color}40` }}
+                  >
+                    Хочу в бету
+                  </button>
+                ) : currentTier !== 'starter' && plan.key === 'starter' ? (
+                  <button
+                    type="button"
+                    className="w-full py-3 rounded-2xl text-sm font-semibold bg-secondary/40 border border-border text-muted-foreground/60 cursor-not-allowed transition-all"
+                    disabled
+                  >
+                    Перехід недоступний
+                  </button>
+                ) : (
+                  <button type="button"
+                    disabled={isLoading}
+                    onClick={() => handleUpgrade(plan.key)}
+                    className="w-full py-3 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
+                    style={{ background: plan.color, boxShadow: `0 4px 16px ${plan.color}40` }}
+                  >
+                    {isThisPaying ? (
+                      <><Loader2 size={15} className="animate-spin" /> Перенаправлення...</>
+                    ) : (
+                      `Перейти на ${plan.name}`
+                    )}
+                  </button>
+                )}
+              </motion.div>
+            );
+          })}
+          </div>
+
+          {/* Referral promo */}
+          <div className="bento-card p-4">
+            <div className="flex items-start gap-3">
+              <div className="size-10 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+                <Gift size={20} className="text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Запроси колегу — отримай місяць безкоштовно</p>
+                <p className="text-xs text-muted-foreground/60 mt-0.5">За кожного зареєстрованого майстра за твоїм посиланням — 1 місяць Pro в подарунок</p>
+                <button type="button"
+                  className="mt-2 text-xs font-semibold text-primary hover:text-primary/90 transition-colors active:scale-[0.95] transition-all"
+                  onClick={() => router.push('/dashboard/referral')}
+                >
+                  Перейти до реферальної програми →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment info + legal consent */}
+          <div className="flex flex-col items-center gap-1.5 px-4">
+            <p className="text-center text-xs text-muted-foreground/60">
+              Оплата через Monobank Acquiring — захищено SSL. Підписка активується автоматично.
+            </p>
+            <p className="text-center text-xs text-muted-foreground/60">
+              Здійснюючи оплату, ви погоджуєтесь з умовами{' '}
+              <a
+                href="/legal/public-offer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Публічної оферти
+              </a>{' '}
+              та{' '}
+              <a
+                href="/legal/refund-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Правил повернення коштів
+              </a>
+              .
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Cancel subscription modal */}

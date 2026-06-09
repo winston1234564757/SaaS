@@ -840,7 +840,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
               {/* Tab 2: GROWTH */}
               {activeTab === 'growth' && isPro && (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
                   {/* BentoSecondary Section (Smart Pricing, Goals, LTV Concentration, Pairs) */}
                   <BentoSecondary
                     isPro={isPro}
@@ -870,7 +870,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
                   {/* Cohort Heatmap Card */}
                   {extras?.cohort_matrix && extras.cohort_matrix.length > 0 && (
-                    <BentoCell className="p-5">
+                    <BentoCell className="p-5 lg:col-span-2">
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Когортний аналіз повернення</p>
