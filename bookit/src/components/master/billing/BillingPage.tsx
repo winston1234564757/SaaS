@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Crown, Building2, Zap, Loader2, X, PartyPopper, CreditCard, Gift } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
-import { createMonoInvoice, recoverCardToken, cancelSubscription } from '@/app/(master)/dashboard/billing/actions';
+import { createMonoInvoice, recoverCardToken, cancelSubscription, submitBetaRequest } from '@/app/(master)/dashboard/billing/actions';
 import { Sheet } from '@/components/ui/Sheet';
 import { cn } from '@/lib/utils/cn';
 
@@ -55,6 +55,7 @@ const PLANS = [
     period: '/ майстер/місяць',
     icon: Building2,
     color: '#5C9E7A',
+    wip: true,
     features: [
       'Все з Pro для кожного майстра',
       'Мін. 2 майстри',
@@ -63,10 +64,16 @@ const PLANS = [
       'Кастомний брендинг',
     ],
   },
-];
+] as const;
+
+const STUDIO_SIZES = [
+  { key: '1',   label: '1 майстер' },
+  { key: '2-5', label: '2–5 майстрів' },
+  { key: '5+',  label: '5+ майстрів' },
+] as const;
 
 export function BillingPage() {
-  const { masterProfile, subscription, refresh } = useMasterContext();
+  const { masterProfile, subscription, refresh, profile } = useMasterContext();
   const router = useRouter();
   const currentTier = (masterProfile?.subscription_tier ?? 'starter') as Tier;
   const searchParams = useSearchParams();
@@ -79,7 +86,14 @@ export function BillingPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
 
-  // Detect return from payment or intended plan from landing
+  // Beta request form state
+  const [showBetaSheet, setShowBetaSheet] = useState(false);
+  const [betaName, setBetaName] = useState('');
+  const [betaContact, setBetaContact] = useState('');
+  const [betaSize, setBetaSize] = useState<'1' | '2-5' | '5+'>('2-5');
+  const [betaSubmitting, setBetaSubmitting] = useState(false);
+  const [betaSubmitted, setBetaSubmitted] = useState(false);
+
   useEffect(() => {
     if (searchParams.get('paid') === '1') {
       setShowSuccess(true);
@@ -92,19 +106,22 @@ export function BillingPage() {
     }
   }, [searchParams]);
 
-  // Silently recover card token from Mono Wallet API if master_subscriptions is empty
-  // (covers payments made before walletData.cardToken fix)
   useEffect(() => {
     if (currentTier !== 'starter') {
       recoverCardToken().then(result => {
         if ('error' in result) {
           console.warn('[BillingPage] recoverCardToken error:', result.error);
         } else if ('ok' in result && result.found) {
-          refresh(); // Update context with newly found subscription
+          refresh();
         }
       });
     }
   }, [currentTier, refresh]);
+
+  // Pre-fill contact from profile phone
+  useEffect(() => {
+    if (profile?.phone) setBetaContact(prev => prev || profile.phone!);
+  }, [profile?.phone]);
 
   function handleUpgrade(tier: Tier) {
     setError(null);
@@ -124,7 +141,29 @@ export function BillingPage() {
       }
     });
   }
-  
+
+  async function handleBetaSubmit() {
+    if (!betaName.trim() || !betaContact.trim()) return;
+    setBetaSubmitting(true);
+    setError(null);
+    try {
+      const result = await submitBetaRequest({
+        name: betaName.trim(),
+        contact: betaContact.trim(),
+        studio_size: betaSize,
+      });
+      if ('error' in result) {
+        setError(result.error);
+      } else {
+        setBetaSubmitted(true);
+      }
+    } catch {
+      setError('Помилка надсилання. Спробуйте ще раз.');
+    } finally {
+      setBetaSubmitting(false);
+    }
+  }
+
   async function handleCancelSubscription() {
     setIsCanceling(true);
     setError(null);
@@ -136,7 +175,7 @@ export function BillingPage() {
         await refresh();
         setShowCancelModal(false);
       }
-    } catch (err) {
+    } catch {
       setError('Не вдалося скасувати підписку. Спробуйте пізніше.');
     } finally {
       setIsCanceling(false);
@@ -233,14 +272,14 @@ export function BillingPage() {
                         : { color: plan?.color, background: `${plan?.color}15` }
                     }
                   >
-                    {subscription?.status === 'canceled' 
-                      ? 'Скасовано' 
-                      : (currentTier !== 'starter' && !subscription) 
-                        ? 'Автопродовження вимкнено' 
+                    {subscription?.status === 'canceled'
+                      ? 'Скасовано'
+                      : (currentTier !== 'starter' && !subscription)
+                        ? 'Автопродовження вимкнено'
                         : 'Активний'}
                   </span>
                   {currentTier !== 'starter' && subscription?.status === 'active' && (
-                    <button type="button" 
+                    <button type="button"
                       onClick={() => setShowCancelModal(true)}
                       className="text-[10px] font-medium text-muted-foreground/70 hover:text-destructive transition-colors underline underline-offset-2"
                     >
@@ -286,10 +325,12 @@ export function BillingPage() {
       {/* Plans */}
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">Доступні плани</p>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {PLANS.map((plan, i) => {
         const PlanIcon = plan.icon;
         const isCurrent = plan.key === currentTier;
         const isThisPaying = payingTier === plan.key && isLoading;
+        const isWip = 'wip' in plan && plan.wip === true;
 
         return (
           <motion.div
@@ -299,22 +340,29 @@ export function BillingPage() {
             transition={{ delay: i * 0.07, type: 'spring' as const, stiffness: 280, damping: 24 }}
             className="bento-card p-5 relative overflow-hidden"
           >
-            {plan.popular && !isCurrent && (
+            {/* Badge */}
+            {isWip && !isCurrent ? (
+              <div
+                className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ color: plan.color, background: `${plan.color}18` }}
+              >
+                В розробці
+              </div>
+            ) : ('popular' in plan && plan.popular) && !isCurrent ? (
               <div
                 className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{ color: plan.color, background: `${plan.color}18` }}
               >
                 Популярний
               </div>
-            )}
-            {isCurrent && (
+            ) : isCurrent ? (
               <div
                 className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{ color: plan.color, background: `${plan.color}18` }}
               >
                 Ваш план
               </div>
-            )}
+            ) : null}
 
             {/* Plan header */}
             <div className="flex items-center gap-3 mb-4">
@@ -347,27 +395,6 @@ export function BillingPage() {
               ))}
             </div>
 
-            {/* Studio breakeven hint */}
-            {plan.key === 'studio' && (
-              <div className="mb-4 px-3 py-2.5 rounded-2xl bg-success/8 border border-success/20">
-                <p className="text-[11px] font-semibold text-foreground mb-1.5">Коли Studio вигідніше Pro?</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 text-center">
-                    <p className="text-[10px] text-muted-foreground/60">2 майстри</p>
-                    <p className="text-xs font-bold text-success">598 ₴/міс</p>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground/60">vs</div>
-                  <div className="flex-1 text-center">
-                    <p className="text-[10px] text-muted-foreground/60">2 × Pro</p>
-                    <p className="text-xs font-bold text-warning">1400 ₴/міс</p>
-                  </div>
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
-                  Якщо ти один — <span className="font-semibold">Pro за 700 ₴</span> вигідніше
-                </p>
-              </div>
-            )}
-
             {/* CTA */}
             {isCurrent ? (
               <div
@@ -376,6 +403,14 @@ export function BillingPage() {
               >
                 Поточний план
               </div>
+            ) : isWip ? (
+              <button type="button"
+                onClick={() => setShowBetaSheet(true)}
+                className="w-full py-3 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                style={{ background: plan.color, boxShadow: `0 4px 16px ${plan.color}40` }}
+              >
+                Хочу в бету
+              </button>
             ) : currentTier !== 'starter' && plan.key === 'starter' ? (
               <button
                 type="button"
@@ -401,6 +436,7 @@ export function BillingPage() {
           </motion.div>
         );
       })}
+      </div>
 
       {/* Referral promo */}
       <div className="bento-card p-4">
@@ -449,6 +485,7 @@ export function BillingPage() {
         </p>
       </div>
 
+      {/* Cancel subscription modal */}
       <Sheet
         open={showCancelModal}
         onOpenChange={(v) => !v && !isCanceling && setShowCancelModal(false)}
@@ -458,7 +495,7 @@ export function BillingPage() {
           <p className="text-sm text-muted-foreground leading-relaxed mb-8">
             Ви зможете користуватися перевагами тарифу <span className="font-semibold text-foreground">{currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}</span> до кінця поточного періоду, але наступних автоматичних списань не буде.
           </p>
-          
+
           <div className="flex flex-col gap-3">
             <button type="button"
               disabled={isCanceling}
@@ -479,6 +516,104 @@ export function BillingPage() {
               Залишити як є
             </button>
           </div>
+        </div>
+      </Sheet>
+
+      {/* Beta request sheet */}
+      <Sheet
+        open={showBetaSheet}
+        onOpenChange={(v) => { if (!v && !betaSubmitting) { setShowBetaSheet(false); if (betaSubmitted) setBetaSubmitted(false); } }}
+        title="Заявка на Studio Beta"
+      >
+        <div className="p-6">
+          {betaSubmitted ? (
+            <div className="flex flex-col items-center text-center gap-4 py-4">
+              <div className="size-16 rounded-3xl bg-success/15 flex items-center justify-center">
+                <Check size={28} className="text-success" />
+              </div>
+              <div>
+                <p className="text-base font-bold text-foreground">Заявку отримано</p>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                  Ми повідомимо вас, коли Studio відкриється для бета-тесту
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowBetaSheet(false); setBetaSubmitted(false); }}
+                className="w-full py-3.5 rounded-2xl bg-secondary text-muted-foreground text-sm font-semibold active:scale-[0.95] transition-all"
+              >
+                Закрити
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Studio ще в розробці — залиште контакт, і ми повідомимо вас першими, як тільки відкриємо бета-тест.
+              </p>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Ім'я або назва студії
+                </label>
+                <input
+                  type="text"
+                  value={betaName}
+                  onChange={(e) => setBetaName(e.target.value)}
+                  placeholder="Студія Краси або Марія Іваненко"
+                  className="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Телефон
+                </label>
+                <input
+                  type="tel"
+                  value={betaContact}
+                  onChange={(e) => setBetaContact(e.target.value)}
+                  placeholder="+380 XX XXX XXXX"
+                  className="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Майстрів у студії
+                </label>
+                <div className="flex gap-2">
+                  {STUDIO_SIZES.map(({ key, label }) => (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => setBetaSize(key)}
+                      className={`flex-1 py-2.5 rounded-2xl border text-xs font-semibold transition-all ${
+                        betaSize === key
+                          ? 'bg-primary/12 border-primary/40 text-primary/90'
+                          : 'bg-secondary/60 border-border text-muted-foreground hover:bg-secondary/80'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={!betaName.trim() || !betaContact.trim() || betaSubmitting}
+                onClick={handleBetaSubmit}
+                className="w-full py-3.5 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ background: '#5C9E7A', boxShadow: '0 4px 16px rgba(92,158,122,0.35)' }}
+              >
+                {betaSubmitting ? (
+                  <><Loader2 size={15} className="animate-spin" /> Надсилання...</>
+                ) : (
+                  'Надіслати заявку'
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </Sheet>
     </div>
