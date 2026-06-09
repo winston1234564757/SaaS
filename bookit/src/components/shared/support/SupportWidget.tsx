@@ -163,6 +163,9 @@ export function SupportWidget() {
     }
   };
 
+  const HIDE_PATHS = ['/dashboard/support/chat', '/my/support/chat'];
+  if (HIDE_PATHS.some(p => pathname.startsWith(p))) return null;
+
   return (
     <>
       {/* Floating Action Button */}
@@ -176,7 +179,7 @@ export function SupportWidget() {
         whileHover={{ scale: 1.06, y: -2 }}
         whileTap={{ scale: 0.95 }}
         transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
-        className="fixed bottom-[92px] right-4 lg:bottom-6 lg:right-6 z-[99] flex size-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border-strong)] backdrop-blur-xl text-[var(--text-primary)] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer relative overflow-hidden group active:scale-[0.95]"
+        className="fixed bottom-[max(calc(env(safe-area-inset-bottom)_+_132px),144px)] right-4 lg:bottom-8 lg:right-8 z-[99] flex size-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border-strong)] backdrop-blur-xl text-[var(--text-primary)] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer relative overflow-hidden group active:scale-[0.95]"
       >
         {/* Ambient light pulse effect */}
         <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500/5 via-[var(--accent-light)] to-emerald-500/5 opacity-60 animate-pulse pointer-events-none" />

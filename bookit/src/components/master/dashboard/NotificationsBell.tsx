@@ -99,19 +99,19 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
           />
         </button>
       ) : fab ? (
-        <button
-          type="button"
-          onClick={handleOpen}
-          className="relative size-11 flex items-center justify-center rounded-full active:scale-[0.92] transition-transform duration-150"
-          style={{
-            background: 'var(--surface)',
-            border: '0.5px solid var(--border-strong)',
-            color: unreadCount > 0 ? 'var(--accent)' : 'var(--text-tertiary)',
-            boxShadow: '0 4px 20px color-mix(in srgb, var(--text-primary) 8%, transparent)',
-          }}
-        >
-          {bellIcon}
-          {unreadCount > 0 && (
+        unreadCount === 0 ? null : (
+          <button
+            type="button"
+            onClick={handleOpen}
+            className="relative size-11 flex items-center justify-center rounded-full active:scale-[0.92] transition-transform duration-150"
+            style={{
+              background: 'var(--surface)',
+              border: '0.5px solid var(--border-strong)',
+              color: 'var(--accent)',
+              boxShadow: '0 4px 20px color-mix(in srgb, var(--text-primary) 8%, transparent)',
+            }}
+          >
+            {bellIcon}
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -119,8 +119,8 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </motion.span>
-          )}
-        </button>
+          </button>
+        )
       ) : (
         <button
           type="button"
