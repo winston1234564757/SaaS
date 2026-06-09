@@ -2,9 +2,9 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
-import { TrendingUp, Users, Clock, Calendar } from 'lucide-react';
+import { TrendingUp, Users, Calendar } from 'lucide-react';
 import { type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { cn } from '@/lib/utils/cn';
@@ -18,20 +18,21 @@ interface Props {
 export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
   const dayStats = useMemo(() => {
     return days.map(day => {
-      const dateStr = day.toISOString().split('T')[0];
+      // Local date parts to avoid UTC drift in UTC+ timezones
+      const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
       const dayBookings = bookings.filter(b => b.date === dateStr && b.status !== 'cancelled');
-      
+
       const revenue = dayBookings.reduce((acc, b) => acc + b.total_price, 0);
       const count = dayBookings.length;
-      
+
       // Assume 8 hours work day = 480 mins
-      const totalWorkMins = 480; 
+      const totalWorkMins = 480;
       const occupiedMins = dayBookings.reduce((acc, b) => {
         const start = b.start_time.split(':').map(Number);
         const end = b.end_time.split(':').map(Number);
         return acc + ((end[0] * 60 + end[1]) - (start[0] * 60 + start[1]));
       }, 0);
-      
+
       const occupancy = Math.min(Math.round((occupiedMins / totalWorkMins) * 100), 100);
 
       return {
@@ -54,7 +55,7 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.03, type: 'spring', stiffness: 260, damping: 28 }}
           onClick={() => onDayClick(stat.date)}
-          className="p-5 lg:p-7 flex flex-col gap-6 lg:gap-8 text-left group transition-all active:scale-[0.98] border border-border-strong/40 rounded-[var(--card-radius)] bg-[var(--surface)] lg:bg-secondary/10 lg:shadow-none lg:border-border/30 hover:border-primary/40 hover:translate-y-[-2px] lg:hover:bg-secondary/20"
+          className="p-5 lg:p-7 flex flex-col gap-6 lg:gap-8 text-left group transition-all active:scale-[0.98] border border-border/30 rounded-[var(--card-radius)] bg-[var(--surface)] lg:bg-secondary/10 lg:shadow-none hover:border-primary/40 hover:translate-y-[-2px] lg:hover:bg-secondary/20"
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
@@ -79,12 +80,12 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
               <span>{stat.occupancy}%</span>
             </div>
             <div className="h-1.5 w-full bg-muted/10 rounded-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${stat.occupancy}%` }}
                 className={cn(
                   "h-full rounded-full transition-colors",
-                  stat.occupancy > 80 ? "bg-error" : stat.occupancy > 50 ? "bg-warning" : "bg-success"
+                  stat.occupancy > 85 ? "bg-success" : stat.occupancy > 55 ? "bg-warning" : "bg-error"
                 )}
               />
             </div>
@@ -109,9 +110,9 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
 
           {stat.bookings.length > 0 && (
             <div className="mt-2 pt-3 border-t border-muted/5 flex -space-x-2 overflow-hidden">
-              {stat.bookings.slice(0, 4).map((b, j) => (
-                <div 
-                  key={b.id} 
+              {stat.bookings.slice(0, 4).map((b) => (
+                <div
+                  key={b.id}
                   className="size-7 rounded-full bg-white border-2 border-peach flex items-center justify-center text-[10px] font-bold text-primary shadow-sm"
                   title={b.client_name}
                 >

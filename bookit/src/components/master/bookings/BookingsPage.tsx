@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  X,
   Plus,
   LayoutList,
   Clock,
@@ -44,6 +45,10 @@ type ViewMode = 'list' | 'timeline' | 'focus';
 type TimeRange = 'day' | 'week' | 'month';
 
 const SPRING = { type: 'spring' as const, duration: 0.35, bounce: 0 };
+
+// Uses local date parts to avoid UTC drift in UTC+ timezones
+const toLocalDateStr = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 export function BookingsPage() {
   const router = useRouter();
@@ -101,7 +106,7 @@ export function BookingsPage() {
     } else if (timeRange === 'month') {
       d.setDate(1);
     }
-    return d.toISOString().split('T')[0];
+    return toLocalDateStr(d);
   }, [anchor, timeRange]);
 
   const dateTo = useMemo(() => {
@@ -113,7 +118,7 @@ export function BookingsPage() {
       d.setMonth(d.getMonth() + 1);
       d.setDate(0);
     }
-    return d.toISOString().split('T')[0];
+    return toLocalDateStr(d);
   }, [anchor, timeRange]);
 
   const { bookings, stats, isLoading } = useBookingsDashboardLogic(dateFrom, dateTo);
@@ -139,7 +144,7 @@ export function BookingsPage() {
 
   const handleOpportunityAction = (action: 'booking' | 'flash' | 'story') => {
     setOpportunityOpen(false);
-    const dateStr = anchor.toISOString().split('T')[0];
+    const dateStr = toLocalDateStr(anchor);
     if (action === 'booking') {
       setPreselectedDate(dateStr);
       setPreselectedTime(opportunityTime);
@@ -162,8 +167,8 @@ export function BookingsPage() {
     const d = new Date(anchor);
     if (timeRange === 'day') d.setDate(d.getDate() + dir);
     else if (timeRange === 'week') d.setDate(d.getDate() + dir * 7);
-    else d.setMonth(d.getMonth() + dir);
-    setUrl({ date: d.toISOString().split('T')[0] });
+    else { d.setDate(1); d.setMonth(d.getMonth() + dir); }
+    setUrl({ date: toLocalDateStr(d) });
   };
 
   const dayWorkHours = useMemo(() => {
@@ -195,13 +200,13 @@ export function BookingsPage() {
   const trLabelsMobile: Record<TimeRange, string> = { day: 'День', week: 'Тиж', month: 'Міс' };
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-10 pb-32">
+    <div className="flex flex-col gap-6 lg:gap-10 pb-32 [overflow-x:clip]">
       {/* 1. Header & Quick Switcher */}
       <div className="flex flex-col gap-6 lg:gap-8">
         <div className="flex items-end justify-between">
           <div className="flex flex-col">
             <h1
-              className="text-[60px] lg:text-[100px] text-foreground font-display transition-all duration-500"
+              className="text-[60px] lg:text-[100px] text-foreground font-display"
               style={{
                 fontFamily: 'var(--font-great-vibes, cursive)',
                 fontWeight: 400,
@@ -219,7 +224,7 @@ export function BookingsPage() {
             <button
               type="button"
               onClick={() => setFormOpen(true)}
-              className="group relative flex items-center gap-2 px-5 py-3 rounded-[20px] bg-foreground text-background font-bold text-sm shadow-xl shadow-black/10 transition-all hover:scale-105 active:scale-[0.95] cursor-pointer overflow-hidden"
+              className="group relative flex items-center gap-2 px-5 py-3 rounded-[20px] bg-foreground text-background font-bold text-sm shadow-xl shadow-black/10 transition-colors hover:scale-105 active:scale-[0.95] cursor-pointer overflow-hidden"
             >
               <div className="absolute inset-0 bg-background/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <Plus size={18} className="relative z-10" />
@@ -233,39 +238,34 @@ export function BookingsPage() {
       </div>
 
       {/* 2. Controls — Mobile sticky */}
-      <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pb-4 mb-2 -mx-4 px-4 pt-2">
+      <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 bg-background/60 backdrop-blur-2xl border-b border-border/40 pb-4 mb-2 -mx-4 px-4 pt-2">
         <div className="flex flex-col gap-3">
 
           {/* Top row: Range + View + Search */}
           <div className="flex items-center justify-between gap-2">
 
             {/* Time Range Switcher (mobile) */}
-            <div className="relative flex bg-secondary/30 border border-border p-1 rounded-xl">
+            <div className="flex bg-secondary/30 border border-border p-1 rounded-xl">
               {(['day', 'week', 'month'] as const).map(r => (
                 <button
                   key={r}
                   type="button"
                   aria-pressed={timeRange === r}
                   onClick={() => setUrl({ range: r })}
-                  className="relative px-3 min-h-[44px] flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-wider active:scale-[0.88] cursor-pointer z-10"
+                  className={`px-3 min-h-[44px] flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-wider active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
+                    timeRange === r
+                      ? 'bg-foreground text-background shadow-sm'
+                      : 'text-muted-foreground/60'
+                  }`}
                 >
-                  <span className={`relative z-10 transition-colors ${timeRange === r ? 'text-background' : 'text-muted-foreground/60'}`}>
-                    {trLabels[r]}
-                  </span>
-                  {timeRange === r && (
-                    <motion.div
-                      layoutId="mobile-tr-indicator"
-                      className="absolute inset-0 rounded-lg bg-foreground shadow-sm"
-                      transition={SPRING}
-                    />
-                  )}
+                  {trLabels[r]}
                 </button>
               ))}
             </div>
 
             {/* View Switcher + Search Toggle */}
             <div className="flex items-center gap-1.5 flex-1 justify-end">
-              <div className="relative flex p-1 rounded-xl bg-secondary/30 border border-border backdrop-blur-sm">
+              <div className="flex p-1 rounded-xl bg-secondary/30 border border-border backdrop-blur-sm">
                 {(
                   [
                     { id: 'list'     as const, icon: <LayoutList size={14} />, label: 'Список' },
@@ -279,34 +279,27 @@ export function BookingsPage() {
                     aria-pressed={view === m.id}
                     aria-label={m.label}
                     onClick={() => setUrl({ view: m.id })}
-                    className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:scale-[0.88] cursor-pointer z-10"
+                    className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
+                      view === m.id ? 'bg-secondary text-primary shadow-sm' : 'text-muted-foreground/60'
+                    }`}
                   >
-                    <span className={`relative z-10 transition-colors ${view === m.id ? 'text-primary' : 'text-muted-foreground/60'}`}>
-                      {m.icon}
-                    </span>
-                    {view === m.id && (
-                      <motion.div
-                        layoutId="mobile-view-indicator"
-                        className="absolute inset-0 rounded-lg bg-secondary shadow-sm"
-                        transition={SPRING}
-                      />
-                    )}
+                    {m.icon}
                   </button>
                 ))}
               </div>
 
               <button
                 type="button"
-                aria-label="Пошук клієнта"
+                aria-label={searchOpen ? 'Закрити пошук' : 'Пошук клієнта'}
                 aria-expanded={searchOpen}
                 onClick={() => setSearchOpen(!searchOpen)}
-                className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl border transition-all active:scale-[0.88] cursor-pointer ${
+                className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl border transition-colors duration-150 active:scale-[0.88] cursor-pointer ${
                   searchOpen
                     ? 'bg-primary/10 border-primary/20 text-primary'
                     : 'bg-secondary/30 border-border text-muted-foreground'
                 }`}
               >
-                <Search size={14} />
+                {searchOpen ? <X size={14} /> : <Search size={14} />}
               </button>
             </div>
           </div>
@@ -321,7 +314,7 @@ export function BookingsPage() {
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Ім'я або телефон клієнта..."
                 aria-label="Пошук клієнта за ім'ям або телефоном"
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition duration-150 outline-none font-medium"
                 autoFocus
               />
             </div>
@@ -333,7 +326,7 @@ export function BookingsPage() {
               type="button"
               aria-label={prevNavLabel}
               onClick={() => navigate(-1)}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer transition-colors duration-150"
             >
               <ChevronLeft size={20} />
             </button>
@@ -342,7 +335,7 @@ export function BookingsPage() {
               type="button"
               aria-label={nextNavLabel}
               onClick={() => navigate(1)}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer transition-colors duration-150"
             >
               <ChevronRight size={20} />
             </button>
@@ -362,14 +355,14 @@ export function BookingsPage() {
                 Пошук клієнта
               </p>
               <div className="relative group">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors duration-150" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Ім'я або телефон..."
                   aria-label="Пошук клієнта за ім'ям або телефоном"
-                  className="w-full pl-11 pr-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
+                  className="w-full pl-11 pr-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition duration-150 outline-none font-medium"
                 />
               </div>
             </div>
@@ -380,7 +373,7 @@ export function BookingsPage() {
               </p>
               <DropdownMenu
                 align="left"
-                triggerClassName="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-bold cursor-pointer flex justify-between items-center"
+                triggerClassName="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm focus:bg-secondary focus:ring-4 focus:ring-primary/5 transition duration-150 outline-none font-bold cursor-pointer flex justify-between items-center"
                 trigger={
                   <>
                     <span>
@@ -413,7 +406,7 @@ export function BookingsPage() {
           <div className="hidden lg:flex widget-card p-4 lg:p-6 flex-col lg:flex-row items-center justify-between gap-4">
 
             {/* View Switcher */}
-            <div className="relative flex p-1.5 rounded-[20px] bg-secondary/30 border border-border backdrop-blur-sm w-full lg:w-auto">
+            <div className="flex p-1.5 rounded-[20px] bg-secondary/30 border border-border backdrop-blur-sm w-full lg:w-auto">
               {(
                 [
                   { id: 'list'     as const, icon: <LayoutList size={16} />, label: 'Список' },
@@ -426,19 +419,16 @@ export function BookingsPage() {
                   type="button"
                   aria-pressed={view === m.id}
                   onClick={() => setUrl({ view: m.id })}
-                  className="relative flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold active:scale-[0.88] cursor-pointer z-10"
+                  className={`flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
+                    view === m.id
+                      ? 'bg-secondary text-primary shadow-md'
+                      : 'text-muted-foreground/60 hover:text-muted-foreground'
+                  }`}
                 >
-                  <span className={`relative z-10 flex items-center gap-2 transition-colors ${view === m.id ? 'text-primary' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                  <span className="flex items-center gap-2">
                     {m.icon}
                     <span>{m.label}</span>
                   </span>
-                  {view === m.id && (
-                    <motion.div
-                      layoutId="desktop-view-indicator"
-                      className="absolute inset-0 rounded-2xl bg-secondary shadow-md"
-                      transition={SPRING}
-                    />
-                  )}
                 </button>
               ))}
             </div>
@@ -447,25 +437,20 @@ export function BookingsPage() {
             <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
 
               {/* Time Range Switcher (desktop) */}
-              <div className="relative flex bg-secondary/30 p-1.5 rounded-[20px] border border-border">
+              <div className="flex bg-secondary/30 p-1.5 rounded-[20px] border border-border">
                 {(['day', 'week', 'month'] as const).map(r => (
                   <button
                     key={r}
                     type="button"
                     aria-pressed={timeRange === r}
                     onClick={() => setUrl({ range: r })}
-                    className="relative px-4 min-h-[44px] flex items-center justify-center rounded-2xl text-[10px] font-bold uppercase tracking-widest active:scale-[0.88] cursor-pointer z-10"
+                    className={`px-4 min-h-[44px] flex items-center justify-center rounded-2xl text-[10px] font-bold uppercase tracking-widest active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
+                      timeRange === r
+                        ? 'bg-foreground text-background shadow-lg'
+                        : 'text-muted-foreground/40 hover:text-muted-foreground'
+                    }`}
                   >
-                    <span className={`relative z-10 transition-colors ${timeRange === r ? 'text-background' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}>
-                      {trLabelsMobile[r]}
-                    </span>
-                    {timeRange === r && (
-                      <motion.div
-                        layoutId="desktop-tr-indicator"
-                        className="absolute inset-0 rounded-2xl bg-foreground shadow-lg"
-                        transition={SPRING}
-                      />
-                    )}
+                    {trLabelsMobile[r]}
                   </button>
                 ))}
               </div>
@@ -476,7 +461,7 @@ export function BookingsPage() {
                   type="button"
                   aria-label={prevNavLabel}
                   onClick={() => navigate(-1)}
-                  className="p-1.5 rounded-xl hover:bg-secondary hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+                  className="p-1.5 rounded-xl hover:bg-secondary hover:text-primary transition-colors duration-150 active:scale-[0.88] cursor-pointer"
                 >
                   <ChevronLeft size={20} />
                 </button>
@@ -487,7 +472,7 @@ export function BookingsPage() {
                   type="button"
                   aria-label={nextNavLabel}
                   onClick={() => navigate(1)}
-                  className="p-1.5 rounded-xl hover:bg-secondary hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+                  className="p-1.5 rounded-xl hover:bg-secondary hover:text-primary transition-colors duration-150 active:scale-[0.88] cursor-pointer"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -564,7 +549,7 @@ export function BookingsPage() {
                       {timeRange === 'day' ? (
                         <VerticalTimeline
                           bookings={bookings}
-                          date={anchor.toISOString().split('T')[0]}
+                          date={toLocalDateStr(anchor)}
                           workStart={dayWorkHours.workStart}
                           workEnd={dayWorkHours.workEnd}
                           isWorkingDay={dayWorkHours.isWorkingDay}
@@ -576,14 +561,14 @@ export function BookingsPage() {
                         <PeriodAnalyticsView
                           bookings={bookings}
                           days={daysInRange}
-                          onDayClick={(date) => setUrl({ date: date.toISOString().split('T')[0], range: 'day' })}
+                          onDayClick={(date) => setUrl({ date: toLocalDateStr(date), range: 'day' })}
                         />
                       ) : (
                         <MonthlyAnalyticsView
                           bookings={bookings}
                           month={anchor}
-                          onDayClick={(date) => setUrl({ date: date.toISOString().split('T')[0], range: 'day' })}
-                          onWeekClick={(date) => setUrl({ date: date.toISOString().split('T')[0], range: 'week' })}
+                          onDayClick={(date) => setUrl({ date: toLocalDateStr(date), range: 'day' })}
+                          onWeekClick={(date) => setUrl({ date: toLocalDateStr(date), range: 'week' })}
                         />
                       )}
                     </div>
@@ -614,7 +599,7 @@ export function BookingsPage() {
           setPreselectedClientPhone(undefined);
         }}
         initialTime={preselectedTime}
-        initialDate={preselectedDate ?? anchor.toISOString().split('T')[0]}
+        initialDate={preselectedDate ?? toLocalDateStr(anchor)}
         initialClientId={preselectedClientId}
         initialClientName={preselectedClientName}
         initialClientPhone={preselectedClientPhone}
