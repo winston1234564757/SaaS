@@ -17,7 +17,7 @@
 | 1 | **T15** | Тема Frost за замовчуванням | ✅ DONE | code-reviewer | 3454e0f + 9865942 + 3e1390b |
 | 2 | **T1** | Баги сторінки Записи | ✅ DONE | code-reviewer | a3bfed2 + 06c791c + 81e75c9 |
 | 3 | **T10** | Клієнти: пігулки перекривають текст | ✅ DONE | code-reviewer | 86aa48a |
-| 4 | **T4** | Studio білінг: форма + баг сабміту | ✅ DONE | code-reviewer + humanizer | — |
+| 4 | **T4** | Studio білінг: форма + баг сабміту | ✅ DONE | code-reviewer + humanizer | cb41655 |
 | 5 | **T3** | Налаштування профілю: горизонт. скрол | ⬜ TODO | code-reviewer | — |
 | 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ⬜ TODO | impeccable + humanizer | — |
 | 7 | **T5** | Конструктор сторіс: анімована стрілка | ⬜ TODO | impeccable | — |
