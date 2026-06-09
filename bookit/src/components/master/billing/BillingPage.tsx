@@ -338,7 +338,7 @@ export function BillingPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07, type: 'spring' as const, stiffness: 280, damping: 24 }}
-            className="bento-card p-5 relative overflow-hidden"
+            className="bento-card p-5 relative overflow-hidden flex flex-col"
           >
             {/* Badge */}
             {isWip && !isCurrent ? (
@@ -386,7 +386,7 @@ export function BillingPage() {
             </div>
 
             {/* Features */}
-            <div className="flex flex-col gap-2 mb-4">
+            <div className="flex flex-col gap-2 mb-4 flex-1">
               {plan.features.map(f => (
                 <div key={f} className="flex items-start gap-2">
                   <Check size={13} className="flex-shrink-0 mt-0.5" style={{ color: plan.color }} />
