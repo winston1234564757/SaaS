@@ -203,7 +203,7 @@ function StatTile({
 }) {
   const [hovered, setHovered] = useState(false);
   const hasContent = (bookingItems !== null && bookingItems.length > 0) || !!note;
-  const tooltipPos = colIdx % 3 === 0 ? { left: 0 } : colIdx % 3 === 2 ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' };
+  const tooltipPos = colIdx % 2 === 0 ? { left: 0 } : { right: 0 };
   const shown = bookingItems?.slice(0, 4) ?? [];
   const extra = (bookingItems?.length ?? 0) - 4;
 
@@ -328,7 +328,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-2 gap-2">
         {stats.map((s, idx) => (
           <StatTile
             key={s.label}
@@ -357,7 +357,7 @@ function DisplayToggle({ active, onChange }: { active: DisplayMode; onChange: (m
             background: tab.id === active ? 'var(--hero-card-bg)' : 'transparent',
           }}
         >
-          <tab.Icon size={10} />
+          <tab.Icon size={16} />
           <span className="hidden sm:inline">{tab.label}</span>
         </button>
       ))}

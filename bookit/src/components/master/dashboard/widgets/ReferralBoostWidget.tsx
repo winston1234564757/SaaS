@@ -11,10 +11,10 @@ import Link from 'next/link';
 
 // Milestone: [threshold, label, shortLabel]
 const MILESTONES = [
-  [1,  '-10% щомісяця',      '1 реферал'],
-  [3,  '-20% щомісяця',      '3 реферали'],
-  [5,  'місяць безкоштовно', '5 рефералів'],
-  [10, '-30% назавжди',      '10 рефералів'],
+  [5,  '−5% назавжди',  '5 рефералів'],
+  [10, '−10% назавжди', '10 рефералів'],
+  [25, '−25% назавжди', '25 рефералів'],
+  [50, '−50% назавжди', '50 рефералів'],
 ] as const;
 
 function getMilestone(count: number) {
@@ -106,8 +106,8 @@ export function ReferralBoostWidget() {
             </p>
             <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
               {current
-                ? `Знижка зараз: ${current[1]}`
-                : 'Один колега вже мінус 10% щомісяця'}
+                ? `Постійна знижка: ${current[1]}`
+                : 'За першу оплату кожного реферала +10% до банку знижок'}
             </p>
           </div>
         </div>
