@@ -20,10 +20,12 @@
 | Іт | ID | Назва | Commits |
 |----|----|-------|---------|
 | 1 | T15 | Тема Frost за замовчуванням | 3454e0f, 9865942, 3e1390b |
-| 2 | T1 | Баги сторінки Записи | a3bfed2 |
+| 2 | T1 | Баги сторінки Записи | a3bfed2, 06c791c, 81e75c9 |
 
 ### Наступна: T10 — Клієнти: пігулки перекривають текст
+**Проблема:** Пігулки-фільтри «Важливі» налазять на текст картки клієнта
 **Скіл:** `code-reviewer`
+**Файли:** `ClientWidgets.tsx`, `ClientGridCard.tsx`
 
 ---
 
@@ -31,7 +33,7 @@
 
 | Спринт | Дата | Результат |
 |---|---|---|
-| Sprint-03 (18 tasks) | 2026-06-09/... | 🔄 In progress (1/18) |
+| Sprint-03 (18 tasks) | 2026-06-09/... | 🔄 In progress (2/18) |
 | Sprint-02 (25 tasks) | 2026-06-08/09 | P1–P4: bugs, features, desktop, invite landings, Studio beta |
 | IRP (8 phases A–H) | 2026-06-07/08 | Security, Frost-only, wizard, no-emoji, a11y, audit |
 | Theme Polish Sprint | 2026-05-19 | Всі 3 теми відполіровані |

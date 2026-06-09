@@ -1,34 +1,61 @@
 # Sprint-03 Transition Prompt
 
-Копіюй і вставляй на початку нової сесії:
+> Копіюй і вставляй на початку КОЖНОЇ нової сесії Sprint-03.
 
 ---
 
 ```
 Привіт. Продовжуємо Sprint-03 BookIT.
 
-STARTUP (виконай ПЕРШИМ):
+ОБОВ'ЯЗКОВИЙ STARTUP (виконай ДО будь-чого іншого):
 1. mempalace_status
-2. Read XDEV/MAPS/SYSTEM_MAP.md (last 40 lines)
-3. Read XDEV/PLANS/SPRINT-03-BACKLOG/HANDOFF.md — стан трекера
+2. Read XDEV/MAPS/SYSTEM_MAP.md (offset 200, limit 60)
 
-Після startup:
-- Знайди наступну ⬜ TODO задачу в трекері HANDOFF.md
-- Зроби mempalace_search по темі задачі
-- Оголоси SKILL + запусти скіл
-- GATE OK → код → tsc → build → vercel --prod → оновити HANDOFF.md
+3. Read XDEV/PLANS/SPRINT-03-BACKLOG/HANDOFF.md — знайди перший ⬜ TODO
+4. Read XDEV\PLANS\SPRINT-03-BACKLOG\initial_plan.md - для контексту
+5. Тут моєю мовою описано: XDEV/PLANS/SPRINT-03-BACKLOG/BACKLOG.md
 
-Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй мене, я перевіряю.
+Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
-Контекст проекту:
+Поточний стан (з HANDOFF.md):
+- 2/18 виконано: T15 ✅ DONE, T1 ✅ DONE
+- Наступна: T10 — Клієнти: пігулки перекривають текст
+
+T10 деталі:
+- Файли: ClientWidgets.tsx, ClientGridCard.tsx
+- Проблема: пігулки-фільтри «Важливі» налазять на текст картки клієнта
+- Скіл: code-reviewer
+- Humanizer: N/A
+
+GATE перед кодом:
+1. mempalace_search "clients grid card pills overflow text"
+2. QA: задай 2-3 уточнення якщо потрібно
+3. SKILL: code-reviewer → запусти Skill tool
+4. GATE OK → код
+
+Після коду:
+- npx tsc --noEmit (нуль помилок)
+- npm run build (clean)
+- vercel --prod
+- Оновити HANDOFF.md: T10 ⬜ → ✅, вписати commit hash
+- mempalace_add_drawer
+- Повідомити юзера → він QA → наступна задача T4
+
+Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
+
+Контекст:
 - Root: C:\Users\Vitossik\SaaS\bookit\
-- Тема: Frost (єдина активна, інші wip)
+- Активна тема: Frost (єдина, Blossom/Studio = wip)
 - Stack: Next.js 16, TS strict, Tailwind v4, Supabase, Vaul
-- Команди: `cd bookit && npx tsc --noEmit` / `npm run build` / `vercel --prod`
+- Повний план: XDEV/PLANS/SPRINT-03-BACKLOG/SPRINT-03-PLAN.md
 ```
 
 ---
 
-## Поточний стан (оновлюй після кожного deploy)
+## Як оновлювати після кожної ітерації
 
-Дивись HANDOFF.md — там актуальний трекер.
+Після завершення T[N]:
+1. У **HANDOFF.md** → змінити `⬜ TODO` → `✅ DONE`, вписати commit hash
+2. У **TRANSITION_PROMPT.md** → оновити "Поточний стан" + "T[N+1] деталі"
+3. У **TASK.md** → оновити прогрес N/18
+4. Закомітити: `git add XDEV/PLANS/SPRINT-03-BACKLOG/ XDEV/TASK.md`
