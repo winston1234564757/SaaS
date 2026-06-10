@@ -19,7 +19,7 @@ import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useBusyness } from '@/lib/supabase/hooks/useBusyness';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, LogOut, User as UserIcon, Camera, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { Loader2, LogOut, User as UserIcon, Camera, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
@@ -32,21 +32,20 @@ export default function SettingsPage() {
   const [analyticsDate, setAnalyticsDate] = useState(new Date());
 
   const { data: analytics } = useAnalytics(
-    { 
-      startDate: format(startOfMonth(analyticsDate), 'yyyy-MM-dd'), 
-      endDate: format(endOfMonth(analyticsDate), 'yyyy-MM-dd') 
+    {
+      startDate: format(startOfMonth(analyticsDate), 'yyyy-MM-dd'),
+      endDate: format(endOfMonth(analyticsDate), 'yyyy-MM-dd')
     },
     masterProfile?.subscription_tier === 'pro' || masterProfile?.subscription_tier === 'studio',
     'month',
     0
   );
-  
+
   const stats = useDashboardStats();
   const { data: busyness } = useBusyness();
 
   if (!masterProfile) return null;
 
-  // Prepare services for ProductMix
   const topServices = (analytics?.topServices ?? []).map(s => ({
     name: s.name,
     count: s.count,
@@ -55,12 +54,14 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen pb-32">
-      <NavigationStrip />
+      <div className="lg:hidden">
+        <NavigationStrip />
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 mt-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto">
-          
-          {/* Row 1: Profile Hero (Main Identity) */}
+      <main className="max-w-7xl mx-auto px-4 mt-24 lg:mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto items-start">
+
+          {/* Row 1: ProfileHero (rowspan 2) | SmartAdvisor | PublicStatus */}
           <section id="hero" className="lg:col-span-1 lg:row-span-2">
             <ProfileHero
               masterId={masterProfile.id}
@@ -76,9 +77,8 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Row 1, Col 2-3: Smart Advisor (High Impact) */}
           <section className="md:col-span-1 lg:col-span-2">
-            <SmartAdvisor 
+            <SmartAdvisor
               data={{
                 bio: state.bio,
                 instagram: state.instagram,
@@ -91,7 +91,6 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Row 1, Col 4: Public Status & QR */}
           <section id="status" className="md:col-span-1 lg:col-span-1">
             <PublicStatusWidget
               slug={state.slug}
@@ -102,8 +101,8 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Row 2: Analytics & Stats */}
-          <section id="stats" className="md:col-span-1 lg:col-span-2">
+          {/* Row 2: ProfileHero (cont) | StatsPulse (1col) | Schedule (2col, always expanded desktop) */}
+          <section id="stats" className="md:col-span-1 lg:col-span-1">
             <StatsPulseWidget
               rating={masterProfile.rating}
               ratingCount={masterProfile.rating_count}
@@ -112,39 +111,35 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Row 2, Col 4: Work Schedule */}
-          <section id="schedule" className="md:col-span-1 lg:col-span-1">
+          <section id="schedule" className="md:col-span-1 lg:col-span-2">
             <ScheduleWidget
               schedule={state.schedule}
               bufferTime={state.bufferTime}
               breaks={state.breaks}
-              retentionCycleDays={state.retentionCycleDays}
-              occupancyData={stats.weekDayBookings}
               busynessData={busyness}
               onScheduleChange={actions.setSchedule}
               onBufferChange={actions.setBufferTime}
               onBreaksChange={actions.setBreaks}
-              onRetentionCycleDaysChange={actions.setRetentionCycleDays}
             />
           </section>
 
-          {/* Row 3: Product Mix & Categories */}
+          {/* Row 3: ProductMix | Categories | Location */}
           <section id="services" className="lg:col-span-1">
-            <ProductMixWidget 
+            <ProductMixWidget
               services={topServices}
               onMonthChange={setAnalyticsDate}
             />
           </section>
 
           <section className="lg:col-span-1">
-            <CategoriesWidget 
+            <CategoriesWidget
               selected={state.selectedCategories}
               onChange={actions.setSelectedCategories}
             />
           </section>
 
           <section id="location" className="lg:col-span-2">
-            <LocationWidget 
+            <LocationWidget
               city={state.city}
               address={state.address}
               floor={state.floor}
@@ -159,7 +154,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Row 3.5: CRM Segments */}
+          {/* Row 4: CRM Segments | Retention Cycle */}
           <section id="segments" className="lg:col-span-2">
             <SegmentConfigWidget
               segments={state.segmentConfig}
@@ -167,32 +162,48 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Row 4: Technical Settings & Vacations */}
-          <section id="technical" className="md:col-span-2">
-            <TechnicalIsland
-              instagram={state.instagram}
-              telegram={state.telegram}
-              telegramChatId={state.telegramChatId}
-              themeKey={state.themeKey}
-              tier={masterProfile.subscription_tier ?? 'starter'}
-              onInstagramChange={actions.setInstagram}
-              onTelegramChange={actions.setTelegram}
-              onTelegramChatIdChange={actions.setTelegramChatId}
-              onThemeChange={actions.setThemeKey}
-            />
+          <section id="retention" className="lg:col-span-2">
+            <div className="widget-card p-6 h-full">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <RefreshCw size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold">Цикл повернення клієнта</h3>
+                  <p className="text-[11px] text-muted-foreground/60">Через скільки днів клієнт вважається неактивним</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[14, 21, 30, 45, 60, 90].map((days) => (
+                  <button
+                    type="button"
+                    key={days}
+                    onClick={() => actions.setRetentionCycleDays(days)}
+                    className={cn(
+                      'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
+                      state.retentionCycleDays === days
+                        ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
+                        : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
+                    )}
+                  >
+                    {days} днів
+                  </button>
+                ))}
+              </div>
+            </div>
           </section>
 
-          {/* Row 5: Identity Settings — rests on global background */}
-          <section id="identity" className="md:col-span-2">
+          {/* Row 5: Identity | Vacations */}
+          <section id="identity" className="lg:col-span-2">
             <div className="flex flex-col gap-6 pt-2">
               <div className="flex items-center gap-3">
-                 <div className="size-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
-                   <UserIcon size={20} />
-                 </div>
-                 <div>
-                   <h3 className="text-lg font-bold text-text-primary">Особисті дані</h3>
-                   <p className="text-xs text-text-mute">Налаштування вашого імені та публічного фото</p>
-                 </div>
+                <div className="size-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
+                  <UserIcon size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-text-primary">Особисті дані</h3>
+                  <p className="text-xs text-text-mute">Налаштування вашого імені та публічного фото</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -224,8 +235,8 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => {
-                     const heroInput = document.querySelector('#hero input[type="file"]');
-                     if (heroInput) (heroInput as HTMLElement).click();
+                    const heroInput = document.querySelector('#hero input[type="file"]');
+                    if (heroInput) (heroInput as HTMLElement).click();
                   }}
                   className="px-6 py-4 rounded-2xl bg-secondary border border-border text-text-primary text-xs font-bold flex items-center gap-2 hover:bg-muted/10 active:scale-95 transition-all shadow-sm"
                 >
@@ -235,15 +246,28 @@ export default function SettingsPage() {
             </div>
           </section>
 
-
-
-          <section id="vacations" className="md:col-span-2">
+          <section id="vacations" className="lg:col-span-2">
             <div className="widget-card p-6 h-full">
               <div className="flex items-center gap-2 mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-text-mute">Відпустки та вихідні</h3>
               </div>
               <VacationManager />
             </div>
+          </section>
+
+          {/* Row 6: Technical — full width */}
+          <section id="technical" className="lg:col-span-4">
+            <TechnicalIsland
+              instagram={state.instagram}
+              telegram={state.telegram}
+              telegramChatId={state.telegramChatId}
+              themeKey={state.themeKey}
+              tier={masterProfile.subscription_tier ?? 'starter'}
+              onInstagramChange={actions.setInstagram}
+              onTelegramChange={actions.setTelegram}
+              onTelegramChatIdChange={actions.setTelegramChatId}
+              onThemeChange={actions.setThemeKey}
+            />
           </section>
 
         </div>
@@ -299,8 +323,8 @@ export default function SettingsPage() {
                   onClick={actions.handleSave}
                   disabled={state.saving || state.slugStatus === 'taken'}
                   className={cn(
-                    "px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white shadow-lg transition-all whitespace-nowrap",
-                    state.isDirty ? "bg-success shadow-success/20 hover:scale-105" : "bg-accent shadow-accent/20"
+                    'px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white shadow-lg transition-all whitespace-nowrap',
+                    state.isDirty ? 'bg-success shadow-success/20 hover:scale-105' : 'bg-accent shadow-accent/20'
                   )}
                 >
                   {state.saving ? (
