@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -33,6 +34,7 @@ export function SupportWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<'selection' | 'form' | 'success'>('selection');
   const [ticketType, setTicketType] = useState<TicketType>('feedback');
+  const [mounted, setMounted] = useState(false);
 
   // Form fields
   const [messageText, setMessageText] = useState('');
@@ -43,6 +45,10 @@ export function SupportWidget() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Clean file preview url
   useEffect(() => {
@@ -166,33 +172,38 @@ export function SupportWidget() {
   const HIDE_PATHS = ['/dashboard/support/chat', '/my/support/chat'];
   if (HIDE_PATHS.some(p => pathname.startsWith(p))) return null;
 
+  // FAB portaled to document.body to escape any transform-containing ancestors
+  // (Framer Motion motion.div with animate adds CSS transform, which breaks position:fixed)
+  const fab = (
+    <motion.button
+      onClick={() => {
+        setIsOpen(true);
+        setStep('selection');
+      }}
+      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      whileHover={{ scale: 1.06, y: -2 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)_+_136px)] right-4 lg:bottom-8 lg:right-8 z-[99] flex size-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border-strong)] backdrop-blur-xl text-[var(--text-primary)] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group active:scale-[0.95]"
+    >
+      {/* Ambient light pulse effect */}
+      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500/5 via-[var(--accent-light)] to-emerald-500/5 opacity-60 animate-pulse pointer-events-none" />
+
+      <div className="relative flex items-center justify-center">
+        <MessageCircle className="size-6 relative z-10 text-[var(--accent)] group-hover:rotate-6 transition-transform duration-200" />
+        {/* Status green dot */}
+        <span className="absolute -top-0.5 -right-0.5 flex size-2 z-20">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full size-2 bg-emerald-500"></span>
+        </span>
+      </div>
+    </motion.button>
+  );
+
   return (
     <>
-      {/* Floating Action Button */}
-      <motion.button
-        onClick={() => {
-          setIsOpen(true);
-          setStep('selection');
-        }}
-        initial={{ opacity: 0, scale: 0.8, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        whileHover={{ scale: 1.06, y: -2 }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
-        className="fixed bottom-24 right-4 lg:bottom-8 lg:right-8 z-[99] flex size-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border-strong)] backdrop-blur-xl text-[var(--text-primary)] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer relative overflow-hidden group active:scale-[0.95]"
-      >
-        {/* Ambient light pulse effect */}
-        <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500/5 via-[var(--accent-light)] to-emerald-500/5 opacity-60 animate-pulse pointer-events-none" />
-
-        <div className="relative flex items-center justify-center">
-          <MessageCircle className="size-6 relative z-10 text-[var(--accent)] group-hover:rotate-6 transition-transform duration-200" />
-          {/* Status green dot */}
-          <span className="absolute -top-0.5 -right-0.5 flex size-2 z-20">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full size-2 bg-emerald-500"></span>
-          </span>
-        </div>
-      </motion.button>
+      {mounted && createPortal(fab, document.body)}
 
       <Sheet
         variant="bottom"
