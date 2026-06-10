@@ -17,19 +17,19 @@
 Після startup відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Next: T[N] — [назва]"
 
 Поточний стан (з HANDOFF.md):
-- 11/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅, T6a ✅, T6b ✅
-- QA-борги після T6b: ✅ ВИПРАВЛЕНО (commits: c282e27, b649402, c81d8c1, 26acd31)
-- Наступна: T7 — Налаштування профілю десктоп
+- 12/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅, T6a ✅, T6b ✅, T7 ✅
+- T7 commit: eebf5b7 — settings desktop layout, schedule always expanded, retention moved
+- Наступна: T9 — Портфоліо → конструктор сторіс
 
-T7 деталі:
-- Файли: SettingsPage.tsx або відповідний компонент налаштувань профілю
-- Проблема: порожній простір на десктопі + стрибки сусідніх блоків при розгортанні графіку
-- Скіл: impeccable
+T9 деталі:
+- Файли: PortfolioItemPage.tsx або PortfolioPage.tsx + StoryGenerator.tsx (marketing)
+- Задача: кнопка «Сторіс» в портфоліо → `/dashboard/marketing?type=work&workId=[id]`; StoryGenerator читає URL-параметри при монтуванні і pre-fills дані роботи
+- Скіл: code-reviewer
 
 GATE перед кодом:
-1. mempalace_search "settings profile desktop layout schedule"
-2. QA: 3-5 питань про layout + анімацію графіку
-3. SKILL: impeccable → запусти Skill tool
+1. mempalace_search "portfolio story generator marketing"
+2. QA: 3-5 питань про UX кнопки + передачу даних
+3. SKILL: code-reviewer → запусти Skill tool
 4. UI рядки → /humanizer якщо є нові
 5. GATE OK → код
 
@@ -37,9 +37,9 @@ GATE перед кодом:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T7 ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T9 ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T9
+- Повідомити юзера → він QA → наступна задача T12
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 

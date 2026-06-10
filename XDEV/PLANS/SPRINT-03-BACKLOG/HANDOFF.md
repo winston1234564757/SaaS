@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 11/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fix pending deploy (commits: c282e27, b649402, c81d8c1, 26acd31)
-**Наступна задача:** **T7 — Налаштування профілю десктоп** (ітерація 12)
+**Прогрес:** 12/18 виконано ✅
+**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes (c282e27, b649402, c81d8c1, 26acd31) → T7 (eebf5b7)
+**Наступна задача:** **T9 — Портфоліо → конструктор сторіс** (ітерація 13)
 
 ### ✅ QA-борги після T6b — ВИПРАВЛЕНО
 
@@ -39,7 +39,7 @@
 | 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ✅ DONE | design-taste-frontend | ddcf28d |
 | 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ✅ DONE | design-taste-frontend | d184b9e + c282e27 |
 | 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ✅ DONE | design-taste-frontend | 60b980c |
-| 12 | **T7** | Налаштування профілю десктоп | ⬜ TODO | impeccable | — |
+| 12 | **T7** | Налаштування профілю десктоп | ✅ DONE | impeccable | eebf5b7 |
 | 13 | **T9** | Портфоліо → конструктор сторіс | ⬜ TODO | code-reviewer | — |
 | 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ⬜ TODO | code-reviewer + create-migration | — |
 | 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ⬜ TODO | impeccable | — |
@@ -201,9 +201,15 @@ Flexbox `min-width: auto` не обмежує ширину → три кнопк
 
 ---
 
-## ⬜ T7 — Налаштування профілю десктоп
+## ✅ T7 — Налаштування профілю десктоп — ВИКОНАНО (commit: eebf5b7)
 
-Порожній простір + стрибки сусідніх блоків при розгортанні графіку.
+**Зроблено:**
+- `SettingsPage.tsx`: 4-col grid тепер повністю заповнений — Segments+Retention (row4, 2+2), Identity+Vacations (row5, 2+2), TechnicalIsland full-width lg:col-span-4 (row6)
+- StatsPulse: `lg:col-span-2` → `1`; Schedule: `lg:col-span-1` → `2` (більше місця для редактора)
+- `ScheduleWidget.tsx`: десктоп завжди розгорнутий (`hidden lg:block`), мобайл-акордеон без змін, кнопка `lg:hidden`
+- RetentionCycleDays перенесено з ScheduleWidget accordion → окрема секція поряд із SegmentConfig
+- Пігулки заповненості: реальний `dayOccupancy` з `busynessData.days` (агрегація по day-of-week за 30 днів, `booked/total` як у PeriodAnalyticsView)
+- Кольори пігулок: ≥85 success / >60 warning / ≥40 info / <40 destructive
 
 ---
 
