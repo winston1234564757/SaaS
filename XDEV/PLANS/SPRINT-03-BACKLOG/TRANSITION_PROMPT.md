@@ -18,11 +18,8 @@
 
 Поточний стан (з HANDOFF.md):
 - 11/18 виконано: T15 ✅, T1 ✅, T10 ✅, T4 ✅, T3 ✅, T2 ✅, T5 ✅, T8 ✅, T6c ✅, T6a ✅, T6b ✅
+- QA-борги після T6b: ✅ ВИПРАВЛЕНО (commits: c282e27, b649402, c81d8c1, 26acd31)
 - Наступна: T7 — Налаштування профілю десктоп
-
-⚠️ QA-БОРГИ (зафіксовано після T6b, вирішити у відповідних ітераціях):
-- T8 REGRESSION: SupportWidget відображається bottom-LEFT → має бути `fixed bottom-24 right-4` (над навбаром)
-- T6a PARTIAL: Reviews та Growth (всі 3 таби) — desktop layout не застосовано. Лише Billing отримав grid.
 
 T7 деталі:
 - Файли: SettingsPage.tsx або відповідний компонент налаштувань профілю
@@ -40,9 +37,9 @@ GATE перед кодом:
 - npx tsc --noEmit (нуль помилок)
 - npm run build (clean)
 - vercel --prod
-- Оновити HANDOFF.md: T6b ⬜ → ✅, вписати commit hash
+- Оновити HANDOFF.md: T7 ⬜ → ✅, вписати commit hash
 - mempalace_add_drawer
-- Повідомити юзера → він QA → наступна задача T7
+- Повідомити юзера → він QA → наступна задача T9
 
 Воркфлоу: ОДНА задача = ОДИН deploy. Після deploy повідомляй.
 

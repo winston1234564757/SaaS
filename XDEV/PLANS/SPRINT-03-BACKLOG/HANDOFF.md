@@ -5,16 +5,17 @@
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
 **Прогрес:** 11/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fix (commit: c282e27 + b649402, pending deploy)
+**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fix pending deploy (commits: c282e27, b649402, c81d8c1, 26acd31)
 **Наступна задача:** **T7 — Налаштування профілю десктоп** (ітерація 12)
 
 ### ✅ QA-борги після T6b — ВИПРАВЛЕНО
 
-**T8 — SupportWidget позиція — FIXED (commit b649402)**
+**T8 — SupportWidget позиція — FIXED (commits: b649402, c81d8c1, 26acd31)**
 - Root cause: Framer Motion `motion.div animate` додає CSS `transform`, що ламає `position:fixed` для нащадків
-- Fix: `createPortal(fab, document.body)` — FAB рендериться поза transform-ієрархією
-- Mobile: `bottom-[calc(env(safe-area-inset-bottom)_+_136px)]` — вище навбара (80px) + Bell (48px + 8px gap)
-- Desktop: `lg:bottom-8 lg:right-8`
+- Fix: `createPortal(fab, document.body)` — FAB рендериться поза transform-ієрархією (b649402)
+- Mobile: `bottom-[calc(env(safe-area-inset-bottom)+80px)]` — впритул над навбаром (c81d8c1)
+- Desktop: `lg:bottom-4 lg:right-8`
+- Tailwind v4 canonical classes застосовано (26acd31)
 - Файл: `SupportWidget.tsx`
 
 **T6a — Growth desktop layout — FIXED**
