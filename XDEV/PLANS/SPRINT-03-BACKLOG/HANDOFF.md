@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 12/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes (c282e27, b649402, c81d8c1, 26acd31) → T7 (eebf5b7)
-**Наступна задача:** **T9 — Портфоліо → конструктор сторіс** (ітерація 13)
+**Прогрес:** 13/18 виконано ✅
+**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes → T7 (eebf5b7) → T9 (f80ef35)
+**Наступна задача:** **T12 — Лояльність: два коди + двосторонній C2B** (ітерація 14)
 
 ### ✅ QA-борги після T6b — ВИПРАВЛЕНО
 
@@ -40,7 +40,7 @@
 | 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ✅ DONE | design-taste-frontend | d184b9e + c282e27 |
 | 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ✅ DONE | design-taste-frontend | 60b980c |
 | 12 | **T7** | Налаштування профілю десктоп | ✅ DONE | impeccable | eebf5b7 |
-| 13 | **T9** | Портфоліо → конструктор сторіс | ⬜ TODO | code-reviewer | — |
+| 13 | **T9** | Портфоліо → конструктор сторіс | ✅ DONE | code-reviewer | f80ef35 |
 | 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ⬜ TODO | code-reviewer + create-migration | — |
 | 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ⬜ TODO | impeccable | — |
 | 16 | **T14** | Онбординг превью: виразніший блок посилання | ⬜ TODO | impeccable | — |
@@ -213,9 +213,13 @@ Flexbox `min-width: auto` не обмежує ширину → три кнопк
 
 ---
 
-## ⬜ T9 — Портфоліо → конструктор сторіс
+## ✅ T9 — Портфоліо → конструктор сторіс — ВИКОНАНО (commit: f80ef35)
 
-Кнопка «Сторіс» → `/dashboard/marketing?type=work&workId=[id]`. StoryGenerator читає параметри при монтуванні.
+**Зроблено:**
+- `PortfolioItemCard.tsx`: кнопка «Сторіс» (hover overlay, `bottom-[52px] left-2`, `Sparkles` icon) — показується тільки коли `item.photos.length > 0`
+- `PortfolioPage.tsx`: передає `onStoryClick={() => router.push('/dashboard/portfolio?drawer=story_generator&prePortfolioId=${item.id}')}` до кожної картки
+- `StoryGenerator.tsx`: авто-вибір першого item з фото (`firstWithPhoto?.id`) коли відкрито з портфоліо без конкретного ID
+- URL архітектура: `?drawer=story_generator&prePortfolioId=[id]` — вже була готова, додали лише UI точку входу
 
 ---
 
