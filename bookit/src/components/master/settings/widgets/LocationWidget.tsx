@@ -92,7 +92,7 @@ export function LocationWidget({
         </div>
 
         {/* Google Map Picker */}
-        <div className="h-[240px] md:h-auto min-h-[200px] rounded-3xl overflow-hidden border border-white/60 shadow-inner">
+        <div className="h-[240px] md:h-auto min-h-[200px] rounded-3xl overflow-hidden border border-border shadow-inner">
            <LocationPicker 
              address={address}
              value={lat && lng ? { lat, lng } : null}

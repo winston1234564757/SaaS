@@ -47,7 +47,7 @@ export function ImageCropper({ image, onCropComplete, aspect = 3 / 4 }: ImageCro
           min={1}
           max={3}
           step={0.1}
-          aria-labelledby="Zoom"
+          aria-label="Масштаб"
           onChange={(e) => onZoomChange(Number(e.target.value))}
           className="w-full h-1.5 bg-white/30 accent-primary rounded-lg appearance-none cursor-pointer backdrop-blur-md"
         />

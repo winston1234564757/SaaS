@@ -73,7 +73,7 @@ export function LocationPicker(props: Props) {
   if (!HAS_MAPS_KEY) {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/30 border border-white/40 border-dashed">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/40 border border-border/60 border-dashed">
           <MapPin size={16} className="text-muted-foreground/60 shrink-0" />
           <div>
             <p className="text-xs font-medium text-muted-foreground">
@@ -256,15 +256,15 @@ function LocationPickerMap({ value, address, onChange }: Props) {
       </div>
 
       {/* Map container */}
-      <div className="relative w-full rounded-2xl overflow-hidden border border-white/60" style={{ height: 220 }}>
+      <div className="relative w-full rounded-2xl overflow-hidden border border-border" style={{ height: 220 }}>
         <div ref={containerRef} className="w-full h-full" />
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface/60 backdrop-blur-sm">
             <Loader2 size={20} className="animate-spin text-primary" />
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-xs text-destructive text-center px-4">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface/80 text-xs text-destructive text-center px-4">
             {error}
           </div>
         )}
