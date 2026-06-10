@@ -5,22 +5,21 @@
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
 **Прогрес:** 11/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (commit: 60b980c)
+**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fix (commit: c282e27 + b649402, pending deploy)
 **Наступна задача:** **T7 — Налаштування профілю десктоп** (ітерація 12)
 
-### ⚠️ QA-знахідки після T6b deploy (потребують фіксу)
+### ✅ QA-борги після T6b — ВИПРАВЛЕНО
 
-**T8 — REGRESSION: SupportWidget позиція**
-- Кнопка підтримки відображається внизу ЗЛІВА (не там)
-- Має бути: fixed НАД навбаром, такі ж властивості як навбар (bottom: над navbar)
-- Правильна позиція: `fixed bottom-24 right-4` (над навбаром), не зліва
-- Файл: `SupportWidget.tsx` або аналог — перевірити позицію/стилі
+**T8 — SupportWidget позиція — FIXED (commit b649402)**
+- Root cause: Framer Motion `motion.div animate` додає CSS `transform`, що ламає `position:fixed` для нащадків
+- Fix: `createPortal(fab, document.body)` — FAB рендериться поза transform-ієрархією
+- Mobile: `bottom-[calc(env(safe-area-inset-bottom)_+_136px)]` — вище навбара (80px) + Bell (48px + 8px gap)
+- Desktop: `lg:bottom-8 lg:right-8`
+- Файл: `SupportWidget.tsx`
 
-**T6a — PARTIAL: reviews + growth desktop layout відсутній**
-- Billing ✅ — двоколонковий лейаут працює
-- Reviews ❌ — десктоп без змін, таби без сайдбару
-- Growth ❌ — всі 3 таби (Overview/Segments/Referral) без змін
-- Потребує: `lg:grid lg:grid-cols-[260px_1fr]` для ReviewsPage та growth-секцій в AnalyticsPage
+**T6a — Growth desktop layout — FIXED**
+- `GrowthHubClient.tsx`: `lg:grid-cols-[240px_1fr]` — лівий сайдбар (header+tabs) + правий контент
+- Reviews: вже мав `lg:grid-cols-[260px_1fr]` в d184b9e ✅
 
 ---
 
@@ -35,9 +34,9 @@
 | 5 | **T3** | Налаштування профілю: горизонт. скрол | ✅ DONE | code-reviewer | cdc410a |
 | 6 | **T2** | Дашборд: статистика мобайл + пік-годин + рефералки | ✅ DONE | impeccable + humanizer | 1de90ec + bee63a0 |
 | 7 | **T5** | Конструктор сторіс: анімована стрілка | ✅ DONE | impeccable | 3ed6e4b |
-| 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ⚠️ REGRESSION | design-taste-frontend | f3107c4 + 620473f |
+| 8 | **T8** | Навбар: профіль праворуч + FAB + сповіщення | ✅ DONE | design-taste-frontend | f3107c4 + 620473f + c282e27 |
 | 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ✅ DONE | design-taste-frontend | ddcf28d |
-| 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ⚠️ PARTIAL | design-taste-frontend | d184b9e |
+| 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ✅ DONE | design-taste-frontend | d184b9e + c282e27 |
 | 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ✅ DONE | design-taste-frontend | 60b980c |
 | 12 | **T7** | Налаштування профілю десктоп | ⬜ TODO | impeccable | — |
 | 13 | **T9** | Портфоліо → конструктор сторіс | ⬜ TODO | code-reviewer | — |
