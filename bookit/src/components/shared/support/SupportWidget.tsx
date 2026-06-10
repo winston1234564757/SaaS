@@ -182,10 +182,10 @@ export function SupportWidget() {
       }}
       initial={{ opacity: 0, scale: 0.8, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      whileHover={{ scale: 1.06, y: -2 }}
+      whileHover={{ scale: 1.2, y: -2 }}
       whileTap={{ scale: 0.95 }}
       transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
-      className="fixed bottom-[calc(env(safe-area-inset-bottom)_+_136px)] right-4 lg:bottom-8 lg:right-8 z-[99] flex size-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border-strong)] backdrop-blur-xl text-[var(--text-primary)] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group active:scale-[0.95]"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)_+_80px)] right-4 lg:bottom-4 lg:right-8 z-[99] flex size-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border-strong)] backdrop-blur-xl text-[var(--text-primary)] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group active:scale-[0.95]"
     >
       {/* Ambient light pulse effect */}
       <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500/5 via-[var(--accent-light)] to-emerald-500/5 opacity-60 animate-pulse pointer-events-none" />
