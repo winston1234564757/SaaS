@@ -60,41 +60,54 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
     }
   };
 
+  const handleOpenStories = useCallback(() => {
+    const firstId = items.find(i => i.photos.length > 0)?.id ?? items[0]?.id;
+    const url = firstId
+      ? `/dashboard/portfolio?drawer=story_generator&prePortfolioId=${firstId}`
+      : '/dashboard/portfolio?drawer=story_generator';
+    router.push(url);
+  }, [items, router]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Портфоліо</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {publishedCount} {pluralUk(publishedCount, 'робота', 'роботи', 'робіт')}
             {isStarter && ` · ${STARTER_LIMIT} макс.`}
           </p>
+          <p className="text-xs text-muted-foreground/50 mt-1">
+            Роботи, які бачать клієнти на вашій публічній сторінці
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button"
-            onClick={() => router.push('/dashboard/portfolio?drawer=story_generator')}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all active:scale-95"
+          <button
+            type="button"
+            onClick={handleOpenStories}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all active:scale-95"
           >
-            <Sparkles size={14} /> Сторіз
+            <Sparkles size={15} /> Сторіс
           </button>
           {masterSlug && (
             <a
               href={`/${masterSlug}/portfolio`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden xs:flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all"
+              className="hidden xs:flex flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all"
             >
-              <ExternalLink size={14} /> Перегляд
+              <ExternalLink size={15} /> Перегляд
             </a>
           )}
-          <button type="button"
+          <button
+            type="button"
             onClick={handleCreate}
             disabled={atLimit || isCreating}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-2xl text-xs font-bold text-white transition-all disabled:opacity-50 active:scale-95 shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white transition-all disabled:opacity-50 active:scale-95 shadow-sm"
             style={{ background: '#789A99' }}
           >
-            {isCreating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={16} />}
+            {isCreating ? <Loader2 size={15} className="animate-spin" /> : <Plus size={17} />}
             {isCreating ? 'Створення...' : 'Додати'}
           </button>
         </div>
@@ -146,7 +159,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           <button type="button"
             onClick={handleCreate}
             disabled={isCreating}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white active:scale-95 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white active:scale-95 transition-all disabled:opacity-50"
             style={{ background: '#789A99' }}
           >
             {isCreating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
