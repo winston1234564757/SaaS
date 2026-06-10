@@ -85,7 +85,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="size-9 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
+          <div className="size-9 rounded-2xl bg-accent text-[var(--accent-on)] flex items-center justify-center shadow-lg shadow-accent/20">
             <Sparkles size={18} />
           </div>
           <div>
@@ -126,7 +126,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
       </div>
 
       {/* Current Tip */}
-      <div className="flex-1 flex flex-col justify-center">
+      <div className="flex-1 flex flex-col justify-center" aria-live="polite" aria-atomic="true">
         <AnimatePresence mode="popLayout">
           <motion.div
             key={tips[0].id}

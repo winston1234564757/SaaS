@@ -19,7 +19,7 @@ import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useBusyness } from '@/lib/supabase/hooks/useBusyness';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, LogOut, User as UserIcon, Camera, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { Loader2, LogOut, User as UserIcon, Camera, ChevronDown, ChevronUp, RefreshCw, CalendarOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
@@ -59,7 +59,7 @@ export default function SettingsPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 mt-24 lg:mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 auto-rows-auto items-start">
 
           {/* Row 1: ProfileHero (rowspan 2) | SmartAdvisor | PublicStatus */}
           <section id="hero" className="lg:col-span-1 lg:row-span-2">
@@ -111,7 +111,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          <section id="schedule" className="md:col-span-1 lg:col-span-2">
+          <section id="schedule" className="md:col-span-1 lg:col-span-2 order-first lg:order-none">
             <ScheduleWidget
               schedule={state.schedule}
               bufferTime={state.bufferTime}
@@ -179,6 +179,7 @@ export default function SettingsPage() {
                     type="button"
                     key={days}
                     onClick={() => actions.setRetentionCycleDays(days)}
+                    aria-pressed={state.retentionCycleDays === days}
                     className={cn(
                       'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
                       state.retentionCycleDays === days
@@ -250,8 +251,11 @@ export default function SettingsPage() {
 
           <section id="vacations" className="lg:col-span-2">
             <div className="widget-card p-6 h-full">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-text-mute">Відпустки та вихідні</h3>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <CalendarOff size={18} />
+                </div>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-text-mute">Відпустки та вихідні</h3>
               </div>
               <VacationManager />
             </div>
@@ -281,7 +285,7 @@ export default function SettingsPage() {
               document.cookie = 'view_mode=client; path=/; max-age=86400';
               window.location.href = '/my/bookings';
             }}
-            className="p-5 rounded-[32px] text-sm font-bold text-accent bg-secondary border border-border hover:bg-muted/10 shadow-sm transition-all flex items-center justify-center gap-2"
+            className="p-5 rounded-full text-sm font-bold text-accent bg-secondary border border-border hover:bg-muted/10 shadow-sm transition-all flex items-center justify-center gap-2"
           >
             <UserIcon size={18} /> Перейти в режим клієнта
           </button>
@@ -294,7 +298,7 @@ export default function SettingsPage() {
               document.cookie = 'user_role=; path=/; max-age=0';
               window.location.href = '/login';
             }}
-            className="p-5 rounded-[32px] text-sm font-bold text-destructive bg-destructive/5 border border-destructive/10 hover:bg-destructive/10 transition-all flex items-center justify-center gap-2"
+            className="p-5 rounded-full text-sm font-bold text-destructive bg-destructive/5 border border-destructive/10 hover:bg-destructive/10 transition-all flex items-center justify-center gap-2"
           >
             <LogOut size={18} /> Вийти з акаунту
           </button>
@@ -325,7 +329,7 @@ export default function SettingsPage() {
                   onClick={actions.handleSave}
                   disabled={state.saving || state.slugStatus === 'taken'}
                   className={cn(
-                    'px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white shadow-lg transition-all whitespace-nowrap',
+                    'px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-[var(--accent-on)] shadow-lg transition-all whitespace-nowrap',
                     state.isDirty ? 'bg-success shadow-success/20 hover:scale-105' : 'bg-accent shadow-accent/20'
                   )}
                 >

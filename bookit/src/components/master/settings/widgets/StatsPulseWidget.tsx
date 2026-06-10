@@ -1,6 +1,7 @@
 'use client';
 
-import { Star, Eye, CalendarCheck } from 'lucide-react';
+import { Star, Eye, CalendarCheck, MessageSquare } from 'lucide-react';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface StatsPulseWidgetProps {
   rating: number;
@@ -16,55 +17,57 @@ export function StatsPulseWidget({
   bookingsCount
 }: StatsPulseWidgetProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 h-full">
-      {/* Rating Tile */}
-      <div className="widget-card p-4 flex flex-col justify-between">
-        <div className="mb-2">
-          <div className="size-8 rounded-xl bg-warning/10 flex items-center justify-center text-warning">
-            <Star size={16} fill="currentColor" />
-          </div>
+    <div className="widget-card p-4 h-full flex flex-col divide-y divide-border/60">
+
+      <div className="flex items-center gap-3 pb-3.5">
+        <div className="size-8 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
+          <Star size={14} fill="currentColor" className="text-warning" />
         </div>
-        <div>
-          <p className="text-2xl font-bold tracking-tighter leading-none mb-1">
+        <div className="flex-1 min-w-0">
+          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none mb-1">Рейтинг</p>
+          <p className="text-base font-bold tracking-tighter text-text-primary leading-none">
             {rating > 0 ? rating.toFixed(1) : '—'}
           </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            {ratingCount} відгуків
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 py-3.5">
+        <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+          <MessageSquare size={14} className="text-accent" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none mb-1">Відгуки</p>
+          <p className="text-base font-bold tracking-tighter text-text-primary leading-none">
+            {ratingCount}{' '}
+            <span className="text-[10px] font-bold text-text-mute">{pluralUk(ratingCount, 'відгук', 'відгуки', 'відгуків')}</span>
           </p>
         </div>
       </div>
 
-      {/* Views Tile */}
-      <div className="widget-card p-4 flex flex-col justify-between">
-        <div className="mb-2">
-          <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
-            <Eye size={16} />
-          </div>
+      <div className="flex items-center gap-3 py-3.5">
+        <div className="size-8 rounded-xl bg-muted/40 flex items-center justify-center shrink-0">
+          <Eye size={14} className="text-text-mute" />
         </div>
-        <div>
-          <p className="text-2xl font-bold tracking-tighter leading-none mb-1">
+        <div className="flex-1 min-w-0">
+          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none mb-1">Перегляди</p>
+          <p className="text-base font-bold tracking-tighter text-text-primary leading-none">
             {viewsCount > 0 ? viewsCount.toLocaleString() : '—'}
           </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Перегляди
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 pt-3.5">
+        <div className="size-8 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+          <CalendarCheck size={14} className="text-success" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none mb-1">Записів за місяць</p>
+          <p className="text-base font-bold tracking-tighter text-text-primary leading-none">
+            {bookingsCount}
           </p>
         </div>
       </div>
 
-      {/* Bookings Tile */}
-      <div className="col-span-2 widget-card p-4 flex items-center gap-3 bg-accent/5 border-accent/10">
-        <div className="size-10 rounded-2xl bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20 shrink-0">
-          <CalendarCheck size={20} />
-        </div>
-        <div>
-          <p className="text-xl font-bold tracking-tighter leading-none">
-            {bookingsCount}
-          </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Записів за місяць
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

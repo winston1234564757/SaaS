@@ -66,15 +66,15 @@ export function PublicStatusWidget({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className={cn(
-            "size-9 rounded-2xl flex items-center justify-center transition-all shadow-sm",
-            isPublished ? "bg-success text-white" : "bg-muted text-text-mute"
+            'size-9 rounded-2xl flex items-center justify-center transition-all shadow-sm',
+            isPublished ? 'bg-success text-[var(--accent-on)]' : 'bg-muted text-text-mute'
           )}>
             <Globe size={18} />
           </div>
           <div>
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute">Публікація</h3>
-            <p className={cn("text-[10px] font-bold", isPublished ? "text-success" : "text-text-mute")}>
-              {isPublished ? "Опубліковано" : "Чернетка"}
+            <p className={cn('text-[10px] font-bold', isPublished ? 'text-success' : 'text-text-mute')}>
+              {isPublished ? 'Опубліковано' : 'Чернетка'}
             </p>
           </div>
         </div>
@@ -82,16 +82,16 @@ export function PublicStatusWidget({
         <button
           type="button"
           onClick={onPublishToggle}
-          aria-label={isPublished ? "Приховати профіль" : "Опублікувати профіль"}
+          aria-label={isPublished ? 'Приховати профіль' : 'Опублікувати профіль'}
           aria-pressed={isPublished}
           className={cn(
-            "relative w-12 h-7 rounded-full transition-colors duration-300 shadow-inner",
-            isPublished ? "bg-success" : "bg-muted-foreground/30"
+            'relative w-12 h-7 rounded-full transition-colors duration-300 shadow-inner cursor-pointer',
+            isPublished ? 'bg-success' : 'bg-muted-foreground/30'
           )}
         >
           <motion.div
             animate={{ x: isPublished ? 20 : 4 }}
-            className="absolute top-1 left-1 size-5 rounded-full bg-white shadow-md"
+            className="absolute top-1 left-1 size-5 rounded-full bg-[var(--accent-on)] shadow-md"
           />
         </button>
       </div>
@@ -114,7 +114,7 @@ export function PublicStatusWidget({
         </div>
 
         {slugStatus === 'taken' && (
-           <p className="text-[10px] font-bold text-destructive px-1">Ця адреса вже зайнята іншим майстром</p>
+          <p className="text-[10px] font-bold text-destructive px-1">Ця адреса вже зайнята іншим майстром</p>
         )}
       </div>
 
@@ -132,7 +132,7 @@ export function PublicStatusWidget({
         {!showQr ? (
           <button type="button"
             onClick={() => setShowQr(true)}
-            className="w-full py-4 rounded-2xl bg-accent text-white text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-accent/20"
+            className="w-full py-4 rounded-2xl bg-accent text-[var(--accent-on)] text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-accent/20 cursor-pointer"
           >
             <QrCode size={14} /> Керувати QR-кодом
           </button>
@@ -158,14 +158,14 @@ export function PublicStatusWidget({
               <button type="button"
                 onClick={handleDownloadQr}
                 disabled={downloading}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-white text-[11px] font-bold shadow-md shadow-accent/10 active:scale-95 transition-all disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-[var(--accent-on)] text-[11px] font-bold shadow-md shadow-accent/10 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {downloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={14} />}
-                Скачати
+                Завантажити
               </button>
               <button type="button"
                 onClick={() => setShowQr(false)}
-                className="px-4 py-3 rounded-xl bg-secondary/80 text-text-mute text-[11px] font-bold border border-border active:scale-95 transition-all"
+                className="px-4 py-3 rounded-xl bg-secondary/80 text-text-mute text-[11px] font-bold border border-border active:scale-95 transition-all cursor-pointer"
               >
                 Сховати
               </button>

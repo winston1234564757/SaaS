@@ -109,9 +109,10 @@ export function ProfileHero({
           )}
         </div>
 
-        {/* Smooth gradient — no pure white, natural fade */}
+        {/* Gradient toned to surface so it blends with the Frost aurora rather than clashing */}
         <div
-          className="absolute bottom-0 inset-x-0 pointer-events-none h-[65%] bg-gradient-to-t from-background via-background/70 to-transparent"
+          className="absolute bottom-0 inset-x-0 pointer-events-none h-[65%]"
+          style={{ background: 'linear-gradient(to top, var(--surface) 0%, color-mix(in srgb, var(--surface) 65%, transparent) 55%, transparent 100%)' }}
         />
 
         {/* Premium badge — top right */}

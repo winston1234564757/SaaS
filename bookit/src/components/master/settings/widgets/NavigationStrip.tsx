@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 
@@ -23,6 +23,7 @@ const ITEMS: NavItem[] = [
 
 export function NavigationStrip() {
   const [activeId, setActiveId] = useState('hero');
+  const activeIdRef = useRef('hero');
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -37,10 +38,10 @@ export function NavigationStrip() {
         top: offsetPosition,
         behavior: 'smooth'
       });
-      
+
+      activeIdRef.current = id;
       setActiveId(id);
-      
-      // Highlight effect
+
       el.classList.add('tour-glow');
       setTimeout(() => el.classList.remove('tour-glow'), 1500);
     }
@@ -48,20 +49,18 @@ export function NavigationStrip() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Find the section that is most prominent in the viewport
       let mostVisibleId = ITEMS[0].id;
       let maxVisibleHeight = 0;
 
       const viewportHeight = window.innerHeight;
-      const threshold = 150; // Offset for the sticky header
+      const threshold = 150;
 
       for (const item of ITEMS) {
         const el = document.getElementById(item.id);
         if (!el) continue;
 
         const rect = el.getBoundingClientRect();
-        
-        // Calculate how much of the section is visible in the 'active' area
+
         const visibleTop = Math.max(rect.top, threshold);
         const visibleBottom = Math.min(rect.bottom, viewportHeight);
         const visibleHeight = Math.max(0, visibleBottom - visibleTop);
@@ -72,32 +71,33 @@ export function NavigationStrip() {
         }
       }
 
-      if (mostVisibleId !== activeId) {
+      if (mostVisibleId !== activeIdRef.current) {
+        activeIdRef.current = mostVisibleId;
         setActiveId(mostVisibleId);
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    // Run once on mount to set initial active state
     handleScroll();
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [activeId]);
+  }, []);
 
   return (
-    <div className="sticky top-4 z-[100] px-4 w-full max-w-2xl mx-auto group/nav">
+    <nav role="navigation" aria-label="Навігація розділами" className="sticky top-4 z-[100] px-4 w-full max-w-2xl mx-auto group/nav">
       <div className="relative h-14 w-full bg-surface/40 backdrop-blur-xl border border-border/60 rounded-full shadow-lg shadow-black/5 overflow-hidden">
-        {/* Mobile Left Hint */}
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-surface/40 to-transparent z-10 pointer-events-none lg:hidden" />
-        
+
         <div className="flex items-center gap-6 h-full overflow-x-auto scrollbar-hide px-6 justify-start lg:justify-center">
           {ITEMS.map((item) => (
-            <button type="button"
+            <button
+              type="button"
               key={item.id}
               onClick={() => scrollTo(item.id)}
+              aria-current={activeId === item.id ? 'location' : undefined}
               className={cn(
-                "relative text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors py-1 shrink-0 active:scale-[0.88] cursor-pointer",
-                activeId === item.id ? "text-accent" : "text-text-mute hover:text-text-sub"
+                'relative text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors py-1 shrink-0 active:scale-[0.88] cursor-pointer',
+                activeId === item.id ? 'text-accent' : 'text-text-mute hover:text-text-sub'
               )}
             >
               {item.label}
@@ -111,9 +111,8 @@ export function NavigationStrip() {
           ))}
         </div>
 
-        {/* Mobile Right Hint */}
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-surface/40 to-transparent z-10 pointer-events-none lg:hidden" />
       </div>
-    </div>
+    </nav>
   );
 }

@@ -82,6 +82,7 @@ export function TechnicalIsland({
         } catch {}
         if (attempts >= 20) {
           clearInterval(poll);
+          showToast({ type: 'warning', title: 'Бот не відповів', message: `Натисніть «Підключити бота» ще раз або відкрийте @${botName} вручну` });
           setWaitingForBot(false);
         }
       }, 3000);
@@ -175,6 +176,7 @@ export function TechnicalIsland({
             return (
               <button type="button"
                 key={theme.key}
+                aria-pressed={isActive && !isLocked && !theme.wip}
                 onClick={() => {
                   if (theme.wip) {
                     showToast({ type: 'info', title: 'Незабаром', message: 'Ця тема зараз у розробці' });

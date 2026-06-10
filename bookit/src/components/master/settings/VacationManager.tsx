@@ -17,8 +17,7 @@ function todayStr() {
 
 function formatDate(iso: string) {
   const [y, m, d] = iso.split('-').map(Number);
-  const result = format(new Date(y, m - 1, d), 'd MMMM yyyy', { locale: uk });
-  return result;
+  return format(new Date(y, m - 1, d), 'd MMMM yyyy', { locale: uk });
 }
 
 function entryLabel(e: TimeOffEntry): string {
@@ -43,9 +42,9 @@ const TYPE_ICONS: Record<TimeOffType, React.FC<{ size?: number; className?: stri
 };
 
 const TYPE_COLOR: Record<TimeOffType, string> = {
-  vacation:  '#789A99',
-  day_off:   '#D4935A',
-  short_day: '#5C9E7A',
+  vacation:  'var(--info)',
+  day_off:   'var(--warning)',
+  short_day: 'var(--success)',
 };
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 26 } as const;
@@ -130,7 +129,7 @@ export function VacationManager() {
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {entries.map(e => {
               const Icon = TYPE_ICONS[e.type];
               const color = TYPE_COLOR[e.type];
@@ -150,7 +149,8 @@ export function VacationManager() {
                     </p>
                     <p className="text-[11px] text-muted-foreground/60">{entrySubLabel(e)}</p>
                   </div>
-                  <button type="button"
+                  <button
+                    type="button"
                     onClick={() => remove(e.id)}
                     aria-label="Видалити"
                     className="size-11 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 active:scale-[0.88] cursor-pointer"
@@ -184,6 +184,7 @@ export function VacationManager() {
                       key={t.key}
                       type="button"
                       onClick={() => setType(t.key)}
+                      aria-pressed={type === t.key}
                       className={`flex-1 py-1.5 rounded-xl text-[11px] font-semibold border transition-all cursor-pointer active:scale-[0.95] ${
                         type === t.key
                           ? 'bg-primary text-primary-foreground border-primary'
@@ -261,13 +262,15 @@ export function VacationManager() {
 
               {/* Кнопки */}
               <div className="flex gap-2">
-                <button type="button"
+                <button
+                  type="button"
                   onClick={resetForm}
                   className="flex-1 py-2 rounded-xl text-xs font-medium text-muted-foreground/60 bg-secondary/40 hover:bg-secondary/60 active:scale-[0.95] cursor-pointer transition-all"
                 >
                   Скасувати
                 </button>
-                <button type="button"
+                <button
+                  type="button"
                   onClick={handleAdd}
                   disabled={!isFormValid() || isAdding}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-1 active:scale-[0.95] cursor-pointer disabled:cursor-not-allowed"
@@ -283,7 +286,8 @@ export function VacationManager() {
 
       {/* ── Кнопка відкриття форми ────────────────────────────────────────── */}
       {!showForm && (
-        <button type="button"
+        <button
+          type="button"
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-secondary/40 border border-dashed border-border text-xs font-medium text-muted-foreground hover:bg-secondary/60 active:scale-[0.95] cursor-pointer transition-all w-full"
         >

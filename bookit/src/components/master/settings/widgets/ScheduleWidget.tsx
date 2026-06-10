@@ -105,7 +105,8 @@ export function ScheduleWidget({
               schedule[day].is_working ? 'bg-secondary border-border shadow-sm' : 'bg-muted/10 border-transparent opacity-50',
             )}
           >
-            <button type="button"
+            <button
+              type="button"
               onClick={() => toggleDay(day)}
               aria-label={schedule[day].is_working ? 'Вимкнути' : 'Увімкнути'}
               aria-pressed={schedule[day].is_working}
@@ -118,7 +119,7 @@ export function ScheduleWidget({
               <motion.div
                 animate={{ x: schedule[day].is_working ? 25 : 3 }}
                 transition={{ type: 'spring' as const, stiffness: 500, damping: 35 }}
-                className="absolute top-[3px] left-0 size-4 rounded-full bg-white shadow-sm"
+                className="absolute top-[3px] left-0 size-4 rounded-full bg-[var(--accent-on)] shadow-sm"
               />
             </button>
 
@@ -157,9 +158,11 @@ export function ScheduleWidget({
         </div>
         <div className="flex flex-wrap gap-2">
           {[0, 5, 10, 15, 20, 30, 45, 60].map((min) => (
-            <button type="button"
+            <button
+              type="button"
               key={min}
               onClick={() => onBufferChange(min)}
+              aria-pressed={bufferTime === min}
               className={cn(
                 'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
                 bufferTime === min
@@ -180,7 +183,8 @@ export function ScheduleWidget({
             <Info size={14} className="text-muted-foreground/50" />
             <h4 className="text-sm font-bold">Перерви</h4>
           </div>
-          <button type="button"
+          <button
+            type="button"
             onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
             className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
           >
@@ -219,7 +223,8 @@ export function ScheduleWidget({
                   aria-label={`Кінець перерви ${i + 1}`}
                   className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-sm font-medium"
                 />
-                <button type="button"
+                <button
+                  type="button"
                   onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
                   aria-label="Видалити перерву"
                   className="size-9 rounded-xl bg-destructive/5 text-destructive flex items-center justify-center hover:bg-destructive/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
@@ -242,7 +247,7 @@ export function ScheduleWidget({
           <div className="flex items-center gap-2.5">
             <div className={cn(
               'size-9 rounded-2xl flex items-center justify-center shadow-md',
-              isWorkingNow ? 'bg-success text-white' : 'bg-warning text-white',
+              isWorkingNow ? 'bg-success text-[var(--accent-on)]' : 'bg-warning text-[var(--accent-on)]',
             )}>
               <Clock size={18} />
             </div>
@@ -257,8 +262,11 @@ export function ScheduleWidget({
           </div>
 
           {/* Expand/collapse — mobile only */}
-          <button type="button"
+          <button
+            type="button"
             onClick={() => setExpanded(v => !v)}
+            aria-expanded={expanded}
+            aria-controls="schedule-editor"
             className="lg:hidden flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-secondary border border-border text-[11px] font-bold text-muted-foreground hover:bg-accent/5 hover:text-accent hover:border-accent/20 active:scale-[0.88] cursor-pointer transition-all shadow-sm"
           >
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -294,11 +302,14 @@ export function ScheduleWidget({
                 <span className={cn('text-[10px] font-bold uppercase tracking-tighter', isToday ? 'text-accent' : 'text-text-mute/30')}>
                   {DAYS_UA_SHORT[day]}
                 </span>
-                <div className={cn(
-                  'w-full aspect-[4/8] rounded-full flex flex-col items-end justify-end border transition-all shadow-inner-sm relative overflow-hidden',
-                  isWorking ? 'bg-secondary border-border' : 'bg-muted/10 border-transparent opacity-30',
-                  isToday && 'ring-2 ring-accent ring-offset-2 scale-110 z-10 shadow-lg shadow-accent/10',
-                )}>
+                <div
+                  aria-label={`${DAYS_UA_SHORT[day]}: ${isWorking ? `${occupancy}%` : 'вихідний'}`}
+                  className={cn(
+                    'w-full aspect-[4/8] rounded-full flex flex-col items-end justify-end border transition-all shadow-inner-sm relative overflow-hidden',
+                    isWorking ? 'bg-secondary border-border' : 'bg-muted/10 border-transparent opacity-30',
+                    isToday && 'ring-2 ring-accent ring-offset-2 scale-110 z-10 shadow-lg shadow-accent/10',
+                  )}
+                >
                   {isWorking && (
                     <motion.div
                       initial={{ height: 0 }}
@@ -332,7 +343,14 @@ export function ScheduleWidget({
                     {busynessData.week.rate}%
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                <div
+                  role="progressbar"
+                  aria-valuenow={busynessData.week.rate}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Завантаженість за тиждень"
+                  className="h-1.5 rounded-full bg-secondary overflow-hidden"
+                >
                   <motion.div
                     className={cn('h-full rounded-full', getBusynessBarColor(busynessData.week.rate))}
                     initial={{ width: 0 }}
@@ -349,7 +367,14 @@ export function ScheduleWidget({
                     {busynessData.month.rate}%
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                <div
+                  role="progressbar"
+                  aria-valuenow={busynessData.month.rate}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Завантаженість за 30 днів"
+                  className="h-1.5 rounded-full bg-secondary overflow-hidden"
+                >
                   <motion.div
                     className={cn('h-full rounded-full', getBusynessBarColor(busynessData.month.rate))}
                     initial={{ width: 0 }}
@@ -374,6 +399,7 @@ export function ScheduleWidget({
         <AnimatePresence initial={false}>
           {expanded && (
             <motion.div
+              id="schedule-editor"
               key="editor"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
