@@ -11,34 +11,39 @@ import { generateSecureToken } from '@/lib/utils/token';
  */
 export async function getOrGenerateProfileReferralCode(
   id: string,
-  type: 'master' | 'client' = 'master'
+  type: 'master' | 'client' | 'client-c2c' | 'client-c2b' = 'master'
 ): Promise<{ success: boolean; code?: string; error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.id !== id) return { success: false, error: 'Unauthorized' };
   try {
     const admin = createAdminClient();
-    const table = type === 'master' ? 'master_profiles' : 'client_profiles';
+    const isMaster = type === 'master';
+    const table = isMaster ? 'master_profiles' : 'client_profiles';
+    // 'client' and 'client-c2c' both use c2c_referral_code for backward compat
+    const col = isMaster
+      ? 'referral_code'
+      : type === 'client-c2b'
+        ? 'c2b_referral_code'
+        : 'c2c_referral_code';
 
-    // 1. Шукаємо існуючий
     const { data: profile } = await admin
       .from(table)
-      .select('referral_code')
+      .select(col)
       .eq('id', id)
       .maybeSingle();
 
-    if (profile?.referral_code) {
-      return { success: true, code: profile.referral_code };
+    if (profile && (profile as Record<string, string | null>)[col]) {
+      return { success: true, code: (profile as Record<string, string | null>)[col] as string };
     }
 
-    // 2. Генеруємо новий з retry при колізіях
     for (let attempt = 0; attempt < 10; attempt++) {
       const code = generateSecureToken(6);
       const { error } = await admin
         .from(table)
-        .update({ referral_code: code })
+        .update({ [col]: code })
         .eq('id', id)
-        .is('referral_code', null);
+        .is(col, null);
 
       if (!error) return { success: true, code };
       // 23505 = unique_violation
@@ -162,13 +167,15 @@ export async function applyReferralRewards(
     // відсутні relationship-рядки (master_referrals, master_alliances, client_promocodes).
     console.warn('[referrals] idempotent path for masterId:', newMasterId);
 
-    const [masterRefRes, clientRefRes] = await Promise.all([
+    const [masterRefRes, clientC2bIdRes, clientLegacyIdRes] = await Promise.all([
       admin.from('master_profiles').select('id').eq('referral_code', existingGrant.ref_code).maybeSingle(),
+      admin.from('client_profiles').select('id').eq('c2b_referral_code', existingGrant.ref_code).maybeSingle(),
       admin.from('client_profiles').select('id').eq('referral_code', existingGrant.ref_code).maybeSingle(),
     ]);
+    const clientRefRes = { data: clientC2bIdRes.data ?? clientLegacyIdRes.data };
 
     const isMasterRef = !!masterRefRes.data;
-    const trialDays = isMasterRef ? 14 : 30;
+    const trialDays = isMasterRef ? 14 : 21;
     
     const { data: currentMaster } = await admin
       .from('master_profiles')
@@ -246,13 +253,14 @@ export async function applyReferralRewards(
     };
   }
 
-  const [masterRes, clientRes] = await Promise.all([
+  const [masterRes, clientC2bRes, clientLegacyRes] = await Promise.all([
     admin.from('master_profiles').select('id, subscription_expires_at').eq('referral_code', refCode).maybeSingle(),
+    admin.from('client_profiles').select('id').eq('c2b_referral_code', refCode).maybeSingle(),
     admin.from('client_profiles').select('id').eq('referral_code', refCode).maybeSingle(),
   ]);
 
   const mReferrer = masterRes.data;
-  const cReferrer = clientRes.data;
+  const cReferrer = clientC2bRes.data ?? clientLegacyRes.data;
 
   const bonus: ReferralBonus = {
     subscriptionTier: 'starter',
@@ -308,7 +316,7 @@ export async function applyReferralRewards(
     bonus.finalReferredBy = refCode;
     bonus.subscriptionTier = 'pro';
     const expires = new Date();
-    expires.setDate(expires.getDate() + 30);
+    expires.setDate(expires.getDate() + 21);
     bonus.subscriptionExpiresAt = expires.toISOString();
 
     // C2B нагороди клієнту — awaited (не fire-and-forget),
@@ -348,11 +356,11 @@ export async function checkC2cEligibility(
 ): Promise<{ eligible: boolean; reason?: 'self_referral' | 'already_used' }> {
   const admin = createAdminClient();
 
-  const { data: referrerProfile } = await admin
-    .from('client_profiles')
-    .select('id')
-    .eq('referral_code', referralCode)
-    .maybeSingle();
+  const [c2cRef, legacyRef] = await Promise.all([
+    admin.from('client_profiles').select('id').eq('c2c_referral_code', referralCode).maybeSingle(),
+    admin.from('client_profiles').select('id').eq('referral_code', referralCode).maybeSingle(),
+  ]);
+  const referrerProfile = c2cRef.data ?? legacyRef.data;
 
   if (!referrerProfile) return { eligible: false, reason: 'already_used' };
 

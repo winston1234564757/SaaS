@@ -48,18 +48,19 @@ interface C2cMasterStat {
 
 interface Props {
   programs: LoyaltyProgram[];
-  referralCode: string;
+  c2cCode: string;
+  c2bCode: string;
   totalMastersInvited: number;
   promocodes: BarterPromocode[];
   c2cMasters?: C2cMasterStat[];
 }
 
-export function MyLoyaltyPage({ programs, referralCode, totalMastersInvited, promocodes, c2cMasters = [] }: Props) {
+export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited, promocodes, c2cMasters = [] }: Props) {
   const [activeTab, setActiveTab] = useState<'loyalty' | 'referral'>('loyalty');
   const [referralSubTab, setReferralSubTab] = useState<'c2c' | 'c2b'>('c2c');
   const [copied, setCopied] = useState<string | null>(null);
 
-  const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}/invite/${referralCode}` : `/invite/${referralCode}`;
+  const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}/invite/${c2bCode}` : `/invite/${c2bCode}`;
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);

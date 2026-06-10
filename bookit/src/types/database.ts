@@ -247,6 +247,8 @@ export interface SmsIpLog {
 export interface ClientProfile {
   id: string;
   referral_code: string | null;
+  c2c_referral_code: string | null;
+  c2b_referral_code: string | null;
   ambassador_level: number;
   total_bookings: number;
   total_masters_invited: number;

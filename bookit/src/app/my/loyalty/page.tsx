@@ -59,11 +59,13 @@ export default async function LoyaltyRoute() {
   });
 
   // 4. Get/Generate client's referral data
-  const [codeRes, clientProfileRes] = await Promise.all([
-    getOrGenerateProfileReferralCode(user!.id, 'client'),
+  const [c2cCodeRes, c2bCodeRes, clientProfileRes] = await Promise.all([
+    getOrGenerateProfileReferralCode(user!.id, 'client-c2c'),
+    getOrGenerateProfileReferralCode(user!.id, 'client-c2b'),
     supabase.from('client_profiles').select('total_masters_invited').eq('id', user!.id).single(),
   ]);
-  const referralCode = codeRes.code || '';
+  const c2cCode = c2cCodeRes.code || '';
+  const c2bCode = c2bCodeRes.code || '';
 
   // 5. Get client's barter promocodes
   const { data: promocodes } = await supabase
@@ -137,7 +139,7 @@ export default async function LoyaltyRoute() {
       return {
         ...m,
         balance: typeof balance === 'number' ? balance : 0,
-        shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${referralCode}`,
+        shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${c2cCode}`,
       };
     })
   );
@@ -145,7 +147,8 @@ export default async function LoyaltyRoute() {
   return (
     <MyLoyaltyPage
       programs={items}
-      referralCode={referralCode}
+      c2cCode={c2cCode}
+      c2bCode={c2bCode}
       totalMastersInvited={clientProfileRes.data?.total_masters_invited || 0}
       promocodes={promoItems}
       c2cMasters={c2cMasters}
