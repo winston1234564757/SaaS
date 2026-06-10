@@ -185,13 +185,13 @@ export function SupportWidget() {
       whileHover={{ scale: 1.2, y: -2 }}
       whileTap={{ scale: 0.95 }}
       transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
-      className="fixed bottom-[calc(env(safe-area-inset-bottom)_+_80px)] right-4 lg:bottom-4 lg:right-8 z-[99] flex size-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--border-strong)] backdrop-blur-xl text-[var(--text-primary)] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group active:scale-[0.95]"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+80px)] right-4 lg:bottom-4 lg:right-8 z-99 flex size-12 items-center justify-center rounded-full bg-(--surface) border border-(--border-strong) backdrop-blur-xl text-(--text-primary) shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group active:scale-[0.95]"
     >
       {/* Ambient light pulse effect */}
-      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500/5 via-[var(--accent-light)] to-emerald-500/5 opacity-60 animate-pulse pointer-events-none" />
+      <span className="absolute inset-0 w-full h-full bg-linear-to-r from-emerald-500/5 via-(--accent-light) to-emerald-500/5 opacity-60 animate-pulse pointer-events-none" />
 
       <div className="relative flex items-center justify-center">
-        <MessageCircle className="size-6 relative z-10 text-[var(--accent)] group-hover:rotate-6 transition-transform duration-200" />
+        <MessageCircle className="size-6 relative z-10 text-(--accent) group-hover:rotate-6 transition-transform duration-200" />
         {/* Status green dot */}
         <span className="absolute -top-0.5 -right-0.5 flex size-2 z-20">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -232,7 +232,7 @@ export function SupportWidget() {
               <button type="button"
                 onClick={handleStartChat}
                 disabled={submitting}
-                className="relative overflow-hidden flex items-center justify-between rounded-3xl border-2 border-indigo-400 bg-gradient-to-br from-indigo-50/50 to-white p-5 text-left transition hover:from-indigo-50/80 hover:to-indigo-50/30 active:scale-[0.98] group cursor-pointer shadow-md"
+                className="relative overflow-hidden flex items-center justify-between rounded-3xl border-2 border-indigo-400 bg-linear-to-br from-indigo-50/50 to-white p-5 text-left transition hover:from-indigo-50/80 hover:to-indigo-50/30 active:scale-[0.98] group cursor-pointer shadow-md"
               >
                 {/* Glow/Light effect inside */}
                 <span className="absolute -top-10 -right-10 size-24 bg-indigo-400/10 rounded-full blur-xl animate-pulse" />
