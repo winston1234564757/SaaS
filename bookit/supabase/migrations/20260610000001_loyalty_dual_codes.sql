@@ -21,7 +21,7 @@ DECLARE
 BEGIN
   FOR r IN SELECT id FROM public.client_profiles WHERE c2b_referral_code IS NULL LOOP
     LOOP
-      new_code := encode(gen_random_bytes(4), 'hex');
+      new_code := substr(replace(gen_random_uuid()::text, '-', ''), 1, 8);
       EXIT WHEN NOT EXISTS (
         SELECT 1 FROM public.client_profiles WHERE c2b_referral_code = new_code
       );

@@ -225,6 +225,34 @@ export async function applyReferralRewards(
         if (ins.error && ins.error.code !== '23505')
           console.error('[referrals] idempotent M2M alliance insert failed:', ins.error.message);
       }
+
+      // Cross-path: якщо поточний refCode відрізняється від збереженого і є C2B-кодом,
+      // клієнт все одно має отримати промокод (stored grant M2M ≠ блокує окремий C2B).
+      if (refCode !== existingGrant.ref_code) {
+        const [xC2bRes, xLegacyRes] = await Promise.all([
+          admin.from('client_profiles').select('id').eq('c2b_referral_code', refCode).maybeSingle(),
+          admin.from('client_profiles').select('id').eq('referral_code', refCode).maybeSingle(),
+        ]);
+        const xCReferrer = xC2bRes.data ?? xLegacyRes.data;
+        if (xCReferrer) {
+          const { data: xPromo } = await admin.from('client_promocodes').select('id')
+            .eq('client_id', xCReferrer.id).eq('master_id', newMasterId).maybeSingle();
+          if (!xPromo) {
+            const [xPromoRes, xIncrRes] = await Promise.all([
+              admin.from('client_promocodes').insert({
+                client_id: xCReferrer.id,
+                master_id: newMasterId,
+                discount_percentage: 50,
+              }),
+              admin.rpc('increment_client_master_invite_count', { p_client_id: xCReferrer.id }),
+            ]);
+            if (xPromoRes.error && xPromoRes.error.code !== '23505')
+              console.error('[referrals] cross-path C2B promo insert failed:', xPromoRes.error.message);
+            if ('error' in xIncrRes && xIncrRes.error)
+              console.error('[referrals] cross-path increment failed:', (xIncrRes.error as { message: string }).message);
+          }
+        }
+      }
     } else if (!isMasterRef && clientRefRes.data) {
       // C2B: відновлюємо client_promocodes якщо відсутній
       const { data: existingPromo } = await admin
