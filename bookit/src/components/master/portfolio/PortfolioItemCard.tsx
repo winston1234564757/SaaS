@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Eye, EyeOff, Scissors, Star, Clock, User, GripVertical } from 'lucide-react';
+import { Eye, EyeOff, Scissors, Star, User, GripVertical, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import type { PortfolioItemFull } from '@/types/database';
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
@@ -9,10 +9,11 @@ import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 interface Props {
   item: PortfolioItemFull;
   onClick: () => void;
+  onStoryClick?: () => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
 }
 
-export function PortfolioItemCard({ item, onClick, dragHandleProps }: Props) {
+export function PortfolioItemCard({ item, onClick, onStoryClick, dragHandleProps }: Props) {
   const coverPhoto = item.photos[0];
 
   const consentChip = item.consent_status === 'pending'
@@ -26,7 +27,7 @@ export function PortfolioItemCard({ item, onClick, dragHandleProps }: Props) {
       className="group relative rounded-3xl overflow-hidden transition-all hover:shadow-md"
       style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
     >
-      {/* Drag handle — sibling to main button, above it in z-order */}
+      {/* Drag handle */}
       <button
         type="button"
         {...dragHandleProps}
@@ -36,7 +37,7 @@ export function PortfolioItemCard({ item, onClick, dragHandleProps }: Props) {
         <GripVertical size={12} className="text-white" />
       </button>
 
-      {/* Main clickable button */}
+      {/* Main clickable area */}
       <button
         type="button"
         onClick={onClick}
@@ -54,13 +55,11 @@ export function PortfolioItemCard({ item, onClick, dragHandleProps }: Props) {
               <p className="text-[10px]">Без фото</p>
             </div>
           )}
-          {/* Photo count badge */}
           {item.photos.length > 1 && (
             <span className="absolute bottom-2 right-2 text-[10px] font-bold text-white bg-black/40 rounded-full px-2 py-0.5">
               {item.photos.length} фото
             </span>
           )}
-          {/* Visibility badge */}
           <span className={cn(
             'absolute top-2 right-2 size-6 rounded-lg flex items-center justify-center',
             item.is_published ? 'bg-success/20 text-success' : 'bg-black/30 text-white'
@@ -72,7 +71,6 @@ export function PortfolioItemCard({ item, onClick, dragHandleProps }: Props) {
         {/* Info */}
         <div className="p-3 space-y-1.5">
           <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{item.title}</p>
-
           <div className="flex flex-wrap gap-1.5 items-center">
             {item.service_name && (
               <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
@@ -92,6 +90,18 @@ export function PortfolioItemCard({ item, onClick, dragHandleProps }: Props) {
           </div>
         </div>
       </button>
+
+      {/* Сторіс overlay — visible on hover when item has photos */}
+      {onStoryClick && item.photos.length > 0 && (
+        <button
+          type="button"
+          onClick={onStoryClick}
+          aria-label="Зробити сторіс"
+          className="absolute bottom-[52px] left-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/35 text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-black/50"
+        >
+          <Sparkles size={10} /> Сторіс
+        </button>
+      )}
     </div>
   );
 }

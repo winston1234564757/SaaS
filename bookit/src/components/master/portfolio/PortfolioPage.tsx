@@ -29,7 +29,8 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
   const { showToast } = useToast();
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const isStoryOpen  = searchParams.get('drawer') === 'story_generator';
+  const isStoryOpen      = searchParams.get('drawer') === 'story_generator';
+  const prePortfolioId   = searchParams.get('prePortfolioId');
   const [isCreating, setIsCreating] = useState(false);
 
   const isStarter = tier === 'starter';
@@ -60,7 +61,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -159,7 +160,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
         <DragDropContext onDragEnd={handleGridDragEnd}>
           <Droppable droppableId="portfolio-grid" direction="vertical">
             {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-wrap gap-3">
+              <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {items.map((item, i) => (
                   <Draggable key={item.id} draggableId={item.id} index={i}>
                     {(prov, snap) => (
@@ -169,7 +170,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
-                        className="w-[calc(50%-0.375rem)] md:w-[calc(33.333%-0.5rem)]"
+                        className=""
                         style={{
                           ...prov.draggableProps.style,
                           opacity: snap.isDragging ? 0.5 : 1,
@@ -179,6 +180,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
                           item={item}
                           dragHandleProps={prov.dragHandleProps}
                           onClick={() => router.push(`/dashboard/portfolio/${item.id}`)}
+                          onStoryClick={() => router.push(`/dashboard/portfolio?drawer=story_generator&prePortfolioId=${item.id}`)}
                         />
                       </motion.div>
                     )}
@@ -188,7 +190,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
 
                 {/* Add card — shown when not at limit */}
                 {!atLimit && (
-                  <div className="w-[calc(50%-0.375rem)] md:w-[calc(33.333%-0.5rem)]">
+                  <div className="">
                     <button type="button"
                       onClick={handleCreate}
                       disabled={isCreating}
@@ -208,11 +210,14 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
 
       {/* Story Generator */}
       <StoryGenerator
+        key={prePortfolioId ?? 'default'}
         isOpen={isStoryOpen}
         onClose={() => router.push('/dashboard/portfolio')}
         items={items}
-        masterName={profile?.full_name || masterProfile?.business_name || 'Майстер'} 
+        masterName={profile?.full_name || masterProfile?.business_name || 'Майстер'}
         masterSlug={masterSlug}
+        initialMode={prePortfolioId ? 'portfolio_item' : undefined}
+        initialPortfolioId={prePortfolioId ?? undefined}
       />
     </div>
   );

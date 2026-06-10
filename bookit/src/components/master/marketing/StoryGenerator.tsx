@@ -70,7 +70,10 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
-  const [selectedBgPhotoId, setSelectedBgPhotoId] = useState<string | null>(initialPortfolioId ?? null);
+  const firstWithPhoto = externalItems?.find(i => i.photos.length > 0);
+  const [selectedBgPhotoId, setSelectedBgPhotoId] = useState<string | null>(
+    initialPortfolioId ?? firstWithPhoto?.id ?? null
+  );
   const bgPhotoUrlRaw = useMemo(() => {
     if (selectedBgPhotoId) {
       const it = portfolioItems.find(i => i.id === selectedBgPhotoId);
