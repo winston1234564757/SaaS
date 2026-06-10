@@ -195,21 +195,22 @@ export default function SettingsPage() {
 
           {/* Row 5: Identity | Vacations */}
           <section id="identity" className="lg:col-span-2">
-            <div className="flex flex-col gap-6 pt-2">
+            <div className="widget-card p-6 h-full flex flex-col gap-6">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
-                  <UserIcon size={20} />
+                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
+                  <UserIcon size={18} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-text-primary">Особисті дані</h3>
+                  <h3 className="text-sm font-bold text-text-primary">Особисті дані</h3>
                   <p className="text-xs text-text-mute">Налаштування вашого імені та публічного фото</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Ваше повне ім'я`}</label>
+                  <label htmlFor="settings-full-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Ваше повне ім'я`}</label>
                   <input
+                    id="settings-full-name"
                     value={state.fullName}
                     onChange={(e) => actions.setFullName(e.target.value)}
                     aria-label="Ваше повне ім'я"
@@ -218,8 +219,9 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Бізнес-ім'я (Студія)`}</label>
+                  <label htmlFor="settings-business-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Бізнес-ім'я (Студія)`}</label>
                   <input
+                    id="settings-business-name"
                     value={state.businessName}
                     onChange={(e) => actions.setBusinessName(e.target.value)}
                     aria-label="Бізнес-ім'я студії"
@@ -292,7 +294,7 @@ export default function SettingsPage() {
               document.cookie = 'user_role=; path=/; max-age=0';
               window.location.href = '/login';
             }}
-            className="p-5 rounded-[32px] text-sm font-bold text-error bg-error/5 border border-error/10 hover:bg-error/10 transition-all flex items-center justify-center gap-2"
+            className="p-5 rounded-[32px] text-sm font-bold text-destructive bg-destructive/5 border border-destructive/10 hover:bg-destructive/10 transition-all flex items-center justify-center gap-2"
           >
             <LogOut size={18} /> Вийти з акаунту
           </button>
@@ -348,9 +350,10 @@ function ExpandableBio({ value, onChange }: { value: string; onChange: (v: strin
 
   return (
     <motion.div layout transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }} className="space-y-2 pt-2 border-t border-border">
-      <label className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Опис</label>
+      <label htmlFor="settings-bio" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Опис</label>
       <motion.div layout="position">
         <textarea
+          id="settings-bio"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={expanded ? 6 : 2}

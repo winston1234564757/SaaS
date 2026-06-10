@@ -39,13 +39,13 @@ const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const getBusynessColor = (rate: number) => {
   if (rate < 40) return 'text-success';
   if (rate < 70) return 'text-warning';
-  return 'text-error';
+  return 'text-destructive';
 };
 
 const getBusynessBarColor = (rate: number) => {
   if (rate < 40) return 'bg-success';
   if (rate < 70) return 'bg-warning';
-  return 'bg-error';
+  return 'bg-destructive';
 };
 
 export function ScheduleWidget({
@@ -113,10 +113,10 @@ export function ScheduleWidget({
                 'relative rounded-full transition-colors shrink-0 active:scale-[0.88] cursor-pointer',
                 schedule[day].is_working ? 'bg-[var(--btn-primary-bg)]' : 'bg-muted-foreground/25',
               )}
-              style={{ height: '22px', width: '40px' }}
+              style={{ height: '28px', width: '44px' }}
             >
               <motion.div
-                animate={{ x: schedule[day].is_working ? 21 : 3 }}
+                animate={{ x: schedule[day].is_working ? 25 : 3 }}
                 transition={{ type: 'spring' as const, stiffness: 500, damping: 35 }}
                 className="absolute top-[3px] left-0 size-4 rounded-full bg-white shadow-sm"
               />
@@ -222,7 +222,7 @@ export function ScheduleWidget({
                 <button type="button"
                   onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
                   aria-label="Видалити перерву"
-                  className="size-9 rounded-xl bg-error/5 text-error flex items-center justify-center hover:bg-error/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
+                  className="size-9 rounded-xl bg-destructive/5 text-destructive flex items-center justify-center hover:bg-destructive/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
                 >
                   <Trash2 size={14} />
                 </button>

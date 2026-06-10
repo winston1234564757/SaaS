@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, QrCode, Download, Loader2, Check, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import { Globe, QrCode, Download, Loader2, Check, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToast } from '@/lib/toast/context';
 
@@ -27,7 +27,6 @@ export function PublicStatusWidget({
   const qrRef = useRef<HTMLImageElement>(null);
 
   const publicUrl = `https://bookit.com.ua/${slug}`;
-  // Use a higher quality QR with custom colors to match theme
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(publicUrl)}&bgcolor=FFFFFF&color=2C1A14`;
 
   const handleDownloadQr = () => {
@@ -79,9 +78,12 @@ export function PublicStatusWidget({
             </p>
           </div>
         </div>
-        
-        <button type="button"
+
+        <button
+          type="button"
           onClick={onPublishToggle}
+          aria-label={isPublished ? "Приховати профіль" : "Опублікувати профіль"}
+          aria-pressed={isPublished}
           className={cn(
             "relative w-12 h-7 rounded-full transition-colors duration-300 shadow-inner",
             isPublished ? "bg-success" : "bg-muted-foreground/30"
@@ -96,10 +98,11 @@ export function PublicStatusWidget({
 
       {/* Slug Input */}
       <div className="space-y-2">
-        <label className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Ваша унікальна адреса</label>
+        <label htmlFor="settings-slug" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Ваша унікальна адреса</label>
         <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-secondary border border-border focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/5 transition-all shadow-inner-sm">
           <span className="text-sm text-text-mute/40 font-medium select-none">bookit.ua/</span>
           <input
+            id="settings-slug"
             value={slug}
             onChange={(e) => onSlugChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
             aria-label="Ваша унікальна адреса"
@@ -109,9 +112,9 @@ export function PublicStatusWidget({
           {slugStatus === 'checking' && <Loader2 size={16} className="animate-spin text-accent" />}
           {slugStatus === 'available' && <Check size={16} className="text-success" />}
         </div>
-        
+
         {slugStatus === 'taken' && (
-           <p className="text-[10px] font-bold text-error px-1">Ця адреса вже зайнята іншим майстром</p>
+           <p className="text-[10px] font-bold text-destructive px-1">Ця адреса вже зайнята іншим майстром</p>
         )}
       </div>
 
@@ -140,11 +143,14 @@ export function PublicStatusWidget({
             className="flex flex-col items-center gap-4 bg-secondary/40 p-4 rounded-xl border border-border"
           >
             <div className="p-4 rounded-[24px] bg-surface shadow-xl border border-border">
-              <img 
+              <img
                 ref={qrRef}
-                src={qrUrl} 
-                alt="QR Code" 
-                className="size-32" 
+                src={qrUrl}
+                alt="QR-код вашого профілю"
+                width={128}
+                height={128}
+                loading="lazy"
+                className="size-32"
                 crossOrigin="anonymous"
               />
             </div>
@@ -154,7 +160,7 @@ export function PublicStatusWidget({
                 disabled={downloading}
                 className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-white text-[11px] font-bold shadow-md shadow-accent/10 active:scale-95 transition-all disabled:opacity-50"
               >
-                {downloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={14} />} 
+                {downloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={14} />}
                 Скачати
               </button>
               <button type="button"
