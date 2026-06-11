@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -82,11 +82,7 @@ export function ProductEditor({ id }: Props) {
   const [showStockLimit, setShowStockLimit] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [prevProduct, setPrevProduct] = useState(product);
-  const [prevLinks, setPrevLinks] = useState(links);
-
-  if (prevProduct !== product) {
-    setPrevProduct(product);
+  useEffect(() => {
     if (id && product) {
       setName(product.name);
       setDescription(product.description ?? '');
@@ -100,18 +96,20 @@ export function ProductEditor({ id }: Props) {
       setProductType(product.product_type ?? 'retail');
       setAutoDeduct(product.auto_deduct !== false);
       setShowStockLimit(true);
+      setError(null);
+      setShowDelete(false);
     }
-    setError(null);
-    setShowDelete(false);
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]);
 
-  if (prevLinks !== links && id && links.length > 0) {
-    setPrevLinks(links);
-    setLinkedServiceIds(links.map(l => l.serviceId));
-    const qMap: Record<string, number> = {};
-    links.forEach(l => { qMap[l.serviceId] = l.quantity; });
-    setServiceQuantities(qMap);
-  }
+  useEffect(() => {
+    if (id && links.length > 0) {
+      setLinkedServiceIds(links.map(l => l.serviceId));
+      const qMap: Record<string, number> = {};
+      links.forEach(l => { qMap[l.serviceId] = l.quantity; });
+      setServiceQuantities(qMap);
+    }
+  }, [links]);
 
   function toggleService(serviceId: string) {
     setLinkedServiceIds(prev =>

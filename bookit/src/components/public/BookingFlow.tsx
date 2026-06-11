@@ -4,6 +4,7 @@ import { BookingWizard, type WizardService, type WizardProduct } from '@/compone
 import type { WorkingHoursConfig } from '@/types/database';
 import type { FlashDeal } from '@/components/public/PublicMasterPage';
 import type { WizardStep } from '@/components/shared/wizard/types';
+import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
 
 interface Service {
   id: string; name: string; price: number; duration: number;
@@ -34,6 +35,7 @@ interface BookingFlowProps {
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;
   masterC2cDiscountPct?: number | null;
+  trustedPartners?: TrustedPartner[];
 }
 
 export function BookingFlow({
@@ -45,6 +47,7 @@ export function BookingFlow({
   initialDate, initialTime,
   c2cRefCode, c2cDiscountPct,
   masterC2cEnabled, masterC2cDiscountPct,
+  trustedPartners,
 }: BookingFlowProps) {
   // Flash deal fast-track: find the service and skip straight to details
   const flashService = flashDeal
@@ -82,6 +85,7 @@ export function BookingFlow({
       c2cDiscountPct={c2cDiscountPct}
       masterC2cEnabled={masterC2cEnabled}
       masterC2cDiscountPct={masterC2cDiscountPct}
+      trustedPartners={trustedPartners}
     />
   );
 }

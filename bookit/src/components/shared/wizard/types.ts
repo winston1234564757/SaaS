@@ -2,6 +2,7 @@
 import type { WorkingHoursConfig } from '@/types/database';
 import type { ProductIconName } from '@/lib/product-icons';
 import type { ServiceIconName } from '@/lib/service-icons';
+import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
 
 export interface WizardService {
   id: string;
@@ -61,6 +62,7 @@ export interface BookingWizardProps {
   c2cDiscountPct?: number | null;
   masterC2cEnabled?: boolean;
   masterC2cDiscountPct?: number | null;
+  trustedPartners?: TrustedPartner[];
 }
 
 export type WizardStep = 'services' | 'datetime' | 'products' | 'details' | 'success';

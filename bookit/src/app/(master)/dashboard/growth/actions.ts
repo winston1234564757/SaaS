@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { generateSecureToken } from '@/lib/utils/token';
 
 export interface GrowthPageData {
   loyaltyData: { activeCount: number };
@@ -18,7 +19,7 @@ export interface GrowthPageData {
     history: { refereeName: string; joinedAt: string; isFirstPaymentMade: boolean }[];
   };
   partnersData: {
-    partners: { id: string; partnerId: string; status: string; createdAt: string; slug: string; name: string; emoji: string }[];
+    partners: { id: string; partnerId: string; status: string; createdAt: string; slug: string; name: string; emoji: string; isVisible: boolean }[];
     inviteLink: string;
     alliances: { id: string; isVisible: boolean; otherId: string; slug: string; name: string; emoji: string }[];
   };
@@ -33,7 +34,7 @@ export async function getGrowthPageData(): Promise<GrowthPageData | null> {
 
   const { data: mp } = await admin
     .from('master_profiles')
-    .select('referral_code, subscription_tier, subscription_expires_at, lifetime_discount, referral_bounties_pending, discount_reserve')
+    .select('referral_code, partner_invite_token, subscription_tier, subscription_expires_at, lifetime_discount, referral_bounties_pending, discount_reserve')
     .eq('id', user.id)
     .single();
 
@@ -48,12 +49,11 @@ export async function getGrowthPageData(): Promise<GrowthPageData | null> {
     { data: alliancesData },
   ] = await Promise.all([
     admin.from('loyalty_programs').select('id', { count: 'exact', head: true }).eq('master_id', user.id),
-    // Cross-user: count other masters who joined via this referral code
     admin.from('master_profiles').select('id', { count: 'exact', head: true }).eq('referred_by', referralCode),
     admin.from('master_referrals').select('id', { count: 'exact', head: true }).eq('referrer_id', user.id).eq('status', 'active'),
     admin.rpc('get_master_referral_history', { p_referrer_id: user.id }),
     admin.from('master_partners').select(`
-      id, partner_id, status, created_at,
+      id, partner_id, status, created_at, is_visible,
       partner:master_profiles!master_partners_partner_id_fkey (
         id, slug, avatar_emoji,
         profiles ( full_name )
@@ -82,6 +82,7 @@ export async function getGrowthPageData(): Promise<GrowthPageData | null> {
       slug: p.partner.slug as string,
       name: (partnerProfile?.full_name as string) || 'Невідомий майстер',
       emoji: (p.partner.avatar_emoji as string) || '',
+      isVisible: (p.is_visible as boolean) ?? true,
     };
   });
 
@@ -99,6 +100,17 @@ export async function getGrowthPageData(): Promise<GrowthPageData | null> {
   });
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+  // Generate partner_invite_token if not yet set
+  let partnerToken = mp?.partner_invite_token as string | null;
+  if (!partnerToken) {
+    partnerToken = generateSecureToken(8);
+    const { error } = await admin.from('master_profiles').update({ partner_invite_token: partnerToken }).eq('id', user.id);
+    if (error?.code === '23505') {
+      partnerToken = generateSecureToken(8);
+      await admin.from('master_profiles').update({ partner_invite_token: partnerToken }).eq('id', user.id);
+    }
+  }
 
   return {
     loyaltyData: { activeCount: loyaltyCount ?? 0 },
@@ -120,7 +132,7 @@ export async function getGrowthPageData(): Promise<GrowthPageData | null> {
     },
     partnersData: {
       partners,
-      inviteLink: `${siteUrl}/dashboard/partners/join?token=${mp?.referral_code || ''}`,
+      inviteLink: `${siteUrl}/dashboard/partners/join?token=${partnerToken}`,
       alliances,
     },
   };

@@ -29,7 +29,7 @@ export default async function JoinPartnerPage({
       id, slug, avatar_emoji,
       profiles ( full_name )
     `)
-    .eq('referral_code', token)
+    .eq('partner_invite_token', token)
     .single();
 
   if (!inviter) {

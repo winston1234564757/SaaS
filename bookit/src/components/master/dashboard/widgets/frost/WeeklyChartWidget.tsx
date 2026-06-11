@@ -103,18 +103,13 @@ export function WeeklyChartWidget() {
               type="button"
               aria-pressed={mode === m}
               onClick={() => { setMode(m); setActiveBar(null); }}
-              className="relative px-2.5 py-[4px] rounded-full text-[11px] font-bold active:scale-[0.95] transition-transform duration-100"
-              style={{ color: mode === m ? 'var(--accent-on)' : 'var(--text-tertiary)' }}
+              className="px-2.5 py-[4px] rounded-full text-[11px] font-bold active:scale-[0.95] transition duration-150 ease-out"
+              style={{
+                color: mode === m ? 'var(--accent-on)' : 'var(--text-tertiary)',
+                background: mode === m ? 'var(--accent)' : 'transparent',
+              }}
             >
-              {mode === m && (
-                <motion.div
-                  layoutId="frost-weekly-tab"
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: 'var(--accent)' }}
-                  transition={{ type: 'spring' as const, duration: 0.35, bounce: 0 }}
-                />
-              )}
-              <span className="relative z-10">{m === 'bookings' ? 'Записи' : 'Дохід'}</span>
+              {m === 'bookings' ? 'Записи' : 'Дохід'}
             </button>
           ))}
         </div>

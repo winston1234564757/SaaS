@@ -2,10 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { generateSecureToken } from '@/lib/utils/token';
 import { revalidatePath } from 'next/cache';
 
 /**
- * Generates a partner invitation link for the current master.
+ * Returns the partner invite link for the current master.
+ * Generates and saves partner_invite_token on first call.
  */
 export async function getPartnerInviteLink(): Promise<{ link: string | null; error: string | null }> {
   try {
@@ -13,18 +15,30 @@ export async function getPartnerInviteLink(): Promise<{ link: string | null; err
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { link: null, error: 'Не авторизований' };
 
-    const { data: mp } = await supabase
+    const admin = createAdminClient();
+    const { data: mp } = await admin
       .from('master_profiles')
-      .select('slug, referral_code')
+      .select('slug, partner_invite_token')
       .eq('id', user.id)
       .single();
 
     if (!mp) return { link: null, error: 'Профіль майстра не знайдено' };
 
+    let token = mp.partner_invite_token as string | null;
+    if (!token) {
+      token = generateSecureToken(8);
+      const { error: updateError } = await admin
+        .from('master_profiles')
+        .update({ partner_invite_token: token })
+        .eq('id', user.id);
+      if (updateError?.code === '23505') {
+        token = generateSecureToken(8);
+        await admin.from('master_profiles').update({ partner_invite_token: token }).eq('id', user.id);
+      }
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const link = `${baseUrl}/dashboard/partners/join?token=${mp.referral_code}`;
-    
-    return { link, error: null };
+    return { link: `${baseUrl}/dashboard/partners/join?token=${token}`, error: null };
   } catch (err: any) {
     console.error('[getPartnerInviteLink] error:', err);
     return { link: null, error: 'Не вдалося згенерувати посилання.' };
@@ -32,7 +46,7 @@ export async function getPartnerInviteLink(): Promise<{ link: string | null; err
 }
 
 /**
- * Accepts a partner invitation.
+ * Accepts a partner invitation using partner_invite_token.
  */
 export async function acceptPartnerInvitation(token: string): Promise<{ success: boolean; error: string | null }> {
   try {
@@ -42,11 +56,10 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
 
     const admin = createAdminClient();
 
-    // 1. Find the inviting master by token (referral_code)
     const { data: invitingMaster } = await admin
       .from('master_profiles')
       .select('id')
-      .eq('referral_code', token)
+      .eq('partner_invite_token', token)
       .single();
 
     if (!invitingMaster) return { success: false, error: 'Недійсне або прострочене запрошення' };
@@ -59,7 +72,7 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
       .maybeSingle();
 
     if (existing) {
-       await admin
+      await admin
         .from('master_partners')
         .update({ status: 'accepted' })
         .eq('id', existing.id);
@@ -81,8 +94,44 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
 }
 
 /**
- * Toggles is_visible on a master_alliance record (for public "Trusted Partners" display).
- * Only the inviter or invitee may toggle their own alliance row.
+ * Toggles is_visible on a master_partners record.
+ * Controls whether this partner appears on the master's public page.
+ */
+export async function togglePartnerVisibility(
+  partnerRowId: string,
+  isVisible: boolean,
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Не авторизований' };
+
+    const admin = createAdminClient();
+
+    const { data: row } = await admin
+      .from('master_partners')
+      .select('id, master_id')
+      .eq('id', partnerRowId)
+      .maybeSingle();
+
+    if (!row) return { success: false, error: 'Партнера не знайдено' };
+    if (row.master_id !== user.id) return { success: false, error: 'Доступ заборонено' };
+
+    await admin
+      .from('master_partners')
+      .update({ is_visible: isVisible })
+      .eq('id', partnerRowId);
+
+    revalidatePath('/dashboard/growth');
+    return { success: true, error: null };
+  } catch (err: any) {
+    console.error('[togglePartnerVisibility] error:', err);
+    return { success: false, error: 'Не вдалося змінити видимість.' };
+  }
+}
+
+/**
+ * Toggles is_visible on a master_alliances record (M2M referral network).
  */
 export async function toggleAllianceVisibility(
   allianceId: string,
@@ -120,7 +169,7 @@ export async function toggleAllianceVisibility(
 }
 
 /**
- * Removes a partner from the network.
+ * Removes a partner from both directions of the master_partners table.
  */
 export async function removePartner(partnerId: string): Promise<{ success: boolean; error: string | null }> {
   try {
@@ -142,4 +191,3 @@ export async function removePartner(partnerId: string): Promise<{ success: boole
     return { success: false, error: 'Не вдалося видалити партнера.' };
   }
 }
-

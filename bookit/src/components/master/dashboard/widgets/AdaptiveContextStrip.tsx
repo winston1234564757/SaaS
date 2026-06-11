@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
-  Zap, Megaphone, Share2, CalendarDays, TrendingUp, Link2,
+  Zap, Megaphone, Share2, Sparkles, TrendingUp, Link2,
 } from 'lucide-react';
 import { useBusyness } from '@/lib/supabase/hooks/useBusyness';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -47,7 +47,7 @@ function StripCard({ card, index, accent = false }: CardProps) {
       variants={cardVariants}
       initial="hidden"
       animate="visible"
-      className="bento-card p-4 flex flex-col gap-3 group"
+      className="bento-card p-4 flex flex-col gap-3"
       style={accent ? { background: 'color-mix(in srgb, var(--accent) 8%, var(--surface))' } : undefined}
     >
       <div className="flex items-start gap-3">
@@ -56,7 +56,7 @@ function StripCard({ card, index, accent = false }: CardProps) {
           style={{
             background: accent
               ? 'color-mix(in srgb, var(--accent) 16%, transparent)'
-              : 'color-mix(in srgb, var(--accent-on, var(--accent)) 8%, transparent)',
+              : 'color-mix(in srgb, var(--accent) 8%, transparent)',
             color: 'var(--accent)',
           }}
         >
@@ -71,9 +71,10 @@ function StripCard({ card, index, accent = false }: CardProps) {
           </p>
         </div>
       </div>
-      <button type="button"
+      <button
+        type="button"
         onClick={card.onCta}
-        className="self-start text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.95] cursor-pointer"
+        className="self-start text-[11px] font-semibold px-3 py-1.5 rounded-full transition-colors duration-150 active:scale-[0.95]"
         style={{
           background: accent
             ? 'var(--accent)'
@@ -93,16 +94,16 @@ export function AdaptiveContextStrip() {
   const { showToast } = useToast();
   const { data: busyness } = useBusyness();
 
-  const today = busyness?.today ?? null;
-  const rate = today?.rate;
-  const booked = today?.booked ?? 0;
-  const total = today?.total ?? 0;
-  const free = Math.max(0, total - booked);
+  const today     = busyness?.today ?? null;
+  const rate      = today?.rate;
+  const booked    = today?.booked ?? 0;
+  const total     = today?.total ?? 0;
+  const free      = Math.max(0, total - booked);
   const isWorkingDay = today !== null;
 
   const state: StripState = getState(rate, isWorkingDay);
 
-  const slug = masterProfile?.slug ?? '';
+  const slug       = masterProfile?.slug ?? '';
   const profileUrl = slug ? `https://bookit.com.ua/${slug}` : '';
 
   function copyLink() {
@@ -154,11 +155,11 @@ export function AdaptiveContextStrip() {
         onCta: copyLink,
       },
       {
-        Icon: CalendarDays,
-        title: 'Найближчі вільні дні',
-        subtitle: 'Клієнти хочуть знати, коли ти вільна',
-        cta: 'Переглянути',
-        onCta: () => router.push('/dashboard/bookings'),
+        Icon: Sparkles,
+        title: 'Вільні дні цього тижня',
+        subtitle: 'Зроби сторіс — клієнти побачать і запишуться',
+        cta: 'Сторіс',
+        onCta: () => router.push('/dashboard/marketing?mode=free_slots'),
       },
     ],
     busy: [

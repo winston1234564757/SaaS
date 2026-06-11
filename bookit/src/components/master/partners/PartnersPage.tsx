@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Copy, Check, Users, Trash2, ExternalLink, Handshake, Eye, EyeOff } from 'lucide-react';
+import { Copy, Check, Users, Trash2, ExternalLink, Handshake, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { removePartner, toggleAllianceVisibility } from '@/lib/actions/partners';
+import { removePartner, togglePartnerVisibility, toggleAllianceVisibility } from '@/lib/actions/partners';
 import Link from 'next/link';
 
 interface Partner {
@@ -15,6 +15,7 @@ interface Partner {
   slug: string;
   name: string;
   emoji: string;
+  isVisible: boolean;
 }
 
 interface Alliance {
@@ -36,6 +37,9 @@ interface Props {
 export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }: Props) {
   const [copied, setCopied] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [partnerVisibility, setPartnerVisibility] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(partners.map(p => [p.id, p.isVisible]))
+  );
   const [allianceVisibility, setAllianceVisibility] = useState<Record<string, boolean>>(
     () => Object.fromEntries(alliances.map(a => [a.id, a.isVisible]))
   );
@@ -54,7 +58,15 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
     setIsDeleting(null);
   };
 
-  const handleToggleVisibility = async (allianceId: string) => {
+  const handleTogglePartnerVisibility = async (partnerRowId: string) => {
+    const next = !partnerVisibility[partnerRowId];
+    setPartnerVisibility(prev => ({ ...prev, [partnerRowId]: next }));
+    setTogglingId(partnerRowId);
+    await togglePartnerVisibility(partnerRowId, next);
+    setTogglingId(null);
+  };
+
+  const handleToggleAllianceVisibility = async (allianceId: string) => {
     const next = !allianceVisibility[allianceId];
     setAllianceVisibility(prev => ({ ...prev, [allianceId]: next }));
     setTogglingId(allianceId);
@@ -92,12 +104,12 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 <button
                   type="button"
                   onClick={copyLink}
-                  className="bg-primary-foreground text-primary px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-primary-foreground/90 active:scale-[0.95] transition-all cursor-pointer"
+                  className="bg-primary-foreground text-primary px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-primary-foreground/90 active:scale-[0.95] transition-colors duration-150"
                 >
                   {copied ? (
                     <><Check size={14} /> Скопійовано</>
                   ) : (
-                    <><Copy size={14} /> Копіювати</>
+                    <><Copy size={14} /> Скопіювати</>
                   )}
                 </button>
               </div>
@@ -116,7 +128,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
             </div>
             <div className="w-px h-8 bg-border" />
             <p className="text-[11px] text-muted-foreground">
-              *Ваші партнери будуть відображатися на вашій публічній сторінці бронювання.
+              *Партнери з увімкненою видимістю з'являться на вашій публічній сторінці.
             </p>
           </div>
         </div>
@@ -130,56 +142,79 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
         {activePartners.length === 0 ? (
           <div className="bento-card p-12 border-dashed border-2 border-border bg-transparent text-center flex flex-col items-center gap-4">
-             <div className="size-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
-               <Users size={32} className="text-muted-foreground/40" />
-             </div>
-             <div>
-               <p className="text-sm font-bold text-foreground">Поки що партнерів не додано</p>
-               <p className="text-xs text-muted-foreground/60 mt-1 italic">Поділися лінком вище з майстрами-знайомими</p>
-             </div>
+            <div className="size-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+              <Users size={32} className="text-muted-foreground/40" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">Поки що партнерів не додано</p>
+              <p className="text-xs text-muted-foreground/60 mt-1 italic">Поділися лінком вище з майстрами-знайомими</p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {activePartners.map((partner) => (
-              <motion.div
-                key={partner.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bento-card p-4 flex items-center justify-between gap-4"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                   <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground shrink-0 font-bold text-sm">
-                     {partner.name.slice(0, 2).toUpperCase()}
-                   </div>
-                   <div className="min-w-0">
+            {activePartners.map((partner) => {
+              const visible = partnerVisibility[partner.id] ?? partner.isVisible;
+              return (
+                <motion.div
+                  key={partner.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bento-card p-4 flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground shrink-0 font-bold text-sm">
+                      {partner.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
                       <p className="text-sm font-bold text-foreground truncate">{partner.name}</p>
-                      <Link 
-                        href={`/${partner.slug}`} 
+                      <Link
+                        href={`/${partner.slug}`}
                         target="_blank"
                         className="text-[10px] text-primary font-medium flex items-center gap-1 hover:underline"
                       >
                         {partner.slug} <ExternalLink size={10} />
                       </Link>
-                   </div>
-                </div>
+                    </div>
+                  </div>
 
-                <button
-                  type="button"
-                  aria-label="Видалити партнера"
-                  onClick={() => handleDelete(partner.partnerId)}
-                  disabled={isDeleting === partner.partnerId}
-                  className="size-9 rounded-xl flex items-center justify-center text-destructive hover:bg-destructive/10 active:scale-[0.88] transition-all disabled:opacity-50 cursor-pointer"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </motion.div>
-            ))}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      aria-pressed={visible}
+                      aria-label={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
+                      onClick={() => handleTogglePartnerVisibility(partner.id)}
+                      disabled={togglingId === partner.id}
+                      className={cn(
+                        'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 active:scale-[0.95]',
+                        visible
+                          ? 'bg-primary/12 text-primary hover:bg-primary/20'
+                          : 'bg-secondary text-muted-foreground/60 hover:bg-secondary/80',
+                        togglingId === partner.id && 'opacity-50 pointer-events-none',
+                      )}
+                    >
+                      {visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                      {visible ? 'Видно' : 'Приховано'}
+                    </button>
+
+                    <button
+                      type="button"
+                      aria-label="Видалити партнера"
+                      onClick={() => handleDelete(partner.partnerId)}
+                      disabled={isDeleting === partner.partnerId}
+                      className="size-9 rounded-xl flex items-center justify-center text-destructive hover:bg-destructive/10 active:scale-[0.88] transition-colors duration-150 disabled:opacity-50"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Alliance Visibility — Referral Network */}
+      {/* Alliance Visibility — M2M Referral Network */}
       {alliances.length > 0 && (
         <div className="flex flex-col gap-3">
           <h2 className="text-sm font-bold text-foreground uppercase tracking-widest pl-1">
@@ -216,10 +251,10 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                     type="button"
                     aria-pressed={visible}
                     aria-label={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
-                    onClick={() => handleToggleVisibility(al.id)}
+                    onClick={() => handleToggleAllianceVisibility(al.id)}
                     disabled={togglingId === al.id}
                     className={cn(
-                      'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.95] cursor-pointer',
+                      'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 active:scale-[0.95]',
                       visible
                         ? 'bg-primary/12 text-primary hover:bg-primary/20'
                         : 'bg-secondary text-muted-foreground/60 hover:bg-secondary/80',

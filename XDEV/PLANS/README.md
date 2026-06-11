@@ -1,37 +1,31 @@
 # XDEV/PLANS — Стратегічні Плани
 
-> Документи довгострокового планування. На відміну від `TASK.md` (поточні спринти), плани тут — це дорожні карти на тижні/місяці.
+> Документи довгострокового планування.
 
 ---
 
-## Індекс планів
+## Активні плани
 
-| ID | Назва | Статус | Scope | Created |
-|---|---|---|---|---|
-| [MTRP-2026-06-02](./MTRP-2026-06-02.md) | Master Technical Remediation Plan | ✅ COMPLETE | 71 items · 5 phases · 42/71 closed | 2026-06-02 |
-| [FROST-POLISH-2026-06-07](./FROST-POLISH-2026-06-07.md) | Frost Theme Polish Sprint | ✅ COMPLETE | 9 files · 8 sprints · WCAG AA · animations | 2026-06-07 |
-| IRP-2026-06-07 | Impeccable Remediation Plan | ✅ COMPLETE → DEPRECATED | 8 phases · A-H · Security+Theme+Wizard+Arch+Audit | 2026-06-07 |
+| ID | Назва | Статус | Папка |
+|---|---|---|---|
+| SPRINT-02-2026-06-08 | Backlog Sprint 02 (16 задач + 9 desktop layouts) | 🟡 IN PROGRESS | [SPRINT-02-BACKLOG/](./SPRINT-02-BACKLOG/) |
+
+## Завершені плани (архів)
+
+| ID | Назва | Статус |
+|---|---|---|
+| IRP-2026-06-07 | Impeccable Remediation Plan (8 phases A-H) | ✅ COMPLETE |
+| MTRP-2026-06-02 | Master Technical Remediation Plan | ✅ COMPLETE |
+| FROST-POLISH-2026-05-19 | Theme Polish Sprint | ✅ COMPLETE |
+| Backlog-2026-06-09 | Partners + C2B/C2C | ✅ COMPLETE |
 
 ---
 
 ## Naming Convention
 
-- **MTRP-** — Master Technical Remediation Plan (tech debt, refactors, fixes)
-- **FRP-** — Feature Roadmap Plan (new features, by quarter)
-- **ADP-** — Architecture Decision Plan (architectural pivots)
-- **MIG-** — Migration Plan (data migration, schema changes)
+- **MTRP-** — Master Technical Remediation Plan
+- **FRP-** — Feature Roadmap Plan
+- **ADP-** — Architecture Decision Plan
+- **MIG-** — Migration Plan
 
-**Date format:** `YYYY-MM-DD`
-
----
-
-## Як створити новий план
-
-1. Скопіюй шаблон з існуючого плану
-2. Дотримуйся структури: Executive Summary → Inventory → Architecture → Execution → KPIs
-3. Додай у таблицю вище
-4. Повідом у `TASK.md` якщо план впливає на поточний спринт
-
----
-
-*Maintained by Claude plan-mode sessions. Update after each plan completion.*
+*Maintained by Claude. Update after each plan completion.*

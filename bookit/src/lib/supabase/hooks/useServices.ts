@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
-import { type Service, INITIAL_SERVICES } from '@/components/master/services/types';
+import { type Service } from '@/components/master/services/types';
 import type { ServiceIconName } from '@/lib/service-icons';
 import { safeQuery, safeMutation } from '../safeQuery';
 
@@ -84,7 +84,6 @@ export function useServices() {
       return (result.data ?? []).map(rowToService);
     },
     enabled: !!masterId,
-    placeholderData: INITIAL_SERVICES,
     staleTime: 60_000,
   });
 
@@ -186,23 +185,26 @@ export function useServices() {
 
   async function reorderServices(services: Service[]) {
     const supabase = createClient();
-    for (const [index, service] of services.entries()) {
-      const { error } = await supabase
-        .from('services')
-        .update({ sort_order: index + 1 })
-        .eq('id', service.id)
-        .eq('master_id', masterId!);
-      if (error) {
-        throw Object.assign(new Error(error.message ?? 'Failed to reorder services'), {
-          __safeResult: { error },
-        });
-      }
+    const results = await Promise.all(
+      services.map((service, index) =>
+        supabase
+          .from('services')
+          .update({ sort_order: index + 1 })
+          .eq('id', service.id)
+          .eq('master_id', masterId!)
+      )
+    );
+    const failed = results.find(r => r.error);
+    if (failed?.error) {
+      throw Object.assign(new Error(failed.error.message ?? 'Failed to reorder services'), {
+        __safeResult: { error: failed.error },
+      });
     }
     await qc.invalidateQueries({ queryKey: key });
   }
 
   return {
-    services: query.data ?? INITIAL_SERVICES,
+    services: query.data ?? [],
     isLoading: query.isLoading,
     error: query.error as Error | null,
     addService: addMutation.mutateAsync,

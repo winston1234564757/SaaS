@@ -88,30 +88,31 @@ export type NotifEventType =
 
 export const notifMap: Record<NotifEventType, NotifTemplate> = {
 
-  // ── BOOKING_CREATED (guest online booking → client) ─────────────────────────
+  // ── BOOKING_CREATED (new booking → master) ───────────────────────────────────
   booking_created: {
     isCritical: true,
     inApp: (d) => ({
-      title: 'Запис прийнято',
-      body: `${fmtDate(d.date!)} о ${fmtTime(d.startTime!)} — ${d.services}`,
+      title: 'Новий запис',
+      body: `${d.clientName} — ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}`,
     }),
     push: (d) => ({
-      title: '✅ Запис прийнято',
-      body: `${fmtDate(d.date!)} о ${fmtTime(d.startTime!)} — ${d.services}`,
-      url: d.bookingId ? `/my/bookings?bookingId=${d.bookingId}` : '/my/bookings',
+      title: '🆕 Новий запис',
+      body: `${d.clientName} — ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}`,
+      url: d.bookingId ? `/dashboard/bookings?bookingId=${d.bookingId}` : '/dashboard/bookings',
     }),
     telegram: (d) => ({
       text:
-        `✅ <b>Запис прийнято</b>\n\n` +
+        `🆕 <b>Новий запис</b>\n\n` +
+        `👤 ${escHtml(d.clientName ?? '')}\n` +
         `📅 ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}\n` +
-        `💅 ${escHtml(d.services ?? '')}\n` +
-        `👤 Майстер: <b>${escHtml(d.masterName ?? '')}</b>`,
+        `💅 ${escHtml(d.services ?? '')}` +
+        (d.totalPrice ? `\n💰 ${Math.round(d.totalPrice / 100)} грн` : ''),
       buttons: d.bookingId
-        ? [[{ text: 'Мої записи', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Відкрити запис', url: `${SITE_URL}/dashboard/bookings?bookingId=${d.bookingId}` }]]
         : undefined,
     }),
     sms: (d) =>
-      `BookIT: Запис прийнято. ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}, ${d.services}.`,
+      `BookIT: Новий запис від ${d.clientName ?? 'клієнта'}. ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}, ${d.services}.`,
   },
 
   // ── BOOKING_CONFIRMED (master confirmed → client) ───────────────────────────

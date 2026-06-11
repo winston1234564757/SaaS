@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendTelegramMessage, escHtml } from '@/lib/telegram';
 
 const MONO_TOKEN = process.env.MONO_API_KEY!;
 
@@ -195,5 +196,48 @@ export async function cancelSubscription(): Promise<{ ok: true } | { error: stri
   } catch (e) {
     console.error('[cancelSubscription] fatal:', String(e));
     return { error: 'Помилка при скасуванні підписки' };
+  }
+}
+
+export async function submitBetaRequest(data: {
+  name: string;
+  contact: string;
+  studio_size: string;
+}): Promise<{ ok: true } | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Unauthorized' };
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.from('beta_requests').insert({
+      master_id:   user.id,
+      name:        data.name,
+      contact:     data.contact,
+      studio_size: data.studio_size,
+    });
+
+    if (error) {
+      console.error('[submitBetaRequest] insert error:', error.message);
+      return { error: 'Не вдалося зберегти заявку. Спробуйте пізніше.' };
+    }
+
+    const adminChatId = process.env.ADMIN_TG_CHAT_ID;
+    if (adminChatId) {
+      await sendTelegramMessage(
+        adminChatId,
+        `<b>Нова заявка на Studio Beta</b>\n\n` +
+        `Ім'я: ${escHtml(data.name)}\n` +
+        `Контакт: ${escHtml(data.contact)}\n` +
+        `Студія: ${escHtml(data.studio_size)} майстрів\n` +
+        `Master ID: <code>${escHtml(user.id)}</code>`
+      );
+    }
+
+    console.log('[submitBetaRequest] beta request saved for master:', user.id);
+    return { ok: true };
+  } catch (e) {
+    console.error('[submitBetaRequest] fatal:', String(e));
+    return { error: 'Помилка надсилання заявки' };
   }
 }

@@ -10,6 +10,8 @@ import { PushPrompt } from './PushPrompt';
 import { MONTH_S, fmt, slide } from './helpers';
 import type { WizardService, CartItem } from './types';
 import { getOrCreateReferralLink } from '@/lib/actions/referrals';
+import { PostBookingPartnersBlock } from '@/components/public/PostBookingPartnersBlock';
+import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
 
 interface BookingSuccessProps {
   selectedServices: WizardService[];
@@ -28,6 +30,7 @@ interface BookingSuccessProps {
   finalTotal: number;
   direction: number;
   onClose: () => void;
+  partners?: TrustedPartner[];
 }
 
 export function BookingSuccess({
@@ -46,6 +49,7 @@ export function BookingSuccess({
   finalTotal,
   direction,
   onClose,
+  partners = [],
 }: BookingSuccessProps) {
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -143,6 +147,8 @@ export function BookingSuccess({
           </div>
         </div>
       )}
+
+      <PostBookingPartnersBlock partners={partners} />
 
       {!clientUserId && createdBookingId ? (
         <div className="w-full border-t border-border pt-5">

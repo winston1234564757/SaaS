@@ -27,7 +27,7 @@ export function StepProgress({ step, hasProducts }: { step: WizardStep; hasProdu
         return (
           <motion.div
             key={s}
-            animate={{ scale: isActive ? 1.75 : 1 }}
+            animate={{ scale: isActive ? 1.3 : 1 }}
             transition={prefersReduced ? { duration: 0 } : spring}
             style={{
               boxShadow: isActive

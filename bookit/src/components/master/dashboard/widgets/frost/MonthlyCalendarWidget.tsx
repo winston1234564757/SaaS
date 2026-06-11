@@ -178,18 +178,13 @@ export function MonthlyCalendarWidget() {
             <button type="button"
               key={String(opt.val)}
               onClick={() => { setDirection(0); setIsExpanded(opt.val); setSelectedDay(null); }}
-              className="relative px-2.5 py-[4px] rounded-full text-[11px] font-bold transition-colors duration-100"
-              style={{ color: opt.val === isExpanded ? 'var(--accent-on)' : 'var(--text-tertiary)' }}
+              className="px-2.5 py-[4px] rounded-full text-[11px] font-bold transition duration-150 ease-out"
+              style={{
+                color: opt.val === isExpanded ? 'var(--accent-on)' : 'var(--text-tertiary)',
+                background: opt.val === isExpanded ? 'var(--accent)' : 'transparent',
+              }}
             >
-              {opt.val === isExpanded && (
-                <motion.div
-                  layoutId="frost-cal-tab"
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: 'var(--accent)' }}
-                  transition={{ type: 'spring' as const, duration: 0.35, bounce: 0 }}
-                />
-              )}
-              <span className="relative z-10">{opt.label}</span>
+              {opt.label}
             </button>
           ))}
         </div>

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useTransition, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ChevronDown, User, Scissors, Star, Trash2, Loader2, Eye, EyeOff, UserX } from 'lucide-react';
+import { ChevronLeft, ChevronDown, User, Scissors, Star, Trash2, Loader2, Eye, EyeOff, UserX, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/lib/toast/context';
 import { PortfolioPhotoUploader } from './PortfolioPhotoUploader';
@@ -206,6 +207,15 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
           <ChevronLeft size={18} /> Назад
         </button>
         <div className="flex items-center gap-2">
+          {itemId && (
+            <Link
+              href={`/dashboard/portfolio?drawer=story_generator&prePortfolioId=${itemId}`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all active:scale-[0.95]"
+            >
+              <Sparkles size={13} />
+              Сторіс
+            </Link>
+          )}
           {itemId && (
             <button type="button"
               onClick={handleTogglePublish}

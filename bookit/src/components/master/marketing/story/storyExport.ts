@@ -4,6 +4,14 @@ export async function exportCanvasPng(node: HTMLElement, filename: string, skipS
     skipSave ? Promise.resolve(null) : import('file-saver')
   ]);
 
+  // Ensure all fonts are loaded before capture
+  if (typeof document !== 'undefined' && document.fonts) {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise(r => setTimeout(r, 1500)),
+    ]);
+  }
+
   const imgs = Array.from(node.querySelectorAll('img'));
 
   try {
@@ -14,7 +22,7 @@ export async function exportCanvasPng(node: HTMLElement, filename: string, skipS
 
     const dataUrl = await domToJpeg(node, {
       scale: 3.5,
-      quality: 0.9,
+      quality: 0.95,
       width: 360,
       height: 640,
       backgroundColor: '#ffffff',

@@ -2,7 +2,7 @@
 // src/components/shared/wizard/ServiceSelector.tsx
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Check, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { formatDurationFull } from '@/lib/utils/dates';
@@ -414,27 +414,32 @@ export function ServiceSelector({
       </div>
 
       {/* CTA */}
-      <div className="mt-auto pt-5 pb-2 sticky bottom-0 bg-gradient-to-t from-secondary via-secondary/90 to-transparent z-10">
-        <button
-          type="button"
-          disabled={!canGoToDatetime}
-          onClick={onContinue}
-          data-testid="wizard-next-btn"
-          className={`w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-all shadow-lg cursor-pointer ${
-            canGoToDatetime
-              ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]'
-              : 'bg-secondary/60 border border-border text-muted-foreground/60 cursor-not-allowed shadow-none'
-          }`}
-        >
-          {canGoToDatetime
-            ? `Далі · ${pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')} · ${fmt(c2cDiscountPct ? Math.round(totalServicesPrice * (1 - c2cDiscountPct / 100)) : totalServicesPrice)}`
-            : 'Обери послугу'}
-        </button>
+      <div className="mt-auto pt-5 pb-2 sticky bottom-0 bg-gradient-to-t from-[var(--page-bg)] via-[var(--page-bg)]/90 to-transparent z-10">
+        <AnimatePresence initial={false}>
+          {canGoToDatetime && (
+            <motion.div
+              key="main-cta"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 14 }}
+              transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
+            >
+              <button
+                type="button"
+                onClick={onContinue}
+                data-testid="wizard-next-btn"
+                className="w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-opacity shadow-lg cursor-pointer bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]"
+              >
+                {`Далі · ${pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')} · ${fmt(c2cDiscountPct ? Math.round(totalServicesPrice * (1 - c2cDiscountPct / 100)) : totalServicesPrice)}`}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {mode === 'client' && hasProducts && !canGoToDatetime && onSkipToProducts && (
           <button
             type="button"
             onClick={onSkipToProducts}
-            className="w-full mt-3 py-3 rounded-[100px] text-[11px] font-bold uppercase tracking-widest text-primary border-2 border-primary/20 hover:bg-primary/5 active:scale-[0.95] transition-all bg-secondary/40 cursor-pointer"
+            className="w-full py-3 rounded-[100px] text-[11px] font-bold uppercase tracking-widest text-primary border-2 border-primary/20 hover:bg-primary/5 active:scale-[0.95] transition-all bg-secondary/40 cursor-pointer"
           >
             Тільки товари
           </button>

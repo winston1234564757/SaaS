@@ -37,7 +37,7 @@ export function BroadcastsTab({ broadcastsUsed, isStarter }: Props) {
             onClick={() => router.push('/dashboard/marketing/new')}
             data-testid="new-broadcast-btn"
             className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-semibold text-white transition-opacity active:opacity-80"
-            style={{ background: 'linear-gradient(135deg, #2C1A14, #4A2E24)' }}
+            style={{ background: 'var(--accent)' }}
           >
             <Plus size={15} />
             Нова
@@ -52,8 +52,8 @@ export function BroadcastsTab({ broadcastsUsed, isStarter }: Props) {
       {isStarter && (
         <div className="mx-4 mb-4 px-4 py-3 rounded-2xl flex items-start gap-3"
           style={{
-            background: 'linear-gradient(135deg, rgba(212,147,90,0.12), rgba(120,154,153,0.10))',
-            border: '1px solid rgba(212,147,90,0.28)',
+            background: 'rgba(99,102,241,0.07)',
+            border: '1px solid rgba(99,102,241,0.18)',
           }}
         >
           <Zap size={16} className="text-warning shrink-0 mt-0.5" />

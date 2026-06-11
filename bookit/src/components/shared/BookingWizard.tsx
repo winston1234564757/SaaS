@@ -43,6 +43,7 @@ export function BookingWizard({
   initialDate, initialTime, initialClientId, initialClientName, initialClientPhone,
   c2cRefCode = null, c2cDiscountPct = null,
   masterC2cEnabled = false, masterC2cDiscountPct = null,
+  trustedPartners = [],
 }: BookingWizardProps) {
 
   const isFlashFastTrack = !!(flashDeal?.slotDate && flashDeal?.slotTime);
@@ -102,13 +103,17 @@ export function BookingWizard({
   const phoneDiscountTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    if (mode !== 'client' || watchPhone.length < 13) {
-      setPhoneDiscountPct(0);
-      return;
-    }
+    if (mode !== 'client') { setPhoneDiscountPct(0); return; }
+    // Normalize to +380XXXXXXXXX before lookup — watchPhone may be 0XX or 38XX format
+    let digits = watchPhone.replace(/\D/g, '');
+    if (digits.length === 10 && digits.startsWith('0')) digits = '38' + digits;
+    else if (digits.length === 11 && digits.startsWith('80')) digits = '3' + digits;
+    const normalizedPhone = '+' + digits;
+    if (!/^\+380\d{9}$/.test(normalizedPhone)) { setPhoneDiscountPct(0); return; }
+
     clearTimeout(phoneDiscountTimer.current);
     phoneDiscountTimer.current = setTimeout(async () => {
-      const result = await getActivePhoneDiscount(watchPhone, masterId);
+      const result = await getActivePhoneDiscount(normalizedPhone, masterId);
       if (!result) { setPhoneDiscountPct(0); return; }
       if (result.service_id) {
         const ids = selectedServices.map(s => s.id);
@@ -422,6 +427,7 @@ export function BookingWizard({
                       finalTotal={finalTotal}
                       direction={direction}
                       onClose={onClose}
+                      partners={trustedPartners}
                     />
                   </div>
                 )}

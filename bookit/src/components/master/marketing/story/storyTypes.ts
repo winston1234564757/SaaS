@@ -91,6 +91,8 @@ export interface CanvasProps {
   platePos: 'top' | 'center' | 'bottom';
   textAlign: 'left' | 'center' | 'right';
   transparency: number;
+  showSticker?: boolean;
+  ctaText?: string;
   isExporting?: boolean;
 }
 
@@ -101,4 +103,5 @@ export interface StoryGeneratorProps {
   masterName?: string;
   masterSlug?: string;
   initialMode?: string;
+  initialPortfolioId?: string;
 }

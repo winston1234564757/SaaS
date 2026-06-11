@@ -7,6 +7,62 @@ import { useToast, type ToastType } from '@/lib/toast/context';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 
+// ── Web Audio: critical notification sounds ──────────────────────────────────
+
+let _audioCtx: AudioContext | null = null;
+
+function getAudioCtx(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (!_audioCtx) _audioCtx = new AudioContext();
+    return _audioCtx;
+  } catch {
+    return null;
+  }
+}
+
+function playNotificationSound(variant: 'positive' | 'warning'): void {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+
+  const play = () => {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+
+    if (variant === 'positive') {
+      osc.frequency.setValueAtTime(523.25, now);        // C5
+      osc.frequency.setValueAtTime(659.25, now + 0.12); // E5
+    } else {
+      osc.frequency.setValueAtTime(349.23, now);        // F4
+    }
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.22, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+    osc.start(now);
+    osc.stop(now + 0.65);
+  };
+
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(play).catch(() => {});
+  } else {
+    play();
+  }
+}
+
+function soundVariant(type: string): 'positive' | 'warning' | null {
+  if (type === 'new_booking' || type === 'new_review') return 'positive';
+  if (type === 'booking_cancelled' || type === 'unhandled_booking') return 'warning';
+  return null;
+}
+
+// ── Hook ─────────────────────────────────────────────────────────────────────
+
 /**
  * Consolidated Realtime channels for the master dashboard.
  */
@@ -82,6 +138,9 @@ export function useRealtimeNotifications() {
           };
 
           qc.invalidateQueries({ queryKey: ['notifications', masterId] });
+
+          const sv = soundVariant(n.type);
+          if (sv) playNotificationSound(sv);
 
           if (n.type === 'support_user_reply' && (pathname === '/dashboard/support/chat' || pathname === '/my/support/chat')) {
             console.log('[Realtime] Suppressing support notification toast because user is on support chat page.');

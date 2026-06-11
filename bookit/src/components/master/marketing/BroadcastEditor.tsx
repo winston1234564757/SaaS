@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X, Send, Users, MessageSquare, Percent, Link2,
+  X, Send, Bell, Navigation, Smartphone, Users, MessageSquare, Percent, Link2,
   ChevronDown, ChevronUp, Eye, Loader2, Tag, ShoppingBag,
   Scissors, Zap, Search, Check, UserCheck, ChevronRight,
 } from 'lucide-react';
@@ -47,19 +47,19 @@ interface ClientPreviewItem {
 
 const TAG_OPTIONS: { value: BroadcastTagFilter; label: string; color: string; bg: string }[] = [
   { value: 'vip',      label: 'VIP',          color: '#D4935A', bg: '#D4935A15' },
-  { value: 'new',      label: 'Новий',         color: '#789A99', bg: '#789A9915' },
-  { value: 'regular',  label: 'Постійний',     color: '#5C9E7A', bg: '#5C9E7A15' },
+  { value: 'new',      label: 'Новий',         color: '#0369A1', bg: '#0369A10F' },
+  { value: 'regular',  label: 'Постійний',     color: '#5C9E7A', bg: '#5C9E7A0D' },
   { value: 'big_check',label: 'Великий чек',   color: '#D4935A', bg: '#D4935A15' },
-  { value: 'sleeping', label: 'Спить',         color: '#A8928D', bg: '#A8928D15' },
-  { value: 'at_risk',  label: 'Під ризиком',   color: '#C05B5B', bg: '#C05B5B15' },
-  { value: 'lost',     label: 'Втрачений',     color: '#6B5750', bg: '#6B575015' },
-  { value: 'active',   label: 'Активний',      color: '#5C9E7A', bg: '#5C9E7A15' },
+  { value: 'sleeping', label: 'Спить',         color: '#52525B', bg: '#52525B0F' },
+  { value: 'at_risk',  label: 'Під ризиком',   color: '#C05B5B', bg: '#C05B5B0D' },
+  { value: 'lost',     label: 'Втрачений',     color: '#475569', bg: '#4755690F' },
+  { value: 'active',   label: 'Активний',      color: '#5C9E7A', bg: '#5C9E7A0D' },
 ];
 
-const CHANNEL_OPTIONS: { value: BroadcastChannel; label: string; icon: string }[] = [
-  { value: 'push',     label: 'Push',     icon: '🔔' },
-  { value: 'telegram', label: 'Telegram', icon: '✈️' },
-  { value: 'sms',      label: 'SMS',      icon: '📱' },
+const CHANNEL_OPTIONS: { value: BroadcastChannel; label: string; icon: ReactNode }[] = [
+  { value: 'push',     label: 'Push',     icon: <Bell size={13} /> },
+  { value: 'telegram', label: 'Telegram', icon: <Navigation size={13} /> },
+  { value: 'sms',      label: 'SMS',      icon: <Smartphone size={13} /> },
 ];
 
 const EXPIRY_OPTIONS = [
@@ -238,22 +238,9 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
   const pickerClients: ClientPreviewItem[] = (pickerData?.clients ?? []) as ClientPreviewItem[];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <motion.div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        onClick={onClose}
-      />
-
-      <motion.div
-        className="relative w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl flex flex-col"
-        style={{ background: 'var(--surface)', backdropFilter: 'blur(20px)' }}
-        initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 60, opacity: 0 }}
-      >
+    <div className="max-w-2xl mx-auto px-4 pb-24">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-secondary sticky top-0 z-10"
-          style={{ background: 'var(--surface)' }}>
+        <div className="flex items-center justify-between pt-5 pb-4 border-b border-secondary mb-2">
           <div>
             <h2 className="font-semibold text-foreground text-base">
               {step === 'confirm' ? 'Підтвердження розсилки' : 'Нова розсилка'}
@@ -264,7 +251,12 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               </p>
             )}
           </div>
-          <button type="button" onClick={onClose} aria-label="Закрити" className="p-2 rounded-full hover:bg-secondary transition-colors active:scale-95 transition-all">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Закрити"
+            className="p-2 rounded-full hover:bg-secondary transition-colors duration-150 active:scale-[0.95] cursor-pointer"
+          >
             <X size={18} className="text-muted-foreground" />
           </button>
         </div>
@@ -305,15 +297,19 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               {error && <p className="text-xs text-destructive px-1">{error}</p>}
 
               <div className="flex gap-3">
-                <button type="button" onClick={() => setStep('edit')}
-                  className="flex-1 py-3 rounded-2xl border border-border text-sm text-muted-foreground font-medium">
+                <button
+                  type="button"
+                  onClick={() => setStep('edit')}
+                  className="flex-1 py-3 rounded-2xl border border-border text-sm text-muted-foreground font-medium transition-colors duration-150 hover:bg-secondary/40 active:scale-[0.95] cursor-pointer"
+                >
                   Назад
                 </button>
-                <button type="button"
+                <button
+                  type="button"
                   onClick={handleSend}
                   disabled={isSending}
                   data-testid="confirm-send-btn"
-                  className="flex-[2] py-3 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-60 active:scale-95 transition-all"
+                  className="flex-[2] py-3 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-colors duration-150 disabled:opacity-60 active:scale-[0.95] cursor-pointer"
                   style={{ background: 'var(--btn-primary-bg)' }}
                 >
                   {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
@@ -356,7 +352,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       <button type="button"
                         key={mode}
                         onClick={() => setTargetMode(mode)}
-                        className="px-3 py-1.5 transition-all"
+                        className="px-3 py-1.5 transition-colors duration-150 cursor-pointer"
                         style={targetMode === mode
                           ? { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)' }
                           : { background: 'var(--background)', color: 'var(--muted-foreground)' }}
@@ -380,7 +376,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                             key={tag.value}
                             onClick={() => toggleTag(tag.value)}
                             data-testid={`tag-filter-${tag.value}`}
-                            className="text-xs font-bold px-3 py-1.5 rounded-full border transition-all"
+                            className="text-xs font-bold px-3 py-1.5 rounded-full border transition-colors duration-150 cursor-pointer"
                             style={tags.includes(tag.value)
                               ? { color: tag.color, background: tag.bg, borderColor: tag.color + '40' }
                               : { color: 'var(--muted-foreground)', background: 'var(--background)', borderColor: 'var(--border)' }}
@@ -420,14 +416,14 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                             <div className="flex gap-2 px-3 py-2 border-t border-secondary">
                               {tagPage > 0 && (
                                 <button type="button" onClick={() => setTagPage(p => p - 1)}
-                                  className="text-[11px] text-primary flex items-center gap-1">
+                                  className="text-[11px] text-primary flex items-center gap-1 cursor-pointer">
                                   ← Назад
                                 </button>
                               )}
                               <span className="flex-1" />
                               {tagPreview?.hasMore && (
                                 <button type="button" onClick={() => setTagPage(p => p + 1)}
-                                  className="text-[11px] text-primary flex items-center gap-1">
+                                  className="text-[11px] text-primary flex items-center gap-1 cursor-pointer">
                                   Ще <ChevronRight size={11} />
                                 </button>
                               )}
@@ -461,7 +457,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                             Обрано: {selectedIds.size}
                           </span>
                           <button type="button" onClick={() => setSelectedIds(new Set())}
-                            className="text-[11px] text-destructive underline">
+                            className="text-[11px] text-destructive underline cursor-pointer transition-opacity hover:opacity-70">
                             Скинути
                           </button>
                         </div>
@@ -483,12 +479,12 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                             <div className="flex gap-2 px-3 py-2 border-t border-secondary">
                               {clientPage > 0 && (
                                 <button type="button" onClick={() => setClientPage(p => p - 1)}
-                                  className="text-[11px] text-primary">← Назад</button>
+                                  className="text-[11px] text-primary cursor-pointer">← Назад</button>
                               )}
                               <span className="flex-1" />
                               {pickerData?.hasMore && (
                                 <button type="button" onClick={() => setClientPage(p => p + 1)}
-                                  className="text-[11px] text-primary flex items-center gap-1">
+                                  className="text-[11px] text-primary flex items-center gap-1 cursor-pointer">
                                   Ще <ChevronRight size={11} />
                                 </button>
                               )}
@@ -513,12 +509,12 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                     <button type="button"
                       key={ch.value}
                       onClick={() => toggleChannel(ch.value)}
-                      className="flex-1 py-2.5 rounded-2xl text-xs font-medium border transition-all"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-medium border transition-colors duration-150 cursor-pointer"
                       style={channels.includes(ch.value)
                         ? { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', borderColor: 'var(--btn-primary-bg)' }
                         : { background: 'var(--background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}
                     >
-                      {ch.icon} {ch.label}
+                      {ch.icon}{ch.label}
                     </button>
                   ))}
                 </div>
@@ -544,14 +540,14 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   {["{{ім'я}}", '{{кількість_візитів}}', '{{знижка}}'].map(v => (
                     <button type="button" key={v}
                       onClick={() => setMessage(prev => prev + v)}
-                      className="text-[10px] px-2 py-0.5 rounded-full border border-primary/40 text-primary hover:bg-primary/10 transition-colors">
+                      className="text-[10px] px-2 py-0.5 rounded-full border border-primary/40 text-primary hover:bg-primary/10 transition-colors cursor-pointer active:scale-[0.95]">
                       {v}
                     </button>
                   ))}
                   {tags.length > 0 && (
                     <button type="button"
                       onClick={() => setMessage(TEMPLATES[tags[0]] ?? TEMPLATES.default)}
-                      className="text-[10px] px-2 py-0.5 rounded-full border border-warning/40 text-warning hover:bg-warning/10 transition-colors ml-auto">
+                      className="text-[10px] px-2 py-0.5 rounded-full border border-warning/40 text-warning hover:bg-warning/10 transition-colors ml-auto cursor-pointer active:scale-[0.95]">
                       Шаблон для тегу
                     </button>
                   )}
@@ -581,14 +577,14 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                     <div className="flex-1">
                       <label className="text-xs text-muted-foreground/60 mb-1 block">Діє</label>
                       <select value={discountDays} onChange={e => setDiscountDays(Number(e.target.value))}
-                        className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border cursor-pointer"
                         style={{ background: 'var(--surface)' }}>
                         {EXPIRY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </select>
                     </div>
                   </div>
                   <select value={discountServiceId} onChange={e => setDiscountServiceId(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                    className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border cursor-pointer"
                     style={{ background: 'var(--surface)' }}>
                     <option value="">Будь-яка послуга</option>
                     {(services ?? []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -612,7 +608,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       <Scissors size={11} /> Послуга
                     </label>
                     <select value={serviceLinkId} onChange={e => setServiceLinkId(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border cursor-pointer"
                       style={{ background: 'var(--surface)' }}>
                       <option value="">Не обрано</option>
                       {(services ?? []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -623,7 +619,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       <ShoppingBag size={11} /> Товар
                     </label>
                     <select value={productLinkId} onChange={e => setProductLinkId(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border"
+                      className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border cursor-pointer"
                       style={{ background: 'var(--surface)' }}>
                       <option value="">Не обрано</option>
                       {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -647,7 +643,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                 onClick={handlePreview}
                 disabled={resolving || (isStarter && broadcastsUsed >= 3)}
                 data-testid="preview-broadcast-btn"
-                className="w-full py-4 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-50"
+                className="w-full py-4 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 cursor-pointer"
                 style={{ background: 'var(--btn-primary-bg)' }}
               >
                 {resolving ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />}
@@ -656,7 +652,6 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
     </div>
   );
 }
@@ -669,7 +664,7 @@ function ClientRow({
   return (
     <button type="button"
       onClick={onToggle}
-      className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-secondary/60 last:border-0 transition-colors hover:bg-secondary/40 text-left active:scale-95 transition-all"
+      className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-secondary/60 last:border-0 transition-colors duration-150 hover:bg-secondary/40 text-left active:scale-[0.95] cursor-pointer"
     >
       <div
         className="size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
@@ -683,7 +678,7 @@ function ClientRow({
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-medium text-foreground truncate">{client.name}</span>
           {client.isVip && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#D4935A15] text-warning">VIP</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-warning/8 text-warning">VIP</span>
           )}
         </div>
         <span className="text-[11px] text-muted-foreground/60">{client.phone}</span>
@@ -713,7 +708,7 @@ function CollapsibleSection({
 }) {
   return (
     <div>
-      <button type="button" onClick={onToggle} className="flex items-center gap-2 text-sm font-medium text-foreground w-full active:scale-95 transition-all">
+      <button type="button" onClick={onToggle} className="flex items-center gap-2 text-sm font-medium text-foreground w-full active:scale-[0.95] transition-colors duration-150 cursor-pointer">
         {icon}
         {label}
         <span className="ml-auto">

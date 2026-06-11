@@ -32,10 +32,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const endpoint = subscriptionData.endpoint as string;
 
   const admin = createAdminClient();
+
+  const { data: existing } = await admin
+    .from('push_subscriptions')
+    .select('id')
+    .eq('endpoint', endpoint)
+    .maybeSingle();
+
+  const isNew = !existing;
+
   await admin.from('push_subscriptions').upsert(
     { user_id: user.id, endpoint, subscription: subscriptionData },
     { onConflict: 'endpoint' }
   );
+
+  if (!isNew) {
+    return NextResponse.json({ ok: true, push_sent: false });
+  }
 
   const resolvedRole = role === 'client' ? 'client' : 'master';
   const welcome = WELCOME[resolvedRole];

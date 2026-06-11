@@ -9,7 +9,8 @@ import {
   ShieldCheck,
   MessageSquare,
   Activity,
-  LogOut
+  LogOut,
+  ClipboardList,
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { name: 'Модерація', href: '/admin/moderation', icon: ShieldCheck },
     { name: 'Підтримка чат', href: '/admin/support', icon: MessageSquare },
     { name: 'Системні логи', href: '/admin/logs', icon: Activity },
+    { name: 'Бета-заявки', href: '/admin/beta-requests', icon: ClipboardList },
   ];
 
   return (

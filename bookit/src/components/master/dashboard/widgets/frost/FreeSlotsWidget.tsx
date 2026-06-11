@@ -15,7 +15,7 @@ import { pluralUk } from '@/lib/utils/pluralUk';
 
 const SLOT_ACTIONS = [
   { href: '/dashboard/flash',                     label: 'Flash акція', Icon: Zap,      primary: true  },
-  { href: '/dashboard/marketing?mode=free_slots', label: 'Сторіс',      Icon: Sparkles, primary: true  },
+  { href: '/dashboard/marketing?mode=free_slots', label: 'Сторіс',      Icon: Sparkles, primary: false },
 ] as const;
 
 const TIME_GROUPS = [
@@ -112,7 +112,8 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
                   key={svc.id}
                   type="button"
                   onClick={() => setSelectedServiceId(svc.id)}
-                  className="flex-shrink-0 px-2.5 py-2 rounded-full text-[11px] font-bold tracking-[0.04em] transition-all duration-150 cursor-pointer whitespace-nowrap"
+                  aria-pressed={isActive}
+                  className="flex-shrink-0 px-2.5 py-2 rounded-full text-[11px] font-bold tracking-[0.04em] transition-colors duration-150 whitespace-nowrap"
                   style={{
                     background: isActive ? 'var(--accent)' : 'var(--border)',
                     color:      isActive ? 'var(--accent-on)' : 'var(--text-tertiary)',
@@ -145,7 +146,7 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
                     type="button"
                     onClick={() => handleSlotClick(t)}
                     aria-label={`Вільний час ${t}`}
-                    className="flex items-center justify-center py-2.5 text-[11px] font-bold tabular-nums cursor-pointer transition-all duration-150 active:scale-[0.93] hover:opacity-70"
+                    className="flex items-center justify-center py-2.5 text-[11px] font-bold tabular-nums transition-colors duration-150 active:scale-[0.93] hover:opacity-70"
                     style={{
                       borderRadius: '6px',
                       border:       '1px solid color-mix(in srgb, var(--accent) 12%, transparent)',
@@ -172,7 +173,7 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
           <Link
             key={href}
             href={href}
-            className="flex items-center justify-center gap-2 h-12 rounded-[14px] font-semibold text-[13px] transition-all duration-150 active:scale-[0.96]"
+            className="flex items-center justify-center gap-2 h-12 rounded-[14px] font-semibold text-[13px] transition-colors duration-150 active:scale-[0.96]"
             style={primary
               ? { background: 'var(--accent)', color: 'var(--accent-on)', boxShadow: '0 3px 10px color-mix(in srgb, var(--accent) 22%, transparent)' }
               : { background: 'color-mix(in srgb, var(--accent) 10%, var(--surface))', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--text-primary)' }
