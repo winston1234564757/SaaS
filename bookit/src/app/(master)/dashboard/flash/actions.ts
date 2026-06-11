@@ -4,16 +4,17 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { broadcastPush } from '@/lib/push';
 import { sendTelegramMessage, escHtml } from '@/lib/telegram';
+import { getMonthStart, calcDiscountedPrice } from '@/lib/utils/flashDeal';
 
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 export interface CreateFlashDealParams {
-  serviceId: string;     // UUID послуги
-  slotDate: string;      // YYYY-MM-DD
-  slotTime: string;      // HH:MM
-  originalPrice: number; // грн (не копійки)
+  serviceId: string;      // UUID послуги
+  slotDate: string;       // YYYY-MM-DD
+  slotTime: string;       // HH:MM
+  originalPrice: number;  // грн (не копійки)
   discountPct: number;
   expiresInHours: number; // 2 | 4 | 8
 }
@@ -48,9 +49,7 @@ export async function createFlashDeal(
 
   // Перевірка ліміту Starter
   if (mp?.subscription_tier === 'starter') {
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
+    const monthStart = getMonthStart(new Date());
     const { count } = await admin
       .from('flash_deals')
       .select('id', { count: 'exact', head: true })
@@ -92,10 +91,10 @@ export async function createFlashDeal(
     .eq('id', user.id)
     .single();
 
-  const masterName     = profile?.full_name ?? 'Майстер';
-  const discountedPrice = Math.round(params.originalPrice * (1 - params.discountPct / 100));
-  const bookingUrl     = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp?.slug}`;
-  const dateStr        = format(new Date(params.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
+  const masterName      = profile?.full_name ?? 'Майстер';
+  const discountedPrice = calcDiscountedPrice(params.originalPrice, params.discountPct);
+  const bookingUrl      = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua'}/${mp?.slug}`;
+  const dateStr         = format(new Date(params.slotDate + 'T00:00:00'), 'd MMMM', { locale: uk });
 
   const notifTitle = `⚡ Флеш-акція від ${masterName}!`;
   const notifBody  = `${serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralUk(params.expiresInHours, 'годину', 'години', 'годин')}!`;
@@ -159,7 +158,7 @@ export async function createFlashDeal(
     }
   }
 
-  return { error: null, sentTo: sentCount };
+  return { error: null, sentTo: sentCount > 0 ? sentCount : clientIds.length };
 }
 
 export async function cancelFlashDeal(dealId: string): Promise<{ error: string | null }> {

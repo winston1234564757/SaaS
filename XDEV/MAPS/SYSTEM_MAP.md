@@ -100,6 +100,7 @@
 | `/admin/moderation` | Модераційний хаб: перевірка скарг на контент (відгуки, портфоліо), блокування та налаштування лімітів | `admin/moderation/page.tsx` | — | `ModerationHub.tsx` |
 | `/admin/support` | Пульт техпідтримки: спліт-скрін реального часу з чатами користувачів, чергою тікетів та Realtime оновленнями | `admin/support/page.tsx` | `support.ts` | `AdminSupportConsole.tsx` |
 | `/admin/logs` | Системні логи: діагностика статусів сповіщень, лог помилок каналів та активних SMS OTP | `admin/logs/page.tsx` | — | `SystemLogsViewer.tsx` |
+| `/admin/beta-requests` | Бета-заявки Studio: список заявок на Studio Beta (name, contact, studio_size) | `admin/beta-requests/page.tsx` | `billing/actions.ts#submitBetaRequest` | — |
 
 ---
 
@@ -403,6 +404,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `url.ts` | `getBaseUrl()` |
 | `uuid.ts` | `flatUidToUuid(flat)` |
 | `occupancy.ts` | `computeOccupancy` |
+| `flashDeal.ts` | `getMonthStart`, `calcDiscountedPrice`, `isFlashSlotMatch` — pure helpers для flash deals (T11) |
 
 ### Validations
 - `src/lib/validations/booking.ts` — Zod schema для BookingWizard

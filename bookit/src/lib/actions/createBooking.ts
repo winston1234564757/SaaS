@@ -10,6 +10,7 @@ import { computeEndTime } from '@/lib/utils/bookingEngine';
 import { notifyMasterNewBooking } from '@/lib/notifications';
 import { revalidatePath } from 'next/cache';
 import { bookingClientSchema } from '@/lib/validations/booking';
+import { isFlashSlotMatch } from '@/lib/utils/flashDeal';
 
 // Phone normalization is now handled by Zod preprocessing in bookingClientSchema
 
@@ -321,10 +322,15 @@ export async function createBooking(
   if (p.flashDealId) {
     const { data: deal } = await admin
       .from('flash_deals')
-      .select('discount_pct, status, master_id')
+      .select('discount_pct, status, master_id, slot_date, slot_time')
       .eq('id', p.flashDealId)
       .single();
-    if (deal && deal.status === 'active' && deal.master_id === p.masterId) {
+    if (
+      deal &&
+      deal.status === 'active' &&
+      deal.master_id === p.masterId &&
+      isFlashSlotMatch(p.date, p.startTime, deal.slot_date as string, deal.slot_time as string)
+    ) {
       flashDealDiscountPct = deal.discount_pct as number;
     }
   }

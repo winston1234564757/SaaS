@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 16/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes → T7 (eebf5b7) → T9 (f80ef35) → T12 (a42386f, 0b44cd6) → T13 (b1735d5) → T14 (4fc56d6)
-**Наступна задача:** **T11 — Флеш-акції: повний аудит + тести** (ітерація 17)
+**Прогрес:** 17/18 виконано ✅
+**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes → T7 (eebf5b7) → T9 (f80ef35) → T12 (a42386f, 0b44cd6) → T13 (b1735d5) → T14 (4fc56d6) → T11 (pending commit)
+**Наступна задача:** **T16 — Тур: підсвічування елементів** (ітерація 18)
 
 > **⚠️ Відкрита задача (поза спринтом):** Сторінка налаштувань профілю потребує подальшої роботи. Проведено impeccable 6-phase pass (commits: **b81ca4c** + **10383f4**) — аудит a11y, токени, лейаут, polish. Але юзер вважає задачу не закритою — повернутись після T12.
 
@@ -46,7 +46,7 @@
 | 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ✅ DONE | code-reviewer + create-migration | a42386f + 0b44cd6 |
 | 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ✅ DONE | impeccable | b1735d5 |
 | 16 | **T14** | Онбординг превью: виразніший блок посилання | ✅ DONE | impeccable | 4fc56d6 |
-| 17 | **T11** | Флеш-акції: повний аудит + тести | ⬜ TODO | code-reviewer + react-doctor | — |
+| 17 | **T11** | Флеш-акції: повний аудит + тести | ✅ DONE | code-reviewer + react-doctor | pending |
 | 18 | **T16** | Тур: підсвічування елементів | ⬜ TODO | design-taste-frontend + emil-design-eng | — |
 
 ---
@@ -100,6 +100,39 @@ State machine з 3 станами у `StepSchedule.tsx`:
 - Весь UI-текст через humanizer: "Твій link in bio", "Копіювати" / "Скопійовано", "Відкрити", "Поширити"
 
 **TSC:** 0 помилок | **Build:** clean
+
+---
+
+## ✅ T11 — Флеш-акції: повний аудит + тести — ВИКОНАНО
+
+**Задача:** Повний аудит флеш-акцій (actions.ts, createBooking.ts, UI), виправлення 3 багів, написання unit + integration тестів. 0 тестів → 24 нових тести.
+
+**Bug #1 — Критична безпека: createBooking.ts (CRITICAL)**
+- **Проблема:** Flash deal discount застосовувався без перевірки слоту — будь-який клієнт міг передати чужий `flashDealId` і отримати знижку на будь-який запис у будь-який час.
+- **Fix:** Розширено SELECT (`slot_date, slot_time`) + `isFlashSlotMatch()` validation у if-умові.
+
+**Bug #2 — UTC month boundary: actions.ts**
+- **Проблема:** `new Date().setHours(0,0,0,0)` — локальний timezone → Starter quota (5/міс) зміщувалась на UTC±offset годин.
+- **Fix:** `getMonthStart(new Date())` → `Date.UTC(year, month, 1)` — детерміновано UTC.
+
+**Bug #3 — sentCount fallback: actions.ts**
+- **Проблема:** In-app сповіщення вставляються але не рахуються в `sentCount` → "Сповіщено 0 клієнтів" навіть коли всі отримали сповіщення.
+- **Fix:** `sentTo: sentCount > 0 ? sentCount : clientIds.length`
+
+**Архітектурне рішення — `src/lib/utils/flashDeal.ts` (NEW):**
+Next.js `'use server'` заборонено export sync функцій → helpers переміщені в звичайний utility файл:
+- `getMonthStart(date)` — UTC перший день місяця
+- `calcDiscountedPrice(price, pct)` — знижкована ціна з Math.round
+- `isFlashSlotMatch(bookingDate, bookingTime, dealSlotDate, dealSlotTime)` — порівняння слоту (обробляє PostgreSQL TIME `HH:MM:SS`)
+
+**Нові тести:**
+- `flashDeal.test.ts` — 18 unit тестів (getMonthStart ×5, isFlashSlotMatch ×7, calcDiscountedPrice ×6)
+- `createBooking.action.test.ts` — +6 integration тестів (matching slot, wrong date/time, wrong status/master, claim verification)
+- Підсумок: 49/49 passed
+
+**Файли:** `src/lib/utils/flashDeal.ts` (NEW), `flash/actions.ts`, `createBooking.ts`, `flashDeal.test.ts` (NEW), `createBooking.action.test.ts`, `SYSTEM_MAP.md`
+
+**TSC:** 0 помилок | **Build:** clean | **Tests:** 49/49 ✅
 
 ---
 

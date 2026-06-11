@@ -598,4 +598,123 @@ describe('createBooking() — server action integration', () => {
       expect(result.finalTotal).toBe(300);
     });
   });
+
+  // ── Flash deal slot validation ───────────────────────────────────────────────
+
+  describe('flash deal slot validation', () => {
+    const FLASH_DEAL_ID = 'eeeeeeee-0000-4000-8000-000000000005';
+
+    function makeAdminWithFlashDeal(
+      dealData: Record<string, unknown>,
+    ): ReturnType<typeof makeAdmin> {
+      return makeAdmin({
+        master_profiles:  [{ data: BASE_MASTER }],
+        services:         [{ data: [BASE_SERVICE] }],
+        bookings:         [{ count: 0 }, { error: null }],
+        loyalty_programs: [{ data: [] }],
+        phone_discounts:  [{ data: null }],
+        flash_deals:      [{ data: dealData }, { error: null }], // fetch + claim update
+        booking_services: [{ error: null }],
+      });
+    }
+
+    it('applies 20% discount when flash deal slot matches booking date and time', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdminWithFlashDeal({
+          discount_pct: 20,
+          status:       'active',
+          master_id:    MASTER_ID,
+          slot_date:    '2026-01-15',
+          slot_time:    '10:00:00',
+        }) as any,
+      );
+      const result = await createBooking(buildPayload({ flashDealId: FLASH_DEAL_ID }));
+      // flashDealAmount = round(500 * 20 / 100) = 100 → finalTotal = 400
+      expect(result.finalTotal).toBe(400);
+      expect(result.error).toBeNull();
+    });
+
+    it('does NOT apply discount when slot_date differs from booking date', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdminWithFlashDeal({
+          discount_pct: 20,
+          status:       'active',
+          master_id:    MASTER_ID,
+          slot_date:    '2026-01-20', // different date
+          slot_time:    '10:00:00',
+        }) as any,
+      );
+      const result = await createBooking(buildPayload({ flashDealId: FLASH_DEAL_ID }));
+      expect(result.finalTotal).toBe(500);
+      expect(result.error).toBeNull();
+    });
+
+    it('does NOT apply discount when slot_time differs from booking startTime', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdminWithFlashDeal({
+          discount_pct: 20,
+          status:       'active',
+          master_id:    MASTER_ID,
+          slot_date:    '2026-01-15',
+          slot_time:    '14:00:00', // different time
+        }) as any,
+      );
+      const result = await createBooking(buildPayload({ flashDealId: FLASH_DEAL_ID }));
+      expect(result.finalTotal).toBe(500);
+      expect(result.error).toBeNull();
+    });
+
+    it('does NOT apply discount when flash deal status is not active', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdminWithFlashDeal({
+          discount_pct: 20,
+          status:       'claimed', // already used
+          master_id:    MASTER_ID,
+          slot_date:    '2026-01-15',
+          slot_time:    '10:00:00',
+        }) as any,
+      );
+      const result = await createBooking(buildPayload({ flashDealId: FLASH_DEAL_ID }));
+      expect(result.finalTotal).toBe(500);
+      expect(result.error).toBeNull();
+    });
+
+    it('does NOT apply discount when master_id does not match', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdminWithFlashDeal({
+          discount_pct: 20,
+          status:       'active',
+          master_id:    'ffffffff-0000-4000-8000-000000000099', // different master
+          slot_date:    '2026-01-15',
+          slot_time:    '10:00:00',
+        }) as any,
+      );
+      const result = await createBooking(buildPayload({ flashDealId: FLASH_DEAL_ID }));
+      expect(result.finalTotal).toBe(500);
+      expect(result.error).toBeNull();
+    });
+
+    it('marks deal as claimed: flash_deals table called at least twice (fetch + update)', async () => {
+      mockAnonClient();
+      const admin = makeAdminWithFlashDeal({
+        discount_pct: 20,
+        status:       'active',
+        master_id:    MASTER_ID,
+        slot_date:    '2026-01-15',
+        slot_time:    '10:00:00',
+      });
+      vi.mocked(createAdminClient).mockReturnValue(admin as any);
+      const result = await createBooking(buildPayload({ flashDealId: FLASH_DEAL_ID }));
+      expect(result.finalTotal).toBe(400);
+      expect(result.error).toBeNull();
+      const flashDealsCallCount = (admin.from as ReturnType<typeof vi.fn>).mock.calls
+        .filter((call: string[]) => call[0] === 'flash_deals').length;
+      expect(flashDealsCallCount).toBeGreaterThanOrEqual(2);
+    });
+  });
 });
