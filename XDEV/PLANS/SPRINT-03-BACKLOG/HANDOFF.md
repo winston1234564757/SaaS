@@ -4,9 +4,11 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 13/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes → T7 (eebf5b7) → T9 (f80ef35)
-**Наступна задача:** **T12 — Лояльність: два коди + двосторонній C2B** (ітерація 14)
+**Прогрес:** 15/18 виконано ✅
+**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes → T7 (eebf5b7) → T9 (f80ef35) → T12 (a42386f, 0b44cd6) → T13 (b1735d5)
+**Наступна задача:** **T14 — Онбординг превью: виразний блок посилання** (ітерація 16)
+
+> **⚠️ Відкрита задача (поза спринтом):** Сторінка налаштувань профілю потребує подальшої роботи. Проведено impeccable 6-phase pass (commits: **b81ca4c** + **10383f4**) — аудит a11y, токени, лейаут, polish. Але юзер вважає задачу не закритою — повернутись після T12.
 
 ### ✅ QA-борги після T6b — ВИПРАВЛЕНО
 
@@ -39,13 +41,37 @@
 | 9 | **T6c** | Аналітика десктоп: навігація дат + слайдер | ✅ DONE | design-taste-frontend | ddcf28d |
 | 10 | **T6a** | Десктоп лейаут: billing + reviews + growth | ✅ DONE | design-taste-frontend | d184b9e + c282e27 |
 | 11 | **T6b** | Десктоп лейаут: revenue + marketing + products + services | ✅ DONE | design-taste-frontend | 60b980c |
-| 12 | **T7** | Налаштування профілю десктоп | ✅ DONE | impeccable | eebf5b7 |
-| 13 | **T9** | Портфоліо → конструктор сторіс | ✅ DONE | code-reviewer | f80ef35 |
-| 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ⬜ TODO | code-reviewer + create-migration | — |
-| 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ⬜ TODO | impeccable | — |
+| 12 | **T7** | Налаштування профілю десктоп | ⚠️ PARTIAL | impeccable | eebf5b7 + b81ca4c + 10383f4 | impeccable pass зроблено, але сторінка не закрита
+| 13 | **T9** | Портфоліо → конструктор сторіс | ✅ DONE | code-reviewer | f80ef35 | 
+| 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ✅ DONE | code-reviewer + create-migration | a42386f + 0b44cd6 |
+| 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ✅ DONE | impeccable | b1735d5 |
 | 16 | **T14** | Онбординг превью: виразніший блок посилання | ⬜ TODO | impeccable | — |
 | 17 | **T11** | Флеш-акції: повний аудит + тести | ⬜ TODO | code-reviewer + react-doctor | — |
 | 18 | **T16** | Тур: підсвічування елементів | ⬜ TODO | design-taste-frontend + emil-design-eng | — |
+
+---
+
+## ✅ T13 — Онбординг графік: кнопки Налаштувати/Продовжити — ВИКОНАНО
+
+**Проблема:** На кроці SCHEDULE одним тапом по чіпу відразу зберігалось і відбувався перехід. Повторне відвідування кроку не мало кнопки "Продовжити". Не було чіткого розмежування між "ще не налаштовано" та "вже налаштовано".
+
+**Зроблено (1 коміт: b1735d5):**
+
+State machine з 3 станами у `StepSchedule.tsx`:
+- **State A** (`!isConfigured && !showForm`) — template chip + кнопка "Налаштувати" (opacity-70)
+- **State B** (`!isConfigured && showForm`) — template chip + розгорнутий кастомний редактор з "Зберегти"
+- **State C** (`isConfigured`) — summary card (getScheduleSummary: "Пн–Сб, 10:00–19:00") + кнопка "Продовжити" → onSave()
+
+`OnboardingWizard.tsx` — додано `initialConfigured={!!initialData.schedule}` до `<StepSchedule>`.
+
+**Ключові рішення:**
+- Template chip більше не викликає `onSave()` напряму — тільки `setIsConfigured(true)`
+- `onSave()` (→ DB save + navigate) викликається ЛИШЕ при "Продовжити" (State C)
+- `initialConfigured=false` для нових майстрів (`initialData.schedule === undefined`)
+- `initialConfigured=true` для тих, хто повернувся (schedule вже збережено в DB)
+- AnimatePresence `mode="wait"` на bottom CTA, spring `{stiffness:380, damping:30}`
+
+**TSC:** 0 помилок | **Build:** clean
 
 ---
 
@@ -223,13 +249,24 @@ Flexbox `min-width: auto` не обмежує ширину → три кнопк
 
 ---
 
-## ⬜ T12 — Лояльність: два коди + двосторонній C2B
+## ✅ T12 — Лояльність: два коди + двосторонній C2B — ВИКОНАНО (commits: a42386f, 0b44cd6)
 
-- `c2c_referral_code` для друзів, `c2b_referral_code` від майстра — нова міграція
-- C2B BUG: тільки майстер отримує бонус → виправити двосторонньо
-- Унікальний дизайн invite-сторінок для кожного типу
+**Проблеми:**
+- Invite-посилання показували пусті коди (`?ref=` / `/invite/`)
+- C2B: тільки майстер отримував Pro 21 днів; клієнт не отримував промокод 50%
+- Idempotency bug: при повторній реєстрації з C2B-кодом — старий M2M grant блокував правильний шлях
 
-**Файли:** `my/loyalty/page.tsx`, `invite/[code]/page.tsx`, `referrals.ts`, `applyReferralRewards()`
+**a42386f — міграція + код:**
+- Міграція `20260610000001_loyalty_dual_codes.sql`: колонки `c2c_referral_code` + `c2b_referral_code` в `client_profiles`, backfill, partial unique indexes
+- `getOrGenerateProfileReferralCode`: зчитує правильну колонку по типу `'client-c2c'` / `'client-c2b'`
+- `invite/[code]/page.tsx`: lookup chain master_slug → master_referral → client_c2b → client(legacy)
+- `my/loyalty/page.tsx`: відображає обидва коди + `totalMastersInvited` + список промокодів
+
+**0b44cd6 — cross-path idempotency fix:**
+- `applyReferralRewards`: якщо в `referral_grants` є старий M2M grant і нова спроба йде через C2B-код — окремо шукає клієнта за `c2b_referral_code` і вставляє промокод + інкрементує лічильник
+- Root cause: founder мав однаковий `referral_code='176921EA'` в обох таблицях → M2M path виграв
+
+**Файли:** `referrals.ts`, `my/loyalty/page.tsx`, `invite/[code]/page.tsx`, `supabase/migrations/20260610000001_loyalty_dual_codes.sql`
 
 ---
 
