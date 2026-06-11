@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, type ComponentType } from 'react';
+import { useState, useEffect, type ComponentType } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import {
   ArrowRight, BadgeCheck, Check, Clock, Copy, ExternalLink,
-  Eye, Leaf, Loader2, Pencil, Scissors, Sparkles, Star, X, Zap,
+  Eye, Leaf, Loader2, Pencil, Scissors, Share2, Sparkles, Star, X, Zap,
 } from 'lucide-react';
 import { serviceCategories } from '@/lib/constants/categories';
 import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
@@ -146,6 +146,11 @@ export function StepPreview({
   const [slugDraft, setSlugDraft] = useState(slug);
   const [slugChecking, setSlugChecking] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
+  const [canShare, setCanShare] = useState(false);
+
+  useEffect(() => {
+    setCanShare('share' in navigator);
+  }, []);
 
   const publicUrl     = slug ? `bookit.com.ua/${slug}` : 'bookit.com.ua/твій-нік';
   const fullPublicUrl = slug ? `https://bookit.com.ua/${slug}` : '#';
@@ -176,6 +181,10 @@ export function StepPreview({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch { /* clipboard unavailable in some envs */ }
+  }
+
+  function handleShare() {
+    navigator.share({ title: 'Моя сторінка на Bookit', url: fullPublicUrl }).catch(() => {});
   }
 
   async function handleSlugSave() {
@@ -403,13 +412,16 @@ export function StepPreview({
         </div>
       </div>
 
-      {/* URL block with slug editing */}
+      {/* Link hero card */}
       <div
-        className="rounded-2xl px-4 py-3.5 mb-5 border"
-        style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
+        className="rounded-2xl border overflow-hidden mb-5"
+        style={{
+          background: 'color-mix(in srgb, var(--accent) 5%, var(--surface))',
+          borderColor: 'color-mix(in srgb, var(--accent) 28%, transparent)',
+        }}
       >
         {isEditingSlug ? (
-          <div className="flex flex-col gap-2">
+          <div className="px-4 py-3.5 flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="text-[12px] font-mono flex-shrink-0" style={{ color: 'var(--text-secondary)', opacity: 0.6 }}>
                 bookit.com.ua/
@@ -461,48 +473,82 @@ export function StepPreview({
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-2">
-            <p className="flex-1 text-[13px] font-mono truncate text-foreground">
-              {publicUrl}
-            </p>
-            {slug && (
+          <>
+            {/* Label + URL row */}
+            <div className="px-4 pt-4 pb-3">
+              <p
+                className="text-[10px] font-semibold uppercase tracking-widest mb-2"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Твій link in bio
+              </p>
+              <div className="flex items-center gap-2">
+                <p className="flex-1 text-[15px] font-mono font-semibold text-foreground truncate">
+                  {publicUrl}
+                </p>
+                {slug && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingSlug(true)}
+                    aria-label="Змінити адресу"
+                    className="size-8 flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.95] flex-shrink-0"
+                    style={{ background: 'var(--secondary)', color: 'var(--text-secondary)' }}
+                  >
+                    <Pencil size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: 'color-mix(in srgb, var(--border) 65%, transparent)' }} />
+
+            {/* Action buttons */}
+            <div className="flex gap-2 px-3 py-3">
+              {/* Copy — primary, flex-1 */}
               <button
                 type="button"
-                onClick={() => setIsEditingSlug(true)}
-                aria-label="Змінити адресу"
-                className="size-8 flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.95]"
-                style={{ background: 'var(--secondary)', color: 'var(--text-secondary)' }}
+                onClick={handleCopy}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer active:scale-[0.97]"
+                style={{
+                  background: copied
+                    ? 'color-mix(in srgb, var(--accent) 12%, transparent)'
+                    : 'var(--accent)',
+                  color: copied ? 'var(--accent)' : 'var(--accent-on)',
+                }}
               >
-                <Pencil size={12} />
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? 'Скопійовано' : 'Копіювати'}
               </button>
-            )}
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-medium transition-all cursor-pointer active:scale-[0.95]"
-              style={{
-                background: copied
-                  ? 'color-mix(in srgb, var(--accent) 14%, transparent)'
-                  : 'var(--secondary)',
-                color: copied ? 'var(--accent)' : 'var(--text-secondary)',
-              }}
-            >
-              {copied ? <Check size={12} /> : <Copy size={12} />}
-              {copied ? 'Скопійовано' : 'Копіювати'}
-            </button>
-            {slug && (
-              <a
-                href={fullPublicUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Відкрити сторінку"
-                className="size-8 flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.95]"
-                style={{ background: 'var(--secondary)', color: 'var(--text-secondary)' }}
-              >
-                <ExternalLink size={13} />
-              </a>
-            )}
-          </div>
+
+              {/* Open in new tab */}
+              {slug && (
+                <a
+                  href={fullPublicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-3 rounded-xl text-sm font-medium cursor-pointer active:scale-[0.97] transition-all"
+                  style={{ background: 'var(--secondary)', color: 'var(--foreground)' }}
+                >
+                  <ExternalLink size={14} />
+                  Відкрити
+                </a>
+              )}
+
+              {/* Share — mobile Web Share API */}
+              {canShare && slug && (
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  aria-label="Поширити"
+                  className="size-[46px] flex items-center justify-center rounded-xl cursor-pointer active:scale-[0.97] transition-all flex-shrink-0"
+                  style={{ background: 'var(--secondary)', color: 'var(--foreground)' }}
+                >
+                  <Share2 size={16} />
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
 
