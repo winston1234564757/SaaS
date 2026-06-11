@@ -21,7 +21,7 @@
 | 13 | T12 | Лояльність: два коди + двосторонній C2B бонус | ✅ DONE | code-reviewer + create-migration | a42386f + 0b44cd6 | — |
 | 14 | T13 | Онбординг: крок графіку (Налаштувати/Продовжити) | ✅ DONE | impeccable | b1735d5 | [T13_BRIEF.md](T13_BRIEF.md) |
 | 15 | T14 | Онбординг: виразний блок посилання | ✅ DONE | impeccable | 4fc56d6 | [T14_BRIEF.md](T14_BRIEF.md) |
-| 16 | **T11** | **Флеш-акції: повний аудит** | ✅ DONE | code-reviewer + react-doctor | — | [T11_BRIEF.md](T11_BRIEF.md) |
+| 16 | **T11** | **Флеш-акції: повний аудит** | ✅ DONE | code-reviewer + react-doctor | 8d284bd | [T11_BRIEF.md](T11_BRIEF.md) |
 | 17 | **T16** | **Тур: підсвічування елементів (spotlight)** | **▶ NEXT** | design-taste-frontend + emil-design-eng | — | [T16_BRIEF.md](T16_BRIEF.md) |
 | 18 | T7 | Налаштування профілю (ч.2 — незакрите) | ⚠️ PARTIAL | impeccable | eebf5b7 + b81ca4c + 10383f4 | [T7_BRIEF.md](T7_BRIEF.md) |
 
