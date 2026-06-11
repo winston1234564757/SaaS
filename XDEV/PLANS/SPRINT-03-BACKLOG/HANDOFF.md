@@ -4,11 +4,27 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 17/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (60b980c) → T7 (eebf5b7) → T9 (f80ef35) → T12 (a42386f, 0b44cd6) → T13 (b1735d5) → T14 (4fc56d6) → T11 (8d284bd) → **hotfix/flash-clients (9f5a835)**
-**Наступна задача:** **T16 — Тур: підсвічування елементів** (ітерація 18)
+**Прогрес:** 18/18 виконано ✅ — SPRINT-03 COMPLETE
+**Останній deploy:** → T11 (8d284bd) → hotfix/flash-clients (9f5a835) → **T16 (0f600d2)**
+**Наступна задача:** **T7 — Налаштування профілю (ч.2)**
 
 > **⚠️ Відкрита задача (поза спринтом):** Сторінка налаштувань профілю потребує подальшої роботи. Проведено impeccable 6-phase pass (commits: **b81ca4c** + **10383f4**) — аудит a11y, токени, лейаут, polish. Але юзер вважає задачу не закритою — повернутись після T12.
+
+### ✅ T16 — Тур: Spotlight Overlay (commit: 0f600d2)
+
+**Root cause bug:** `document.querySelector('[data-tour-step="N"]')` завжди знаходив мобайл-елемент першим. На desktop він `display:none` → `getBoundingClientRect()` = `{width:0,height:0}` → overlay 0×0 → нічого не видно.
+
+**Fix:** `querySelectorAll` + фільтр по `getBCR().width > 0` — знаходить видимий екземпляр.
+
+**Spotlight:**
+- `box-shadow: 0 0 0 9999px rgba(0,0,0,0.55)` — повноекранний dim
+- Persistent overlay через `useRef` — не знищується між кроками
+- CSS transitions `cubic-bezier(0.34,1.56,0.64,1)` для top/left (spring overshoot)
+- Cleanup `useEffect` на unmount
+
+**Файл:** `src/components/master/dashboard/DashboardTourBanner.tsx`
+
+---
 
 ### ✅ QA-борги після T6b — ВИПРАВЛЕНО
 

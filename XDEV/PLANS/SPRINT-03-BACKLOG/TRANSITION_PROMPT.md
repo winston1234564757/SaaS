@@ -15,14 +15,14 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 17/18 ✅ + hotfix/flash-clients (9f5a835)
-Виконано: T15 T1 T10 T4 T3 T2 T5 T8 T6c T6a T6b T9 T12 T13 T14 T11
-Наступна: T16 — Тур: підсвічування елементів (spotlight)
-Brief: XDEV/PLANS/SPRINT-03-BACKLOG/T16_BRIEF.md
+Прогрес: 18/18 ✅ SPRINT-03 COMPLETE + hotfix/flash-clients (9f5a835)
+Виконано: T15 T1 T10 T4 T3 T2 T5 T8 T6c T6a T6b T9 T12 T13 T14 T11 T16
+Наступна: T7 — Налаштування профілю (ч.2)
+Brief: XDEV/PLANS/SPRINT-03-BACKLOG/T7_BRIEF.md
 
 ═══ TASK GATE (обов'язково перед кодом) ═══
-1. Read Brief файл: XDEV/PLANS/SPRINT-03-BACKLOG/T16_BRIEF.md
-2. mempalace_search "onboarding tour spotlight highlight overlay"
+1. Read Brief файл: XDEV/PLANS/SPRINT-03-BACKLOG/T7_BRIEF.md
+2. mempalace_search "settings profile page impeccable audit"
 3. QA Gate: задати 3-5 питань (готові питання є в Brief файлі)
 4. SKILL: design-taste-frontend + emil-design-eng → запустити Skill tool
 5. UI рядки → /humanizer якщо є нові
