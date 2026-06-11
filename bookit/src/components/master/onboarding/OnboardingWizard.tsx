@@ -354,6 +354,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
               direction={direction} slideVariants={slideVariants} transition={transition}
               schedule={schedule}
               saving={saving}
+              initialConfigured={!!initialData.schedule}
               onScheduleChange={setSchedule}
               onSave={handleSaveSchedule}
             />
