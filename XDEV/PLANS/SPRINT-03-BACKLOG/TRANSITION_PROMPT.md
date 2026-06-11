@@ -15,14 +15,14 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 15/18 ✅
-Виконано: T15 T1 T10 T4 T3 T2 T5 T8 T6c T6a T6b T9 T12 T13
-Наступна: T14 — Онбординг: виразний блок посилання
-Brief: XDEV/PLANS/SPRINT-03-BACKLOG/T14_BRIEF.md
+Прогрес: 16/18 ✅
+Виконано: T15 T1 T10 T4 T3 T2 T5 T8 T6c T6a T6b T9 T12 T13 T14
+Наступна: T11 — Флеш-акції: повний аудит + тести
+Brief: XDEV/PLANS/SPRINT-03-BACKLOG/T11_BRIEF.md
 
 ═══ TASK GATE (обов'язково перед кодом) ═══
-1. Read Brief файл: XDEV/PLANS/SPRINT-03-BACKLOG/T14_BRIEF.md
-2. mempalace_search "onboarding preview step link slug StepPreview"
+1. Read Brief файл: XDEV/PLANS/SPRINT-03-BACKLOG/T11_BRIEF.md
+2. mempalace_search "flash actions quick-actions dashboard frost"
 3. QA Gate: задати 3-5 питань (готові питання є в Brief файлі)
 4. SKILL: impeccable → запустити Skill tool
 5. UI рядки → /humanizer якщо є нові
@@ -53,7 +53,8 @@ Stack: Next.js 16, TS strict, Tailwind v4, Supabase, Vaul
 | # | ID | Назва | Brief |
 |---|----|-------|-------|
 | 15 | ~~T13~~ | ~~Онбординг: крок графіку~~ | ✅ b1735d5 |
-| 16 | **T14** ▶ | Онбординг: виразний блок посилання | [T14_BRIEF.md](T14_BRIEF.md) |
+| 16 | ~~T14~~ | ~~Онбординг: виразний блок посилання~~ | ✅ 4fc56d6 |
+| 17 | **T11** ▶ | Флеш-акції: повний аудит + тести | [T11_BRIEF.md](T11_BRIEF.md) |
 | 16 | T11 | Флеш-акції: повний аудит | [T11_BRIEF.md](T11_BRIEF.md) |
 | 17 | T16 | Тур: підсвічування елементів | [T16_BRIEF.md](T16_BRIEF.md) |
 | 18 | T7 | Налаштування профілю (ч.2) | [T7_BRIEF.md](T7_BRIEF.md) |

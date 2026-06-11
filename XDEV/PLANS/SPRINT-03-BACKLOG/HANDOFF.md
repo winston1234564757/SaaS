@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
-**Прогрес:** 15/18 виконано ✅
-**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes → T7 (eebf5b7) → T9 (f80ef35) → T12 (a42386f, 0b44cd6) → T13 (b1735d5)
-**Наступна задача:** **T14 — Онбординг превью: виразний блок посилання** (ітерація 16)
+**Прогрес:** 16/18 виконано ✅
+**Останній deploy:** vercel --prod T6b (commit: 60b980c) → QA-fixes → T7 (eebf5b7) → T9 (f80ef35) → T12 (a42386f, 0b44cd6) → T13 (b1735d5) → T14 (4fc56d6)
+**Наступна задача:** **T11 — Флеш-акції: повний аудит + тести** (ітерація 17)
 
 > **⚠️ Відкрита задача (поза спринтом):** Сторінка налаштувань профілю потребує подальшої роботи. Проведено impeccable 6-phase pass (commits: **b81ca4c** + **10383f4**) — аудит a11y, токени, лейаут, polish. Але юзер вважає задачу не закритою — повернутись після T12.
 
@@ -45,7 +45,7 @@
 | 13 | **T9** | Портфоліо → конструктор сторіс | ✅ DONE | code-reviewer | f80ef35 | 
 | 14 | **T12** | Лояльність: два коди + двосторонній C2B бонус | ✅ DONE | code-reviewer + create-migration | a42386f + 0b44cd6 |
 | 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ✅ DONE | impeccable | b1735d5 |
-| 16 | **T14** | Онбординг превью: виразніший блок посилання | ⬜ TODO | impeccable | — |
+| 16 | **T14** | Онбординг превью: виразніший блок посилання | ✅ DONE | impeccable | 4fc56d6 |
 | 17 | **T11** | Флеш-акції: повний аудит + тести | ⬜ TODO | code-reviewer + react-doctor | — |
 | 18 | **T16** | Тур: підсвічування елементів | ⬜ TODO | design-taste-frontend + emil-design-eng | — |
 
@@ -70,6 +70,34 @@ State machine з 3 станами у `StepSchedule.tsx`:
 - `initialConfigured=false` для нових майстрів (`initialData.schedule === undefined`)
 - `initialConfigured=true` для тих, хто повернувся (schedule вже збережено в DB)
 - AnimatePresence `mode="wait"` на bottom CTA, spring `{stiffness:380, damping:30}`
+
+**TSC:** 0 помилок | **Build:** clean
+
+---
+
+## ✅ T14 — Онбординг превью: виразний блок посилання — ВИКОНАНО
+
+**Проблема:** URL-блок на кроці PREVIEW онбордингу був компактним і непомітним — не передавав цінності "link in bio". Кнопка "Скопіювати" була маленькою, не було кнопки відкрити в новій вкладці та мобільного share.
+
+**Зроблено (1 коміт: 4fc56d6):**
+
+`StepPreview.tsx` — link hero card:
+- **Лейбл:** `"Твій link in bio"` — uppercase tracking-widest, accent tint background
+- **URL рядок:** `text-[15px] font-mono font-semibold` (крупніший, читабельніший)
+- **Три кнопки у підвалі карти:**
+  - **Copy** (`flex-1`, primary accent bg) — при кліку: accent tint + Check icon + "Скопійовано" (2с)
+  - **Відкрити** (secondary bg, text+icon) — `target="_blank"`, показується тільки якщо є slug
+  - **Поширити** (icon-only 46px, secondary bg) — Web Share API, `canShare && slug` guard
+- **Hydration-safe:** `const [canShare, setCanShare] = useState(false)` + `useEffect(() => setCanShare('share' in navigator), [])`
+- **handleShare:** `navigator.share({ title: 'Моя сторінка на Bookit', url: fullPublicUrl }).catch(() => {})`
+- Кнопка редагування slug перенесена в рядок з URL (Pencil icon, розмір 8×8, secondary bg)
+- Divider між URL-рядком і кнопками: `color-mix(in srgb, var(--border) 65%, transparent)`
+
+**Ключові рішення:**
+- `color-mix(in srgb, var(--accent) 5%, var(--surface))` — акцентний tint фону карти
+- `color-mix(in srgb, var(--accent) 28%, transparent)` — тонкий акцентний border
+- Share API guard через `useEffect` (не через SSR-unsafe `typeof window`) — уникає hydration mismatch
+- Весь UI-текст через humanizer: "Твій link in bio", "Копіювати" / "Скопійовано", "Відкрити", "Поширити"
 
 **TSC:** 0 помилок | **Build:** clean
 
