@@ -92,7 +92,7 @@ export function FlashDealPage({
   const [discountPct, setDiscountPct]     = useState(20);
   const [expiresInHours, setExpiresInHours] = useState(4);
   const [loading, setLoading]             = useState(false);
-  const [result, setResult]               = useState<{ error: string | null; sentTo: number } | null>(null);
+  const [result, setResult]               = useState<{ error: string | null; sentTo: number; clients?: { id: string; name: string }[] } | null>(null);
   const [cancellingId, setCancellingId]   = useState<string | null>(null);
 
   // We only really need the schedule when we are ready to pick a slot
@@ -404,7 +404,7 @@ const FlashDealForm = React.memo(({
   expiresInHours: number;
   setExpiresInHours: (hrs: number) => void;
   loading: boolean;
-  result: { error: string | null; sentTo: number } | null;
+  result: { error: string | null; sentTo: number; clients?: { id: string; name: string }[] } | null;
   closeTour: () => void;
   nextStep: () => void;
 }) => (
@@ -547,9 +547,47 @@ const FlashDealForm = React.memo(({
     </AnimatePresence>
 
     {result && (
-      <div className={`p-3 rounded-2xl text-xs font-medium ${result.error ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-        {result.error ?? `Акцію створено! Сповіщено ${result.sentTo} клієнтів.`}
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SPRING}
+        className={cn(
+          'rounded-2xl text-xs overflow-hidden',
+          result.error
+            ? 'p-3 bg-red-50 border border-red-100 text-red-600 font-medium flex items-center gap-2'
+            : 'border border-border/50 bg-secondary/30'
+        )}
+      >
+        {result.error ? (
+          <>
+            <AlertCircle size={13} className="shrink-0" />
+            {result.error}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 px-3.5 py-2.5 border-b border-border/30">
+              <CheckCircle2 size={13} className="text-green-600 shrink-0" />
+              <span className="font-semibold text-foreground">Акцію запущено!</span>
+              <div className="ml-auto flex items-center gap-1 text-muted-foreground">
+                <Users size={11} />
+                <span>{result.sentTo}</span>
+              </div>
+            </div>
+            <div className="px-3.5 py-2 flex flex-col gap-0.5">
+              {result.clients && result.clients.length > 0 ? (
+                result.clients.map(c => (
+                  <div key={c.id} className="flex items-center gap-2 py-0.5">
+                    <div className="size-1.5 rounded-full bg-green-500/60 shrink-0" />
+                    <span className="text-foreground/70">{c.name}</span>
+                  </div>
+                ))
+              ) : (
+                <span className="text-muted-foreground/60 py-0.5">Немає клієнтів для сповіщення</span>
+              )}
+            </div>
+          </>
+        )}
+      </motion.div>
     )}
 
     <button

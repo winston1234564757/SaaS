@@ -23,10 +23,10 @@ const STARTER_LIMIT = 5;
 
 export async function createFlashDeal(
   params: CreateFlashDealParams
-): Promise<{ error: string | null; sentTo: number }> {
+): Promise<{ error: string | null; sentTo: number; clients: { id: string; name: string }[] }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Не авторизований', sentTo: 0 };
+  if (!user) return { error: 'Не авторизований', sentTo: 0, clients: [] };
 
   const admin = createAdminClient();
 
@@ -45,7 +45,7 @@ export async function createFlashDeal(
       .single(),
   ]);
 
-  if (!service) return { error: 'Послугу не знайдено або немає доступу', sentTo: 0 };
+  if (!service) return { error: 'Послугу не знайдено або немає доступу', sentTo: 0, clients: [] };
 
   // Перевірка ліміту Starter
   if (mp?.subscription_tier === 'starter') {
@@ -59,6 +59,7 @@ export async function createFlashDeal(
       return {
         error: `На Starter тарифі — ${STARTER_LIMIT} флеш-акцій на місяць. Перейдіть на Pro.`,
         sentTo: 0,
+        clients: [],
       };
     }
   }
@@ -82,7 +83,7 @@ export async function createFlashDeal(
     .select('id')
     .single();
 
-  if (dealErr) return { error: dealErr.message, sentTo: 0 };
+  if (dealErr) return { error: dealErr.message, sentTo: 0, clients: [] };
 
   // Дані для сповіщень
   const { data: profile } = await admin
@@ -99,16 +100,14 @@ export async function createFlashDeal(
   const notifTitle = `⚡ Флеш-акція від ${masterName}!`;
   const notifBody  = `${serviceName} ${dateStr} о ${params.slotTime} — ${discountedPrice} ₴ замість ${params.originalPrice} ₴ (-${params.discountPct}%). Акція діє ${pluralUk(params.expiresInHours, 'годину', 'години', 'годин')}!`;
 
-  // ── Смарт-таргетинг: виключно через SQL RPC (±48 год) ──
-  // Слот у київський час (+03:00), PostgreSQL конвертує в UTC при порівнянні
-  const slotTimestamp = `${params.slotDate}T${params.slotTime}:00+03:00`;
+  // Таргетинг: всі клієнти без запису в наступні 3 дні
   const { data: eligibleRows } = await admin
     .rpc('get_eligible_flash_deal_clients', {
-      p_master_id:      user.id,
-      p_slot_timestamp: slotTimestamp,
+      p_master_id: user.id,
     });
 
-  const clientIds = (eligibleRows ?? []).map((r: { client_id: string }) => r.client_id);
+  const notifClients = (eligibleRows ?? []) as { client_id: string; client_name: string }[];
+  const clientIds = notifClients.map(r => r.client_id);
 
   let sentCount = 0;
 
@@ -158,7 +157,8 @@ export async function createFlashDeal(
     }
   }
 
-  return { error: null, sentTo: sentCount > 0 ? sentCount : clientIds.length };
+  const clients = notifClients.map(r => ({ id: r.client_id, name: r.client_name }));
+  return { error: null, sentTo: sentCount > 0 ? sentCount : clientIds.length, clients };
 }
 
 export async function cancelFlashDeal(dealId: string): Promise<{ error: string | null }> {
