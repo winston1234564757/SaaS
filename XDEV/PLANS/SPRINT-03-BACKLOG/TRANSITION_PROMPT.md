@@ -15,7 +15,7 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 17/18 ✅
+Прогрес: 17/18 ✅ + hotfix/flash-clients (9f5a835)
 Виконано: T15 T1 T10 T4 T3 T2 T5 T8 T6c T6a T6b T9 T12 T13 T14 T11
 Наступна: T16 — Тур: підсвічування елементів (spotlight)
 Brief: XDEV/PLANS/SPRINT-03-BACKLOG/T16_BRIEF.md
