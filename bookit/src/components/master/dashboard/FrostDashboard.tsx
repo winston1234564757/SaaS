@@ -226,63 +226,63 @@ function FrostMobile({
         <FrostGreeting />
       </motion.div>
 
-      <motion.div custom={1} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={1} variants={rise} initial="hidden" animate="visible" data-tour-step={1}>
         <FrostMetricsStrip />
       </motion.div>
 
-      <motion.div custom={2} variants={rise} initial="hidden" animate="visible" data-tour-step={1}>
+      <motion.div custom={2} variants={rise} initial="hidden" animate="visible" data-tour-step={2}>
         <AdaptiveContextStrip />
       </motion.div>
 
-      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={4}>
+      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={3}>
         <QuickActionsWidget />
       </motion.div>
 
-      <motion.div custom={4} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={4} variants={rise} initial="hidden" animate="visible" data-tour-step={4}>
         <FreeSlotsWidget onSlotClick={onSlotClick} />
       </motion.div>
 
-      <motion.div custom={5} variants={rise} initial="hidden" animate="visible" data-tour-step={2}>
+      <motion.div custom={5} variants={rise} initial="hidden" animate="visible" data-tour-step={5}>
         <ScheduleWidget />
       </motion.div>
 
-      <motion.div custom={6} variants={rise} initial="hidden" animate="visible" data-tour-step={3}>
+      <motion.div custom={6} variants={rise} initial="hidden" animate="visible" data-tour-step={6}>
         <WeeklyChartWidget />
       </motion.div>
 
-      <motion.div custom={7} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={7} variants={rise} initial="hidden" animate="visible" data-tour-step={7}>
         <PeakHoursWidget />
       </motion.div>
 
-      <motion.div custom={8} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={8} variants={rise} initial="hidden" animate="visible" data-tour-step={8}>
         <MonthlyCalendarWidget />
       </motion.div>
 
-      <motion.div custom={9} variants={rise} initial="hidden" animate="visible" data-tour-step={6}>
+      <motion.div custom={9} variants={rise} initial="hidden" animate="visible" data-tour-step={9}>
         <InsightsRow />
       </motion.div>
 
-      <motion.div custom={10} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={10} variants={rise} initial="hidden" animate="visible" data-tour-step={10}>
         <CancellationRateWidget />
       </motion.div>
 
-      <motion.div custom={11} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={11} variants={rise} initial="hidden" animate="visible" data-tour-step={11}>
         <TopServicesWidget />
       </motion.div>
 
-      <motion.div custom={12} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={12} variants={rise} initial="hidden" animate="visible" data-tour-step={12}>
         <NextFreeDaysWidget onDayClick={onDayClick} />
       </motion.div>
 
-      <motion.div custom={13} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={13} variants={rise} initial="hidden" animate="visible" data-tour-step={13}>
         <ChannelHealthWidget />
       </motion.div>
 
-      <motion.div custom={14} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={14} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
         <ClientAlertsWidget />
       </motion.div>
 
-      <motion.div custom={15} variants={rise} initial="hidden" animate="visible" data-tour-step={5}>
+      <motion.div custom={15} variants={rise} initial="hidden" animate="visible" data-tour-step={15}>
         <ReferralBoostWidget />
       </motion.div>
     </div>
@@ -304,20 +304,20 @@ function FrostDesktop({
         <FrostGreeting />
       </motion.div>
 
-      <motion.div custom={1} variants={rise} initial="hidden" animate="visible" className="mb-4">
+      <motion.div custom={1} variants={rise} initial="hidden" animate="visible" className="mb-4" data-tour-step={1}>
         <FrostMetricsStrip />
       </motion.div>
 
       <motion.div custom={2} variants={rise} initial="hidden" animate="visible" className="mb-4">
         <div className="grid gap-4" style={{ gridTemplateColumns: '3fr 2fr' }}>
-          <div data-tour-step={1} className="flex flex-col">
+          <div data-tour-step={2} className="flex flex-col">
             <AdaptiveContextStrip />
           </div>
           <EarningsPulseWidget />
         </div>
       </motion.div>
 
-      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={4}>
+      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={3}>
         <FrostActionsBar />
       </motion.div>
 
@@ -325,10 +325,12 @@ function FrostDesktop({
 
       <motion.div custom={4} variants={rise} initial="hidden" animate="visible">
         <div className="grid gap-4" style={{ gridTemplateColumns: '3fr 2fr' }}>
-          <div data-tour-step={2} className="flex flex-col h-full">
+          <div data-tour-step={5} className="flex flex-col h-full">
             <ScheduleWidget />
           </div>
-          <FreeSlotsWidget onSlotClick={onSlotClick} />
+          <div data-tour-step={4}>
+            <FreeSlotsWidget onSlotClick={onSlotClick} />
+          </div>
         </div>
       </motion.div>
 
@@ -336,16 +338,18 @@ function FrostDesktop({
 
       <motion.div custom={5} variants={rise} initial="hidden" animate="visible">
         <div className="grid gap-4" style={{ gridTemplateColumns: '40fr 60fr' }}>
-          <div data-tour-step={3} className="flex flex-col">
+          <div data-tour-step={6} className="flex flex-col">
             <WeeklyChartWidget />
           </div>
-          <PeakHoursWidget />
+          <div data-tour-step={7}>
+            <PeakHoursWidget />
+          </div>
         </div>
       </motion.div>
 
       <FrostDivider />
 
-      <motion.div custom={6} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={6} variants={rise} initial="hidden" animate="visible" data-tour-step={8}>
         <MonthlyCalendarWidget />
       </motion.div>
 
@@ -353,8 +357,12 @@ function FrostDesktop({
 
       <motion.div custom={7} variants={rise} initial="hidden" animate="visible">
         <div className="grid grid-cols-2 gap-4">
-          <TopServicesWidget />
-          <CancellationRateWidget />
+          <div data-tour-step={11}>
+            <TopServicesWidget />
+          </div>
+          <div data-tour-step={10}>
+            <CancellationRateWidget />
+          </div>
         </div>
       </motion.div>
 
@@ -362,23 +370,27 @@ function FrostDesktop({
 
       <motion.div custom={8} variants={rise} initial="hidden" animate="visible">
         <div className="grid grid-cols-3 gap-4">
-          <div data-tour-step={6} className="flex flex-col">
+          <div data-tour-step={9} className="flex flex-col">
             <InsightsRow />
           </div>
-          <NextFreeDaysWidget onDayClick={onDayClick} />
-          <ChannelHealthWidget />
+          <div data-tour-step={12}>
+            <NextFreeDaysWidget onDayClick={onDayClick} />
+          </div>
+          <div data-tour-step={13}>
+            <ChannelHealthWidget />
+          </div>
         </div>
       </motion.div>
 
       <FrostDivider />
 
-      <motion.div custom={9} variants={rise} initial="hidden" animate="visible">
+      <motion.div custom={9} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
         <ClientAlertsWidget />
       </motion.div>
 
       <FrostDivider />
 
-      <motion.div custom={10} variants={rise} initial="hidden" animate="visible" data-tour-step={5}>
+      <motion.div custom={10} variants={rise} initial="hidden" animate="visible" data-tour-step={15}>
         <ReferralBoostWidget />
       </motion.div>
 

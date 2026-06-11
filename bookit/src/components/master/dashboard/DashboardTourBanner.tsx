@@ -59,7 +59,8 @@ export function DashboardTourBanner() {
       return;
     }
 
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // instant avoids mid-scroll getBCR mis-positioning (smooth can take 500ms+)
+    el.scrollIntoView({ behavior: 'instant', block: 'center' });
 
     const timer = setTimeout(() => {
       const ov = overlayRef.current;
@@ -70,7 +71,7 @@ export function DashboardTourBanner() {
       ov.style.width  = `${rect.width + 16}px`;
       ov.style.height = `${rect.height + 16}px`;
       ov.style.opacity = '1';
-    }, 350);
+    }, 80);
 
     return () => clearTimeout(timer);
   }, [tourStep]);
