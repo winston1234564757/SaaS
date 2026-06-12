@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, PenLine, MessageSquare, Phone } from 'lucide-react';
+import { Calendar, PenLine, Phone, Sparkles } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
 import { saveClientNote } from '@/app/(master)/dashboard/clients/actions';
 import { useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
-import { useRouter } from 'next/navigation';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
 import { RETENTION_CONFIG } from './clientsUtils';
 
@@ -16,14 +15,15 @@ interface ClientListRowProps {
   client: ClientRow;
   onOpen: (client: ClientRow) => void;
   onBooking: (client: ClientRow) => void;
+  onSmartAction: (client: ClientRow) => void;
 }
 
 export const ClientListRow = React.memo(function ClientListRow({
   client,
   onOpen,
   onBooking,
+  onSmartAction,
 }: ClientListRowProps) {
-  const router = useRouter();
   const { showToast } = useToast();
   const invalidateNote = useClientNoteInvalidate();
 
@@ -121,27 +121,27 @@ export const ClientListRow = React.memo(function ClientListRow({
 
       {/* Desktop action buttons — absolute right, visible on group-hover */}
       {!editing && (
-        <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-4 top-1/2 -translate-y-1/2 z-10">
+        <div className="hidden sm:flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity absolute right-4 top-1/2 -translate-y-1/2 z-10">
           <button
             type="button"
             onClick={() => { setEditing(true); setNoteValue(''); }}
-            className="p-2 rounded-lg bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all active:scale-[0.88]"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
             aria-label="Швидка нотатка"
           >
             <PenLine size={14} />
           </button>
           <button
             type="button"
-            onClick={() => router.push(`/dashboard/marketing?phone=${client.client_phone}`)}
-            className="p-2 rounded-lg bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all active:scale-[0.88]"
-            aria-label="Розсилка"
+            onClick={() => onSmartAction(client)}
+            className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-colors duration-150 active:scale-[0.88] hover:bg-primary hover:text-white"
+            aria-label="Smart-дія"
           >
-            <MessageSquare size={14} />
+            <Sparkles size={14} />
           </button>
           <button
             type="button"
             onClick={() => { window.location.href = `tel:${client.client_phone}`; }}
-            className="p-2 rounded-lg bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all active:scale-[0.88]"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
             aria-label="Подзвонити"
           >
             <Phone size={14} />
@@ -190,27 +190,27 @@ export const ClientListRow = React.memo(function ClientListRow({
 
       {/* Mobile action bar */}
       <div className="flex sm:hidden items-center justify-between gap-1 mt-3 pt-3 border-t border-secondary/40">
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           <button
             type="button"
             onClick={() => { setEditing(true); setNoteValue(''); }}
-            className="min-h-[44px] px-3 rounded-lg bg-secondary/40 text-muted-foreground active:scale-[0.88] transition-all flex items-center justify-center"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
             aria-label="Швидка нотатка"
           >
             <PenLine size={14} />
           </button>
           <button
             type="button"
-            onClick={() => router.push(`/dashboard/marketing?phone=${client.client_phone}`)}
-            className="min-h-[44px] px-3 rounded-lg bg-secondary/40 text-muted-foreground active:scale-[0.88] transition-all flex items-center justify-center"
-            aria-label="Розсилка"
+            onClick={() => onSmartAction(client)}
+            className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary active:scale-[0.88] transition-all hover:bg-primary hover:text-white"
+            aria-label="Smart-дія"
           >
-            <MessageSquare size={14} />
+            <Sparkles size={14} />
           </button>
           <button
             type="button"
             onClick={() => { window.location.href = `tel:${client.client_phone}`; }}
-            className="min-h-[44px] px-3 rounded-lg bg-secondary/40 text-muted-foreground active:scale-[0.88] transition-all flex items-center justify-center"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
             aria-label="Подзвонити"
           >
             <Phone size={14} />

@@ -565,6 +565,11 @@ export function ClientsPage() {
                     client={filtered[vItem.index]}
                     onOpen={openClientSheet}
                     onBooking={openBookingForClient}
+                    onSmartAction={(c) => {
+                      const action = getSmartAction(c, smartSegment);
+                      setSmartMessage(action.template);
+                      setShowSmartAction(c);
+                    }}
                   />
                 </div>
               ))}
