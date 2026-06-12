@@ -40,7 +40,6 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
 
   function handleOpen() {
     setOpen(true);
-    markAllRead();
   }
 
   function handleClick(n: MasterNotification) {
@@ -145,7 +144,10 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
 
       <Drawer.Root
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(val) => {
+          setOpen(val);
+          if (!val) markAllRead();
+        }}
         shouldScaleBackground={false}
         repositionInputs={false}
       >
