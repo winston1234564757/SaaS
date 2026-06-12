@@ -82,7 +82,7 @@ export const ClientListRow = React.memo(function ClientListRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-bold text-foreground truncate">{client.client_name}</p>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="flex items-center gap-1.5 flex-shrink-0 sm:group-hover:hidden">
               <span
                 className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full"
                 style={{ color: ret.color, background: ret.bg }}
@@ -189,42 +189,44 @@ export const ClientListRow = React.memo(function ClientListRow({
       )}
 
       {/* Mobile action bar */}
-      <div className="flex sm:hidden items-center justify-between gap-1 mt-3 pt-3 border-t border-secondary/40">
-        <div className="flex gap-2">
+      {!editing && (
+        <div className="flex sm:hidden items-center justify-between gap-1 mt-3 pt-3 border-t border-secondary/40">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setEditing(true); setNoteValue(''); }}
+              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
+              aria-label="Швидка нотатка"
+            >
+              <PenLine size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onSmartAction(client)}
+              className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary active:scale-[0.88] transition-all hover:bg-primary hover:text-white"
+              aria-label="Smart-дія"
+            >
+              <Sparkles size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => { window.location.href = `tel:${client.client_phone}`; }}
+              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
+              aria-label="Подзвонити"
+            >
+              <Phone size={14} />
+            </button>
+          </div>
           <button
             type="button"
-            onClick={() => { setEditing(true); setNoteValue(''); }}
-            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
-            aria-label="Швидка нотатка"
+            onClick={() => onBooking(client)}
+            className="flex items-center gap-1.5 px-3 min-h-[44px] rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[10px] font-bold active:scale-[0.88] transition-all"
           >
-            <PenLine size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onSmartAction(client)}
-            className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary active:scale-[0.88] transition-all hover:bg-primary hover:text-white"
-            aria-label="Smart-дія"
-          >
-            <Sparkles size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={() => { window.location.href = `tel:${client.client_phone}`; }}
-            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
-            aria-label="Подзвонити"
-          >
-            <Phone size={14} />
+            <Calendar size={12} />
+            Записати
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => onBooking(client)}
-          className="flex items-center gap-1.5 px-3 min-h-[44px] rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[10px] font-bold active:scale-[0.88] transition-all"
-        >
-          <Calendar size={12} />
-          Записати
-        </button>
-      </div>
+      )}
     </motion.div>
   );
 });
