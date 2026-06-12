@@ -85,7 +85,7 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
           <div className="relative">
             {bellIcon}
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center">
+              <span className="absolute -top-1.5 -right-2 z-10 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -115,7 +115,7 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center leading-none"
+              className="absolute -top-1 -right-1 z-10 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center leading-none"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </motion.span>
@@ -125,14 +125,17 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
         <button
           type="button"
           onClick={handleOpen}
-          className="relative size-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary transition-colors duration-150 active:scale-95"
+          className={cn(
+            'relative size-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border hover:bg-secondary transition-colors duration-150 active:scale-95',
+            unreadCount > 0 ? 'text-accent' : 'text-muted-foreground',
+          )}
         >
           {bellIcon}
           {unreadCount > 0 && (
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center leading-none"
+              className="absolute -top-1 -right-1 z-10 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center leading-none"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </motion.span>
@@ -220,7 +223,9 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
                                 {timeAgo(n.createdAt)}
                               </p>
                             </div>
-                            <p className="text-xs text-muted-foreground leading-tight mt-0.5">{n.body}</p>
+                            <p className={cn('text-xs leading-tight mt-0.5', n.isRead ? 'text-muted-foreground/50' : 'text-muted-foreground')}>
+                              {n.body}
+                            </p>
                           </div>
                           {!n.isRead && (
                             <div className="size-2 rounded-full bg-warning flex-shrink-0 mt-1.5" />
