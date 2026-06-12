@@ -41,6 +41,8 @@
 3. Body text прочитаних: `text-muted-foreground/50` (vs unread: `text-muted-foreground`)
 4. **Hotfix** (`f88b444`): `markAllRead()` переміщено з `handleOpen()` → `onOpenChange(!val)` — тепер відмічає прочитаними при **закритті**, а не при відкритті. Root cause: виклик до рендеру → всі items одразу `isRead=true` → сірі.
 
+**Hotfix-3** (`185d78a`) — optimistic mark-as-read: `qc.setQueryData` синхронно перед DB write → instant UI, DB write у background `.then(invalidateQueries)`. Функції змінені з `async` на sync. File: `src/lib/supabase/hooks/useNotifications.ts`.
+
 **TSC:** 0 | **Build:** clean
 
 ---
