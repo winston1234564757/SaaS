@@ -81,18 +81,22 @@ export function PublicStatusWidget({
 
         <button
           type="button"
+          role="switch"
+          aria-checked={isPublished}
           onClick={onPublishToggle}
           aria-label={isPublished ? 'Приховати профіль' : 'Опублікувати профіль'}
-          aria-pressed={isPublished}
-          className={cn(
-            'relative w-12 h-7 rounded-full transition-colors duration-300 shadow-inner cursor-pointer',
-            isPublished ? 'bg-success' : 'bg-muted-foreground/30'
-          )}
+          className="py-[8px] px-0.5 -my-[8px] flex items-center shrink-0 active:scale-95"
         >
-          <motion.div
-            animate={{ x: isPublished ? 20 : 4 }}
-            className="absolute top-1 left-1 size-5 rounded-full bg-[var(--accent-on)] shadow-md"
-          />
+          <span className={cn(
+            'relative w-12 h-7 rounded-full transition-colors duration-300 shadow-inner',
+            isPublished ? 'bg-success' : 'bg-muted-foreground/30'
+          )}>
+            <motion.div
+              animate={{ x: isPublished ? 20 : 4 }}
+              transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
+              className="absolute top-1 left-1 size-5 rounded-full bg-[var(--accent-on)] shadow-md"
+            />
+          </span>
         </button>
       </div>
 

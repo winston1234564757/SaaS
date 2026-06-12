@@ -330,16 +330,21 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                   </div>
                   <button
                     type="button"
+                    role="switch"
+                    aria-checked={recommendAlways}
+                    aria-label={recommendAlways ? 'Вимкнути рекомендацію' : 'Увімкнути рекомендацію'}
                     onClick={() => setRecommendAlways(v => !v)}
-                    className={`relative w-12 h-6 rounded-full transition-colors shrink-0 cursor-pointer ${
-                      recommendAlways ? 'bg-primary' : 'bg-muted'
-                    }`}
+                    className="py-[12px] px-0.5 -my-[12px] flex items-center shrink-0 active:scale-95"
                   >
-                    <span
-                      className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-[var(--accent-on)] shadow-sm transition-transform ${
-                        recommendAlways ? 'translate-x-6' : 'translate-x-0'
-                      }`}
-                    />
+                    <span className={`relative w-12 h-6 rounded-full transition-colors ${
+                      recommendAlways ? 'bg-accent' : 'bg-muted-foreground/25'
+                    }`}>
+                      <motion.div
+                        animate={{ x: recommendAlways ? 24 : 0 }}
+                        transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
+                        className="absolute top-0.5 left-0.5 size-5 rounded-full bg-[var(--accent-on)] shadow-sm"
+                      />
+                    </span>
                   </button>
                 </div>
 

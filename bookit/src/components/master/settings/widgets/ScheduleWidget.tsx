@@ -107,20 +107,25 @@ export function ScheduleWidget({
           >
             <button
               type="button"
+              role="switch"
+              aria-checked={schedule[day].is_working}
               onClick={() => toggleDay(day)}
               aria-label={schedule[day].is_working ? 'Вимкнути' : 'Увімкнути'}
-              aria-pressed={schedule[day].is_working}
-              className={cn(
-                'relative rounded-full transition-colors shrink-0 active:scale-[0.88] cursor-pointer',
-                schedule[day].is_working ? 'bg-[var(--btn-primary-bg)]' : 'bg-muted-foreground/25',
-              )}
-              style={{ height: '28px', width: '44px' }}
+              className="py-[8px] -my-[8px] flex items-center shrink-0 active:scale-[0.88]"
             >
-              <motion.div
-                animate={{ x: schedule[day].is_working ? 25 : 3 }}
-                transition={{ type: 'spring' as const, stiffness: 500, damping: 35 }}
-                className="absolute top-[3px] left-0 size-4 rounded-full bg-[var(--accent-on)] shadow-sm"
-              />
+              <span
+                className={cn(
+                  'relative rounded-full transition-colors',
+                  schedule[day].is_working ? 'bg-accent' : 'bg-muted-foreground/25',
+                )}
+                style={{ height: '28px', width: '44px' }}
+              >
+                <motion.div
+                  animate={{ x: schedule[day].is_working ? 25 : 3 }}
+                  transition={{ type: 'spring' as const, stiffness: 500, damping: 35 }}
+                  className="absolute top-[3px] left-0 size-4 rounded-full bg-[var(--accent-on)] shadow-sm"
+                />
+              </span>
             </button>
 
             <span className="text-[11px] font-bold w-6 shrink-0">{DAYS_UA_SHORT[day]}</span>

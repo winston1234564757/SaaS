@@ -140,18 +140,21 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
         <Tooltip content={<p className="text-xs text-foreground">{service.active ? 'Деактивувати послугу' : 'Активувати послугу'}</p>} position="top">
           <button
             type="button"
-            aria-pressed={service.active}
+            role="switch"
+            aria-checked={service.active}
             aria-label={service.active ? 'Деактивувати послугу' : 'Активувати послугу'}
             onClick={(e) => { e.stopPropagation(); onToggle(service.id); }}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-              service.active ? 'bg-primary' : 'bg-secondary/80'
-            }`}
+            className="py-[12px] px-0.5 -my-[12px] flex items-center shrink-0 active:scale-95"
           >
-            <motion.div
-              animate={{ x: service.active ? 20 : 2 }}
-              transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
-              className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
-            />
+            <span className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+              service.active ? 'bg-accent' : 'bg-muted-foreground/25'
+            }`}>
+              <motion.div
+                animate={{ x: service.active ? 20 : 2 }}
+                transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
+                className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
+              />
+            </span>
           </button>
         </Tooltip>
       </div>
