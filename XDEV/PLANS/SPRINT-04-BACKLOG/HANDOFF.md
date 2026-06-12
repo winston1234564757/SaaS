@@ -95,6 +95,10 @@
 1. `ClientListRow.tsx`: кнопка #2 `MessageSquare → Sparkles` + `onSmartAction(client)`. Всі 3 іконки → `size-11 rounded-full` (desktop hover + mobile bar). Видалено `useRouter` + `MessageSquare` imports.
 2. `ClientsPage.tsx`: додано `onSmartAction` callback до `ClientListRow` (той самий `getSmartAction` → `setSmartMessage` → `setShowSmartAction` що в grid).
 
+**Hotfix** (`ee456cb`) — два баги виявлені під час impeccable audit:
+1. `ClientListRow.tsx`: status/VIP badge wrapper → додано `sm:group-hover:hidden` (badge проглядався крізь absolute hover overlay на desktop)
+2. `ClientListRow.tsx`: mobile action bar → загорнуто в `{!editing && (...)}` guard (bar показувався одночасно з note editor)
+
 **TSC:** 0 | **Build:** clean
 
 ---
