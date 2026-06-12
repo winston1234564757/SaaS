@@ -356,7 +356,7 @@ export function MobileHub() {
       {!isOpen && (
         <div
           className="fixed right-4 z-[76] pointer-events-auto"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 80px)' }}
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 146px)' }}
         >
           <NotificationsBell fab />
         </div>
