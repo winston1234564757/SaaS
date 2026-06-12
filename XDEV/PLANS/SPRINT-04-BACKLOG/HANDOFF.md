@@ -103,17 +103,38 @@
 
 ---
 
-## ▶ T06 — Меню > Система > Студія: redesign + alpha/beta
+## ✅ T06 — Меню > Система > Студія: redesign + alpha/beta
 
-**Проблема:** Кнопка "Студія" в системному меню → немає деталей участі в alpha/beta. Кнопка не відповідає стилю тарифної сторінки.
+**Commit:** `875f512`
 
-**Що робити:**
-1. Знайти системне меню / Settings page — секція Студія
-2. Додати секцію з описом alpha/beta участі
-3. CTA кнопка — той самий style що на `/pricing` або тарифній сторінці
-4. Humanizer для всього copy; Frost design tokens
+**Root cause:** `/dashboard/studio` мав `WaitlistButton` (joinWaitlist — анонімний список) замість beta-форми з реальними контактами. Стиль кнопки `bg-primary` не відповідав BillingPage Studio CTA.
 
-**Скіл:** `design-taste-frontend` + `impeccable`
+**Що зроблено:**
+1. `studio/page.tsx` — повний rewrite: Server Component, STUDIO_COLOR = #5C9E7A, left-aligned layout, vertical feature list, humanized copy
+2. `StudioBetaCard.tsx` — новий Client Component: "Беремо перших" секція + Sheet форма (name/contact/size → submitBetaRequest з billing/actions)
+3. CTA "Хочу в бету" — style як на BillingPage: `background: #5C9E7A, boxShadow: 0 4px 16px #5C9E7A40`
+4. Badge a11y fix: `color: #1E5C3F` на `#5C9E7A18` bg = 7.90:1 WCAG AA
+5. WaitlistButton → більше не використовується (замінений StudioBetaCard)
+
+**TSC:** 0 | **Build:** pending deploy
+
+---
+
+## ▶ T07 — Записи мобайл: safe area top + opacity при скролі
+
+**Проблема:** Control panel (тижні/місяці/режими) ховається за "чубом" телефону. При скролі накладається на картки.
+
+**Де шукати:**
+- `src/components/master/bookings/BookingsPage.tsx` — sticky control panel
+- Шукати: sticky header з тижнями/місяцями/режимами
+
+**Acceptance criteria:**
+- AC-1: `padding-top: env(safe-area-inset-top)` на sticky control panel
+- AC-2: При скролі > 50px → sticky bar: `backdrop-filter: blur(12px)` + `opacity: 0.95`
+- AC-3: Картки під sticky bar мають `mt` = висота sticky bar (без overlap)
+- AC-4: Десктоп view — не зламано
+
+**Скіл:** `senior-frontend` + `impeccable`
 
 ---
 

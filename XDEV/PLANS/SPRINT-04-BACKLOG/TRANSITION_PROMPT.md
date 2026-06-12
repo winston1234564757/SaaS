@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 5/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T06 — Меню > Система > Студія: redesign + alpha/beta
+Прогрес: 6/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T07 — Записи мобайл: safe area top + opacity при скролі
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 ⚠️ Pending із Sprint-03:

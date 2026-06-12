@@ -11,8 +11,8 @@
 | 3 | T03 | Портфоліо → Сторіс: редірект замість drawer | ✅ | `code-reviewer` | `55ce2f9` | drawer removed; redirect to /dashboard/marketing?tab=stories&portfolioId |
 | 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle уніфікація | ✅ | `senior-frontend` | `df27107` `3c26ff6` | inline btn + TabBtn outlined + уніфікація всіх 5 pill-тоглів: role=switch/bg-accent/44px |
 | 5 | T05 | Клієнти (список): стандартизація кнопок + smart кнопка | ✅ | `code-reviewer` | `c239ae4` | MessageSquare→Sparkles; size-11 rounded-full; onSmartAction wired |
-| 6 | **T06** | **Меню > Система > Студія: redesign + alpha/beta** | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | — |
-| 7 | T07 | Записи мобайл: safe area top + opacity при скролі | ⬜ | `senior-frontend` + `impeccable` | — | — |
+| 6 | T06 | Меню > Система > Студія: redesign + alpha/beta | ✅ | `design-taste-frontend` + `humanizer` | `875f512` | StudioBetaCard.tsx new: beta form (name/contact/size) → submitBetaRequest; WaitlistButton replaced; #1E5C3F badge for a11y |
+| 7 | **T07** | **Записи мобайл: safe area top + opacity при скролі** | **▶ NEXT** | `senior-frontend` + `impeccable` | — | — |
 | 8 | T08 | Дашборд: tooltip safe area (кліп на краях) | ⬜ | `senior-frontend` + `impeccable` | — | — |
 | 9 | T09 | Мобайл послуги: кнопка + toggle a11y + компакт + sep | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 10 | T10 | Портфоліо: кольори + mobile photo actions (3 кнопки) | ⬜ | `design-taste-frontend` + `impeccable` | — | — |

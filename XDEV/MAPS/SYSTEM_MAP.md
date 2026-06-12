@@ -34,7 +34,7 @@
 | `/dashboard/settings` | Розклад, відпустки, Telegram, локація, тема | `settings/page.tsx` | `settings/actions.ts` | `master/settings/SettingsPage.tsx`, `VacationManager.tsx`, `LocationPicker.tsx` |
 | `/dashboard/loyalty` | Redirect Gateway to `/dashboard/growth?tab=loyalty` | `loyalty/page.tsx` | — | Redirect Gateway |
 | `/dashboard/referral` | Redirect Gateway to `/dashboard/growth?tab=referral` | `referral/page.tsx` | — | Redirect Gateway |
-| `/dashboard/studio` | Studio-режим: запрошення майстрів | `studio/page.tsx` | `studio/actions.ts` | `master/studio/StudioPage.tsx` |
+| `/dashboard/studio` | Studio coming-soon: preview features + beta CTA form | `studio/page.tsx` | `billing/actions.ts` (submitBetaRequest) | `master/studio/StudioBetaCard.tsx` (client: beta Sheet form, submitBetaRequest, sizes 1/2-5/5+), `master/studio/WaitlistButton.tsx` (unused — replaced) |
 | `/dashboard/partners` | Redirect Gateway to `/dashboard/growth?tab=partners` | `partners/page.tsx` | — | Redirect Gateway |
 | `/dashboard/revenue` | Revenue Hub: вкладки "Флеш-акції" та "Смарт-ціни" (inline) | `revenue/page.tsx` | — | `master/revenue/RevenueHubClient.tsx` |
 | `/dashboard/marketing` | Marketing Hub: Story Generator + Broadcast розсилки (in-app/Push/Telegram/SMS) | `marketing/page.tsx` | `marketing/actions.ts` | `master/marketing/StoryGenerator.tsx`, `BroadcastEditor.tsx`, `BroadcastHistory.tsx` |
