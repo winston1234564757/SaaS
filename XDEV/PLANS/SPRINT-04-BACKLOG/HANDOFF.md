@@ -132,6 +132,8 @@
 3. AC-3: `controlsRef` + `ResizeObserver` → `barHeight`. `scroll-padding-top` на `document.documentElement`. `scrollMarginTop: barHeight` на кожній date-group div
 4. AC-4: Desktop: `lg:hidden` → barHeight = 0 (offsetHeight hidden = 0) → scroll-padding-top = 0 автоматично
 
+**Hotfix** (`5be8ae1`) — impeccable audit: flat `bg-background` bar замінено на `widget-card` (glass surface = `var(--surface)` + `blur(36px)` + inset glow + `0.5px border`), що відповідає 4 stat-картам вище. Outer div = safe-area cover (`var(--background)`). Видалено redundant `backdrop-blur-sm` з View Switcher та `isScrolled` opacity hack (a11y ризик).
+
 **TSC:** 0 | **Build:** clean
 
 ---
