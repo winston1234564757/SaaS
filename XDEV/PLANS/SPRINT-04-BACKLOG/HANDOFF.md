@@ -42,6 +42,7 @@
 4. **Hotfix** (`f88b444`): `markAllRead()` переміщено з `handleOpen()` → `onOpenChange(!val)` — тепер відмічає прочитаними при **закритті**, а не при відкритті. Root cause: виклик до рендеру → всі items одразу `isRead=true` → сірі.
 
 **Hotfix-3** (`185d78a`) — optimistic mark-as-read: `qc.setQueryData` синхронно перед DB write → instant UI, DB write у background `.then(invalidateQueries)`. Функції змінені з `async` на sync. File: `src/lib/supabase/hooks/useNotifications.ts`.
+**Hotfix-4** (`2746e21`) — X кнопка тепер також викликає `markAllRead()`: Vaul v1 не тригерить `onOpenChange` при зовнішньому `setOpen(false)` → close button мав додатковий explicit call. `onClick={() => { markAllRead(); setOpen(false); }}`. File: `NotificationsBell.tsx`.
 
 **TSC:** 0 | **Build:** clean
 
