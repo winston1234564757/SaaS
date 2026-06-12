@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 1/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T02 — In-app сповіщення: unread кольорові + z-index
+Прогрес: 2/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T03 — Портфоліо → Сторіс: редірект замість drawer
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 ⚠️ Pending із Sprint-03:

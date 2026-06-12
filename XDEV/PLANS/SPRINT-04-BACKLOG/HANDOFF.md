@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 1/30 ✅
-**Наступна задача:** **T02 — In-app сповіщення: unread кольорові + z-index**
+**Прогрес:** 2/30 ✅
+**Наступна задача:** **T03 — Портфоліо → Сторіс: редірект замість drawer**
 
 ---
 
@@ -32,20 +32,33 @@
 
 ---
 
-## ▶ T02 — In-app сповіщення: unread кольорові + z-index
+## ✅ T02 — In-app сповіщення: unread кольорові + z-index
+**Commit:** `b7c1d25`
 
-**Проблема:** Прочитані сповіщення сірі ✓, але непрочитані теж виглядають приглушено. Лічильник badge ховається за кнопкою навбару.
+**Що зроблено** (`NotificationsBell.tsx`):
+1. Десктоп bell кнопка: `text-muted-foreground` завжди → `unreadCount > 0 ? 'text-accent' : 'text-muted-foreground'` (відповідає mobileNav поведінці)
+2. Badge z-index: додано `z-10` до всіх 3 badge span (mobileNav / fab / default варіанти)
+3. Body text прочитаних: `text-muted-foreground/50` (vs unread: `text-muted-foreground`) — чіткіша ієрархія
+4. Title: вже було correct — unread `text-foreground`, read `text-muted-foreground`
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T03 — Портфоліо → Сторіс: редірект замість drawer
+
+**Проблема:** Кнопка "Сторіс" на сторінці портфоліо відкриває Drawer. Потрібен redirect на `/dashboard/stories` з query параметрами.
 
 **Що робити:**
-1. Знайти компонент NotificationBell / лічильник сповіщень
-2. Непрочитані → насичений колір (Frost token: `--color-text-primary` або `text-foreground`)
-3. Прочитані → `text-muted-foreground` або `text-gray-400`
-4. Лічильник badge: перевірити z-index (має бути вище кнопки навбару: `z-[60]` або `z-50+1`)
+1. Знайти кнопку "Сторіс" в `src/app/(master)/dashboard/portfolio/`
+2. Замінити Drawer → `router.push('/dashboard/stories?type=portfolio&id=<work_id>')`
+3. Видалити Drawer повністю
+4. Перевірити чи stories constructor підхоплює query params
 
 **Acceptance criteria:**
-- AC-1: Непрочитані сповіщення — насичений колір (не muted)
-- AC-2: Прочитані — приглушений колір
-- AC-3: Лічильник badge завжди видно поверх кнопки
+- AC-1: Кнопка → `router.push('/dashboard/stories?type=portfolio&id=<work_id>')`
+- AC-2: Drawer — видалено повністю
+- AC-3: Stories constructor підхоплює query params (або просто redirect без params якщо неможливо)
 - AC-4: TSC: 0, Build: clean
 
 **Скіл:** `code-reviewer`
