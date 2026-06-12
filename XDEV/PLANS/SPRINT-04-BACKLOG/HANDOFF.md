@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 5/30 ✅
-**Наступна задача:** **T06 — Меню > Система > Студія: redesign + alpha/beta**
+**Прогрес:** 7/30 ✅
+**Наступна задача:** **T08 — Дашборд: tooltip safe area (кліп на краях)**
 
 ---
 
@@ -120,19 +120,33 @@
 
 ---
 
-## ▶ T07 — Записи мобайл: safe area top + opacity при скролі
+## ✅ T07 — Записи мобайл: safe area top + opacity при скролі
 
-**Проблема:** Control panel (тижні/місяці/режими) ховається за "чубом" телефону. При скролі накладається на картки.
+**Commit:** `224b0f9`
+
+**Root cause:** `top-[var(--safe-top,0px)]` — `--safe-top` ніде не встановлювався → дефолт 0px → sticky bar при стікінгу залазив вище `main`'s `pt-[env(safe-area-inset-top)]`, тобто під нотч. Бар не мав background → картки видно крізь нього при скролі.
+
+**Що зроблено** (`BookingsPage.tsx`):
+1. AC-1: `paddingTop: 'calc(env(safe-area-inset-top) + 8px)'` inline style — зберігає оригінальний pt-2 + додає safe zone
+2. AC-2: `isScrolled` state + passive `window.scroll` listener (scrollY > 50). При скролі: `bg-background/90 backdrop-blur-[12px] opacity-[0.95]`. В спокої: `bg-background` (solid). `transition-all duration-300` для плавності
+3. AC-3: `controlsRef` + `ResizeObserver` → `barHeight`. `scroll-padding-top` на `document.documentElement`. `scrollMarginTop: barHeight` на кожній date-group div
+4. AC-4: Desktop: `lg:hidden` → barHeight = 0 (offsetHeight hidden = 0) → scroll-padding-top = 0 автоматично
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T08 — Дашборд: tooltip safe area (кліп на краях)
+
+**Проблема:** Тултіпи віджету "Доходи" обрізаються у блоці. Тултіпи "Пікові години" виходять за край дисплею.
 
 **Де шукати:**
-- `src/components/master/bookings/BookingsPage.tsx` — sticky control panel
-- Шукати: sticky header з тижнями/місяцями/режимами
+- `src/components/master/dashboard/` — RevenueWidget, PeakHoursWidget
 
 **Acceptance criteria:**
-- AC-1: `padding-top: env(safe-area-inset-top)` на sticky control panel
-- AC-2: При скролі > 50px → sticky bar: `backdrop-filter: blur(12px)` + `opacity: 0.95`
-- AC-3: Картки під sticky bar мають `mt` = висота sticky bar (без overlap)
-- AC-4: Десктоп view — не зламано
+- AC-1: Доходи: `overflow: visible` на контейнері, тултіп `z-index` вище siblings
+- AC-2: Пікові години: `clamp(8px, calculatedX, viewportWidth - tooltipWidth - 8px)`
+- AC-3: Жоден тултіп не виходить за межі viewport на будь-якому розмірі екрану
 
 **Скіл:** `senior-frontend` + `impeccable`
 
