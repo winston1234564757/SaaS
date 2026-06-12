@@ -92,12 +92,24 @@ export function ProductsPage() {
               <h1 className="heading-serif text-xl text-foreground">Магазин</h1>
               <p className="text-sm text-muted-foreground/60 mt-0.5">Товари та замовлення</p>
             </div>
-            {newOrders > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
-                <ShoppingBag size={14} strokeWidth={2.5} />
-                <span className="text-xs font-bold">{newOrders} нових</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {tab === 'products' && (
+                <button
+                  type="button"
+                  onClick={() => router.push('/dashboard/products/new')}
+                  className="flex items-center gap-1.5 px-3 min-h-[44px] rounded-xl bg-accent text-accent-foreground text-xs font-semibold hover:bg-accent/90 transition-colors active:scale-95"
+                >
+                  <Plus size={14} />
+                  Додати товар
+                </button>
+              )}
+              {newOrders > 0 && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
+                  <ShoppingBag size={14} strokeWidth={2.5} />
+                  <span className="text-xs font-bold">{newOrders} нових</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -271,7 +283,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
       aria-pressed={active}
       onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all lg:flex-none lg:w-full lg:justify-start lg:px-4 ${
-        active ? 'bg-primary text-white shadow-sm' : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
+        active ? 'bg-accent text-accent-foreground shadow-sm' : 'border border-border bg-transparent text-muted-foreground hover:bg-secondary/40'
       } active:scale-95`}
     >
       {children}

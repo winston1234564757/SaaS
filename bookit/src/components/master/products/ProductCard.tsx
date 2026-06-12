@@ -67,15 +67,18 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
           {/* Active toggle */}
           <button
             type="button"
-            aria-pressed={p.is_active}
+            role="switch"
+            aria-checked={p.is_active}
             onClick={onToggle}
-            className={`shrink-0 w-9 h-5 rounded-full transition-colors ${p.is_active ? 'bg-primary' : 'bg-muted-foreground/30'} active:scale-95`}
+            className="shrink-0 py-[12px] px-0.5 -my-[12px] flex items-center active:scale-95"
             aria-label={p.is_active ? 'Деактивувати' : 'Активувати'}
           >
-            <span
-              className={`block size-4 rounded-full bg-accent-on shadow transition-transform ${p.is_active ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}
-              style={{ marginTop: 2 }}
-            />
+            <span className={`w-9 h-5 rounded-full transition-colors ${p.is_active ? 'bg-accent' : 'bg-muted-foreground/30'}`}>
+              <span
+                className={`block size-4 rounded-full bg-accent-on shadow transition-transform ${p.is_active ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}
+                style={{ marginTop: 2 }}
+              />
+            </span>
           </button>
         </div>
 
