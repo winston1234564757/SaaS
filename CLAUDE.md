@@ -88,14 +88,32 @@ npx supabase db push # Застосувати локальні міграції 
 
 ## ⛔ Post-Change Protocol
 
-Після завершення будь-якої зміни коду (фікс, фіча, рефакторинг) — **обов'язковий pipeline**:
+Після завершення будь-якої зміни коду (фікс, фіча, рефакторинг) — **обов'язковий pipeline** (автоматично, без нагадувань):
 
 1. **TypeScript check:** `npx tsc --noEmit` в папці `bookit/`.
 2. **Build check:** `npm run build` для підтвердження успішної компіляції Next.js App Router.
-3. **Run E2E tests:** `npm run test:e2e` для запобігання регресіям.
-4. **MemPalace update:** Обов'язково зберегти ключові технічні рішення, виправлення помилок чи RLS-зміни через `mempalace_add_drawer`.
-5. **Graphify check:** Переконатися, що граф взаємозв'язків актуальний (автоматично оновлюється хуками/комітом, за потреби запустити перегенерацію).
-6. **Project Files sync:** Оновити ключові проєктні файли ([SYSTEM_MAP.md](file:///C:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md), [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md) та [changelog/page.tsx](file:///C:/Users/Vitossik/SaaS/bookit/src/app/(master)/dashboard/changelog/page.tsx)) для повної синхронізації знань.
+3. **MemPalace update:** зберегти ключові технічні рішення через `mempalace_add_drawer`.
+4. **SYSTEM_MAP sync:** оновити `XDEV/MAPS/SYSTEM_MAP.md` якщо з'явились нові роути, компоненти, таблиці або змінилась архітектура.
+5. **si:extract:** якщо з'явився патерн, що може повторитись — викликати `Skill(skill='self-improving-agent')` з командою extract.
+6. **Project Files sync:** оновити [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md) якщо змінилась бізнес-логіка.
+
+## ⛔ Sprint Pipeline (АВТОМАТИЧНО після кожної задачі)
+
+**Залізне правило: після git commit коду → одразу без запитань:**
+
+```
+КРОК 1 → TRACKER.md: T[N] ⬜→✅, commit hash, brief (1 рядок)
+КРОК 2 → HANDOFF.md: T[N] секція ✅ + root cause; T[N+1] секція ▶ з деталями
+КРОК 3 → TRANSITION_PROMPT.md: "Наступна" → T[N+1]
+КРОК 4 → git commit "docs(sprint-04): T[N] done — TRACKER [X]/30 | HANDOFF + TRANSITION updated"
+КРОК 5 → mempalace_add_drawer для кожного key decision
+КРОК 6 → si:extract якщо є reusable pattern
+КРОК 7 → SYSTEM_MAP.md якщо змінилась архітектура
+```
+
+**Жодного кроку не пропускати. Жодного "нагадай мені оновити". Все автоматично.**
+
+Активний спринт: `XDEV/PLANS/SPRINT-04-BACKLOG/`
 
 ---
 

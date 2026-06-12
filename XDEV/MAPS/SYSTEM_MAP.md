@@ -16,7 +16,7 @@
 
 ### Layout & Auth Guard
 - `src/app/(master)/layout.tsx` — Server Component, server-side auth check; ініціює `MasterProvider`; **isOnboarding branch (2026-05-29)**: `<style>html,body{bg:#EFF2FF!important}</style>` + clean Frost div (no DashboardLayout chrome); MasterProvider wraps children
-- `src/app/layout.tsx` — Root layout; reads `x-pathname` header → forces `data-theme="frost"` on `<html>` for `/dashboard/onboarding` and `/onboarding` paths → inline `beforeInteractive` script sets `body.bg=#EFF2FF` server-side
+- `src/app/layout.tsx` — Root layout; reads `x-pathname` header → forces `data-theme="frost"` on `<html>` for `/dashboard/onboarding` and `/onboarding` paths → inline `beforeInteractive` script sets `body.bg=#EFF2FF` server-side. **Frost-only (T01 2026-06-12):** `client_theme` cookie normalized — missing or `'default'` (Blossom wip) → `'frost'`; `client_profiles` has NO theme column (cookie-only)
 - `src/components/master/DashboardLayout.tsx` — shell: sidebar nav + `BentoBottomNav` (Mosaic Command Center); `ThemeApplier` client component sets `data-theme` per `mood_theme`
 
 ### Routes → Компоненти → Server Actions
