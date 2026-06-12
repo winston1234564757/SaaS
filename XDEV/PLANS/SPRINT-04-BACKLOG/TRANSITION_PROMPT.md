@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 4/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T05 — Клієнти (список): стандартизація кнопок + smart кнопка
+Прогрес: 5/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T06 — Меню > Система > Студія: redesign + alpha/beta
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 ⚠️ Pending із Sprint-03:

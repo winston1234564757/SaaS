@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 4/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-12
+**Прогрес:** 5/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-12
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -10,8 +10,8 @@
 | 2 | T02 | In-app сповіщення: unread кольорові + z-index | ✅ | `code-reviewer` | `b7c1d25` `f88b444` `185d78a` `2746e21` | text-accent unread bell; badge z-10; markAllRead on close; optimistic setQueryData; X button explicit markAllRead call |
 | 3 | T03 | Портфоліо → Сторіс: редірект замість drawer | ✅ | `code-reviewer` | `55ce2f9` | drawer removed; redirect to /dashboard/marketing?tab=stories&portfolioId |
 | 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle уніфікація | ✅ | `senior-frontend` | `df27107` `3c26ff6` | inline btn + TabBtn outlined + уніфікація всіх 5 pill-тоглів: role=switch/bg-accent/44px |
-| 5 | **T05** | **Клієнти (список): стандартизація кнопок + smart кнопка** | **▶ NEXT** | `code-reviewer` | — | — |
-| 6 | T06 | Меню > Система > Студія: redesign + alpha/beta | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
+| 5 | T05 | Клієнти (список): стандартизація кнопок + smart кнопка | ✅ | `code-reviewer` | `c239ae4` | MessageSquare→Sparkles; size-11 rounded-full; onSmartAction wired |
+| 6 | **T06** | **Меню > Система > Студія: redesign + alpha/beta** | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | — |
 | 7 | T07 | Записи мобайл: safe area top + opacity при скролі | ⬜ | `senior-frontend` + `impeccable` | — | — |
 | 8 | T08 | Дашборд: tooltip safe area (кліп на краях) | ⬜ | `senior-frontend` + `impeccable` | — | — |
 | 9 | T09 | Мобайл послуги: кнопка + toggle a11y + компакт + sep | ⬜ | `design-taste-frontend` + `impeccable` | — | — |

@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 4/30 ✅
-**Наступна задача:** **T05 — Клієнти (список): стандартизація кнопок + smart кнопка**
+**Прогрес:** 5/30 ✅
+**Наступна задача:** **T06 — Меню > Система > Студія: redesign + alpha/beta**
 
 ---
 
@@ -86,17 +86,30 @@
 
 ---
 
-## ▶ T05 — Клієнти (список): стандартизація кнопок + smart кнопка
+## ✅ T05 — Клієнти (список): стандартизація кнопок + smart кнопка
+**Commit:** `c239ae4`
 
-**Проблема:** Кнопки в списку клієнтів не стандартизовані; відсутня "smart" кнопка дії.
+**Root cause:** `ClientListRow` мав `MessageSquare` (→ маркетинг) замість `Sparkles` (smart-action) як кнопку #2; стилі були `rounded-lg px-3` замість `size-11 rounded-full` як у `ClientGridCard`; `onSmartAction` не був прокинутий.
+
+**Що зроблено:**
+1. `ClientListRow.tsx`: кнопка #2 `MessageSquare → Sparkles` + `onSmartAction(client)`. Всі 3 іконки → `size-11 rounded-full` (desktop hover + mobile bar). Видалено `useRouter` + `MessageSquare` imports.
+2. `ClientsPage.tsx`: додано `onSmartAction` callback до `ClientListRow` (той самий `getSmartAction` → `setSmartMessage` → `setShowSmartAction` що в grid).
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T06 — Меню > Система > Студія: redesign + alpha/beta
+
+**Проблема:** Кнопка "Студія" в системному меню → немає деталей участі в alpha/beta. Кнопка не відповідає стилю тарифної сторінки.
 
 **Що робити:**
-1. Знайти `src/components/master/clients/` або відповідну сторінку
-2. Стандартизувати стилі кнопок (Frost tokens: `bg-accent`, `border-border`, `text-muted-foreground`)
-3. Додати "smart" кнопку — контекстна CTA залежно від стану клієнта
-4. Touch target ≥ 44px; `type="button"` на всіх
+1. Знайти системне меню / Settings page — секція Студія
+2. Додати секцію з описом alpha/beta участі
+3. CTA кнопка — той самий style що на `/pricing` або тарифній сторінці
+4. Humanizer для всього copy; Frost design tokens
 
-**Скіл:** `code-reviewer`
+**Скіл:** `design-taste-frontend` + `impeccable`
 
 ---
 
