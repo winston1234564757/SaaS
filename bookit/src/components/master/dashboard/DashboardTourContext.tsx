@@ -47,8 +47,8 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     // step 6 — WeeklyChartWidget
-    title: 'Тижневий графік',
-    text: 'Де піки, а де вільно — видно одразу. Використовуй це для планування Flash-акцій.',
+    title: 'Записи і доходи',
+    text: 'Перемикай між записами та доходом. Порівнюй з минулими днями і тижнями — динаміка видна одразу.',
     emptyHint: 'Графік заповниться після перших записів.',
   },
   {
@@ -88,12 +88,7 @@ export const TOUR_STEPS: TourStep[] = [
     text: 'Telegram та Push — ключові канали для нагадувань клієнтам. Зелений означає підключено і працює.',
   },
   {
-    // step 14 — ClientAlertsWidget
-    title: 'Клієнти без каналів',
-    text: 'Клієнти, які ще не підключили жоден канал сповіщень. Надішли їм запрошення — скоротиш кількість no-show.',
-  },
-  {
-    // step 15 — ReferralBoostWidget
+    // step 14 — ReferralBoostWidget
     title: 'Реферальна програма',
     text: 'Запрошуй колег — отримуй знижки на тариф. Чим більше рефералів, тим більший бонус.',
   },
@@ -143,7 +138,11 @@ export function DashboardTourProvider({ children }: { children: React.ReactNode 
     const hasSeen = seenTours?.[TOUR_NAME] ?? seenTours?.dashboard ?? masterProfile?.has_seen_tour ?? false;
     if (hasSeen) return;
 
-    const t = setTimeout(() => setTourStep(0), 1200);
+    const t = setTimeout(() => {
+      setTourStep(0);
+      // persist immediately — page reload won't re-trigger the tour
+      markTourSeen(TOUR_NAME).catch(() => {});
+    }, 1200);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);

@@ -278,11 +278,11 @@ function FrostMobile({
         <ChannelHealthWidget />
       </motion.div>
 
-      <motion.div custom={14} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
+      <motion.div custom={14} variants={rise} initial="hidden" animate="visible">
         <ClientAlertsWidget />
       </motion.div>
 
-      <motion.div custom={15} variants={rise} initial="hidden" animate="visible" data-tour-step={15}>
+      <motion.div custom={15} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
         <ReferralBoostWidget />
       </motion.div>
     </div>
@@ -384,13 +384,13 @@ function FrostDesktop({
 
       <FrostDivider />
 
-      <motion.div custom={9} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
+      <motion.div custom={9} variants={rise} initial="hidden" animate="visible">
         <ClientAlertsWidget />
       </motion.div>
 
       <FrostDivider />
 
-      <motion.div custom={10} variants={rise} initial="hidden" animate="visible" data-tour-step={15}>
+      <motion.div custom={10} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
         <ReferralBoostWidget />
       </motion.div>
 

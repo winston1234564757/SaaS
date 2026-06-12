@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, GraduationCap } from 'lucide-react';
-import Link from 'next/link';
 import { useTourStep } from './DashboardTourContext';
 
 export function DashboardTourBanner() {
   const { tourStep, totalSteps, currentStepData, handleNextStep, closeTour } = useTourStep();
+  const router = useRouter();
 
   const isVisible = tourStep >= 0 && !!currentStepData;
   const isLast = tourStep === totalSteps - 1;
@@ -141,15 +142,15 @@ export function DashboardTourBanner() {
             {/* Actions */}
             <div className="flex items-center gap-2">
               {isLast ? (
-                <Link
-                  href="/dashboard/academy"
+                <button
+                  type="button"
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.95] cursor-pointer"
                   style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
-                  onClick={closeTour}
+                  onClick={() => { closeTour(); router.push('/dashboard/academy'); }}
                 >
                   <GraduationCap size={14} />
                   Відкрити Академію
-                </Link>
+                </button>
               ) : (
                 <button type="button"
                   onClick={handleNextStep}
