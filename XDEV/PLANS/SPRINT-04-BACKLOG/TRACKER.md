@@ -9,7 +9,7 @@
 | 1 | T01 | Frost тема: всі клієнти → міграція | ✅ | `code-reviewer` | `490a108` | rawTheme fallback '' → 'frost'; DB migration 20260609000001 |
 | 2 | T02 | In-app сповіщення: unread кольорові + z-index | ✅ | `code-reviewer` | `b7c1d25` `f88b444` | text-accent unread bell; badge z-10; markAllRead on close |
 | 3 | T03 | Портфоліо → Сторіс: редірект замість drawer | ✅ | `code-reviewer` | `55ce2f9` | drawer removed; redirect to /dashboard/marketing?tab=stories&portfolioId |
-| 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle a11y | ✅ | `senior-frontend` | `df27107` | inline button after h1; TabBtn outlined; role=switch+aria-checked; 44px touch |
+| 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle уніфікація | ✅ | `senior-frontend` | `df27107` `3c26ff6` | inline btn + TabBtn outlined + уніфікація всіх 5 pill-тоглів: role=switch/bg-accent/44px |
 | 5 | **T05** | **Клієнти (список): стандартизація кнопок + smart кнопка** | **▶ NEXT** | `code-reviewer` | — | — |
 | 6 | T06 | Меню > Система > Студія: redesign + alpha/beta | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 7 | T07 | Записи мобайл: safe area top + opacity при скролі | ⬜ | `senior-frontend` + `impeccable` | — | — |
