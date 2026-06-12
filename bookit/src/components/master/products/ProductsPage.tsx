@@ -14,7 +14,6 @@ import { OrderCard } from './OrderCard';
 import type { Product, OrderStatus } from '@/types/database';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 
-const FAB_SPRING = { type: 'spring' as const, stiffness: 400, damping: 22 } as const;
 
 export function ProductsPage() {
   const router = useRouter();
@@ -92,24 +91,12 @@ export function ProductsPage() {
               <h1 className="heading-serif text-xl text-foreground">Магазин</h1>
               <p className="text-sm text-muted-foreground/60 mt-0.5">Товари та замовлення</p>
             </div>
-            <div className="flex items-center gap-2">
-              {tab === 'products' && (
-                <button
-                  type="button"
-                  onClick={() => router.push('/dashboard/products/new')}
-                  className="flex items-center gap-1.5 px-3 min-h-[44px] rounded-xl bg-accent text-accent-foreground text-xs font-semibold hover:bg-accent/90 transition-colors active:scale-95"
-                >
-                  <Plus size={14} />
-                  Додати товар
-                </button>
-              )}
-              {newOrders > 0 && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
-                  <ShoppingBag size={14} strokeWidth={2.5} />
-                  <span className="text-xs font-bold">{newOrders} нових</span>
-                </div>
-              )}
-            </div>
+            {newOrders > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
+                <ShoppingBag size={14} strokeWidth={2.5} />
+                <span className="text-xs font-bold">{newOrders} нових</span>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -142,6 +129,17 @@ export function ProductsPage() {
               )}
             </TabBtn>
           </div>
+
+          {tab === 'products' && (
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard/products/new')}
+              className="mt-3 w-full flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-accent text-accent-foreground text-sm font-semibold hover:bg-accent/90 transition-colors active:scale-[0.98]"
+            >
+              <Plus size={16} />
+              Додати
+            </button>
+          )}
         </div>
 
         {/* Right: content */}
@@ -239,22 +237,6 @@ export function ProductsPage() {
           </AnimatePresence>
         </div>
       </div>
-
-      {tab === 'products' && (
-        <motion.button
-          type="button"
-          aria-label="Додати товар"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, ...FAB_SPRING }}
-          whileTap={{ scale: 0.94 }}
-          onClick={() => router.push('/dashboard/products/new')}
-          className="fixed bottom-24 right-5 size-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center z-30 hover:bg-primary/90 transition-colors"
-          style={{ boxShadow: '0 4px 20px rgba(120, 154, 153, 0.4)' }}
-        >
-          <Plus size={24} />
-        </motion.button>
-      )}
 
       {restockTarget && (
         <RestockDrawer

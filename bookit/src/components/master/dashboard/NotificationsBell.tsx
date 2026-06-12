@@ -99,26 +99,28 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
         </button>
       ) : fab ? (
         unreadCount === 0 ? null : (
-          <button
-            type="button"
-            onClick={handleOpen}
-            className="relative size-11 flex items-center justify-center rounded-full active:scale-[0.92] transition-transform duration-150"
-            style={{
-              background: 'var(--surface)',
-              border: '0.5px solid var(--border-strong)',
-              color: 'var(--accent)',
-              boxShadow: '0 4px 20px color-mix(in srgb, var(--text-primary) 8%, transparent)',
-            }}
-          >
-            {bellIcon}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={handleOpen}
+              className="relative size-11 flex items-center justify-center rounded-full active:scale-[0.92] transition-transform duration-150"
+              style={{
+                background: 'var(--surface)',
+                border: '0.5px solid var(--border-strong)',
+                color: 'var(--accent)',
+                boxShadow: '0 4px 20px color-mix(in srgb, var(--text-primary) 8%, transparent)',
+              }}
+            >
+              {bellIcon}
+            </button>
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 z-10 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center leading-none"
+              className="absolute -top-1 -right-1 z-50 size-4 rounded-full bg-warning text-white text-[10px] font-bold flex items-center justify-center leading-none pointer-events-none"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </motion.span>
-          </button>
+          </div>
         )
       ) : (
         <button
