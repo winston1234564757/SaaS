@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays,
@@ -66,6 +66,31 @@ export function BookingsPage() {
   const statusFilter = searchParams.get('status') ?? 'all';
 
   const [search, setSearch] = useState('');
+
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const [barHeight, setBarHeight] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const el = controlsRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setBarHeight(el.offsetHeight));
+    ro.observe(el);
+    setBarHeight(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (barHeight > 0) document.documentElement.style.scrollPaddingTop = `${barHeight}px`;
+    return () => { document.documentElement.style.scrollPaddingTop = ''; };
+  }, [barHeight]);
 
   const [formOpen, setFormOpen] = useState(false);
   const [preselectedTime, setPreselectedTime]               = useState<string | undefined>();
@@ -232,7 +257,11 @@ export function BookingsPage() {
       </div>
 
       {/* 2. Controls — Mobile sticky */}
-      <div className="lg:hidden sticky top-[var(--safe-top,0px)] z-40 border-b border-border/30 pb-4 mb-2 -mx-4 px-4 pt-2">
+      <div
+        ref={controlsRef}
+        className={`lg:hidden sticky top-0 z-40 border-b border-border/30 pb-4 mb-2 -mx-4 px-4 transition-all duration-300 ${isScrolled ? 'bg-background/90 backdrop-blur-[12px] opacity-[0.95]' : 'bg-background'}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+      >
         <div className="flex flex-col gap-3">
 
           {/* Top row: Range + View */}
@@ -497,7 +526,7 @@ export function BookingsPage() {
                   {view === 'list' && (
                     <div className="flex flex-col gap-10">
                       {groupedBookings.map(([date, dayBookings]) => (
-                        <div key={date} className="flex flex-col gap-5">
+                        <div key={date} className="flex flex-col gap-5" style={{ scrollMarginTop: `${barHeight}px` }}>
                           <div className="flex items-center gap-4 px-2">
                             <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] whitespace-nowrap">
                               {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
