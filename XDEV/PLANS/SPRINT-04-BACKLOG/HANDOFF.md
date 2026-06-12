@@ -36,10 +36,10 @@
 **Commit:** `b7c1d25`
 
 **Що зроблено** (`NotificationsBell.tsx`):
-1. Десктоп bell кнопка: `text-muted-foreground` завжди → `unreadCount > 0 ? 'text-accent' : 'text-muted-foreground'` (відповідає mobileNav поведінці)
-2. Badge z-index: додано `z-10` до всіх 3 badge span (mobileNav / fab / default варіанти)
-3. Body text прочитаних: `text-muted-foreground/50` (vs unread: `text-muted-foreground`) — чіткіша ієрархія
-4. Title: вже було correct — unread `text-foreground`, read `text-muted-foreground`
+1. Десктоп bell кнопка: `text-muted-foreground` завжди → `unreadCount > 0 ? 'text-accent' : 'text-muted-foreground'`
+2. Badge z-index: `z-10` на всіх 3 badge span (mobileNav / fab / default)
+3. Body text прочитаних: `text-muted-foreground/50` (vs unread: `text-muted-foreground`)
+4. **Hotfix** (`f88b444`): `markAllRead()` переміщено з `handleOpen()` → `onOpenChange(!val)` — тепер відмічає прочитаними при **закритті**, а не при відкритті. Root cause: виклик до рендеру → всі items одразу `isRead=true` → сірі.
 
 **TSC:** 0 | **Build:** clean
 

@@ -7,7 +7,7 @@
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
 | 1 | T01 | Frost тема: всі клієнти → міграція | ✅ | `code-reviewer` | `490a108` | rawTheme fallback '' → 'frost'; DB migration 20260609000001 |
-| 2 | T02 | In-app сповіщення: unread кольорові + z-index | ✅ | `code-reviewer` | `b7c1d25` | text-accent unread bell; badge z-10; read body /50 |
+| 2 | T02 | In-app сповіщення: unread кольорові + z-index | ✅ | `code-reviewer` | `b7c1d25` `f88b444` | text-accent unread bell; badge z-10; markAllRead on close |
 | 3 | **T03** | **Портфоліо → Сторіс: редірект замість drawer** | **▶ NEXT** | `code-reviewer` | — | — |
 | 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle a11y | ⬜ | `code-reviewer` + `impeccable` | — | — |
 | 5 | T05 | Клієнти (список): стандартизація кнопок + smart кнопка | ⬜ | `code-reviewer` | — | — |
