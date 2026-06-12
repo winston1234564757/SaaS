@@ -1,47 +1,30 @@
 # TASK.md — Поточні задачі
 
-> Оновлюється після кожної ітерації Sprint-03.
-> **Updated:** 2026-06-11
+> Оновлюється після кожної ітерації Sprint-04.
+> **Updated:** 2026-06-12
 
 ---
 
 ## Активний спринт
 
-**Sprint-03** — 18 ітерацій (one task = one vercel --prod deploy)
-**Повний план:** `XDEV/PLANS/SPRINT-03-BACKLOG/SPRINT-03-PLAN.md`
-**Живий трекер:** `XDEV/PLANS/SPRINT-03-BACKLOG/HANDOFF.md`
-**Transition prompt:** `XDEV/PLANS/SPRINT-03-BACKLOG/TRANSITION_PROMPT.md`
+**Sprint-04** — 30 ітерацій (one task = one vercel --prod deploy)
+**Повний план:** `XDEV/PLANS/SPRINT-04-BACKLOG/SPRINT-04-PLAN.md`
+**Живий трекер:** `XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md`
+**Handoff:** `XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md`
+**Transition prompt:** `XDEV/PLANS/SPRINT-04-BACKLOG/TRANSITION_PROMPT.md`
 
 | Прогрес | Поточна задача |
 |---|---|
-| **17/18** ✅ | **T16** — Тур: підсвічування елементів (ітерація 18) |
+| **5/30** ✅ | **T06** — Меню > Система > Студія: redesign + alpha/beta |
 
-> ⚠️ **Відкрита задача:** Сторінка налаштувань (T7) — impeccable pass зроблено (b81ca4c + 10383f4), але юзер вважає незакритою. Повернутись після T13.
-
-### Виконано
-| Іт | ID | Назва | Commits |
-|----|----|-------|---------|
-| 1 | T15 | Тема Frost за замовчуванням | 3454e0f, 9865942, 3e1390b |
-| 2 | T1 | Баги сторінки Записи | a3bfed2, 06c791c, 81e75c9 |
-| 3 | T10 | Клієнти: пігулки перекривають текст | 86aa48a |
-| 4 | T4 | Studio білінг: форма + баг сабміту | cb41655, 8f2ee05 |
-| 5 | T3 | Налаштування профілю: горизонт. скрол | cdc410a |
-| 6 | T2 | Дашборд: статистика мобайл + пік-годин + рефералки | 1de90ec, bee63a0 |
-| 7 | T5 | Конструктор сторіс: анімована стрілка | 3ed6e4b |
-| 8 | T8 | Навбар: профіль праворуч + FAB + сповіщення + QA-fix | f3107c4, 620473f, c282e27, b649402, c81d8c1, 26acd31 |
-| 9 | T6c | Аналітика десктоп: навігація дат + слайдер | ddcf28d |
-| 10 | T6a | Десктоп лейаут: billing + reviews + growth | d184b9e, c282e27 |
-| 11 | T6b | Десктоп лейаут: revenue + marketing + products + services | 60b980c |
-| 12 | T7 | Налаштування профілю десктоп ⚠️ | eebf5b7 + b81ca4c + 10383f4 |
-| 13 | T9 | Портфоліо → конструктор сторіс | f80ef35 |
-| 14 | T12 | Лояльність: два коди + двосторонній C2B бонус | a42386f, 0b44cd6 |
-| 15 | T13 | Онбординг графік: кнопки Налаштувати/Продовжити | b1735d5 |
-| 16 | T14 | Онбординг превью: виразний блок посилання | 4fc56d6 |
-| 17 | T11 | Флеш-акції: повний аудит + тести | 8d284bd |
-| — | hotfix | Flash "0 клієнтів": RPC params + eligibility + client list UI | 9f5a835 |
-
-### Наступна: T16 — Тур: підсвічування елементів (spotlight)
-**Скіл:** `design-taste-frontend` + `emil-design-eng`
+### Виконано (Sprint-04)
+| Іт | ID | Назва | Commit |
+|----|----|-------|--------|
+| 1 | T01 | Frost тема: всі клієнти → міграція | `490a108` |
+| 2 | T02 | In-app сповіщення: unread кольорові + z-index | `b7c1d25` `f88b444` `185d78a` `2746e21` |
+| 3 | T03 | Портфоліо → Сторіс: редірект замість drawer | `55ce2f9` |
+| 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle уніфікація | `df27107` `3c26ff6` |
+| 5 | T05 | Клієнти (список): стандартизація кнопок + smart кнопка | `c239ae4` |
 
 ---
 
@@ -49,7 +32,13 @@
 
 | Спринт | Дата | Результат |
 |---|---|---|
-| Sprint-03 (18 tasks) | 2026-06-09/... | 🔄 In progress (14/18) |
-| Sprint-02 (25 tasks) | 2026-06-08/09 | P1–P4: bugs, features, desktop, invite landings, Studio beta |
-| IRP (8 phases A–H) | 2026-06-07/08 | Security, Frost-only, wizard, no-emoji, a11y, audit |
-| Theme Polish Sprint | 2026-05-19 | Всі 3 теми відполіровані |
+| Sprint-03 (18 tasks) | 2026-06-09/12 | ✅ Complete (18/18) |
+| Sprint-02 (25 tasks) | 2026-06-08/09 | ✅ Complete |
+| IRP (8 phases A–H) | 2026-06-07/08 | ✅ Security, Frost-only, wizard, no-emoji, a11y, audit |
+| Theme Polish Sprint | 2026-05-19 | ✅ Всі 3 теми відполіровані |
+
+---
+
+## ⚠️ Pending (cross-sprint)
+- `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql`
+- Vercel Pro → cron `0 * * * *` для check-uncompleted

@@ -2,10 +2,12 @@
 """
 POST_EDIT_HOOK — PostToolUse (Edit|Write):
 - Triggers graphify file tracking
+- AUTO-RUNS npx tsc --noEmit for TypeScript files and injects result
 - Prints post-change protocol reminder for .ts/.tsx files
 """
 import sys
 import json
+import subprocess
 from pathlib import Path
 
 # Force UTF-8 on Windows
@@ -21,6 +23,7 @@ except ImportError:
 
 TS_EXTENSIONS = {".ts", ".tsx"}
 STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
+BOOKIT_DIR = Path("C:/Users/Vitossik/SaaS/bookit")
 
 
 def reset_consecutive_reads():
@@ -37,6 +40,31 @@ def reset_consecutive_reads():
         pass
 
 
+def run_tsc_auto() -> str:
+    """Auto-run npx tsc --noEmit and return result string."""
+    try:
+        result = subprocess.run(
+            ["npx", "tsc", "--noEmit"],
+            cwd=str(BOOKIT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=60,
+            shell=True,
+        )
+        if result.returncode == 0:
+            return "AUTO-TSC: 0 errors ✅"
+        else:
+            output = (result.stdout + result.stderr).strip()
+            # Trim to avoid flooding context
+            if len(output) > 600:
+                output = output[:600] + "\n... (truncated)"
+            return f"AUTO-TSC FAILED ❌ — fix before continuing:\n{output}"
+    except subprocess.TimeoutExpired:
+        return "AUTO-TSC: timeout (>60s) — run manually"
+    except Exception as e:
+        return f"AUTO-TSC: could not run ({e})"
+
+
 def main():
     try:
         raw_in = sys.stdin.buffer.read()
@@ -49,17 +77,22 @@ def main():
             track_file(file_path, tool_name.lower())
             reset_consecutive_reads()
 
-        # Post-change protocol — inject into model context for TypeScript files
+        # Post-change protocol — TypeScript files only
         if file_path and Path(file_path).suffix in TS_EXTENSIONS:
             fname = Path(file_path).name
+
+            # Auto-run TSC
+            tsc_result = run_tsc_auto()
+
             context = (
                 f"[POST-CHANGE] {fname} was just modified. "
-                "MANDATORY next steps before this task is considered done: "
-                "1) run `npx tsc --noEmit` in bookit/ and confirm 0 errors; "
-                "2) run `npm run build` to verify Next.js compilation; "
-                "3) call mempalace_add_drawer to save technical decisions; "
-                "4) update XDEV/MAPS/SYSTEM_MAP.md if new routes/components added. "
-                "Do NOT mark task complete or move to the next task until these are done."
+                f"{tsc_result} | "
+                "Remaining mandatory steps: "
+                "1) npm run build (before deploy only); "
+                "2) mempalace_add_drawer — save key decisions; "
+                "3) SYSTEM_MAP if new routes/components added; "
+                "4) Sprint pipeline: TRACKER✅ → HANDOFF → TRANSITION → docs commit. "
+                "Do NOT mark task complete until all done."
             )
             output = {
                 "hookSpecificOutput": {
