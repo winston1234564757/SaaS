@@ -2,14 +2,14 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 2/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-12
+**Прогрес:** 3/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-12
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
 | 1 | T01 | Frost тема: всі клієнти → міграція | ✅ | `code-reviewer` | `490a108` | rawTheme fallback '' → 'frost'; DB migration 20260609000001 |
 | 2 | T02 | In-app сповіщення: unread кольорові + z-index | ✅ | `code-reviewer` | `b7c1d25` `f88b444` | text-accent unread bell; badge z-10; markAllRead on close |
-| 3 | **T03** | **Портфоліо → Сторіс: редірект замість drawer** | **▶ NEXT** | `code-reviewer` | — | — |
-| 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle a11y | ⬜ | `code-reviewer` + `impeccable` | — | — |
+| 3 | T03 | Портфоліо → Сторіс: редірект замість drawer | ✅ | `code-reviewer` | `55ce2f9` | drawer removed; redirect to /dashboard/marketing?tab=stories&portfolioId |
+| 4 | **T04** | **Мобайл магазин: кнопка "Додати товар" + toggle a11y** | **▶ NEXT** | `code-reviewer` + `impeccable` | — | — |
 | 5 | T05 | Клієнти (список): стандартизація кнопок + smart кнопка | ⬜ | `code-reviewer` | — | — |
 | 6 | T06 | Меню > Система > Студія: redesign + alpha/beta | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 7 | T07 | Записи мобайл: safe area top + opacity при скролі | ⬜ | `senior-frontend` + `impeccable` | — | — |

@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 2/30 ✅
-**Наступна задача:** **T03 — Портфоліо → Сторіс: редірект замість drawer**
+**Прогрес:** 3/30 ✅
+**Наступна задача:** **T04 — Мобайл магазин: кнопка "Додати товар" + toggle a11y**
 
 ---
 
@@ -45,23 +45,39 @@
 
 ---
 
-## ▶ T03 — Портфоліо → Сторіс: редірект замість drawer
+## ✅ T03 — Портфоліо → Сторіс: редірект замість drawer
+**Commit:** `55ce2f9`
 
-**Проблема:** Кнопка "Сторіс" на сторінці портфоліо відкриває Drawer. Потрібен redirect на `/dashboard/stories` з query параметрами.
+**Root cause:** `StoryGenerator` жив inline в `PortfolioPage` — дублював маркетинг-логіку. `/dashboard/stories` не існував — реальний роут `/dashboard/marketing?tab=stories`.
+
+**Що зроблено:**
+1. `PortfolioPage.tsx`: `handleOpenStories` + `onStoryClick` → `router.push('/dashboard/marketing?tab=stories&portfolioId=<id>')`. Видалено `StoryGenerator`, `isStoryOpen`, `prePortfolioId`, `useSearchParams`, `useMasterContext`.
+2. `PortfolioItemPage.tsx`: Link href → `/dashboard/marketing?tab=stories&portfolioId=${itemId}`
+3. `marketing/page.tsx`: додано `portfolioId` у searchParams; `activeMode` деривується з portfolioId (`portfolio_item` якщо є). Передається в `MarketingTabs`.
+4. `MarketingTabs.tsx`: додано `initialPortfolioId` prop → передається в `StoryGenerator`.
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T04 — Мобайл магазин: кнопка "Додати товар" + toggle a11y
+
+**Проблема:** Кнопка без тексту + не після заголовку. Toggle: активний = весь чорний, неактивний = весь білий (non-Frost).
 
 **Що робити:**
-1. Знайти кнопку "Сторіс" в `src/app/(master)/dashboard/portfolio/`
-2. Замінити Drawer → `router.push('/dashboard/stories?type=portfolio&id=<work_id>')`
-3. Видалити Drawer повністю
-4. Перевірити чи stories constructor підхоплює query params
+1. Знайти сторінку магазину в `src/app/(master)/dashboard/` або `src/components/master/`
+2. Кнопка "Додати товар": `<button>` з іконкою + текстом, одразу після `<h1>`
+3. Toggle: `active = var(--color-accent)`, `inactive = outlined/muted`
+4. `role="switch"` + `aria-checked={bool}` на toggle
+5. Touch target ≥ 44px на всіх клікабельних елементах
 
 **Acceptance criteria:**
-- AC-1: Кнопка → `router.push('/dashboard/stories?type=portfolio&id=<work_id>')`
-- AC-2: Drawer — видалено повністю
-- AC-3: Stories constructor підхоплює query params (або просто redirect без params якщо неможливо)
-- AC-4: TSC: 0, Build: clean
+- AC-1: `<button>` "Додати товар" з іконкою + текстом, одразу після `<h1>` сторінки
+- AC-2: Toggle: active = Frost primary (`--color-accent`), inactive = outlined/muted
+- AC-3: `role="switch"` + `aria-checked={bool}` на toggle
+- AC-4: Touch target ≥ 44px
 
-**Скіл:** `code-reviewer`
+**Скіл:** `code-reviewer` + `impeccable`
 
 ---
 

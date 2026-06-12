@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 2/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T03 — Портфоліо → Сторіс: редірект замість drawer
+Прогрес: 3/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T04 — Мобайл магазин: кнопка "Додати товар" + toggle a11y
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 ⚠️ Pending із Sprint-03:
