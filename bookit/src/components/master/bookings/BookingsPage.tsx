@@ -69,14 +69,6 @@ export function BookingsPage() {
 
   const controlsRef = useRef<HTMLDivElement>(null);
   const [barHeight, setBarHeight] = useState(0);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   useEffect(() => {
     const el = controlsRef.current;
@@ -259,10 +251,10 @@ export function BookingsPage() {
       {/* 2. Controls — Mobile sticky */}
       <div
         ref={controlsRef}
-        className={`lg:hidden sticky top-0 z-40 border-b border-border/30 pb-4 mb-2 -mx-4 px-4 transition-all duration-300 ${isScrolled ? 'bg-background/90 backdrop-blur-[12px] opacity-[0.95]' : 'bg-background'}`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+        className="lg:hidden sticky top-0 z-40 -mx-4 px-4 pb-2 mb-2"
+        style={{ paddingTop: 'env(safe-area-inset-top)', background: 'var(--background)' }}
       >
-        <div className="flex flex-col gap-3">
+        <div className="widget-card p-4 flex flex-col gap-3">
 
           {/* Top row: Range + View */}
           <div className="flex items-center justify-between gap-2">
@@ -287,7 +279,7 @@ export function BookingsPage() {
             </div>
 
             {/* View Switcher */}
-            <div className="flex p-1 rounded-xl bg-secondary/30 border border-border backdrop-blur-sm">
+            <div className="flex p-1 rounded-xl bg-secondary/30 border border-border">
               {(
                 [
                   { id: 'list'     as const, icon: <LayoutList size={14} />, label: 'Список' },
