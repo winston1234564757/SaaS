@@ -60,24 +60,30 @@ export function useNotifications() {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  async function markAllRead() {
+  function markAllRead() {
     if (!masterId || unreadCount === 0) return;
+    qc.setQueryData<MasterNotification[]>(['notifications', masterId], (old) =>
+      old ? old.map(n => ({ ...n, isRead: true })) : old
+    );
     const supabase = createClient();
-    await supabase
+    supabase
       .from('notifications')
       .update({ is_read: true })
       .eq('recipient_id', masterId)
-      .eq('is_read', false);
-    qc.invalidateQueries({ queryKey: ['notifications', masterId] });
+      .eq('is_read', false)
+      .then(() => qc.invalidateQueries({ queryKey: ['notifications', masterId] }));
   }
 
-  async function markNotificationRead(notifId: string) {
+  function markNotificationRead(notifId: string) {
+    qc.setQueryData<MasterNotification[]>(['notifications', masterId], (old) =>
+      old ? old.map(n => n.id === notifId ? { ...n, isRead: true } : n) : old
+    );
     const supabase = createClient();
-    await supabase
+    supabase
       .from('notifications')
       .update({ is_read: true })
-      .eq('id', notifId);
-    qc.invalidateQueries({ queryKey: ['notifications', masterId] });
+      .eq('id', notifId)
+      .then(() => qc.invalidateQueries({ queryKey: ['notifications', masterId] }));
   }
 
   return { notifications, unreadCount, markAllRead, markNotificationRead };
