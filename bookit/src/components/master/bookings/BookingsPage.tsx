@@ -251,7 +251,7 @@ export function BookingsPage() {
       {/* 2. Controls — Mobile sticky */}
       <div
         ref={controlsRef}
-        className="lg:hidden sticky top-0 z-40 -mx-4 px-4 pb-2 mb-2"
+        className="lg:hidden sticky top-0 z-40 -mx-4 px-4 mb-2"
         style={{ paddingTop: 'env(safe-area-inset-top)', background: 'var(--background)' }}
       >
         <div className="widget-card p-4 flex flex-col gap-3">
