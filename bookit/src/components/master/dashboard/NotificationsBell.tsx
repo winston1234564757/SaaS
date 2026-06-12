@@ -174,7 +174,7 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
               <p className="text-base font-semibold text-foreground">Сповіщення</p>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => { markAllRead(); setOpen(false); }}
                 aria-label="Закрити"
                 className="size-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/60 transition-colors duration-150"
               >
