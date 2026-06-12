@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Маркетинг — Bookit' };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; mode?: string }>;
+  searchParams: Promise<{ tab?: string; mode?: string; portfolioId?: string }>;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -34,13 +34,15 @@ export default async function Page({
   const broadcastsUsed = mpResult.data?.broadcasts_used ?? 0;
   const products = productsResult.data ?? [];
 
-  const { tab, mode } = await searchParams;
+  const { tab, mode, portfolioId } = await searchParams;
   const activeTab = tab === 'broadcasts' ? 'broadcasts' : 'stories';
+  const activeMode = mode ?? (portfolioId ? 'portfolio_item' : undefined);
 
   return (
     <MarketingTabs
       initialTab={activeTab}
-      initialMode={mode}
+      initialMode={activeMode}
+      initialPortfolioId={portfolioId}
       isStarter={isStarter}
       isPro={isPro}
       broadcastsUsed={broadcastsUsed}

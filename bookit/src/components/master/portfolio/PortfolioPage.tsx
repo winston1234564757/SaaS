@@ -1,15 +1,13 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Sparkles, Plus, ExternalLink, Images, Lock, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { usePortfolioItems, useInvalidatePortfolio } from '@/lib/supabase/hooks/usePortfolioItems';
 import { PortfolioItemCard } from './PortfolioItemCard';
-import { StoryGenerator } from '@/components/master/marketing/StoryGenerator';
 import { pluralUk } from '@/lib/utils/pluralUk';
-import { useMasterContext } from '@/lib/supabase/context';
 import { reorderPortfolioItems, createPortfolioDraft } from '@/app/(master)/dashboard/portfolio/actions';
 import { useToast } from '@/lib/toast/context';
 import type { PortfolioItemFull, SubscriptionTier } from '@/types/database';
@@ -23,14 +21,10 @@ interface Props {
 }
 
 export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
-  const { masterProfile, profile } = useMasterContext();
   const { data: items = initialItems } = usePortfolioItems(initialItems);
   const invalidate = useInvalidatePortfolio();
   const { showToast } = useToast();
-  const router       = useRouter();
-  const searchParams = useSearchParams();
-  const isStoryOpen      = searchParams.get('drawer') === 'story_generator';
-  const prePortfolioId   = searchParams.get('prePortfolioId');
+  const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
 
   const isStarter = tier === 'starter';
@@ -46,13 +40,12 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
     await reorderPortfolioItems(reordered.map(i => i.id));
   };
 
-  // Create draft client-side → navigate directly to editor (no /new flash)
   const handleCreate = async () => {
     if (atLimit || isCreating) return;
     setIsCreating(true);
     try {
       const id = await createPortfolioDraft();
-      invalidate(); // refresh list cache so draft is visible on return
+      invalidate();
       router.push(`/dashboard/portfolio/${id}?draft=true`);
     } catch {
       setIsCreating(false);
@@ -63,8 +56,8 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
   const handleOpenStories = useCallback(() => {
     const firstId = items.find(i => i.photos.length > 0)?.id ?? items[0]?.id;
     const url = firstId
-      ? `/dashboard/portfolio?drawer=story_generator&prePortfolioId=${firstId}`
-      : '/dashboard/portfolio?drawer=story_generator';
+      ? `/dashboard/marketing?tab=stories&portfolioId=${firstId}`
+      : '/dashboard/marketing?tab=stories';
     router.push(url);
   }, [items, router]);
 
@@ -193,7 +186,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
                           item={item}
                           dragHandleProps={prov.dragHandleProps}
                           onClick={() => router.push(`/dashboard/portfolio/${item.id}`)}
-                          onStoryClick={() => router.push(`/dashboard/portfolio?drawer=story_generator&prePortfolioId=${item.id}`)}
+                          onStoryClick={() => router.push(`/dashboard/marketing?tab=stories&portfolioId=${item.id}`)}
                         />
                       </motion.div>
                     )}
@@ -220,18 +213,6 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           </Droppable>
         </DragDropContext>
       )}
-
-      {/* Story Generator */}
-      <StoryGenerator
-        key={prePortfolioId ?? 'default'}
-        isOpen={isStoryOpen}
-        onClose={() => router.push('/dashboard/portfolio')}
-        items={items}
-        masterName={profile?.full_name || masterProfile?.business_name || 'Майстер'}
-        masterSlug={masterSlug}
-        initialMode={prePortfolioId ? 'portfolio_item' : undefined}
-        initialPortfolioId={prePortfolioId ?? undefined}
-      />
     </div>
   );
 }

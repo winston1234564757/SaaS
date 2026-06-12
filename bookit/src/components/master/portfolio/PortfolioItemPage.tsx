@@ -209,7 +209,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
         <div className="flex items-center gap-2">
           {itemId && (
             <Link
-              href={`/dashboard/portfolio?drawer=story_generator&prePortfolioId=${itemId}`}
+              href={`/dashboard/marketing?tab=stories&portfolioId=${itemId}`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all active:scale-[0.95]"
             >
               <Sparkles size={13} />

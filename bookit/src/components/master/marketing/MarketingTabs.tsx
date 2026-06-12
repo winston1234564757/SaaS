@@ -11,6 +11,7 @@ interface Product { id: string; name: string; price: number }
 interface Props {
   initialTab: 'stories' | 'broadcasts';
   initialMode?: string;
+  initialPortfolioId?: string;
   isStarter: boolean;
   isPro: boolean;
   broadcastsUsed: number;
@@ -22,7 +23,7 @@ const TABS = [
   { id: 'broadcasts' as const, label: 'Розсилки',  icon: Send },
 ];
 
-export function MarketingTabs({ initialTab, initialMode, isStarter, isPro, broadcastsUsed, products }: Props) {
+export function MarketingTabs({ initialTab, initialMode, initialPortfolioId, isStarter, isPro, broadcastsUsed, products }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const tab = (searchParams.get('tab') as 'stories' | 'broadcasts') || initialTab;
@@ -80,7 +81,7 @@ export function MarketingTabs({ initialTab, initialMode, isStarter, isPro, broad
       {/* Right: tab content */}
       <div>
         {tab === 'stories' ? (
-          <StoryGenerator initialMode={initialMode} />
+          <StoryGenerator initialMode={initialMode} initialPortfolioId={initialPortfolioId} />
         ) : (
           <BroadcastsTab
             broadcastsUsed={broadcastsUsed}
