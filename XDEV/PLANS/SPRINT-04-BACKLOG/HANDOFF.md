@@ -134,6 +134,8 @@
 
 **Hotfix** (`5be8ae1`) — impeccable audit: flat `bg-background` bar замінено на `widget-card` (glass surface = `var(--surface)` + `blur(36px)` + inset glow + `0.5px border`), що відповідає 4 stat-картам вище. Outer div = safe-area cover (`var(--background)`). Видалено redundant `backdrop-blur-sm` з View Switcher та `isScrolled` opacity hack (a11y ризик).
 
+**Hotfix-2** (`0167e17`) — sticky повністю видалено на прохання юзера: controls panel скролиться вільно. Видалено `sticky`, `isScrolled`, `controlsRef`, `ResizeObserver`, `barHeight`, `scroll-padding-top`, `scrollMarginTop`. Залишився простий `<div className="lg:hidden widget-card p-4 flex flex-col gap-3">` без будь-яких ефектів.
+
 **TSC:** 0 | **Build:** clean
 
 ---
