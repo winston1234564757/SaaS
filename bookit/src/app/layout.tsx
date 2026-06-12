@@ -67,7 +67,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const initialIsAuth = headersList.get('x-is-auth') === 'true';
   const pathname = headersList.get('x-pathname') ?? '';
   const cookieStore = await cookies();
-  const rawTheme = cookieStore.get('client_theme')?.value || '';
+  const cookieTheme = cookieStore.get('client_theme')?.value;
+  // Frost-only strategy: 'default' (Blossom) is wip; missing cookie = new client → Frost
+  const rawTheme = (!cookieTheme || cookieTheme === 'default') ? 'frost' : cookieTheme;
   // Force Frost on onboarding routes so the inline beforeInteractive script
   // immediately sets body.backgroundColor = '#EFF2FF' — no JS hydration gap.
   const isOnboardingPath = pathname.startsWith('/dashboard/onboarding') || pathname.startsWith('/onboarding');
