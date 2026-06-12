@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 3/30 ✅
-**Наступна задача:** **T04 — Мобайл магазин: кнопка "Додати товар" + toggle a11y**
+**Прогрес:** 4/30 ✅
+**Наступна задача:** **T05 — Клієнти (список): стандартизація кнопок + smart кнопка**
 
 ---
 
@@ -60,24 +60,31 @@
 
 ---
 
-## ▶ T04 — Мобайл магазин: кнопка "Додати товар" + toggle a11y
+## ✅ T04 — Мобайл магазин: кнопка "Додати товар" + toggle a11y
+**Commit:** `df27107`
 
-**Проблема:** Кнопка без тексту + не після заголовку. Toggle: активний = весь чорний, неактивний = весь білий (non-Frost).
+**Root cause:** FAB мав тільки іконку без тексту (a11y); TabBtn використовував `bg-primary/bg-secondary` замість `bg-accent/border`; ProductCard toggle мав `aria-pressed` замість `role="switch"` + `aria-checked`; touch target = 20px замість ≥ 44px.
+
+**Що зроблено:**
+1. `ProductsPage.tsx`: inline `<button>` "Додати товар" (Plus icon + text) в header поряд з h1, видимий коли `tab === 'products'`; FAB залишено
+2. `ProductsPage.tsx` — `TabBtn`: active = `bg-accent text-accent-foreground`; inactive = `border border-border bg-transparent text-muted-foreground`
+3. `ProductCard.tsx`: toggle → `role="switch"` + `aria-checked={p.is_active}`; `bg-primary→bg-accent`; `py-[12px] -my-[12px]` для 44px touch target
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T05 — Клієнти (список): стандартизація кнопок + smart кнопка
+
+**Проблема:** Кнопки в списку клієнтів не стандартизовані; відсутня "smart" кнопка дії.
 
 **Що робити:**
-1. Знайти сторінку магазину в `src/app/(master)/dashboard/` або `src/components/master/`
-2. Кнопка "Додати товар": `<button>` з іконкою + текстом, одразу після `<h1>`
-3. Toggle: `active = var(--color-accent)`, `inactive = outlined/muted`
-4. `role="switch"` + `aria-checked={bool}` на toggle
-5. Touch target ≥ 44px на всіх клікабельних елементах
+1. Знайти `src/components/master/clients/` або відповідну сторінку
+2. Стандартизувати стилі кнопок (Frost tokens: `bg-accent`, `border-border`, `text-muted-foreground`)
+3. Додати "smart" кнопку — контекстна CTA залежно від стану клієнта
+4. Touch target ≥ 44px; `type="button"` на всіх
 
-**Acceptance criteria:**
-- AC-1: `<button>` "Додати товар" з іконкою + текстом, одразу після `<h1>` сторінки
-- AC-2: Toggle: active = Frost primary (`--color-accent`), inactive = outlined/muted
-- AC-3: `role="switch"` + `aria-checked={bool}` на toggle
-- AC-4: Touch target ≥ 44px
-
-**Скіл:** `code-reviewer` + `impeccable`
+**Скіл:** `code-reviewer`
 
 ---
 
