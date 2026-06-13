@@ -342,7 +342,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                       <motion.div
                         animate={{ x: recommendAlways ? 24 : 0 }}
                         transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
-                        className="absolute top-0.5 left-0.5 size-5 rounded-full bg-[var(--accent-on)] shadow-sm"
+                        className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow-sm"
                       />
                     </span>
                   </button>

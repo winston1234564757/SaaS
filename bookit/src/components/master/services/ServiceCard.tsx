@@ -150,7 +150,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
               service.active ? 'bg-accent' : 'bg-muted-foreground/25'
             }`}>
               <motion.div
-                animate={{ x: service.active ? 20 : 2 }}
+                animate={{ x: service.active ? 26 : 2 }}
                 transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
                 className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
               />

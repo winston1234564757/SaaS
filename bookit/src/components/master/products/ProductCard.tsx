@@ -75,7 +75,7 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
           >
             <span className={`w-9 h-5 rounded-full transition-colors ${p.is_active ? 'bg-accent' : 'bg-muted-foreground/30'}`}>
               <span
-                className={`block size-4 rounded-full bg-accent-on shadow transition-transform ${p.is_active ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}
+                className={`block size-4 rounded-full bg-white shadow transition-transform ${p.is_active ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}
                 style={{ marginTop: 2 }}
               />
             </span>
