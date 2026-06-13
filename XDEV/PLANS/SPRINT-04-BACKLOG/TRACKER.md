@@ -14,7 +14,7 @@
 | 6 | T06 | Меню > Система > Студія: redesign + alpha/beta | ✅ | `design-taste-frontend` + `humanizer` | `875f512` | StudioBetaCard.tsx new: beta form (name/contact/size) → submitBetaRequest; WaitlistButton replaced; #1E5C3F badge for a11y |
 | 7 | T07 | Записи мобайл: safe area top + opacity при скролі | ✅ | `senior-frontend` + `impeccable` | `224b0f9` `5be8ae1` `cc50914` `0167e17` | widget-card controls (no sticky); safe-area paddingTop; hotfix-2: sticky fully removed |
 | 8 | T08 | Дашборд: tooltip safe area (кліп на краях) | ✅ | `senior-frontend` + `impeccable` | `acce085` `3743331` `5a5971f` | WeeklyChart: fixed outside bento-card (backdrop-filter trap); useLayoutEffect clamp; hotfix-4: FM overrides style.transform when y/scale in initial/animate → split into 2 nested motion.div (outer=position, inner=animation) |
-| 9 | T09 | Мобайл послуги: кнопка + toggle a11y + компакт + sep | ✅ | `design-taste-frontend` | `99cbd6c` | FAB→inline bg-accent btn; groupBy category + multi-Droppable; compact p-3/size-10; knob bg-white |
+| 9 | T09 | Мобайл послуги: кнопка + toggle a11y + компакт + sep | ✅ | `design-taste-frontend` | `99cbd6c` `decf6fd` | FAB→inline bg-accent btn; groupBy category + multi-Droppable; compact p-3/size-10; knob bg-white; hotfix: x=26 sym + ProductCard/ProductFormDrawer bg-white |
 | 10 | **T10** | **Портфоліо: кольори стандарт + mobile photo actions** | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | — |
 | 11 | T11 | GrowthHub мобайл: tab layout redesign | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 12 | T12 | Профіль: відпустка/вихідні overlap fix (3 таби) | ⬜ | `redesign-existing-projects` + `impeccable` | — | — |

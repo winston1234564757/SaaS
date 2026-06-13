@@ -183,6 +183,12 @@
 2. Toggle knob: `bg-accent-on→bg-white` (explicit white, однаково видний в active/inactive).
 3. Price: `text-base→text-sm`, icon `size-18→size-16`.
 
+**Hotfix** (`decf6fd`) — toggle knob position + shop standardization:
+1. `ServiceCard.tsx`: `x=20→26` — симетрична формула: active_x = track(44) - knob(16) - inactive_x(2) = 26
+2. `ProductCard.tsx`: knob `bg-accent-on→bg-white`
+3. `ProductFormDrawer.tsx`: knob `bg-[var(--accent-on)]→bg-white`
+**Залізний патерн:** `active_x = track_width - knob_size - inactive_x`. Knob скрізь = `bg-white`.
+
 **TSC:** 0 | **Build:** clean
 
 ---
