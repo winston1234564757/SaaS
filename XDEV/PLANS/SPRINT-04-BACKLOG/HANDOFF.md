@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 7/30 ✅
-**Наступна задача:** **T08 — Дашборд: tooltip safe area (кліп на краях)**
+**Прогрес:** 8/30 ✅
+**Наступна задача:** **T09 — Мобайл послуги: кнопка + toggle a11y + компакт + sep**
 
 ---
 
@@ -140,19 +140,41 @@
 
 ---
 
-## ▶ T08 — Дашборд: tooltip safe area (кліп на краях)
+## ✅ T08 — Дашборд: tooltip safe area (кліп на краях)
 
-**Проблема:** Тултіпи віджету "Доходи" обрізаються у блоці. Тултіпи "Пікові години" виходять за край дисплею.
+**Commit:** `acce085`
+
+**Root cause:**
+1. `WeeklyChartWidget` (Доходи): `BarTooltip` був `position: absolute` всередині `bento-card overflow-hidden`. `bento-card` має `backdrop-filter: blur(36px)` → створює новий stacking context → `position: fixed` дітей "trapped" відносно bento-card, а не viewport. Навіть `z-[9000]` не допомагав.
+2. `PeakHoursWidget` (Пікові години): тултіп вже мав `position: fixed`, але `left` не клемпувався. Для Sunday (крайня права колонка) → `translateX(-50%)` виводив правий край за межі. `HALF_W=90` недостатньо для "немає записів" (~225px = half 113px).
+
+**Що зроблено:**
+1. `WeeklyChartWidget.tsx`: обгортка `<div className="flex flex-col flex-1">` → всередині `AnimatePresence + fixed tooltip` та `bento-card` як siblings. Tooltip рендериться поза bento-card → escape backdrop-filter trap. `onMouseLeave` dismiss на bars-container. scroll dismiss useEffect.
+2. `PeakHoursWidget.tsx`: в `handleCell()` — `left = Math.max(HALF_W+PAD, Math.min(vw-HALF_W-PAD, centerX))` з `HALF_W=115`, `PAD=8`. Sunday tooltip залишається в межах viewport.
+
+**Ключовий патерн:** `backdrop-filter` на предку "трапить" `position: fixed` — завжди рендер fixed tooltips поза bento-card.
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T09 — Мобайл послуги: кнопка + toggle a11y + компакт + sep
+
+**Проблема (з BACKLOG):**
+- 4.1. Кнопку "Додати послугу" — зробити з текстом, одразу після заголовку сторінки
+- 4.2. Toggle: виправити кольоровий непопад (активний = весь чорний / неактивний = весь білий), a11y аудит
+- 4.3. Картки послуг: зробити компактніше + додати розділювачі по спеціалізаціям
 
 **Де шукати:**
-- `src/components/master/dashboard/` — RevenueWidget, PeakHoursWidget
+- `src/app/dashboard/services/` — ServicesPage або аналог
+- `src/components/master/services/` — ServiceCard, ServiceFormDrawer
 
 **Acceptance criteria:**
-- AC-1: Доходи: `overflow: visible` на контейнері, тултіп `z-index` вище siblings
-- AC-2: Пікові години: `clamp(8px, calculatedX, viewportWidth - tooltipWidth - 8px)`
-- AC-3: Жоден тултіп не виходить за межі viewport на будь-якому розмірі екрану
+- AC-1: Inline кнопка "Додати послугу" (Plus + text) після h1, видима в header
+- AC-2: Toggle → `role=switch` + `aria-checked` + `bg-accent` + 44px touch (стандарт T04)
+- AC-3: ServiceCard — compact layout + розділювачі між спеціалізаціями
 
-**Скіл:** `senior-frontend` + `impeccable`
+**Скіл:** `design-taste-frontend` + `impeccable`
 
 ---
 

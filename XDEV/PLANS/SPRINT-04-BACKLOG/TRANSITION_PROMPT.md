@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 7/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T08 — Дашборд: tooltip safe area (кліп на краях)
+Прогрес: 8/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T09 — Мобайл послуги: кнопка + toggle a11y + компакт + sep
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 ⚠️ Pending із Sprint-03:
