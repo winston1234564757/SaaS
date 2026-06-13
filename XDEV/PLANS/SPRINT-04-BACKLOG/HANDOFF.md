@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 10/30 ✅
-**Наступна задача:** **T11 — GrowthHub мобайл: tab layout redesign**
+**Прогрес:** 11/30 ✅
+**Наступна задача:** **T12 — Профіль: відпустка/вихідні overlap fix (3 таби)**
 
 ---
 
@@ -220,17 +220,41 @@
 **AC-5 — Product photos lightbox:**
 - `ProductFormDrawer.tsx`: `lightboxIndex` state; invisible `<button z-[1]>` на кожному фото; delete button → `z-[2]`; `PhotoLightbox` в AnimatePresence поряд з drawer
 
+**Hotfix** (`3cb5502`) — lightbox розмір: `max-w-lg mx-16 aspect-square` → `w-[90vw] max-w-[640px] h-[80vh]`; адаптивний aspect ratio з `object-contain`.
+**Hotfix-2** (`438a2f7`) — grid: `grid-cols-1 sm:grid-cols-2` → `grid-cols-2` дефолтно; `gap-3→gap-4`.
+
 **TSC:** 0 | **Build:** pending
 
 ---
 
-## ▶ T11 — GrowthHub мобайл: tab layout redesign
+## ✅ T11 — GrowthHub мобайл: tab layout redesign
+**Commit:** `fae6e9a`
+**Root cause:** `flex-1 px-5` на 3 довгих українських слова в `rounded-[100px]` pill контейнері → overflow на мобайлі. Старий дизайн рівно ділив ширину між табами незалежно від тексту.
+
+**Що зроблено** (`GrowthHubClient.tsx`):
+1. Видалено `bg-surface/40 backdrop-blur-md border border-border/40 p-1 rounded-[100px]` pill-контейнер
+2. Wrapper → `grid grid-cols-3 gap-2` (mobile) / `lg:flex lg:flex-col lg:gap-1` (desktop — без змін)
+3. Кожен button = widget-блок: `flex-col items-center gap-1.5 p-3 rounded-2xl`
+   - Inactive: `bg-surface/60 border border-border/40` (мобайл) / `lg:bg-transparent lg:border-0` (десктоп)
+   - Active: `text-[var(--accent-on)]` + `motion.div layoutId="growth-active-tab"` з `bg: var(--accent)`
+4. Видалено `Rocket` іконку + `bg-warning/10` обгортку з хедера
+5. Додано `description` поле в tabs array:
+   - Лояльність: "Знижки для постійних клієнтів"
+   - Реферали: "Бонус за кожного нового майстра"
+   - Партнери: "Спільні акції з майстрами поряд"
+6. `text-[11px] leading-snug opacity-70 lg:hidden` — опис видно тільки на мобайлі
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T12 — Профіль: відпустка/вихідні overlap fix (3 таби)
 
 **Де шукати:**
-- `src/components/master/` — marketing / growthHub компоненти
-- Tab layout, mobile UX
+- `src/components/master/` — profile / schedule компоненти
+- 3 таби: відпустка / вихідні / короткий день
 
-**Скіл:** `design-taste-frontend` + `impeccable`
+**Скіл:** `redesign-existing-projects` + `impeccable`
 
 ---
 
