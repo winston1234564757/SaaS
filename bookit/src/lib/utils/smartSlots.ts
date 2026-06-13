@@ -159,8 +159,8 @@ export function generateAvailableSlots(params: GenerateSlotsParams): SlotInfo[] 
     }
 
     // C. Booking Overlap Check
-    // We check if [slotStart, totalBlockedEnd] overlaps any existing booking
-    const bookingOverlap = bookingBlocks.some(b => isOverlapping(slotStart, totalBlockedEnd, b.start, b.end));
+    // We check if [slotStart, totalBlockedEnd] overlaps any existing booking (including its trailing buffer)
+    const bookingOverlap = bookingBlocks.some(b => isOverlapping(slotStart, totalBlockedEnd, b.start, b.end + bufferMinutes));
     if (bookingOverlap) {
       result.push({ time: fromMins(t), available: false, reason: 'booked' });
       continue;

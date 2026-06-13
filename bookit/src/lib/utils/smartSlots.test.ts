@@ -148,6 +148,30 @@ describe('generateAvailableSlots – buffer', () => {
     });
     expect(available(slots)).toContain('09:30');
   });
+
+  it('blocks slot starting exactly at existing booking end when buffer > 0', () => {
+    // Booking 9:00–10:00, buffer=10 → next slot must start >= 10:10
+    const slots = generateAvailableSlots({
+      workStart: '09:00', workEnd: '12:00',
+      bookings: [{ start: '09:00', end: '10:00' }],
+      breaks: [], bufferMinutes: 10, requestedDuration: 60,
+    });
+    expect(available(slots)).not.toContain('10:00'); // gap=0 < buffer=10 → blocked
+    expect(available(slots)).toContain('10:30');     // gap=30 > buffer=10 → allowed
+  });
+
+  it('allows slot starting exactly at buffer boundary', () => {
+    // Booking 9:00–10:00, buffer=10, step=10 → 10:10 must be first available
+    const slots = generateAvailableSlots({
+      workStart: '09:00', workEnd: '12:00',
+      bookings: [{ start: '09:00', end: '10:00' }],
+      breaks: [], bufferMinutes: 10, requestedDuration: 30,
+      stepMinutes: 10,
+    });
+    expect(available(slots)).not.toContain('10:00'); // gap=0 → blocked
+    expect(available(slots)).not.toContain('10:05'); // gap=5 < buffer → blocked
+    expect(available(slots)).toContain('10:10');     // gap=10 = buffer → allowed (boundary)
+  });
 });
 
 // ── Past cutoff (Safety buffer) ────────────────────────────────────────────────────────
@@ -281,8 +305,8 @@ describe('generateAvailableSlots – combined', () => {
     // 09:30 → spans 09:30–10:30 → overlaps booking 10:00–11:00 → BLOCKED
     expect(avail).not.toContain('09:30');
 
-    // 11:00 → spans 11:00–12:00 → no overlap → next event = break 13:00 → 12:00+10=12:10 <= 13:00 → OK
-    expect(avail).toContain('11:00');
+    // 11:00 → booking 10:00–11:00 ends at 11:00, buffer=10 → must start >= 11:10 → BLOCKED
+    expect(avail).not.toContain('11:00');
 
     // 11:30 → spans 11:30–12:30 → next event = break 13:00 → 12:30+10=12:40 <= 13:00 → OK
     expect(avail).toContain('11:30');
@@ -294,8 +318,9 @@ describe('generateAvailableSlots – combined', () => {
     // 13:30 → spans 13:30–14:30 → overlaps booking 14:00–15:30 → BLOCKED
     expect(avail).not.toContain('13:30');
 
-    // 15:30 → spans 15:30–16:30 → no overlap → next event = workEnd 18:00 → 16:30+10=16:40 <= 18:00 → OK
-    expect(avail).toContain('15:30');
+    // 15:30 → booking 14:00–15:30 ends at 15:30, buffer=10 → must start >= 15:40 → BLOCKED (step=30 → 16:00 first)
+    expect(avail).not.toContain('15:30');
+    expect(avail).toContain('16:00');
 
     // Verify strictly: no available slot overlaps any booking or break
     const allEvents = [
