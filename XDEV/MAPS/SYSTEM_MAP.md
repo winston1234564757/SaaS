@@ -41,7 +41,7 @@
 | `/dashboard/marketing/new` | Нова розсилка — окрема сторінка (No-Modals policy) | `marketing/new/page.tsx` | — | `master/marketing/BroadcastEditorPage.tsx` → `BroadcastEditor.tsx` |
 | `/dashboard/marketing/[id]` | Деталі розсилки по клієнтах (per-client delivery results) | `marketing/[id]/page.tsx` | — | `master/marketing/BroadcastDetailPage.tsx` |
 | `/dashboard/growth` | Growth Hub: вкладки "Лояльність", "Реферали" та "Партнери" (inline) | `growth/page.tsx` | — | `master/growth/GrowthHubClient.tsx` |
-| `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (drag-reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemPage.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` |
+| `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (tap-overlay + ←→ reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemPage.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` | Shared: `components/shared/PhotoLightbox.tsx` |
 | `/dashboard/portfolio/[id]` | Редагування кейсу портфоліо (No-Modals policy). Ліміт Starter = 5 публічних; захист на 3 рівнях. | `portfolio/[id]/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioItemPage.tsx` |
 | `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення | `products/page.tsx` | `products/actions.ts` | `master/products/ProductsPage.tsx` |
 
@@ -242,9 +242,11 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 
 ### Публічне Портфоліо
 - `src/app/[slug]/portfolio/page.tsx` — SSR grid усіх опублікованих робіт майстра, revalidate 300s
-- `src/app/[slug]/portfolio/[id]/page.tsx` — SSR детальна сторінка: фото, відгуки, клієнт, inline BookingFlow (PortfolioBookingButton)
+- `src/app/[slug]/portfolio/[id]/page.tsx` — SSR детальна сторінка: фото (via PortfolioPhotoViewer), відгуки, клієнт, inline BookingFlow (PortfolioBookingButton)
+- `src/components/public/portfolio/PortfolioPhotoViewer.tsx` — Client Component: cover photo + thumbnail strip + PhotoLightbox inline
 - `src/components/public/portfolio/PublicPortfolioGallery.tsx` — горизонтальний strip: 2 items + "Всі роботи" (на сторінці майстра, після Shop Banner)
 - `src/components/public/portfolio/PortfolioBookingButton.tsx` — client component: кнопка + inline BookingFlow з pre-selected послугою
+- `src/components/shared/PhotoLightbox.tsx` — shared full-screen lightbox (fixed z-[100], keyboard nav Esc/←→, safe-area); used by PortfolioPhotoUploader + PortfolioPhotoViewer + ProductFormDrawer
 
 ### Auth Flow
 - `src/app/(auth)/layout.tsx` — split-screen Frost layout: 45% dark brand panel (#0F172A + aurora blobs) + 55% form panel; mobile single-column (updated 2026-05-28)
