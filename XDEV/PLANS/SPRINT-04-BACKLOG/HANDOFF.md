@@ -263,6 +263,8 @@
 8. Entries list: додано `"Заплановано"` label зверху (тільки коли `entries.length > 0`)
 9. Видалено зайві імпорти: `CalendarOff`, `useEffect`
 
+**Hotfix** (`7b617ac`): tab selector — `text-[10px] font-medium px-1.5` (fits "Короткий день" on 1 line); inactive `bg-background/60` (was `bg-secondary/40` — invisible on `bg-secondary/50`); `LayoutGroup id="vacation-tabs"` for proper layoutId scoping.
+
 **TSC:** 0 | **Build:** clean
 
 ---
