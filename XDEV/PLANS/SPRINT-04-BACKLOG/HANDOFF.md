@@ -248,13 +248,33 @@
 
 ---
 
-## ▶ T12 — Профіль: відпустка/вихідні overlap fix (3 таби)
+## ✅ T12 — Профіль: відпустка/вихідні overlap fix (3 таби)
+**Commit:** `8533ce4`
+**Root cause:** Форма ховалася за toggle-кнопкою; при відкритті AnimatePresence(height: 0→auto) викликав layout jump. Vacation dates у `grid-cols-2` — задасно для мобайлу. `bg-primary` замість accent токенів.
+
+**Що зроблено** (`src/components/master/settings/VacationManager.tsx`):
+1. Видалено `showForm` state + "Додати виняток з розкладу" кнопку — форма завжди відкрита
+2. Type selector: `grid grid-cols-3 gap-1.5` з `min-h-[44px]`; active = `motion.div layoutId="vacation-type-active"` + `bg: var(--accent)`; inactive = `bg-secondary/40 border-border`
+3. `type` switch також викликає `resetForm()` — поля скидаються при зміні типу
+4. Vacation dates: `grid-cols-2` → `flex flex-col gap-3` (вертикально стек)
+5. Short-day times: grid-cols-2 залишено (HH:MM компактні); labels `"Початок роботи"/"Кінець роботи"` → `"Від"/"До"`
+6. `bg-primary` → `bg-accent`, `text-primary-foreground` → `text-accent-foreground`; `focus:border-accent focus:ring-accent/20`
+7. Form wrapper: `gap-3` → `gap-4`; `inputClass`: `py-2` → `py-2.5`
+8. Entries list: додано `"Заплановано"` label зверху (тільки коли `entries.length > 0`)
+9. Видалено зайві імпорти: `CalendarOff`, `useEffect`
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T13 — Записи: баг буферу 10 хв між записами
 
 **Де шукати:**
-- `src/components/master/` — profile / schedule компоненти
-- 3 таби: відпустка / вихідні / короткий день
+- `src/app/(master)/dashboard/` — bookings / booking logic
+- Buffer / time gap between appointments
+- Debug master ID: `551c7a11-a02b-4944-9b34-594c41ccb951`
 
-**Скіл:** `redesign-existing-projects` + `impeccable`
+**Скіл:** `focused-fix` + `senior-backend`
 
 ---
 

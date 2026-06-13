@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 11/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-13
+**Прогрес:** 12/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-13
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -17,8 +17,8 @@
 | 9 | T09 | Мобайл послуги: кнопка + toggle a11y + компакт + sep | ✅ | `design-taste-frontend` | `99cbd6c` `decf6fd` | FAB→inline bg-accent btn; groupBy category + multi-Droppable; compact p-3/size-10; knob bg-white; hotfix: x=26 sym + ProductCard/ProductFormDrawer bg-white |
 | 10 | T10 | Портфоліо: кольори стандарт + mobile photo actions | ✅ | `design-taste-frontend` + `impeccable` | `69f072e` `39cc4e9` `3cb5502` `438a2f7` | PhotoLightbox shared; tap overlay + ←→ reorder; bg-accent tokens; ProductFormDrawer lightbox; hotfix: lightbox 90vw/80vh + grid-cols-2 gap-4 |
 | 11 | T11 | GrowthHub мобайл: tab layout redesign | ✅ | `design-taste-frontend` | `fae6e9a` | grid-cols-3 widget blocks; icon+label+desc; bg-accent active; Rocket header removed |
-| 12 | **T12** | **Профіль: відпустка/вихідні overlap fix (3 таби)** | **▶ NEXT** | `redesign-existing-projects` + `impeccable` | — | — |
-| 13 | T13 | Записи: баг буферу 10 хв між записами | ⬜ | `focused-fix` + `senior-backend` | — | — |
+| 12 | T12 | Профіль: відпустка/вихідні overlap fix (3 таби) | ✅ | `redesign-existing-projects` | `8533ce4` | always-open form; grid-cols-3 type selector 44px; vacation dates stacked; bg-accent; "Від"/"До" time labels |
+| 13 | **T13** | **Записи: баг буферу 10 хв між записами** | **▶ NEXT** | `focused-fix` + `senior-backend` | — | — |
 | 14 | T14 | Конструктор сторіс (ПК): розширення робочої зони | ⬜ | `senior-frontend` + `impeccable` | — | — |
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ⬜ | `spec-driven-workflow` + `senior-backend` | — | — |
 | 16 | T16 | Клієнтський навбар: redesign + Каталог + desktop notif | ⬜ | `design-taste-frontend` + `impeccable` | — | — |

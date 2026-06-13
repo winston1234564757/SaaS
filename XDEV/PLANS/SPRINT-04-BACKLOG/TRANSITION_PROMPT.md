@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 11/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T12 — Профіль: відпустка/вихідні overlap fix (3 таби)
+Прогрес: 12/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T13 — Записи: баг буферу 10 хв між записами
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 ⚠️ Pending із Sprint-03:
