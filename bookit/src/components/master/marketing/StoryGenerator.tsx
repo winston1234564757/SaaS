@@ -138,15 +138,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     blurTimerRef.current = setTimeout(() => setBlurActive(true), 3_000);
   }, [mode, isStarterPlan]);
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setShowScrollHint(true);
-      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-      hintTimerRef.current = setTimeout(() => setShowScrollHint(false), 4_000);
-    }, 1_200);
-    return () => clearTimeout(t);
-  }, []);
-
   const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -472,15 +463,9 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   );
 
   const contentBody = (
-    <div>
-      {/* ─── Full-width page title ─── */}
-      <div className="px-5 lg:px-6 pt-5 pb-4 border-b border-border">
-        <h1 className="font-display text-2xl font-semibold text-foreground">Конструктор Сторіс</h1>
-        <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
-      </div>
-
+    <div className="w-full min-w-0">
       {/* ─── Two-column: wide controls (left) + fixed preview (right) ─── */}
-      <div className="flex flex-col lg:flex-row lg:items-start">
+      <div className="flex flex-col lg:flex-row lg:items-start w-full">
 
         {/* Controls panel — flex-1, multi-column dense grid */}
         <div className="flex-1 min-w-0 px-5 lg:px-6 py-5 space-y-4 max-w-2xl mx-auto lg:max-w-none lg:mx-0">
@@ -703,7 +688,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         {/* ─── Preview panel — fixed width, far right, sticky ─── */}
         <div
           ref={desktopPreviewPanelRef}
-          className="hidden lg:flex shrink-0 w-[280px] xl:w-[360px] flex-col items-center justify-center self-start sticky top-16 h-[calc(100vh-4rem)] border-l border-border"
+          className="hidden lg:flex shrink-0 w-[260px] xl:w-[320px] flex-col items-center justify-center self-start sticky top-24 h-[calc(100vh-6rem)] border-l border-border"
           style={{ background: 'color-mix(in srgb, var(--secondary) 25%, transparent)' }}
         >
           <div className="flex flex-col items-center gap-4">
