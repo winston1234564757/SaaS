@@ -319,6 +319,11 @@
 - `previewOverlay` — blur-lock overlay + premium timer badge (shared)
 - `UpgradePromptModal` переміщено в `sharedBottom` (рендериться в обох режимах)
 
+**Hotfix-5** (`8d39a4d`) — попередній чат не закрив 3 баги:
+1. Mode tabs + Photo picker: `overflow-x-auto` без `lg:flex-wrap` → горизонтальний скрол на десктопі. Фікс: `lg:overflow-x-visible lg:flex-wrap` на обох рядах.
+2. `setMode(m.id)` і `setPalIdx(i)` не викликали `onControlChange()` → mobile floating pill не з'являвся при зміні режиму/кольору. Фікс: `onControlChange()` в кожному `onClick`.
+3. Preview panel `w-[260px] xl:w-[320px]` → scale 0.57/0.73 (замалий preview). Фікс: `w-[280px] xl:w-[360px]` → scale 0.62/0.84.
+
 **TSC:** 0 | **Build:** clean
 
 ---
