@@ -463,9 +463,9 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   );
 
   const contentBody = (
-    <div className="w-full min-w-0">
+    <div>
       {/* ─── Two-column: wide controls (left) + fixed preview (right) ─── */}
-      <div className="flex flex-col lg:flex-row lg:items-start w-full">
+      <div className="flex flex-col lg:flex-row lg:items-start">
 
         {/* Controls panel — flex-1, multi-column dense grid */}
         <div className="flex-1 min-w-0 px-5 lg:px-6 py-5 space-y-4 max-w-2xl mx-auto lg:max-w-none lg:mx-0">
