@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWeeklyOverview } from '@/lib/supabase/hooks/useWeeklyOverview';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
@@ -10,9 +10,7 @@ import { BarChart2 } from 'lucide-react';
 
 const DAYS    = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const BAR_MAX = 96;
-const TOOLTIP_HALF_W = 80;
 const TOOLTIP_H_EST  = 56;
-const CLAMP_PAD      = 8;
 const GAP            = 6;
 
 function getTodayIdx(): number { return (new Date().getDay() + 6) % 7; }
@@ -44,6 +42,7 @@ export function WeeklyChartWidget() {
   const [mode, setMode]         = useState<'bookings' | 'revenue'>('bookings');
   const [activeBar, setActiveBar] = useState<number | null>(null);
   const [tooltip, setTooltip]   = useState<BarTooltipInfo | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const today     = getTodayIdx();
   const prevRange = useMemo(() => getPrevWeekRange(), []);
   const { bookings: prevBookings } = useBookings(prevRange.from, prevRange.to);
@@ -70,16 +69,25 @@ export function WeeklyChartWidget() {
     return () => window.removeEventListener('scroll', dismiss);
   }, [tooltip]);
 
+  // Measure actual tooltip width after render (opacity:0) and clamp to viewport
+  useLayoutEffect(() => {
+    if (!tooltipRef.current || !tooltip) return;
+    const halfW = tooltipRef.current.offsetWidth / 2;
+    const vw = window.innerWidth;
+    const clamped = Math.max(halfW + 8, Math.min(vw - halfW - 8, tooltip.left));
+    if (Math.abs(clamped - tooltip.left) > 0.5) {
+      setTooltip(prev => prev ? { ...prev, left: clamped } : null);
+    }
+  }, [tooltip?.left]);
+
   const handleBarClick = (i: number, e: React.MouseEvent<HTMLButtonElement>) => {
     if (activeBar === i) { setActiveBar(null); setTooltip(null); return; }
     const rect = e.currentTarget.getBoundingClientRect();
-    const vw = window.innerWidth;
     const centerX = rect.left + rect.width / 2;
-    const clampedLeft = Math.max(TOOLTIP_HALF_W + CLAMP_PAD, Math.min(vw - TOOLTIP_HALF_W - CLAMP_PAD, centerX));
     const flipDown = rect.top < TOOLTIP_H_EST + GAP + 8;
     setActiveBar(i);
     setTooltip({
-      left: clampedLeft,
+      left: centerX,
       top: flipDown ? rect.bottom + GAP : rect.top - TOOLTIP_H_EST - GAP,
       dayLabel: DAYS[i],
       bookings: data[i]?.bookings ?? 0,
@@ -102,6 +110,7 @@ export function WeeklyChartWidget() {
             transition={{ type: 'spring' as const, duration: 0.22, bounce: 0 }}
           >
             <div
+              ref={tooltipRef}
               className="px-3 py-2 rounded-xl text-[11px] whitespace-nowrap"
               style={{ background: 'var(--hero-card-bg)', boxShadow: 'var(--hero-card-shadow)' }}
             >

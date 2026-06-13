@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { subDays, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
@@ -27,6 +27,7 @@ export function PeakHoursWidget() {
   const cellRefs = useRef<(HTMLButtonElement | null)[][]>(
     Array.from({ length: 7 }, () => Array(HOURS.length).fill(null))
   );
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const { grid, max } = useMemo<{ grid: number[][]; max: number }>(() => {
     const g: number[][] = Array.from({ length: 7 }, () => Array(HOURS.length).fill(0));
@@ -49,20 +50,29 @@ export function PeakHoursWidget() {
     return () => window.removeEventListener('scroll', dismiss);
   }, [activeCell]);
 
+  // Measure actual tooltip width after render (opacity:0) and clamp to viewport
+  useLayoutEffect(() => {
+    if (!tooltipRef.current || !tooltipPos) return;
+    const halfW = tooltipRef.current.offsetWidth / 2;
+    const vw = window.innerWidth;
+    const clamped = Math.max(halfW + 8, Math.min(vw - halfW - 8, tooltipPos.left));
+    if (Math.abs(clamped - tooltipPos.left) > 0.5) {
+      setTooltipPos(prev => prev ? { ...prev, left: clamped } : null);
+    }
+  }, [tooltipPos?.left]);
+
   const handleCell = (dIdx: number, hIdx: number, target: HTMLElement) => {
     const isSame = activeCell?.dIdx === dIdx && activeCell?.hIdx === hIdx;
     if (isSame) { setActiveCell(null); setTooltipPos(null); return; }
     const rect = target.getBoundingClientRect();
     const TOOLTIP_H = 38;
     const GAP = 6;
-    const HALF_W = 115;
     const PAD = 8;
-    const vw = window.innerWidth;
     const centerX = rect.left + rect.width / 2;
     const flipDown = rect.top < TOOLTIP_H + GAP + PAD;
     setActiveCell({ dIdx, hIdx });
     setTooltipPos({
-      left: Math.max(HALF_W + PAD, Math.min(vw - HALF_W - PAD, centerX)),
+      left: centerX,
       top: flipDown ? rect.bottom + GAP : rect.top - TOOLTIP_H - GAP,
       flipDown,
     });
@@ -118,6 +128,7 @@ export function PeakHoursWidget() {
             transition={{ type: 'spring' as const, duration: 0.22, bounce: 0 }}
           >
             <div
+              ref={tooltipRef}
               className="px-3 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap shadow-lg"
               style={{ background: 'var(--hero-card-bg)', color: 'var(--accent-on)' }}
             >
