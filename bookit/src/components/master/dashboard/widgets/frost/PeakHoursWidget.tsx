@@ -116,30 +116,36 @@ export function PeakHoursWidget() {
 
   return (
     <div className="flex flex-col flex-1">
+      {/* Outer motion.div: position only (no FM transform props → style.transform preserved) */}
+      {/* Inner motion.div: entrance animation only (y/scale don't conflict with outer transform) */}
       <AnimatePresence>
         {tooltipInfo && (
           <motion.div
             key="peak-tooltip"
             className="pointer-events-none fixed z-[9000]"
             style={{ left: tooltipInfo.left, top: tooltipInfo.top, transform: 'translateX(-50%)' }}
-            initial={{ opacity: 0, y: tooltipInfo.flipDown ? -4 : 4, scale: 0.93 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring' as const, duration: 0.22, bounce: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
           >
-            <div
-              ref={tooltipRef}
-              className="px-3 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap shadow-lg"
-              style={{ background: 'var(--hero-card-bg)', color: 'var(--accent-on)' }}
+            <motion.div
+              initial={{ opacity: 0, y: tooltipInfo.flipDown ? -4 : 4, scale: 0.93 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring' as const, duration: 0.22, bounce: 0 }}
             >
-              <span style={{ opacity: 0.55 }}>{tooltipInfo.day} · {tooltipInfo.hour}:00</span>
-              <span className="mx-1.5" style={{ opacity: 0.3 }}>·</span>
-              <span>
-                {tooltipInfo.count === 0
-                  ? 'немає записів'
-                  : `${tooltipInfo.count} ${pluralUk(tooltipInfo.count, 'запис', 'записи', 'записів')}`}
-              </span>
-            </div>
+              <div
+                ref={tooltipRef}
+                className="px-3 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap shadow-lg"
+                style={{ background: 'var(--hero-card-bg)', color: 'var(--accent-on)' }}
+              >
+                <span style={{ opacity: 0.55 }}>{tooltipInfo.day} · {tooltipInfo.hour}:00</span>
+                <span className="mx-1.5" style={{ opacity: 0.3 }}>·</span>
+                <span>
+                  {tooltipInfo.count === 0
+                    ? 'немає записів'
+                    : `${tooltipInfo.count} ${pluralUk(tooltipInfo.count, 'запис', 'записи', 'записів')}`}
+                </span>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
