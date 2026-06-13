@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { X, Loader2, Plus, Umbrella, Sun, Clock } from 'lucide-react';
 import { useTimeOff, type TimeOffEntry } from '@/lib/supabase/hooks/useTimeOff';
 import type { TimeOffType } from '@/app/(master)/dashboard/settings/actions';
@@ -166,6 +166,7 @@ export function VacationManager() {
       <div className="flex flex-col gap-4 p-4 rounded-2xl bg-secondary/50 border border-border">
 
         {/* Type selector */}
+        <LayoutGroup id="vacation-tabs">
         <div className="grid grid-cols-3 gap-1.5">
           {TYPES.map(t => {
             const isActive = type === t.key;
@@ -176,12 +177,12 @@ export function VacationManager() {
                 aria-pressed={isActive}
                 onClick={() => { setType(t.key); resetForm(); }}
                 className={[
-                  'relative min-h-[44px] px-2 py-2 rounded-xl text-[11px] font-semibold border',
+                  'relative min-h-[44px] px-1.5 py-2 rounded-xl text-[10px] font-medium border',
                   'transition-colors duration-150 cursor-pointer active:scale-[0.96] transform-gpu',
                   'flex items-center justify-center text-center leading-tight',
                   isActive
                     ? 'text-accent-foreground border-transparent'
-                    : 'bg-secondary/40 text-muted-foreground border-border hover:border-accent/40',
+                    : 'bg-background/60 text-muted-foreground border-border hover:border-accent/40',
                 ].join(' ')}
               >
                 {isActive && (
@@ -197,6 +198,7 @@ export function VacationManager() {
             );
           })}
         </div>
+        </LayoutGroup>
 
         {/* Fields */}
         <div className="flex flex-col gap-3">
