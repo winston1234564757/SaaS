@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 13/30 ✅
-**Наступна задача:** **T14 — Конструктор сторіс (ПК): розширення робочої зони**
+**Прогрес:** 14/30 ✅
+**Наступна задача:** **T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link**
 
 ---
 
@@ -289,13 +289,48 @@
 
 ---
 
-## ▶ T14 — Конструктор сторіс (ПК): розширення робочої зони
+## ✅ T14 — Конструктор сторіс (ПК): розширення робочої зони
+**Commit:** `6cc91f2`
+
+**Root cause:** StoryGenerator.tsx мав `max-w-2xl mx-auto` з фіксованим preview `252×448px` (scale 0.7). На широкому десктопі (~900px+ content area) справа і знизу залишалось ~600px порожнього місця. Mobile scroll hint з'являвся тільки на першу взаємодію (hasInteracted guard).
+
+**Що зроблено** (`StoryGenerator.tsx`):
+
+**Desktop two-column layout:**
+- Прибрано `max-w-2xl mx-auto px-4 py-6 space-y-5` wrapper
+- Новий outer: `flex flex-col lg:flex-row lg:items-start`
+- Controls panel: `lg:w-[340px] lg:shrink-0 lg:border-r lg:border-border` — фіксована ширина, скролиться зі сторінкою
+- Preview panel: `hidden lg:flex flex-1 self-start sticky top-16 h-[calc(100vh-4rem)]` — sticky, fills viewport minus navbar
+- `HINT_SPRING = { type: 'spring', stiffness: 380, damping: 28 } as const` (RULE 4)
+
+**Desktop preview scaling (ResizeObserver):**
+- `desktopPreviewPanelRef` + `ResizeObserver` → `scale = Math.min((w-80)/360, (h-80)/640, 1.15)`
+- На 900px панелі preview ≈ 414×736px (scale ~1.15) замість колишніх 252×448
+- Мінімум scale: 0.55
+
+**Mobile scroll hint redesign:**
+- Прибрано `hasInteracted` state — hint тригериться на КОЖЕН `onControlChange`
+- Таймер: 3s auto-hide (було 4s)
+- Замінено inline AnimatePresence hint → `fixed bottom-6 inset-x-0 lg:hidden` floating button
+- Текст: "Переглянути результат" + ChevronDown bounce
+
+**Code quality:**
+- `previewCanvas(scale, radius)` helper — shared між мобайл (0.7) і десктоп (desktopScale)
+- `previewOverlay` — blur-lock overlay + premium timer badge (shared)
+- `UpgradePromptModal` переміщено в `sharedBottom` (рендериться в обох режимах)
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link
 
 **Де шукати:**
-- `src/components/master/marketing/` — StoryGenerator і пов'язані компоненти
-- `src/app/(master)/dashboard/marketing/` — роут
+- `src/lib/notifications/` — оркестратор, notifMap
+- `src/app/api/notifications/` — API роути
+- `public/sw.js` або `src/app/sw.ts` — Service Worker
 
-**Скіл:** `senior-frontend` + `impeccable`
+**Скіл:** `spec-driven-workflow` + `senior-backend`
 
 ---
 
