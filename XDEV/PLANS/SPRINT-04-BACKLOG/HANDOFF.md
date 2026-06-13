@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 8/30 ✅
-**Наступна задача:** **T09 — Мобайл послуги: кнопка + toggle a11y + компакт + sep**
+**Прогрес:** 9/30 ✅
+**Наступна задача:** **T10 — Портфоліо: кольори стандарт + mobile photo actions**
 
 ---
 
@@ -162,21 +162,49 @@
 
 ---
 
-## ▶ T09 — Мобайл послуги: кнопка + toggle a11y + компакт + sep
+## ✅ T09 — Мобайл послуги: кнопка + toggle a11y + компакт + sep
 
-**Проблема (з BACKLOG):**
-- 4.1. Кнопку "Додати послугу" — зробити з текстом, одразу після заголовку сторінки
-- 4.2. Toggle: виправити кольоровий непопад (активний = весь чорний / неактивний = весь білий), a11y аудит
-- 4.3. Картки послуг: зробити компактніше + додати розділювачі по спеціалізаціям
+**Commit:** `99cbd6c`
+
+**Root cause:** FAB (іконка без тексту) → не очевидно. Toggle knob = `bg-accent-on` (непрозоро в inactive). Картки p-4 + size-12 — надто великі. Жодного групування по категоріях.
+
+**Що зроблено:**
+
+`ServicesPage.tsx`:
+1. FAB видалено → `w-full min-h-[44px] rounded-xl bg-accent text-accent-foreground` кнопка в sidebar widget (як ProductsPage). `id="tour-services-add"` перенесено.
+2. `groupByCategory(services)` → CATEGORIES порядок + extra cats → `Map<string, Service[]>`. `useMemo` wrapper.
+3. Render: `Array.from(grouped).map([cat, items])` → `CategoryHeader` + `Droppable droppableId={cat}`.
+4. `handleServiceDragEnd`: cross-category drag rejected (`source.droppableId !== dest.droppableId → return`). Within-category: знаходить позиції в повному масиві → реконструює повний array → `reorderServices(next)`.
+5. `!mounted` (SSR) та DnD рендер уніфіковані через `groupedContent(withDnd: boolean)`.
+6. Видалено `masterProfile` (не використовувався).
+
+`ServiceCard.tsx`:
+1. Compact: `p-4→p-3`, `size-12→size-10`, `gap-3→gap-2.5`, actions `mt-3 pt-3→mt-2 pt-2`.
+2. Toggle knob: `bg-accent-on→bg-white` (explicit white, однаково видний в active/inactive).
+3. Price: `text-base→text-sm`, icon `size-18→size-16`.
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T10 — Портфоліо: кольори стандарт + mobile photo actions
+
+**Проблема (з BACKLOG + PLAN):**
+- Кнопки мають нестандартні кольори (не Frost design tokens)
+- На мобайлі нема дій з фото: видалити / зробити головним / переглянути
+- Drag-n-drop не працює або неочевидний
+- Lightbox/перегляд фото — відкривається в новій вкладці замість inline
 
 **Де шукати:**
-- `src/app/dashboard/services/` — ServicesPage або аналог
-- `src/components/master/services/` — ServiceCard, ServiceFormDrawer
+- `src/components/master/portfolio/` — PortfolioPage, PortfolioItem, компоненти фото
+- `src/app/dashboard/portfolio/` — page, [id]
 
 **Acceptance criteria:**
-- AC-1: Inline кнопка "Додати послугу" (Plus + text) після h1, видима в header
-- AC-2: Toggle → `role=switch` + `aria-checked` + `bg-accent` + 44px touch (стандарт T04)
-- AC-3: ServiceCard — compact layout + розділювачі між спеціалізаціями
+- AC-1: Всі кнопки → Frost design tokens (bg-accent, bg-secondary, border-border тощо)
+- AC-2: Тап на фото (мобайл) → overlay з 3 кнопками: Видалити / Головне / Переглянути
+- AC-3: "Переглянути" → inline lightbox (не нова вкладка)
+- AC-4: Drag-n-drop виправлений або замінений на ↑↓ order кнопки
+- AC-5: Той самий inline-перегляд → уніфікувати для фото товарів + послуг
 
 **Скіл:** `design-taste-frontend` + `impeccable`
 
