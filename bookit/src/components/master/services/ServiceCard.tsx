@@ -28,27 +28,27 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, type: 'spring' as const, stiffness: 300, damping: 24 } as const}
       className={cn(
-        "bento-card p-4 transition-all duration-300 group",
+        "bento-card p-3 transition-all duration-300 group",
         !service.active && "opacity-55"
       )}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         {/* Thumbnail / Drag handle */}
-        <div className="relative size-12 rounded-xl overflow-hidden flex-shrink-0 bg-warning/20">
+        <div className="relative size-10 rounded-xl overflow-hidden flex-shrink-0 bg-warning/20">
           <button
             type="button"
             {...dragHandleProps}
             aria-label="Перемістити послугу"
             onClick={(e) => e.stopPropagation()}
-            className="absolute top-0.5 left-0.5 size-5 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
+            className="absolute top-0.5 left-0.5 size-4 rounded-md bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
           >
-            <GripVertical size={10} className="text-white" />
+            <GripVertical size={8} className="text-white" />
           </button>
           {service.imageUrl ? (
-            <Image src={service.imageUrl} alt={service.name} width={48} height={48} className="w-full h-full object-cover" unoptimized />
+            <Image src={service.imageUrl} alt={service.name} width={40} height={40} className="w-full h-full object-cover" unoptimized />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-2xl">
-              <ServiceIcon name={service.icon_name} size={18} />
+            <div className="w-full h-full flex items-center justify-center text-xl">
+              <ServiceIcon name={service.icon_name} size={16} />
             </div>
           )}
         </div>
@@ -61,16 +61,16 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
           className="flex-1 flex items-center gap-2 min-w-0 text-left hover:opacity-80 transition-opacity"
         >
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <p className="text-sm font-semibold text-foreground">{service.name}</p>
               {service.popular && (
                 <Tooltip content={<p className="text-xs text-foreground">Відображається як «Популярне» на публічній сторінці</p>} position="top">
-                  <Star size={12} className="fill-warning text-warning cursor-default" />
+                  <Star size={11} className="fill-warning text-warning cursor-default" />
                 </Tooltip>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
                 {service.category}
               </span>
               <span className="text-xs text-muted-foreground/60">{formatDuration(service.duration)}</span>
@@ -78,12 +78,12 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
           </div>
 
           {/* Price */}
-          <p className="text-base font-bold text-foreground flex-shrink-0">{formatPrice(service.price)}</p>
+          <p className="text-sm font-bold text-foreground flex-shrink-0">{formatPrice(service.price)}</p>
         </button>
       </div>
 
       {/* Actions row */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-secondary/60">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-secondary/60">
         <div className="flex items-center gap-1">
           <Tooltip content={<p className="text-xs text-foreground">Редагувати послугу</p>} position="top">
             <button
@@ -152,7 +152,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
               <motion.div
                 animate={{ x: service.active ? 20 : 2 }}
                 transition={{ type: 'spring' as const, stiffness: 500, damping: 30 } as const}
-                className="absolute top-1 size-4 rounded-full bg-accent-on shadow-sm"
+                className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
               />
             </span>
           </button>
