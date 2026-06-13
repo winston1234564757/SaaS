@@ -154,7 +154,9 @@
 
 **Hotfix** (`3743331`) — статичний `HALF_W=115` виявився недостатнім (реальна ширина tooltip "Нд · 20:00 · немає записів" ~220px = halfW 110px, але translateX(-50%) використовує РЕАЛЬНУ ширину). Рішення: `useLayoutEffect` + `tooltipRef` → вимірює `offsetWidth` після DOM commit поки tooltip ще `opacity:0` (Framer Motion initial) → clamps → state update → re-render (досі opacity:0) → browser paint з правильною позицією → opacity animation. Без видимого стрибка. Applied до обох виджетів.
 
-**Ключовий патерн:** `backdrop-filter` на предку "трапить" `position: fixed` — завжди рендер fixed tooltips поза bento-card. Для clamping — `useLayoutEffect` measurement замість статичних констант.
+**Hotfix-4** (`5a5971f`) — Framer Motion overrides `style.transform` when `initial/animate` contain transform props (`y`, `scale`). The `translateX(-50%)` centering was silently dropped → `tooltip.left` became the LEFT EDGE, not center. `useLayoutEffect` clamping was correct but operating on the wrong assumption. Fix: two nested `motion.div` — outer handles `position: fixed` + `style.transform: 'translateX(-50%)'` + only `exit={{ opacity:0 }}` (no transform props → FM doesn't touch outer's transform); inner handles `initial/animate` with `y/scale/opacity` independently. Applied to both widgets.
+
+**Залізний патерн:** Ніколи не змішуй `style.transform` з `initial/animate` transform-props на одному `motion.div` — FM перезаписує user transform. Рішення: outer `motion.div` (position) + inner `motion.div` (animation).
 
 **TSC:** 0 | **Build:** clean
 
@@ -177,6 +179,39 @@
 - AC-3: ServiceCard — compact layout + розділювачі між спеціалізаціями
 
 **Скіл:** `design-taste-frontend` + `impeccable`
+
+---
+
+## ⬜ T31 — Smart Design System: Context-Adaptive UI
+
+**Концепція (2026-06-13):** Три глобальних утиліти для iOS-like адаптивного UI.
+
+### Паттерн 1: Adaptive Text Contrast
+Елемент "читає" колір фону під собою → автоматично перемикає text-color.
+- **CSS-only:** `mix-blend-mode: difference` → `.adaptive-text` клас
+- **JS hook:** `useAdaptiveColor(ref)` → `getComputedStyle` + `getBoundingClientRect` → returns `'light' | 'dark'`
+- **Застосування:** dashboard greeting name, заголовки поверх фото/градієнтів
+
+### Паттерн 2: Smart Tooltip Hook (reusable)
+`useSmartTooltip(anchorRef, options)` → `{ x, y, side }` — pre-clamped, viewport-aware.
+- Вимірює anchor rect → вимірює tooltip after mount → вибирає оптимальний side (top/bottom) → shift left/right
+- Safe area: `Math.max(SAFE + safeInset, Math.min(vw - tooltipW - SAFE - safeInset, centerX))`
+- Замінює всі ручні clamp у WeeklyChart + PeakHours + всі future tooltips
+- Враховує `env(safe-area-inset-left/right)` для iPhone notch landscape
+
+### Паттерн 3: FitText Component
+`<FitText text={...} maxLines={1|2} minSize={px} maxSize={px} />`
+- `ResizeObserver` на контейнер + `canvas.measureText()` бінарний пошук max font-size що влізає
+- 1 рядок → scale up щоб заповнити ширину (як iOS заголовок)
+- Overflow → break на 2 рядки + ще більший шрифт
+- **Застосування:** Dashboard greeting (ім'я + вітання), великі метрики
+
+**Acceptance Criteria:**
+- AC-1: `.adaptive-text` CSS клас + `useAdaptiveColor` hook → задокументовані в `globals.css` + `src/lib/hooks/`
+- AC-2: `useSmartTooltip` → рефакторинг WeeklyChart + PeakHours → видалити `useLayoutEffect` clamp з обох
+- AC-3: `<FitText>` компонент → `src/components/shared/FitText.tsx` → застосувати в Dashboard greeting
+
+**Скіл:** `spec-driven-workflow` + `senior-frontend` + `impeccable`
 
 ---
 
