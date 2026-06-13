@@ -88,8 +88,8 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
 
         {/* Tabs: widget blocks (mobile) / vertical nav (desktop) */}
         <div className={cn(
-          'grid grid-cols-3 gap-2',
-          'lg:flex lg:flex-col lg:gap-1'
+          'flex flex-col gap-2',
+          'lg:gap-1'
         )}>
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
@@ -101,8 +101,8 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
                 aria-pressed={isActive}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'relative flex flex-col items-center gap-1.5 p-3 rounded-2xl text-center transition-colors duration-200 cursor-pointer active:scale-[0.96] transform-gpu',
-                  'lg:flex-row lg:items-center lg:text-left lg:rounded-xl lg:px-4 lg:py-2.5 lg:justify-start lg:gap-2',
+                  'relative flex items-center gap-3 px-4 py-3 rounded-2xl text-left w-full transition-colors duration-200 cursor-pointer active:scale-[0.98] transform-gpu',
+                  'lg:rounded-xl lg:px-4 lg:py-2.5',
                   !isActive && 'bg-surface/60 border border-border/40 lg:bg-transparent lg:border-0',
                   isActive
                     ? 'text-[var(--accent-on)]'
@@ -120,7 +120,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
                 <Icon size={18} className="relative z-10 shrink-0" />
                 <div className="relative z-10 flex flex-col gap-0.5">
                   <span className="text-xs font-semibold leading-tight">{tab.label}</span>
-                  <span className="text-[11px] leading-snug opacity-70 lg:hidden">{tab.description}</span>
+                  <span className="text-[11px] leading-snug opacity-70">{tab.description}</span>
                 </div>
               </button>
             );
@@ -139,9 +139,9 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
             {activeTab === 'loyalty' && (
               <motion.div
                 key="loyalty"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
               >
                 <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
@@ -153,9 +153,9 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
             {activeTab === 'referral' && (
               <motion.div
                 key="referral"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
               >
                 <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
@@ -179,9 +179,9 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
             {activeTab === 'partners' && (
               <motion.div
                 key="partners"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
               >
                 <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
