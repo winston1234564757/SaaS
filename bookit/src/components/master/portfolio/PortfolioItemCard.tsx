@@ -46,7 +46,7 @@ export function PortfolioItemCard({ item, onClick, onStoryClick, dragHandleProps
         {/* Cover */}
         <div className="relative w-full aspect-[4/3] bg-secondary">
           {coverPhoto ? (
-            <Image src={coverPhoto.url} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+            <Image src={coverPhoto.url} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw" />
           ) : (
             <div className="flex flex-col items-center justify-center h-full gap-1 text-[#C8B8B2]">
               <div className="size-10 rounded-2xl bg-[#EBD5CC] flex items-center justify-center">
