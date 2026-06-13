@@ -2,7 +2,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { useQueryState, parseAsString } from 'nuqs';
-import { Rocket, Gift, Share2, Users } from 'lucide-react';
+import { Gift, Share2, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 import dynamic from 'next/dynamic';
@@ -71,9 +71,9 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
   }, [drawerParam, setActiveTab, setDrawerParam]);
 
   const tabs = [
-    { id: 'loyalty', label: 'Лояльність', icon: Gift },
-    { id: 'referral', label: 'Реферали', icon: Share2 },
-    { id: 'partners', label: 'Партнери', icon: Users },
+    { id: 'loyalty',  label: 'Лояльність', icon: Gift,   description: 'Знижки для постійних клієнтів' },
+    { id: 'referral', label: 'Реферали',   icon: Share2,  description: 'Бонус за кожного нового майстра' },
+    { id: 'partners', label: 'Партнери',   icon: Users,   description: 'Спільні акції з майстрами поряд' },
   ];
 
   return (
@@ -81,20 +81,15 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
 
       {/* Left sidebar: hub header + tab navigation */}
       <div className="bento-card p-5 flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <div className="size-12 rounded-2xl bg-warning/10 flex items-center justify-center text-warning shrink-0">
-            <Rocket size={24} />
-          </div>
-          <div>
-            <h1 className="display-md text-foreground">Growth Hub</h1>
-            <p className="text-sm text-muted-foreground">Інструменти залучення та утримання клієнтів</p>
-          </div>
+        <div>
+          <h1 className="display-md text-foreground">Growth Hub</h1>
+          <p className="text-sm text-muted-foreground">Інструменти залучення та утримання клієнтів</p>
         </div>
 
-        {/* Tabs: horizontal pill on mobile, vertical nav on desktop */}
+        {/* Tabs: widget blocks (mobile) / vertical nav (desktop) */}
         <div className={cn(
-          'relative bg-surface/40 backdrop-blur-md border border-border/40 p-1 flex gap-1 rounded-[100px]',
-          'lg:flex-col lg:rounded-2xl lg:bg-transparent lg:border-0 lg:p-0 lg:gap-1'
+          'grid grid-cols-3 gap-2',
+          'lg:flex lg:flex-col lg:gap-1'
         )}>
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
@@ -106,21 +101,27 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
                 aria-pressed={isActive}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'relative flex-1 px-5 py-2.5 rounded-full text-xs font-semibold flex items-center justify-center gap-2 transition-colors duration-200 cursor-pointer active:scale-[0.95] transform-gpu',
-                  'lg:flex-none lg:w-full lg:rounded-xl lg:px-4 lg:justify-start',
-                  isActive ? 'text-[var(--accent-on)]' : 'text-text-secondary hover:text-foreground'
+                  'relative flex flex-col items-center gap-1.5 p-3 rounded-2xl text-center transition-colors duration-200 cursor-pointer active:scale-[0.96] transform-gpu',
+                  'lg:flex-row lg:items-center lg:text-left lg:rounded-xl lg:px-4 lg:py-2.5 lg:justify-start lg:gap-2',
+                  !isActive && 'bg-surface/60 border border-border/40 lg:bg-transparent lg:border-0',
+                  isActive
+                    ? 'text-[var(--accent-on)]'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="growth-active-tab"
-                    className="absolute inset-0 rounded-full lg:rounded-xl"
+                    className="absolute inset-0 rounded-2xl lg:rounded-xl"
                     style={{ background: 'var(--accent)' }}
                     transition={{ type: 'spring' as const, duration: 0.35, bounce: 0 }}
                   />
                 )}
-                <Icon size={14} className="relative z-10" />
-                <span className="relative z-10">{tab.label}</span>
+                <Icon size={18} className="relative z-10 shrink-0" />
+                <div className="relative z-10 flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold leading-tight">{tab.label}</span>
+                  <span className="text-[11px] leading-snug opacity-70 lg:hidden">{tab.description}</span>
+                </div>
               </button>
             );
           })}
