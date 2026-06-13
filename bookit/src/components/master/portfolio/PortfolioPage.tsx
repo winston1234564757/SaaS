@@ -164,7 +164,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
         <DragDropContext onDragEnd={handleGridDragEnd}>
           <Droppable droppableId="portfolio-grid" direction="vertical">
             {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {items.map((item, i) => (
                   <Draggable key={item.id} draggableId={item.id} index={i}>
                     {(prov, snap) => (

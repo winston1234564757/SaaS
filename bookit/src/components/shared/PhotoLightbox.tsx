@@ -85,7 +85,7 @@ export function PhotoLightbox({ photos, currentIndex, onClose, onPrev, onNext }:
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.94 }}
         transition={spring}
-        className="relative w-full max-w-lg mx-16 aspect-square"
+        className="relative w-[90vw] max-w-[640px] h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <Image
