@@ -471,12 +471,12 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         <div className="flex-1 min-w-0 px-5 lg:px-6 py-5 space-y-4 max-w-2xl mx-auto lg:max-w-none lg:mx-0">
 
           {/* Mode tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-2 overflow-x-auto lg:overflow-x-visible lg:flex-wrap pb-0.5" style={{ scrollbarWidth: 'none' }}>
             {MODES.map(m => {
               const active = m.id === mode;
               const Icon = m.Icon;
               return (
-                <button key={m.id} type="button" aria-pressed={active} onClick={() => setMode(m.id)}
+                <button key={m.id} type="button" aria-pressed={active} onClick={() => { setMode(m.id); onControlChange(); }}
                   className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer shrink-0 active:scale-[0.88]",
                     active
                       ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
@@ -502,7 +502,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 </button>
                 <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 lg:overflow-x-visible lg:flex-wrap">
                 <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
                   className={`relative size-11 rounded-xl flex items-center justify-center border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
                   <X size={16} />
@@ -531,7 +531,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
               <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
               <div className="flex gap-2 flex-wrap">
                 {PALETTES.map((p, i) => (
-                  <button key={p.id} type="button" aria-label={p.label} aria-pressed={i === palIdx} onClick={() => setPalIdx(i)}
+                  <button key={p.id} type="button" aria-label={p.label} aria-pressed={i === palIdx} onClick={() => { setPalIdx(i); onControlChange(); }}
                     className="relative size-7 rounded-full transition-colors duration-150 cursor-pointer"
                     style={{
                       background: p.bg,
@@ -688,7 +688,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         {/* ─── Preview panel — fixed width, far right, sticky ─── */}
         <div
           ref={desktopPreviewPanelRef}
-          className="hidden lg:flex shrink-0 w-[260px] xl:w-[320px] flex-col items-center justify-center self-start sticky top-24 h-[calc(100vh-6rem)] border-l border-border"
+          className="hidden lg:flex shrink-0 w-[280px] xl:w-[360px] flex-col items-center justify-center self-start sticky top-24 h-[calc(100vh-6rem)] border-l border-border"
           style={{ background: 'color-mix(in srgb, var(--secondary) 25%, transparent)' }}
         >
           <div className="flex flex-col items-center gap-4">
