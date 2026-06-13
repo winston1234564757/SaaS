@@ -92,9 +92,9 @@ export function VacationManager() {
   }
 
   const inputCls =
-    'w-full px-3.5 py-3 rounded-2xl bg-background/70 border border-border text-sm text-foreground ' +
+    'w-full px-3 py-2 rounded-xl bg-background/60 border border-border text-xs text-foreground ' +
     'outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors';
-  const labelCls = 'block text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider mb-1.5';
+  const labelCls = 'block text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider mb-1';
 
   return (
     <div className="flex flex-col gap-4">
@@ -163,7 +163,7 @@ export function VacationManager() {
       )}
 
       {/* Form */}
-      <div className="flex flex-col gap-4 p-4 rounded-2xl bg-secondary/40 border border-border/60">
+      <div className="flex flex-col gap-4 p-5 rounded-2xl bg-secondary/40 border border-border/60">
 
         {/* Type tabs — flex-1 guarantees equal width + height */}
         <LayoutGroup id="vacation-type">
@@ -200,7 +200,7 @@ export function VacationManager() {
         </LayoutGroup>
 
         {/* Fields */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {type === 'vacation' && (
             <>
               <div>
@@ -279,7 +279,7 @@ export function VacationManager() {
           type="button"
           onClick={handleAdd}
           disabled={!isFormValid() || isAdding}
-          className="w-full py-3 rounded-2xl text-sm font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-2xl text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
         >
           {isAdding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
           Зберегти
