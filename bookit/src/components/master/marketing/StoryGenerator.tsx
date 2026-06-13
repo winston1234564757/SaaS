@@ -37,9 +37,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   const [showScrollHint, setShowScrollHint] = useState(false);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Responsive desktop preview scale via ResizeObserver
-  const [desktopScale, setDesktopScale] = useState(0.9);
+  const [desktopScale, setDesktopScale] = useState(0.8);
 
   const [isTMA, setIsTMA] = useState(false);
   useEffect(() => { setIsTMA(!!window.Telegram?.WebApp?.initData); }, []);
@@ -49,9 +47,9 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     if (!el) return;
     const obs = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
-      const pad = 80;
-      const s = Math.min((width - pad) / 360, (height - pad) / 640, 1.15);
-      setDesktopScale(Math.max(s, 0.55));
+      const pad = 56;
+      const s = Math.min((width - pad) / 360, (height - pad) / 640, 1.1);
+      setDesktopScale(Math.max(s, 0.5));
     });
     obs.observe(el);
     return () => obs.disconnect();
@@ -129,7 +127,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isStarterPlan = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
 
-  // Show mobile scroll hint on EVERY control change (not just first time)
   const onControlChange = useCallback(() => {
     setShowScrollHint(true);
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
@@ -140,6 +137,15 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     setBlurActive(false);
     blurTimerRef.current = setTimeout(() => setBlurActive(true), 3_000);
   }, [mode, isStarterPlan]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setShowScrollHint(true);
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      hintTimerRef.current = setTimeout(() => setShowScrollHint(false), 4_000);
+    }, 1_200);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -288,13 +294,14 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   const isBlurLocked = isPremiumLocked && blurActive;
 
+  // Mode-specific controls
   const controls = (
     <div className="space-y-3">
       {mode === 'announcement' && (
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст публікації</label>
           <textarea value={annoText} onChange={e => { setAnnoText(e.target.value); onControlChange(); }}
-            rows={5} maxLength={200} placeholder="Ваш текст..."
+            rows={3} maxLength={200} placeholder="Ваш текст..."
             className="resize-none outline-none text-sm transition-colors duration-150" style={{ ...INPUT_STYLE, height: 'auto' }} />
           <div className="flex justify-end mt-1">
             <span className="text-[10px] text-muted-foreground/60">{annoText.length}/200</span>
@@ -302,12 +309,12 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         </div>
       )}
       {mode === 'free_slots' && (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
             {services.length === 0 ? (
-              <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
-                Немає активних послуг. Додайте у розділі <span className="font-semibold text-primary">Послуги</span>.
+              <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
+                Немає послуг
               </div>
             ) : (
               <select value={selectedSvcId ?? ''} onChange={e => { setSelectedSvcId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
@@ -319,15 +326,15 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
             <input type="date" value={slotsDate ?? ''} min={todayStr} onChange={e => { setSlotsDate(e.target.value || null); onControlChange(); }} aria-label="Дата слоту для сторіс" className="outline-none text-sm" style={INPUT_STYLE} />
             {slotsDate && !slotsLoading && (
-              <p className={`text-[11px] mt-1.5 font-medium ${slots.length > 0 ? 'text-success' : 'text-muted-foreground/60'}`}>
-                {slots.length > 0 ? `${slots.length} вільних вікон знайдено` : 'Немає вільних вікон'}
+              <p className={`text-[11px] mt-1 font-medium ${slots.length > 0 ? 'text-success' : 'text-muted-foreground/60'}`}>
+                {slots.length > 0 ? `${slots.length} вільних вікон` : 'Немає вікон'}
               </p>
             )}
           </div>
         </div>
       )}
       {mode === 'vacation' && (
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">З якого числа</label>
             <input type="date" value={vacStart ?? ''} onChange={e => { setVacStart(e.target.value || null); onControlChange(); }} aria-label="Початок відпустки" className="outline-none text-sm" style={INPUT_STYLE} />
@@ -342,8 +349,8 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Активна Flash Deal</label>
           {flashDeals.length === 0 ? (
-            <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
-              Немає активних флеш-акцій. Створіть у <span className="font-semibold text-primary">Дохід → Flash Deals</span>.
+            <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
+              Немає акцій. Створіть у <span className="font-semibold text-primary">Дохід → Flash Deals</span>.
             </div>
           ) : (
             <select value={dealIdx} onChange={e => { setDealIdx(Number(e.target.value)); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
@@ -356,8 +363,8 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">5★ відгук клієнта</label>
           {starReviews.length === 0 ? (
-            <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
-              Немає опублікованих 5★ відгуків. Попросіть клієнта залишити відгук після запису.
+            <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
+              Немає опублікованих 5★ відгуків
             </div>
           ) : (
             <select value={selectedReviewId ?? ''} onChange={e => { setSelectedReviewId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
@@ -365,65 +372,67 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             </select>
           )}
           {selectedReview?.comment && (
-            <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed px-1 line-clamp-3">«{selectedReview.comment}»</p>
+            <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed px-1 line-clamp-2">«{selectedReview.comment}»</p>
           )}
         </div>
       )}
       {mode === 'flash_window' && (
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
-            {services.length === 0 ? (
-              <div className="px-4 py-3 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">Немає активних послуг.</div>
-            ) : (
-              <select value={flashWinSvcId ?? ''} onChange={e => { setFlashWinSvcId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
-                {services.map(s => <option key={s.id} value={s.id}>{s.emoji ? `${s.emoji} ` : ''}{s.name} ({s.duration_minutes} хв)</option>)}
-              </select>
-            )}
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
-            <input type="date" value={flashWinDate ?? ''} min={todayStr} onChange={e => { setFlashWinDate(e.target.value || null); onControlChange(); }} aria-label="Дата флеш-пропозиції" className="outline-none text-sm" style={INPUT_STYLE} />
-          </div>
-          {flashWinDate && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Час слоту</label>
-              {flashWinSlotsLoading ? (
-                <p className="text-[11px] text-muted-foreground/60">Завантаження...</p>
-              ) : flashWinSlots.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground/60">Немає вільних вікон на цей день</p>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
+              {services.length === 0 ? (
+                <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">Немає послуг</div>
               ) : (
-                <div className="flex flex-wrap gap-2">
-                  {flashWinSlots.map(s => (
-                    <button key={s} type="button" onClick={() => { setFlashWinTime(s); onControlChange(); }}
-                      className={cn("px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer active:scale-[0.88]",
-                        flashWinTime === s ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)]" : "bg-secondary/70 text-text-secondary border border-border")}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <select value={flashWinSvcId ?? ''} onChange={e => { setFlashWinSvcId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
+                  {services.map(s => <option key={s.id} value={s.id}>{s.emoji ? `${s.emoji} ` : ''}{s.name} ({s.duration_minutes} хв)</option>)}
+                </select>
               )}
             </div>
-          )}
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Знижка: <span className="text-destructive font-bold">−{flashWinDiscount}%</span></label>
-            <input type="range" min={5} max={70} step={5} value={flashWinDiscount}
-              onChange={e => { setFlashWinDiscount(Number(e.target.value)); onControlChange(); }}
-              aria-label="Відсоток знижки флеш-пропозиції" className="w-full cursor-pointer" style={{ accentColor: 'var(--accent)' }} />
-            <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5"><span>5%</span><span>70%</span></div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
+              <input type="date" value={flashWinDate ?? ''} min={todayStr} onChange={e => { setFlashWinDate(e.target.value || null); onControlChange(); }} aria-label="Дата флеш-пропозиції" className="outline-none text-sm" style={INPUT_STYLE} />
+            </div>
+          </div>
+          <div className="space-y-3">
+            {flashWinDate && (
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Час слоту</label>
+                {flashWinSlotsLoading ? (
+                  <p className="text-[11px] text-muted-foreground/60">Завантаження...</p>
+                ) : flashWinSlots.length === 0 ? (
+                  <p className="text-[11px] text-muted-foreground/60">Немає вільних вікон</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {flashWinSlots.map(s => (
+                      <button key={s} type="button" onClick={() => { setFlashWinTime(s); onControlChange(); }}
+                        className={cn("px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer active:scale-[0.88]",
+                          flashWinTime === s ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)]" : "bg-secondary/70 text-text-secondary border border-border")}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Знижка: <span className="text-destructive font-bold">−{flashWinDiscount}%</span></label>
+              <input type="range" min={5} max={70} step={5} value={flashWinDiscount}
+                onChange={e => { setFlashWinDiscount(Number(e.target.value)); onControlChange(); }}
+                aria-label="Відсоток знижки" className="w-full cursor-pointer" style={{ accentColor: 'var(--accent)' }} />
+              <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5"><span>5%</span><span>70%</span></div>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 
-  // Shared preview canvas node (used in both mobile and desktop)
+  // Shared preview canvas
   const previewCanvas = (scale: number, radius: number) => (
     <div style={{
-      width: 360 * scale,
-      height: 640 * scale,
-      overflow: 'hidden',
-      borderRadius: radius,
+      width: 360 * scale, height: 640 * scale,
+      overflow: 'hidden', borderRadius: radius,
       filter: isBlurLocked ? 'blur(10px)' : 'none',
       transition: 'filter 0.6s ease',
       boxShadow: '0 20px 60px color-mix(in srgb, var(--accent) 18%, transparent), 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent)',
@@ -434,20 +443,18 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     </div>
   );
 
-  const previewOverlay = (
+  const previewOverlay = (scale: number) => (
     <>
       <AnimatePresence>
         {isBlurLocked && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 22 }}
             className="absolute inset-0 flex items-center justify-center"
-            style={{ borderRadius: 20 * desktopScale, background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
-            <div className="flex flex-col items-center gap-2 px-5 py-4 rounded-2xl text-center"
-              style={{ background: 'color-mix(in srgb, var(--text-primary) 90%, transparent)', backdropFilter: 'blur(4px)', maxWidth: 200 }}>
-              <Lock size={18} strokeWidth={2.5} style={{ color: 'var(--accent-on)' }} />
+            style={{ borderRadius: 20 * scale, background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
+            <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-2xl text-center"
+              style={{ background: 'color-mix(in srgb, var(--text-primary) 90%, transparent)', backdropFilter: 'blur(4px)', maxWidth: 180 }}>
+              <Lock size={16} strokeWidth={2.5} style={{ color: 'var(--accent-on)' }} />
               <span className="text-[11px] font-bold tracking-wide leading-tight" style={{ color: 'var(--accent-on)' }}>{upgradeCopy?.overlayTitle ?? 'Доступно в PRO'}</span>
               <span className="text-[10px] leading-snug" style={{ color: 'color-mix(in srgb, var(--accent-on) 55%, transparent)' }}>{upgradeCopy?.overlayHint ?? '700 грн/міс'}</span>
               <span className="text-[10px] font-bold px-3 py-1 rounded-full mt-0.5"
@@ -465,245 +472,250 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   );
 
   const contentBody = (
-    // Two-column layout on desktop: fixed controls panel (left) + sticky preview panel (right)
-    <div className="flex flex-col lg:flex-row lg:items-start">
+    <div>
+      {/* ─── Full-width page title ─── */}
+      <div className="px-5 lg:px-6 pt-5 pb-4 border-b border-border">
+        <h1 className="font-display text-2xl font-semibold text-foreground">Конструктор Сторіс</h1>
+        <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
+      </div>
 
-      {/* ─── Controls panel ─── */}
-      <div className="w-full lg:w-[340px] lg:shrink-0 lg:border-r lg:border-border px-5 py-6 space-y-5 max-w-lg mx-auto lg:max-w-none lg:mx-0">
+      {/* ─── Two-column: wide controls (left) + fixed preview (right) ─── */}
+      <div className="flex flex-col lg:flex-row lg:items-start">
 
-        <div>
-          <h1 className="font-display text-2xl font-semibold text-foreground">Конструктор Сторіс</h1>
-          <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
-        </div>
+        {/* Controls panel — flex-1, multi-column dense grid */}
+        <div className="flex-1 min-w-0 px-5 lg:px-6 py-5 space-y-4 max-w-2xl mx-auto lg:max-w-none lg:mx-0">
 
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-          {MODES.map(m => {
-            const active = m.id === mode;
-            const Icon = m.Icon;
-            return (
-              <button key={m.id} type="button" aria-pressed={active} onClick={() => setMode(m.id)}
-                className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer shrink-0 active:scale-[0.88]",
-                  active
-                    ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
-                    : "bg-secondary/70 text-text-secondary border border-border")}>
-                <Icon size={13} strokeWidth={2.5} />
-                {m.label}
-                {m.premium && (
-                  <span className={cn("ml-0.5 text-[10px] font-bold px-1 py-0.5 rounded-md", active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
+          {/* Mode tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+            {MODES.map(m => {
+              const active = m.id === mode;
+              const Icon = m.Icon;
+              return (
+                <button key={m.id} type="button" aria-pressed={active} onClick={() => setMode(m.id)}
+                  className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer shrink-0 active:scale-[0.88]",
+                    active
+                      ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
+                      : "bg-secondary/70 text-text-secondary border border-border")}>
+                  <Icon size={13} strokeWidth={2.5} />
+                  {m.label}
+                  {m.premium && (
+                    <span className={cn("ml-0.5 text-[10px] font-bold px-1 py-0.5 rounded-md", active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Photo picker + Palette side by side */}
+          <div className="grid grid-cols-[1fr_152px] gap-4 items-start">
+            {/* Photo picker */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
+                  <Plus size={11} /> Завантажити
+                </button>
+                <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+                <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
+                  className={`relative size-11 rounded-xl flex items-center justify-center border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
+                  <X size={16} />
+                </button>
+                {customBgPhoto && (
+                  <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
+                    className={`relative size-11 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'}`}>
+                    <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
+                    {(!selectedBgPhotoId && customBgPhoto) && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>
+                    )}
+                  </button>
                 )}
-              </button>
-            );
-          })}
-        </div>
+                {portfolioItems.map(item => (
+                  <button key={item.id} type="button" onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
+                    aria-label={item.title ?? 'Фото з портфоліо'}
+                    className={`relative size-11 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'}`}>
+                    <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
-              <Plus size={12} /> Завантажити своє
-            </button>
-            <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
+            {/* Palette */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
+              <div className="flex gap-2 flex-wrap">
+                {PALETTES.map((p, i) => (
+                  <button key={p.id} type="button" aria-label={p.label} aria-pressed={i === palIdx} onClick={() => setPalIdx(i)}
+                    className="relative size-7 rounded-full transition-colors duration-150 cursor-pointer"
+                    style={{
+                      background: p.bg,
+                      border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
+                      boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
+                    }}>
+                    {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={10} style={{ color: p.text }} strokeWidth={3} /></span>}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 mt-1.5">{PALETTES[palIdx].label}</p>
+            </div>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
-              className={`relative size-12 rounded-xl flex items-center justify-center border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
-              <X size={18} />
-            </button>
-            {customBgPhoto && (
-              <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
-                className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'}`}>
-                <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
-                {(!selectedBgPhotoId && customBgPhoto) && (
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={14} className="text-white" strokeWidth={3} /></div>
-                )}
-              </button>
-            )}
-            {portfolioItems.map(item => (
-              <button key={item.id} type="button" onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
-                aria-label={item.title ?? 'Фото з портфоліо'}
-                className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'}`}>
-                <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
-              </button>
-            ))}
-          </div>
-        </div>
 
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
-          <div className="flex gap-2.5 flex-wrap">
-            {PALETTES.map((p, i) => (
-              <button
-                key={p.id}
-                type="button"
-                aria-label={p.label}
-                aria-pressed={i === palIdx}
-                onClick={() => setPalIdx(i)}
-                className="relative size-8 rounded-full transition-colors duration-150 cursor-pointer"
-                style={{
-                  background: p.bg,
-                  border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
-                  boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
-                }}>
-                {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={12} style={{ color: p.text }} strokeWidth={3} /></span>}
-              </button>
-            ))}
-            <span className="self-center text-xs text-muted-foreground/60 ml-1">{PALETTES[palIdx].label}</span>
-          </div>
-        </div>
+          {/* Mode-specific controls */}
+          {controls}
 
-        {controls}
-
-        <div className="pt-4 border-t border-border space-y-4">
-          <div>
-            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Налаштування плашки</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[10px] text-muted-foreground block mb-1">Позиція</label>
-                <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-                  {(['top', 'center', 'bottom'] as const).map(pos => (
-                    <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
-                      className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                      {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
-                    </button>
-                  ))}
+          {/* Premium teaser (compact inline) */}
+          <AnimatePresence mode="popLayout">
+            {isPremiumLocked && upgradeCopy && (
+              <motion.button type="button"
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}
+                className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left"
+                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
+                onClick={() => setShowUpgradeModal(true)}>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-foreground">{upgradeCopy.teaserTitle}</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug truncate">{upgradeCopy.teaserDesc}</p>
                 </div>
-              </div>
-              <div>
-                <label className="text-[10px] text-muted-foreground block mb-1">Текст</label>
-                <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-                  {(['left', 'center', 'right'] as const).map(a => (
-                    <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
-                      className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                      {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between items-center mb-1.5">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Прозорість скла</label>
-              <span className="text-[10px] font-bold text-primary">{transparency}%</span>
-            </div>
-            <input type="range" min={0} max={100} step={1} value={transparency}
-              onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
-              aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
-          </div>
-        </div>
-
-        <AnimatePresence mode="popLayout">
-          {isPremiumLocked && upgradeCopy && (
-            <motion.button type="button"
-              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22 }}
-              className="w-full rounded-2xl px-4 py-3.5 flex items-start gap-3 text-left"
-              style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
-              onClick={() => setShowUpgradeModal(true)}>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-foreground mb-0.5">{upgradeCopy.teaserTitle}</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">{upgradeCopy.teaserDesc}</p>
-              </div>
-              <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl self-center"
-                style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        <button type="button" onClick={() => setShowAvatar(v => !v)}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
-          <div className="text-left">
-            <p className="text-sm font-semibold text-foreground">Показувати фото</p>
-            <p className="text-[11px] text-muted-foreground/60">Аватар та ім&apos;я майстра</p>
-          </div>
-          {showAvatar ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
-        </button>
-
-        <button type="button" onClick={() => setShowSticker(v => !v)}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
-          <div className="text-left">
-            <p className="text-sm font-semibold text-foreground">Кнопка запису</p>
-            <p className="text-[11px] text-muted-foreground/60">Стікер з текстом внизу сторіс</p>
-          </div>
-          {showSticker ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
-        </button>
-
-        {showSticker && (
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
-            <input
-              value={ctaText}
-              onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
-              maxLength={28}
-              placeholder="Записатися онлайн"
-              className="outline-none text-sm"
-              style={INPUT_STYLE}
-            />
-            <div className="flex justify-end mt-1">
-              <span className="text-[10px] text-muted-foreground/60">{ctaText.length}/28</span>
-            </div>
-          </div>
-        )}
-
-        <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
-          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
-          style={exported
-            ? { background: 'var(--success)', color: '#fff', boxShadow: '0 6px 20px color-mix(in srgb, var(--success) 30%, transparent)' }
-            : { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', boxShadow: '0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-          <AnimatePresence mode="popLayout" initial={false}>
-            {exporting ? (
-              <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <Loader2 size={16} className="animate-spin" /> Генеруємо...
-              </motion.span>
-            ) : isBlurLocked ? (
-              <motion.span key="u" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <Lock size={16} /> Розблокувати на PRO
-              </motion.span>
-            ) : isPremiumLocked ? (
-              <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <Download size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити'}
-              </motion.span>
-            ) : exported ? (
-              <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <Check size={16} strokeWidth={3} /> {isTMA ? 'Відправлено!' : 'Збережено!'}
-              </motion.span>
-            ) : (
-              <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <Megaphone size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
-              </motion.span>
+                <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
+              </motion.button>
             )}
           </AnimatePresence>
-        </motion.button>
 
-        <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
-          {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
-        </p>
+          {/* Plate position + Text align + Transparency in 3 columns */}
+          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
+            <div>
+              <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Позиція</label>
+              <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+                {(['top', 'center', 'bottom'] as const).map(pos => (
+                  <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
+                    className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                    {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Текст</label>
+              <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+                {(['left', 'center', 'right'] as const).map(a => (
+                  <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
+                    className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                    {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Скло</label>
+                <span className="text-[10px] font-bold text-primary">{transparency}%</span>
+              </div>
+              <input type="range" min={0} max={100} step={1} value={transparency}
+                onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
+                aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
+            </div>
+          </div>
 
-        {/* Mobile preview — visible below download button on mobile only */}
-        <div ref={previewRef} className="lg:hidden flex flex-col items-center gap-3 pt-4 border-t border-border">
-          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
-          <div style={{ position: 'relative', width: 252, height: 448 }}>
-            {previewCanvas(0.7, 20)}
-            {previewOverlay}
+          {/* Avatar + Sticker toggles side by side (compact) */}
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => setShowAvatar(v => !v)}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-xs font-semibold text-foreground">Показувати фото</p>
+                <p className="text-[10px] text-muted-foreground/60 truncate">Аватар та ім&apos;я</p>
+              </div>
+              {showAvatar ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+            </button>
+            <button type="button" onClick={() => setShowSticker(v => !v)}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-xs font-semibold text-foreground">Кнопка запису</p>
+                <p className="text-[10px] text-muted-foreground/60 truncate">Стікер внизу сторіс</p>
+              </div>
+              {showSticker ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+            </button>
+          </div>
+
+          {/* CTA text input (only when sticker on) */}
+          {showSticker && (
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
+              <div className="flex gap-2 items-center">
+                <input
+                  value={ctaText}
+                  onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
+                  maxLength={28}
+                  placeholder="Записатися онлайн"
+                  className="flex-1 outline-none text-sm"
+                  style={INPUT_STYLE}
+                />
+                <span className="text-[10px] text-muted-foreground/60 shrink-0">{ctaText.length}/28</span>
+              </div>
+            </div>
+          )}
+
+          {/* Download button */}
+          <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
+            className="w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
+            style={exported
+              ? { background: 'var(--success)', color: '#fff', boxShadow: '0 6px 20px color-mix(in srgb, var(--success) 30%, transparent)' }
+              : { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', boxShadow: '0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+            <AnimatePresence mode="popLayout" initial={false}>
+              {exporting ? (
+                <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" /> Генеруємо...
+                </motion.span>
+              ) : isBlurLocked ? (
+                <motion.span key="u" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                  <Lock size={16} /> Розблокувати на PRO
+                </motion.span>
+              ) : isPremiumLocked ? (
+                <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                  <Download size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити'}
+                </motion.span>
+              ) : exported ? (
+                <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                  <Check size={16} strokeWidth={3} /> {isTMA ? 'Відправлено!' : 'Збережено!'}
+                </motion.span>
+              ) : (
+                <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                  <Megaphone size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
+
+          <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
+            {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
+          </p>
+
+          {/* Mobile preview — below all controls, lg:hidden */}
+          <div ref={previewRef} className="lg:hidden flex flex-col items-center gap-3 pt-4 border-t border-border">
+            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
+            <div style={{ position: 'relative', width: 252, height: 448 }}>
+              {previewCanvas(0.7, 20)}
+              {previewOverlay(0.7)}
+            </div>
+          </div>
+
+        </div>
+
+        {/* ─── Preview panel — fixed width, far right, sticky ─── */}
+        <div
+          ref={desktopPreviewPanelRef}
+          className="hidden lg:flex shrink-0 w-[280px] xl:w-[360px] flex-col items-center justify-center self-start sticky top-16 h-[calc(100vh-4rem)] border-l border-border"
+          style={{ background: 'color-mix(in srgb, var(--secondary) 25%, transparent)' }}
+        >
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
+            <div style={{ position: 'relative', width: 360 * desktopScale, height: 640 * desktopScale }}>
+              {previewCanvas(desktopScale, Math.round(20 * desktopScale))}
+              {previewOverlay(desktopScale)}
+            </div>
           </div>
         </div>
 
       </div>
-
-      {/* ─── Desktop preview panel — sticky, fills viewport ─── */}
-      <div
-        ref={desktopPreviewPanelRef}
-        className="hidden lg:flex flex-1 items-center justify-center self-start sticky top-16 h-[calc(100vh-4rem)]"
-        style={{ background: 'color-mix(in srgb, var(--secondary) 30%, transparent)' }}
-      >
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
-          <div style={{ position: 'relative', width: 360 * desktopScale, height: 640 * desktopScale }}>
-            {previewCanvas(desktopScale, Math.round(20 * desktopScale))}
-            {previewOverlay}
-          </div>
-        </div>
-      </div>
-
     </div>
   );
 
@@ -711,7 +723,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     <>
       <UpgradePromptModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} source="marketing" feature={upgradeCopy?.modalTitle} description={upgradeCopy?.modalDesc} />
 
-      {/* Mobile: floating "scroll to preview" button — appears after every control change */}
+      {/* Mobile floating scroll-to-preview button */}
       <AnimatePresence>
         {showScrollHint && (
           <motion.div
