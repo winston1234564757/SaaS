@@ -210,7 +210,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
           {itemId && (
             <Link
               href={`/dashboard/marketing?tab=stories&portfolioId=${itemId}`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all active:scale-[0.95]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border text-muted-foreground bg-secondary/60 hover:bg-secondary transition-all active:scale-[0.95]"
             >
               <Sparkles size={13} />
               Сторіс
@@ -343,7 +343,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
               <button type="button"
                 onClick={handleTagClient}
                 disabled={!selectedClientId || clientPending || !itemId}
-                className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:opacity-40 active:scale-[0.95] cursor-pointer"
+                className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-all disabled:opacity-40 active:scale-[0.95] cursor-pointer"
               >
                 {clientPending ? <Loader2 size={14} className="animate-spin" /> : 'Відмітити'}
               </button>
@@ -383,14 +383,14 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
                       }
                       className={`w-full flex items-start gap-3 rounded-2xl p-3 text-left transition-all border active:scale-[0.95] cursor-pointer ${
                         isSelected
-                          ? 'bg-primary/10 border-primary/30'
+                          ? 'bg-accent/10 border-accent/30'
                           : 'bg-secondary/40 border-transparent hover:bg-secondary/60'
                       }`}
                     >
                       <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                        isSelected ? 'border-primary bg-primary' : 'border-border bg-transparent'
+                        isSelected ? 'border-accent bg-accent' : 'border-border bg-transparent'
                       }`}>
-                        {isSelected && <div className="size-1.5 rounded-full bg-primary-foreground" />}
+                        {isSelected && <div className="size-1.5 rounded-full bg-accent-foreground" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-foreground">
@@ -407,7 +407,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
               <button type="button"
                 onClick={handleSaveReviews}
                 disabled={reviewsPending || !itemId}
-                className="w-full rounded-xl py-2.5 text-xs font-semibold border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 active:scale-[0.95] cursor-pointer"
+                className="w-full rounded-xl py-2.5 text-xs font-semibold border border-accent text-accent hover:bg-accent/10 transition-colors disabled:opacity-50 active:scale-[0.95] cursor-pointer"
               >
                 {reviewsPending
                   ? <Loader2 size={13} className="animate-spin mx-auto" />
@@ -435,7 +435,7 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
           <button type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:opacity-60 active:scale-[0.95] cursor-pointer"
+            className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-all disabled:opacity-60 active:scale-[0.95] cursor-pointer"
           >
             {saving ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'Зберегти'}
           </button>

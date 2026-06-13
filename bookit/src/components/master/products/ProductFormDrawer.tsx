@@ -12,6 +12,7 @@ import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useProductLinks } from '@/lib/supabase/hooks/useProductLinks';
 import type { Product, ProductCategory } from '@/types/database';
 import { ServiceIcon } from '@/lib/service-icons';
+import { PhotoLightbox } from '@/components/shared/PhotoLightbox';
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: 'hair',  label: 'Волосся' },
@@ -48,6 +49,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
   const [error, setError]             = useState<string | null>(null);
   const [isPending, startTransition]  = useTransition();
   const [showDelete, setShowDelete]   = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Load existing links when editing
@@ -211,13 +213,19 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                   Фото ({photos.length}/5)
                 </label>
                 <div className="flex gap-2 flex-wrap">
-                  {photos.map(url => (
+                  {photos.map((url, photoIdx) => (
                     <div key={url} className="relative size-20 rounded-lg overflow-hidden bg-secondary">
                       <Image src={url} alt="" fill className="object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setLightboxIndex(photoIdx)}
+                        aria-label="Переглянути фото"
+                        className="absolute inset-0 z-[1]"
+                      />
                       <button type="button"
                         onClick={() => removePhoto(url)}
                         aria-label="Видалити фото"
-                        className="absolute top-1 right-1 size-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer"
+                        className="absolute top-1 right-1 z-[2] size-5 rounded-full bg-destructive text-white flex items-center justify-center cursor-pointer"
                       >
                         <X size={10} />
                       </button>
@@ -437,6 +445,18 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               )}
             </div>
           </motion.div>
+
+          <AnimatePresence>
+            {lightboxIndex !== null && (
+              <PhotoLightbox
+                photos={photos.map(url => ({ url }))}
+                currentIndex={lightboxIndex}
+                onClose={() => setLightboxIndex(null)}
+                onPrev={() => setLightboxIndex(prev => (prev !== null && prev > 0) ? prev - 1 : prev)}
+                onNext={() => setLightboxIndex(prev => (prev !== null && prev < photos.length - 1) ? prev + 1 : prev)}
+              />
+            )}
+          </AnimatePresence>
         </>
       )}
     </AnimatePresence>

@@ -6,6 +6,7 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { ArrowLeft, Scissors, Star, User, CheckCircle, Clock } from 'lucide-react';
 import { formatDateFull } from '@/lib/utils/dates';
 import { PortfolioBookingButton } from '@/components/public/portfolio/PortfolioBookingButton';
+import { PortfolioPhotoViewer } from '@/components/public/portfolio/PortfolioPhotoViewer';
 
 export const revalidate = 300;
 
@@ -153,21 +154,7 @@ export default async function PortfolioItemPage(
 
       <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
         {item.photos.length > 0 && (
-          <div className="space-y-2">
-            <div className="relative w-full aspect-square rounded-xl overflow-hidden"
-              style={{ boxShadow: '0 4px 24px rgba(44,26,20,0.10)' }}>
-              <Image src={item.photos[0].url} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, 512px" priority />
-            </div>
-            {item.photos.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                {item.photos.slice(1).map(photo => (
-                  <div key={photo.id} className="relative size-20 rounded-xl overflow-hidden shrink-0">
-                    <Image src={photo.url} alt="" fill className="object-cover" sizes="80px" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <PortfolioPhotoViewer photos={item.photos} title={item.title} />
         )}
 
         <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}>
