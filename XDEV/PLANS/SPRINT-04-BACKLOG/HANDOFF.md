@@ -150,9 +150,11 @@
 
 **Що зроблено:**
 1. `WeeklyChartWidget.tsx`: обгортка `<div className="flex flex-col flex-1">` → всередині `AnimatePresence + fixed tooltip` та `bento-card` як siblings. Tooltip рендериться поза bento-card → escape backdrop-filter trap. `onMouseLeave` dismiss на bars-container. scroll dismiss useEffect.
-2. `PeakHoursWidget.tsx`: в `handleCell()` — `left = Math.max(HALF_W+PAD, Math.min(vw-HALF_W-PAD, centerX))` з `HALF_W=115`, `PAD=8`. Sunday tooltip залишається в межах viewport.
+2. `PeakHoursWidget.tsx`: вже рендерив fixed tooltip поза bento-card. Доданий `useLayoutEffect` clamp (div 2).
 
-**Ключовий патерн:** `backdrop-filter` на предку "трапить" `position: fixed` — завжди рендер fixed tooltips поза bento-card.
+**Hotfix** (`3743331`) — статичний `HALF_W=115` виявився недостатнім (реальна ширина tooltip "Нд · 20:00 · немає записів" ~220px = halfW 110px, але translateX(-50%) використовує РЕАЛЬНУ ширину). Рішення: `useLayoutEffect` + `tooltipRef` → вимірює `offsetWidth` після DOM commit поки tooltip ще `opacity:0` (Framer Motion initial) → clamps → state update → re-render (досі opacity:0) → browser paint з правильною позицією → opacity animation. Без видимого стрибка. Applied до обох виджетів.
+
+**Ключовий патерн:** `backdrop-filter` на предку "трапить" `position: fixed` — завжди рендер fixed tooltips поза bento-card. Для clamping — `useLayoutEffect` measurement замість статичних констант.
 
 **TSC:** 0 | **Build:** clean
 
