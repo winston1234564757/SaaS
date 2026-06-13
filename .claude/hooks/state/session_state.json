@@ -1,8 +1,9 @@
 {
   "edit_counts": {
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-03-BACKLOG\\HANDOFF.md": 1,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-03-BACKLOG\\TRANSITION_PROMPT.md": 2,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\TASK.md": 2
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\PhotoLightbox.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\public\\portfolio\\PortfolioPhotoViewer.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\portfolio\\PortfolioPhotoUploader.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\portfolio\\PortfolioPage.tsx": 0
   },
   "consecutive_reads": 0,
   "read_files": []

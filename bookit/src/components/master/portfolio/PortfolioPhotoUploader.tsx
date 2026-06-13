@@ -1,55 +1,115 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { X, Plus, GripVertical, Loader2 } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { Plus, Loader2, Star, Expand, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { addPortfolioPhoto, deletePortfolioPhoto, reorderPortfolioPhotos } from '@/app/(master)/dashboard/portfolio/actions';
+import { PhotoLightbox } from '@/components/shared/PhotoLightbox';
 import type { PortfolioItemPhoto } from '@/types/database';
 
 const MAX_PHOTOS = 5;
 
-interface SortablePhotoProps {
+interface PhotoItemProps {
   photo: PortfolioItemPhoto;
   index: number;
-  onDelete: (id: string) => void;
-  deleting: boolean;
+  total: number;
+  isActive: boolean;
+  isDeleting: boolean;
+  onActivate: () => void;
+  onDismiss: () => void;
+  onDelete: () => void;
+  onSetCover: () => void;
+  onPreview: () => void;
+  onMoveLeft: () => void;
+  onMoveRight: () => void;
 }
 
-function SortablePhoto({ photo, index, onDelete, deleting }: SortablePhotoProps) {
+function PhotoItem({
+  photo, index, total, isActive, isDeleting,
+  onActivate, onDismiss, onDelete, onSetCover, onPreview, onMoveLeft, onMoveRight,
+}: PhotoItemProps) {
+  const isCover = index === 0;
+
   return (
-    <Draggable draggableId={photo.id} index={index}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          className="group relative size-24 rounded-2xl overflow-hidden shrink-0"
-          style={{
-            ...provided.draggableProps.style,
-            opacity: snapshot.isDragging ? 0.6 : 1,
-          }}
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative size-28 rounded-2xl overflow-hidden shrink-0">
+        <Image src={photo.url} alt="" fill className="object-cover" sizes="112px" />
+
+        {isCover && !isActive && (
+          <div className="absolute top-1.5 left-1.5 size-5 rounded-md bg-warning/85 flex items-center justify-center z-[1]">
+            <Star size={10} className="text-white fill-white" />
+          </div>
+        )}
+
+        <button
+          type="button"
+          aria-label={isActive ? 'Закрити' : 'Відкрити дії'}
+          onClick={isActive ? onDismiss : onActivate}
+          className="absolute inset-0 z-[2]"
+        />
+
+        <AnimatePresence>
+          {isActive && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="absolute inset-0 flex flex-col items-stretch justify-center gap-1 px-1.5 z-[3]"
+              style={{ background: 'rgba(0,0,0,0.60)' }}
+            >
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onPreview(); }}
+                className="flex items-center justify-center gap-1 py-[9px] rounded-lg bg-white/15 active:bg-white/25 text-white text-[11px] font-semibold active:scale-95 transition-transform"
+              >
+                <Expand size={11} /> Переглянути
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onSetCover(); }}
+                disabled={isCover}
+                className="flex items-center justify-center gap-1 py-[9px] rounded-lg bg-white/15 active:bg-white/25 text-white text-[11px] font-semibold active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none"
+              >
+                <Star size={11} /> Головне
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                disabled={isDeleting}
+                className="flex items-center justify-center gap-1 py-[9px] rounded-lg bg-red-500/40 active:bg-red-500/60 text-white text-[11px] font-semibold active:scale-95 transition-transform"
+              >
+                {isDeleting ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                Видалити
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="flex gap-1">
+        <button
+          type="button"
+          onClick={onMoveLeft}
+          disabled={index === 0}
+          aria-label="Перемістити вліво"
+          className="size-6 rounded-md flex items-center justify-center text-muted-foreground bg-secondary disabled:opacity-25 active:scale-95 transition-transform"
         >
-          <Image src={photo.url} alt="" fill className="object-cover" sizes="96px" />
-          <button
-            type="button"
-            {...provided.dragHandleProps}
-            aria-label="Перетягнути фото"
-            className="absolute top-1 left-1 size-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing active:scale-95 transition-all"
-          >
-            <GripVertical size={12} className="text-white" />
-          </button>
-          <button type="button"
-            onClick={() => onDelete(photo.id)}
-            disabled={deleting}
-            aria-label="Видалити фото"
-            className="absolute top-1 right-1 size-6 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            {deleting ? <Loader2 size={10} className="text-white animate-spin" /> : <X size={10} className="text-white" />}
-          </button>
-        </div>
-      )}
-    </Draggable>
+          <ChevronLeft size={13} />
+        </button>
+        <button
+          type="button"
+          onClick={onMoveRight}
+          disabled={index === total - 1}
+          aria-label="Перемістити вправо"
+          className="size-6 rounded-md flex items-center justify-center text-muted-foreground bg-secondary disabled:opacity-25 active:scale-95 transition-transform"
+        >
+          <ChevronRight size={13} />
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -62,14 +122,11 @@ interface Props {
 }
 
 export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChange, disabled = false }: Props) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -123,82 +180,70 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
 
   const handleDelete = async (photoId: string) => {
     setDeletingId(photoId);
+    setActiveId(null);
     await deletePortfolioPhoto(photoId);
     onPhotosChange(photos.filter(p => p.id !== photoId));
     setDeletingId(null);
   };
 
-  const handleDragEnd = async (result: DropResult) => {
-    if (!result.destination || result.source.index === result.destination.index) return;
-
-    const reordered = Array.from(photos);
-    const [moved] = reordered.splice(result.source.index, 1);
-    reordered.splice(result.destination.index, 0, moved);
+  const handleMove = async (index: number, direction: -1 | 1) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= photos.length) return;
+    const reordered = [...photos];
+    [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
     const updated = reordered.map((p, i) => ({ ...p, display_order: i }));
     onPhotosChange(updated);
     await reorderPortfolioPhotos(itemId, updated.map(p => p.id));
   };
 
+  const handleSetCover = async (photoId: string) => {
+    const idx = photos.findIndex(p => p.id === photoId);
+    if (idx <= 0) return;
+    const reordered = [photos[idx], ...photos.filter(p => p.id !== photoId)];
+    const updated = reordered.map((p, i) => ({ ...p, display_order: i }));
+    onPhotosChange(updated);
+    setActiveId(null);
+    await reorderPortfolioPhotos(itemId, updated.map(p => p.id));
+  };
+
   return (
     <div className="space-y-3">
-      {!mounted ? (
-        <div className="flex items-center gap-2 flex-wrap">
-          {photos.map((photo) => (
-            <div key={photo.id} className="relative size-24 rounded-2xl overflow-hidden shrink-0">
-              <Image src={photo.url} alt="" fill className="object-cover" sizes="96px" />
-            </div>
-          ))}
-          {photos.length < MAX_PHOTOS && (
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading || disabled}
-              className="size-24 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors shrink-0"
-            >
-              {uploading
-                ? <Loader2 size={18} className="animate-spin" />
-                : <><Plus size={18} /><span className="text-[10px] font-medium">Фото</span></>
-              }
-            </button>
-          )}
-        </div>
-      ) : (
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="photos" direction="horizontal">
-            {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} className="flex items-center gap-2 flex-wrap">
-                {photos.map((photo, index) => (
-                  <SortablePhoto
-                    key={photo.id}
-                    photo={photo}
-                    index={index}
-                    onDelete={handleDelete}
-                    deleting={deletingId === photo.id}
-                  />
-                ))}
-                {provided.placeholder}
+      <div className="flex items-end gap-2 flex-wrap">
+        {photos.map((photo, index) => (
+          <PhotoItem
+            key={photo.id}
+            photo={photo}
+            index={index}
+            total={photos.length}
+            isActive={activeId === photo.id}
+            isDeleting={deletingId === photo.id}
+            onActivate={() => setActiveId(photo.id)}
+            onDismiss={() => setActiveId(null)}
+            onDelete={() => handleDelete(photo.id)}
+            onSetCover={() => handleSetCover(photo.id)}
+            onPreview={() => { setActiveId(null); setLightboxIndex(index); }}
+            onMoveLeft={() => handleMove(index, -1)}
+            onMoveRight={() => handleMove(index, 1)}
+          />
+        ))}
 
-                {photos.length < MAX_PHOTOS && (
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    disabled={uploading || disabled}
-                    className="size-24 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors shrink-0"
-                  >
-                    {uploading
-                      ? <Loader2 size={18} className="animate-spin" />
-                      : <><Plus size={18} /><span className="text-[10px] font-medium">Фото</span></>
-                    }
-                  </button>
-                )}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      )}
+        {photos.length < MAX_PHOTOS && (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading || disabled}
+            className="size-28 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-accent hover:text-accent transition-colors shrink-0 self-start"
+          >
+            {uploading
+              ? <Loader2 size={20} className="animate-spin" />
+              : <><Plus size={20} /><span className="text-[10px] font-medium">Фото</span></>
+            }
+          </button>
+        )}
+      </div>
 
       <p className="text-xs text-muted-foreground/60">
-        {photos.length} / {MAX_PHOTOS} фото · Перетягуйте для зміни порядку
+        {photos.length} / {MAX_PHOTOS} · Торкніться фото для дій
       </p>
 
       {uploadError && (
@@ -217,6 +262,18 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
         tabIndex={-1}
         onChange={handleUpload}
       />
+
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <PhotoLightbox
+            photos={photos.map(p => ({ url: p.url }))}
+            currentIndex={lightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+            onPrev={() => setLightboxIndex(prev => (prev !== null && prev > 0) ? prev - 1 : prev)}
+            onNext={() => setLightboxIndex(prev => (prev !== null && prev < photos.length - 1) ? prev + 1 : prev)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

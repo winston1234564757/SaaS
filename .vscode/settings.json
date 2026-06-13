@@ -1,0 +1,20 @@
+{
+  "terminal.integrated.profiles.windows": {
+    "Claude - Main (Profile 1)": {
+      "source": "PowerShell",
+      "icon": "terminal-tmux",
+      "color": "terminal.ansiGreen",
+      "env": {
+        "CLAUDE_CONFIG_DIR": "${userHome}/.claude-profile-1"
+      }
+    },
+    "Claude - Second (Profile 2)": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "color": "terminal.ansiBlue",
+      "env": {
+        "CLAUDE_CONFIG_DIR": "${userHome}/.claude-profile-2"
+      }
+    }
+  }
+}

@@ -5,7 +5,7 @@
 **Спринт:** Sprint-03 (16 задач → 18 ітерацій)
 **Розпочато:** 2026-06-09
 **Прогрес:** 18/18 виконано ✅ — SPRINT-03 COMPLETE
-**Останній deploy:** → T11 (8d284bd) → hotfix/flash-clients (9f5a835) → **T16 (0f600d2)**
+**Останній deploy:** → T11 (8d284bd) → hotfix/flash-clients (9f5a835) → **T16 (0f600d2 + 54d40c1 + 541eae6)**
 **Наступна задача:** **T7 — Налаштування профілю (ч.2)**
 
 > **⚠️ Відкрита задача (поза спринтом):** Сторінка налаштувань профілю потребує подальшої роботи. Проведено impeccable 6-phase pass (commits: **b81ca4c** + **10383f4**) — аудит a11y, токени, лейаут, polish. Але юзер вважає задачу не закритою — повернутись після T12.
@@ -23,6 +23,25 @@
 - Cleanup `useEffect` на unmount
 
 **Файл:** `src/components/master/dashboard/DashboardTourBanner.tsx`
+
+---
+
+### ✅ T16 — Tour Polish + Bug Fixes (commits: 54d40c1 + 541eae6, 2026-06-12)
+
+**Зміни контенту:**
+- Step 6 WeeklyChartWidget: `'Тижневий графік'` → `'Записи і доходи'`, текст оновлено з порівнянням з минулими днями і тижнями
+- Step 14 `ClientAlertsWidget` ("Клієнти без каналів") — видалено з туру, тур = 16 кроків (було 17)
+- `FrostDashboard.tsx`: `data-tour-step={14}` знято з `ClientAlertsWidget` (mobile + desktop), `ReferralBoostWidget` → `data-tour-step={14}` в обох views
+
+**Bug: тур рестартував кожен page reload**
+- Root cause: `markTourSeen()` викликався тільки при close/complete. Якщо юзер перезавантажив сторінку поки тур відкритий — DB не оновлена, `seen_tours.dashboard_v2 = null` → тур стартує знову
+- Fix: `markTourSeen(TOUR_NAME)` викликається fire-and-forget одразу при **старті** туру (в setTimeout разом з `setTourStep(0)`)
+
+**Bug: кнопка "Відкрити Академію" не редіректила**
+- Root cause: `<Link onClick={closeTour}>` — `onMutate` синхронно ставить `tourStep = -1`, AnimatePresence unmount-ить Link до того як Next.js обробляє href
+- Fix: замінено `<Link>` на `<button>` з `useRouter` + `router.push('/dashboard/academy')`; видалено unused `import Link from 'next/link'`
+
+**TSC:** 0 | **Build:** clean (Google Fonts error = network, не код)
 
 ---
 
@@ -63,7 +82,7 @@
 | 15 | **T13** | Онбординг графік: кнопки Налаштувати/Продовжити | ✅ DONE | impeccable | b1735d5 |
 | 16 | **T14** | Онбординг превью: виразніший блок посилання | ✅ DONE | impeccable | 4fc56d6 |
 | 17 | **T11** | Флеш-акції: повний аудит + тести | ✅ DONE | code-reviewer + react-doctor | pending |
-| 18 | **T16** | Тур: підсвічування елементів | ⬜ TODO | design-taste-frontend + emil-design-eng | — |
+| 18 | **T16** | Тур: підсвічування елементів | ✅ DONE | senior-frontend | 0f600d2 + 54d40c1 + 541eae6 |
 
 ---
 

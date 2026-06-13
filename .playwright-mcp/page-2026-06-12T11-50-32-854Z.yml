@@ -1,0 +1,63 @@
+- generic [ref=e1]:
+  - main [ref=e25]:
+    - generic [ref=e26]:
+      - complementary [ref=e27]:
+        - link "Bookit." [ref=e28] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - paragraph [ref=e31]: Для майстрів краси
+            - heading "Для тих, хто перетворив красу на роботу" [level=2] [ref=e32]:
+              - text: Для тих, хто перетворив
+              - text: красу на роботу
+            - paragraph [ref=e33]: Розклад, клієнти й дохід. В одному місці.
+          - generic [ref=e34]:
+            - img [ref=e35]
+            - paragraph [ref=e38]: Записи пішли вже на другий день. Тепер не уявляю, як взагалі без цього працювала.
+            - generic [ref=e39]:
+              - generic [ref=e40]: А
+              - generic [ref=e41]:
+                - paragraph [ref=e42]: Аліна К.
+                - paragraph [ref=e43]: Нігтьовий майстер — Харків
+        - paragraph [ref=e44]: © 2025 Bookit
+      - main [ref=e46]:
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - heading "Ласкаво просимо" [level=1] [ref=e58]
+            - paragraph [ref=e59]: Як будете використовувати Bookit?
+          - generic [ref=e60]:
+            - button "Я Клієнт Записуюсь до майстрів онлайн" [ref=e61]:
+              - img [ref=e64]
+              - generic [ref=e67]:
+                - paragraph [ref=e68]: Я Клієнт
+                - paragraph [ref=e69]: Записуюсь до майстрів онлайн
+            - button "Я Майстер Керую записами, клієнтами та доходом" [ref=e72]:
+              - img [ref=e75]
+              - generic [ref=e81]:
+                - paragraph [ref=e82]: Я Майстер
+                - paragraph [ref=e83]: Керую записами, клієнтами та доходом
+          - generic [ref=e85] [cursor=pointer]:
+            - checkbox "Я ознайомлений(а) та погоджуюсь з Умовами надання послуг, Публічною офертою та Політикою конфіденційності" [ref=e87]
+            - generic [ref=e89]:
+              - text: Я ознайомлений(а) та погоджуюсь з
+              - link "Умовами надання послуг" [ref=e90]:
+                - /url: /legal/terms-of-service
+              - text: ","
+              - link "Публічною офертою" [active] [ref=e91]:
+                - /url: /legal/public-offer
+              - text: та
+              - link "Політикою конфіденційності" [ref=e92]:
+                - /url: /legal/privacy-policy
+          - button "Продовжити" [disabled] [ref=e93]
+  - generic [ref=e18] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e19]:
+      - img [ref=e20]
+    - generic [ref=e94]:
+      - button "Open issues overlay" [ref=e95]:
+        - generic [ref=e96]:
+          - generic [ref=e97]: "0"
+          - generic [ref=e98]: "1"
+        - generic [ref=e99]: Issue
+      - button "Collapse issues badge" [ref=e100]:
+        - img [ref=e101]
+  - alert [ref=e103]

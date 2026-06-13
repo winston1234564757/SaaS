@@ -32,11 +32,11 @@ Brief: XDEV/PLANS/SPRINT-03-BACKLOG/T7_BRIEF.md
 □ npx tsc --noEmit (нуль помилок)
 □ npm run build (clean)
 □ vercel --prod
-□ TRACKER.md: T16 ⬜→✅, вписати commit hash
-□ HANDOFF.md: додати секцію T16 з деталями
-□ TRANSITION_PROMPT.md: оновити "Наступна" → T7 + Brief → T7_BRIEF.md
+□ TRACKER.md: T7 ⬜→✅, вписати commit hash
+□ HANDOFF.md: додати секцію T7 з деталями
+□ TRANSITION_PROMPT.md: оновити "Наступна" → Sprint-04
 □ mempalace_add_drawer
-□ Повідомити юзера → він QA → підтверджує → наступна T7
+□ Повідомити юзера → він QA → підтверджує → Sprint-04
 
 ═══ КОНТЕКСТ ═══
 Root: C:\Users\Vitossik\SaaS\bookit\
@@ -55,8 +55,8 @@ Stack: Next.js 16, TS strict, Tailwind v4, Supabase, Vaul
 | 15 | ~~T13~~ | ~~Онбординг: крок графіку~~ | ✅ b1735d5 |
 | 16 | ~~T14~~ | ~~Онбординг: виразний блок посилання~~ | ✅ 4fc56d6 |
 | 17 | ~~T11~~ | ~~Флеш-акції: повний аудит + тести~~ | ✅ 8d284bd |
-| 18 | **T16** ▶ | Тур: підсвічування елементів | [T16_BRIEF.md](T16_BRIEF.md) |
-| 18 | T7 | Налаштування профілю (ч.2) | [T7_BRIEF.md](T7_BRIEF.md) |
+| 17 | ~~T16~~ | ~~Тур: підсвічування елементів~~ | ✅ 0f600d2 + 54d40c1 + 541eae6 |
+| 18 | **T7** ▶ | Налаштування профілю (ч.2) | [T7_BRIEF.md](T7_BRIEF.md) |
 
 ---
 

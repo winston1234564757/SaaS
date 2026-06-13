@@ -79,7 +79,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           <button
             type="button"
             onClick={handleOpenStories}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all active:scale-95"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-muted-foreground border border-border bg-secondary/60 hover:bg-secondary transition-all active:scale-95"
           >
             <Sparkles size={15} /> Сторіс
           </button>
@@ -88,7 +88,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
               href={`/${masterSlug}/portfolio`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden xs:flex flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-primary border border-primary/30 bg-white/40 backdrop-blur-sm hover:bg-primary/5 transition-all"
+              className="hidden xs:flex flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-muted-foreground border border-border bg-secondary/60 hover:bg-secondary transition-all"
             >
               <ExternalLink size={15} /> Перегляд
             </a>
@@ -97,8 +97,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
             type="button"
             onClick={handleCreate}
             disabled={atLimit || isCreating}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white transition-all disabled:opacity-50 active:scale-95 shadow-sm"
-            style={{ background: '#789A99' }}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold bg-accent text-accent-foreground transition-all disabled:opacity-50 active:scale-95 shadow-sm"
           >
             {isCreating ? <Loader2 size={15} className="animate-spin" /> : <Plus size={17} />}
             {isCreating ? 'Створення...' : 'Додати'}
@@ -152,8 +151,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           <button type="button"
             onClick={handleCreate}
             disabled={isCreating}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white active:scale-95 transition-all disabled:opacity-50"
-            style={{ background: '#789A99' }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold bg-accent text-accent-foreground active:scale-95 transition-all disabled:opacity-50"
           >
             {isCreating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
             {isCreating ? 'Створення...' : 'Додати першу роботу'}
@@ -200,7 +198,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
                     <button type="button"
                       onClick={handleCreate}
                       disabled={isCreating}
-                      className="w-full rounded-3xl aspect-[4/3] flex flex-col items-center justify-center gap-2 text-muted-foreground/60 hover:text-primary transition-colors active:scale-95 transition-all disabled:opacity-50"
+                      className="w-full rounded-3xl aspect-[4/3] flex flex-col items-center justify-center gap-2 text-muted-foreground/60 hover:text-accent transition-colors active:scale-95 transition-all disabled:opacity-50"
                       style={{ border: '2px dashed #E8D5CF' }}
                     >
                       {isCreating ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} />}

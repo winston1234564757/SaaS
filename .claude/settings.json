@@ -150,6 +150,15 @@
             "statusMessage": "Checking skill invocation..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/self_improving_hook.py",
+            "statusMessage": "Checking for session memory curation..."
+          }
+        ]
       }
     ]
   },

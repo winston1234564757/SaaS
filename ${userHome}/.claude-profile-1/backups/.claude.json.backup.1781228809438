@@ -1,0 +1,44 @@
+{
+  "firstStartTime": "2026-06-12T01:45:43.734Z",
+  "opusProMigrationComplete": true,
+  "sonnet1m45MigrationComplete": true,
+  "seenNotifications": {},
+  "migrationVersion": 13,
+  "userID": "179705093e68a3481eebe110deaf75b911347e4416b256fde48930cd29724e1d",
+  "changelogLastFetched": 1781228745097,
+  "oauthAccount": {
+    "accountUuid": "f2c3f03f-9105-4b64-a6b3-5fb03d2370dc",
+    "emailAddress": "v6475464@gmail.com",
+    "organizationUuid": "334be766-d6ec-49e2-a855-c9b094106b9c",
+    "hasExtraUsageEnabled": false,
+    "billingType": "stripe_subscription",
+    "accountCreatedAt": "2026-06-09T18:53:48.542434Z",
+    "subscriptionCreatedAt": "2026-06-09T19:31:36.089425Z",
+    "ccOnboardingFlags": {},
+    "claudeCodeTrialEndsAt": null,
+    "claudeCodeTrialDurationDays": null,
+    "seatTier": null,
+    "displayName": "Вітос",
+    "organizationRole": "admin",
+    "workspaceRole": null,
+    "organizationName": "v6475464@gmail.com's Organization",
+    "organizationType": "claude_pro",
+    "organizationRateLimitTier": "default_claude_ai",
+    "userRateLimitTier": null
+  },
+  "claudeCodeFirstTokenDate": "2026-06-09T19:34:36.640139Z",
+  "clientDataCache": {
+    "cedar_lagoon": {
+      "claude-fable": true,
+      "claude-mythos": true
+    }
+  },
+  "additionalModelOptionsCache": [
+    {
+      "value": "claude-fable-5[1m]",
+      "label": "Fable",
+      "description": "Fable 5 · Most capable for your hardest and longest-running tasks · Uses your limits ~2× faster than Opus"
+    }
+  ],
+  "additionalModelCostsCache": {}
+}

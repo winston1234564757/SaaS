@@ -64,7 +64,13 @@
       "mcp__mempalace__mempalace_kg_stats",
       "mcp__mempalace__mempalace_kg_timeline",
       "mcp__mempalace__mempalace_update_drawer",
-      "mcp__magic__21st_magic_component_inspiration"
+      "mcp__magic__21st_magic_component_inspiration",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_press_key"
     ],
     "defaultMode": "acceptEdits"
   }

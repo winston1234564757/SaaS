@@ -1,0 +1,323 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - img [ref=e6]
+    - paragraph [ref=e9]: Ініціалізація...
+    - paragraph [ref=e11]: Шукаємо вільне віконечко...
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e19]:
+        - link "bookit ." [ref=e20] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e21]: bookit
+          - generic [ref=e22]: .
+        - navigation [ref=e23]:
+          - generic [ref=e24]:
+            - link "Огляд" [ref=e25] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e26]
+              - generic [ref=e31]: Огляд
+            - link "Записи" [ref=e32] [cursor=pointer]:
+              - /url: /dashboard/bookings
+              - img [ref=e33]
+              - generic [ref=e35]: Записи
+            - link "Аналітика" [ref=e36] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - img [ref=e37]
+              - generic [ref=e38]: Аналітика
+            - link "CRM" [ref=e39] [cursor=pointer]:
+              - /url: /dashboard/clients
+              - img [ref=e40]
+              - generic [ref=e45]: CRM
+            - link "Послуги" [ref=e46] [cursor=pointer]:
+              - /url: /dashboard/services
+              - img [ref=e47]
+              - generic [ref=e53]: Послуги
+            - button "Діяльність" [ref=e55] [cursor=pointer]:
+              - generic [ref=e56]: Діяльність
+              - img [ref=e57]
+            - button "Розвиток" [ref=e59] [cursor=pointer]:
+              - generic [ref=e60]: Розвиток
+              - img [ref=e61]
+        - generic [ref=e63]:
+          - button [ref=e64]:
+            - img [ref=e66]
+          - button "Your Beauty Studio" [ref=e70]:
+            - img "Your Beauty Studio" [ref=e72]
+            - img [ref=e73]
+      - main [ref=e76]:
+        - generic [ref=e80]:
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - generic [ref=e84]:
+                - paragraph [ref=e85]: П’ятниця
+                - paragraph [ref=e86]: 12 червня
+              - generic [ref=e87]:
+                - paragraph [ref=e88]: Зараз
+                - paragraph [ref=e89]: 15:30
+            - paragraph [ref=e90]: Доброго дня, Віктор
+          - generic [ref=e93]:
+            - link "Записів сьогодні 0" [ref=e94] [cursor=pointer]:
+              - /url: /dashboard/bookings
+              - generic [ref=e95]: Записів сьогодні
+              - generic [ref=e97]: "0"
+            - link "Виручка 0 ₴" [ref=e99] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - generic [ref=e100]: Виручка
+              - generic [ref=e102]: 0 ₴
+            - link "Підтверджено 0" [ref=e104] [cursor=pointer]:
+              - /url: /dashboard/bookings
+              - generic [ref=e105]: Підтверджено
+              - generic [ref=e107]: "0"
+            - link "Очікує 0" [ref=e109] [cursor=pointer]:
+              - /url: /dashboard/bookings
+              - generic [ref=e110]: Очікує
+              - generic [ref=e112]: "0"
+            - link "Клієнтів тиждень 0" [ref=e114] [cursor=pointer]:
+              - /url: /dashboard/clients
+              - generic [ref=e115]: Клієнтів тиждень
+              - generic [ref=e117]: "0"
+            - link "Нових 0" [ref=e119] [cursor=pointer]:
+              - /url: /dashboard/clients
+              - generic [ref=e120]: Нових
+              - generic [ref=e122]: "0"
+            - link "Завершено за місяць 0" [ref=e124] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - generic [ref=e125]: Завершено за місяць
+              - generic [ref=e127]: "0"
+            - link "Конверсія —" [ref=e129] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - generic [ref=e130]: Конверсія
+              - generic [ref=e132]: —
+            - link [ref=e134] [cursor=pointer]:
+              - /url: /dashboard/bookings
+              - generic [ref=e135]: Записів сьогодні
+              - generic [ref=e137]: "0"
+            - link [ref=e139] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - generic [ref=e140]: Виручка
+              - generic [ref=e142]: 0 ₴
+            - link [ref=e144] [cursor=pointer]:
+              - /url: /dashboard/bookings
+              - generic [ref=e145]: Підтверджено
+              - generic [ref=e147]: "0"
+            - link [ref=e149] [cursor=pointer]:
+              - /url: /dashboard/bookings
+              - generic [ref=e150]: Очікує
+              - generic [ref=e152]: "0"
+            - link [ref=e154] [cursor=pointer]:
+              - /url: /dashboard/clients
+              - generic [ref=e155]: Клієнтів тиждень
+              - generic [ref=e157]: "0"
+            - link [ref=e159] [cursor=pointer]:
+              - /url: /dashboard/clients
+              - generic [ref=e160]: Нових
+              - generic [ref=e162]: "0"
+            - link [ref=e164] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - generic [ref=e165]: Завершено за місяць
+              - generic [ref=e167]: "0"
+            - link [ref=e169] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - generic [ref=e170]: Конверсія
+              - generic [ref=e172]: —
+          - generic [ref=e175]:
+            - generic [ref=e177]:
+              - generic [ref=e178]:
+                - generic [ref=e179]:
+                  - img [ref=e181]
+                  - generic [ref=e187]:
+                    - paragraph [ref=e188]: Ще немає записів
+                    - paragraph [ref=e189]: Поділись посиланням — перший клієнт вже поруч
+                - button "Скопіювати" [ref=e190]
+              - generic [ref=e191]:
+                - generic [ref=e192]:
+                  - img [ref=e194]
+                  - generic [ref=e197]:
+                    - paragraph [ref=e198]: Нагадай клієнтам
+                    - paragraph [ref=e199]: Розішли повідомлення тим, хто давно не приходив
+                - button "Розіслати" [ref=e200]
+            - generic [ref=e201]:
+              - generic [ref=e203]:
+                - paragraph [ref=e204]: Сьогодні
+                - paragraph [ref=e205]: 0 грн
+              - generic [ref=e207]: Ще немає записів
+          - generic [ref=e210]:
+            - link "Flash Sale" [ref=e211] [cursor=pointer]:
+              - /url: /dashboard/flash
+              - img [ref=e213]
+              - generic [ref=e215]: Flash Sale
+            - link "Сторіс" [ref=e216] [cursor=pointer]:
+              - /url: /dashboard/marketing?mode=free_slots
+              - img [ref=e218]
+              - generic [ref=e221]: Сторіс
+            - link "Клієнти" [ref=e222] [cursor=pointer]:
+              - /url: /dashboard/clients
+              - img [ref=e224]
+              - generic [ref=e229]: Клієнти
+            - link "Аналітика" [ref=e230] [cursor=pointer]:
+              - /url: /dashboard/analytics
+              - img [ref=e232]
+              - generic [ref=e235]: Аналітика
+          - generic [ref=e238]:
+            - generic [ref=e240]:
+              - generic [ref=e241]:
+                - paragraph [ref=e243]: Записи
+                - link "Усі" [ref=e244] [cursor=pointer]:
+                  - /url: /dashboard/bookings
+                  - text: Усі
+                  - img [ref=e245]
+              - generic [ref=e247]:
+                - generic [ref=e248]:
+                  - button "Сьогодні" [ref=e249]
+                  - button "Завтра" [ref=e250]
+                  - button "Тиждень" [ref=e251]
+                - generic [ref=e252]:
+                  - button "Список" [ref=e253]:
+                    - img [ref=e254]
+                    - generic [ref=e255]: Список
+                  - button "Статистика" [ref=e256]:
+                    - img [ref=e257]
+                    - generic [ref=e260]: Статистика
+              - generic [ref=e267]:
+                - generic [ref=e268]: Виручка (завершені)
+                - generic [ref=e269]: 0 грн
+            - generic [ref=e271]:
+              - paragraph [ref=e274]: Вільно сьогодні
+              - generic [ref=e276]:
+                - link "Flash акція" [ref=e277] [cursor=pointer]:
+                  - /url: /dashboard/flash
+                  - img [ref=e278]
+                  - text: Flash акція
+                - link "Сторіс" [ref=e280] [cursor=pointer]:
+                  - /url: /dashboard/marketing?mode=free_slots
+                  - img [ref=e281]
+                  - text: Сторіс
+          - generic [ref=e288]:
+            - generic [ref=e289]:
+              - generic [ref=e292]: "0"
+              - generic [ref=e293]:
+                - button "Записи" [pressed] [ref=e294]
+                - button "Дохід" [ref=e295]
+            - generic [ref=e297]:
+              - 'button "Пн: немає записів" [ref=e298] [cursor=pointer]'
+              - 'button "Вт: немає записів" [ref=e300] [cursor=pointer]'
+              - 'button "Ср: немає записів" [ref=e302] [cursor=pointer]'
+              - 'button "Чт: немає записів" [ref=e304] [cursor=pointer]'
+              - 'button "Пт: немає записів" [ref=e306] [cursor=pointer]'
+              - 'button "Сб: немає записів" [ref=e307] [cursor=pointer]'
+              - 'button "Нд: немає записів" [ref=e308] [cursor=pointer]'
+            - generic [ref=e309]:
+              - generic [ref=e311]: Пн
+              - generic [ref=e313]: Вт
+              - generic [ref=e315]: Ср
+              - generic [ref=e317]: Чт
+              - generic [ref=e319]: Пт
+              - generic [ref=e321]: Сб
+              - generic [ref=e323]: Нд
+            - generic [ref=e324]:
+              - img [ref=e325]
+              - generic [ref=e326]: Записів за тиждень ще немає
+          - generic [ref=e333]:
+            - generic [ref=e334]:
+              - generic [ref=e335]:
+                - paragraph [ref=e336]: Календар записів
+                - paragraph [ref=e337]: 0 записів за місяць
+              - generic [ref=e338]:
+                - button "Тиждень" [ref=e339]
+                - button "Місяць" [ref=e340]
+            - generic [ref=e342]:
+              - button "Попередній місяць" [ref=e343]:
+                - img [ref=e344]
+              - generic [ref=e346]: червень 2026
+              - button "Наступний місяць" [ref=e347]:
+                - img [ref=e348]
+            - generic [ref=e350]:
+              - generic [ref=e352]: Пн
+              - generic [ref=e354]: Вт
+              - generic [ref=e356]: Ср
+              - generic [ref=e358]: Чт
+              - generic [ref=e360]: Пт
+              - generic [ref=e362]: Сб
+              - generic [ref=e364]: Нд
+          - generic [ref=e406]:
+            - paragraph [ref=e407]: Топ послуги · червень
+            - generic [ref=e412]:
+              - link "Послуги" [ref=e413] [cursor=pointer]:
+                - /url: /dashboard/services
+                - img [ref=e414]
+                - text: Послуги
+              - link "Прайс" [ref=e420] [cursor=pointer]:
+                - /url: /dashboard/pricing
+                - img [ref=e421]
+                - text: Прайс
+              - link "Промо" [ref=e424] [cursor=pointer]:
+                - /url: /dashboard/flash
+                - img [ref=e425]
+                - text: Промо
+          - generic [ref=e433]:
+            - generic [ref=e435]:
+              - paragraph [ref=e437]: Топ клієнт тижня
+              - paragraph [ref=e444]: Середній чек
+            - generic [ref=e452]:
+              - paragraph [ref=e453]: Вільні дні
+              - generic [ref=e459]:
+                - link "Flash" [ref=e460] [cursor=pointer]:
+                  - /url: /dashboard/revenue?drawer=flash_deals
+                  - img [ref=e461]
+                  - text: Flash
+                - link "Сторіс" [ref=e463] [cursor=pointer]:
+                  - /url: /dashboard/marketing?mode=free_slots
+                  - img [ref=e464]
+                  - text: Сторіс
+                - link "Шаблони" [ref=e467] [cursor=pointer]:
+                  - /url: /dashboard/marketing?mode=templates
+                  - img [ref=e468]
+                  - text: Шаблони
+                - link "Розсилки" [ref=e471] [cursor=pointer]:
+                  - /url: /dashboard/marketing
+                  - img [ref=e472]
+                  - text: Розсилки
+            - paragraph [ref=e478]: Канали клієнтів
+          - generic [ref=e498]:
+            - generic [ref=e500]:
+              - img [ref=e502]
+              - generic [ref=e506]:
+                - paragraph [ref=e507]: Запрошуй колег, платиш менше
+                - paragraph [ref=e508]: За першу оплату кожного реферала +10% до банку знижок
+            - generic [ref=e511]:
+              - generic [ref=e512]: 0 рефералів
+              - generic [ref=e513]: ще 5 до −5% назавжди
+            - generic [ref=e514]:
+              - generic [ref=e515]:
+                - generic [ref=e516]: 5 рефералів
+                - generic [ref=e517]: −5% назавжди
+              - generic [ref=e518]:
+                - generic [ref=e519]: 10 рефералів
+                - generic [ref=e520]: −10% назавжди
+              - generic [ref=e521]:
+                - generic [ref=e522]: 25 рефералів
+                - generic [ref=e523]: −25% назавжди
+              - generic [ref=e524]:
+                - generic [ref=e525]: 50 рефералів
+                - generic [ref=e526]: −50% назавжди
+            - generic [ref=e527]:
+              - button "Скопіювати лінк" [ref=e528] [cursor=pointer]:
+                - img [ref=e529]
+                - text: Скопіювати лінк
+              - link [ref=e532] [cursor=pointer]:
+                - /url: /dashboard/growth?tab=referral
+                - img [ref=e533]
+  - generic [ref=e539] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e540]:
+      - img [ref=e541]
+    - generic [ref=e544]:
+      - button "Open issues overlay" [ref=e545]:
+        - generic [ref=e546]:
+          - generic [ref=e547]: "0"
+          - generic [ref=e548]: "1"
+        - generic [ref=e549]: Issue
+      - button "Collapse issues badge" [ref=e550]:
+        - img [ref=e551]
+  - alert [ref=e553]
+  - button [ref=e554] [cursor=pointer]:
+    - img [ref=e556]

@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-03-PLAN.md` | Session brief: `T##_BRIEF.md`
 
-**Прогрес:** 18/18 ✅ + 1 hotfix | **Розпочато:** 2026-06-09 | **Оновлено:** 2026-06-11
+**Прогрес:** 18/18 ✅ + 1 hotfix | **Розпочато:** 2026-06-09 | **Оновлено:** 2026-06-12
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -23,7 +23,7 @@
 | 15 | T14 | Онбординг: виразний блок посилання | ✅ DONE | impeccable | 4fc56d6 | [T14_BRIEF.md](T14_BRIEF.md) |
 | 16 | **T11** | **Флеш-акції: повний аудит** | ✅ DONE | code-reviewer + react-doctor | 8d284bd | [T11_BRIEF.md](T11_BRIEF.md) |
 | — | **hotfix** | **Flash "0 клієнтів": RPC fix + eligibility + client list** | ✅ DONE | code-reviewer | 9f5a835 | — |
-| 17 | **T16** | **Тур: підсвічування елементів (spotlight)** | ✅ DONE | senior-frontend | 0f600d2 | [T16_BRIEF.md](T16_BRIEF.md) |
+| 17 | **T16** | **Тур: підсвічування елементів (spotlight)** | ✅ DONE | senior-frontend | 0f600d2 + 54d40c1 + 541eae6 | [T16_BRIEF.md](T16_BRIEF.md) |
 | 18 | T7 | Налаштування профілю (ч.2 — незакрите) | ⚠️ PARTIAL | impeccable | eebf5b7 + b81ca4c + 10383f4 | [T7_BRIEF.md](T7_BRIEF.md) |
 
 ---
