@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 12/30 ✅
-**Наступна задача:** **T13 — Записи: баг буферу 10 хв між записами**
+**Прогрес:** 13/30 ✅
+**Наступна задача:** **T14 — Конструктор сторіс (ПК): розширення робочої зони**
 
 ---
 
@@ -271,14 +271,31 @@
 
 ---
 
-## ▶ T13 — Записи: баг буферу 10 хв між записами
+## ✅ T13 — Записи: баг буферу 10 хв між записами
+**Commit:** `9b5fdde`
+**Root cause:** `src/lib/utils/smartSlots.ts` — функція `generateAvailableSlots` перевіряла overlap лише в одному напрямку. Код додавав `bufferMinutes` до кінця НОВОГО слоту (`totalBlockedEnd = slotEnd + buffer`), але не до кінця ІСНУЮЧОГО бронювання. Через строгу нерівність `s1 < e2` в `isOverlapping`, слот що стартує рівно в момент кінця існуючого бронювання повертав `false` → показувався як доступний.
+
+**Що зроблено** (`src/lib/utils/smartSlots.ts`, `smartSlots.test.ts`):
+1. Рядок 163: `b.end` → `b.end + bufferMinutes` в `isOverlapping` check
+   - `isOverlapping(slotStart, totalBlockedEnd, b.start, b.end + bufferMinutes)` — тепер буфер існуючого бронювання також враховується
+2. Додані 2 regression тести: `blocks slot starting exactly at existing booking end` + `allows slot starting exactly at buffer boundary`
+3. Оновлено існуючий тест `real-world day` — очікування 11:00 і 15:30 виправлені (були написані під баг)
+
+**Математика фіксу:**
+- До: `isOverlapping(600, 660, 540, 600)` = `600 < 600` = FALSE → 10:00 доступний (ПОМИЛКА)
+- Після: `isOverlapping(600, 660, 540, 610)` = `600 < 610` = TRUE → 10:00 заблокований ✓
+
+**TSC:** 0 | **Tests:** 32/32 ✅
+
+---
+
+## ▶ T14 — Конструктор сторіс (ПК): розширення робочої зони
 
 **Де шукати:**
-- `src/app/(master)/dashboard/` — bookings / booking logic
-- Buffer / time gap between appointments
-- Debug master ID: `551c7a11-a02b-4944-9b34-594c41ccb951`
+- `src/components/master/marketing/` — StoryGenerator і пов'язані компоненти
+- `src/app/(master)/dashboard/marketing/` — роут
 
-**Скіл:** `focused-fix` + `senior-backend`
+**Скіл:** `senior-frontend` + `impeccable`
 
 ---
 

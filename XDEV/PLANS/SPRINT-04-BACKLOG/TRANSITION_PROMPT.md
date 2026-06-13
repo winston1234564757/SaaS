@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 12/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T13 — Записи: баг буферу 10 хв між записами
+Прогрес: 13/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T14 — Конструктор сторіс (ПК): розширення робочої зони
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 ⚠️ Pending із Sprint-03:

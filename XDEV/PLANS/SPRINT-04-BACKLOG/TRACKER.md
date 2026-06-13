@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 12/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-13
+**Прогрес:** 13/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-13
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -18,8 +18,8 @@
 | 10 | T10 | Портфоліо: кольори стандарт + mobile photo actions | ✅ | `design-taste-frontend` + `impeccable` | `69f072e` `39cc4e9` `3cb5502` `438a2f7` | PhotoLightbox shared; tap overlay + ←→ reorder; bg-accent tokens; ProductFormDrawer lightbox; hotfix: lightbox 90vw/80vh + grid-cols-2 gap-4 |
 | 11 | T11 | GrowthHub мобайл: tab layout redesign | ✅ | `design-taste-frontend` | `fae6e9a` | grid-cols-3 widget blocks; icon+label+desc; bg-accent active; Rocket header removed |
 | 12 | T12 | Профіль: відпустка/вихідні overlap fix (3 таби) | ✅ | `redesign-existing-projects` | `8533ce4` `b9b3b86` `1af1b3e` | always-open form; flex segmented control equal-height; "Короткий" label; hotfix-2: py-2/text-xs inputs, p-5 form padding, gap-4 fields |
-| 13 | **T13** | **Записи: баг буферу 10 хв між записами** | **▶ NEXT** | `focused-fix` + `senior-backend` | — | — |
-| 14 | T14 | Конструктор сторіс (ПК): розширення робочої зони | ⬜ | `senior-frontend` + `impeccable` | — | — |
+| 13 | T13 | Записи: баг буферу 10 хв між записами | ✅ | `focused-fix` | `9b5fdde` | smartSlots.ts: `b.end` → `b.end + bufferMinutes` — backward buffer enforcement |
+| 14 | **T14** | **Конструктор сторіс (ПК): розширення робочої зони** | **▶ NEXT** | `senior-frontend` + `impeccable` | — | — |
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ⬜ | `spec-driven-workflow` + `senior-backend` | — | — |
 | 16 | T16 | Клієнтський навбар: redesign + Каталог + desktop notif | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 17 | T17 | /my/masters: картка майстра → як картка товару | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
