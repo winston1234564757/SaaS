@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 9/30 ✅
-**Наступна задача:** **T10 — Портфоліо: кольори стандарт + mobile photo actions**
+**Прогрес:** 10/30 ✅
+**Наступна задача:** **T11 — GrowthHub мобайл: tab layout redesign**
 
 ---
 
@@ -193,24 +193,42 @@
 
 ---
 
-## ▶ T10 — Портфоліо: кольори стандарт + mobile photo actions
+## ✅ T10 — Портфоліо: кольори стандарт + mobile photo actions
 
-**Проблема (з BACKLOG + PLAN):**
-- Кнопки мають нестандартні кольори (не Frost design tokens)
-- На мобайлі нема дій з фото: видалити / зробити головним / переглянути
-- Drag-n-drop не працює або неочевидний
-- Lightbox/перегляд фото — відкривається в новій вкладці замість inline
+**Commits:** `69f072e` (GLCH — AC-1/2/3/4) `39cc4e9` (AC-1 PortfolioItemPage + AC-3 public + AC-5)
+
+**Що зроблено:**
+
+**AC-1 — Frost tokens:**
+- `PortfolioPage.tsx`: Сторіс/Перегляд/Додати → `bg-secondary/60 border-border` + `bg-accent text-accent-foreground`
+- `PortfolioItemPage.tsx`: Відмітити/Зберегти → `bg-accent text-accent-foreground`; review selected → `bg-accent/10 border-accent/30`; checkbox → `border-accent bg-accent`; Зберегти відгуки → `border-accent text-accent`
+
+**AC-2 — Mobile tap overlay:**
+- `PortfolioPhotoUploader.tsx`: `PhotoItem` subcomponent, `size-28` (112px) thumbs, `activeId` state
+- Overlay z-[3] з AnimatePresence fade (bg-black/60): 3 кнопки — Переглянути / Головне / Видалити
+- Star badge (cover indicator) hidden when overlay active. Dismiss on outside tap.
+
+**AC-3 — Inline lightbox:**
+- `src/components/shared/PhotoLightbox.tsx` — NEW: fixed inset-0 z-[100], keyboard nav (Esc/←→), safe-area X button
+- `PortfolioPhotoViewer.tsx` — NEW Client Component для public portfolio (Server Component не може мати lightbox)
+- `[slug]/portfolio/[id]/page.tsx` — статичний grid замінений на `<PortfolioPhotoViewer>`
+
+**AC-4 — Reorder buttons:**
+- `@hello-pangea/dnd` видалено з PortfolioPhotoUploader; замінений на ChevronLeft/ChevronRight кнопки `size-6` під кожним фото
+- `handleMove(index, -1|1)` → swap + `reorderPortfolioPhotos`
+
+**AC-5 — Product photos lightbox:**
+- `ProductFormDrawer.tsx`: `lightboxIndex` state; invisible `<button z-[1]>` на кожному фото; delete button → `z-[2]`; `PhotoLightbox` в AnimatePresence поряд з drawer
+
+**TSC:** 0 | **Build:** pending
+
+---
+
+## ▶ T11 — GrowthHub мобайл: tab layout redesign
 
 **Де шукати:**
-- `src/components/master/portfolio/` — PortfolioPage, PortfolioItem, компоненти фото
-- `src/app/dashboard/portfolio/` — page, [id]
-
-**Acceptance criteria:**
-- AC-1: Всі кнопки → Frost design tokens (bg-accent, bg-secondary, border-border тощо)
-- AC-2: Тап на фото (мобайл) → overlay з 3 кнопками: Видалити / Головне / Переглянути
-- AC-3: "Переглянути" → inline lightbox (не нова вкладка)
-- AC-4: Drag-n-drop виправлений або замінений на ↑↓ order кнопки
-- AC-5: Той самий inline-перегляд → уніфікувати для фото товарів + послуг
+- `src/components/master/` — marketing / growthHub компоненти
+- Tab layout, mobile UX
 
 **Скіл:** `design-taste-frontend` + `impeccable`
 
