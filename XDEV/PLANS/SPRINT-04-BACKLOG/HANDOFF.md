@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 11/30 ✅
-**Наступна задача:** **T12 — Профіль: відпустка/вихідні overlap fix (3 таби)**
+**Прогрес:** 12/30 ✅
+**Наступна задача:** **T13 — Записи: баг буферу 10 хв між записами**
 
 ---
 
@@ -265,6 +265,7 @@
 
 **Hotfix** (`7b617ac`): text-[10px] font-medium px-1.5 + bg-background/60 + LayoutGroup — not enough, "Короткий день" still wraps.
 **Hotfix-2** (`b9b3b86`): full rewrite — `grid-cols-3` → `flex gap-1` container + `flex-1` buttons (CSS flex stretch guarantees equal height). "Короткий день" → "Короткий". Inputs: rounded-2xl py-3 text-sm. TSC: 0.
+**Hotfix-3** (`1af1b3e`): input polish — `py-3 text-sm` → `py-2 text-xs rounded-xl`; form wrapper `p-4` → `p-5`; fields `gap-3` → `gap-4`; submit `py-3 text-sm` → `py-2.5 text-xs`. Mobile form spacing polished.
 
 **TSC:** 0 | **Build:** clean
 
