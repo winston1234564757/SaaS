@@ -26,19 +26,36 @@ import { useServices, useActiveFlashDeals, useStarReviews } from './story/useSto
 import { exportCanvasPng } from './story/storyExport';
 import type { Mode, StoryGeneratorProps } from './story/storyTypes';
 
+const HINT_SPRING = { type: 'spring', stiffness: 380, damping: 28 } as const;
+
 export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug, initialMode, initialPortfolioId }: StoryGeneratorProps = {}) {
   const { profile, masterProfile } = useMasterContext();
   const { showToast } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const desktopPreviewPanelRef = useRef<HTMLDivElement>(null);
 
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [showScrollHint, setShowScrollHint] = useState(false);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Detect TMA once on mount — avoids repeated inline typeof window checks
+  // Responsive desktop preview scale via ResizeObserver
+  const [desktopScale, setDesktopScale] = useState(0.9);
+
   const [isTMA, setIsTMA] = useState(false);
   useEffect(() => { setIsTMA(!!window.Telegram?.WebApp?.initData); }, []);
+
+  useEffect(() => {
+    const el = desktopPreviewPanelRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      const pad = 80;
+      const s = Math.min((width - pad) / 360, (height - pad) / 640, 1.15);
+      setDesktopScale(Math.max(s, 0.55));
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const startMode: Mode = (initialMode && VALID_MODES.has(initialMode as Mode)) ? initialMode as Mode : 'announcement';
 
@@ -112,18 +129,17 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isStarterPlan = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
 
+  // Show mobile scroll hint on EVERY control change (not just first time)
   const onControlChange = useCallback(() => {
-    if (!hasInteracted) {
-      setHasInteracted(true);
-      setShowScrollHint(true);
-      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-      hintTimerRef.current = setTimeout(() => setShowScrollHint(false), 4_000);
-    }
+    setShowScrollHint(true);
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    hintTimerRef.current = setTimeout(() => setShowScrollHint(false), 3_000);
+
     if (!PREMIUM_MODES.has(mode) || !isStarterPlan) return;
     if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
     setBlurActive(false);
     blurTimerRef.current = setTimeout(() => setBlurActive(true), 3_000);
-  }, [mode, isStarterPlan, hasInteracted]);
+  }, [mode, isStarterPlan]);
 
   const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -270,6 +286,8 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     platePos, textAlign, transparency, showSticker, ctaText,
   ]);
 
+  const isBlurLocked = isPremiumLocked && blurActive;
+
   const controls = (
     <div className="space-y-3">
       {mode === 'announcement' && (
@@ -399,294 +417,332 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     </div>
   );
 
-  const isBlurLocked = isPremiumLocked && blurActive;
+  // Shared preview canvas node (used in both mobile and desktop)
+  const previewCanvas = (scale: number, radius: number) => (
+    <div style={{
+      width: 360 * scale,
+      height: 640 * scale,
+      overflow: 'hidden',
+      borderRadius: radius,
+      filter: isBlurLocked ? 'blur(10px)' : 'none',
+      transition: 'filter 0.6s ease',
+      boxShadow: '0 20px 60px color-mix(in srgb, var(--accent) 18%, transparent), 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent)',
+    }}>
+      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+        <StoryCanvas {...canvasSharedProps} />
+      </div>
+    </div>
+  );
+
+  const previewOverlay = (
+    <>
+      <AnimatePresence>
+        {isBlurLocked && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ borderRadius: 20 * desktopScale, background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
+            <div className="flex flex-col items-center gap-2 px-5 py-4 rounded-2xl text-center"
+              style={{ background: 'color-mix(in srgb, var(--text-primary) 90%, transparent)', backdropFilter: 'blur(4px)', maxWidth: 200 }}>
+              <Lock size={18} strokeWidth={2.5} style={{ color: 'var(--accent-on)' }} />
+              <span className="text-[11px] font-bold tracking-wide leading-tight" style={{ color: 'var(--accent-on)' }}>{upgradeCopy?.overlayTitle ?? 'Доступно в PRO'}</span>
+              <span className="text-[10px] leading-snug" style={{ color: 'color-mix(in srgb, var(--accent-on) 55%, transparent)' }}>{upgradeCopy?.overlayHint ?? '700 грн/міс'}</span>
+              <span className="text-[10px] font-bold px-3 py-1 rounded-full mt-0.5"
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>Перейти на PRO</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {isPremiumLocked && !blurActive && (
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center">
+          <span className="text-[9px] text-muted-foreground/60 bg-background/80 rounded-full px-2 py-0.5">Перегляд · 10 сек</span>
+        </div>
+      )}
+    </>
+  );
+
   const contentBody = (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-foreground">Конструктор Сторіс</h1>
-        <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
-      </div>
+    // Two-column layout on desktop: fixed controls panel (left) + sticky preview panel (right)
+    <div className="flex flex-col lg:flex-row lg:items-start">
 
-      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-        {MODES.map(m => {
-          const active = m.id === mode;
-          const Icon = m.Icon;
-          return (
-            <button key={m.id} type="button" aria-pressed={active} onClick={() => setMode(m.id)}
-              className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer shrink-0 active:scale-[0.88]",
-                active
-                  ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
-                  : "bg-secondary/70 text-text-secondary border border-border")}>
-              <Icon size={13} strokeWidth={2.5} />
-              {m.label}
-              {m.premium && (
-                <span className={cn("ml-0.5 text-[10px] font-bold px-1 py-0.5 rounded-md", active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* ─── Controls panel ─── */}
+      <div className="w-full lg:w-[340px] lg:shrink-0 lg:border-r lg:border-border px-5 py-6 space-y-5 max-w-lg mx-auto lg:max-w-none lg:mx-0">
 
-      <div className="flex flex-col md:flex-row gap-5 items-start">
-        <div className="flex-1 space-y-4 w-full">
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
-              <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
-                <Plus size={12} /> Завантажити своє
-              </button>
-              <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
-                className={`relative size-12 rounded-xl flex items-center justify-center border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
-                <X size={18} />
-              </button>
-              {customBgPhoto && (
-                <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
-                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'}`}>
-                  <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
-                  {(!selectedBgPhotoId && customBgPhoto) && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={14} className="text-white" strokeWidth={3} /></div>
-                  )}
-                </button>
-              )}
-              {portfolioItems.map(item => (
-                <button key={item.id} type="button" onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
-                  aria-label={item.title ?? 'Фото з портфоліо'}
-                  className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'}`}>
-                  <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
-            <div className="flex gap-2.5 flex-wrap">
-              {PALETTES.map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  aria-label={p.label}
-                  aria-pressed={i === palIdx}
-                  onClick={() => setPalIdx(i)}
-                  className="relative size-8 rounded-full transition-colors duration-150 cursor-pointer"
-                  style={{
-                    background: p.bg,
-                    border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
-                    boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
-                  }}>
-                  {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={12} style={{ color: p.text }} strokeWidth={3} /></span>}
-                </button>
-              ))}
-              <span className="self-center text-xs text-muted-foreground/60 ml-1">{PALETTES[palIdx].label}</span>
-            </div>
-          </div>
-
-          {controls}
-
-          <div className="pt-4 border-t border-border space-y-4">
-            <div>
-              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Налаштування плашки</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-muted-foreground block mb-1">Позиція</label>
-                  <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-                    {(['top', 'center', 'bottom'] as const).map(pos => (
-                      <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
-                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                        {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground block mb-1">Текст</label>
-                  <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-                    {(['left', 'center', 'right'] as const).map(a => (
-                      <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
-                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                        {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Прозорість скла</label>
-                <span className="text-[10px] font-bold text-primary">{transparency}%</span>
-              </div>
-              <input type="range" min={0} max={100} step={1} value={transparency}
-                onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
-                aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {isPremiumLocked && upgradeCopy && (
-              <motion.button type="button"
-                initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22 }}
-                className="w-full rounded-2xl px-4 py-3.5 flex items-start gap-3 text-left"
-                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
-                onClick={() => setShowUpgradeModal(true)}>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-foreground mb-0.5">{upgradeCopy.teaserTitle}</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{upgradeCopy.teaserDesc}</p>
-                </div>
-                <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl self-center"
-                  style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
-              </motion.button>
-            )}
-          </AnimatePresence>
-
-          <button type="button" onClick={() => setShowAvatar(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
-            <div className="text-left">
-              <p className="text-sm font-semibold text-foreground">Показувати фото</p>
-              <p className="text-[11px] text-muted-foreground/60">Аватар та ім&apos;я майстра</p>
-            </div>
-            {showAvatar ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
-          </button>
-
-          <button type="button" onClick={() => setShowSticker(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
-            <div className="text-left">
-              <p className="text-sm font-semibold text-foreground">Кнопка запису</p>
-              <p className="text-[11px] text-muted-foreground/60">Стікер з текстом внизу сторіс</p>
-            </div>
-            {showSticker ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
-          </button>
-
-          {showSticker && (
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
-              <input
-                value={ctaText}
-                onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
-                maxLength={28}
-                placeholder="Записатися онлайн"
-                className="outline-none text-sm"
-                style={INPUT_STYLE}
-              />
-              <div className="flex justify-end mt-1">
-                <span className="text-[10px] text-muted-foreground/60">{ctaText.length}/28</span>
-              </div>
-            </div>
-          )}
-
-          <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
-            className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
-            style={exported
-              ? { background: 'var(--success)', color: '#fff', boxShadow: '0 6px 20px color-mix(in srgb, var(--success) 30%, transparent)' }
-              : { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', boxShadow: '0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-            <AnimatePresence mode="popLayout" initial={false}>
-              {exporting ? (
-                <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Loader2 size={16} className="animate-spin" /> Генеруємо...
-                </motion.span>
-              ) : isBlurLocked ? (
-                <motion.span key="u" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Lock size={16} /> Розблокувати на PRO
-                </motion.span>
-              ) : isPremiumLocked ? (
-                <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Download size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити'}
-                </motion.span>
-              ) : exported ? (
-                <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Check size={16} strokeWidth={3} /> {isTMA ? 'Відправлено!' : 'Збережено!'}
-                </motion.span>
-              ) : (
-                <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Megaphone size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
-
-          <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
-            {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
-          </p>
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-foreground">Конструктор Сторіс</h1>
+          <p className="text-sm text-muted-foreground/60 mt-0.5">Шаблони сторіс · 6 палітр · Експорт 1080×1920 для Instagram</p>
         </div>
 
-        <AnimatePresence>
-          {showScrollHint && (
-            <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              className="flex justify-center md:hidden w-full -mt-1 mb-1"
-            >
-              <motion.button
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          {MODES.map(m => {
+            const active = m.id === mode;
+            const Icon = m.Icon;
+            return (
+              <button key={m.id} type="button" aria-pressed={active} onClick={() => setMode(m.id)}
+                className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer shrink-0 active:scale-[0.88]",
+                  active
+                    ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
+                    : "bg-secondary/70 text-text-secondary border border-border")}>
+                <Icon size={13} strokeWidth={2.5} />
+                {m.label}
+                {m.premium && (
+                  <span className={cn("ml-0.5 text-[10px] font-bold px-1 py-0.5 rounded-md", active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
+              <Plus size={12} /> Завантажити своє
+            </button>
+            <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
+              className={`relative size-12 rounded-xl flex items-center justify-center border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
+              <X size={18} />
+            </button>
+            {customBgPhoto && (
+              <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
+                className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'}`}>
+                <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
+                {(!selectedBgPhotoId && customBgPhoto) && (
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={14} className="text-white" strokeWidth={3} /></div>
+                )}
+              </button>
+            )}
+            {portfolioItems.map(item => (
+              <button key={item.id} type="button" onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
+                aria-label={item.title ?? 'Фото з портфоліо'}
+                className={`relative size-12 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'}`}>
+                <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
+          <div className="flex gap-2.5 flex-wrap">
+            {PALETTES.map((p, i) => (
+              <button
+                key={p.id}
                 type="button"
-                aria-label="Перейти до попереднього перегляду"
-                onClick={() => {
-                  previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  setShowScrollHint(false);
-                }}
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 1.0, repeat: Infinity, ease: 'easeInOut' }}
-                className="flex flex-col items-center gap-1 px-4 py-2 rounded-full active:scale-95"
+                aria-label={p.label}
+                aria-pressed={i === palIdx}
+                onClick={() => setPalIdx(i)}
+                className="relative size-8 rounded-full transition-colors duration-150 cursor-pointer"
                 style={{
-                  background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-                  color: 'var(--accent)',
-                }}
-              >
-                <span className="text-[11px] font-semibold leading-none">Перегляд</span>
-                <ChevronDown size={20} strokeWidth={2.5} />
-              </motion.button>
-            </motion.div>
+                  background: p.bg,
+                  border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
+                  boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
+                }}>
+                {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={12} style={{ color: p.text }} strokeWidth={3} /></span>}
+              </button>
+            ))}
+            <span className="self-center text-xs text-muted-foreground/60 ml-1">{PALETTES[palIdx].label}</span>
+          </div>
+        </div>
+
+        {controls}
+
+        <div className="pt-4 border-t border-border space-y-4">
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Налаштування плашки</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] text-muted-foreground block mb-1">Позиція</label>
+                <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+                  {(['top', 'center', 'bottom'] as const).map(pos => (
+                    <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
+                      className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                      {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground block mb-1">Текст</label>
+                <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+                  {(['left', 'center', 'right'] as const).map(a => (
+                    <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
+                      className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                      {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Прозорість скла</label>
+              <span className="text-[10px] font-bold text-primary">{transparency}%</span>
+            </div>
+            <input type="range" min={0} max={100} step={1} value={transparency}
+              onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
+              aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
+          </div>
+        </div>
+
+        <AnimatePresence mode="popLayout">
+          {isPremiumLocked && upgradeCopy && (
+            <motion.button type="button"
+              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22 }}
+              className="w-full rounded-2xl px-4 py-3.5 flex items-start gap-3 text-left"
+              style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
+              onClick={() => setShowUpgradeModal(true)}>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-foreground mb-0.5">{upgradeCopy.teaserTitle}</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{upgradeCopy.teaserDesc}</p>
+              </div>
+              <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl self-center"
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
+            </motion.button>
           )}
         </AnimatePresence>
 
-        <div ref={previewRef} className="shrink-0 mx-auto md:mx-0">
-          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2 text-center">Попередній перегляд</p>
-          <div style={{ position: 'relative', width: 252, height: 448 }}>
-            <div style={{
-              width: 252, height: 448, overflow: 'hidden', borderRadius: 20,
-              filter: isBlurLocked ? 'blur(10px)' : 'none',
-              transition: 'filter 0.6s ease',
-              boxShadow: '0 16px 48px color-mix(in srgb, var(--accent) 15%, transparent)',
-            }}>
-              <div style={{ transform: 'scale(0.7)', transformOrigin: 'top left', pointerEvents: 'none' }}>
-                <StoryCanvas {...canvasSharedProps} />
-              </div>
+        <button type="button" onClick={() => setShowAvatar(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
+          <div className="text-left">
+            <p className="text-sm font-semibold text-foreground">Показувати фото</p>
+            <p className="text-[11px] text-muted-foreground/60">Аватар та ім&apos;я майстра</p>
+          </div>
+          {showAvatar ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+        </button>
+
+        <button type="button" onClick={() => setShowSticker(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors duration-150 cursor-pointer bg-secondary/70 border border-border active:scale-[0.88]">
+          <div className="text-left">
+            <p className="text-sm font-semibold text-foreground">Кнопка запису</p>
+            <p className="text-[11px] text-muted-foreground/60">Стікер з текстом внизу сторіс</p>
+          </div>
+          {showSticker ? <ToggleRight size={26} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={26} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+        </button>
+
+        {showSticker && (
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
+            <input
+              value={ctaText}
+              onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
+              maxLength={28}
+              placeholder="Записатися онлайн"
+              className="outline-none text-sm"
+              style={INPUT_STYLE}
+            />
+            <div className="flex justify-end mt-1">
+              <span className="text-[10px] text-muted-foreground/60">{ctaText.length}/28</span>
             </div>
-            <AnimatePresence>
-              {isBlurLocked && (
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                  className="absolute inset-0 flex items-center justify-center rounded-[20px]"
-                  style={{ background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
-                  <div className="flex flex-col items-center gap-2 px-5 py-4 rounded-2xl text-center"
-                    style={{ background: 'color-mix(in srgb, var(--text-primary) 90%, transparent)', backdropFilter: 'blur(4px)', maxWidth: 200 }}>
-                    <Lock size={18} strokeWidth={2.5} style={{ color: 'var(--accent-on)' }} />
-                    <span className="text-[11px] font-bold tracking-wide leading-tight" style={{ color: 'var(--accent-on)' }}>{upgradeCopy?.overlayTitle ?? 'Доступно в PRO'}</span>
-                    <span className="text-[10px] leading-snug" style={{ color: 'color-mix(in srgb, var(--accent-on) 55%, transparent)' }}>{upgradeCopy?.overlayHint ?? '700 грн/міс'}</span>
-                    <span className="text-[10px] font-bold px-3 py-1 rounded-full mt-0.5"
-                      style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>Перейти на PRO</span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {isPremiumLocked && !blurActive && (
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                <span className="text-[9px] text-muted-foreground/60 bg-background/80 rounded-full px-2 py-0.5">Перегляд · 10 сек</span>
-              </div>
+          </div>
+        )}
+
+        <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
+          className="w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
+          style={exported
+            ? { background: 'var(--success)', color: '#fff', boxShadow: '0 6px 20px color-mix(in srgb, var(--success) 30%, transparent)' }
+            : { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', boxShadow: '0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {exporting ? (
+              <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                <Loader2 size={16} className="animate-spin" /> Генеруємо...
+              </motion.span>
+            ) : isBlurLocked ? (
+              <motion.span key="u" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                <Lock size={16} /> Розблокувати на PRO
+              </motion.span>
+            ) : isPremiumLocked ? (
+              <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                <Download size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити'}
+              </motion.span>
+            ) : exported ? (
+              <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                <Check size={16} strokeWidth={3} /> {isTMA ? 'Відправлено!' : 'Збережено!'}
+              </motion.span>
+            ) : (
+              <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                <Megaphone size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
+              </motion.span>
             )}
+          </AnimatePresence>
+        </motion.button>
+
+        <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
+          {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
+        </p>
+
+        {/* Mobile preview — visible below download button on mobile only */}
+        <div ref={previewRef} className="lg:hidden flex flex-col items-center gap-3 pt-4 border-t border-border">
+          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
+          <div style={{ position: 'relative', width: 252, height: 448 }}>
+            {previewCanvas(0.7, 20)}
+            {previewOverlay}
+          </div>
+        </div>
+
+      </div>
+
+      {/* ─── Desktop preview panel — sticky, fills viewport ─── */}
+      <div
+        ref={desktopPreviewPanelRef}
+        className="hidden lg:flex flex-1 items-center justify-center self-start sticky top-16 h-[calc(100vh-4rem)]"
+        style={{ background: 'color-mix(in srgb, var(--secondary) 30%, transparent)' }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
+          <div style={{ position: 'relative', width: 360 * desktopScale, height: 640 * desktopScale }}>
+            {previewCanvas(desktopScale, Math.round(20 * desktopScale))}
+            {previewOverlay}
           </div>
         </div>
       </div>
 
-      <UpgradePromptModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} source="marketing" feature={upgradeCopy?.modalTitle} description={upgradeCopy?.modalDesc} />
     </div>
   );
 
   const sharedBottom = (
     <>
+      <UpgradePromptModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} source="marketing" feature={upgradeCopy?.modalTitle} description={upgradeCopy?.modalDesc} />
+
+      {/* Mobile: floating "scroll to preview" button — appears after every control change */}
+      <AnimatePresence>
+        {showScrollHint && (
+          <motion.div
+            className="fixed bottom-6 inset-x-0 flex justify-center z-[60] pointer-events-none lg:hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={HINT_SPRING}
+          >
+            <motion.button
+              type="button"
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+              onClick={() => {
+                previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setShowScrollHint(false);
+              }}
+              className="pointer-events-auto flex items-center gap-2 px-5 py-3 rounded-full"
+              style={{
+                background: 'var(--accent)',
+                color: 'var(--accent-on)',
+                boxShadow: '0 8px 28px color-mix(in srgb, var(--accent) 45%, transparent)',
+              }}
+            >
+              <ChevronDown size={16} strokeWidth={2.5} />
+              <span className="text-sm font-semibold">Переглянути результат</span>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {exporting && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
