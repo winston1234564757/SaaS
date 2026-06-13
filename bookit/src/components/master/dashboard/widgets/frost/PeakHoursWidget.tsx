@@ -55,10 +55,14 @@ export function PeakHoursWidget() {
     const rect = target.getBoundingClientRect();
     const TOOLTIP_H = 38;
     const GAP = 6;
-    const flipDown = rect.top < TOOLTIP_H + GAP + 8;
+    const HALF_W = 115;
+    const PAD = 8;
+    const vw = window.innerWidth;
+    const centerX = rect.left + rect.width / 2;
+    const flipDown = rect.top < TOOLTIP_H + GAP + PAD;
     setActiveCell({ dIdx, hIdx });
     setTooltipPos({
-      left: rect.left + rect.width / 2,
+      left: Math.max(HALF_W + PAD, Math.min(vw - HALF_W - PAD, centerX)),
       top: flipDown ? rect.bottom + GAP : rect.top - TOOLTIP_H - GAP,
       flipDown,
     });
