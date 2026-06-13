@@ -263,7 +263,8 @@
 8. Entries list: додано `"Заплановано"` label зверху (тільки коли `entries.length > 0`)
 9. Видалено зайві імпорти: `CalendarOff`, `useEffect`
 
-**Hotfix** (`7b617ac`): tab selector — `text-[10px] font-medium px-1.5` (fits "Короткий день" on 1 line); inactive `bg-background/60` (was `bg-secondary/40` — invisible on `bg-secondary/50`); `LayoutGroup id="vacation-tabs"` for proper layoutId scoping.
+**Hotfix** (`7b617ac`): text-[10px] font-medium px-1.5 + bg-background/60 + LayoutGroup — not enough, "Короткий день" still wraps.
+**Hotfix-2** (`b9b3b86`): full rewrite — `grid-cols-3` → `flex gap-1` container + `flex-1` buttons (CSS flex stretch guarantees equal height). "Короткий день" → "Короткий". Inputs: rounded-2xl py-3 text-sm. TSC: 0.
 
 **TSC:** 0 | **Build:** clean
 
