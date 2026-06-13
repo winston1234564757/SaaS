@@ -86,3 +86,9 @@
 24. Велика бізнес/серверно-логічна задача.
 У нас є 2 типи товарів: на продаж і розхідники для послуг.
 По логіці товарів на продаж все працює впринципі, а розхідники десь якось просто існують, треба провести детальний бізнес бррейшнторм, user side аналіз, і зробити це максимально зручно і корисно. Розробити ідею, міграції, серверну логіку та UX/ui.
+
+25. Smart Design System: Context-Adaptive UI (2026-06-13).
+Три глобальних паттерни для iOS-like адаптивного UI:
+- Adaptive Text Contrast: елемент читає колір фону під собою → перемикає text-color. CSS: mix-blend-mode: difference (.adaptive-text). JS: useAdaptiveColor(ref) hook. Як iOS status bar.
+- Smart Tooltip Positioning: useSmartTooltip(anchorRef) → viewport-aware flip+shift+safe-area. Якщо тултіп доходить до краю — залишається Safe Area відступ. Замінює ручний clamp.
+- FitText Component: якщо текст влазить в один рядок — scale up до ширини контейнера. Якщо ні — 2 рядки з ще більшим шрифтом. ResizeObserver + canvas.measureText().

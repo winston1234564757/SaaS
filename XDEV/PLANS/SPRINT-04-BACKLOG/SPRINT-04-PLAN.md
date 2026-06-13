@@ -603,6 +603,23 @@
 
 ---
 
+### T31 — Smart Design System: Context-Adaptive UI
+**Беклог:** BL#25
+**Скіл:** `spec-driven-workflow` + `senior-frontend` + `impeccable`
+**Складність:** 🔴
+**Залежність:** немає (незалежна архітектурна задача)
+
+**Контекст:** iOS-like адаптивний UI — три глобальних утиліти що використовуються по всьому проекту.
+
+**Acceptance criteria:**
+- AC-1: CSS `.adaptive-text` (`mix-blend-mode: difference`) + `useAdaptiveColor(ref)` hook → `src/lib/hooks/`; застосовано в Dashboard greeting
+- AC-2: `useSmartTooltip(anchorRef, options)` → `src/lib/hooks/`; viewport flip+shift+safe-area; рефакторинг WeeklyChart + PeakHours (прибрати ручний useLayoutEffect clamp)
+- AC-3: `<FitText>` → `src/components/shared/FitText.tsx`; ResizeObserver + canvas.measureText() binary search; Dashboard greeting name
+
+**Definition of done:** Три утиліти типізовані, документовані, застосовані в dashboard ✅
+
+---
+
 ## Skill Assignments
 
 | Скіл | Задачі |
@@ -611,11 +628,12 @@
 | `create-migration` | T01 (Frost migration), T29 |
 | `design-taste-frontend` | T06, T09, T10, T11, T16, T17, T21, T24, T25, T30 |
 | `redesign-existing-projects` | T12, T19 |
-| `senior-frontend` | T07, T08, T14, T20, T26, T27 |
+| `senior-frontend` | T07, T08, T14, T20, T26, T27, T31 |
 | `focused-fix` | T13 |
 | `senior-backend` | T13, T15, T18, T29 |
 | `performance-profiler` | T18 |
-| `impeccable` | T06, T07, T08, T09, T10, T11, T12, T14, T16, T17, T19, T21, T22, T24, T25, T30 |
+| `spec-driven-workflow` | T15, T23, T26, T28, T31 |
+| `impeccable` | T06, T07, T08, T09, T10, T11, T12, T14, T16, T17, T19, T21, T22, T24, T25, T30, T31 |
 | `spec-driven-workflow` | T15, T23, T26, T28 |
 | `emil-design-eng` | T27 |
 | `senior-fullstack` | T22 |
