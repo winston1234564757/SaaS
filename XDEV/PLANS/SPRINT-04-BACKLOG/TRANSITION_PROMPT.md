@@ -15,13 +15,10 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 14/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link
+Прогрес: 15/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T16 — Клієнтський навбар: redesign + Каталог + desktop notif
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
-⚠️ Pending із Sprint-03:
-- supabase db push: 20260607000000_security_search_path_fix.sql
-- Vercel Pro → cron 0 * * * * для check-uncompleted
 
 ═══ TASK GATE (обов'язково перед кодом) ═══
 1. Read HANDOFF.md: деталі поточної задачі

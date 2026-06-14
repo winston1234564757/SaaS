@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 14/30 ✅ (T14 mobile hotfix додано)
-**Наступна задача:** **T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link**
+**Прогрес:** 15/30 ✅
+**Наступна задача:** **T16 — Клієнтський навбар: redesign + Каталог + desktop notif**
 
 ---
 
@@ -362,14 +362,42 @@
 
 ---
 
-## ▶ T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link
+## ✅ T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link
+**Commit:** `51f0ba7`
+
+**Root cause (3 критичних + 3 проактивних):**
+
+**1. CRITICAL — Cascade double-delivery:**
+`NotificationOrchestrator.ts:133` — `pushSubs.some(s => s.endpoint.includes('web.push.apple.com'))` тригерив TG навіть якщо Chrome push OK. Юзер з Chrome+Safari сабскрипцією отримував і push і TG.
+Фікс: `pushSubs.every(...)` + renamed `onlyApplePush` — TG fallback тільки якщо ВСІ subs = Apple (APNs 201 = ненадійний).
+
+**2. CRITICAL — Price "2 грн":**
+`notifMap.ts:109` — `Math.round(d.totalPrice / 100)`. Але `bookings.total_price` = `DECIMAL(10,2)` у ГРИВНЯХ. Поділ на 100 робив 650 грн → "6 грн". (Плутанина з `products.price_kopecks` де ділення на 100 = правильне).
+Фікс: прибрано `/100` — `${Math.round(d.totalPrice)} грн`.
+
+**3. HIGH — SW_NAVIGATE listener відсутній для клієнтів:**
+Listener був тільки в `DashboardLayout.tsx` (master routes). Клієнти на `/my/*` не мали listener → iOS PWA push-click при відкритому додатку не навігував.
+Фікс: переміщено в `ServiceWorkerRegistration.tsx` (root layout, shared). Видалено дублікат з DashboardLayout.
+
+**Проактивні фікси (full audit 23 типів):**
+- `booking_cancelled` push: `'/my/bookings'` → `?bookingId=${d.bookingId}` (deeplink)
+- `booking_cancelled` TG: відсутня кнопка → додано "Мої записи" (всі інші події мали кнопки)
+- `reminder_30m` TG: відсутня кнопка → додано "Деталі" (reminder_24h/2h мали, 30m — ні)
+
+**debug/fire-notifs:** додано `email` lookup, `summary` таблиця, `cleanupExpired` для 49 накопичених push subs.
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T16 — Клієнтський навбар: redesign + Каталог + desktop notif
 
 **Де шукати:**
-- `src/lib/notifications/` — оркестратор, notifMap
-- `src/app/api/notifications/` — API роути
-- `public/sw.js` або `src/app/sw.ts` — Service Worker
+- `src/app/my/` — client layout + pages
+- `src/components/shared/MobileHub.tsx` — поточний мобайл навбар (master)
+- `/explore` — каталог майстрів
 
-**Скіл:** `spec-driven-workflow` + `senior-backend`
+**Скіл:** `design-taste-frontend` + `impeccable`
 
 ---
 
