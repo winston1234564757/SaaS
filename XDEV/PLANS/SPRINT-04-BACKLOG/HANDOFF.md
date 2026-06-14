@@ -455,6 +455,17 @@ TG inline keyboard buttons завжди відкриваються у власн
 
 **TSC:** 0 | **Build:** clean
 
+**T16-ext (commits `947311e` `c78f6d0` `39b7a4c` `a1390d2` `e115959`) — /explore deep enhancement:**
+- Direction 3 selected: category icon grid + CTA ArrowUpRight + minPrice badge + availableToday pill
+- **Schema hotfix** (`c78f6d0`): wrong columns `master_schedules`/`price_kopecks` → correct `schedule_templates`/`price`; `is_enabled`→`is_working`; caused null masters. Fixed in `src/app/explore/page.tsx` SELECT + mapping
+- **3 view modes** (`39b7a4c`): grid (`grid-cols-2`) / list (size-20 row) / tiktok (snap-y snap-mandatory, height `calc(100svh - 220px)`)
+- Comprehensive MasterCard: topServices (3 rows with price), latestReview snippet, portfolioPhotos
+- Search now indexes `serviceNames` (all active service names joined) via `m.serviceNames.toLowerCase().includes(q)`
+- `AvatarFallback`: gradient bg + initial letter (no emoji — RULE 4)
+- `day_of_week` DAY_MAP: `['sun','mon','tue','wed','thu','fri','sat']` — `new Date().getDay()` offset 0=sun
+- **Portfolio photos** (`a1390d2`): strip h-16 in TikTok / avatar fallback in grid+list; Supabase nested SELECT `portfolio_items (is_published, portfolio_item_photos (url, display_order))`
+- **pb-20 fix** (`e115959`): TikTok info zone CTA was hidden behind bottom navbar (64px). Added `pb-20` to scrollable info container.
+
 ---
 
 ## ✅ T17 — /my/* full visual redesign (impeccable craft)
