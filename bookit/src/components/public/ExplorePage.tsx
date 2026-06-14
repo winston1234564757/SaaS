@@ -112,7 +112,7 @@ export function ExplorePage({ masters, cities }: Props) {
     <div className="min-h-screen bg-transparent">
       <div className="max-w-2xl mx-auto px-4 pt-10 pb-24">
 
-        {/* Editorial header */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,7 +125,7 @@ export function ExplorePage({ masters, cities }: Props) {
           </p>
         </motion.div>
 
-        {/* Search — floating pill */}
+        {/* Search */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -167,7 +167,7 @@ export function ExplorePage({ masters, cities }: Props) {
             className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold transition-colors duration-150 flex-shrink-0 active:scale-[0.95] ${
               activeFiltersCount > 0 || showFilters
                 ? 'bg-accent text-accent-foreground shadow-sm'
-                : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
+                : 'bg-secondary/50 border border-border/60 text-muted-foreground hover:bg-secondary'
             }`}
           >
             <SlidersHorizontal size={12} />
@@ -185,7 +185,7 @@ export function ExplorePage({ masters, cities }: Props) {
                 type="button"
                 aria-pressed={!activeCategory}
                 onClick={() => setActiveCategory(null)}
-                className="relative flex-shrink-0 flex items-center px-3 py-2.5 rounded-full text-xs font-semibold transition-colors duration-150 active:scale-[0.95]"
+                className={`relative flex-shrink-0 flex items-center px-3 py-2.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-[0.95] ${!activeCategory ? '' : 'border border-border/60 bg-secondary/50'}`}
               >
                 {!activeCategory && (
                   <motion.div
@@ -194,7 +194,7 @@ export function ExplorePage({ masters, cities }: Props) {
                     transition={SPRING}
                   />
                 )}
-                <span className={`relative z-10 flex items-center gap-1.5 transition-colors duration-150 ${!activeCategory ? 'text-accent-foreground' : 'text-muted-foreground/70'}`}>
+                <span className={`relative z-10 flex items-center gap-1.5 transition-colors duration-150 ${!activeCategory ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
                   <Sparkles size={12} />
                   Всі
                 </span>
@@ -208,7 +208,7 @@ export function ExplorePage({ masters, cities }: Props) {
                     type="button"
                     aria-pressed={active}
                     onClick={() => setActiveCategory(active ? null : cat.id)}
-                    className="relative flex-shrink-0 flex items-center px-3 py-2.5 rounded-full text-xs font-semibold transition-colors duration-150 active:scale-[0.95]"
+                    className={`relative flex-shrink-0 flex items-center px-3 py-2.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-[0.95] ${!active ? 'border border-border/60 bg-secondary/50' : ''}`}
                   >
                     {active && (
                       <motion.div
@@ -217,7 +217,7 @@ export function ExplorePage({ masters, cities }: Props) {
                         transition={SPRING}
                       />
                     )}
-                    <span className={`relative z-10 flex items-center gap-1.5 transition-colors duration-150 ${active ? 'text-accent-foreground' : 'text-muted-foreground/70'}`}>
+                    <span className={`relative z-10 flex items-center gap-1.5 transition-colors duration-150 ${active ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
                       <CategoryIcon id={cat.id} size={12} />
                       <span>{cat.label}</span>
                     </span>
@@ -364,7 +364,7 @@ export function ExplorePage({ masters, cities }: Props) {
 }
 
 function MasterCard({ master, index }: { master: Master; index: number }) {
-  const isFeatured = index % 5 === 0;
+  const isFeatured = index === 0;
   const masterCategories = serviceCategories.filter(c =>
     master.categories.includes(c.id) || master.categories.includes(c.label)
   );
@@ -377,73 +377,110 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
       transition={{ delay: Math.min(index * 0.04, 0.3), ...SPRING }}
     >
       <Link href={`/${master.slug}`} className="block">
-        <div
-          className={`relative overflow-hidden rounded-2xl shadow-sm active:scale-[0.97] transition-transform duration-150 ${
-            isFeatured ? 'h-52' : 'h-44'
-          }`}
-        >
-          {/* Photo */}
-          {master.avatarUrl ? (
-            <Image
-              src={master.avatarUrl}
-              alt={master.name}
-              fill
-              className="object-cover"
-              sizes={isFeatured
-                ? '(max-width: 640px) 100vw, 672px'
-                : '(max-width: 640px) 50vw, 336px'}
-            />
-          ) : (
-            <div className="absolute inset-0 bg-accent/10 flex items-center justify-center">
-              <span className="text-5xl" aria-hidden="true">{master.avatarEmoji}</span>
-            </div>
-          )}
-
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" aria-hidden="true" />
-
-          {/* Top row: PRO badge + category chips */}
-          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between">
-            {master.isPro ? (
-              <span className="text-[9px] font-bold text-white bg-warning px-1.5 py-0.5 rounded-full leading-none">
-                PRO
-              </span>
-            ) : (
-              <div />
-            )}
-            {masterCategories.length > 0 && (
-              <div className="flex flex-col gap-1 items-end">
-                {masterCategories.slice(0, isFeatured ? 2 : 1).map(cat => (
-                  <span
-                    key={cat.id}
-                    className="flex items-center gap-1 bg-white/85 backdrop-blur-sm px-2 py-0.5 rounded-full text-[9px] font-semibold text-foreground/80 leading-none"
-                  >
-                    <CategoryIcon id={cat.id} size={8} />
-                    {cat.label}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Bottom: name + city + rating */}
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <div className="flex items-end justify-between gap-2">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-white leading-tight truncate">{master.name}</p>
-                {master.city && (
-                  <p className="text-[10px] text-white/65 mt-0.5 truncate">{master.city}</p>
+        {/* Outer bezel shell */}
+        <div className="p-1.5 rounded-[1.5rem] bg-secondary/70 shadow-sm active:scale-[0.97] transition-transform duration-150">
+          {/* Inner core */}
+          {isFeatured ? (
+            <div className="rounded-[1.25rem] overflow-hidden bg-background flex flex-row h-40">
+              {/* Photo — left half */}
+              <div className="relative w-[42%] flex-shrink-0">
+                {master.avatarUrl ? (
+                  <Image
+                    src={master.avatarUrl}
+                    alt={master.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 42vw, 280px"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-accent/10 flex items-center justify-center">
+                    <span className="text-4xl" aria-hidden="true">{master.avatarEmoji}</span>
+                  </div>
                 )}
               </div>
-              {master.ratingCount > 0 && (
-                <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full flex-shrink-0">
-                  <Star size={9} className="text-warning fill-warning" />
-                  <span className="text-[10px] font-semibold text-white">{master.rating.toFixed(1)}</span>
-                </div>
-              )}
-            </div>
-          </div>
 
+              {/* Info — right half */}
+              <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+                <div>
+                  <span className="inline-flex items-center bg-accent/15 text-accent text-[9px] font-bold px-2 py-0.5 rounded-full mb-2 leading-none">
+                    Топ тижня
+                  </span>
+                  <p className="text-sm font-semibold text-foreground leading-tight truncate">{master.name}</p>
+                  {master.city && (
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate">{master.city}</p>
+                  )}
+                  {masterCategories.length > 0 && (
+                    <p className="text-[10px] text-muted-foreground/50 mt-1 truncate">
+                      {masterCategories.slice(0, 2).map(c => c.label).join(' · ')}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  {master.ratingCount > 0 ? (
+                    <div className="flex items-center gap-1">
+                      <Star size={10} className="text-warning fill-warning" />
+                      <span className="text-xs font-semibold text-foreground">{master.rating.toFixed(1)}</span>
+                      <span className="text-[10px] text-muted-foreground/50">({master.ratingCount})</span>
+                    </div>
+                  ) : (
+                    <div />
+                  )}
+                  {master.isPro && (
+                    <span className="text-[9px] font-bold text-white bg-warning px-1.5 py-0.5 rounded-full leading-none flex-shrink-0">
+                      PRO
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[1.25rem] overflow-hidden bg-background">
+              {/* Photo */}
+              <div className="relative h-40">
+                {master.avatarUrl ? (
+                  <Image
+                    src={master.avatarUrl}
+                    alt={master.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 336px"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-accent/10 flex items-center justify-center">
+                    <span className="text-4xl" aria-hidden="true">{master.avatarEmoji}</span>
+                  </div>
+                )}
+                {master.isPro && (
+                  <span className="absolute top-2 right-2 text-[9px] font-bold text-white bg-warning px-1.5 py-0.5 rounded-full leading-none">
+                    PRO
+                  </span>
+                )}
+              </div>
+
+              {/* Text zone */}
+              <div className="p-3">
+                <p className="text-sm font-semibold text-foreground truncate leading-tight">{master.name}</p>
+                {masterCategories.length > 0 && (
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate">
+                    {masterCategories[0]!.label}
+                  </p>
+                )}
+                <div className="flex items-center justify-between mt-2">
+                  {master.ratingCount > 0 ? (
+                    <div className="flex items-center gap-1">
+                      <Star size={9} className="text-warning fill-warning" />
+                      <span className="text-[10px] font-medium text-foreground">{master.rating.toFixed(1)}</span>
+                    </div>
+                  ) : (
+                    <div />
+                  )}
+                  {master.city && (
+                    <span className="text-[10px] text-muted-foreground/50 truncate max-w-[50%]">{master.city}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </Link>
     </motion.div>
