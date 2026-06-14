@@ -19,7 +19,7 @@
 | 11 | T11 | GrowthHub мобайл: tab layout redesign | ✅ | `design-taste-frontend` | `fae6e9a` | grid-cols-3 widget blocks; icon+label+desc; bg-accent active; Rocket header removed |
 | 12 | T12 | Профіль: відпустка/вихідні overlap fix (3 таби) | ✅ | `redesign-existing-projects` | `8533ce4` `b9b3b86` `1af1b3e` | always-open form; flex segmented control equal-height; "Короткий" label; hotfix-2: py-2/text-xs inputs, p-5 form padding, gap-4 fields |
 | 13 | T13 | Записи: баг буферу 10 хв між записами | ✅ | `focused-fix` | `9b5fdde` | smartSlots.ts: `b.end` → `b.end + bufferMinutes` — backward buffer enforcement |
-| 14 | T14 | Конструктор сторіс (ПК): розширення робочої зони | ✅ | `senior-frontend` | `6cc91f2` `aeb10fa` `8d39a4d` | Two-column sticky layout; ResizeObserver scale; mobile floating scroll btn; hotfix-5: lg:flex-wrap на tabs/photos (no desktop h-scroll); pill triggers on mode+palette change; preview w-[280→360px] |
+| 14 | T14 | Конструктор сторіс (ПК+мобайл): розширення робочої зони | ✅ | `senior-frontend` + `impeccable` | `6cc91f2` `aeb10fa` `8d39a4d` `51e8875` | Two-column sticky desktop; ResizeObserver scale; hotfix-5: lg:flex-wrap; **mobile redesign (51e8875)**: two-section split lg:hidden/hidden lg:flex; preview-first (ResizeObserver mobileScale); grid-cols-4 photo picker; flex-wrap mode tabs (no page h-scroll) |
 | 15 | **T15** | **Сповіщення: каскад Push→TG + тексти + PWA deep link** | **▶ NEXT** | `spec-driven-workflow` + `senior-backend` | — | — |
 | 16 | T16 | Клієнтський навбар: redesign + Каталог + desktop notif | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 17 | T17 | /my/masters: картка майстра → як картка товару | ⬜ | `design-taste-frontend` + `impeccable` | — | — |

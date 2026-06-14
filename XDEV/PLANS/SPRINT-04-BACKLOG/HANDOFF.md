@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 14/30 ✅
+**Прогрес:** 14/30 ✅ (T14 mobile hotfix додано)
 **Наступна задача:** **T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link**
 
 ---
@@ -323,6 +323,24 @@
 1. Mode tabs + Photo picker: `overflow-x-auto` без `lg:flex-wrap` → горизонтальний скрол на десктопі. Фікс: `lg:overflow-x-visible lg:flex-wrap` на обох рядах.
 2. `setMode(m.id)` і `setPalIdx(i)` не викликали `onControlChange()` → mobile floating pill не з'являвся при зміні режиму/кольору. Фікс: `onControlChange()` в кожному `onClick`.
 3. Preview panel `w-[260px] xl:w-[320px]` → scale 0.57/0.73 (замалий preview). Фікс: `w-[280px] xl:w-[360px]` → scale 0.62/0.84.
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ✅ T14 mobile hotfix — Конструктор сторіс: мобайл redesign
+**Commit:** `51e8875`
+
+**Root cause:** T14 desktop layout (overflow-x-auto tabs + horizontal photo picker) спричинив page-wide horizontal scroll на iPhone. Preview знаходився в самому низу сторінки.
+
+**Що зроблено** (`StoryGenerator.tsx`):
+1. Two-section split: `lg:hidden` (mobile) / `hidden lg:flex` (desktop — незмінений T14 layout)
+2. Mobile mode tabs: `flex flex-wrap gap-1.5` → всі 8 режимів видимі без scroll (~4 на рядок)
+3. Mobile preview: переміщено ВГОРУ (над контролами); `mobilePreviewPanelRef` + ResizeObserver → `mobileScale = clamp((w-24)/360, 0.55, 0.82)`
+4. Photo picker mobile: `grid grid-cols-4 gap-2 aspect-square` thumbnails (без горизонтального scroll)
+5. Видалено: `showScrollHint`, `hintTimerRef`, `previewRef`, floating "Переглянути результат" pill
+6. `fileInputRef` переміщено в `sharedBottom` (єдиний DOM-елемент, спрацьовує з обох секцій через `.click()`)
+7. Спільні константи: `downloadBtn`, `settingsRows` — зменшення дублювання
 
 **TSC:** 0 | **Build:** clean
 
