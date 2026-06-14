@@ -183,7 +183,7 @@ export function ExplorePage({ masters, cities }: Props) {
             )}
           </button>
 
-          <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide flex-1">
+          <div className="flex gap-2 overflow-x-auto pb-0.5 pe-4 scrollbar-hide flex-1">
             <LayoutGroup id="explore-cats">
               <button
                 type="button"
@@ -345,7 +345,7 @@ export function ExplorePage({ masters, cities }: Props) {
             <p className="text-xs text-muted-foreground/60 mt-1">Спробуй інший запит або змінити фільтри</p>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {filtered.map((master, i) => (
               <MasterCard key={master.id} master={master} index={i} />
             ))}
