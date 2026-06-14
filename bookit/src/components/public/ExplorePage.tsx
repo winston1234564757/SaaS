@@ -1,18 +1,19 @@
 'use client';
 
-import { useState, useMemo, type ElementType } from 'react';
+import { useState, useMemo, useEffect, type ElementType } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import {
   Search, Star, Sparkles, ChevronDown, X,
-  Scissors, Eye, Sparkle, Smile, ArrowUpRight, MapPin,
-  LayoutGrid, List, Maximize2,
+  Scissors, Eye, Sparkle, Smile, MapPin,
+  LayoutGrid, List, Maximize2, ArrowRight,
 } from 'lucide-react';
 import { serviceCategories } from '@/lib/constants/categories';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
+const PAGE_SIZE = 12;
 
 type CatIconEntry = { icon: ElementType; fill?: string; rotate?: boolean };
 
@@ -91,6 +92,8 @@ interface Props {
   cities: string[];
 }
 
+// ─── Dropdowns ────────────────────────────────────────────────────────────────
+
 function CityDropdown({ cities, activeCity, onChange }: {
   cities: string[]; activeCity: string | null; onChange: (city: string | null) => void;
 }) {
@@ -102,10 +105,10 @@ function CityDropdown({ cities, activeCity, onChange }: {
         onClick={() => setOpen(v => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold transition-colors duration-150 min-h-[44px] whitespace-nowrap ${
+        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold transition-all duration-150 min-h-[44px] whitespace-nowrap ${
           activeCity
-            ? 'bg-accent text-accent-foreground'
-            : 'bg-secondary/60 border border-border/60 text-muted-foreground hover:bg-secondary'
+            ? 'bg-accent text-accent-foreground shadow-sm'
+            : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
         }`}
       >
         <MapPin size={11} />
@@ -116,11 +119,11 @@ function CityDropdown({ cities, activeCity, onChange }: {
         {open && (
           <motion.div
             role="listbox"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.12 }}
-            className="absolute top-full left-0 mt-1.5 bento-card rounded-xl p-1 z-30 min-w-[160px] max-h-52 overflow-y-auto"
+            className="absolute top-full left-0 mt-1.5 bento-card rounded-xl p-1 z-30 min-w-[160px] max-h-52 overflow-y-auto shadow-lg"
           >
             <button type="button" role="option" aria-selected={!activeCity}
               onClick={() => { onChange(null); setOpen(false); }}
@@ -155,7 +158,7 @@ function SortDropdown({ sort, onChange }: { sort: SortMode; onChange: (s: SortMo
         onClick={() => setOpen(v => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold bg-secondary/60 border border-border/60 text-muted-foreground hover:bg-secondary transition-colors duration-150 min-h-[44px] whitespace-nowrap"
+        className="flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30 transition-all duration-150 min-h-[44px] whitespace-nowrap"
       >
         {current.label}
         <ChevronDown size={11} className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
@@ -164,11 +167,11 @@ function SortDropdown({ sort, onChange }: { sort: SortMode; onChange: (s: SortMo
         {open && (
           <motion.div
             role="listbox"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.12 }}
-            className="absolute top-full right-0 mt-1.5 bento-card rounded-xl p-1 z-30 min-w-[180px]"
+            className="absolute top-full right-0 mt-1.5 bento-card rounded-xl p-1 z-30 min-w-[180px] shadow-lg"
           >
             {SORT_OPTIONS.map(opt => (
               <button key={opt.value} type="button" role="option" aria-selected={sort === opt.value}
@@ -186,23 +189,109 @@ function SortDropdown({ sort, onChange }: { sort: SortMode; onChange: (s: SortMo
   );
 }
 
-export function ExplorePage({ masters, cities }: Props) {
-  const [search, setSearch]           = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [activeCity, setActiveCity]   = useState<string | null>(null);
-  const [sort, setSort]               = useState<SortMode>('popular');
-  const [viewMode, setViewMode]       = useState<ViewMode>('grid');
+// ─── Category Pills ────────────────────────────────────────────────────────────
 
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const m of masters) {
-      for (const rawCat of m.categories) {
-        const def = serviceCategories.find(d => d.id === rawCat || d.label === rawCat);
-        if (def) counts[def.id] = (counts[def.id] ?? 0) + 1;
-      }
-    }
-    return counts;
-  }, [masters]);
+function CategoryPills({ activeCategory, onSelect }: {
+  activeCategory: string | null;
+  onSelect: (id: string | null) => void;
+}) {
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-1 pe-4 scrollbar-hide">
+      <button
+        type="button"
+        aria-pressed={!activeCategory}
+        onClick={() => onSelect(null)}
+        className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold min-h-[36px] transition-all duration-150 active:scale-[0.95] ${
+          !activeCategory
+            ? 'bg-accent text-accent-foreground shadow-sm'
+            : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
+        }`}
+      >
+        <Sparkles size={12} />
+        Всі
+      </button>
+
+      {serviceCategories.map(cat => {
+        const active = activeCategory === cat.id;
+        return (
+          <button
+            key={cat.id}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onSelect(active ? null : cat.id)}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold min-h-[36px] transition-all duration-150 active:scale-[0.95] ${
+              active
+                ? 'bg-accent text-accent-foreground shadow-sm'
+                : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
+            }`}
+          >
+            <CategoryIcon id={cat.id} size={12} />
+            {cat.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Featured PRO Card ─────────────────────────────────────────────────────────
+
+function FeaturedCard({ master }: { master: Master }) {
+  return (
+    <Link href={`/${master.slug}`} className="flex-shrink-0 block w-36 active:scale-[0.97] transition-transform duration-150">
+      <div className="bento-card overflow-hidden">
+        <div className="relative h-24">
+          {master.avatarUrl ? (
+            <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="144px" />
+          ) : master.portfolioPhotos[0] ? (
+            <Image src={master.portfolioPhotos[0]} alt={master.name} fill className="object-cover" sizes="144px" />
+          ) : (
+            <AvatarFallback name={master.name} textClassName="text-2xl" />
+          )}
+          <span className="absolute top-1.5 left-1.5 text-[9px] font-bold bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full leading-none">PRO</span>
+        </div>
+        <div className="p-2 space-y-0.5">
+          <p className="text-[11px] font-semibold text-foreground truncate">{master.name}</p>
+          {master.topServices[0] && (
+            <p className="text-[10px] text-muted-foreground/60 truncate">{master.topServices[0].name}</p>
+          )}
+          {master.ratingCount > 0 && (
+            <div className="flex items-center gap-1 pt-0.5">
+              <Star size={8} className="text-warning fill-warning" />
+              <span className="text-[10px] font-semibold text-foreground">{master.rating.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────────
+
+export function ExplorePage({ masters, cities }: Props) {
+  const [search, setSearch]                 = useState('');
+  const [searchFocused, setSearchFocused]   = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCity, setActiveCity]         = useState<string | null>(null);
+  const [sort, setSort]                     = useState<SortMode>('popular');
+  const [viewMode, setViewMode]             = useState<ViewMode>('grid');
+  const [page, setPage]                     = useState(1);
+
+  const isFiltered = !!(search || activeCategory || activeCity);
+
+  useEffect(() => { setPage(1); }, [search, activeCategory, activeCity, sort]);
+
+  const resetFilters = () => {
+    setSearch('');
+    setActiveCategory(null);
+    setActiveCity(null);
+  };
+
+  const proMasters = useMemo(
+    () => masters.filter(m => m.isPro),
+    [masters],
+  );
 
   const filtered = useMemo(() => {
     let result = masters;
@@ -245,6 +334,11 @@ export function ExplorePage({ masters, cities }: Props) {
     return sorted;
   }, [masters, activeCategory, activeCity, search, sort]);
 
+  const visible       = filtered.slice(0, page * PAGE_SIZE);
+  const hasMore       = visible.length < filtered.length;
+  const remaining     = Math.min(filtered.length - visible.length, PAGE_SIZE);
+  const showFeatured  = !isFiltered && viewMode === 'grid' && proMasters.length >= 2;
+
   return (
     <div className="min-h-screen bg-transparent">
       <div className={`max-w-2xl mx-auto px-4 pt-10 ${viewMode === 'tiktok' ? 'pb-4' : 'pb-24'}`}>
@@ -256,9 +350,9 @@ export function ExplorePage({ masters, cities }: Props) {
           transition={SPRING}
           className="mb-5"
         >
-          <h1 className="heading-serif text-4xl text-foreground leading-[1.1] tracking-tight">Краса поруч</h1>
-          <p className="text-sm text-muted-foreground/60 mt-1.5">
-            {masters.length} {pluralUk(masters.length, 'майстер', 'майстри', 'майстрів')} у Bookit
+          <h1 className="heading-serif text-3xl text-foreground leading-[1.1] tracking-tight">Краса поруч</h1>
+          <p className="text-xs text-muted-foreground/50 mt-1.5 tracking-wide">
+            Нігті · Волосся · Брови · Макіяж
           </p>
         </motion.div>
 
@@ -267,35 +361,61 @@ export function ExplorePage({ masters, cities }: Props) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...SPRING, delay: 0.05 }}
-          className="relative mb-2.5"
+          className="relative mb-2"
         >
-          <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
+          <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none z-10" />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             placeholder="Яку послугу або майстра шукаєш?"
             aria-label="Пошук майстра або послуги"
-            className="w-full pl-10 pr-10 py-3 rounded-full bg-secondary/60 border border-border/60 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:bg-secondary focus:border-accent/40 focus:ring-2 focus:ring-accent/15 transition-all duration-150"
+            className={`w-full pl-10 pr-10 rounded-full border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-200 ${
+              searchFocused
+                ? 'py-3.5 bg-white shadow-md border-accent/50 ring-2 ring-accent/15'
+                : 'py-3 bg-white/70 border-border/50'
+            }`}
           />
           {search && (
-            <button type="button" onClick={() => setSearch('')} aria-label="Очистити пошук"
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground/50 hover:text-muted-foreground">
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              aria-label="Очистити пошук"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground/50 hover:text-muted-foreground z-10"
+            >
               <X size={14} />
             </button>
           )}
         </motion.div>
+
+        {/* Result count */}
+        <AnimatePresence>
+          {isFiltered && viewMode !== 'tiktok' && (
+            <motion.p
+              key="count"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="text-xs text-muted-foreground/60 mb-2.5 pl-1"
+            >
+              Знайдено: {filtered.length}
+            </motion.p>
+          )}
+        </AnimatePresence>
 
         {/* Controls: City + Sort + View toggle */}
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...SPRING, delay: 0.08 }}
-          className="flex items-center gap-2 mb-5"
+          className="flex items-center gap-1.5 mb-5"
         >
           <CityDropdown cities={cities} activeCity={activeCity} onChange={setActiveCity} />
           <SortDropdown sort={sort} onChange={setSort} />
-          <div className="ml-auto flex items-center gap-0.5 bg-secondary/60 border border-border/40 rounded-full p-1">
+          <div className="ml-auto flex items-center gap-0.5 bg-white/60 border border-border/40 rounded-full p-1">
             {VIEW_MODES.map(({ mode, icon: Icon, label }) => (
               <button
                 key={mode}
@@ -315,66 +435,88 @@ export function ExplorePage({ masters, cities }: Props) {
           </div>
         </motion.div>
 
-        {/* Category tiles — hidden in tiktok mode */}
+        {/* Category pills — hidden in tiktok mode */}
         {viewMode !== 'tiktok' && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING, delay: 0.11 }}
-            className="flex gap-2 overflow-x-auto pb-1 pe-4 scrollbar-hide mb-5"
+            className="mb-5"
           >
-            <button type="button" aria-pressed={!activeCategory} onClick={() => setActiveCategory(null)}
-              className={`flex-shrink-0 flex flex-col items-center justify-center gap-1 w-[76px] min-h-[68px] rounded-2xl border transition-all duration-150 active:scale-[0.95] px-2 py-3 ${
-                !activeCategory ? 'bg-accent/15 border-accent' : 'bg-secondary/50 border-border/40'
-              }`}
-            >
-              <span className={!activeCategory ? 'text-accent' : 'text-muted-foreground'}><Sparkles size={20} /></span>
-              <span className={`text-[10px] font-medium leading-tight text-center ${!activeCategory ? 'text-accent' : 'text-muted-foreground/80'}`}>Всі</span>
-              <span className="text-[9px] text-muted-foreground/50">{masters.length}</span>
-            </button>
-
-            {serviceCategories.map(cat => {
-              const active = activeCategory === cat.id;
-              const count = categoryCounts[cat.id] ?? 0;
-              return (
-                <button key={cat.id} type="button" aria-pressed={active}
-                  onClick={() => setActiveCategory(active ? null : cat.id)}
-                  className={`flex-shrink-0 flex flex-col items-center justify-center gap-1 w-[76px] min-h-[68px] rounded-2xl border transition-all duration-150 active:scale-[0.95] px-2 py-3 ${
-                    active ? 'bg-accent/15 border-accent' : 'bg-secondary/50 border-border/40'
-                  }`}
-                >
-                  <span className={active ? 'text-accent' : 'text-muted-foreground'}><CategoryIcon id={cat.id} size={20} /></span>
-                  <span className={`text-[10px] font-medium leading-tight text-center ${active ? 'text-accent' : 'text-muted-foreground/80'}`}>{cat.label}</span>
-                  <span className="text-[9px] text-muted-foreground/50">{count}</span>
-                </button>
-              );
-            })}
+            <CategoryPills activeCategory={activeCategory} onSelect={setActiveCategory} />
           </motion.div>
         )}
 
-        {/* Results count */}
-        {(search || activeCategory || activeCity) && viewMode !== 'tiktok' && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-muted-foreground/60 mb-3">
-            Знайдено: {filtered.length}
-          </motion.p>
-        )}
+        {/* Featured PRO row — only when no filters active */}
+        <AnimatePresence>
+          {showFeatured && (
+            <motion.div
+              key="featured"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ ...SPRING, delay: 0.13 }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold text-accent tracking-widest uppercase">Рекомендуємо</span>
+                <span className="text-[10px] text-muted-foreground/50">
+                  {proMasters.length} {pluralUk(proMasters.length, 'PRO майстер', 'PRO майстри', 'PRO майстрів')}
+                </span>
+              </div>
+              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
+                {proMasters.slice(0, 8).map(m => <FeaturedCard key={m.id} master={m} />)}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Masters zone */}
         <AnimatePresence mode="popLayout">
           {filtered.length === 0 ? (
-            <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-16">
-              <Search size={32} className="mx-auto mb-3 text-muted-foreground/30" />
-              <p className="text-sm font-semibold text-foreground">Нікого не знайдено</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Спробуй інший запит або змінити фільтри</p>
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-16"
+            >
+              <div className="size-12 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <Sparkles size={20} className="text-accent/50" />
+              </div>
+              <p className="text-sm font-semibold text-foreground mb-1">Нікого не знайдено</p>
+              <p className="text-xs text-muted-foreground/60 mb-4">Спробуй інший запит або змінити фільтри</p>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="px-5 py-2.5 rounded-full bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors duration-150 min-h-[44px]"
+              >
+                Скинути фільтри
+              </button>
             </motion.div>
+
           ) : viewMode === 'grid' ? (
-            <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-2 gap-3">
-              {filtered.map((master, i) => <MasterCard key={master.id} master={master} index={i} />)}
+            <motion.div
+              key="grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-2 gap-3"
+            >
+              {visible.map((master, i) => <MasterCard key={master.id} master={master} index={i} />)}
             </motion.div>
+
           ) : viewMode === 'list' ? (
-            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-3">
-              {filtered.map((master, i) => <MasterListCard key={master.id} master={master} index={i} />)}
+            <motion.div
+              key="list"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col gap-3"
+            >
+              {visible.map((master, i) => <MasterListCard key={master.id} master={master} index={i} />)}
             </motion.div>
+
           ) : (
             <motion.div
               key="tiktok"
@@ -393,13 +535,35 @@ export function ExplorePage({ masters, cities }: Props) {
           )}
         </AnimatePresence>
 
-        {/* Footer */}
-        {viewMode !== 'tiktok' && (
-          <div className="mt-10 text-center">
-            <p className="text-xs text-muted-foreground/60">
-              Ти майстер?{' '}
-              <Link href="/register" className="text-accent font-semibold hover:underline">Приєднуйся безкоштовно</Link>
-            </p>
+        {/* Load more */}
+        {hasMore && viewMode !== 'tiktok' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-6 flex justify-center"
+          >
+            <button
+              type="button"
+              onClick={() => setPage(p => p + 1)}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/70 border border-border/50 text-sm font-semibold text-foreground/70 hover:bg-white hover:border-accent/30 transition-all duration-150 min-h-[44px]"
+            >
+              Показати ще {remaining}
+            </button>
+          </motion.div>
+        )}
+
+        {/* Footer — shows after all masters are visible */}
+        {viewMode !== 'tiktok' && !hasMore && filtered.length > 0 && (
+          <div className="mt-12 text-center px-6 py-8 rounded-2xl bg-accent/5 border border-accent/10">
+            <p className="text-sm font-semibold text-foreground mb-1">Ти майстер?</p>
+            <p className="text-xs text-muted-foreground/60 mb-5">Реєструйся безкоштовно та приймай записи вже сьогодні</p>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-foreground text-xs font-semibold min-h-[44px] hover:opacity-90 transition-opacity duration-150"
+            >
+              Приєднатись безкоштовно
+              <ArrowRight size={13} />
+            </Link>
           </div>
         )}
       </div>
@@ -407,36 +571,46 @@ export function ExplorePage({ masters, cities }: Props) {
   );
 }
 
-function MasterCard({ master, index }: { master: Master; index: number }) {
-  const masterCategories = serviceCategories.filter(c =>
-    master.categories.includes(c.id) || master.categories.includes(c.label)
-  );
+// ─── Grid Card ─────────────────────────────────────────────────────────────────
 
+function MasterCard({ master, index }: { master: Master; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.3), ...SPRING }}
+      className="group"
     >
       <Link href={`/${master.slug}`} className="block">
-        <div className="bento-card overflow-hidden active:scale-[0.97] transition-transform duration-150">
+        <div className="bento-card overflow-hidden transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md active:scale-[0.97]">
 
           {/* Photo zone */}
-          <div className="relative h-40">
+          <div className="relative h-56 overflow-hidden">
             {master.avatarUrl ? (
-              <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="(max-width: 640px) 50vw, 336px" />
+              <Image
+                src={master.avatarUrl}
+                alt={master.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, 336px"
+              />
             ) : master.portfolioPhotos[0] ? (
-              <Image src={master.portfolioPhotos[0]} alt={master.name} fill className="object-cover" sizes="(max-width: 640px) 50vw, 336px" />
+              <Image
+                src={master.portfolioPhotos[0]}
+                alt={master.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, 336px"
+              />
             ) : (
               <AvatarFallback name={master.name} textClassName="text-4xl" />
             )}
 
             {master.isPro && (
-              <span className="absolute top-2.5 left-2.5 text-[9px] font-bold text-white bg-warning px-1.5 py-0.5 rounded-full leading-none">PRO</span>
+              <span className="absolute top-2.5 left-2.5 text-[9px] font-bold text-accent-foreground bg-accent px-1.5 py-0.5 rounded-full leading-none">
+                PRO
+              </span>
             )}
-            <div className="absolute top-2.5 right-2.5 size-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm" aria-hidden="true">
-              <ArrowUpRight size={13} className="text-foreground/70" />
-            </div>
             {master.availableToday && (
               <span className="absolute bottom-2.5 left-2.5 flex items-center gap-1 bg-accent text-accent-foreground text-[9px] font-bold px-2 py-1 rounded-full leading-none">
                 <span className="size-1.5 rounded-full bg-accent-foreground/70 flex-shrink-0" aria-hidden="true" />
@@ -445,11 +619,21 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
             )}
           </div>
 
+          {/* Portfolio strip — always show when photos exist */}
+          {master.portfolioPhotos.length > 0 && (
+            <div className="flex gap-px h-10 overflow-hidden border-t border-border/20">
+              {master.portfolioPhotos.slice(0, 3).map((url, i) => (
+                <div key={i} className="relative flex-1 h-full overflow-hidden">
+                  <Image src={url} alt="" fill className="object-cover" sizes="33vw" aria-hidden="true" />
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Info zone */}
           <div className="p-3 space-y-1.5">
             <p className="text-sm font-semibold text-foreground truncate leading-tight">{master.name}</p>
 
-            {/* Top services */}
             {master.topServices.slice(0, 2).map((s, i) => (
               <div key={i} className="flex items-center justify-between gap-1.5">
                 <span className="text-[11px] text-muted-foreground/70 truncate">{s.name}</span>
@@ -457,21 +641,22 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
               </div>
             ))}
 
-            {/* Fallback: categories if no services */}
-            {master.topServices.length === 0 && masterCategories.length > 0 && (
+            {master.topServices.length === 0 && master.categories.length > 0 && (
               <p className="text-[10px] text-muted-foreground/60 truncate">
-                {masterCategories.slice(0, 2).map(c => c.label).join(' · ')}
+                {serviceCategories
+                  .filter(c => master.categories.includes(c.id) || master.categories.includes(c.label))
+                  .slice(0, 2)
+                  .map(c => c.label)
+                  .join(' · ')}
               </p>
             )}
 
-            {/* Latest review */}
             {master.latestReview && (
-              <p className="text-[10px] text-muted-foreground/50 italic line-clamp-2 leading-snug">
+              <p className="text-[10px] text-muted-foreground/50 italic line-clamp-1 leading-snug">
                 &quot;{master.latestReview}&quot;
               </p>
             )}
 
-            {/* Bottom meta row */}
             <div className="flex items-center justify-between gap-1 pt-0.5">
               <div className="flex items-center gap-1 min-w-0 overflow-hidden">
                 {master.ratingCount > 0 && (
@@ -500,6 +685,8 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
   );
 }
 
+// ─── List Card ─────────────────────────────────────────────────────────────────
+
 function MasterListCard({ master, index }: { master: Master; index: number }) {
   return (
     <motion.div
@@ -508,28 +695,27 @@ function MasterListCard({ master, index }: { master: Master; index: number }) {
       transition={{ delay: Math.min(index * 0.03, 0.25), ...SPRING }}
     >
       <Link href={`/${master.slug}`} className="block">
-        <div className="bento-card overflow-hidden active:scale-[0.98] transition-transform duration-150 flex gap-3 p-3">
+        <div className="bento-card overflow-hidden active:scale-[0.98] transition-all duration-150 hover:-translate-y-px hover:shadow-sm flex gap-3 p-3">
 
-          {/* Photo — 80×80 */}
-          <div className="relative size-20 flex-shrink-0 rounded-xl overflow-hidden">
+          {/* Photo — 88×88 */}
+          <div className="relative size-[88px] flex-shrink-0 rounded-xl overflow-hidden">
             {master.avatarUrl ? (
-              <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="80px" />
+              <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="88px" />
             ) : master.portfolioPhotos[0] ? (
-              <Image src={master.portfolioPhotos[0]} alt={master.name} fill className="object-cover" sizes="80px" />
+              <Image src={master.portfolioPhotos[0]} alt={master.name} fill className="object-cover" sizes="88px" />
             ) : (
               <AvatarFallback name={master.name} textClassName="text-2xl" />
             )}
             {master.isPro && (
-              <span className="absolute bottom-1 left-1 text-[8px] font-bold text-white bg-warning px-1 py-0.5 rounded-full leading-none">PRO</span>
+              <span className="absolute bottom-1 left-1 text-[8px] font-bold text-accent-foreground bg-accent px-1 py-0.5 rounded-full leading-none">
+                PRO
+              </span>
             )}
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex items-start justify-between gap-1">
-              <p className="text-sm font-semibold text-foreground truncate">{master.name}</p>
-              <ArrowUpRight size={12} className="text-muted-foreground/40 flex-shrink-0 mt-0.5" />
-            </div>
+            <p className="text-sm font-semibold text-foreground truncate">{master.name}</p>
 
             {master.topServices.slice(0, 2).map((s, i) => (
               <div key={i} className="flex items-center justify-between gap-2">
@@ -567,6 +753,8 @@ function MasterListCard({ master, index }: { master: Master; index: number }) {
   );
 }
 
+// ─── TikTok Card ───────────────────────────────────────────────────────────────
+
 function MasterTikTokCard({ master, index }: { master: Master; index: number }) {
   const masterCategories = serviceCategories.filter(c =>
     master.categories.includes(c.id) || master.categories.includes(c.label)
@@ -575,7 +763,6 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
   return (
     <div className="bento-card overflow-hidden h-full flex flex-col">
 
-      {/* Photo zone — 45% if has portfolio, else 50% */}
       <Link href={`/${master.slug}`} className={`relative block ${master.portfolioPhotos.length > 0 ? 'flex-[0_0_45%]' : 'flex-[0_0_50%]'}`}>
         {master.avatarUrl ? (
           <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
@@ -584,7 +771,7 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
         )}
 
         {master.isPro && (
-          <span className="absolute top-3 left-3 text-[10px] font-bold text-white bg-warning px-2 py-1 rounded-full leading-none">PRO</span>
+          <span className="absolute top-3 left-3 text-[10px] font-bold text-accent-foreground bg-accent px-2 py-1 rounded-full leading-none">PRO</span>
         )}
         {master.availableToday && (
           <span className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-accent text-accent-foreground text-[10px] font-bold px-2.5 py-1.5 rounded-full leading-none">
@@ -594,7 +781,6 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
         )}
       </Link>
 
-      {/* Portfolio strip */}
       {master.portfolioPhotos.length > 0 && (
         <div className="flex gap-px flex-none h-16 overflow-hidden">
           {master.portfolioPhotos.map((url, i) => (
@@ -605,7 +791,6 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
         </div>
       )}
 
-      {/* Info zone */}
       <div className="flex flex-col flex-1 p-4 pb-20 gap-2.5 overflow-y-auto min-h-0">
         <Link href={`/${master.slug}`} className="block">
           <h2 className="text-xl font-semibold text-foreground leading-tight">{master.name}</h2>
@@ -616,7 +801,6 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
           )}
         </Link>
 
-        {/* Services */}
         {master.topServices.length > 0 && (
           <div className="space-y-1.5 py-2 border-t border-border/40">
             {master.topServices.slice(0, 3).map((s, i) => (
@@ -628,14 +812,12 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
           </div>
         )}
 
-        {/* Review */}
         {master.latestReview && (
           <p className="text-sm text-muted-foreground/60 italic line-clamp-2 leading-relaxed border-t border-border/40 pt-2">
             &quot;{master.latestReview}&quot;
           </p>
         )}
 
-        {/* Meta */}
         <div className="flex items-center gap-2 flex-wrap">
           {master.ratingCount > 0 && (
             <>
@@ -650,7 +832,6 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
           )}
         </div>
 
-        {/* CTA */}
         <Link
           href={`/${master.slug}`}
           className="mt-auto block w-full bg-accent text-accent-foreground text-sm font-semibold py-3.5 rounded-2xl text-center transition-opacity duration-150 active:opacity-80 min-h-[44px]"
