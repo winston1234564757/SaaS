@@ -346,6 +346,22 @@
 
 ---
 
+## ✅ T14 hotfix-6 — settingsRows polish: grid-cols-2 + glass full-width + pill switches
+**Commit:** `0fa2aab`
+
+**Root cause:** `settingsRows` had `grid-cols-3` (Позиція/Текст/Скло cramped on mobile), ToggleLeft/ToggleRight icons (inconsistent with project pattern), and both `ToggleLeft`/`ToggleRight` were removed from imports causing TSC errors at lines 550/558.
+
+**Що зроблено** (`StoryGenerator.tsx`):
+1. `settingsRows` rewritten via full-file Write (CRLF-safe):
+   - `grid-cols-3` → `grid-cols-2` for Позиція + Текст (side by side)
+   - Скло range input moved to separate full-width row below (`space-y-3` container)
+   - ToggleLeft/ToggleRight → pill switches (`role="switch"`, `aria-checked`, `w-11 h-6 rounded-full`, `motion.div animate={{ x: active ? 26 : 2 }}`, spring `{ stiffness: 500, damping: 30 }`)
+2. Pill switch pattern matches `ServiceCard.tsx` — consistent project design system
+
+**TSC:** 0 | **Build:** clean
+
+---
+
 ## ▶ T15 — Сповіщення: каскад Push→TG + тексти + PWA deep link
 
 **Де шукати:**
