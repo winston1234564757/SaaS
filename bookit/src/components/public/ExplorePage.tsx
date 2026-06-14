@@ -606,7 +606,7 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
       )}
 
       {/* Info zone */}
-      <div className="flex flex-col flex-1 p-4 gap-2.5 overflow-y-auto min-h-0">
+      <div className="flex flex-col flex-1 p-4 pb-20 gap-2.5 overflow-y-auto min-h-0">
         <Link href={`/${master.slug}`} className="block">
           <h2 className="text-xl font-semibold text-foreground leading-tight">{master.name}</h2>
           {masterCategories.length > 0 && (
