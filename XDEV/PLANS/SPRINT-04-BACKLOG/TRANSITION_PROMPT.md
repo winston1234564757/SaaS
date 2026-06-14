@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 16/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T17 — /my/masters: картка майстра → як картка товару
+Прогрес: 17/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T18 — Оптимізація завантаження сторінки послуг
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 16/30 ✅
-**Наступна задача:** **T17 — /my/masters: картка майстра → як картка товару**
+**Прогрес:** 17/30 ✅
+**Наступна задача:** **T18 — Оптимізація завантаження сторінки послуг**
 
 ---
 
@@ -457,13 +457,43 @@ TG inline keyboard buttons завжди відкриваються у власн
 
 ---
 
-## ▶ T17 — /my/masters: картка майстра → як картка товару
+## ✅ T17 — /my/* full visual redesign (impeccable craft)
+**Commit:** `830acd4`
+
+**Що зроблено** (3 компоненти):
+
+**1. MyMastersPage.tsx — portrait 2-col grid**
+- `grid grid-cols-2 gap-3` — як ExplorePage
+- MasterCard: `bento-card overflow-hidden` / `h-40` photo zone / visit count badge top-right (`bg-black/50 backdrop-blur-sm`) / last visit badge bottom-left / `p-3` text zone з category chips + full-width Записатись CTA (`bg-accent rounded-xl`)
+- `SPRING = { type: 'spring', stiffness: 300, damping: 24 } as const`
+- Stagger: `delay: Math.min(index * 0.04, 0.3)`
+
+**2. MyLoyaltyPage.tsx — LoyaltyCard redesign + token fix**
+- LoyaltyCard: `h-16 bg-accent/8` top avatar strip / `size-12` centered avatar / visit counter `text-2xl font-bold tabular-nums` / progress bar `h-1.5` (thinner) / Записатись `bg-accent text-accent-foreground`
+- isCompleted: badge в avatar strip `top-2 right-2 bg-success`
+- Tab "Refer & Earn" → "Ділись та заробляй" (humanizer)
+- Всі `bg-primary` → `bg-accent` у файлі (6 місць)
+
+**3. ClientNotificationsPage.tsx — date-grouped feed**
+- `groupByDate()` helper: групує по дню → `[{label, items}]`
+- Labels: "Сьогодні" / "Вчора" / uk-UA date
+- `DateSeparator` компонент: hr + label (`aria-hidden`)
+- Type dot: `size-2 rounded-full` кольоровий по типу (accent/destructive/warning/muted)
+- Unread: `bg-accent/5 border-accent/10` tint
+- Touch targets: `min-h-[44px] rounded-xl`
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T18 — Оптимізація завантаження сторінки послуг
 
 **Де шукати:**
-- `src/app/my/masters/` — список майстрів клієнта
-- `src/components/public/ExplorePage.tsx` — новий `MasterCard` (T16) як референс для portrait картки
+- Сторінка послуг майстра — знайти через роут /[slug]/services або публічна сторінка
+- Перевірити: кількість запитів до Supabase, waterfall, кешування
+- `SPRINT-04-PLAN.md` — деталі T18
 
-**Скіл:** `design-taste-frontend` + `impeccable`
+**Скіл:** `performance-profiler` + `senior-backend`
 
 ---
 
