@@ -86,7 +86,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
           aria-pressed={activeTab === 'loyalty'}
           onClick={() => setActiveTab('loyalty')}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
+            "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
             activeTab === 'loyalty' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
           )}
         >
@@ -98,12 +98,12 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
           aria-pressed={activeTab === 'referral'}
           onClick={() => setActiveTab('referral')}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
+            "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
             activeTab === 'referral' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
           )}
         >
           <Users size={14} />
-          Refer & Earn
+          Ділись та заробляй
         </button>
       </div>
 
@@ -134,7 +134,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 </div>
                 <Link
                   href="/my/masters"
-                  className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all shadow-sm"
+                  className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground text-xs font-bold hover:opacity-90 active:scale-[0.97] cursor-pointer transition-all"
                 >
                   Знайти майстрів
                 </Link>
@@ -162,7 +162,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 aria-pressed={referralSubTab === 'c2c'}
                 onClick={() => setReferralSubTab('c2c')}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
+                  "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
                   referralSubTab === 'c2c' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
                 )}
               >
@@ -173,7 +173,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 aria-pressed={referralSubTab === 'c2b'}
                 onClick={() => setReferralSubTab('c2b')}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer",
+                  "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
                   referralSubTab === 'c2b' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
                 )}
               >
@@ -223,7 +223,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                             </p>
                           </div>
                           {m.balance > 0 && (
-                            <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-primary/15 text-primary">
+                            <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-accent/15 text-accent">
                               +{m.balance}%
                             </span>
                           )}
@@ -232,14 +232,14 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                           <button
                             type="button"
                             onClick={() => handleShare(m.shareLink, m.masterName, m.c2cDiscountPct)}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all animate-none"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.97] cursor-pointer transition-all"
                           >
                             <Share2 size={12} /> Поділитись
                           </button>
                           <button
                             type="button"
                             onClick={() => copyToClipboard(m.shareLink, m.masterId)}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary/80 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary active:scale-[0.95] cursor-pointer transition-all"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary/80 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary active:scale-[0.97] cursor-pointer transition-all"
                           >
                             {copied === m.masterId ? <><Check size={12} /> Скопійовано</> : <><Copy size={12} /> Копіювати</>}
                           </button>
@@ -250,10 +250,8 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 </motion.div>
               ) : (
                 <motion.div key="c2b" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="flex flex-col gap-4">
-                  {/* C2B — existing Refer & Earn */}
                   <div className="bento-card overflow-hidden border-none shadow-xl shadow-accent/10">
                     <div className="bg-gradient-to-br from-accent to-accent/80 p-6 text-primary-foreground relative overflow-hidden">
-                      {/* Decorative background element */}
                       <div className="absolute -right-6 -top-6 size-32 bg-accent-foreground/10 rounded-full blur-2xl" />
 
                       <div className="flex justify-between items-start mb-5 relative z-10">
@@ -276,7 +274,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                             type="button"
                             onClick={() => copyToClipboard(inviteLink, 'c2b')}
                             aria-label={copied === 'c2b' ? 'Скопійовано' : 'Скопіювати'}
-                            className="bg-primary-foreground text-accent p-2.5 rounded-lg hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all shadow-sm"
+                            className="bg-primary-foreground text-accent p-2.5 rounded-lg hover:opacity-90 active:scale-[0.97] cursor-pointer transition-all shadow-sm"
                           >
                             {copied === 'c2b' ? <Check size={18} /> : <Copy size={18} />}
                           </button>
@@ -298,7 +296,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
 
                   <div className="flex flex-col gap-3 mt-2">
                     <div className="flex items-center gap-2 px-1">
-                      <Ticket size={14} className="text-primary/60" />
+                      <Ticket size={14} className="text-accent/60" />
                       <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">Твої Бонуси за Майстрів</h3>
                     </div>
                     {promocodes.length === 0 ? (
@@ -336,16 +334,16 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                           <div className="flex flex-col items-end gap-1.5">
                             <div className={cn(
                               "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm",
-                              pc.isUsed ? "bg-secondary text-muted-foreground" : "bg-primary/15 text-primary"
+                              pc.isUsed ? "bg-secondary text-muted-foreground" : "bg-accent/15 text-accent"
                             )}>
                               {pc.isUsed ? (
                                 <>Використано</>
                               ) : (
-                                <><div className="size-1.5 rounded-full bg-primary animate-pulse" /> Активний</>
+                                <><div className="size-1.5 rounded-full bg-accent animate-pulse" /> Активний</>
                               )}
                             </div>
                             {!pc.isUsed && (
-                              <Link href={`/${pc.masterSlug}`} className="text-[11px] font-bold text-accent hover:text-accent/80 flex items-center gap-1 active:scale-[0.95] cursor-pointer transition-all">
+                              <Link href={`/${pc.masterSlug}`} className="text-[11px] font-bold text-accent hover:text-accent/80 flex items-center gap-1 active:scale-[0.97] cursor-pointer transition-all">
                                 Записатись <ArrowRight size={12} />
                               </Link>
                             )}
@@ -373,66 +371,80 @@ function rewardLabel(type: string, value: number): string {
 function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: number }) {
   const percent = Math.min((p.currentVisits / p.targetVisits) * 100, 100);
   const isCompleted = p.currentVisits >= p.targetVisits;
+  const SPRING = { type: 'spring' as const, stiffness: 300, damping: 24 };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, type: 'spring' as const, stiffness: 300, damping: 24 }}
-      className="bento-card p-4"
+      transition={{ delay: index * 0.06, ...SPRING }}
+      className="bento-card overflow-hidden"
     >
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="size-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-accent/15 text-accent overflow-hidden relative">
-            {p.masterAvatarUrl ? (
-              <Image src={p.masterAvatarUrl} alt={p.masterName} fill className="object-cover" />
-            ) : (
-              p.masterEmoji
-            )}
-          </div>
-          <span className="text-sm font-medium text-foreground truncate">{p.masterName}</span>
+      {/* Top avatar strip */}
+      <div className="h-16 bg-accent/8 flex items-center justify-center relative">
+        <div className="size-12 rounded-full bg-background border-2 border-background shadow-sm overflow-hidden relative flex items-center justify-center text-2xl">
+          {p.masterAvatarUrl ? (
+            <Image src={p.masterAvatarUrl} alt={p.masterName} fill className="object-cover" />
+          ) : (
+            p.masterEmoji
+          )}
         </div>
-        <Link
-          href={`/${p.masterSlug}`}
-          className="flex-shrink-0 text-[11px] font-semibold text-accent hover:text-accent/90 transition-all px-2.5 py-1 rounded-lg bg-accent/10 hover:bg-accent/20 active:scale-[0.95] cursor-pointer"
-        >
-          Записатись
-        </Link>
+        {isCompleted && (
+          <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-full bg-success text-white leading-none">
+            Готово
+          </span>
+        )}
       </div>
 
-      <p className="text-sm font-bold text-foreground mb-3">{p.name}</p>
+      {/* Content */}
+      <div className="p-4">
+        {/* Master name + book CTA */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span className="text-sm font-semibold text-foreground truncate">{p.masterName}</span>
+          <Link
+            href={`/${p.masterSlug}`}
+            className="flex-shrink-0 text-[11px] font-semibold text-accent-foreground bg-accent px-3 py-1.5 rounded-lg hover:opacity-90 active:scale-[0.97] transition-all cursor-pointer min-h-[32px] flex items-center"
+          >
+            Записатись
+          </Link>
+        </div>
 
-      <div className="w-full h-3 rounded-full overflow-hidden bg-secondary">
-        <motion.div
-          className="h-full rounded-full bg-accent"
-          initial={{ width: 0 }}
-          animate={{ width: `${percent}%` }}
-          transition={{ delay: index * 0.06 + 0.15, duration: 0.7, ease: 'easeOut' }}
-        />
-      </div>
+        {/* Program name */}
+        <p className="text-xs text-muted-foreground mb-3 leading-snug">{p.name}</p>
 
-      <div className="flex items-center justify-between mt-2 gap-2">
-        <span className="text-xs text-muted-foreground">
-          {p.currentVisits} з {p.targetVisits} візитів
-        </span>
-        <span className="text-xs font-semibold text-accent">
+        {/* Visit counter */}
+        <div className="flex items-baseline gap-1 mb-2">
+          <span className="text-2xl font-bold text-foreground tabular-nums">{p.currentVisits}</span>
+          <span className="text-sm text-muted-foreground/60">/ {p.targetVisits} візитів</span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full h-1.5 rounded-full overflow-hidden bg-border/60">
+          <motion.div
+            className="h-full rounded-full bg-accent"
+            initial={{ width: 0 }}
+            animate={{ width: `${percent}%` }}
+            transition={{ delay: index * 0.06 + 0.15, duration: 0.7, ease: 'easeOut' }}
+          />
+        </div>
+
+        {/* Reward label */}
+        <p className="text-xs font-semibold text-accent mt-2">
           {rewardLabel(p.rewardType, p.rewardValue)}
-        </span>
-      </div>
+        </p>
 
-      {isCompleted && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: index * 0.06 + 0.4, type: 'spring' as const, stiffness: 300, damping: 20 }}
-          className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10"
-        >
-          <Check size={14} className="text-success shrink-0 mt-0.5" />
-          <p className="text-xs font-medium text-success">
-            Нагорода готова! Запишись щоб отримати
-          </p>
-        </motion.div>
-      )}
+        {isCompleted && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.06 + 0.4, ...SPRING }}
+            className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10"
+          >
+            <Check size={13} className="text-success shrink-0" />
+            <p className="text-xs font-medium text-success">Нагорода готова! Запишись щоб отримати</p>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 }

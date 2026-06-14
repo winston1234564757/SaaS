@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MapPin, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface Master {
@@ -17,6 +17,8 @@ interface Master {
   visitCount: number;
   lastVisitDate: string;
 }
+
+const SPRING = { type: 'spring', stiffness: 300, damping: 24 } as const;
 
 function relativeDate(dateStr: string): string {
   const today = new Date();
@@ -55,38 +57,41 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring' as const, stiffness: 300, damping: 24 }}
-          className="bento-card p-8 text-center"
+          transition={SPRING}
+          className="bento-card p-8 text-center flex flex-col items-center gap-4"
         >
-          <p className="text-sm font-medium text-foreground mb-1">
+          <p className="text-sm font-semibold text-foreground">
             Ти ще не записувалась до жодного майстра
           </p>
-          <p className="text-xs text-muted-foreground/60 mb-5">
-            Знайди свого ідеального майстра та запишись онлайн
+          <p className="text-xs text-muted-foreground/60">
+            Знайди майстра і запишись — це просто
           </p>
           <Link
             href="/explore"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all"
           >
             Знайти майстра
           </Link>
         </motion.div>
       )}
 
-      {/* Masters list */}
+      {/* Portrait grid */}
       {masters.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {masters.map((master, index) => (
-            <MasterCard key={master.id} master={master} index={index} />
-          ))}
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            {masters.map((master, index) => (
+              <MasterCard key={master.id} master={master} index={index} />
+            ))}
+          </div>
+
           <Link
             href="/explore"
-            className="w-full flex items-center justify-center gap-2 py-3.5 mt-2 rounded-lg bg-secondary/50 text-muted-foreground font-semibold hover:bg-secondary active:scale-[0.95] transition-all border border-secondary text-sm cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary/50 text-muted-foreground font-semibold hover:bg-secondary active:scale-[0.97] transition-all border border-border text-sm"
           >
             <Search size={15} />
             Знайти нових майстрів
           </Link>
-        </div>
+        </>
       )}
     </div>
   );
@@ -97,53 +102,69 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring' as const, stiffness: 300, damping: 24 }}
-      className="bento-card p-4"
+      transition={{ delay: Math.min(index * 0.04, 0.3), ...SPRING }}
     >
-      <div className="flex items-center gap-3">
-        {/* Avatar */}
-        <div
-          className="size-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15 overflow-hidden relative"
-        >
-          {master.avatarUrl ? (
-            <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" />
-          ) : (
-            master.avatarEmoji
-          )}
-        </div>
+      <Link href={`/${master.slug}`} className="block">
+        <div className="bento-card overflow-hidden hover:-translate-y-0.5 transition-transform duration-150 active:scale-[0.97]">
 
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-foreground truncate">{master.name}</p>
+          {/* Photo zone */}
+          <div className="relative h-40 bg-accent/10">
+            {master.avatarUrl ? (
+              <Image
+                src={master.avatarUrl}
+                alt={master.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, 33vw"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-4xl">
+                {master.avatarEmoji}
+              </div>
+            )}
 
-          {master.categories.length > 0 && (
-            <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">
-              {master.categories.join(' · ')}
-            </p>
-          )}
-
-          {master.city && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <MapPin size={11} className="text-muted-foreground/60 flex-shrink-0" />
-              <span className="text-xs text-muted-foreground/60 truncate">{master.city}</span>
+            {/* Visit count badge — top right */}
+            <div className="absolute top-2 right-2 flex items-center bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-semibold text-white">
+                {master.visitCount} {pluralUk(master.visitCount, 'візит', 'візити', 'візитів')}
+              </span>
             </div>
-          )}
 
-          <p className="text-xs text-muted-foreground mt-1">
-            {master.visitCount} {pluralUk(master.visitCount, 'візит', 'візити', 'візитів')} · Останній: {relativeDate(master.lastVisitDate)}
-          </p>
+            {/* Last visit badge — bottom left */}
+            <div className="absolute bottom-2 left-2 flex items-center bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-medium text-white/90">
+                {relativeDate(master.lastVisitDate)}
+              </span>
+            </div>
+          </div>
+
+          {/* Text zone */}
+          <div className="p-3">
+            <p className="text-sm font-semibold text-foreground truncate">{master.name}</p>
+
+            {master.categories.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {master.categories.slice(0, 2).map((cat) => (
+                  <span
+                    key={cat}
+                    className="text-[10px] font-medium text-muted-foreground/70 border border-border/60 px-1.5 py-0.5 rounded-full"
+                  >
+                    {cat}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <Link
+              href={`/${master.slug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2.5 flex items-center justify-center w-full py-2 rounded-xl bg-accent text-accent-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.97] transition-all min-h-[36px]"
+            >
+              Записатись
+            </Link>
+          </div>
         </div>
-
-        {/* Book button */}
-        <Link
-          href={`/${master.slug}`}
-          className="flex-shrink-0 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
-        >
-          Записатись
-        </Link>
-      </div>
+      </Link>
     </motion.div>
   );
 }
-
-
