@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 15/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-14
+**Прогрес:** 16/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-14
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -21,8 +21,8 @@
 | 13 | T13 | Записи: баг буферу 10 хв між записами | ✅ | `focused-fix` | `9b5fdde` | smartSlots.ts: `b.end` → `b.end + bufferMinutes` — backward buffer enforcement |
 | 14 | T14 | Конструктор сторіс (ПК+мобайл): розширення робочої зони | ✅ | `senior-frontend` + `impeccable` | `6cc91f2` `aeb10fa` `8d39a4d` `51e8875` `0fa2aab` | Two-column sticky desktop; ResizeObserver scale; hotfix-5: lg:flex-wrap; **mobile redesign (51e8875)**: two-section split lg:hidden/hidden lg:flex; preview-first (ResizeObserver mobileScale); grid-cols-4 photo picker; flex-wrap mode tabs (no page h-scroll); **hotfix-6 (0fa2aab)**: grid-cols-2 pos/text + glass full-width + pill switches (motion.div knob, role=switch) |
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ✅ | `focused-fix` + `senior-backend` | `51f0ba7` `f2b24bf` | some→every cascade; /100 price fix; SW_NAVIGATE→shared; /goto redirect page (iOS/Android hint); remove onlyApplePush → no double delivery; gotoUrl() всі 19 TG кнопок |
-| 16 | **T16** | **Клієнтський навбар: redesign + Каталог + desktop notif + /explore редизайн** | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | — |
-| 17 | T17 | /my/masters: картка майстра → як картка товару | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
+| 16 | T16 | Клієнтський навбар: redesign + Каталог + desktop notif + /explore редизайн | ✅ | `impeccable` craft+shape | `e5e15d8` | MyBottomNav 5 items + LayoutGroup pill; ExplorePage portrait grid max-w-2xl; ClientNotificationsBell; PublicNavbar RSC slot |
+| 17 | **T17** | **/my/masters: картка майстра → як картка товару** | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | — |
 | 18 | T18 | Оптимізація завантаження сторінки послуг | ⬜ | `performance-profiler` + `senior-backend` | — | — |
 | 19 | T19 | /my/bookings: повний аудит + premium redesign | ⬜ | `impeccable` + `redesign-existing-projects` | — | — |
 | 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ⬜ | `senior-frontend` + `humanizer` | — | — |

@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 15/30 ✅
-**Наступна задача:** **T16 — Клієнтський навбар: redesign + Каталог + desktop notif**
+**Прогрес:** 16/30 ✅
+**Наступна задача:** **T17 — /my/masters: картка майстра → як картка товару**
 
 ---
 
@@ -408,12 +408,60 @@ TG inline keyboard buttons завжди відкриваються у власн
 
 ---
 
-## ▶ T16 — Клієнтський навбар: redesign + Каталог + desktop notif
+## ✅ T16 — Клієнтський навбар: redesign + Каталог + desktop notif + /explore redesign
+**Commit:** `e5e15d8`
+
+**Що зроблено:**
+
+**1. MyBottomNav.tsx (повний redesign)**
+- Nav items: Записи / Каталог (`/explore`) / Бонуси / Сповіщення / Профіль (5 items, Майстри прибрано)
+- LayoutGroup id="client-nav" + `motion.div layoutId="client-nav-active"` spring pill — sliding active indicator
+- `SPRING = { type: 'spring', stiffness: 400, damping: 30 } as const` (RULE 4)
+- Active: `text-foreground`, inactive: `text-muted-foreground/50`
+- `transition-all` → `transition-colors duration-150` (perf fix)
+
+**2. ExplorePage.tsx (повний redesign)**
+- `max-w-lg` → `max-w-2xl mx-auto` — ширший контейнер для discovery
+- Grid: `grid grid-cols-2 sm:grid-cols-3 gap-3` (портретні картки замість горизонтального списку)
+- MasterCard: `h-36` photo zone (object-cover / emoji centered) + `p-3` text zone (name + city + 2 chips)
+- Rating badge: overlay `bg-black/50 backdrop-blur-sm` в photo zone
+- `getCategoryIcon` switch → `CATEGORY_ICONS: Record<string, CatIconEntry>` data object + `CategoryIcon` component
+- Category chips: LayoutGroup id="explore-cats" + `layoutId="explore-cat-pill"` spring pill
+- `transition-all` → `transition-colors duration-150` всюди
+
+**3. ClientNotificationsBell.tsx (новий компонент)**
+- `hidden md:inline-flex` — desktop-only wrapper
+- `useClientNotifications(userId)` hook (новий, не MasterContext залежний)
+- Shake animation на нові unread: `motion.div animate={shaking ? { rotate: [...] } : { rotate: 0 }}`
+- Warning badge: `motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}`
+- Vaul drawer: `z-[140]` overlay, `z-[150]` content, `max-h-[78dvh]`, `rounded-t-[28px]`
+- Click routing: bookingId → `/my/bookings?bookingId=...`, else → `/my/notifications`
+- TYPE_CONFIG: booking_confirmed / booking_created / booking_cancelled / booking_reminder / support_reply
+
+**4. PublicNavbar.tsx + my/layout.tsx**
+- PublicNavbar: `{ notifBell?: React.ReactNode }` prop — RSC slot pattern (Server stays server)
+- `{notifBell}` рендериться між "Мої записи" і profile avatar
+- my/layout.tsx: `<PublicNavbar notifBell={<ClientNotificationsBell userId={user.id} />} />`
+- ClientNotificationsBell (Client) передається як ReactNode з Server Component (valid RSC pattern)
+
+**5. useClientNotifications.ts (новий хук)**
+- Path: `src/lib/supabase/hooks/useClientNotifications.ts`
+- `userId: string | null` prop (не MasterContext — клієнтська зона)
+- QueryKey: `['client-notifications', userId]`, staleTime: 30s
+- markAllRead(): optimistic setQueryData + DB update + invalidateQueries
+- Повертає: `{ notifications, unreadCount, markAllRead }`
+
+**Root cause:** `useNotifications` використовує `useMasterContext()` → недоступний для клієнтів. Рішення: окремий хук з `userId` prop.
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ▶ T17 — /my/masters: картка майстра → як картка товару
 
 **Де шукати:**
-- `src/app/my/` — client layout + pages
-- `src/components/shared/MobileHub.tsx` — поточний мобайл навбар (master)
-- `/explore` — каталог майстрів
+- `src/app/my/masters/` — список майстрів клієнта
+- `src/components/public/ExplorePage.tsx` — новий `MasterCard` (T16) як референс для portrait картки
 
 **Скіл:** `design-taste-frontend` + `impeccable`
 

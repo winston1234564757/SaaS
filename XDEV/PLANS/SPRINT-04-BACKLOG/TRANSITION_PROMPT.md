@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 15/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T16 — Клієнтський навбар: redesign + Каталог + desktop notif
+Прогрес: 16/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T17 — /my/masters: картка майстра → як картка товару
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
