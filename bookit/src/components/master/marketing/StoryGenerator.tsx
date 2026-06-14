@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Download, Loader2, Check, ToggleLeft, ToggleRight, X,
+  Download, Loader2, Check, X,
   Megaphone, Lock, Plus, Send
 } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -503,30 +503,32 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     </>
   );
 
-  // Shared settings rows (position/align/glass + avatar/sticker + cta)
+  // Shared settings rows (position/text grid-2 + glass full-width + pill switches + cta)
   const settingsRows = (
     <>
-      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
-        <div>
-          <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Позиція</label>
-          <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-            {(['top', 'center', 'bottom'] as const).map(pos => (
-              <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
-                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
-              </button>
-            ))}
+      <div className="pt-3 border-t border-border space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Позиція</label>
+            <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+              {(['top', 'center', 'bottom'] as const).map(pos => (
+                <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
+                  className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                  {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-        <div>
-          <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Текст</label>
-          <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-            {(['left', 'center', 'right'] as const).map(a => (
-              <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
-                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
-              </button>
-            ))}
+          <div>
+            <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Текст</label>
+            <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+              {(['left', 'center', 'right'] as const).map(a => (
+                <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
+                  className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                  {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div>
@@ -541,21 +543,35 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <button type="button" onClick={() => setShowAvatar(v => !v)}
-          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-          <div className="flex-1 min-w-0 text-left">
+        <button type="button" role="switch" aria-checked={showAvatar}
+          onClick={() => setShowAvatar(v => !v)}
+          className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
+          <div className="min-w-0 text-left">
             <p className="text-xs font-semibold text-foreground">Показувати фото</p>
-            <p className="text-[10px] text-muted-foreground/60 truncate">Аватар та ім&apos;я</p>
+            <p className="text-[10px] text-muted-foreground/60">Аватар та ім&apos;я</p>
           </div>
-          {showAvatar ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+          <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showAvatar ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
+            <motion.div
+              animate={{ x: showAvatar ? 26 : 2 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 } as const}
+              className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
+            />
+          </span>
         </button>
-        <button type="button" onClick={() => setShowSticker(v => !v)}
-          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-          <div className="flex-1 min-w-0 text-left">
+        <button type="button" role="switch" aria-checked={showSticker}
+          onClick={() => setShowSticker(v => !v)}
+          className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
+          <div className="min-w-0 text-left">
             <p className="text-xs font-semibold text-foreground">Кнопка запису</p>
-            <p className="text-[10px] text-muted-foreground/60 truncate">Стікер внизу сторіс</p>
+            <p className="text-[10px] text-muted-foreground/60">Стікер внизу сторіс</p>
           </div>
-          {showSticker ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+          <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showSticker ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
+            <motion.div
+              animate={{ x: showSticker ? 26 : 2 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 } as const}
+              className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
+            />
+          </span>
         </button>
       </div>
 
