@@ -21,7 +21,8 @@ export default async function Explore() {
       profiles ( full_name, avatar_url ),
       services ( id, is_active, price, name, is_popular ),
       schedule_templates ( day_of_week, is_working ),
-      reviews ( comment, created_at )
+      reviews ( comment, created_at ),
+      portfolio_items ( id, is_published, portfolio_item_photos ( url, display_order ) )
     `)
     .eq('is_published', true)
     .order('rating_count', { ascending: false })
@@ -67,6 +68,13 @@ export default async function Explore() {
       ? reviewList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]?.comment ?? null
       : null;
 
+    const portfolioPhotos = ((m.portfolio_items ?? []) as { is_published: boolean; portfolio_item_photos: { url: string; display_order: number }[] }[])
+      .filter(item => item.is_published)
+      .flatMap(item => (item.portfolio_item_photos ?? []).sort((a, b) => a.display_order - b.display_order))
+      .map(p => p.url as string)
+      .filter(Boolean)
+      .slice(0, 3);
+
     return {
       id: m.id as string,
       slug: m.slug as string,
@@ -86,6 +94,7 @@ export default async function Explore() {
       topServices,
       serviceNames,
       latestReview,
+      portfolioPhotos,
     };
   });
 

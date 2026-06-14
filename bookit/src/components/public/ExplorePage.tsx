@@ -68,6 +68,7 @@ interface Master {
   topServices: TopService[];
   latestReview: string | null;
   serviceNames: string;
+  portfolioPhotos: string[];
 }
 
 type SortMode = 'popular' | 'rating' | 'newest';
@@ -424,6 +425,8 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
           <div className="relative h-40">
             {master.avatarUrl ? (
               <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="(max-width: 640px) 50vw, 336px" />
+            ) : master.portfolioPhotos[0] ? (
+              <Image src={master.portfolioPhotos[0]} alt={master.name} fill className="object-cover" sizes="(max-width: 640px) 50vw, 336px" />
             ) : (
               <AvatarFallback name={master.name} textClassName="text-4xl" />
             )}
@@ -511,6 +514,8 @@ function MasterListCard({ master, index }: { master: Master; index: number }) {
           <div className="relative size-20 flex-shrink-0 rounded-xl overflow-hidden">
             {master.avatarUrl ? (
               <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="80px" />
+            ) : master.portfolioPhotos[0] ? (
+              <Image src={master.portfolioPhotos[0]} alt={master.name} fill className="object-cover" sizes="80px" />
             ) : (
               <AvatarFallback name={master.name} textClassName="text-2xl" />
             )}
@@ -570,8 +575,8 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
   return (
     <div className="bento-card overflow-hidden h-full flex flex-col">
 
-      {/* Photo zone — 50% */}
-      <Link href={`/${master.slug}`} className="relative flex-[0_0_50%] block">
+      {/* Photo zone — 45% if has portfolio, else 50% */}
+      <Link href={`/${master.slug}`} className={`relative block ${master.portfolioPhotos.length > 0 ? 'flex-[0_0_45%]' : 'flex-[0_0_50%]'}`}>
         {master.avatarUrl ? (
           <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
         ) : (
@@ -588,6 +593,17 @@ function MasterTikTokCard({ master, index }: { master: Master; index: number }) 
           </span>
         )}
       </Link>
+
+      {/* Portfolio strip */}
+      {master.portfolioPhotos.length > 0 && (
+        <div className="flex gap-px flex-none h-16 overflow-hidden">
+          {master.portfolioPhotos.map((url, i) => (
+            <div key={i} className="relative flex-1 overflow-hidden">
+              <Image src={url} alt="" fill className="object-cover" sizes="33vw" />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Info zone */}
       <div className="flex flex-col flex-1 p-4 gap-2.5 overflow-y-auto min-h-0">
