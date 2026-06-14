@@ -388,6 +388,24 @@ Listener був тільки в `DashboardLayout.tsx` (master routes). Кліє�
 
 **TSC:** 0 | **Build:** clean
 
+**Hotfix-7** (`f2b24bf`) — подвійне сповіщення + TG→PWA deep link:
+
+**4. BUG — Double delivery (TG + Push обидва приходять):**
+Після реактивації push subs юзер з APNs-only setup отримував і TG (бо `onlyApplePush=true`) і Push (APNs доставив). Root cause: попередній фікс `every()` → TG ЗАВЖДИ для Apple-only, незалежно від `pushDelivered`.
+Фікс (`NotificationOrchestrator.ts`): видалено `onlyApplePush` константу і умову. Тепер: `if (!pushDelivered)` — довіряємо APNs 201 = прийнято → доставить. TG тільки при реальному failure push.
+
+**5. TG button → opens in TG WebView (internal browser):**
+TG inline keyboard buttons завжди відкриваються у власному WebView, не в системному браузері → PWA не запускається.
+Фікс: `gotoUrl()` helper у `notifMap.ts` — всі 19 TG inline-keyboard URLs тепер ведуть через `/goto?url=...`.
+
+**6. NEW ROUTE — `/goto` redirect page:**
+`src/app/goto/page.tsx` + `src/app/goto/GotoClient.tsx`:
+- UA detection: `Telegram` in `navigator.userAgent` → показує hint
+- iOS Telegram: "Відкрити в Safari" (···→Відкрити в Safari інструкція) + кнопка з `target="_blank"`
+- Android Telegram: "Відкрити в Chrome" (⋮→Відкрити у Chrome) + кнопка
+- Не-Telegram UA: `window.location.replace(targetUrl)` — миттєвий редірект
+- Security: `rawUrl.startsWith('/')` guard — тільки відносні шляхи (захист від open redirect)
+
 ---
 
 ## ▶ T16 — Клієнтський навбар: redesign + Каталог + desktop notif
