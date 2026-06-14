@@ -127,12 +127,10 @@ export class NotificationOrchestrator {
 
     await Promise.all([inAppPromise, pushPromise]);
 
-    // ── 2. Telegram (if push didn't deliver or all subs are Apple APNs) ─────────
-    // Apple APNs returns HTTP 201 even when the device doesn't receive the notification,
-    // so pushDelivered=true can be a false positive when ALL subs are Safari Web Push.
-    // If at least one Chrome/Firefox sub delivered — trust it. Only fallback if every sub is Apple.
-    const onlyApplePush = pushSubs.length > 0 && pushSubs.every(s => s.endpoint.includes('web.push.apple.com'));
-    if (!pushDelivered || onlyApplePush) {
+    // ── 2. Telegram (push fallback only) ─────────────────────────────────────
+    // Trust pushDelivered: if any subscription returned 2xx, skip TG to avoid double delivery.
+    // APNs 201 = accepted by Apple servers → device will receive it.
+    if (!pushDelivered) {
       if (def.telegram && telegramChatId) {
         const { text, buttons } = def.telegram(data);
         const replyMarkup = buttons ? { inline_keyboard: buttons } : undefined;

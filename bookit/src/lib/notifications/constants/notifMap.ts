@@ -3,6 +3,12 @@ import { pluralUk } from '@/lib/utils/pluralUk';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua';
 
+// Wraps internal path through /goto so TG inline buttons land on the hint page
+// instead of Telegram's internal WebView. Non-Telegram browsers redirect instantly.
+function gotoUrl(path: string): string {
+  return `${SITE_URL}/goto?url=${encodeURIComponent(path)}`;
+}
+
 const UA_MONTHS = [
   'січня','лютого','березня','квітня','травня','червня',
   'липня','серпня','вересня','жовтня','листопада','грудня',
@@ -108,7 +114,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `💅 ${escHtml(d.services ?? '')}` +
         (d.totalPrice ? `\n💰 ${Math.round(d.totalPrice)} грн` : ''),
       buttons: d.bookingId
-        ? [[{ text: 'Відкрити запис', url: `${SITE_URL}/dashboard/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Відкрити запис', url: gotoUrl(`/dashboard/bookings?bookingId=${d.bookingId}`) }]]
         : undefined,
     }),
     sms: (d) =>
@@ -134,7 +140,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `📅 ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}`,
       buttons: d.bookingId
-        ? [[{ text: 'Деталі', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Деталі', url: gotoUrl(`/my/bookings?bookingId=${d.bookingId}`) }]]
         : undefined,
     }),
     sms: (d) =>
@@ -159,7 +165,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `📅 ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}`,
       buttons: d.bookingId
-        ? [[{ text: 'Мої записи', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Мої записи', url: gotoUrl(`/my/bookings?bookingId=${d.bookingId}`) }]]
         : undefined,
     }),
     sms: (d) =>
@@ -185,7 +191,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `📅 <b>Коли:</b> ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}\n` +
         `💅 <b>Послуги:</b> ${escHtml(d.services ?? '')}`,
       buttons: d.bookingId
-        ? [[{ text: 'Деталі запису', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Деталі запису', url: gotoUrl(`/my/bookings?bookingId=${d.bookingId}`) }]]
         : undefined,
     }),
     sms: (d) =>
@@ -209,7 +215,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `⭐ <b>Як пройшов візит?</b>\n\n` +
         `Залиште відгук для <b>${escHtml(d.masterName ?? '')}</b> — це допоможе іншим клієнтам.`,
       buttons: d.bookingId
-        ? [[{ text: 'Залишити відгук', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}&review=1` }]]
+        ? [[{ text: 'Залишити відгук', url: gotoUrl(`/my/bookings?bookingId=${d.bookingId}&review=1`) }]]
         : undefined,
     }),
     sms: null,
@@ -232,7 +238,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `⚠️ <b>Незавершені записи (${d.count})</b>\n\n` +
         `${d.bookingItems ?? ''}\n\n` +
         `Відмітьте їх як завершені, щоб клієнти могли залишити відгук.`,
-      buttons: [[{ text: 'Відкрити записи', url: `${SITE_URL}/dashboard/bookings` }]],
+      buttons: [[{ text: 'Відкрити записи', url: gotoUrl('/dashboard/bookings') }]],
     }),
     sms: null,
   },
@@ -256,7 +262,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `⏰ ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}`,
       buttons: d.bookingId
-        ? [[{ text: 'Деталі', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Деталі', url: gotoUrl(`/my/bookings?bookingId=${d.bookingId}`) }]]
         : undefined,
     }),
     sms: null,
@@ -281,7 +287,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `⏱ о ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}`,
       buttons: d.bookingId
-        ? [[{ text: 'Деталі', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Деталі', url: gotoUrl(`/my/bookings?bookingId=${d.bookingId}`) }]]
         : undefined,
     }),
     sms: (d) =>
@@ -307,7 +313,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `⏱ о ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}`,
       buttons: d.bookingId
-        ? [[{ text: 'Деталі', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        ? [[{ text: 'Деталі', url: gotoUrl(`/my/bookings?bookingId=${d.bookingId}`) }]]
         : undefined,
     }),
     sms: null,
@@ -329,7 +335,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
       text:
         `☀️ <b>Розклад на сьогодні</b>\n\n` +
         `${d.bookingItems ?? 'Записів немає — гарного дня!'}`,
-      buttons: [[{ text: 'Відкрити розклад', url: `${SITE_URL}/dashboard/bookings` }]],
+      buttons: [[{ text: 'Відкрити розклад', url: gotoUrl('/dashboard/bookings') }]],
     }),
     sms: null,
   },
@@ -351,7 +357,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `${'⭐'.repeat(d.rating ?? 5)} <b>Новий відгук</b>\n\n` +
         `👤 <b>${escHtml(d.clientName ?? '')}</b> — ${d.rating}/5\n` +
         (d.comment ? `💬 ${escHtml(d.comment)}\n` : ''),
-      buttons: [[{ text: 'Всі відгуки', url: `${SITE_URL}/dashboard/reviews` }]],
+      buttons: [[{ text: 'Всі відгуки', url: gotoUrl('/dashboard/reviews') }]],
     }),
     sms: null,
   },
@@ -373,7 +379,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `💆 <b>Час до ${escHtml(d.masterName ?? '')}?</b>\n\n` +
         `Минув час після вашого останнього візиту. Запишіться знову!`,
       buttons: d.masterSlug
-        ? [[{ text: 'Записатися', url: `${SITE_URL}/${d.masterSlug}` }]]
+        ? [[{ text: 'Записатися', url: gotoUrl(`/${d.masterSlug}`) }]]
         : undefined,
     }),
     sms: null,
@@ -396,7 +402,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `📸 <b>${escHtml(d.masterName ?? '')}</b> відмітив вас у роботі портфоліо:\n` +
         `«<b>${escHtml(d.portfolioItemTitle ?? '')}</b>»\n\n` +
         `Натисніть щоб підтвердити або відхилити участь.`,
-      buttons: [[{ text: 'Переглянути', url: `${SITE_URL}/my/notifications` }]],
+      buttons: [[{ text: 'Переглянути', url: gotoUrl('/my/notifications') }]],
     }),
     sms: null,
   },
@@ -418,7 +424,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `🛍 <b>Нове замовлення</b>\n\n` +
         `${escHtml(d.orderItems ?? '')}\n\n` +
         `Клієнт чекає підтвердження.`,
-      buttons: [[{ text: 'Деталі замовлення', url: `${SITE_URL}/dashboard/products` }]],
+      buttons: [[{ text: 'Деталі замовлення', url: gotoUrl('/dashboard/products') }]],
     }),
     sms: null,
   },
@@ -477,7 +483,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `Товар: <b>${escHtml(d.productName ?? '')}</b>\n` +
         `Залишилось: ${d.stockCount} шт.\n\n` +
         `Поповніть запаси вчасно.`,
-      buttons: [[{ text: 'Управління товарами', url: `${SITE_URL}/dashboard/products` }]],
+      buttons: [[{ text: 'Управління товарами', url: gotoUrl('/dashboard/products') }]],
     }),
     sms: null,
   },
@@ -520,7 +526,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `⏳ <b>Підписка закінчується за 3 дні</b>\n\n` +
         (d.expiresAt ? `Термін дії: до ${escHtml(d.expiresAt)}\n\n` : '') +
         `Поновіть підписку, щоб не втратити доступ до Pro-функцій.`,
-      buttons: [[{ text: 'Поновити підписку', url: `${SITE_URL}/dashboard/billing` }]],
+      buttons: [[{ text: 'Поновити підписку', url: gotoUrl('/dashboard/billing') }]],
     }),
     sms: null,
   },
@@ -541,7 +547,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
       text:
         `❌ <b>Оплата за підписку не пройшла</b>\n\n` +
         `Перевірте реквізити картки та переконайтесь, що на ній достатньо коштів.`,
-      buttons: [[{ text: 'Налаштування білінгу', url: `${SITE_URL}/dashboard/billing` }]],
+      buttons: [[{ text: 'Налаштування білінгу', url: gotoUrl('/dashboard/billing') }]],
     }),
     sms: () => `BookIT Pro: Оплата не пройшла. Перевірте картку на bookit.com.ua/billing`,
   },
@@ -562,7 +568,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
       text:
         `📉 <b>Акаунт переведено на Starter</b>\n\n` +
         `Pro-функції тимчасово недоступні. Поновіть підписку для відновлення доступу.`,
-      buttons: [[{ text: 'Поновити', url: `${SITE_URL}/dashboard/billing` }]],
+      buttons: [[{ text: 'Поновити', url: gotoUrl('/dashboard/billing') }]],
     }),
     sms: null,
   },
@@ -578,8 +584,8 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `👤 Від: <b>${escHtml(d.clientName ?? 'Користувач')}</b>\n` +
         `💬 Повідомлення: <i>${escHtml(d.comment ?? '')}</i>`,
       buttons: d.ticketId
-        ? [[{ text: 'Відкрити чат', url: `${SITE_URL}/admin/support?ticketId=${d.ticketId}` }]]
-        : [[{ text: 'Всі звернення', url: `${SITE_URL}/admin/support` }]],
+        ? [[{ text: 'Відкрити чат', url: gotoUrl(`/admin/support?ticketId=${d.ticketId}`) }]]
+        : [[{ text: 'Всі звернення', url: gotoUrl('/admin/support') }]],
     }),
     sms: null,
   },
@@ -600,7 +606,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
       text:
         `🎧 <b>Відповідь від підтримки BookIT</b>\n\n` +
         `💬 <i>${escHtml(d.comment ?? '')}</i>`,
-      buttons: [[{ text: 'Відкрити чат', url: `${SITE_URL}${d.userRole === 'client' ? '/my/support/chat' : '/dashboard/support/chat'}` }]],
+      buttons: [[{ text: 'Відкрити чат', url: gotoUrl(d.userRole === 'client' ? '/my/support/chat' : '/dashboard/support/chat') }]],
     }),
     sms: null,
   },
