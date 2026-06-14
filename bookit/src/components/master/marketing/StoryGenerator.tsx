@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Loader2, Check, ToggleLeft, ToggleRight, X,
-  Megaphone, Lock, Plus, Send, ChevronDown
+  Megaphone, Lock, Plus, Send
 } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
@@ -26,18 +26,16 @@ import { useServices, useActiveFlashDeals, useStarReviews } from './story/useSto
 import { exportCanvasPng } from './story/storyExport';
 import type { Mode, StoryGeneratorProps } from './story/storyTypes';
 
-const HINT_SPRING = { type: 'spring', stiffness: 380, damping: 28 } as const;
-
 export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug, initialMode, initialPortfolioId }: StoryGeneratorProps = {}) {
   const { profile, masterProfile } = useMasterContext();
   const { showToast } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
   const desktopPreviewPanelRef = useRef<HTMLDivElement>(null);
+  const mobilePreviewPanelRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [showScrollHint, setShowScrollHint] = useState(false);
-  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [desktopScale, setDesktopScale] = useState(0.8);
+  const [mobileScale, setMobileScale] = useState(0.7);
 
   const [isTMA, setIsTMA] = useState(false);
   useEffect(() => { setIsTMA(!!window.Telegram?.WebApp?.initData); }, []);
@@ -50,6 +48,17 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
       const pad = 56;
       const s = Math.min((width - pad) / 360, (height - pad) / 640, 1.1);
       setDesktopScale(Math.max(s, 0.5));
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const el = mobilePreviewPanelRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      setMobileScale(Math.max(Math.min((w - 24) / 360, 0.82), 0.55));
     });
     obs.observe(el);
     return () => obs.disconnect();
@@ -82,7 +91,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const [transparency, setTransparency] = useState(38);
 
   const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
   const firstWithPhoto = externalItems?.find(i => i.photos.length > 0);
@@ -128,10 +136,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
   const isStarterPlan = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
 
   const onControlChange = useCallback(() => {
-    setShowScrollHint(true);
-    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-    hintTimerRef.current = setTimeout(() => setShowScrollHint(false), 3_000);
-
     if (!PREMIUM_MODES.has(mode) || !isStarterPlan) return;
     if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
     setBlurActive(false);
@@ -285,7 +289,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
   const isBlurLocked = isPremiumLocked && blurActive;
 
-  // Mode-specific controls
+  // Mode-specific controls (shared between mobile and desktop)
   const controls = (
     <div className="space-y-3">
       {mode === 'announcement' && (
@@ -419,7 +423,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     </div>
   );
 
-  // Shared preview canvas
   const previewCanvas = (scale: number, radius: number) => (
     <div style={{
       width: 360 * scale, height: 640 * scale,
@@ -462,13 +465,256 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     </>
   );
 
+  // Shared download button JSX
+  const downloadBtn = (
+    <>
+      <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
+        className="w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
+        style={exported
+          ? { background: 'var(--success)', color: '#fff', boxShadow: '0 6px 20px color-mix(in srgb, var(--success) 30%, transparent)' }
+          : { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', boxShadow: '0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {exporting ? (
+            <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin" /> Генеруємо...
+            </motion.span>
+          ) : isBlurLocked ? (
+            <motion.span key="u" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+              <Lock size={16} /> Розблокувати на PRO
+            </motion.span>
+          ) : isPremiumLocked ? (
+            <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+              <Download size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити'}
+            </motion.span>
+          ) : exported ? (
+            <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+              <Check size={16} strokeWidth={3} /> {isTMA ? 'Відправлено!' : 'Збережено!'}
+            </motion.span>
+          ) : (
+            <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+              <Megaphone size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.button>
+      <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
+        {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
+      </p>
+    </>
+  );
+
+  // Shared settings rows (position/align/glass + avatar/sticker + cta)
+  const settingsRows = (
+    <>
+      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
+        <div>
+          <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Позиція</label>
+          <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+            {(['top', 'center', 'bottom'] as const).map(pos => (
+              <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
+                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Текст</label>
+          <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+            {(['left', 'center', 'right'] as const).map(a => (
+              <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
+                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
+                {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between items-center mb-1.5">
+            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Скло</label>
+            <span className="text-[10px] font-bold text-primary">{transparency}%</span>
+          </div>
+          <input type="range" min={0} max={100} step={1} value={transparency}
+            onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
+            aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <button type="button" onClick={() => setShowAvatar(v => !v)}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-xs font-semibold text-foreground">Показувати фото</p>
+            <p className="text-[10px] text-muted-foreground/60 truncate">Аватар та ім&apos;я</p>
+          </div>
+          {showAvatar ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+        </button>
+        <button type="button" onClick={() => setShowSticker(v => !v)}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-xs font-semibold text-foreground">Кнопка запису</p>
+            <p className="text-[10px] text-muted-foreground/60 truncate">Стікер внизу сторіс</p>
+          </div>
+          {showSticker ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
+        </button>
+      </div>
+
+      {showSticker && (
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
+          <div className="flex gap-2 items-center">
+            <input
+              value={ctaText}
+              onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
+              maxLength={28}
+              placeholder="Записатися онлайн"
+              className="flex-1 outline-none text-sm"
+              style={INPUT_STYLE}
+            />
+            <span className="text-[10px] text-muted-foreground/60 shrink-0">{ctaText.length}/28</span>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   const contentBody = (
     <div>
-      {/* ─── Two-column: wide controls (left) + fixed preview (right) ─── */}
-      <div className="flex flex-col lg:flex-row lg:items-start">
 
-        {/* Controls panel — flex-1, multi-column dense grid */}
-        <div className="flex-1 min-w-0 px-5 lg:px-6 py-5 space-y-4 max-w-2xl mx-auto lg:max-w-none lg:mx-0">
+      {/* ─── MOBILE LAYOUT (< lg) ─── */}
+      <div className="lg:hidden flex flex-col">
+
+        {/* Mode tabs — flex-wrap, no horizontal overflow */}
+        <div className="flex flex-wrap gap-1.5 px-4 pt-4 pb-3">
+          {MODES.map(m => {
+            const active = m.id === mode;
+            const Icon = m.Icon;
+            return (
+              <button key={m.id} type="button" aria-pressed={active}
+                onClick={() => { setMode(m.id); onControlChange(); }}
+                className={cn(
+                  "flex items-center gap-1 px-3 py-2 rounded-2xl text-[11px] font-semibold transition-colors duration-150 cursor-pointer active:scale-[0.88]",
+                  active
+                    ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
+                    : "bg-secondary/70 text-text-secondary border border-border"
+                )}>
+                <Icon size={12} strokeWidth={2.5} />
+                {m.label}
+                {m.premium && (
+                  <span className={cn("text-[9px] font-bold px-1 py-0.5 rounded-md",
+                    active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Preview — at top, ResizeObserver-scaled */}
+        <div
+          ref={mobilePreviewPanelRef}
+          className="flex justify-center items-center py-5 px-4"
+          style={{ background: 'color-mix(in srgb, var(--secondary) 18%, transparent)' }}
+        >
+          <div style={{ position: 'relative', width: 360 * mobileScale, height: 640 * mobileScale }}>
+            {previewCanvas(mobileScale, Math.round(20 * mobileScale))}
+            {previewOverlay(mobileScale)}
+          </div>
+        </div>
+
+        {/* Controls area */}
+        <div className="px-4 py-4 space-y-4">
+
+          {/* Photo picker — grid 4-col */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <button type="button"
+                onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }}
+                aria-label="Без фону"
+                className={`aspect-square rounded-xl flex items-center justify-center border-2 transition-colors duration-150 cursor-pointer active:scale-[0.88] ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
+                <X size={18} />
+              </button>
+              <button type="button" onClick={() => fileInputRef.current?.click()}
+                className="aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 border-dashed border-border bg-secondary/40 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors duration-150 cursor-pointer active:scale-[0.88]">
+                <Plus size={14} />
+                <span className="text-[8px] font-semibold">Фото</span>
+              </button>
+              {customBgPhoto && (
+                <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
+                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-colors duration-150 cursor-pointer active:scale-[0.88] ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}`}>
+                  <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
+                  {(!selectedBgPhotoId && customBgPhoto) && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>
+                  )}
+                </button>
+              )}
+              {portfolioItems.map(item => (
+                <button key={item.id} type="button"
+                  onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
+                  aria-label={item.title ?? 'Фото з портфоліо'}
+                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-colors duration-150 cursor-pointer active:scale-[0.88] ${selectedBgPhotoId === item.id ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}`}>
+                  <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
+                  {selectedBgPhotoId === item.id && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Palette */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
+            <div className="flex gap-2 flex-wrap">
+              {PALETTES.map((p, i) => (
+                <button key={p.id} type="button" aria-label={p.label} aria-pressed={i === palIdx}
+                  onClick={() => { setPalIdx(i); onControlChange(); }}
+                  className="relative size-7 rounded-full transition-colors duration-150 cursor-pointer"
+                  style={{
+                    background: p.bg,
+                    border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
+                    boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
+                  }}>
+                  {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={10} style={{ color: p.text }} strokeWidth={3} /></span>}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground/60 mt-1.5">{PALETTES[palIdx].label}</p>
+          </div>
+
+          {/* Mode controls */}
+          {controls}
+
+          {/* Premium teaser */}
+          <AnimatePresence mode="popLayout">
+            {isPremiumLocked && upgradeCopy && (
+              <motion.button type="button"
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}
+                className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left"
+                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
+                onClick={() => setShowUpgradeModal(true)}>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-foreground">{upgradeCopy.teaserTitle}</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug truncate">{upgradeCopy.teaserDesc}</p>
+                </div>
+                <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          {settingsRows}
+          {downloadBtn}
+
+        </div>
+      </div>
+
+      {/* ─── DESKTOP LAYOUT (≥ lg) — T14 unchanged ─── */}
+      <div className="hidden lg:flex lg:flex-row lg:items-start">
+
+        {/* Controls panel */}
+        <div className="flex-1 min-w-0 px-6 py-5 space-y-4">
 
           {/* Mode tabs */}
           <div className="flex gap-2 overflow-x-auto lg:overflow-x-visible lg:flex-wrap pb-0.5" style={{ scrollbarWidth: 'none' }}>
@@ -493,14 +739,12 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
 
           {/* Photo picker + Palette side by side */}
           <div className="grid grid-cols-[1fr_152px] gap-4 items-start">
-            {/* Photo picker */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
                   <Plus size={11} /> Завантажити
                 </button>
-                <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
               </div>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 lg:overflow-x-visible lg:flex-wrap">
                 <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
@@ -525,8 +769,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 ))}
               </div>
             </div>
-
-            {/* Palette */}
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
               <div className="flex gap-2 flex-wrap">
@@ -546,10 +788,10 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             </div>
           </div>
 
-          {/* Mode-specific controls */}
+          {/* Mode controls */}
           {controls}
 
-          {/* Premium teaser (compact inline) */}
+          {/* Premium teaser */}
           <AnimatePresence mode="popLayout">
             {isPremiumLocked && upgradeCopy && (
               <motion.button type="button"
@@ -566,129 +808,15 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             )}
           </AnimatePresence>
 
-          {/* Plate position + Text align + Transparency in 3 columns */}
-          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
-            <div>
-              <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Позиція</label>
-              <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-                {(['top', 'center', 'bottom'] as const).map(pos => (
-                  <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
-                    className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                    {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Текст</label>
-              <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-                {(['left', 'center', 'right'] as const).map(a => (
-                  <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
-                    className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                    {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Скло</label>
-                <span className="text-[10px] font-bold text-primary">{transparency}%</span>
-              </div>
-              <input type="range" min={0} max={100} step={1} value={transparency}
-                onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
-                aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
-            </div>
-          </div>
-
-          {/* Avatar + Sticker toggles side by side (compact) */}
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => setShowAvatar(v => !v)}
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-xs font-semibold text-foreground">Показувати фото</p>
-                <p className="text-[10px] text-muted-foreground/60 truncate">Аватар та ім&apos;я</p>
-              </div>
-              {showAvatar ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
-            </button>
-            <button type="button" onClick={() => setShowSticker(v => !v)}
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-xs font-semibold text-foreground">Кнопка запису</p>
-                <p className="text-[10px] text-muted-foreground/60 truncate">Стікер внизу сторіс</p>
-              </div>
-              {showSticker ? <ToggleRight size={22} className="text-primary shrink-0" strokeWidth={1.8} /> : <ToggleLeft size={22} className="text-muted-foreground/60 shrink-0" strokeWidth={1.8} />}
-            </button>
-          </div>
-
-          {/* CTA text input (only when sticker on) */}
-          {showSticker && (
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
-              <div className="flex gap-2 items-center">
-                <input
-                  value={ctaText}
-                  onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
-                  maxLength={28}
-                  placeholder="Записатися онлайн"
-                  className="flex-1 outline-none text-sm"
-                  style={INPUT_STYLE}
-                />
-                <span className="text-[10px] text-muted-foreground/60 shrink-0">{ctaText.length}/28</span>
-              </div>
-            </div>
-          )}
-
-          {/* Download button */}
-          <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
-            className="w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
-            style={exported
-              ? { background: 'var(--success)', color: '#fff', boxShadow: '0 6px 20px color-mix(in srgb, var(--success) 30%, transparent)' }
-              : { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', boxShadow: '0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-            <AnimatePresence mode="popLayout" initial={false}>
-              {exporting ? (
-                <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Loader2 size={16} className="animate-spin" /> Генеруємо...
-                </motion.span>
-              ) : isBlurLocked ? (
-                <motion.span key="u" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Lock size={16} /> Розблокувати на PRO
-                </motion.span>
-              ) : isPremiumLocked ? (
-                <motion.span key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Download size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити'}
-                </motion.span>
-              ) : exported ? (
-                <motion.span key="d" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Check size={16} strokeWidth={3} /> {isTMA ? 'Відправлено!' : 'Збережено!'}
-                </motion.span>
-              ) : (
-                <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Megaphone size={16} /> {isTMA ? 'Отримати в Telegram' : 'Завантажити для Сторіс'}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
-
-          <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
-            {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
-          </p>
-
-          {/* Mobile preview — below all controls, lg:hidden */}
-          <div ref={previewRef} className="lg:hidden flex flex-col items-center gap-3 pt-4 border-t border-border">
-            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
-            <div style={{ position: 'relative', width: 252, height: 448 }}>
-              {previewCanvas(0.7, 20)}
-              {previewOverlay(0.7)}
-            </div>
-          </div>
+          {settingsRows}
+          {downloadBtn}
 
         </div>
 
-        {/* ─── Preview panel — fixed width, far right, sticky ─── */}
+        {/* Sticky preview panel */}
         <div
           ref={desktopPreviewPanelRef}
-          className="hidden lg:flex shrink-0 w-[280px] xl:w-[360px] flex-col items-center justify-center self-start sticky top-24 h-[calc(100vh-6rem)] border-l border-border"
+          className="flex shrink-0 w-[280px] xl:w-[360px] flex-col items-center justify-center self-start sticky top-24 h-[calc(100vh-6rem)] border-l border-border"
           style={{ background: 'color-mix(in srgb, var(--secondary) 25%, transparent)' }}
         >
           <div className="flex flex-col items-center gap-4">
@@ -708,37 +836,8 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     <>
       <UpgradePromptModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} source="marketing" feature={upgradeCopy?.modalTitle} description={upgradeCopy?.modalDesc} />
 
-      {/* Mobile floating scroll-to-preview button */}
-      <AnimatePresence>
-        {showScrollHint && (
-          <motion.div
-            className="fixed bottom-6 inset-x-0 flex justify-center z-[60] pointer-events-none lg:hidden"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={HINT_SPRING}
-          >
-            <motion.button
-              type="button"
-              animate={{ y: [0, 4, 0] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-              onClick={() => {
-                previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setShowScrollHint(false);
-              }}
-              className="pointer-events-auto flex items-center gap-2 px-5 py-3 rounded-full"
-              style={{
-                background: 'var(--accent)',
-                color: 'var(--accent-on)',
-                boxShadow: '0 8px 28px color-mix(in srgb, var(--accent) 45%, transparent)',
-              }}
-            >
-              <ChevronDown size={16} strokeWidth={2.5} />
-              <span className="text-sm font-semibold">Переглянути результат</span>
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Hidden file input — single instance, works for both mobile + desktop triggers */}
+      <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
 
       <AnimatePresence>
         {exporting && (
