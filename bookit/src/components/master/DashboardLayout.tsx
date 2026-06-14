@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { MasterProvider, useMasterContext } from '@/lib/supabase/context';
 import { useRealtimeNotifications } from '@/lib/supabase/hooks/useRealtimeNotifications';
@@ -53,20 +53,8 @@ function ThemeApplier() {
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
   useRealtimeNotifications();
-  const router = useRouter();
   const pathname = usePathname();
   const isChatRoute = pathname === '/dashboard/support/chat';
-
-  useEffect(() => {
-    if (!navigator.serviceWorker) return;
-    const handler = (e: MessageEvent) => {
-      if (e.data?.type === 'SW_NAVIGATE' && typeof e.data.url === 'string') {
-        router.push(e.data.url);
-      }
-    };
-    navigator.serviceWorker.addEventListener('message', handler);
-    return () => navigator.serviceWorker.removeEventListener('message', handler);
-  }, [router]);
 
   if (isChatRoute) {
     return (

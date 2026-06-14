@@ -106,7 +106,7 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `👤 ${escHtml(d.clientName ?? '')}\n` +
         `📅 ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}` +
-        (d.totalPrice ? `\n💰 ${Math.round(d.totalPrice / 100)} грн` : ''),
+        (d.totalPrice ? `\n💰 ${Math.round(d.totalPrice)} грн` : ''),
       buttons: d.bookingId
         ? [[{ text: 'Відкрити запис', url: `${SITE_URL}/dashboard/bookings?bookingId=${d.bookingId}` }]]
         : undefined,
@@ -151,13 +151,16 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
     push: (d) => ({
       title: '❌ Запис скасовано',
       body: `${fmtDate(d.date!)} о ${fmtTime(d.startTime!)} — ${d.services}`,
-      url: '/my/bookings',
+      url: d.bookingId ? `/my/bookings?bookingId=${d.bookingId}` : '/my/bookings',
     }),
     telegram: (d) => ({
       text:
         `❌ <b>Запис скасовано</b>\n\n` +
         `📅 ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}`,
+      buttons: d.bookingId
+        ? [[{ text: 'Мої записи', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        : undefined,
     }),
     sms: (d) =>
       `BookIT: Запис ${fmtDate(d.date!)} о ${fmtTime(d.startTime!)} скасовано.`,
@@ -303,6 +306,9 @@ export const notifMap: Record<NotifEventType, NotifTemplate> = {
         `👤 ${escHtml(d.masterName ?? '')}\n` +
         `⏱ о ${fmtTime(d.startTime!)}\n` +
         `💅 ${escHtml(d.services ?? '')}`,
+      buttons: d.bookingId
+        ? [[{ text: 'Деталі', url: `${SITE_URL}/my/bookings?bookingId=${d.bookingId}` }]]
+        : undefined,
     }),
     sms: null,
   },

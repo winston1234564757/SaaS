@@ -60,10 +60,23 @@ const CLIENT_EVENTS: NotifEventType[] = [
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({})) as { userId?: string; eventsFilter?: string[] };
-    const userId = body.userId ?? '551c7a11-a02b-4944-9b34-594c41ccb951';
+    const body = await request.json().catch(() => ({})) as {
+      userId?: string;
+      email?: string;
+      eventsFilter?: string[];
+      cleanupExpired?: boolean;
+    };
 
     const admin = createAdminClient();
+
+    // Support email lookup in addition to direct userId
+    let userId = body.userId ?? '551c7a11-a02b-4944-9b34-594c41ccb951';
+    if (body.email) {
+      const { data: authUser } = await admin.auth.admin.listUsers();
+      const found = authUser?.users?.find(u => u.email === body.email);
+      if (!found) return NextResponse.json({ error: `User not found for email=${body.email}` }, { status: 404 });
+      userId = found.id;
+    }
 
     const { data: masterProf, error: mErr } = await admin
       .from('master_profiles')
@@ -79,10 +92,20 @@ export async function POST(request: Request) {
       .select('endpoint')
       .eq('user_id', userId);
 
+    // Optionally clean up obviously stale subscriptions (>20 for same user = leftover test subs)
+    if (body.cleanupExpired && pushSubs && pushSubs.length > 20) {
+      const toDelete = pushSubs.slice(0, pushSubs.length - 3).map(s => s.endpoint);
+      await admin.from('push_subscriptions').delete().in('endpoint', toDelete);
+    }
+
     const masterId    = masterProf.id;
     const recipientId = userId;
 
-    const results: { event: string; role: string; result: { inApp: boolean; push: boolean; telegram: boolean; sms: boolean } }[] = [];
+    const results: {
+      event: string;
+      role: string;
+      result: { inApp: boolean; push: boolean; telegram: boolean; sms: boolean };
+    }[] = [];
     const filterSet = body.eventsFilter ? new Set(body.eventsFilter) : null;
 
     const run = async (event: NotifEventType, role: 'master' | 'client') => {
@@ -100,14 +123,25 @@ export async function POST(request: Request) {
     for (const ev of MASTER_EVENTS) await run(ev, 'master');
     for (const ev of CLIENT_EVENTS)  await run(ev, 'client');
 
+    // Summary table for quick reading
+    const summary = results.map(r => ({
+      event:    r.event,
+      role:     r.role,
+      inApp:    r.result.inApp    ? '✅' : '—',
+      push:     r.result.push     ? '✅' : '—',
+      telegram: r.result.telegram ? '✅' : '—',
+      sms:      r.result.sms      ? '✅' : '—',
+    }));
+
     return NextResponse.json({
       userId,
       masterProfileId: masterId,
       businessName:    masterProf.business_name,
       telegramChatId:  masterProf.telegram_chat_id,
       pushSubsCount:   pushSubs?.length ?? 0,
-      pushEndpoints:   pushSubs?.map(s => s.endpoint.slice(0, 60) + '…') ?? [],
+      pushEndpoints:   pushSubs?.map(s => s.endpoint.slice(0, 70) + '…') ?? [],
       eventsFired:     results.length,
+      summary,
       results,
     });
 
