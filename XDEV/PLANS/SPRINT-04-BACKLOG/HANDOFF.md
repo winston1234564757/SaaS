@@ -497,6 +497,34 @@ TG inline keyboard buttons завжди відкриваються у власн
 
 ---
 
+## ✅ T16-ext-2 — /explore full redesign (impeccable craft)
+**Commit:** `e59ff92`
+
+**Що зроблено** (`src/components/public/ExplorePage.tsx` — +307/-126):
+
+1. **Category section redesign** — square tiles 76×68px → horizontal pill chips (`rounded-full px-3.5 py-2 h-36px`); count number removed; active = `bg-accent`
+2. **MasterCard photo zone** — `h-40` → `h-56` (224px); portfolio strip `h-10` завжди видимий (навіть якщо є avatarUrl); inner divs `h-full` для Image fill
+3. **PRO badge** — `bg-warning` → `bg-accent text-accent-foreground` (Frost brand, committed color strategy)
+4. **FeaturedCard + featured row** — новий `FeaturedCard` (w-36, h-24 photo) + `РЕКОМЕНДУЄМО` row: показується коли `!isFiltered && grid && proMasters.length >= 2`
+5. **Pagination** — `PAGE_SIZE=12`; `useEffect` скидає page при зміні фільтрів; "Показати ще N" button внизу
+6. **Search upgrade** — `bg-white/70` glass + focus: `py-3.5 bg-white shadow-md border-accent/50 ring-2 ring-accent/15`
+7. **Result count** — `AnimatePresence` з'являється під search при `isFiltered` (opacity+y, без height animation)
+8. **Empty state** — Sparkles icon в `rounded-2xl bg-accent/10` + "Скинути фільтри" CTA button
+9. **Footer** — показується тільки коли `!hasMore && filtered.length>0`; accent card блок з Link
+10. **Header** — `text-4xl` → `text-3xl`; subtitle "Нігті · Волосся · Брови · Макіяж"
+11. **List card** — `size-20` → `size-[88px]`; `ArrowUpRight` видалено
+12. **Dropdowns** — `bg-secondary` → `bg-white/60 border border-border/50`
+
+**Design brief** (impeccable shape → craft):
+- Register: product | Color: Committed (Frost accent indigo 30-60%)
+- Scene: girl on metro, daylight, phone vertical, 5 min between stops
+- References: Behance portfolio discovery + Linear precision filter
+
+**Removed imports:** `ArrowUpRight` | **Added:** `ArrowRight`, `useEffect`
+**TSC:** 0 | **Build:** clean
+
+---
+
 ## ▶ T18 — Оптимізація завантаження сторінки послуг
 
 **Де шукати:**
