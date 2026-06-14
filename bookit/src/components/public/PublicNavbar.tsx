@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Search, Gift, User, LogIn, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 
-export async function PublicNavbar() {
+export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user ?? null;
@@ -63,6 +63,7 @@ export async function PublicNavbar() {
               >
                 Мої записи
               </Link>
+              {notifBell}
               <Link
                 href="/my/profile"
                 className="size-8 ml-1 rounded-lg bg-primary/20 flex items-center justify-center text-primary hover:bg-primary/30 active:scale-[0.95] transition-all cursor-pointer"

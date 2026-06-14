@@ -6,6 +6,7 @@ import { MasterModeBanner } from '@/components/client/MasterModeBanner';
 import { ChannelBanner } from '@/components/client/ChannelBanner';
 import { B2CRouteGuard } from '@/components/client/B2CRouteGuard';
 import { PublicNavbar } from '@/components/public/PublicNavbar';
+import { ClientNotificationsBell } from '@/components/client/ClientNotificationsBell';
 import { SmartBackButton } from '@/components/shared/SmartBackButton';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
 
@@ -80,7 +81,7 @@ export default async function MyLayout({ children }: { children: React.ReactNode
 
   return (
     <div data-theme="frost" className="min-h-dvh pt-[env(safe-area-inset-top)] md:pt-20">
-      <PublicNavbar />
+      <PublicNavbar notifBell={<ClientNotificationsBell userId={user.id} />} />
       <SmartBackButton floating />
       <BlobBackground />
       {isMasterInClientMode && <MasterModeBanner />}
