@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 25/34 ✅ Sprint-04 IN PROGRESS
+Прогрес: 26/34 ✅ Sprint-04 IN PROGRESS
 Наступна: T-phone — /my/setup/phone onboarding redesign з нуля (CLIENT ZONE Deploy #21)
-Стан: T-chat ✅ DONE — /my/messages client↔master direct messaging: conversations+direct_messages tables, MessagesListPage+DirectChatPage+ConversationRow, useDMChat+useUnreadDMCount hooks, Бонуси→Чат nav swap, read receipts, iOS keyboard push-up, image attachments. T-chat-kbd merged. Commit: e3273aa.
+Стан: T33 ✅ DONE — Лендинг консистентність: LandingPricing (Starter 8 фіч, Studio→Waitlist), LandingMagic/BentoFeatures/Economy/Marquee (до 32%/27%), BillingPage sync. Commit: e01e138.
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

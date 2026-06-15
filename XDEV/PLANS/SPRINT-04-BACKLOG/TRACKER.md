@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 25/34 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 26/34 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -52,7 +52,7 @@
 | 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | — | Три глобальних паттерни: adaptive contrast (mix-blend/hook), smart tooltip hook (viewport-aware flip+shift), fit-text component (ResizeObserver scale) |
 | 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | ✅ | `spec-driven-workflow` + `create-migration` + `senior-backend` | `e7645f9` | migration 141 (auto_flash_on_cancel + discount_pct); createFlashDealInternal; RPC bug fix (p_slot_timestamp); AutoFlashSettingsCard toggle+pills; encoding hotfix 6 landing files |
-| 34 | T33 | Лендинг: повна консистентність тарифів | ⬜ | `humanizer` + `senior-frontend` | — | — |
+| 34 | T33 | Лендинг: повна консистентність тарифів | ✅ | `humanizer` + `senior-frontend` | `e01e138` | LandingPricing Studio→Waitlist; Starter 8 фіч; softened metrics до 32%/27%; BillingPage sync |
 
 ---
 
