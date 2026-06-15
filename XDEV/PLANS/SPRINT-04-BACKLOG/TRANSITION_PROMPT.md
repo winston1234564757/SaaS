@@ -1,4 +1,4 @@
-# Sprint-04 Transition Prompt
+﻿# Sprint-04 Transition Prompt
 
 > **ONE TASK = ONE SESSION** — залізне правило.
 > Копіюй і вставляй на початку КОЖНОЇ нової сесії Sprint-04.
@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 26/34 ✅ Sprint-04 IN PROGRESS
-Наступна: T-phone — /my/setup/phone onboarding redesign з нуля (CLIENT ZONE Deploy #21)
-Стан: T33 ✅ DONE — Лендинг консистентність: LandingPricing (Starter 8 фіч, Studio→Waitlist), LandingMagic/BentoFeatures/Economy/Marquee (до 32%/27%), BillingPage sync. Commit: e01e138.
+Прогрес: 27/34 ✅ Sprint-04 IN PROGRESS
+Наступна: T-QA-explore — /explore: фото h-[192px]→h-[134px] (-30%) + теги/статуси в scrollable strip (сесія 2/4 QA спринту)
+Стан: T-QA-bookings ✅ DONE — 6 QA fixes /my/bookings. Commit: 731ea92. Стан T33: Лендинг консистентність: LandingPricing (Starter 8 фіч, Studio→Waitlist), LandingMagic/BentoFeatures/Economy/Marquee (до 32%/27%), BillingPage sync. Commit: e01e138.
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

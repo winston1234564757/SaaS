@@ -1,4 +1,4 @@
-# Sprint-04 HANDOFF
+﻿# Sprint-04 HANDOFF
 > Читай цей файл ПЕРШИМ на початку кожної нової сесії.
 > Тут повний стан спринту: що зроблено, що далі, всі деталі задач.
 
@@ -58,6 +58,23 @@
 
 ---
 
+
+## T-QA-bookings - /my/bookings: 6 QA fixes (post T-chat deploy)
+**Commit:** `731ea92`
+
+**Що зроблено:**
+1. **1.1 MasterGroup 2-row header** — видалено truncate з masterName. Новий layout: row1 (avatar 44px + name + visit count), row2 (2 full-width buttons min-h-[44px]: Написати + Записатись знову).
+2. **1.2 Service pills** — HeroCard: shown.slice(0,3) з pill chips (bg-background/70 border border-border/60 rounded-full px-2.5 py-1). CompactBookingRow: first service pill (max-w-[130px] truncate) + extra count.
+3. **1.3 Cross-master conflict** — createBooking.ts step 7.7: SELECT client's pending/confirmed bookings on same date (neq master_id), check time overlap (startTime < b.end_time AND endTime > b.start_time), return error 'У вас вже є запис на цей час'.
+4. **1.4 HeroCard single-row** — isToday banner з absolute → inline chip (text-[9px] rounded-full bg-primary) поруч з ім'ям. flex items-center gap-3. Avatar 56px (було 72px).
+5. **1.5 Tab border removed** — sticky wrapper: видалено border-b border-border.
+6. **1.6 Orders admin client** — page.tsx: createAdminClient() для orders query (bypasses RLS що приховував pending/new замовлення клієнтів).
+
+**Root cause 1.6:** orders table RLS policy не давала клієнтам читати не-completed замовлення. Admin client bypass — безпечно (серверний компонент, user.id фільтр).
+**Root cause 1.3:** Unique index лише на (master_id, date, start_time) — не захищав від запису до РІЗНИХ майстрів в той самий час.
+**UI slot blocking (defer):** marking client-blocked slots in DateTimePicker requires threading clientBlockedRanges through /[slug]/page.tsx → PublicMasterPage → wizard state → useBookingScheduleData → slot rendering. Separate mini-task.
+
+---
 ## ▶ T-phone — /my/setup/phone: Onboarding Phone Redesign (Deploy #21)
 **Статус:** NEXT
 **Скіли:** `design-taste-frontend` + `impeccable`
