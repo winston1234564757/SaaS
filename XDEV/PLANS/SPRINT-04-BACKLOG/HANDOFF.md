@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 17/30 ✅ (T16 🔄 explore Phase 3/5 in progress)
-**Наступна задача:** **T16 — /explore PHASE 3 (critique → layout → bolder) → PHASE 4 (animate) → PHASE 5 (audit → ship)**
+**Прогрес:** 18/30 ✅ (Deploy-14 /explore ✅ DONE)
+**Наступна задача:** **T18 — Оптимізація завантаження сторінки послуг**
 **Оновлено:** 2026-06-15
 
 ---
@@ -566,6 +566,28 @@ TG inline keyboard buttons завжди відкриваються у власн
 - `CATEGORY_ALIASES` — мастери зі старим label 'Брови/Вії' продовжують показуватись у фільтрі 'brows'
 
 **TSC:** 0 errors | **Build:** clean
+
+**Deploy-14 Phases 3-5 (commit `3e151e5`) — critique → animate → ship:**
+
+**Phase 3 — Critique + Layout + Bolder + Harden:**
+- `critique` 15/40 → 36/40: photos cut-off fix (aspect-[3/4]), minPrice guard (`> 0`), empty `<span />` → `<span aria-hidden="true" />`, BottomNav gap (`pb-24`)
+- `layout`: CategoryPills → `overflow-x-auto scrollbar-hide` horizontal scroll (removed grid); FeaturedCard `w-[140px] h-[90px]` compact; safe-area paddingTop formula
+- `bolder`: Great Vibes hero `text-[3.5rem]` → `text-[4rem] leading-[0.88]`; subtitle `text-[11px] uppercase tracking-wider text-muted-foreground/40`; `РЕКОМЕНДУЄМО` → `Рекомендуємо` (`font-black text-accent tracking-[0.2em]`)
+- `harden`: `MotionConfig reducedMotion="user"` wrapper; `FeaturedCard` + `MasterCard` `useState` photo error + `onError` fallback; `stripErrors: Set<number>` per-image; `minPrice > 0` guard; geolocation deny → `geoError` nudge (не silent fail); `haversineKm` called only when both coords present
+
+**Phase 4 — Animate (emil-design-eng):**
+- Filter chips `ActiveFiltersBar`: `scale: 0.85→0.92` (from 0.85 felt too aggressive)
+- SortDropdown: `transformOrigin: 'top right'`; PriceDropdown: `transformOrigin: 'top left'`
+- Dropdowns: click-outside + Escape key via `useRef` + `useEffect`
+- Search clear button: `<AnimatePresence><motion.button>` scale 0.6→1→0.6, duration 0.12s
+- Empty state icon: `motion.div` scale 0.8→1 + delay 0.06s
+- Load more button: `active:scale-[0.97]`
+
+**Phase 5 — Audit + Polish + Humanizer:**
+- `audit` 15/20 → 18/20: search `aria-label` added; `focus-visible:ring-2 ring-accent/50 ring-offset-1`; chip × button `size-4→size-5`
+- `polish`: category label `/45→/60` contrast; CTA `text-[11px]→text-xs`
+- `humanizer`: geo error em dash removed — "Геолокацію заблоковано — дозволь..." → "...заблоковано. Дозволь..."
+- TSC: 0 | Build: clean | Deploy: `3e151e5` → bookit-k57ww43im-winston1234564757s-projects.vercel.app
 
 **Deploy-14 ext (commits `c2c3c12` `0bd45a4`) — explore UI polish iterations:**
 

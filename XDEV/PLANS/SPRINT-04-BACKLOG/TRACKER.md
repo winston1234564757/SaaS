@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 17/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 18/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -21,7 +21,7 @@
 | 13 | T13 | Записи: баг буферу 10 хв між записами | ✅ | `focused-fix` | `9b5fdde` | smartSlots.ts: `b.end` → `b.end + bufferMinutes` — backward buffer enforcement |
 | 14 | T14 | Конструктор сторіс (ПК+мобайл): розширення робочої зони | ✅ | `senior-frontend` + `impeccable` | `6cc91f2` `aeb10fa` `8d39a4d` `51e8875` `0fa2aab` | Two-column sticky desktop; ResizeObserver scale; hotfix-5: lg:flex-wrap; **mobile redesign (51e8875)**: two-section split lg:hidden/hidden lg:flex; preview-first (ResizeObserver mobileScale); grid-cols-4 photo picker; flex-wrap mode tabs (no page h-scroll); **hotfix-6 (0fa2aab)**: grid-cols-2 pos/text + glass full-width + pill switches (motion.div knob, role=switch) |
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ✅ | `focused-fix` + `senior-backend` | `51f0ba7` `f2b24bf` | some→every cascade; /100 price fix; SW_NAVIGATE→shared; /goto redirect page (iOS/Android hint); remove onlyApplePush → no double delivery; gotoUrl() всі 19 TG кнопок |
-| 16 | T16 | Клієнтський навбар: redesign + Каталог + /explore (Deploy-14 Phase 2/5) | 🔄 | `impeccable` + `design-taste-frontend` | `947311e` `e59ff92` `eae2f99` `c2c3c12` `0bd45a4` `28a5a40` | navbar+explore base; h-56 cards+pagination; FROM SCRATCH: Great Vibes hero, geo, smart sort, 7 filters, 2-row dropdowns. Phase 3 next: critique→layout→bolder→colorize |
+| 16 | T16 | Клієнтський навбар: redesign + Каталог + /explore (Deploy-14 ✅) | ✅ | `impeccable` + `design-taste-frontend` + `emil-design-eng` | `947311e` `e59ff92` `eae2f99` `c2c3c12` `0bd45a4` `28a5a40` `3e151e5` | navbar+explore base; FROM SCRATCH: Great Vibes hero, geo, smart sort, 7 filters, 2-row dropdowns. Phases 3-5: critique(15→36/40)+layout+bolder+harden+animate+audit(15→18/20)+polish+humanizer. Deploy-14 shipped |
 | 17 | T17 | /my/* повний візуальний редизайн (masters, loyalty, notifications) | ✅ | `design-taste-frontend` + `impeccable` | `830acd4` | portrait 2-col grid; loyalty progress; date-grouped notifications |
 | 17b | T-card | Картка майстра: повний редизайн (повний цикл) | ⬜ | `ui-ux-pro-max` → `impeccable shape` → `design-taste-frontend` → `impeccable critique` + `animate` | — | brainstorm → shape → design → critique → animate → ship (explore + /my/masters) |
 | 18 | **T18** | **Оптимізація завантаження сторінки послуг** | **▶ NEXT** | `performance-profiler` + `senior-backend` | — | — |
