@@ -1,11 +1,11 @@
 'use client';
 
 import { Fragment, useRef } from 'react';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
+import { LANDING_SPRING } from './shared/CountUp';
 
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const PAINS = [
@@ -31,7 +31,6 @@ const PAINS = [
   },
 ];
 
-// Split body into sentences keeping punctuation
 function splitSentences(text: string): string[] {
   return text.split(/(?<=[.?!]) /).filter(Boolean);
 }
@@ -39,6 +38,7 @@ function splitSentences(text: string): string[] {
 function PainItem({ item }: { item: typeof PAINS[0] }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
+  const shouldReduce = useReducedMotion();
   const sentences = splitSentences(item.body);
 
   return (
@@ -47,11 +47,12 @@ function PainItem({ item }: { item: typeof PAINS[0] }) {
       initial={{ opacity: 0, y: 32, scale: 0.97 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.65, ease: easeOut }}
-      className="flex items-start gap-7 p-7 rounded-[1.25rem]"
+      whileHover={shouldReduce ? {} : { y: -3, scale: 1.01 }}
+      className="flex items-start gap-7 p-8 rounded-[1.25rem]"
       style={{
-        background: 'var(--l-surface, rgba(248,250,252,0.65))',
+        background: 'var(--l-surface)',
         border: '1px solid var(--l-border)',
-        boxShadow: '0 2px 20px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.02)',
+        boxShadow: 'var(--l-shadow-card)',
       }}
     >
       {/* Number */}
@@ -60,14 +61,16 @@ function PainItem({ item }: { item: typeof PAINS[0] }) {
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.9, ease: easeOut, delay: 0.04 }}
         className="font-[family-name:var(--font-cormorant)] font-semibold leading-none select-none flex-shrink-0 pt-0.5"
-        style={{ fontSize: 'clamp(2.2rem, 3.5vw, 3.2rem)', color: 'var(--l-border-2)' }}
+        style={{
+          fontSize: 'clamp(3rem, 6vw, 5rem)',
+          color: 'color-mix(in srgb, var(--l-indigo) 28%, transparent)',
+        }}
         aria-hidden="true"
       >
         {item.no}
       </motion.span>
 
       <div className="flex-1 min-w-0">
-        {/* Word-by-word h3 — title and body start simultaneously */}
         <h3 className="font-semibold leading-snug mb-3" style={{ fontSize: '1.1rem', color: 'var(--l-ink)' }}>
           {item.title.split(' ').map((word, wi, arr) => (
             <span
@@ -92,7 +95,6 @@ function PainItem({ item }: { item: typeof PAINS[0] }) {
           ))}
         </h3>
 
-        {/* Sentence-by-sentence body — starts at same base delay as title first word */}
         <p className="text-[0.9rem] leading-relaxed" style={{ color: 'var(--l-muted)' }}>
           {sentences.map((sentence, si, arr) => (
             <Fragment key={si}>
@@ -118,14 +120,15 @@ function PainItem({ item }: { item: typeof PAINS[0] }) {
 export function LandingAgitation() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   });
   const isDesktop = useIsDesktop();
-  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-8%']);
-  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-2%']);
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-8%']);
+  const headingYMobile  = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-2%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
@@ -140,7 +143,7 @@ export function LandingAgitation() {
         style={{
           width: 500,
           height: 500,
-          background: 'radial-gradient(circle, rgba(99,102,241,0.055) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, var(--l-blob-indigo-xs) 0%, transparent 70%)',
           top: '-12%',
           right: '-6%',
         }}
@@ -155,7 +158,7 @@ export function LandingAgitation() {
               <motion.span
                 initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
                 animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-                transition={{ ...spring, delay: 0.05 }}
+                transition={{ ...LANDING_SPRING, delay: 0.05 }}
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-6"
                 style={{ color: 'var(--l-indigo)' }}
               >
@@ -171,7 +174,7 @@ export function LandingAgitation() {
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ ...spring, delay: 0.32 }}
+                transition={{ ...LANDING_SPRING, delay: 0.32 }}
                 className="mt-5 text-base leading-relaxed"
                 style={{ color: 'var(--l-muted)', maxWidth: 280 }}
               >
@@ -180,7 +183,7 @@ export function LandingAgitation() {
             </motion.div>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             {PAINS.map((p, i) => (
               <PainItem key={i} item={p} />
             ))}

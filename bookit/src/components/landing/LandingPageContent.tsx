@@ -12,6 +12,8 @@ import { LandingMarquee } from '@/components/landing/LandingMarquee';
 import { LandingAgitation } from '@/components/landing/LandingAgitation';
 import { LandingMagic } from '@/components/landing/LandingMagic';
 import { LandingBentoFeatures } from '@/components/landing/LandingBentoFeatures';
+import { LandingFeatures } from '@/components/landing/LandingFeatures';
+import { LandingTestimonials } from '@/components/landing/LandingTestimonials';
 import { LandingIntegrations } from '@/components/landing/LandingIntegrations';
 import { LandingClientFlow } from '@/components/landing/LandingClientFlow';
 import { LandingComparison } from '@/components/landing/LandingComparison';
@@ -37,11 +39,13 @@ const SECTIONS: SectionDef[] = [
   { Component: LandingAgitation,     id: 'sec-agitation',    overlap: true  },
   { Component: LandingMagic,         id: 'sec-magic',        overlap: true  },
   { Component: LandingBentoFeatures, id: 'sec-bento',        overlap: true  },
+  { Component: LandingFeatures,      id: 'sec-features',     overlap: true  },
   { Component: LandingIntegrations,  id: 'sec-integrations', overlap: true  },
   { Component: LandingClientFlow,    id: 'sec-client-flow',  overlap: true  },
   { Component: LandingComparison,    id: 'sec-comparison',   overlap: true  },
   { Component: LandingProcess,       id: 'sec-process',      overlap: false },
   { Component: LandingEconomy,       id: 'sec-economy',      overlap: true  },
+  { Component: LandingTestimonials,  id: 'sec-testimonials', overlap: true  },
   { Component: LandingPricing,       id: 'sec-pricing',      overlap: true  },
   { Component: LandingFAQ,           id: 'sec-faq',          overlap: false },
   { Component: LandingFooterCTA,     id: 'sec-footer-cta',   overlap: true  },

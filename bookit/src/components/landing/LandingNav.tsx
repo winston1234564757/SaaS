@@ -13,6 +13,7 @@ const NAV_LINKS = [
 ];
 
 const spring = { type: 'spring', stiffness: 280, damping: 26 } as const;
+const focusRing = 'focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:ring-offset-2 focus-visible:rounded-sm focus-visible:outline-none';
 
 export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -46,7 +47,10 @@ export function LandingNav() {
           {/* Left: logo */}
           <Link
             href="/"
-            className="font-[family-name:var(--font-cormorant)] font-semibold flex-shrink-0 tracking-tight"
+            className={cn(
+              'font-[family-name:var(--font-cormorant)] font-bold flex-shrink-0 tracking-tight',
+              focusRing
+            )}
             style={{ fontSize: 'clamp(1.4rem, 3vw, 1.75rem)', color: 'var(--l-ink)' }}
           >
             bookit<span style={{ color: 'var(--l-indigo)' }}>.</span>
@@ -55,52 +59,48 @@ export function LandingNav() {
           {/* Center: primary CTA */}
           <Link
             href="/register"
-            className="group flex items-center gap-2 text-sm font-semibold pl-5 pr-2.5 py-2 rounded-full transition-all active:scale-[0.97] mx-auto"
+            className={cn(
+              'group flex items-center gap-2 text-sm font-semibold pl-5 pr-2.5 py-2 rounded-full transition-all active:scale-[0.97] mx-auto',
+              focusRing
+            )}
             style={{
               background: 'var(--l-accent)',
-              color: '#F8FAFC',
+              color: 'var(--l-accent-on)',
               boxShadow: '0 2px 16px rgba(15,23,42,0.22)',
               whiteSpace: 'nowrap',
             }}
           >
             Спробувати безкоштовно
-            <div data-impeccable-variants="f98252b8" data-impeccable-variant-count="3" style={{ display: "contents" }}>
-              {/* impeccable-variants-start f98252b8 */}
-              {/* Original */}
-              <div data-impeccable-variant="original">
-                <div data-impeccable-variants="f98252b8" data-impeccable-variant-count="3" style={{ display: "contents" }}>
-                  {/* impeccable-variants-start f98252b8 */}
-                  {/* Original */}
-                  <div data-impeccable-variant="original">
-                    <span
-                      className="size-6 rounded-full flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                      style={{ background: 'rgba(248,250,252,0.18)' }}
-                    >
-                      <ArrowUpRight size={12} aria-hidden="true" />
-                    </span>
-                  </div>
-                  {/* Variants: insert below this line */}
-                  {/* impeccable-variants-end f98252b8 */}
-                </div>
-              </div>
-              {/* Variants: insert below this line */}
-              {/* impeccable-variants-end f98252b8 */}
-            </div>
+            <span
+              className="size-6 rounded-full flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+              style={{ background: 'rgba(248,250,252,0.18)' }}
+              aria-hidden="true"
+            >
+              <ArrowUpRight size={12} aria-hidden="true" />
+            </span>
           </Link>
 
           {/* Right: login + mobile hamburger */}
           <div className="flex items-center justify-end gap-2">
             <Link
               href="/login"
-              className="hidden sm:block text-sm font-medium px-3 py-1.5 transition-opacity hover:opacity-60"
+              className={cn(
+                'hidden sm:block text-sm font-medium px-3 py-1.5 transition-opacity hover:opacity-60',
+                focusRing
+              )}
               style={{ color: 'var(--l-muted)' }}
             >
               Увійти
             </Link>
-            <button type="button"
+            <button
+              type="button"
               onClick={() => setOpen(true)}
-              className="sm:hidden size-9 flex flex-col items-center justify-center gap-[5px] rounded-full transition-colors hover:bg-black/5"
+              className={cn(
+                'sm:hidden size-9 flex flex-col items-center justify-center gap-[5px] rounded-full transition-colors hover:bg-black/5',
+                focusRing
+              )}
               aria-label="Відкрити навігацію"
+              aria-expanded={open}
             >
               <span className="w-4 h-[1.5px] block" style={{ background: 'var(--l-ink)' }} />
               <span className="w-4 h-[1.5px] block" style={{ background: 'var(--l-ink)' }} />
@@ -127,9 +127,13 @@ export function LandingNav() {
               >
                 bookit<span style={{ color: 'var(--l-indigo)' }}>.</span>
               </span>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => setOpen(false)}
-                className="size-10 flex items-center justify-center rounded-full transition-colors"
+                className={cn(
+                  'size-11 flex items-center justify-center rounded-full transition-colors hover:bg-black/5',
+                  focusRing
+                )}
                 style={{ background: 'var(--l-surface-2)', border: '1px solid var(--l-border)' }}
                 aria-label="Закрити навігацію"
               >
@@ -150,7 +154,10 @@ export function LandingNav() {
                   <Link
                     href={l.href}
                     onClick={() => setOpen(false)}
-                    className="block text-[2.5rem] font-[family-name:var(--font-cormorant)] font-semibold py-5 leading-none transition-colors"
+                    className={cn(
+                      'block text-[2.5rem] font-[family-name:var(--font-cormorant)] font-semibold py-5 leading-none transition-opacity hover:opacity-70',
+                      focusRing
+                    )}
                     style={{
                       color: 'var(--l-ink)',
                       borderBottom: '1px solid var(--l-border)',
@@ -171,10 +178,13 @@ export function LandingNav() {
               <Link
                 href="/register"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center h-14 rounded-2xl font-semibold text-base active:scale-[0.97] transition-all"
+                className={cn(
+                  'flex items-center justify-center h-14 rounded-2xl font-semibold text-base active:scale-[0.97] transition-all',
+                  focusRing
+                )}
                 style={{
                   background: 'var(--l-accent)',
-                  color: '#F8FAFC',
+                  color: 'var(--l-accent-on)',
                   boxShadow: '0 4px 20px rgba(15,23,42,0.22)',
                 }}
               >

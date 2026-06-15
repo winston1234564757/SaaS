@@ -1,25 +1,25 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
-
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
+import { LANDING_SPRING } from './shared/CountUp';
 
 export function LandingHero() {
   const sectionRef = useRef<HTMLElement>(null);
+  const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end start'],
   });
 
-  const textY       = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
-  const mockupRotX  = useTransform(scrollYProgress, [0, 0.45], [36, 0]);
-  const mockupScale = useTransform(scrollYProgress, [0, 0.45], [0.95, 1]);
-  const mockupY     = useTransform(scrollYProgress, [0, 1], ['0%', '6%']);
+  const textY      = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '18%']);
+  const mockupRotX = useTransform(scrollYProgress, [0, 0.45], shouldReduce ? [0, 0] : [36, 0]);
+  const mockupScale= useTransform(scrollYProgress, [0, 0.45], shouldReduce ? [1, 1] : [0.95, 1]);
+  const mockupY    = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '6%']);
 
   return (
     <section
@@ -27,16 +27,43 @@ export function LandingHero() {
       className="relative overflow-hidden"
       style={{ minHeight: '100dvh', background: 'var(--l-bg)' }}
     >
-      {/* Frost gradient blobs */}
+      <style>{`
+        @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+          .l-blob-1 { animation: lBlobDrift1 22s ease-in-out infinite; }
+          .l-blob-2 { animation: lBlobDrift2 28s ease-in-out infinite; }
+          .l-blob-3 { animation: lBlobDrift3 34s ease-in-out infinite; }
+        }
+        @keyframes lBlobDrift1 {
+          0%,100% { transform: scale(1) translate(0,0); }
+          33% { transform: scale(1.06) translate(2%,1%); }
+          66% { transform: scale(0.96) translate(-1%,2%); }
+        }
+        @keyframes lBlobDrift2 {
+          0%,100% { transform: scale(1) translate(0,0); }
+          50% { transform: scale(1.05) translate(-2%,-1%); }
+        }
+        @keyframes lBlobDrift3 {
+          0%,100% { transform: scale(1) translate(0,0); }
+          40% { transform: scale(1.08) translate(1%,-2%); }
+          80% { transform: scale(0.97) translate(-1%,1%); }
+        }
+      `}</style>
+
+      {/* Frost gradient blobs — split for independent drift animation */}
       <div
-        className="pointer-events-none absolute inset-0"
+        className="l-blob-1 pointer-events-none absolute inset-0"
         aria-hidden="true"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse 100% 55% at 50% -5%, rgba(99,102,241,0.22) 0%, transparent 60%),' +
-            'radial-gradient(ellipse 55% 40% at 88% 5%, rgba(139,92,246,0.14) 0%, transparent 50%),' +
-            'radial-gradient(ellipse 40% 30% at 8% 95%, rgba(59,130,246,0.10) 0%, transparent 45%)',
-        }}
+        style={{ background: 'radial-gradient(ellipse 100% 55% at 50% -5%, var(--l-blob-indigo) 0%, transparent 60%)' }}
+      />
+      <div
+        className="l-blob-2 pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{ background: 'radial-gradient(ellipse 55% 40% at 88% 5%, var(--l-blob-violet) 0%, transparent 50%)' }}
+      />
+      <div
+        className="l-blob-3 pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{ background: 'radial-gradient(ellipse 40% 30% at 8% 95%, var(--l-blob-blue) 0%, transparent 45%)' }}
       />
 
       {/* Text block */}
@@ -47,11 +74,11 @@ export function LandingHero() {
         <motion.span
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.08 }}
+          transition={{ ...LANDING_SPRING, delay: 0.08 }}
           className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] px-4 py-1.5 rounded-full mb-9"
           style={{
-            background: 'rgba(99,102,241,0.10)',
-            border: '1px solid rgba(99,102,241,0.20)',
+            background: 'var(--l-blob-indigo-sm)',
+            border: '1px solid var(--l-blob-badge)',
             color: 'var(--l-indigo)',
           }}
         >
@@ -66,9 +93,9 @@ export function LandingHero() {
         <motion.h1
           initial={{ opacity: 0, y: 36 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.16 }}
+          transition={{ ...LANDING_SPRING, delay: 0.16 }}
           className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.9] tracking-tight text-balance"
-          style={{ fontSize: 'clamp(3.4rem, 9.5vw, 7.5rem)', color: 'var(--l-accent)' }}
+          style={{ fontSize: 'clamp(3.4rem, 9.5vw, 8.5rem)', color: 'var(--l-accent)' }}
         >
           Більше записів.
           <br />
@@ -78,7 +105,7 @@ export function LandingHero() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.26 }}
+          transition={{ ...LANDING_SPRING, delay: 0.36 }}
           className="mt-6 text-base sm:text-lg leading-relaxed max-w-md"
           style={{ color: 'var(--l-muted)' }}
         >
@@ -88,29 +115,37 @@ export function LandingHero() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.36 }}
+          transition={{ ...LANDING_SPRING, delay: 0.48 }}
           className="mt-10 flex items-center gap-4 flex-wrap justify-center"
         >
-          <Link
-            href="/register"
-            className="group flex items-center gap-2 text-sm font-semibold pl-6 pr-2.5 py-3 rounded-full transition-all active:scale-[0.97]"
-            style={{
-              background: 'var(--l-accent)',
-              color: 'var(--l-accent-on)',
-              boxShadow: '0 4px 24px rgba(15,23,42,0.30), 0 1px 4px rgba(15,23,42,0.12)',
-            }}
+          <motion.div
+            whileHover={shouldReduce ? {} : { scale: 1.03 }}
+            transition={LANDING_SPRING}
+            className="inline-flex"
           >
-            Почати безкоштовно
-            <span
-              className="size-7 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              style={{ background: 'rgba(248,250,252,0.12)' }}
+            <Link
+              href="/register"
+              className="group flex items-center gap-2 text-sm font-semibold pl-6 pr-2.5 py-3 rounded-full transition-colors active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              style={{
+                background: 'var(--l-accent)',
+                color: 'var(--l-accent-on)',
+                boxShadow: '0 4px 24px rgba(15,23,42,0.30), 0 1px 4px rgba(15,23,42,0.12)',
+              }}
             >
-              <ArrowUpRight size={13} aria-hidden="true" />
-            </span>
-          </Link>
+              Почати безкоштовно
+              <span
+                className="size-7 rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                style={{ background: 'rgba(248,250,252,0.12)' }}
+                aria-hidden="true"
+              >
+                <ArrowUpRight size={13} aria-hidden="true" />
+              </span>
+            </Link>
+          </motion.div>
+
           <Link
             href="/login"
-            className="text-sm font-medium transition-opacity hover:opacity-60"
+            className="text-sm font-medium transition-opacity hover:opacity-60 focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:ring-offset-2 focus-visible:outline-none focus-visible:rounded-sm"
             style={{ color: 'var(--l-muted)' }}
           >
             Вже є акаунт
@@ -129,7 +164,7 @@ export function LandingHero() {
           }}
           initial={{ opacity: 0, y: 56 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.5 }}
+          transition={{ ...LANDING_SPRING, delay: 0.6 }}
           className="relative z-10 mx-auto px-4 sm:px-10 lg:px-20"
           aria-hidden="true"
         >
@@ -145,8 +180,8 @@ export function LandingHero() {
                 gap: 5,
               }}
             >
-              {['rgba(248,250,252,0.18)', 'rgba(248,250,252,0.18)', 'rgba(248,250,252,0.18)'].map((bg, i) => (
-                <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: bg }} />
+              {[0, 1, 2].map((i) => (
+                <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(248,250,252,0.18)' }} />
               ))}
               <div
                 style={{

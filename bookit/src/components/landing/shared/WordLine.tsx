@@ -9,16 +9,18 @@ export function WordLine({
   lineIndex,
   style,
   inView,
+  reducedMotion = false,
 }: {
   words: string[];
   lineIndex: number;
   style?: React.CSSProperties;
   inView: boolean;
+  reducedMotion?: boolean;
 }) {
   return (
     <span style={{ display: 'block', ...style }}>
       {words.map((word, wi) => {
-        const delay = (lineIndex * 200 + wi * 70) / 1000;
+        const delay = reducedMotion ? 0 : (lineIndex * 200 + wi * 70) / 1000;
         return (
           <span
             key={wi}
@@ -32,9 +34,9 @@ export function WordLine({
           >
             <motion.span
               style={{ display: 'inline-block' }}
-              initial={{ y: '110%' }}
+              initial={reducedMotion ? { y: 0 } : { y: '110%' }}
               animate={inView ? { y: 0 } : {}}
-              transition={{ duration: 0.9, ease: easeOut, delay }}
+              transition={{ duration: reducedMotion ? 0 : 0.9, ease: easeOut, delay }}
             >
               {word}
             </motion.span>

@@ -1,33 +1,43 @@
-﻿'use client';
+'use client';
 
-import { useState, useRef } from 'react';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { formatCurrency } from '@/lib/utils/currency';
 import { WordLine } from '@/components/landing/shared/WordLine';
+import { LANDING_SPRING } from './shared/CountUp';
 
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
 
 export function LandingEconomy() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const isDesktop = useIsDesktop();
-  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
-  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-4%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   const [clients, setClients] = useState(5);
   const [avgPrice, setAvgPrice] = useState(600);
   const [workDays, setWorkDays] = useState(22);
+  const [hasDemoed, setHasDemoed] = useState(false);
 
-  const monthlyRaw    = clients * avgPrice * workDays;
+  const monthlyRaw = clients * avgPrice * workDays;
   const monthlyBookit = Math.round(monthlyRaw * 1.27);
-  const yearlyBookit  = monthlyBookit * 12;
-  const gain          = monthlyBookit - monthlyRaw;
+  const yearlyBookit = monthlyBookit * 12;
+  const gain = monthlyBookit - monthlyRaw;
+
+  useEffect(() => {
+    if (!inView || !isDesktop || shouldReduce || hasDemoed) return;
+    setHasDemoed(true);
+    const t1 = setTimeout(() => setClients(8), 700);
+    const t2 = setTimeout(() => setAvgPrice(900), 1400);
+    const t3 = setTimeout(() => setWorkDays(24), 2100);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [inView, isDesktop, shouldReduce, hasDemoed]);
 
   return (
     <section
@@ -42,8 +52,8 @@ export function LandingEconomy() {
             <motion.span
               initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
               animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-              transition={{ ...spring, delay: 0.05 }}
-              className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
+              transition={{ ...LANDING_SPRING, delay: 0.05 }}
+              className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
               style={{ color: 'var(--l-indigo)' }}
             >
               Калькулятор доходу
@@ -66,7 +76,7 @@ export function LandingEconomy() {
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ ...spring, delay: 0.68 }}
+              transition={{ ...LANDING_SPRING, delay: 0.68 }}
               className="mt-5 text-base leading-relaxed max-w-sm"
               style={{ color: 'var(--l-muted)' }}
             >
@@ -76,8 +86,8 @@ export function LandingEconomy() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ ...spring, delay: 0.76 }}
-              className="mt-10 p-6 rounded-[1.5rem]"
+              transition={{ ...LANDING_SPRING, delay: 0.76 }}
+              className="mt-10 p-8 rounded-[1.5rem]"
               style={{
                 background: 'var(--l-surface)',
                 border: '1px solid var(--l-border)',
@@ -85,28 +95,54 @@ export function LandingEconomy() {
               }}
             >
               <div className="flex flex-col gap-4">
-                <div className="flex items-end justify-between gap-4">
+                <div className="flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--l-muted-2)' }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: 'var(--l-muted-2)' }}>
                       Зараз
                     </p>
-                    <p
-                      className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
-                      style={{ fontSize: 'clamp(1.8rem,3vw,2.4rem)', color: 'var(--l-ink)' }}
-                    >
-                      {formatCurrency(monthlyRaw)}
-                    </p>
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={monthlyRaw}
+                        initial={shouldReduce ? false : { opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={shouldReduce ? undefined : { opacity: 0, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
+                        style={{ fontSize: 'clamp(2.4rem,4vw,3rem)', color: 'var(--l-ink)' }}
+                      >
+                        {formatCurrency(monthlyRaw)}
+                      </motion.p>
+                    </AnimatePresence>
                   </div>
+
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={inView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ ...LANDING_SPRING, delay: 0.82 }}
+                    className="font-[family-name:var(--font-cormorant)] font-semibold flex-shrink-0 pb-1"
+                    style={{ fontSize: '1.8rem', color: 'var(--l-indigo)' }}
+                    aria-hidden="true"
+                  >
+                    ×1.27
+                  </motion.span>
+
                   <div className="text-right">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--l-muted-2)' }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: 'var(--l-muted-2)' }}>
                       З Bookit
                     </p>
-                    <p
-                      className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
-                      style={{ fontSize: 'clamp(1.8rem,3vw,2.4rem)', color: 'var(--l-accent)' }}
-                    >
-                      {formatCurrency(monthlyBookit)}
-                    </p>
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={monthlyBookit}
+                        initial={shouldReduce ? false : { opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={shouldReduce ? undefined : { opacity: 0, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
+                        style={{ fontSize: 'clamp(2.4rem,4vw,3rem)', color: 'var(--l-accent)' }}
+                      >
+                        {formatCurrency(monthlyBookit)}
+                      </motion.p>
+                    </AnimatePresence>
                   </div>
                 </div>
 
@@ -116,15 +152,35 @@ export function LandingEconomy() {
                   <p className="text-sm" style={{ color: 'var(--l-muted)' }}>
                     Додатковий дохід на місяць
                   </p>
-                  <p className="text-lg font-bold" style={{ color: 'var(--l-accent)' }}>
-                    +{formatCurrency(gain)}
-                  </p>
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={`gain-${gain}`}
+                      initial={shouldReduce ? false : { opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={shouldReduce ? undefined : { opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="text-lg font-bold"
+                      style={{ color: 'var(--l-accent)' }}
+                    >
+                      +{formatCurrency(gain)}
+                    </motion.p>
+                  </AnimatePresence>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm" style={{ color: 'var(--l-muted)' }}>На рік</p>
-                  <p className="text-lg font-bold" style={{ color: 'var(--l-ink)' }}>
-                    {formatCurrency(yearlyBookit)}
-                  </p>
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={`yearly-${yearlyBookit}`}
+                      initial={shouldReduce ? false : { opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={shouldReduce ? undefined : { opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="text-lg font-bold"
+                      style={{ color: 'var(--l-ink)' }}
+                    >
+                      {formatCurrency(yearlyBookit)}
+                    </motion.p>
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>
@@ -133,7 +189,7 @@ export function LandingEconomy() {
           <motion.div
             initial={{ opacity: 0, x: 32 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.9, ease: easeOut, delay: 0.22 }}
+            transition={{ duration: shouldReduce ? 0 : 0.9, ease: easeOut, delay: shouldReduce ? 0 : 0.22 }}
             className="flex flex-col gap-10 lg:pt-24"
           >
             <Slider

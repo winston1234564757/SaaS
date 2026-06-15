@@ -4,16 +4,15 @@ import { useRef } from 'react';
 import {
   motion,
   useInView,
+  useReducedMotion,
   useTransform,
   useScroll,
 } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
-import { CountUp } from '@/components/landing/shared/CountUp';
+import { CountUp, LANDING_SPRING } from '@/components/landing/shared/CountUp';
 
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
 
 const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 const TIMES = ['09:00', '10:30', '12:00', '13:30', '15:00', '16:30', '18:00'];
@@ -64,14 +63,15 @@ const METRICS: MetricItem[] = [
 export function LandingBentoFeatures() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   });
   const isDesktop = useIsDesktop();
-  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
-  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-14%']);
+  const headingYMobile  = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-4%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
@@ -80,6 +80,16 @@ export function LandingBentoFeatures() {
       className="py-20 sm:py-36 px-4 sm:px-6 lg:px-12"
       style={{ background: 'var(--l-bg-dark)' }}
     >
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .l-slot-smart { animation: lSlotPulse 2s ease-in-out infinite; }
+        }
+        @keyframes lSlotPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.6; }
+        }
+      `}</style>
+
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
@@ -88,7 +98,7 @@ export function LandingBentoFeatures() {
             <motion.span
               initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
               animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-              transition={{ ...spring, delay: 0.05 }}
+              transition={{ ...LANDING_SPRING, delay: 0.05 }}
               className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
               style={{ color: 'color-mix(in srgb, var(--l-indigo-glow) 70%, transparent)' }}
             >
@@ -202,13 +212,14 @@ export function LandingBentoFeatures() {
                       return (
                         <td key={d} style={{ paddingBottom: 3 }}>
                           <div
+                            className={slot?.status === 'smart' ? 'l-slot-smart' : undefined}
                             style={{
                               height: 28,
                               borderRadius: 6,
                               background: slot?.status === 'booked'
                                 ? 'rgba(99,102,241,0.30)'
                                 : slot?.status === 'smart'
-                                ? 'var(--l-indigo)'
+                                ? 'var(--l-slot-booked)'
                                 : 'rgba(248,250,252,0.04)',
                               border: slot?.status === 'smart'
                                 ? '1px solid rgba(99,102,241,0.6)'
@@ -234,8 +245,8 @@ export function LandingBentoFeatures() {
 
             <div className="flex items-center gap-6 mt-6 flex-wrap">
               {[
-                  { bg: 'color-mix(in srgb, var(--l-indigo-glow) 30%, transparent)', border: 'var(--l-border-on-dark)', label: 'Заброньовано' },
-                { bg: 'var(--l-indigo)', border: 'color-mix(in srgb, var(--l-indigo-glow) 60%, transparent)', label: 'Smart / Flash слот' },
+                { bg: 'color-mix(in srgb, var(--l-indigo-glow) 30%, transparent)', border: 'var(--l-border-on-dark)', label: 'Заброньовано' },
+                { bg: 'var(--l-slot-booked)', border: 'color-mix(in srgb, var(--l-indigo-glow) 60%, transparent)', label: 'Smart / Flash слот' },
                 { bg: 'var(--l-surface-on-dark)', border: 'var(--l-border-on-dark)', label: 'Вільно' },
               ].map((l, i) => (
                 <div key={i} className="flex items-center gap-2">

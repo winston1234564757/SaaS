@@ -302,6 +302,32 @@
   --l-avatar-1: #7A9A8A;
   --l-avatar-2: #9A8A6A;
   --l-avatar-3: #8A7A9A;
+
+  /* Blob gradient tokens — decorative radial gradients */
+  --l-blob-indigo:      rgba(99, 102, 241, 0.22);
+  --l-blob-violet:      rgba(139, 92, 246, 0.14);
+  --l-blob-blue:        rgba(59, 130, 246, 0.10);
+  --l-blob-indigo-sm:   rgba(99, 102, 241, 0.10);
+  --l-blob-indigo-xs:   rgba(99, 102, 241, 0.055);
+  --l-blob-badge:       rgba(99, 102, 241, 0.20);
+
+  /* Green family — waitlist & success states */
+  --l-green:            #2D6A4A;
+  --l-green-bg:         rgba(92, 158, 122, 0.10);
+  --l-green-border:     rgba(92, 158, 122, 0.22);
+  --l-green-border-act: rgba(92, 158, 122, 0.40);
+  --l-green-bg-form:    rgba(92, 158, 122, 0.12);
+
+  /* Extended indigo scale */
+  --l-indigo-light:     #E0E7FF;
+
+  /* Slot grid semantic tokens */
+  --l-slot-booked:      var(--l-indigo);
+  --l-slot-light:       var(--l-indigo-light);
+
+  /* Form & overlay tokens */
+  --l-input-bg:         rgba(26, 23, 16, 0.04);
+  --l-overlay-modal:    rgba(26, 23, 16, 0.48);
 }
 
 /* Landing page: fix html/body overscroll bg showing theme color */

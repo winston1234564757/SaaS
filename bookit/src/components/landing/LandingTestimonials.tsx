@@ -1,10 +1,9 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { Star } from 'lucide-react';
-
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
+import { LANDING_SPRING } from './shared/CountUp';
 
 const TESTIMONIALS = [
   {
@@ -36,6 +35,7 @@ const TESTIMONIALS = [
 export function LandingTestimonials() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const shouldReduce = useReducedMotion();
 
   return (
     <section ref={ref} className="py-36 px-4 sm:px-6 lg:px-12">
@@ -44,8 +44,8 @@ export function LandingTestimonials() {
           <motion.span
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ ...spring, delay: 0.05 }}
-            className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
+            transition={{ ...LANDING_SPRING, delay: 0.05 }}
+            className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
           >
             Відгуки
@@ -53,7 +53,7 @@ export function LandingTestimonials() {
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ ...spring, delay: 0.12 }}
+            transition={{ ...LANDING_SPRING, delay: 0.12 }}
             className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"
             style={{ fontSize: 'clamp(2.2rem,4.5vw,3.8rem)', color: 'var(--l-ink)' }}
           >
@@ -67,7 +67,8 @@ export function LandingTestimonials() {
               key={i}
               initial={{ opacity: 0, y: 32 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ ...spring, delay: 0.1 + i * 0.1 }}
+              transition={{ ...LANDING_SPRING, delay: shouldReduce ? 0 : 0.1 + i * 0.18 }}
+              whileHover={shouldReduce ? {} : { y: -4, scale: 1.01 }}
             >
               {/* Double-Bezel */}
               <div
@@ -88,13 +89,20 @@ export function LandingTestimonials() {
                     aria-label="Рейтинг 5 з 5 зірок"
                   >
                     {Array.from({ length: 5 }).map((_, si) => (
-                      <Star key={si} size={14} fill="#BF8950" color="#BF8950" aria-hidden="true" />
+                      <motion.span
+                        key={si}
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={inView ? { opacity: 1, scale: 1 } : {}}
+                        transition={{ ...LANDING_SPRING, delay: shouldReduce ? 0 : 0.18 + i * 0.18 + si * 0.07 }}
+                      >
+                        <Star size={14} fill="#BF8950" color="#BF8950" aria-hidden="true" />
+                      </motion.span>
                     ))}
                   </div>
 
                   {/* Quote */}
                   <blockquote
-                    className="text-base leading-relaxed flex-1"
+                    className="text-base leading-loose flex-1"
                     style={{ color: 'var(--l-ink-2)' }}
                   >
                     {t.quote}
@@ -102,14 +110,18 @@ export function LandingTestimonials() {
 
                   {/* Metric badge */}
                   <div
-                    className="px-3 py-2 rounded-xl text-sm font-semibold self-start"
+                    className="px-4 py-2 rounded-xl self-start"
                     style={{
                       background: 'color-mix(in srgb, var(--l-indigo-glow) 8%, transparent)',
-                      color: 'var(--l-indigo)',
                       border: '1px solid color-mix(in srgb, var(--l-indigo-glow) 14%, transparent)',
                     }}
                   >
-                    {t.metric}
+                    <span
+                      className="font-[family-name:var(--font-cormorant)] font-semibold"
+                      style={{ fontSize: '1.25rem', color: 'var(--l-indigo)' }}
+                    >
+                      {t.metric}
+                    </span>
                   </div>
 
                   {/* Author */}
@@ -121,10 +133,10 @@ export function LandingTestimonials() {
                     >
                       {t.initials}
                     </div>
-                    <div>
+                    <cite style={{ fontStyle: 'normal' }}>
                       <p className="text-sm font-semibold" style={{ color: 'var(--l-ink)' }}>{t.name}</p>
-                      <p className="text-xs" style={{ color: 'var(--l-muted)' }}>{t.role}</p>
-                    </div>
+                      <p className="text-sm" style={{ color: 'var(--l-muted)' }}>{t.role}</p>
+                    </cite>
                   </div>
                 </div>
               </div>

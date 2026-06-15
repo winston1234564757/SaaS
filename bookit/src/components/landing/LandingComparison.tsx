@@ -1,12 +1,12 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { X, Check } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
+import { LANDING_SPRING } from './shared/CountUp';
 
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const ROWS = [
@@ -35,11 +35,12 @@ const ROWS = [
 export function LandingComparison() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const isDesktop = useIsDesktop();
-  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
-  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-4%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
@@ -55,7 +56,7 @@ export function LandingComparison() {
           <motion.span
             initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
             animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-            transition={{ ...spring, delay: 0.05 }}
+            transition={{ ...LANDING_SPRING, delay: 0.05 }}
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
           >
@@ -74,71 +75,89 @@ export function LandingComparison() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
-          transition={{ ...spring, delay: 0.22 }}
+          transition={{ ...LANDING_SPRING, delay: 0.22 }}
           className="grid grid-cols-2 gap-4 mb-4 px-4"
+          role="rowgroup"
         >
-          <p
-            className="text-[11px] font-semibold uppercase tracking-[0.15em]"
+          <span
+            role="columnheader"
+            className="text-[11px] font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--l-muted-2)' }}
           >
             Без Bookit
-          </p>
-          <p
-            className="text-[11px] font-semibold uppercase tracking-[0.15em]"
+          </span>
+          <span
+            role="columnheader"
+            className="text-[11px] font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--l-indigo)' }}
           >
             З Bookit
-          </p>
+          </span>
         </motion.div>
 
         {/* Comparison rows */}
-        <div style={{ borderTop: '1px solid var(--l-border)' }}>
-          {ROWS.map((row, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-2 gap-4 py-5 px-4"
-              style={{ borderBottom: '1px solid var(--l-border)' }}
-            >
-              {/* Before — slides from left, reinforces "without Bookit" narrative */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={inView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.8, ease: easeOut, delay: 0.24 + i * 0.08 }}
-                className="flex items-start gap-3"
+        <div
+          role="table"
+          aria-label="Порівняння можливостей"
+          style={{ borderTop: '1px solid var(--l-border)' }}
+        >
+          <div role="rowgroup">
+            {ROWS.map((row, i) => (
+              <div
+                key={i}
+                role="row"
+                className="grid grid-cols-2 gap-4 py-5 px-4"
+                style={{ borderBottom: '1px solid var(--l-border)' }}
               >
-                <div
-                  className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'color-mix(in srgb, var(--l-muted-2) 12%, transparent)' }}
-                  aria-hidden="true"
+                {/* Before */}
+                <motion.div
+                  role="cell"
+                  initial={{ opacity: 0, x: shouldReduce ? 0 : -20 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: shouldReduce ? 0 : 0.8, ease: easeOut, delay: shouldReduce ? 0 : 0.08 + i * 0.10 }}
+                  className="flex items-start gap-3"
                 >
-                  <X size={10} style={{ color: 'var(--l-muted-2)' }} />
-                </div>
-                <p className="text-sm leading-snug" style={{ color: 'var(--l-muted)' }}>
-                  {row.before}
-                </p>
-              </motion.div>
+                  <div
+                    className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: 'color-mix(in srgb, var(--l-muted-2) 12%, transparent)' }}
+                    role="img"
+                    aria-label="Ні"
+                  >
+                    <X size={10} style={{ color: 'var(--l-muted-2)' }} aria-hidden="true" />
+                  </div>
+                  <p className="text-sm leading-snug" style={{ color: 'var(--l-muted)' }}>
+                    {row.before}
+                  </p>
+                </motion.div>
 
-              {/* After — slides from right, reinforces "with Bookit" narrative */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={inView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.8, ease: easeOut, delay: 0.30 + i * 0.08 }}
-                className="flex items-start gap-3 px-4 py-3 rounded-xl"
-                style={{ background: 'color-mix(in srgb, var(--l-indigo-glow) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--l-indigo-glow) 12%, transparent)' }}
-              >
-                <div
-                  className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'color-mix(in srgb, var(--l-indigo-glow) 18%, transparent)' }}
-                  aria-hidden="true"
+                {/* After */}
+                <motion.div
+                  role="cell"
+                  initial={{ opacity: 0, x: shouldReduce ? 0 : 20 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: shouldReduce ? 0 : 0.8, ease: easeOut, delay: shouldReduce ? 0 : 0.14 + i * 0.10 }}
+                  whileHover={shouldReduce ? {} : { backgroundColor: 'color-mix(in srgb, var(--l-indigo-glow) 10%, transparent)' }}
+                  className="flex items-start gap-3 px-4 py-3 rounded-xl"
+                  style={{
+                    background: 'color-mix(in srgb, var(--l-indigo-glow) 6%, transparent)',
+                    border: '1px solid color-mix(in srgb, var(--l-indigo-glow) 12%, transparent)',
+                  }}
                 >
-                  <Check size={10} style={{ color: 'var(--l-indigo)' }} />
-                </div>
-                <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--l-ink)' }}>
-                  {row.after}
-                </p>
-              </motion.div>
-            </div>
-          ))}
+                  <div
+                    className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: 'color-mix(in srgb, var(--l-indigo-glow) 18%, transparent)' }}
+                    role="img"
+                    aria-label="Так"
+                  >
+                    <Check size={10} style={{ color: 'var(--l-indigo)' }} aria-hidden="true" />
+                  </div>
+                  <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--l-ink)' }}>
+                    {row.after}
+                  </p>
+                </motion.div>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>

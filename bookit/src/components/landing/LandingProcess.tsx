@@ -1,11 +1,11 @@
 'use client';
 
 import { Fragment, useRef } from 'react';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { WordLine } from '@/components/landing/shared/WordLine';
+import { LANDING_SPRING } from './shared/CountUp';
 
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const STEPS = [
@@ -26,7 +26,6 @@ const STEPS = [
   },
 ];
 
-
 function splitSentences(text: string): string[] {
   return text.split(/(?<=[.?!]) /).filter(Boolean);
 }
@@ -34,6 +33,7 @@ function splitSentences(text: string): string[] {
 function StepItem({ item }: { item: typeof STEPS[0] }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
+  const shouldReduce = useReducedMotion();
   const sentences = splitSentences(item.body);
 
   return (
@@ -42,28 +42,32 @@ function StepItem({ item }: { item: typeof STEPS[0] }) {
       initial={{ opacity: 0, y: 32, scale: 0.97 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.65, ease: easeOut }}
-      className="flex items-start gap-7 p-7 rounded-[1.25rem]"
+      whileHover={shouldReduce ? {} : { y: -3 }}
+      className="flex items-start gap-7 p-8 rounded-[1.25rem]"
       style={{
-        background: 'var(--l-surface, rgba(248,250,252,0.65))',
+        background: 'var(--l-surface)',
         border: '1px solid var(--l-border)',
-        boxShadow: '0 2px 20px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.02)',
+        boxShadow: 'var(--l-shadow-sm)',
       }}
     >
-      {/* Number */}
+      {/* Step number */}
       <motion.span
         initial={{ opacity: 0, y: 14 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.9, ease: easeOut, delay: 0.04 }}
         className="font-[family-name:var(--font-cormorant)] font-semibold leading-none select-none flex-shrink-0 pt-0.5"
-        style={{ fontSize: 'clamp(2.4rem, 4vw, 3.6rem)', color: 'var(--l-border-2)', display: 'block' }}
+        style={{
+          fontSize: 'clamp(3rem, 5vw, 4.5rem)',
+          color: 'color-mix(in srgb, var(--l-indigo) 28%, transparent)',
+          display: 'block',
+        }}
         aria-hidden="true"
       >
         {item.no}
       </motion.span>
 
       <div className="pt-1 flex-1 min-w-0">
-        {/* Word-by-word h3 — starts simultaneously with body */}
-        <h3 className="font-semibold leading-snug mb-3" style={{ fontSize: '1.1rem', color: 'var(--l-ink)' }}>
+        <h3 className="text-[1.1rem] font-semibold leading-snug mb-3" style={{ color: 'var(--l-ink)' }}>
           {item.title.split(' ').map((word, wi, arr) => (
             <span
               key={wi}
@@ -87,7 +91,6 @@ function StepItem({ item }: { item: typeof STEPS[0] }) {
           ))}
         </h3>
 
-        {/* Sentence-by-sentence body */}
         <p className="text-[0.9rem] leading-relaxed" style={{ color: 'var(--l-muted)' }}>
           {sentences.map((sentence, si, arr) => (
             <Fragment key={si}>
@@ -113,14 +116,15 @@ function StepItem({ item }: { item: typeof STEPS[0] }) {
 export function LandingProcess() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   });
   const isDesktop = useIsDesktop();
-  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-8%']);
-  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-2%']);
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-8%']);
+  const headingYMobile  = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-2%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
@@ -131,7 +135,7 @@ export function LandingProcess() {
         style={{
           width: 420,
           height: 420,
-          background: 'radial-gradient(circle, rgba(99,102,241,0.09) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, var(--l-blob-indigo-sm) 0%, transparent 70%)',
           bottom: '0%',
           right: '-6%',
         }}
@@ -147,8 +151,8 @@ export function LandingProcess() {
               <motion.span
                 initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
                 animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-                transition={{ ...spring, delay: 0.05 }}
-                className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
+                transition={{ ...LANDING_SPRING, delay: 0.05 }}
+                className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
                 style={{ color: 'var(--l-indigo)' }}
               >
                 Старт
@@ -168,7 +172,7 @@ export function LandingProcess() {
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ ...spring, delay: 0.52 }}
+                transition={{ ...LANDING_SPRING, delay: 0.52 }}
                 className="mt-5 text-base leading-relaxed"
                 style={{ color: 'var(--l-muted)' }}
               >
@@ -178,7 +182,7 @@ export function LandingProcess() {
           </div>
 
           {/* Right: step cards */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             {STEPS.map((s, i) => (
               <StepItem key={i} item={s} />
             ))}
@@ -187,7 +191,7 @@ export function LandingProcess() {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ ...spring, delay: 0.58 }}
+              transition={{ ...LANDING_SPRING, delay: 0.58 }}
               className="mt-4 inline-flex items-center gap-3 px-5 py-3 rounded-full self-start"
               style={{
                 background: 'color-mix(in srgb, var(--l-indigo-glow) 8%, transparent)',

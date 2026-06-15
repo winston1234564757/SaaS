@@ -1,12 +1,12 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { motion, useInView, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, useInView, useReducedMotion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { Plus } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
+import { LANDING_SPRING } from './shared/CountUp';
 
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const FAQS = [
@@ -38,20 +38,27 @@ const FAQS = [
 
 function FAQItem({ item, index, inView }: { item: typeof FAQS[0]; index: number; inView: boolean }) {
   const [open, setOpen] = useState(false);
+  const shouldReduce = useReducedMotion();
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.9, ease: easeOut, delay: 0.08 + index * 0.07 }}
+      transition={{ duration: shouldReduce ? 0 : 0.9, ease: easeOut, delay: shouldReduce ? 0 : 0.08 + index * 0.08 }}
       style={{ borderBottom: '1px solid var(--l-border)' }}
     >
-      <button type="button"
+      <button
+        type="button"
+        id={`faq-btn-${index}`}
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between gap-6 py-6 text-left transition-opacity hover:opacity-80"
+        className="w-full flex items-center justify-between gap-6 py-6 text-left"
         aria-expanded={open}
+        aria-controls={`faq-panel-${index}`}
       >
-        <span className="text-base font-semibold leading-snug" style={{ color: 'var(--l-ink)' }}>
+        <span
+          className="text-base font-semibold leading-snug transition-colors"
+          style={{ color: open ? 'var(--l-indigo)' : 'var(--l-ink)' }}
+        >
           {item.q}
         </span>
         <span
@@ -59,8 +66,8 @@ function FAQItem({ item, index, inView }: { item: typeof FAQS[0]; index: number;
           style={{
             background: open ? 'var(--l-accent)' : 'var(--l-surface-2)',
             border: '1px solid var(--l-border)',
-            transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
             color: open ? '#FDFAF5' : 'var(--l-ink)',
+            transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
             transition: 'transform 220ms ease-out, background 220ms ease-out, color 220ms ease-out',
           }}
           aria-hidden="true"
@@ -73,10 +80,13 @@ function FAQItem({ item, index, inView }: { item: typeof FAQS[0]; index: number;
         {open && (
           <motion.div
             key="answer"
+            id={`faq-panel-${index}`}
+            role="region"
+            aria-labelledby={`faq-btn-${index}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+            transition={shouldReduce ? { duration: 0 } : { duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
             style={{ overflow: 'hidden' }}
           >
             <p className="pb-6 text-base leading-relaxed" style={{ color: 'var(--l-muted)' }}>
@@ -92,11 +102,12 @@ function FAQItem({ item, index, inView }: { item: typeof FAQS[0]; index: number;
 export function LandingFAQ() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const isDesktop = useIsDesktop();
-  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-8%']);
-  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-2%']);
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-8%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-2%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   return (
@@ -109,8 +120,8 @@ export function LandingFAQ() {
               <motion.span
                 initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
                 animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-                transition={{ ...spring, delay: 0.05 }}
-                className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
+                transition={{ ...LANDING_SPRING, delay: 0.05 }}
+                className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
                 style={{ color: 'var(--l-indigo)' }}
               >
                 Запитання

@@ -1,14 +1,14 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import Link from 'next/link';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { Check, Loader2, X } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 import { submitBetaRequest } from '@/app/(master)/dashboard/billing/actions';
+import { LANDING_SPRING } from './shared/CountUp';
 
-const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 type Plan = {
@@ -85,7 +85,7 @@ const PLANS: Plan[] = [
 export function LandingPricing() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
-  const router = useRouter();
+  const shouldReduce = useReducedMotion();
 
   const [showBetaForm, setShowBetaForm] = useState(false);
   const [betaName, setBetaName] = useState('');
@@ -96,8 +96,8 @@ export function LandingPricing() {
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const isDesktop = useIsDesktop();
-  const headingYDesktop = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
-  const headingYMobile = useTransform(scrollYProgress, [0, 1], ['0%', '-4%']);
+  const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-14%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-4%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
 
   function handleBetaSubmit(e: React.FormEvent) {
@@ -107,6 +107,8 @@ export function LandingPricing() {
       setBetaDone(true);
     });
   }
+
+  const ctaBase = 'w-full h-12 rounded-full font-semibold text-sm transition-all active:scale-[0.97] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:ring-offset-2 focus-visible:outline-none';
 
   return (
     <>
@@ -121,8 +123,8 @@ export function LandingPricing() {
             <motion.span
               initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
               animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-              transition={{ ...spring, delay: 0.05 }}
-              className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
+              transition={{ ...LANDING_SPRING, delay: 0.05 }}
+              className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
               style={{ color: 'var(--l-indigo)' }}
             >
               Тарифи
@@ -141,7 +143,8 @@ export function LandingPricing() {
                 key={plan.name}
                 initial={{ opacity: 0, y: 32, scale: 0.97 }}
                 animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-                transition={{ duration: 0.9, ease: easeOut, delay: 0.12 + i * 0.1 }}
+                transition={{ duration: shouldReduce ? 0 : 0.9, ease: easeOut, delay: shouldReduce ? 0 : 0.1 + i * 0.12 }}
+                whileHover={shouldReduce ? {} : { y: plan.accent ? -6 : -4 }}
                 className={plan.accent ? 'md:-mt-4 md:mb-4' : ''}
               >
                 <div
@@ -150,9 +153,9 @@ export function LandingPricing() {
                     background: plan.accent
                       ? 'var(--l-accent)'
                       : plan.waitlist
-                      ? 'rgba(92,158,122,0.04)'
+                      ? 'color-mix(in srgb, var(--l-green) 4%, transparent)'
                       : 'rgba(26,23,16,0.03)',
-                    border: `1px solid ${plan.accent ? 'var(--l-accent)' : plan.waitlist ? 'rgba(92,158,122,0.18)' : 'var(--l-border)'}`,
+                    border: `1px solid ${plan.accent ? 'var(--l-accent)' : plan.waitlist ? 'color-mix(in srgb, var(--l-green) 18%, transparent)' : 'var(--l-border)'}`,
                     boxShadow: plan.accent ? '0 24px 64px rgba(99,102,241,0.28)' : 'none',
                   }}
                 >
@@ -165,12 +168,12 @@ export function LandingPricing() {
                   >
                     <div className="flex items-center gap-2 mb-4">
                       <p
-                        className="text-[11px] font-semibold uppercase tracking-widest"
+                        className="text-[11px] font-semibold uppercase tracking-[0.18em]"
                         style={{
                           color: plan.accent
                             ? 'color-mix(in srgb, var(--l-text-on-dark) 60%, transparent)'
                             : plan.waitlist
-                            ? 'rgba(92,158,122,0.7)'
+                            ? 'color-mix(in srgb, var(--l-green) 70%, transparent)'
                             : 'var(--l-muted-2)',
                         }}
                       >
@@ -179,7 +182,10 @@ export function LandingPricing() {
                       {plan.waitlist && (
                         <span
                           className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                          style={{ color: '#2D6A4A', background: 'rgba(92,158,122,0.14)' }}
+                          style={{
+                            color: 'var(--l-green)',
+                            background: 'color-mix(in srgb, var(--l-green) 14%, transparent)',
+                          }}
                         >
                           Скоро
                         </span>
@@ -232,7 +238,7 @@ export function LandingPricing() {
                           key={fi}
                           initial={{ opacity: 0, x: -8 }}
                           animate={inView ? { opacity: 1, x: 0 } : {}}
-                          transition={{ duration: 0.7, ease: easeOut, delay: 0.32 + i * 0.1 + fi * 0.055 }}
+                          transition={{ duration: shouldReduce ? 0 : 0.7, ease: easeOut, delay: shouldReduce ? 0 : 0.32 + i * 0.1 + fi * 0.055 }}
                           className="flex items-start gap-3"
                         >
                           <div
@@ -241,7 +247,7 @@ export function LandingPricing() {
                               background: plan.accent
                                 ? 'color-mix(in srgb, var(--l-text-on-dark) 18%, transparent)'
                                 : plan.waitlist
-                                ? 'rgba(92,158,122,0.08)'
+                                ? 'color-mix(in srgb, var(--l-green) 8%, transparent)'
                                 : 'color-mix(in srgb, var(--l-indigo-glow) 10%, transparent)',
                             }}
                             aria-hidden="true"
@@ -252,7 +258,7 @@ export function LandingPricing() {
                                 color: plan.accent
                                   ? 'var(--l-text-on-dark)'
                                   : plan.waitlist
-                                  ? 'rgba(92,158,122,0.45)'
+                                  ? 'color-mix(in srgb, var(--l-green) 45%, transparent)'
                                   : 'var(--l-accent)',
                               }}
                             />
@@ -273,32 +279,40 @@ export function LandingPricing() {
                       ))}
                     </ul>
 
-                    <button
-                      type="button"
-                      onClick={() => plan.waitlist ? setShowBetaForm(true) : router.push('/register')}
-                      className="w-full h-12 rounded-full font-semibold text-sm transition-all active:scale-[0.97]"
-                      style={
-                        plan.accent
-                          ? {
-                              background: 'var(--l-surface)',
-                              color: 'var(--l-accent)',
-                              boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                            }
-                          : plan.waitlist
-                          ? {
-                              background: 'rgba(92,158,122,0.10)',
-                              color: '#2D6A4A',
-                              border: '1.5px solid rgba(92,158,122,0.22)',
-                            }
-                          : {
-                              background: 'transparent',
-                              color: 'var(--l-ink)',
-                              border: '1.5px solid var(--l-border-2)',
-                            }
-                      }
-                    >
-                      {plan.cta}
-                    </button>
+                    {plan.waitlist ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowBetaForm(true)}
+                        className={ctaBase}
+                        style={{
+                          background: 'var(--l-green-bg)',
+                          color: 'var(--l-green)',
+                          border: '1.5px solid var(--l-green-border)',
+                        }}
+                      >
+                        {plan.cta}
+                      </button>
+                    ) : (
+                      <Link
+                        href="/register"
+                        className={ctaBase}
+                        style={
+                          plan.accent
+                            ? {
+                                background: 'var(--l-surface)',
+                                color: 'var(--l-accent)',
+                                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                              }
+                            : {
+                                background: 'transparent',
+                                color: 'var(--l-ink)',
+                                border: '1.5px solid var(--l-border-2)',
+                              }
+                        }
+                      >
+                        {plan.cta}
+                      </Link>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -308,7 +322,7 @@ export function LandingPricing() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
-            transition={{ ...spring, delay: 0.62 }}
+            transition={{ ...LANDING_SPRING, delay: 0.62 }}
             className="text-center text-sm mt-8"
             style={{ color: 'var(--l-muted)' }}
           >
@@ -320,21 +334,26 @@ export function LandingPricing() {
       {showBetaForm && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
-          style={{ background: 'rgba(26,23,16,0.48)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setShowBetaForm(false)}
+          style={{ background: 'var(--l-overlay-modal)', backdropFilter: 'blur(4px)' }}
         >
+          <button
+            type="button"
+            className="absolute inset-0 w-full h-full"
+            onClick={() => setShowBetaForm(false)}
+            aria-label="Закрити діалог"
+            tabIndex={-1}
+          />
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ ...spring }}
-            className="w-full max-w-md rounded-[1.75rem] p-8 relative"
+            transition={{ ...LANDING_SPRING }}
+            className="w-full max-w-md rounded-[1.75rem] p-8 relative z-10"
             style={{ background: 'var(--l-surface)', border: '1px solid var(--l-border)', boxShadow: '0 32px 80px rgba(26,23,16,0.14)' }}
-            onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setShowBetaForm(false)}
-              className="absolute top-5 right-5 size-8 rounded-full flex items-center justify-center transition-colors"
+              className="absolute top-5 right-5 size-8 rounded-full flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:outline-none"
               style={{ background: 'rgba(26,23,16,0.06)' }}
               aria-label="Закрити"
             >
@@ -345,9 +364,9 @@ export function LandingPricing() {
               <div className="text-center py-8">
                 <div
                   className="size-14 rounded-full mx-auto mb-5 flex items-center justify-center"
-                  style={{ background: 'rgba(92,158,122,0.12)' }}
+                  style={{ background: 'var(--l-green-bg-form)' }}
                 >
-                  <Check size={24} style={{ color: '#2D6A4A' }} />
+                  <Check size={24} style={{ color: 'var(--l-green)' }} />
                 </div>
                 <p
                   className="font-[family-name:var(--font-cormorant)] font-semibold text-2xl mb-2"
@@ -385,9 +404,9 @@ export function LandingPricing() {
                       onChange={(e) => setBetaName(e.target.value)}
                       required
                       placeholder="Glow Studio"
-                      className="h-11 rounded-xl px-4 text-sm outline-none transition-colors"
+                      className="h-11 rounded-xl px-4 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:ring-offset-1"
                       style={{
-                        background: 'rgba(26,23,16,0.04)',
+                        background: 'var(--l-input-bg)',
                         border: '1px solid var(--l-border)',
                         color: 'var(--l-ink)',
                       }}
@@ -407,9 +426,9 @@ export function LandingPricing() {
                       onChange={(e) => setBetaContact(e.target.value)}
                       required
                       placeholder="@username або +380..."
-                      className="h-11 rounded-xl px-4 text-sm outline-none transition-colors"
+                      className="h-11 rounded-xl px-4 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:ring-offset-1"
                       style={{
-                        background: 'rgba(26,23,16,0.04)',
+                        background: 'var(--l-input-bg)',
                         border: '1px solid var(--l-border)',
                         color: 'var(--l-ink)',
                       }}
@@ -429,11 +448,11 @@ export function LandingPricing() {
                           key={s}
                           type="button"
                           onClick={() => setBetaSize(s)}
-                          className="flex-1 h-10 rounded-xl text-sm font-medium transition-all"
+                          className="flex-1 h-10 rounded-xl text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-[var(--l-indigo)] focus-visible:outline-none"
                           style={{
-                            background: betaSize === s ? 'rgba(92,158,122,0.12)' : 'rgba(26,23,16,0.04)',
-                            border: `1.5px solid ${betaSize === s ? 'rgba(92,158,122,0.4)' : 'var(--l-border)'}`,
-                            color: betaSize === s ? '#2D6A4A' : 'var(--l-muted)',
+                            background: betaSize === s ? 'var(--l-green-bg-form)' : 'var(--l-input-bg)',
+                            border: `1.5px solid ${betaSize === s ? 'var(--l-green-border-act)' : 'var(--l-border)'}`,
+                            color: betaSize === s ? 'var(--l-green)' : 'var(--l-muted)',
                           }}
                           aria-pressed={betaSize === s}
                         >
@@ -446,11 +465,11 @@ export function LandingPricing() {
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="h-12 rounded-full font-semibold text-sm mt-2 flex items-center justify-center gap-2 transition-all active:scale-[0.97] disabled:opacity-60"
+                    className="h-12 rounded-full font-semibold text-sm mt-2 flex items-center justify-center gap-2 transition-all active:scale-[0.97] disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-[var(--l-green)] focus-visible:outline-none"
                     style={{
-                      background: 'rgba(92,158,122,0.12)',
-                      color: '#2D6A4A',
-                      border: '1.5px solid rgba(92,158,122,0.22)',
+                      background: 'var(--l-green-bg)',
+                      color: 'var(--l-green)',
+                      border: '1.5px solid var(--l-green-border)',
                     }}
                   >
                     {isPending && <Loader2 size={14} className="animate-spin" />}
