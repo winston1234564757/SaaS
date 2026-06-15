@@ -567,6 +567,25 @@ TG inline keyboard buttons завжди відкриваються у власн
 
 **TSC:** 0 errors | **Build:** clean
 
+**Deploy-14 ext (commits `c2c3c12` `0bd45a4`) — explore UI polish iterations:**
+
+Round 1 (`c2c3c12`):
+- Text search input повернуто (пошук по імені/місту/сервісах)
+- Category pills: `flex-wrap` → `grid grid-cols-3 gap-2` з `col-span-3` для "Всі" — рівний відступ від країв
+- Hero: `heading-serif text-[3.25rem] uppercase` → inline `style={{ fontFamily: 'var(--font-great-vibes, cursive)' }} text-[3.5rem]` (Frost theme переовзначував .greeting-script → Geist)
+- Subtitle "Краса поруч — запис до перевіреного майстра за пару кліків" → "Краса поруч. Твій майстер чекає." (коротше)
+- Safe area: `pt-10` → `style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}`
+
+Round 2 (`0bd45a4`) — 4 нових фільтри:
+- `slotTomorrow` state + "Завтра" toggle (Calendar icon) — фільтрує `m.availableTomorrow`
+- `priceMax` state + `PriceDropdown` component — опції: null/300/500/1000₴; `minPrice === null` → pass
+- `proOnly` state + "PRO" toggle (BadgeCheck icon) — фільтрує `m.isPro`
+- `withReviews` state + "З відгуками" toggle (Star icon) — фільтрує `m.ratingCount > 0`
+- `toggleClass(active)` helper екстрактований для DRY filter bar
+- "Є час сьогодні" → "Сьогодні" (коротше для filter row)
+
+**TSC:** 0 | **Build:** pending deploy
+
 ---
 
 ## ▶ T18 — Оптимізація завантаження сторінки послуг
