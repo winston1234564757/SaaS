@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef, type ElementType } from 'react';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import {
   Sparkles, Scissors, Eye, Smile, Hand, Flower2, Droplets,
   Zap, Circle, PenTool, MoreHorizontal, Star, MapPin,
   ChevronDown, Navigation, ArrowRight, Clock, Search, X,
-  Calendar, BadgeCheck,
+  Calendar, BadgeCheck, LayoutGrid, AlignJustify,
 } from 'lucide-react';
 import { serviceCategories } from '@/lib/constants/categories';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -70,6 +70,7 @@ const CATEGORY_ALIASES: Record<string, string[]> = {
 };
 
 type SortMode = 'popular' | 'rating' | 'newest' | 'smart';
+type ViewMode = 'grid' | 'list';
 
 export interface ExploreMaster {
   id: string;
@@ -135,7 +136,7 @@ function AvatarFallback({ name }: { name: string }) {
   );
 }
 
-// ─── Category Pills — single horizontal scroll row ─────────────────────────────
+// ─── Category Pills ────────────────────────────────────────────────────────────
 
 function CategoryPills({
   activeCategory,
@@ -438,7 +439,7 @@ function FeaturedCard({ master }: { master: ExploreMaster }) {
           ) : (
             <AvatarFallback name={master.name} />
           )}
-          <span className="absolute top-1.5 left-1.5 text-[8px] font-bold bg-indigo-500/90 text-white px-1.5 py-0.5 rounded-full leading-none">
+          <span className="absolute top-1.5 left-1.5 text-[8px] font-bold bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full leading-none">
             PRO
           </span>
         </div>
@@ -463,13 +464,13 @@ function SkeletonGrid() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="bento-card overflow-hidden animate-pulse">
-          <div className="aspect-[3/4] bg-muted/30" />
-          <div className="h-10 bg-muted/20" />
-          <div className="p-3.5 space-y-2">
-            <div className="h-3.5 bg-muted/30 rounded-full w-4/5" />
+        <div key={i} className="bento-card rounded-3xl overflow-hidden animate-pulse">
+          <div className="m-3 rounded-2xl bg-muted/20 aspect-square" />
+          <div className="px-3.5 pb-4 space-y-2">
+            <div className="h-4 bg-muted/30 rounded-full w-3/4" />
             <div className="h-3 bg-muted/20 rounded-full w-1/2" />
             <div className="h-3 bg-muted/15 rounded-full w-2/3" />
+            <div className="h-8 bg-muted/20 rounded-full w-full mt-1" />
           </div>
         </div>
       ))}
@@ -477,16 +478,18 @@ function SkeletonGrid() {
   );
 }
 
-// ─── Master Card ───────────────────────────────────────────────────────────────
+// ─── Master Card (Portrait Grid) ──────────────────────────────────────────────
 
 function MasterCard({
   master,
   index,
   showDistance,
+  isRecommended,
 }: {
   master: ProcessedMaster;
   index: number;
   showDistance: boolean;
+  isRecommended: boolean;
 }) {
   const [mainPhotoError, setMainPhotoError] = useState(false);
   const [stripErrors, setStripErrors] = useState<Set<number>>(new Set());
@@ -504,99 +507,279 @@ function MasterCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ delay: Math.min(index * 0.04, 0.28), ...SPRING }}
-      className="group"
+      className="h-full"
     >
-      <Link href={`/${master.slug}`} className="block">
-        <div className="bento-card overflow-hidden transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md active:scale-[0.97]">
+      <Link href={`/${master.slug}`} className="block group h-full">
+        <div className="bento-card rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md active:scale-[0.97]">
 
-          {/* Photo — 3:4 */}
-          <div className="relative aspect-[3/4] overflow-hidden">
-            {mainPhoto ? (
-              <Image
-                src={mainPhoto}
-                alt={master.name}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                sizes="(max-width: 640px) 50vw, 280px"
-                onError={() => setMainPhotoError(true)}
-              />
-            ) : (
-              <AvatarFallback name={master.name} />
-            )}
+          {/* ── Photo Frame — fixed h-[192px], flex-col inside ── */}
+          <div className="m-3 rounded-2xl bg-accent/5 overflow-hidden relative flex flex-col h-[192px] flex-shrink-0">
 
-            {/* Top row badges */}
-            <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between pointer-events-none">
+            {/* Badges — absolute overlay */}
+            <div className="absolute top-2 left-2 right-2 flex items-start justify-between z-10 pointer-events-none">
               {master.isPro ? (
-                <span className="text-[9px] font-bold text-white bg-indigo-500/90 px-2 py-0.5 rounded-full leading-none tracking-wide">
+                <span className="text-[8px] font-black text-white bg-indigo-700 px-1.5 py-0.5 rounded-full leading-none tracking-wide">
                   PRO
                 </span>
               ) : <span aria-hidden="true" />}
               {showDistance && master.distance !== null && (
-                <span className="flex items-center gap-0.5 text-[9px] font-semibold text-foreground/90 bg-white/90 px-2 py-0.5 rounded-full leading-none backdrop-blur-sm">
-                  <MapPin size={8} />
+                <span className="flex items-center gap-0.5 text-[8px] font-semibold text-foreground/90 bg-white/90 px-1.5 py-0.5 rounded-full leading-none backdrop-blur-sm">
+                  <MapPin size={7} aria-hidden="true" />
                   {formatDistance(master.distance)}
                 </span>
               )}
             </div>
 
-            {/* Availability badge */}
-            {(master.availableToday || master.availableTomorrow) && (
-              <div className="absolute bottom-2.5 left-2.5 pointer-events-none">
-                <span className="flex items-center gap-1 bg-indigo-500/15 text-indigo-700 text-[9px] font-bold px-2 py-1 rounded-full leading-none">
-                  <span className="size-1.5 rounded-full bg-indigo-500 flex-shrink-0" aria-hidden="true" />
-                  {master.availableToday ? 'Приймає сьогодні' : 'Вільно завтра'}
-                </span>
+            {/* Avatar — fills remaining space, centered */}
+            <div className="flex-1 flex items-center justify-center pt-6">
+              <div className="relative w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0">
+                {mainPhoto ? (
+                  <Image
+                    src={mainPhoto}
+                    alt={master.name}
+                    fill
+                    className="object-cover"
+                    sizes="72px"
+                    onError={() => setMainPhotoError(true)}
+                  />
+                ) : (
+                  <AvatarFallback name={master.name} />
+                )}
               </div>
-            )}
-            {/* Depth scrim */}
-            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
-          </div>
-
-          {/* Portfolio strip */}
-          {strip.length > 0 && (
-            <div className="flex gap-px overflow-hidden h-10">
-              {strip.map((url, i) => (
-                <div key={i} className="relative flex-1 h-full overflow-hidden bg-muted/20">
-                  {!stripErrors.has(i) && (
-                    <Image
-                      src={url}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      sizes="33vw"
-                      aria-hidden="true"
-                      onError={() => setStripErrors(prev => new Set(prev).add(i))}
-                    />
-                  )}
-                </div>
-              ))}
             </div>
-          )}
 
-          {/* Info */}
-          <div className="p-3.5 space-y-1.5">
-            <p className="text-sm font-bold text-foreground truncate leading-tight">{master.name}</p>
-            <div className="flex items-center justify-between gap-1">
-              <span className="text-xs text-muted-foreground/60 truncate">
-                {getCategoryLabel(master.categories)}
-              </span>
-              {master.ratingCount > 0 && (
-                <div className="flex items-center gap-0.5 flex-shrink-0">
-                  <Star size={9} className="text-warning fill-warning" />
-                  <span className="text-xs font-semibold text-foreground">{master.rating.toFixed(1)}</span>
+            {/* Bottom: availability + portfolio strip — always at bottom of frame */}
+            <div className="flex flex-col gap-1 pb-2">
+              {(master.availableToday || master.availableTomorrow) && (
+                <div className="flex justify-center">
+                  <span className={`flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-full leading-none ${
+                    master.availableToday
+                      ? 'bg-emerald-500/15 text-emerald-700'
+                      : 'bg-amber-500/15 text-amber-800'
+                  }`}>
+                    {master.availableToday
+                      ? <><Clock size={7} aria-hidden="true" /> Є місця сьогодні</>
+                      : <><Calendar size={7} aria-hidden="true" /> Є місця на завтра</>
+                    }
+                  </span>
+                </div>
+              )}
+              {strip.length > 0 && (
+                <div className="flex gap-1.5 px-2">
+                  {strip.slice(0, 3).map((url, i) => (
+                    <div key={i} className="relative flex-1 h-12 rounded-lg overflow-hidden bg-muted/20">
+                      {!stripErrors.has(i) && (
+                        <Image
+                          src={url}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="25vw"
+                          aria-hidden="true"
+                          onError={() => setStripErrors(prev => new Set(prev).add(i))}
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-            {master.minPrice !== null && master.minPrice > 0 && (
-              <p className="text-xs font-medium text-muted-foreground/60">
-                від {master.minPrice}₴
-              </p>
-            )}
+          </div>
 
-            {/* CTA signal */}
-            <div className="pt-2 mt-0.5 border-t border-accent/15 flex items-center justify-between">
-              <span className="text-xs font-semibold text-accent">Записатись</span>
-              <ArrowRight size={11} className="text-accent/60 flex-shrink-0" />
+          {/* ── Content — flex-1, CTA pinned to bottom ── */}
+          <div className="px-3.5 pb-4 flex flex-col flex-1">
+
+            {/* Scrollable info — grows to fill space */}
+            <div className="flex-1 space-y-1.5">
+
+              {/* Name + recommended */}
+              <div className="flex items-center gap-1 pt-0.5">
+                <h3
+                  className="font-semibold text-foreground truncate leading-snug flex-1"
+                  style={{ fontFamily: 'var(--font-cormorant, "Cormorant Garamond", Georgia, serif)', fontSize: '1.05rem' }}
+                >
+                  {master.name}
+                </h3>
+                {isRecommended && (
+                  <BadgeCheck size={14} className="text-accent flex-shrink-0" aria-label="Рекомендуємо" />
+                )}
+              </div>
+
+              {/* Category + city */}
+              <div className="flex items-center gap-1 text-[11px] text-muted-foreground/60 -mt-0.5">
+                <span className="truncate">{getCategoryLabel(master.categories)}</span>
+                {master.city && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="flex items-center gap-0.5 flex-shrink-0">
+                      <MapPin size={8} aria-hidden="true" />
+                      {master.city}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Rating */}
+              {master.ratingCount > 0 && (
+                <div className="flex items-center gap-1">
+                  <Star size={10} className="text-warning fill-warning" aria-hidden="true" />
+                  <span className="text-xs font-semibold text-foreground">{master.rating.toFixed(1)}</span>
+                  <span className="text-[10px] text-muted-foreground/40">
+                    · {master.ratingCount} {pluralUk(master.ratingCount, 'відгук', 'відгуки', 'відгуків')}
+                  </span>
+                </div>
+              )}
+
+              {/* Top services */}
+              {master.topServices.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {master.topServices.slice(0, 2).map((s, i) => (
+                    <span
+                      key={i}
+                      className="text-[10px] bg-secondary/50 text-muted-foreground/70 px-2 py-0.5 rounded-full leading-snug"
+                    >
+                      {s.name} · {s.price}₴
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Min price */}
+              {master.minPrice !== null && master.minPrice > 0 && (
+                <p className="text-[11px] text-muted-foreground/50">від {master.minPrice} ₴</p>
+              )}
+            </div>
+
+            {/* CTA — always at bottom of card */}
+            <div
+              aria-hidden="true"
+              className="mt-3 w-full py-2.5 rounded-full bg-accent text-accent-foreground text-xs font-semibold text-center flex items-center justify-center min-h-[40px]"
+            >
+              Записатись
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+// ─── Master List Card (1-col) ──────────────────────────────────────────────────
+
+function MasterListCard({
+  master,
+  index,
+  showDistance,
+  isRecommended,
+}: {
+  master: ProcessedMaster;
+  index: number;
+  showDistance: boolean;
+  isRecommended: boolean;
+}) {
+  const [photoError, setPhotoError] = useState(false);
+  const mainPhoto = !photoError ? (master.avatarUrl ?? master.portfolioPhotos[0] ?? null) : null;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ delay: Math.min(index * 0.03, 0.2), ...SPRING }}
+    >
+      <Link href={`/${master.slug}`} className="block group">
+        <div className="bento-card rounded-2xl overflow-hidden flex transition-all duration-200 active:scale-[0.98] group-hover:shadow-md">
+
+          {/* Left: Photo frame */}
+          <div className="relative w-24 flex-shrink-0 self-stretch min-h-[96px] bg-accent/5">
+            {mainPhoto ? (
+              <Image
+                src={mainPhoto}
+                alt={master.name}
+                fill
+                className="object-cover"
+                sizes="96px"
+                onError={() => setPhotoError(true)}
+              />
+            ) : (
+              <AvatarFallback name={master.name} />
+            )}
+            {master.isPro && (
+              <span className="absolute top-1.5 left-1.5 text-[7px] font-black text-white bg-indigo-700 px-1 py-0.5 rounded-full leading-none tracking-wide">
+                PRO
+              </span>
+            )}
+            {showDistance && master.distance !== null && (
+              <span className="absolute bottom-1.5 left-1.5 flex items-center gap-0.5 text-[7px] font-semibold text-white bg-black/40 px-1 py-0.5 rounded-full leading-none backdrop-blur-sm">
+                <MapPin size={6} aria-hidden="true" />
+                {formatDistance(master.distance)}
+              </span>
+            )}
+          </div>
+
+          {/* Right: Content */}
+          <div className="flex-1 min-w-0 px-3.5 py-3 flex flex-col justify-between gap-1.5">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1">
+                <h3
+                  className="font-semibold text-foreground truncate flex-1 leading-snug"
+                  style={{ fontFamily: 'var(--font-cormorant, "Cormorant Garamond", Georgia, serif)', fontSize: '1.05rem' }}
+                >
+                  {master.name}
+                </h3>
+                {isRecommended && (
+                  <BadgeCheck size={12} className="text-accent flex-shrink-0" aria-label="Рекомендуємо" />
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground/60 truncate">{getCategoryLabel(master.categories)}</p>
+              {master.city && (
+                <p className="text-[10px] text-muted-foreground/40 flex items-center gap-0.5">
+                  <MapPin size={8} aria-hidden="true" />
+                  {master.city}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-end justify-between gap-2">
+              <div className="space-y-1">
+                {master.ratingCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Star size={9} className="text-warning fill-warning" aria-hidden="true" />
+                    <span className="text-xs font-semibold text-foreground">{master.rating.toFixed(1)}</span>
+                    <span className="text-[10px] text-muted-foreground/40">
+                      ({master.ratingCount} {pluralUk(master.ratingCount, 'відгук', 'відгуки', 'відгуків')})
+                    </span>
+                  </div>
+                )}
+                {master.topServices.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {master.topServices.slice(0, 1).map((s, i) => (
+                      <span key={i} className="text-[9px] bg-secondary/50 text-muted-foreground/60 px-1.5 py-0.5 rounded-full">
+                        {s.name} · {s.price}₴
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {master.minPrice !== null && master.minPrice > 0 && (
+                  <p className="text-[10px] text-muted-foreground/50">від {master.minPrice} ₴</p>
+                )}
+              </div>
+
+              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                {(master.availableToday || master.availableTomorrow) && (
+                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full leading-none whitespace-nowrap ${
+                    master.availableToday
+                      ? 'bg-emerald-500/15 text-emerald-700'
+                      : 'bg-amber-500/15 text-amber-800'
+                  }`}>
+                    {master.availableToday ? 'Є місця сьогодні' : 'Є місця на завтра'}
+                  </span>
+                )}
+                <span className="text-xs font-semibold text-accent flex items-center gap-0.5" aria-hidden="true">
+                  Записатись <ArrowRight size={10} />
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -621,6 +804,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
   const [priceMax,       setPriceMax]       = useState<number | null>(null);
   const [proOnly,        setProOnly]        = useState(false);
   const [withReviews,    setWithReviews]    = useState(false);
+  const [viewMode,       setViewMode]       = useState<ViewMode>('grid');
 
   const filterRowRef = useAutoScroll();
 
@@ -748,7 +932,6 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
     ? `"${searchQuery.slice(0, 20)}…"`
     : `"${searchQuery}"`;
 
-  // Active filter chips
   const activeFiltersList: ActiveFilterItem[] = [
     ...(activeCategory ? [{
       key: 'cat',
@@ -827,7 +1010,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
             </AnimatePresence>
           </motion.div>
 
-          {/* ── Category pills — horizontal scroll ── */}
+          {/* ── Category pills ── */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -849,7 +1032,6 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
             transition={{ ...SPRING, delay: 0.09 }}
             className="flex flex-col gap-2 mb-6"
           >
-            {/* Row 1: toggle pills — scrollable */}
             <div ref={filterRowRef} className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
               <button
                 type="button"
@@ -907,14 +1089,13 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
               </button>
             </div>
 
-            {/* Row 2: price + sort — equal width side by side */}
             <div className="flex gap-2">
               <PriceDropdown priceMax={priceMax} onChange={setPriceMax} fullWidth />
               <SortDropdown sort={sort} onChange={setSort} hasPreferred={preferredCategories.length > 0} fullWidth />
             </div>
           </motion.div>
 
-          {/* ── Geo error nudge ── */}
+          {/* ── Geo error ── */}
           <AnimatePresence>
             {geoError && !nearbyActive && (
               <motion.p
@@ -934,22 +1115,6 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
           {/* ── Active filter chips ── */}
           <ActiveFiltersBar filters={activeFiltersList} />
 
-          {/* ── Result count ── */}
-          <AnimatePresence>
-            {isFiltered && (
-              <motion.p
-                key="count"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15 }}
-                className="text-xs text-muted-foreground/50 mb-3 font-medium"
-              >
-                {processed.length} {pluralUk(processed.length, 'майстер', 'майстри', 'майстрів')}
-              </motion.p>
-            )}
-          </AnimatePresence>
-
           {/* ── Featured PRO row ── */}
           <AnimatePresence>
             {showFeatured && (
@@ -962,7 +1127,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
                 className="mb-7"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-black text-indigo-700 tracking-[0.2em] uppercase">Рекомендуємо</span>
+                  <span className="text-[11px] font-black text-accent tracking-[0.2em] uppercase">Рекомендуємо</span>
                   <span className="text-[10px] text-muted-foreground/40">
                     {proMasters.length} PRO {pluralUk(proMasters.length, 'майстер', 'майстри', 'майстрів')}
                   </span>
@@ -982,7 +1147,48 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
             </div>
           )}
 
-          {/* ── Masters grid ── */}
+          {/* ── Count + View toggle ── */}
+          <div className="flex items-center justify-between mb-4">
+            {isFiltered && processed.length > 0 ? (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-muted-foreground/50 font-medium"
+              >
+                {processed.length} {pluralUk(processed.length, 'майстер', 'майстри', 'майстрів')}
+              </motion.p>
+            ) : <span />}
+            <div className="flex items-center gap-0.5 bg-secondary/50 p-1 rounded-full ml-auto">
+              <button
+                type="button"
+                aria-label="Сітка"
+                aria-pressed={viewMode === 'grid'}
+                onClick={() => setViewMode('grid')}
+                className={`size-8 rounded-full flex items-center justify-center transition-all duration-150 ${
+                  viewMode === 'grid'
+                    ? 'bg-white shadow-sm text-foreground'
+                    : 'text-muted-foreground/50 hover:text-foreground/60'
+                }`}
+              >
+                <LayoutGrid size={13} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                aria-label="Список"
+                aria-pressed={viewMode === 'list'}
+                onClick={() => setViewMode('list')}
+                className={`size-8 rounded-full flex items-center justify-center transition-all duration-150 ${
+                  viewMode === 'list'
+                    ? 'bg-white shadow-sm text-foreground'
+                    : 'text-muted-foreground/50 hover:text-foreground/60'
+                }`}
+              >
+                <AlignJustify size={13} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          {/* ── Masters grid / list ── */}
           <AnimatePresence mode="popLayout">
             {visible.length === 0 ? (
               <motion.div
@@ -997,15 +1203,15 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ ...SPRING, delay: 0.06 }}
-                  className="size-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-4"
+                  className="size-12 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4"
                 >
-                  <Sparkles size={20} className="text-indigo-500/50" />
+                  <Sparkles size={20} className="text-accent/40" />
                 </motion.div>
                 <p className="text-sm font-semibold text-foreground mb-1.5">
-                  {searchQuery ? `За «${searchQuery}» нікого немає` : 'Нікого не знайдено'}
+                  {searchQuery ? `За «${searchQuery}» нікого немає` : 'Нічого не знайшли'}
                 </p>
                 <p className="text-xs text-muted-foreground/60 mb-5">
-                  {searchQuery ? 'Спробуй інше слово' : 'Спробуй інші фільтри'}
+                  {searchQuery ? 'Спробуй інше слово' : 'Спробуйте інші фільтри або місто'}
                 </p>
                 <button
                   type="button"
@@ -1015,13 +1221,40 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
                   Скинути
                 </button>
               </motion.div>
-            ) : (
+            ) : viewMode === 'grid' ? (
               <motion.div
                 key="grid"
                 className="grid grid-cols-2 sm:grid-cols-3 gap-3"
               >
                 {visible.map((master, i) => (
-                  <MasterCard key={master.id} master={master} index={i} showDistance={nearbyActive} />
+                  <MasterCard
+                    key={master.id}
+                    master={master}
+                    index={i}
+                    showDistance={nearbyActive}
+                    isRecommended={
+                      preferredCategories.some(c => master.categories.includes(c)) &&
+                      master.ratingCount >= 3
+                    }
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                className="flex flex-col gap-2"
+              >
+                {visible.map((master, i) => (
+                  <MasterListCard
+                    key={master.id}
+                    master={master}
+                    index={i}
+                    showDistance={nearbyActive}
+                    isRecommended={
+                      preferredCategories.some(c => master.categories.includes(c)) &&
+                      master.ratingCount >= 3
+                    }
+                  />
                 ))}
               </motion.div>
             )}
