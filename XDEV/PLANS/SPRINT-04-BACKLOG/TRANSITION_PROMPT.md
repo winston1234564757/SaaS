@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 22/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T22 — Стандартизація завантаження фото (всі сутності)
-Стан: T21 ✅ DONE — MyProfilePage Identity Card redesign: avatar upload (Supabase avatars bucket, client-side), instagram_url+telegram_handle fields+migration, collapsible health section, isDirty sticky save bar. Commit: 4e8d0c5
+Прогрес: 23/33 ✅ Sprint-04 IN PROGRESS
+Наступна: T33 — Лендинг: повна консистентність тарифів
+Стан: T32 ✅ DONE — авто Flash Deal при скасуванні: migration 141 (auto_flash_on_cancel + discount_pct), createFlashDealInternal, RPC bug fix (p_slot_timestamp), AutoFlashSettingsCard toggle+pills WCAG AA, encoding hotfix 6 landing files. Commit: e7645f9
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

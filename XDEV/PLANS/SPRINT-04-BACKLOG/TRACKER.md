@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 22/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 23/33 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -38,7 +38,7 @@
 | 29 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | — | — |
 | 30 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 31 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | — | Три глобальних паттерни: adaptive contrast (mix-blend/hook), smart tooltip hook (viewport-aware flip+shift), fit-text component (ResizeObserver scale) |
-| 32 | T32 | Smart Slots: авто Flash Deal при скасуванні | ⬜ | `spec-driven-workflow` + `create-migration` + `senior-backend` | — | — |
+| 32 | T32 | Smart Slots: авто Flash Deal при скасуванні | ✅ | `spec-driven-workflow` + `create-migration` + `senior-backend` | `e7645f9` | migration 141 (auto_flash_on_cancel + discount_pct); createFlashDealInternal; RPC bug fix (p_slot_timestamp); AutoFlashSettingsCard toggle+pills; encoding hotfix 6 landing files |
 | 33 | T33 | Лендинг: повна консистентність тарифів | ⬜ | `humanizer` + `senior-frontend` | — | — |
 
 ---

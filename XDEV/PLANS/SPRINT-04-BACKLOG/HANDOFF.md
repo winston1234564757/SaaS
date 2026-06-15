@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 22/30 ✅ (T21 /my/profile Identity Card redesign ✅ DONE)
-**Наступна задача:** **T22 — Стандартизація завантаження фото (всі сутності)**
+**Прогрес:** 23/33 ✅ (T32 Smart Slots авто Flash Deal ✅ DONE)
+**Наступна задача:** **T33 — Лендинг: повна консистентність тарифів**
 **Оновлено:** 2026-06-15
 
 ---
@@ -14,6 +14,22 @@
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
   - Якщо CLI не працює → Dashboard SQL Editor
 - Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+
+---
+
+## ✅ T32 — Smart Slots: авто Flash Deal при скасуванні
+**Commit:** `e7645f9`
+
+**Що зроблено:**
+1. **Migration 141** — `ALTER TABLE master_profiles ADD COLUMN auto_flash_on_cancel BOOLEAN DEFAULT false, auto_flash_discount_pct INT DEFAULT 20 CHECK (IN 10,15,20,25,30)`; застосовано через Supabase MCP.
+2. **flash/actions.ts** — рефакторинг: новий `createFlashDealInternal(masterId, tier, params)` без auth (NFR-4); RPC bug fix (FR-8): `get_eligible_flash_deal_clients` тепер отримує `{p_master_id, p_slot_timestamp}`; новий `updateAutoFlashSettings` server action (FR-11).
+3. **bookings/actions.ts** — `cancelBooking`: паралельний запит `master_profiles(auto_flash_on_cancel, auto_flash_discount_pct, slug, subscription_tier)`; авто-тригер `.catch()` pattern (NFR-1,3); guards FR-6,7 (no services / product-only) + EC-6 (zero price).
+4. **FlashDealPage.tsx** — `AutoFlashSettingsCard`: toggle `role=switch aria-checked` + pill кнопки знижки (10-30%); `useEffect` синхронізує з `masterProfile`; auto-save при зміні; WCAG fix: `#2D6A4A` (6.42:1 vs white).
+5. **Encoding hotfix** — cp1251 mojibake виправлено в 6 landing файлах через Python `encode('cp1251').decode('utf-8')` (обхід hook що блокував Write на corrupted файли).
+
+**Root cause RPC bug:** `createFlashDeal` викликав `get_eligible_flash_deal_clients` тільки з `{p_master_id}`, але RPC (migration 054) вимагає `p_slot_timestamp` — клієнти таргетувалися неправильно.
+
+**Key decision:** Два окремих запити в `cancelBooking` (один для основних даних, другий для auto-flash полів) — запобігає `GenericStringError` від Supabase TypeScript при string concatenation в `.select()`.
 
 ---
 
