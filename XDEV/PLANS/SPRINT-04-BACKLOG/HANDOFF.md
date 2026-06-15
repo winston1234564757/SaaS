@@ -1,11 +1,11 @@
-﻿# Sprint-04 HANDOFF
+# Sprint-04 HANDOFF
 > Читай цей файл ПЕРШИМ на початку кожної нової сесії.
 > Тут повний стан спринту: що зроблено, що далі, всі деталі задач.
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 26/34 ✅ (T33 DONE)
-**Наступна задача:** **T-phone — /my/setup/phone: onboarding redesign з нуля (Deploy #21)**
+**Прогрес:** 27/34 ✅ (T-QA-bookings DONE)
+**Наступна задача:** **T-QA-explore — /explore: фото h-[192px]→h-[134px] (-30%) + теги/статуси (Deploy #20)**
 **Оновлено:** 2026-06-15
 
 ---
@@ -24,7 +24,7 @@
 1. **LandingPricing.tsx** — повний rewrite через PowerShell here-string (файл мав mojibake). Starter: 8 пунктів (додано нагадування, CRM, флеш-акції, розсилки). Pro: 8 пунктів (прибрано Авто-нагадування + CRM, додано Магазин). Studio: waitlist-картка — "Скоро" badge, сірі фічі, "Залишити заявку" → /register, без ціни.
 2. **LandingMagic.tsx** — `stat: '+27%'` → `stat: 'до 27%'` (Python cp1251 fix).
 3. **LandingBentoFeatures.tsx** — CountUp metric type → static `{ type: 'static', text: 'до 32%', label: 'більше доходу' }` (Python cp1251 fix).
-4. **LandingEconomy.tsx** — 'на 32%' → 'до 32%' (UTF-8 BOM файл з double-encoded Ukrainian; decode utf-8-sig + Unicode codepoint replace 'РЅР°'→'РґРѕ').
+4. **LandingEconomy.tsx** — 'на 32%' → 'до 32%' (UTF-8 BOM файл з double-encoded Ukrainian; decode utf-8-sig + Unicode codepoint replace 'РЅРа'→'РґРѕ').
 5. **LandingMarquee.tsx** — Smart Slots copy soften + '+32% до доходу в середньому' → 'до 32% більше доходу'.
 6. **BillingPage.tsx** — Starter 5→8 фіч, Pro 8→9 фіч; синхронізовано з лендингом.
 
@@ -75,10 +75,10 @@
 **UI slot blocking (defer):** marking client-blocked slots in DateTimePicker requires threading clientBlockedRanges through /[slug]/page.tsx → PublicMasterPage → wizard state → useBookingScheduleData → slot rendering. Separate mini-task.
 
 ---
-## ▶ T-phone — /my/setup/phone: Onboarding Phone Redesign (Deploy #21)
+## ▶ T-QA-explore — /explore: фото -30% + теги/статуси (Deploy #20)
 **Статус:** NEXT
 **Скіли:** `design-taste-frontend` + `impeccable`
-**Деталі:** /my/setup/phone redesign з нуля — Frost theme, elegant step UI, phone verification form.
+**Деталі:** /explore: фото h-[192px]→h-[134px] (-30%); теги/статуси (PRO, Рекомендований, є слот) в scrollable strip нижче фото. Скіл: design-taste-frontend + impeccable.
 
 ---
 
