@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 19/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 21/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -25,8 +25,8 @@
 | 17 | T17 | /my/* повний візуальний редизайн (masters, loyalty, notifications) | ✅ | `design-taste-frontend` + `impeccable` | `830acd4` | portrait 2-col grid; loyalty progress; date-grouped notifications |
 | 17b | T-card | Картка майстра: повний редизайн (повний цикл) | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` | `a9c5b5b` | framed photo zone h-[192px], MasterCard+MasterListCard, grid/list toggle, 4 badges WCAG AA, uniform height h-full |
 | 18 | **T18** | **Оптимізація завантаження сторінки послуг** | **▶ NEXT** | `performance-profiler` + `senior-backend` | — | — |
-| 19 | T19 | /my/bookings: повний аудит + premium redesign | ⬜ | `impeccable` + `redesign-existing-projects` | — | — |
-| 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ⬜ | `senior-frontend` + `humanizer` | — | — |
+| 19 | T19 | /my/bookings: повний аудит + premium redesign | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer` | `9118000` | B+D+C hybrid: hero zone (72px avatar, isToday), master groups (visit count, expand), smart CTAs; Sheet variant=bottom; STATUS_CFG WCAG AA fixed |
+| 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ✅ | merged into T19 | `9118000` | ReviewSheet (5-star animated, textarea), CancelSheet confirm; "Записатись знову" router.push /[slug]?services=ids pre-fill |
 | 21 | T21 | Профіль клієнта: фото/IG/TG + impeccable аудит | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 22 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | — | — |
 | 23 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | — | — |

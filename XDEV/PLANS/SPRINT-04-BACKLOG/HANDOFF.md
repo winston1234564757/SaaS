@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 19/30 ✅ (T-card /explore master cards ✅ DONE)
+**Прогрес:** 21/30 ✅ (T19+T20 /my/bookings premium redesign ✅ DONE)
 **Наступна задача:** **T18 — Оптимізація завантаження сторінки послуг**
 **Оновлено:** 2026-06-15
 
@@ -662,6 +662,44 @@ Round 3 (`28a5a40`) — layout polish:
 - PRO: `#ffffff` на `#3730a3` (indigo-700) → 7.90:1 ✅
 - Emerald text: `#047857` на emerald-500/15 → 5.23:1 ✅
 - Amber text: `#92400e` (amber-800) на amber-500/15 → 6.31:1 ✅
+
+**TSC:** 0 | **Build:** clean
+
+---
+
+## ✅ T19+T20 — /my/bookings: повний redesign + review + "Записатись знову"
+**Commit:** `9118000`
+**Skills:** `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer`
+
+**Root cause:** Старий MyBookingsPage мав хронологічний список без групування, без smart CTAs, без review flow. Дизайн не відповідав Frost theme та impeccable standards.
+
+**Архітектура (B+D+C hybrid):**
+- **B — Hero Zone:** перший upcoming запис → `HeroCard` (72px avatar, isToday badge, primary/6% bg, cancel ghost button min-h-[44px])
+- **D — Smart Status CTAs:** `completed + !hasReview` → "Поділитись враженнями" h-11 | `completed + hasReview` → StarRow display | `cancelled` → нічого | `pending/confirmed` → cancel ghost
+- **C — Master Groups:** past bookings згруповані по `masterId` (Map<string, UnifiedOrder[]>), master header row (44px avatar + name + visit count через `pluralUk` + "Записатись знову" pill), max 3 CompactBookingRows + ChevronDown expand
+
+**Ключові компоненти (`MyBookingsPage.tsx`):**
+- `Avatar`: Image якщо `masterAvatarUrl` існує, інакше перша літера `masterName` (NO emoji)
+- `StatusPill`: кольори через `STATUS_CFG` з CSS var fallbacks; WCAG AA fix: `#f59e0b`→`#b45309` (4.70:1), `#10b981`→`#047857` (5.00:1)
+- `CancelSheet`: `Sheet` з `variant="bottom"` (vaul), "Так, скасувати" destructive h-11, "Не скасовувати" secondary h-11
+- `ReviewSheet`: 5 animated stars (`motion.button` scale:[1,1.28,1] spring), textarea 3 rows, "Надіслати"/"Не зараз"; `onSuccess(rating)` callback → батько оновлює `submittedRating` state → показує `StarRow`
+- `HeroCard`: upcoming[0], CancelSheet trigger; `CompactUpcomingRow`: upcoming[1..] — компактні рядки
+- `MasterGroup`: header row + `CompactBookingRow` список + expand (max 3 default)
+- `ShopOrderCard`: shop items окремий компонент, хронологічно
+- Tab `"Записи" | "Замовлення"` з pending count badge
+
+**Критичні рішення:**
+- `Sheet` з `variant="bottom"` — НЕ `BottomSheet` (не існує). Реальний vaul wrapper з `@/components/ui/Sheet.tsx`
+- `first:border-t-0` в `CompactBookingRow` — `AnimatePresence` не додає DOM nodes → CSS :first-child коректний
+- `"Записатись знову"` → `router.push('/[slug]?services=id1,id2')` — pre-fill сервіси з останнього запису
+- `onSuccess(rating)` pattern → оптимістичне оновлення UI після review без refetch
+- `pluralUk(count, 'візит', 'візити', 'візитів')` для кількості відвідувань
+
+**A11y виправлення:**
+- STATUS_CFG fallbacks: `#f59e0b` → `#b45309` (WCAG AA 4.70:1 ✅), `#10b981` → `#047857` (5.00:1 ✅)
+- Всі CTA кнопки: `h-11` (44px touch target ✅)
+- Cancel ghost button: `min-h-[44px] flex items-center`
+- Star icons (fill-amber-400) = декоративні → WCAG check не потрібен
 
 **TSC:** 0 | **Build:** clean
 

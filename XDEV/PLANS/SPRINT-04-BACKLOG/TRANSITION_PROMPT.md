@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 19/30 ✅ Sprint-04 IN PROGRESS
+Прогрес: 21/30 ✅ Sprint-04 IN PROGRESS
 Наступна: T18 — Оптимізація завантаження сторінки послуг
-Стан: T-card ✅ DONE — MasterCard + MasterListCard redesign з нуля на /explore (grid+list toggle, h-[192px] fixed frame, WCAG AA badges, Cormorant display font). Commit: a9c5b5b
+Стан: T19+T20 ✅ DONE — MyBookingsPage повний redesign з нуля: B+D+C hybrid, hero zone, master groups, smart CTAs, ReviewSheet + CancelSheet (Sheet variant=bottom), "Записатись знову" router.push pre-fill. Commit: 9118000
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
