@@ -392,6 +392,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 |---|---|
 | `dates.ts` | `formatDate`, `formatDateFull`, `formatDayFull`, `timeAgo`, `formatDurationFull` |
 | `pluralUk.ts` | `pluralUk(n, one, few, many)` — єдиний plural helper |
+| `haversine.ts` | `haversineKm(lat1,lng1,lat2,lng2): number` + `formatDistance(km): string` — straight-line distance for /explore geo filter |
 | `smartSlots.ts` | `generateAvailableSlots`, `scoreSlots`, `buildSlotRenderItems` |
 | `dynamicPricing.ts` | `calculateDynamicPrice`, `stackRules` |
 | `phone.ts` | E.164 нормалізація |
