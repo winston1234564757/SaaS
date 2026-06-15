@@ -438,7 +438,7 @@ function FeaturedCard({ master }: { master: ExploreMaster }) {
           ) : (
             <AvatarFallback name={master.name} />
           )}
-          <span className="absolute top-1.5 left-1.5 text-[8px] font-bold bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full leading-none">
+          <span className="absolute top-1.5 left-1.5 text-[8px] font-bold bg-indigo-500/90 text-white px-1.5 py-0.5 rounded-full leading-none">
             PRO
           </span>
         </div>
@@ -527,7 +527,7 @@ function MasterCard({
             {/* Top row badges */}
             <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between pointer-events-none">
               {master.isPro ? (
-                <span className="text-[9px] font-bold text-accent-foreground bg-accent px-2 py-0.5 rounded-full leading-none tracking-wide">
+                <span className="text-[9px] font-bold text-white bg-indigo-500/90 px-2 py-0.5 rounded-full leading-none tracking-wide">
                   PRO
                 </span>
               ) : <span aria-hidden="true" />}
@@ -542,8 +542,8 @@ function MasterCard({
             {/* Availability badge */}
             {(master.availableToday || master.availableTomorrow) && (
               <div className="absolute bottom-2.5 left-2.5 pointer-events-none">
-                <span className="flex items-center gap-1 bg-accent text-accent-foreground text-[9px] font-bold px-2 py-1 rounded-full leading-none">
-                  <span className="size-1.5 rounded-full bg-accent-foreground/60 flex-shrink-0" aria-hidden="true" />
+                <span className="flex items-center gap-1 bg-indigo-500/15 text-indigo-700 text-[9px] font-bold px-2 py-1 rounded-full leading-none">
+                  <span className="size-1.5 rounded-full bg-indigo-500 flex-shrink-0" aria-hidden="true" />
                   {master.availableToday ? 'Приймає сьогодні' : 'Вільно завтра'}
                 </span>
               </div>
@@ -962,7 +962,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
                 className="mb-7"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-black text-accent tracking-[0.2em] uppercase">Рекомендуємо</span>
+                  <span className="text-[11px] font-black text-indigo-700 tracking-[0.2em] uppercase">Рекомендуємо</span>
                   <span className="text-[10px] text-muted-foreground/40">
                     {proMasters.length} PRO {pluralUk(proMasters.length, 'майстер', 'майстри', 'майстрів')}
                   </span>
@@ -997,9 +997,9 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ ...SPRING, delay: 0.06 }}
-                  className="size-12 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4"
+                  className="size-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-4"
                 >
-                  <Sparkles size={20} className="text-accent/40" />
+                  <Sparkles size={20} className="text-indigo-500/50" />
                 </motion.div>
                 <p className="text-sm font-semibold text-foreground mb-1.5">
                   {searchQuery ? `За «${searchQuery}» нікого немає` : 'Нікого не знайдено'}
