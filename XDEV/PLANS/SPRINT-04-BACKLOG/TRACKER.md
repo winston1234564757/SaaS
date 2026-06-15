@@ -23,6 +23,7 @@
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ✅ | `focused-fix` + `senior-backend` | `51f0ba7` `f2b24bf` | some→every cascade; /100 price fix; SW_NAVIGATE→shared; /goto redirect page (iOS/Android hint); remove onlyApplePush → no double delivery; gotoUrl() всі 19 TG кнопок |
 | 16 | T16 | Клієнтський навбар: redesign + Каталог + /explore повний редизайн (Deploy-14) | ✅ | `impeccable` + `design-taste-frontend` | `947311e` `e59ff92` `eae2f99` | navbar+explore base; h-56 cards+pagination; FROM SCRATCH: Cormorant hero, geo distance, smart sort, portfolio strip |
 | 17 | T17 | /my/* повний візуальний редизайн (masters, loyalty, notifications) | ✅ | `design-taste-frontend` + `impeccable` | `830acd4` | portrait 2-col grid; loyalty progress; date-grouped notifications |
+| 17b | T-card | Картка майстра: повний редизайн (повний цикл) | ⬜ | `ui-ux-pro-max` → `impeccable shape` → `design-taste-frontend` → `impeccable critique` + `animate` | — | brainstorm → shape → design → critique → animate → ship (explore + /my/masters) |
 | 18 | **T18** | **Оптимізація завантаження сторінки послуг** | **▶ NEXT** | `performance-profiler` + `senior-backend` | — | — |
 | 19 | T19 | /my/bookings: повний аудит + premium redesign | ⬜ | `impeccable` + `redesign-existing-projects` | — | — |
 | 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ⬜ | `senior-frontend` + `humanizer` | — | — |
