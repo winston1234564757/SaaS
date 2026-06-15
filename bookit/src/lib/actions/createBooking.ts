@@ -485,6 +485,25 @@ export async function createBooking(
   const effectiveDuration = p.durationOverrideMinutes ?? totalDuration;
   const endTime = p.startTime ? computeEndTime(p.startTime, effectiveDuration) : null;
 
+  // 7.7. Cross-master client conflict — prevent double-booking the same timeslot with different masters
+  if (p.source === 'online' && resolvedClientId && p.date && p.startTime && endTime && canonicalServices.length > 0) {
+    const { data: clientExisting } = await admin
+      .from('bookings')
+      .select('start_time, end_time')
+      .eq('client_id', resolvedClientId)
+      .eq('date', p.date)
+      .in('status', ['pending', 'confirmed'])
+      .neq('master_id', p.masterId);
+
+    const hasConflict = (clientExisting ?? []).some(b => {
+      if (!b.start_time || !b.end_time) return false;
+      return p.startTime! < b.end_time && endTime > b.start_time;
+    });
+    if (hasConflict) {
+      return { bookingId: null, error: 'У вас вже є запис на цей час' };
+    }
+  }
+
   // 8. Insert booking
   // Зберігаємо результат динамічного ціноутворення для аналітики + trigger-обліку
   const dynamicExtraKopecks = dynamicResult && dynamicResult.modifier > 0

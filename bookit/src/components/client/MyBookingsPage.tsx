@@ -90,7 +90,7 @@ function fmtShort(iso: string) {
 }
 
 function fmtPrice(p: number) {
-  return p.toLocaleString('uk-UA') + ' ₴';
+  return p.toLocaleString('uk-UA') + ' ₴';
 }
 
 function getCfg(status: string) {
@@ -292,8 +292,8 @@ function HeroCard({ order }: { order: UnifiedOrder }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const isToday = order.date === getToday();
   const services = order.services ?? [];
-  const shown = services.slice(0, 2);
-  const extra = services.length - 2;
+  const shown = services.slice(0, 3);
+  const extra = services.length - 3;
   const canCancel = ['pending', 'confirmed'].includes(order.status);
 
   return (
@@ -304,87 +304,93 @@ function HeroCard({ order }: { order: UnifiedOrder }) {
         transition={SPRING}
         className="relative rounded-3xl border border-primary/20 bg-primary/[0.06] p-5 overflow-hidden"
       >
-        {isToday && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none">
-            <span className="bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
-              Сьогодні
-            </span>
+        {/* Row 1: avatar + name + today chip + status */}
+        <div className="flex items-center gap-3">
+          <Avatar url={order.masterAvatarUrl} name={order.masterName} size={56} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <p className="heading-serif text-lg text-foreground leading-tight">{order.masterName}</p>
+              {isToday && (
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground whitespace-nowrap">
+                  Сьогодні
+                </span>
+              )}
+            </div>
+          </div>
+          <StatusPill status={order.status} />
+        </div>
+
+        {/* Date + time */}
+        <div className="mt-3 flex flex-col gap-1">
+          <div className="flex items-center gap-1.5">
+            <CalendarDays size={13} className="text-primary flex-shrink-0" />
+            <span className="text-[13px] font-semibold text-foreground">{fmtDate(order.date)}</span>
+          </div>
+          {order.startTime && (
+            <div className="flex items-center gap-1.5">
+              <Clock size={13} className="text-muted-foreground flex-shrink-0" />
+              <span className="text-xs text-muted-foreground">
+                {order.startTime}{order.endTime ? ` — ${order.endTime}` : ''}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Services as pills */}
+        {shown.length > 0 && (
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {shown.map((s, i) => (
+              <span
+                key={i}
+                className="text-xs bg-background/70 border border-border/60 rounded-full px-2.5 py-1 font-medium text-foreground whitespace-nowrap"
+              >
+                {s.name}
+              </span>
+            ))}
+            {extra > 0 && (
+              <span className="text-xs bg-secondary/50 rounded-full px-2.5 py-1 text-muted-foreground/60 whitespace-nowrap">
+                +{extra} {pluralUk(extra, 'послуга', 'послуги', 'послуг')}
+              </span>
+            )}
           </div>
         )}
 
-        <div className={cn('flex items-start gap-4', isToday && 'mt-7')}>
-          <Avatar url={order.masterAvatarUrl} name={order.masterName} size={72} />
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <p className="heading-serif text-xl text-foreground leading-tight">{order.masterName}</p>
-              <StatusPill status={order.status} />
-            </div>
-
-            <div className="mt-2 flex flex-col gap-1">
-              <div className="flex items-center gap-1.5">
-                <CalendarDays size={13} className="text-primary flex-shrink-0" />
-                <span className="text-[13px] font-semibold text-foreground">{fmtDate(order.date)}</span>
-              </div>
-              {order.startTime && (
-                <div className="flex items-center gap-1.5">
-                  <Clock size={13} className="text-muted-foreground flex-shrink-0" />
-                  <span className="text-xs text-muted-foreground">
-                    {order.startTime}{order.endTime ? ` — ${order.endTime}` : ''}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {shown.length > 0 && (
-              <div className="mt-2.5 flex flex-col gap-0.5">
-                {shown.map((s, i) => (
-                  <p key={i} className="text-xs text-muted-foreground truncate">{s.name}</p>
-                ))}
-                {extra > 0 && (
-                  <p className="text-xs text-muted-foreground/50">
-                    і ще {extra} {pluralUk(extra, 'послуга', 'послуги', 'послуг')}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {order.masterAddress && (
-              <div className="mt-3 flex items-start gap-2 p-2.5 rounded-2xl bg-background/60 border border-border">
-                <MapPin size={13} className="text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold text-foreground">Де зустрічаємось</p>
-                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">{order.masterAddress}</p>
-                  <a
-                    href={
-                      order.masterLat && order.masterLng
-                        ? `https://www.google.com/maps/dir/?api=1&destination=${order.masterLat},${order.masterLng}`
-                        : `https://maps.google.com/?q=${encodeURIComponent(order.masterAddress)}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-primary"
-                  >
-                    <Navigation size={9} />
-                    Маршрут
-                  </a>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-base font-bold text-foreground">{fmtPrice(order.totalPrice)}</span>
-              {canCancel && (
-                <button
-                  type="button"
-                  onClick={() => setCancelOpen(true)}
-                  className="min-h-[44px] flex items-center text-xs text-muted-foreground/60 hover:text-destructive transition-colors font-medium"
-                >
-                  Скасувати запис
-                </button>
-              )}
+        {/* Address */}
+        {order.masterAddress && (
+          <div className="mt-3 flex items-start gap-2 p-2.5 rounded-2xl bg-background/60 border border-border">
+            <MapPin size={13} className="text-muted-foreground flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold text-foreground">Де зустрічаємось</p>
+              <p className="text-[11px] text-muted-foreground truncate mt-0.5">{order.masterAddress}</p>
+              <a
+                href={
+                  order.masterLat && order.masterLng
+                    ? `https://www.google.com/maps/dir/?api=1&destination=${order.masterLat},${order.masterLng}`
+                    : `https://maps.google.com/?q=${encodeURIComponent(order.masterAddress)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-primary"
+              >
+                <Navigation size={9} />
+                Маршрут
+              </a>
             </div>
           </div>
+        )}
+
+        {/* Price + cancel */}
+        <div className="mt-4 flex items-center justify-between">
+          <span className="text-base font-bold text-foreground">{fmtPrice(order.totalPrice)}</span>
+          {canCancel && (
+            <button
+              type="button"
+              onClick={() => setCancelOpen(true)}
+              className="min-h-[44px] flex items-center text-xs text-muted-foreground/60 hover:text-destructive transition-colors font-medium"
+            >
+              Скасувати запис
+            </button>
+          )}
         </div>
       </motion.div>
 
@@ -428,13 +434,15 @@ function CompactBookingRow({ order }: { order: UnifiedOrder }) {
     <>
       <div className="flex flex-col gap-2 py-3 border-t border-border/40 first:border-t-0 first:pt-0">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
             <span className="text-xs text-muted-foreground font-medium flex-shrink-0">{fmtShort(order.date)}</span>
             {first && (
-              <span className="text-xs text-foreground truncate">
+              <span className="text-xs bg-secondary rounded-full px-2 py-0.5 font-medium text-foreground max-w-[130px] truncate flex-shrink-0">
                 {first.name}
-                {extra > 0 && <span className="text-muted-foreground/50 ml-1">+{extra}</span>}
               </span>
+            )}
+            {extra > 0 && (
+              <span className="text-xs text-muted-foreground/50 flex-shrink-0">+{extra}</span>
             )}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -498,28 +506,35 @@ function MasterGroup({ group, index }: { group: MasterGroupData; index: number }
       transition={{ ...SPRING, delay: index * 0.05 }}
       className="rounded-3xl border border-border bg-background overflow-hidden"
     >
-      <div className="flex items-center gap-3 p-4">
-        <Avatar url={group.masterAvatarUrl} name={group.masterName} size={44} />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">{group.masterName}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {group.bookings.length} {pluralUk(group.bookings.length, 'візит', 'візити', 'візитів')}
-          </p>
+      {/* Row 1: avatar + master info */}
+      <div className="flex flex-col p-4 gap-3">
+        <div className="flex items-center gap-3">
+          <Avatar url={group.masterAvatarUrl} name={group.masterName} size={44} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">{group.masterName}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {group.bookings.length} {pluralUk(group.bookings.length, 'візит', 'візити', 'візитів')}
+            </p>
+          </div>
         </div>
-        <Link
-          href={`/my/messages?to=${group.masterId}`}
-          aria-label="Написати майстру"
-          className="size-9 flex items-center justify-center rounded-full bg-secondary border border-border text-foreground flex-shrink-0 active:scale-[0.94] transition-transform"
-        >
-          <MessageCircle size={16} />
-        </Link>
-        <button
-          type="button"
-          onClick={() => router.push(rebookHref)}
-          className="h-9 px-4 rounded-full bg-primary text-primary-foreground text-xs font-bold active:scale-[0.97] transition-transform whitespace-nowrap flex-shrink-0"
-        >
-          Записатись знову
-        </button>
+
+        {/* Row 2: action buttons */}
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/my/messages?to=${group.masterId}`}
+            className="min-h-[44px] flex-1 flex items-center justify-center gap-1.5 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold active:scale-[0.97] transition-transform"
+          >
+            <MessageCircle size={14} />
+            Написати
+          </Link>
+          <button
+            type="button"
+            onClick={() => router.push(rebookHref)}
+            className="min-h-[44px] flex-1 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold active:scale-[0.97] transition-transform"
+          >
+            Записатись знову
+          </button>
+        </div>
       </div>
 
       <div className="px-4 pb-3">
@@ -709,7 +724,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
 
   return (
     <div data-theme="frost" className="flex flex-col min-h-full bg-background">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border px-4 py-2">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm px-4 py-2">
         <div className="flex gap-1 p-1 rounded-xl bg-secondary/60">
           <button
             type="button"

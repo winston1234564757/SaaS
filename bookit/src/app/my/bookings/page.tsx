@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import { MyBookingsPage } from '@/components/client/MyBookingsPage';
 import { ClientRealtimeSync } from '@/components/client/ClientRealtimeSync';
@@ -25,7 +26,8 @@ export default async function MyBookings() {
     .eq('client_id', user!.id)
     .order('date', { ascending: false });
 
-  const { data: orders } = await supabase
+  const admin = createAdminClient();
+  const { data: orders } = await admin
     .from('orders')
     .select(`
       id, created_at, status, total_kopecks, delivery_type, pickup_at,
