@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 17/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-14
+**Прогрес:** 17/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -21,9 +21,8 @@
 | 13 | T13 | Записи: баг буферу 10 хв між записами | ✅ | `focused-fix` | `9b5fdde` | smartSlots.ts: `b.end` → `b.end + bufferMinutes` — backward buffer enforcement |
 | 14 | T14 | Конструктор сторіс (ПК+мобайл): розширення робочої зони | ✅ | `senior-frontend` + `impeccable` | `6cc91f2` `aeb10fa` `8d39a4d` `51e8875` `0fa2aab` | Two-column sticky desktop; ResizeObserver scale; hotfix-5: lg:flex-wrap; **mobile redesign (51e8875)**: two-section split lg:hidden/hidden lg:flex; preview-first (ResizeObserver mobileScale); grid-cols-4 photo picker; flex-wrap mode tabs (no page h-scroll); **hotfix-6 (0fa2aab)**: grid-cols-2 pos/text + glass full-width + pill switches (motion.div knob, role=switch) |
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ✅ | `focused-fix` + `senior-backend` | `51f0ba7` `f2b24bf` | some→every cascade; /100 price fix; SW_NAVIGATE→shared; /goto redirect page (iOS/Android hint); remove onlyApplePush → no double delivery; gotoUrl() всі 19 TG кнопок |
-| 16 | T16 | Клієнтський навбар: redesign + Каталог + desktop notif + /explore редизайн | ✅ | `impeccable` craft+shape+layout | `e5e15d8` `8b5c70a` `947311e` `c78f6d0` `39b7a4c` `a1390d2` `e115959` | MyBottomNav 5 items + LayoutGroup pill; ExplorePage portrait grid max-w-2xl; **ext:** 3 view modes (grid/list/tiktok) + topServices rows + latestReview + portfolioPhotos (strip tiktok / fallback grid) + search by serviceNames; schema hotfix (price/schedule_templates/is_working); pb-20 TikTok CTA above navbar |
-| 17 | T17 | /my/* full visual redesign: masters portrait grid + loyalty card + notif feed | ✅ | `impeccable` craft+shape | `830acd4` | MyMastersPage 2-col portrait grid (h-40 photo, badges); LoyaltyCard h-16 strip + 2xl counter; ClientNotifPage date-grouped feed + type dots |
-| — | T16-ext-2 | /explore full redesign: pill filters, featured PRO row, h-56 cards, pagination | ✅ | `impeccable` shape+craft | `e59ff92` | Square tiles→pills; h-56 photo zone; portfolio strip always; PRO badge→accent; FeaturedCard row; PAGE_SIZE=12; glass search; reset CTA |
+| 16 | T16 | Клієнтський навбар: redesign + Каталог + /explore повний редизайн (Deploy-14) | ✅ | `impeccable` + `design-taste-frontend` | `947311e` `e59ff92` `eae2f99` | navbar+explore base; h-56 cards+pagination; FROM SCRATCH: Cormorant hero, geo distance, smart sort, portfolio strip |
+| 17 | T17 | /my/* повний візуальний редизайн (masters, loyalty, notifications) | ✅ | `design-taste-frontend` + `impeccable` | `830acd4` | portrait 2-col grid; loyalty progress; date-grouped notifications |
 | 18 | **T18** | **Оптимізація завантаження сторінки послуг** | **▶ NEXT** | `performance-profiler` + `senior-backend` | — | — |
 | 19 | T19 | /my/bookings: повний аудит + premium redesign | ⬜ | `impeccable` + `redesign-existing-projects` | — | — |
 | 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ⬜ | `senior-frontend` + `humanizer` | — | — |

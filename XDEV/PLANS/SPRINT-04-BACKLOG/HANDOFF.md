@@ -6,6 +6,7 @@
 **Розпочато:** 2026-06-12
 **Прогрес:** 17/30 ✅
 **Наступна задача:** **T18 — Оптимізація завантаження сторінки послуг**
+**Оновлено:** 2026-06-15
 
 ---
 
@@ -522,6 +523,49 @@ TG inline keyboard buttons завжди відкриваються у власн
 
 **Removed imports:** `ArrowUpRight` | **Added:** `ArrowRight`, `useEffect`
 **TSC:** 0 | **Build:** clean
+
+---
+
+## ✅ T-explore (Deploy-14) — /explore повний редизайн з нуля
+**Commit:** `eae2f99`
+
+**Що зроблено** (4 файли, CLIENT_ZONE_REDESIGN.md Deploy-14):
+
+**1. `src/lib/utils/haversine.ts`** — NEW
+- `haversineKm(lat1, lng1, lat2, lng2): number` — straight-line km
+- `formatDistance(km): string` — "~1.2 км" / "350 м"
+
+**2. `src/lib/constants/categories.ts`** — 7 → 12 категорій
+- Додано: barber, cosmetology, spa, waxing, piercing, tattoo
+- label 'Брови/Вії' → 'Брови і вії' (CATEGORY_ALIASES в ExplorePage для backwards compat)
+
+**3. `src/app/explore/page.tsx`** — server rewrite
+- SELECT: додано `latitude, longitude`
+- Паралельний `bookings` запит (для `preferredCategories` smart sort, тільки при авторизації)
+- DAY_MAP: `['sun','mon','tue','wed','thu','fri','sat']` → `availableToday` + `availableTomorrow`
+- `categoryCounts` нормалізовані по category `id` (через `serviceCategories.find`)
+- Props: `masters`, `categoryCounts`, `preferredCategories`
+
+**4. `src/components/public/ExplorePage.tsx`** — повний rewrite
+- `ExploreMaster` interface (замінює старий `Master` type): +`availableTomorrow`, +`latitude`, +`longitude`; -`avatarEmoji`, -`serviceCount`, -`serviceNames`, -`latestReview`, -`bio`
+- `CATEGORY_ALIASES = { brows: ['Брови/Вії', 'Брови'] }` — backwards compat при зміні label
+- `ProcessedMaster = ExploreMaster & { distance: number | null }`
+- **Hero:** `heading-serif text-[3.25rem] uppercase tracking-wide` — "Майстри\nпоруч"
+- **Category pills:** горизонтальний `overflow-x-auto`, pill `rounded-full`, count suffix `·N`
+- **Filter bar:** "Поруч" toggle (геолокація → haversineKm, silent fail on deny), "Є слот сьогодні" toggle, sort dropdown (Популярні / Рейтинг / Новинки / Для тебе)
+- **Smart sort:** "Для тебе" показується тільки при `preferredCategories.length > 0`; майстри з preferred категоріями підіймаються вгору
+- **Nearby:** `navigator.geolocation.getCurrentPosition` → `haversineKm` → sort by distance; відстань на картці; no error on deny
+- **MasterCard:** `aspect-[3/4]` photo zone + portfolio strip (`h-10`, 3 фото, fallback = avatar) + badge "Є слот / Вільно завтра" + PRO badge
+- **States:** skeleton 2-col, empty state + "Скинути фільтри" CTA
+- **Pagination:** `PAGE_SIZE=12`, "Показати ще N" button
+
+**Key decisions:**
+- Haversine (straight-line) замість Google Maps Distance Matrix — немає зайвого API call, lat/lng вже є в `master_profiles`
+- Geolocation deny → silent fail — toggle stays OFF, no error UI
+- Smart sort → тільки для авторизованих (server queries bookings if `user` exists)
+- `CATEGORY_ALIASES` — мастери зі старим label 'Брови/Вії' продовжують показуватись у фільтрі 'brows'
+
+**TSC:** 0 errors | **Build:** clean
 
 ---
 

@@ -17,6 +17,7 @@
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 17/30 ✅ Sprint-04 IN PROGRESS
 Наступна: T18 — Оптимізація завантаження сторінки послуг
+Щойно завершено: T-explore (Deploy-14) — /explore повний редизайн з нуля (commit eae2f99)
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
