@@ -7,6 +7,7 @@ import {
   notifyClientOnStatusChange,
   notifyClientOnReschedule,
 } from '@/lib/notifications';
+import { createFlashDealInternal } from '@/app/(master)/dashboard/flash/actions';
 import type { BookingStatus } from '@/types/database';
 
 const CANCELLABLE_STATUSES = ['pending', 'confirmed'] as const;
@@ -14,6 +15,20 @@ const MUTABLE_STATUSES = ['pending', 'confirmed'] as const;
 
 type BookingService = { service_name: string };
 type MasterProfileNested = { profiles: { full_name: string } | null } | null;
+
+type ExtendedBookingService = {
+  service_id:    string | null;
+  service_name:  string;
+  service_price: number;
+};
+
+type ExtendedMasterProfile = {
+  profiles:                { full_name: string } | null;
+  auto_flash_on_cancel:    boolean;
+  auto_flash_discount_pct: number;
+  slug:                    string;
+  subscription_tier:       string;
+} | null;
 
 export async function confirmBooking(bookingId: string): Promise<{ error: string | null }> {
   const supabase = await createClient();
@@ -74,7 +89,7 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
 
     const { data: booking } = await admin
       .from('bookings')
-      .select('master_id, client_id, status, date, start_time, booking_services(service_name), master_profiles(profiles(full_name))')
+      .select('master_id, client_id, status, date, start_time, booking_services(service_id, service_name, service_price), master_profiles(profiles(full_name))')
       .eq('id', bookingId)
       .single();
 
@@ -84,19 +99,30 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
       return { error: 'Запис вже завершено або скасовано.' };
     }
 
-    const { error } = await admin
-      .from('bookings')
-      .update({ status: 'cancelled', status_changed_at: new Date().toISOString() })
-      .eq('id', bookingId);
+    // Run update + auto-flash settings fetch in parallel
+    const [{ error: updateErr }, { data: mpFlashRaw }] = await Promise.all([
+      admin
+        .from('bookings')
+        .update({ status: 'cancelled', status_changed_at: new Date().toISOString() })
+        .eq('id', bookingId),
+      admin
+        .from('master_profiles')
+        .select('subscription_tier, slug, auto_flash_on_cancel, auto_flash_discount_pct')
+        .eq('id', booking.master_id)
+        .single(),
+    ]);
 
-    if (error) throw error;
+    if (updateErr) throw updateErr;
 
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
+    const mpBase   = booking.master_profiles as unknown as MasterProfileNested;
+    const mpFlash  = mpFlashRaw as unknown as ExtendedMasterProfile;
+    const masterName = mpBase?.profiles?.full_name ?? 'Майстра';
+
     if (booking.client_id) {
-      const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
-      const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
+      const services = (booking.booking_services as ExtendedBookingService[]).map(s => s.service_name).join(', ');
       notifyClientOnStatusChange({
         clientId: booking.client_id,
         masterId: booking.master_id,
@@ -107,6 +133,26 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
         services,
         status: 'cancelled',
       }).catch(err => console.error('[cancelBooking] Notification failed:', err));
+    }
+
+    // ── Auto Flash Deal trigger (FR-2, FR-3, NFR-1) ──────────────────────
+    if (mpFlash?.auto_flash_on_cancel) {
+      const bServices = booking.booking_services as ExtendedBookingService[];
+      const first = bServices[0];
+      // FR-6: skip if no services; FR-7: skip product-only; EC-6: skip zero price
+      if (first?.service_id && Number(first.service_price) > 0) {
+        createFlashDealInternal(booking.master_id, mpFlash.subscription_tier, {
+          serviceId:      first.service_id,
+          serviceName:    first.service_name,
+          slotDate:       booking.date,
+          slotTime:       booking.start_time.slice(0, 5),
+          originalPrice:  Number(first.service_price),
+          discountPct:    mpFlash.auto_flash_discount_pct,
+          expiresInHours: 2,
+          slug:           mpFlash.slug ?? '',
+          masterName,
+        }).catch(err => console.error('[cancelBooking] Auto Flash Deal failed:', err));
+      }
     }
 
     return { error: null };

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
@@ -13,7 +13,7 @@ const NOTIFICATIONS = [
   {
     channel: 'Telegram',
     sender: 'Bookit',
-    text: 'РќРѕРІРёР№ Р·Р°РїРёСЃ! РђРЅСЏ РљРѕРІР°Р»РµРЅРєРѕ В· РњР°РЅС–РєСЋСЂ В· Р—Р°РІС‚СЂР°, 10:00 В· в‚ґ650',
+    text: 'Новий запис! Аня Коваленко · Манікюр · Завтра, 10:00 · ₴650',
     time: '09:47',
     icon: (
       <Image src="/landing/telegram.png" width={36} height={36} alt="" />
@@ -23,7 +23,7 @@ const NOTIFICATIONS = [
   {
     channel: 'Push',
     sender: 'Bookit',
-    text: 'РќР°РіР°РґСѓРІР°РЅРЅСЏ: Р·Р°РїРёСЃ Сѓ РњР°СЂРёРЅРё С‡РµСЂРµР· 2 РіРѕРґРёРЅРё. РџРµРґРёРєСЋСЂ В· 13:00',
+    text: 'Нагадування: запис у Марини через 2 години. Педикюр · 13:00',
     time: '10:58',
     icon: (
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
@@ -36,7 +36,7 @@ const NOTIFICATIONS = [
   {
     channel: 'SMS',
     sender: '+38 (044) 000-0000',
-    text: 'Bookit: РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ Р·Р°РїРёСЃСѓ РЅР° 15:30. Р’С–РґРїРѕРІС–СЃС‚Рё CANCEL РґР»СЏ СЃРєР°СЃСѓРІР°РЅРЅСЏ.',
+    text: 'Bookit: підтвердження запису на 15:30. Відповісти CANCEL для скасування.',
     time: '14:22',
     icon: (
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
@@ -49,10 +49,10 @@ const NOTIFICATIONS = [
 ];
 
 const CHANNELS = [
-  { label: 'Telegram Bot', sub: 'Р—Р°РїРёСЃРё Р№ СЃРєР°СЃСѓРІР°РЅРЅСЏ РІ СЂРµР°Р»СЊРЅРѕРјСѓ С‡Р°СЃС–' },
-  { label: 'Push-СЃРїРѕРІС–С‰РµРЅРЅСЏ', sub: 'iOS С‚Р° Android Р±РµР· РґРѕРґР°С‚РєР°' },
-  { label: 'SMS-СЂРµР·РµСЂРІ', sub: 'TurboSMS РґР»СЏ РєСЂРёС‚РёС‡РЅРёС… РїРѕРґС–Р№' },
-  { label: 'QR-РєРѕРґ', sub: 'Р”Р»СЏ Instagram, TikTok, СЃС‚С–РЅРё СЃС‚СѓРґС–С—' },
+  { label: 'Telegram Bot', sub: 'Записи й скасування в реальному часі' },
+  { label: 'Push-сповіщення', sub: 'iOS та Android без додатка' },
+  { label: 'SMS-резерв', sub: 'TurboSMS для критичних подій' },
+  { label: 'QR-код', sub: 'Для Instagram, TikTok, стіни студії' },
 ];
 
 export function LandingIntegrations() {
@@ -83,11 +83,11 @@ export function LandingIntegrations() {
               className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
               style={{ color: 'var(--l-indigo)' }}
             >
-              РЎРїРѕРІС–С‰РµРЅРЅСЏ
+              Сповіщення
             </motion.span>
 
             <LandingSplitHeading
-              text={"РљР»С–С”РЅС‚ Р·Р°РІР¶РґРё\nР·РЅР°С”, РґРµ С– РєРѕР»Рё."}
+              text={"Клієнт завжди\nзнає, де і коли."}
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight"
               style={{ fontSize: 'clamp(2.6rem,5vw,4.4rem)', color: 'var(--l-ink)' }}
               stagger={70}
@@ -101,7 +101,7 @@ export function LandingIntegrations() {
               className="mt-6 text-base leading-relaxed max-w-sm"
               style={{ color: 'var(--l-muted)' }}
             >
-              Bookit Р°РІС‚РѕРјР°С‚РёС‡РЅРѕ РѕР±РёСЂР°С” РєР°РЅР°Р» РґР»СЏ РєРѕР¶РЅРѕРіРѕ СЃРїРѕРІС–С‰РµРЅРЅСЏ вЂ” Telegram, Push Р°Р±Рѕ SMS. Р–РѕРґРЅРѕРіРѕ РїСЂРѕРїСѓС‰РµРЅРѕРіРѕ Р·Р°РїРёСЃСѓ.
+              Bookit автоматично обирає канал для кожного сповіщення — Telegram, Push або SMS. Жодного пропущеного запису.
             </motion.p>
 
             <div className="mt-10 flex flex-col gap-0" style={{ borderTop: '1px solid var(--l-border)' }}>

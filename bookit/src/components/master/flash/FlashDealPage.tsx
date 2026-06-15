@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
-import { createFlashDeal, cancelFlashDeal } from '@/app/(master)/dashboard/flash/actions';
+import { createFlashDeal, cancelFlashDeal, updateAutoFlashSettings } from '@/app/(master)/dashboard/flash/actions';
 import { useFlashDeals, useFlashDealsCount, useFlashDealsInvalidate } from '@/lib/supabase/hooks/useFlashDeals';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
 import { useServices } from '@/lib/supabase/hooks/useServices';
@@ -30,6 +30,7 @@ interface Props {
 
 const STARTER_LIMIT = 5;
 const DISCOUNT_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 50];
+const AUTO_FLASH_DISCOUNT_OPTIONS = [10, 15, 20, 25, 30];
 const EXPIRY_OPTIONS = [
   { label: '2 год',  value: 2 },
   { label: '4 год',  value: 4 },
@@ -57,10 +58,10 @@ function progressBarColor(used: number): string {
   return '#5C9E7A';
 }
 
-export function FlashDealPage({ 
-  activeDeals: initialDeals, 
-  tier: initialTier, 
-  usedThisMonth: initialCount, 
+export function FlashDealPage({
+  activeDeals: initialDeals,
+  tier: initialTier,
+  usedThisMonth: initialCount,
   isDrawer,
   initialDate,
   initialTime
@@ -71,7 +72,7 @@ export function FlashDealPage({
   const invalidateDeals = useFlashDealsInvalidate();
   const { data: activeDeals = initialDeals ?? [], isLoading: dealsLoading } = useFlashDeals(initialDeals);
   const { data: usedThisMonth = initialCount ?? 0, isLoading: countLoading } = useFlashDealsCount();
-  
+
   const { services } = useServices();
   const masterId = masterProfile?.id;
 
@@ -94,6 +95,19 @@ export function FlashDealPage({
   const [loading, setLoading]             = useState(false);
   const [result, setResult]               = useState<{ error: string | null; sentTo: number; clients?: { id: string; name: string }[] } | null>(null);
   const [cancellingId, setCancellingId]   = useState<string | null>(null);
+
+  // Auto Flash settings state (FR-9, FR-10)
+  const [autoFlashOnCancel, setAutoFlashOnCancel]       = useState(false);
+  const [autoFlashDiscountPct, setAutoFlashDiscountPct] = useState(20);
+  const [autoFlashSaving, setAutoFlashSaving]           = useState(false);
+
+  useEffect(() => {
+    if (masterProfile) {
+      const mp = masterProfile as any;
+      setAutoFlashOnCancel(mp.auto_flash_on_cancel ?? false);
+      setAutoFlashDiscountPct(mp.auto_flash_discount_pct ?? 20);
+    }
+  }, [masterProfile]);
 
   // We only really need the schedule when we are ready to pick a slot
   const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(
@@ -195,10 +209,24 @@ export function FlashDealPage({
     invalidateDeals();
   };
 
+  const handleAutoFlashToggle = async (enabled: boolean) => {
+    setAutoFlashOnCancel(enabled);
+    setAutoFlashSaving(true);
+    await updateAutoFlashSettings({ autoFlashOnCancel: enabled, autoFlashDiscountPct: autoFlashDiscountPct });
+    setAutoFlashSaving(false);
+  };
+
+  const handleAutoFlashDiscount = async (pct: number) => {
+    setAutoFlashDiscountPct(pct);
+    setAutoFlashSaving(true);
+    await updateAutoFlashSettings({ autoFlashOnCancel: autoFlashOnCancel, autoFlashDiscountPct: pct });
+    setAutoFlashSaving(false);
+  };
+
   return (
     <div className="flex flex-col gap-4 pb-8">
       {!isDrawer && (
-        <FlashDealHeader 
+        <FlashDealHeader
           activeCount={activeDeals.length}
           usedThisMonth={usedThisMonth}
           tier={tier}
@@ -209,7 +237,7 @@ export function FlashDealPage({
       )}
 
       {tier === 'starter' && (
-        <FlashDealStarterProgress 
+        <FlashDealStarterProgress
           usedThisMonth={usedThisMonth}
           progressPct={progressPct}
           barColor={barColor}
@@ -219,7 +247,18 @@ export function FlashDealPage({
 
       {isStarterBlocked && <FlashDealPaywall />}
 
-      <FlashDealForm 
+      {/* Auto Flash Deal settings (FR-9, FR-10) */}
+      {!isDrawer && (
+        <AutoFlashSettingsCard
+          enabled={autoFlashOnCancel}
+          discountPct={autoFlashDiscountPct}
+          saving={autoFlashSaving}
+          onToggle={handleAutoFlashToggle}
+          onDiscountChange={handleAutoFlashDiscount}
+        />
+      )}
+
+      <FlashDealForm
         handleSubmit={handleSubmit}
         currentStep={currentStep}
         isStarterBlocked={isStarterBlocked}
@@ -244,7 +283,7 @@ export function FlashDealPage({
         nextStep={nextStep}
       />
 
-      <ActiveDealsList 
+      <ActiveDealsList
         activeDeals={activeDeals}
         cancellingId={cancellingId}
         handleCancel={handleCancel}
@@ -373,6 +412,93 @@ const FlashDealPaywall = React.memo(() => (
     >
       Pro →
     </Link>
+  </motion.div>
+));
+
+const AutoFlashSettingsCard = React.memo(({
+  enabled, discountPct, saving, onToggle, onDiscountChange,
+}: {
+  enabled: boolean;
+  discountPct: number;
+  saving: boolean;
+  onToggle: (v: boolean) => void;
+  onDiscountChange: (pct: number) => void;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ ...SPRING, delay: 0.09 }}
+    className="bento-card p-4 flex flex-col gap-3"
+  >
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <div className="size-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(92,158,122,0.12)' }}>
+          <Zap size={15} style={{ color: '#5C9E7A' }} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-tight">Авто Flash Deal</p>
+          <p className="text-xs text-muted-foreground/70">При скасуванні запису</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label="Авто Flash Deal при скасуванні"
+        onClick={() => onToggle(!enabled)}
+        className="relative w-11 h-6 rounded-full transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+        style={{ background: enabled ? '#5C9E7A' : '#D1D5DB' }}
+      >
+        <motion.span
+          className="absolute top-0.5 size-5 rounded-full bg-white shadow-sm"
+          animate={{ left: enabled ? '1.375rem' : '0.125rem' }}
+          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+        />
+      </button>
+    </div>
+
+    <AnimatePresence>
+      {enabled && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.22, ease: 'easeInOut' }}
+          className="overflow-hidden"
+        >
+          <div className="pt-1 flex flex-col gap-2">
+            <p className="text-xs font-medium text-muted-foreground">Знижка при авто-тригері</p>
+            <div className="flex gap-1.5">
+              {AUTO_FLASH_DISCOUNT_OPTIONS.map(d => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => onDiscountChange(d)}
+                  className={cn(
+                    'flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer',
+                    discountPct === d
+                      ? 'text-white border-transparent'
+                      : 'bg-secondary/60 text-muted-foreground border-border hover:border-[#5C9E7A]/40'
+                  )}
+                  style={discountPct === d ? { background: '#2D6A4A' } : {}}
+                >
+                  {d}%
+                </button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    {saving && (
+      <div className="flex items-center gap-1.5">
+        <Loader2 size={10} className="animate-spin text-muted-foreground/60" />
+        <span className="text-[10px] text-muted-foreground/60">Зберігається…</span>
+      </div>
+    )}
   </motion.div>
 ));
 
