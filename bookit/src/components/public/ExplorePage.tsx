@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Scissors, Eye, Smile, Hand, Flower2, Droplets,
   Zap, Circle, PenTool, MoreHorizontal, Star, MapPin,
-  ChevronDown, Navigation, ArrowRight, Clock,
+  ChevronDown, Navigation, ArrowRight, Clock, Search, X,
 } from 'lucide-react';
 import { serviceCategories } from '@/lib/constants/categories';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -102,7 +102,7 @@ function CategoryPills({
 }) {
   return (
     <div
-      className="flex gap-2 overflow-x-auto pb-1 pe-4 scrollbar-hide"
+      className="flex flex-wrap gap-2"
       role="group"
       aria-label="Фільтр за категорією"
     >
@@ -110,7 +110,7 @@ function CategoryPills({
         type="button"
         aria-pressed={!activeCategory}
         onClick={() => onSelect(null)}
-        className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 active:scale-[0.95] ${
+        className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 active:scale-[0.95] ${
           !activeCategory
             ? 'bg-accent text-accent-foreground shadow-sm'
             : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
@@ -134,7 +134,7 @@ function CategoryPills({
             type="button"
             aria-pressed={active}
             onClick={() => onSelect(active ? null : cat.id)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 active:scale-[0.95] ${
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 active:scale-[0.95] ${
               cat.id === 'barber' ? '[&_svg]:rotate-90' : ''
             } ${
               active
@@ -395,15 +395,17 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
   const [userCoords,     setUserCoords]     = useState<{ lat: number; lng: number } | null>(null);
   const [sort,           setSort]           = useState<SortMode>('popular');
   const [page,           setPage]           = useState(1);
+  const [searchQuery,    setSearchQuery]    = useState('');
 
-  const isFiltered = !!(activeCategory || slotToday || nearbyActive);
+  const isFiltered = !!(activeCategory || slotToday || nearbyActive || searchQuery);
 
-  useEffect(() => { setPage(1); }, [activeCategory, slotToday, nearbyActive, sort]);
+  useEffect(() => { setPage(1); }, [activeCategory, slotToday, nearbyActive, sort, searchQuery]);
 
   const resetFilters = useCallback(() => {
     setActiveCategory(null);
     setSlotToday(false);
     setNearbyActive(false);
+    setSearchQuery('');
   }, []);
 
   const toggleNearby = useCallback(() => {
@@ -426,6 +428,15 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
 
   const processed = useMemo<ProcessedMaster[]>(() => {
     let result = masters;
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(m =>
+        m.name.toLowerCase().includes(q) ||
+        (m.city ?? '').toLowerCase().includes(q) ||
+        m.topServices.some(s => s.name.toLowerCase().includes(q))
+      );
+    }
 
     if (activeCategory) {
       const cat     = serviceCategories.find(c => c.id === activeCategory);
@@ -476,7 +487,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
     }
 
     return sorted;
-  }, [masters, activeCategory, slotToday, nearbyActive, userCoords, sort, preferredCategories]);
+  }, [masters, searchQuery, activeCategory, slotToday, nearbyActive, userCoords, sort, preferredCategories]);
 
   const visible   = processed.slice(0, page * PAGE_SIZE);
   const hasMore   = visible.length < processed.length;
@@ -491,14 +502,47 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={SPRING}
-          className="mb-7"
+          className="mb-6"
         >
-          <h1 className="heading-serif text-[3.25rem] leading-[0.88] font-medium uppercase tracking-wide text-foreground">
-            Майстри<br />поруч
+          <h1
+            className="text-[3.5rem] leading-[0.9] font-normal text-foreground"
+            style={{ fontFamily: 'var(--font-great-vibes, cursive)' }}
+          >
+            Майстри поруч
           </h1>
-          <p className="text-[11px] text-muted-foreground/50 mt-3.5 tracking-widest uppercase font-medium">
-            Нігті · Волосся · Брови · Краса
+          <p className="text-sm text-muted-foreground/60 mt-3 leading-snug">
+            Краса поруч. Твій майстер чекає.
           </p>
+        </motion.div>
+
+        {/* ── Search ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING, delay: 0.04 }}
+          className="mb-5 relative"
+        >
+          <Search
+            size={14}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none"
+          />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Ім'я, місто або послуга..."
+            className="w-full pl-9 pr-9 py-3 rounded-2xl bg-white/60 border border-border/50 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-accent/50 focus:bg-white/80 transition-all duration-150 min-h-[44px]"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              aria-label="Очистити пошук"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-5 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground/60 hover:bg-muted/60 transition-colors duration-150"
+            >
+              <X size={10} />
+            </button>
+          )}
         </motion.div>
 
         {/* ── Category pills ── */}
@@ -621,8 +665,12 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
               <div className="size-12 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles size={20} className="text-accent/40" />
               </div>
-              <p className="text-sm font-semibold text-foreground mb-1.5">Нікого не знайдено</p>
-              <p className="text-xs text-muted-foreground/60 mb-5">Спробуй інші фільтри</p>
+              <p className="text-sm font-semibold text-foreground mb-1.5">
+                {searchQuery ? `За «${searchQuery}» нікого немає` : 'Нікого не знайдено'}
+              </p>
+              <p className="text-xs text-muted-foreground/60 mb-5">
+                {searchQuery ? 'Спробуй інше слово' : 'Спробуй інші фільтри'}
+              </p>
               <button
                 type="button"
                 onClick={resetFilters}
