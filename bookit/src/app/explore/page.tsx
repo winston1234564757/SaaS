@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { ExplorePage } from '@/components/public/ExplorePage';
+import { serviceCategories } from '@/lib/constants/categories';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -10,93 +11,126 @@ export const metadata: Metadata = {
   description: 'Знайди свого майстра краси: нігті, волосся, брови, макіяж та більше. Онлайн-запис одразу.',
 };
 
+const DAY_MAP = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+
 export default async function Explore() {
   const supabase = await createClient();
 
-  const { data: masters, error: mastersError } = await supabase
-    .from('master_profiles')
-    .select(`
-      id, slug, business_name, bio, city, rating, rating_count,
-      avatar_emoji, categories, subscription_tier, created_at,
-      profiles ( full_name, avatar_url ),
-      services ( id, is_active, price, name, is_popular ),
-      schedule_templates ( day_of_week, is_working ),
-      reviews ( comment, created_at ),
-      portfolio_items ( id, is_published, portfolio_item_photos ( url, display_order ) )
-    `)
-    .eq('is_published', true)
-    .order('rating_count', { ascending: false })
-    .limit(120);
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (mastersError) {
-    console.error('[Explore] Supabase Query Error:', mastersError);
+  const [mastersResult, bookingsResult] = await Promise.all([
+    supabase
+      .from('master_profiles')
+      .select(`
+        id, slug, business_name, city, rating, rating_count,
+        categories, subscription_tier, created_at,
+        latitude, longitude,
+        profiles ( full_name, avatar_url ),
+        services ( is_active, price, name, is_popular ),
+        schedule_templates ( day_of_week, is_working ),
+        portfolio_items ( is_published, portfolio_item_photos ( url, display_order ) )
+      `)
+      .eq('is_published', true)
+      .order('rating_count', { ascending: false })
+      .limit(120),
+
+    user
+      ? supabase
+          .from('bookings')
+          .select('master_profiles!inner(categories)')
+          .eq('client_id', user.id)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .limit(30)
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  // Smart sort: preferred categories from booking history
+  let preferredCategories: string[] = [];
+  if (bookingsResult.data?.length) {
+    const counts: Record<string, number> = {};
+    for (const b of bookingsResult.data) {
+      const cats = (b.master_profiles as any)?.categories as string[] | undefined;
+      for (const c of cats ?? []) {
+        counts[c] = (counts[c] ?? 0) + 1;
+      }
+    }
+    preferredCategories = Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .map(([cat]) => cat)
+      .slice(0, 5);
   }
-  if (!masters?.length) {
-    console.error('[Explore] No masters returned. is_published filter may be too strict, or RLS is blocking reads.');
-  }
 
-  const cities = Array.from(
-    new Set(
-      (masters ?? [])
-        .map((m: any) => m.city as string | null)
-        .filter((c): c is string => !!c && c.trim().length > 0)
-    )
-  ).sort((a, b) => a.localeCompare(b, 'uk'));
+  const today    = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const todayDow    = DAY_MAP[today.getDay()]!;
+  const tomorrowDow = DAY_MAP[tomorrow.getDay()]!;
 
-  const DAY_MAP = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
-  const todayDow = DAY_MAP[new Date().getDay()];
+  const items = ((mastersResult.data ?? []) as any[]).map(m => {
+    const allSvcs  = (m.services ?? []) as { is_active: boolean; price: number; name: string; is_popular: boolean }[];
+    const active   = allSvcs.filter(s => s.is_active);
+    const prices   = active.map(s => Number(s.price || 0)).filter(p => p > 0);
+    const minPrice = prices.length ? Math.min(...prices) : null;
 
-  const items = (masters ?? []).map((m: any) => {
-    const allServices = ((m.services ?? []) as { is_active: boolean; price: number; name: string; is_popular: boolean }[]);
-    const activeServices = allServices.filter(s => s.is_active);
-    const prices = activeServices.map(s => Number(s.price || 0)).filter(p => p > 0);
-    const minPrice = prices.length > 0 ? Math.min(...prices) : null;
-
-    const popularServices = activeServices.filter(s => s.is_popular);
-    const servicePool = popularServices.length > 0 ? popularServices : activeServices;
-    const topServices = servicePool.slice(0, 3).map(s => ({
-      name: s.name as string,
+    const pool        = active.filter(s => s.is_popular).length ? active.filter(s => s.is_popular) : active;
+    const topServices = pool.slice(0, 2).map(s => ({
+      name:  s.name  as string,
       price: Math.round(Number(s.price)),
     }));
-    const serviceNames = activeServices.map(s => s.name).join(' ');
 
-    const schedules = ((m.schedule_templates ?? []) as { day_of_week: string; is_working: boolean }[]);
-    const availableToday = schedules.some(s => s.day_of_week === todayDow && s.is_working);
+    const schedules         = (m.schedule_templates ?? []) as { day_of_week: string; is_working: boolean }[];
+    const availableToday    = schedules.some(s => s.day_of_week === todayDow    && s.is_working);
+    const availableTomorrow = schedules.some(s => s.day_of_week === tomorrowDow && s.is_working);
 
-    const reviewList = ((m.reviews ?? []) as { comment: string; created_at: string }[]);
-    const latestReview = reviewList.length > 0
-      ? reviewList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]?.comment ?? null
-      : null;
-
-    const portfolioPhotos = ((m.portfolio_items ?? []) as { is_published: boolean; portfolio_item_photos: { url: string; display_order: number }[] }[])
+    const portfolioPhotos = ((m.portfolio_items ?? []) as {
+      is_published: boolean;
+      portfolio_item_photos: { url: string; display_order: number }[];
+    }[])
       .filter(item => item.is_published)
-      .flatMap(item => (item.portfolio_item_photos ?? []).sort((a, b) => a.display_order - b.display_order))
+      .flatMap(item =>
+        (item.portfolio_item_photos ?? []).sort((a, b) => a.display_order - b.display_order)
+      )
       .map(p => p.url as string)
       .filter(Boolean)
       .slice(0, 3);
 
     return {
-      id: m.id as string,
-      slug: m.slug as string,
-      name: m.business_name || (m.profiles?.full_name as string) || 'Майстер',
-      bio: (m.bio as string) || null,
-      city: (m.city as string) || null,
-      rating: Number(m.rating ?? 0),
-      ratingCount: Number(m.rating_count ?? 0),
-      avatarEmoji: (m.avatar_emoji as string) ?? '',
-      avatarUrl: (m.profiles?.avatar_url as string) ?? null,
-      categories: (m.categories as string[]) ?? [],
-      isPro: m.subscription_tier === 'pro' || m.subscription_tier === 'studio',
-      serviceCount: activeServices.length,
-      createdAt: m.created_at as string,
+      id:               m.id           as string,
+      slug:             m.slug         as string,
+      name:             (m.business_name || m.profiles?.full_name || 'Майстер') as string,
+      city:             (m.city        as string) ?? null,
+      rating:           Number(m.rating      ?? 0),
+      ratingCount:      Number(m.rating_count ?? 0),
+      avatarUrl:        (m.profiles?.avatar_url as string) ?? null,
+      categories:       (m.categories  as string[]) ?? [],
+      isPro:            m.subscription_tier === 'pro' || m.subscription_tier === 'studio',
+      createdAt:        m.created_at   as string,
       minPrice,
       availableToday,
+      availableTomorrow,
       topServices,
-      serviceNames,
-      latestReview,
       portfolioPhotos,
+      latitude:         (m.latitude  as number) ?? null,
+      longitude:        (m.longitude as number) ?? null,
     };
   });
 
-  return <ExplorePage masters={items} cities={cities} />;
+  // Category counts normalised to category id
+  const categoryCounts: Record<string, number> = {};
+  for (const m of items) {
+    for (const cat of m.categories) {
+      const def = serviceCategories.find(c => c.id === cat || c.label === cat);
+      const key = def?.id ?? cat;
+      categoryCounts[key] = (categoryCounts[key] ?? 0) + 1;
+    }
+  }
+
+  return (
+    <ExplorePage
+      masters={items}
+      categoryCounts={categoryCounts}
+      preferredCategories={preferredCategories}
+    />
+  );
 }
