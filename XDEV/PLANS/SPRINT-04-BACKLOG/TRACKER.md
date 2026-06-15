@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 23/33 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 23/34 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -24,22 +24,35 @@
 | 16 | T16 | Клієнтський навбар: redesign + Каталог + /explore (Deploy-14 ✅) | ✅ | `impeccable` + `design-taste-frontend` + `emil-design-eng` | `947311e` `e59ff92` `eae2f99` `c2c3c12` `0bd45a4` `28a5a40` `3e151e5` | navbar+explore base; FROM SCRATCH: Great Vibes hero, geo, smart sort, 7 filters, 2-row dropdowns. Phases 3-5: critique(15→36/40)+layout+bolder+harden+animate+audit(15→18/20)+polish+humanizer. Deploy-14 shipped |
 | 17 | T17 | /my/* повний візуальний редизайн (masters, loyalty, notifications) | ✅ | `design-taste-frontend` + `impeccable` | `830acd4` | portrait 2-col grid; loyalty progress; date-grouped notifications |
 | 17b | T-card | Картка майстра: повний редизайн (повний цикл) | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` | `a9c5b5b` | framed photo zone h-[192px], MasterCard+MasterListCard, grid/list toggle, 4 badges WCAG AA, uniform height h-full |
-| 18 | **T18** | **Оптимізація завантаження сторінки послуг** | **▶ NEXT** | `performance-profiler` + `senior-backend` | — | — |
-| 19 | T19 | /my/bookings: повний аудит + premium redesign | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer` | `9118000` | B+D+C hybrid: hero zone (72px avatar, isToday), master groups (visit count, expand), smart CTAs; Sheet variant=bottom; STATUS_CFG WCAG AA fixed |
-| 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ✅ | merged into T19 | `9118000` | ReviewSheet (5-star animated, textarea), CancelSheet confirm; "Записатись знову" router.push /[slug]?services=ids pre-fill |
-| 21 | T21 | Профіль клієнта: фото/IG/TG + impeccable аудит | ✅ | `design-taste-frontend` + `impeccable` | `4e8d0c5` | Identity Card hero (96px avatar upload), social fields (instagram_url+telegram_handle), collapsible health, isDirty sticky save bar; migration profile_social_fields applied |
-| 22 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | — | — |
-| 23 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | — | — |
-| 24 | T24 | Клієнтська зона: desktop layout (/my/* + /explore) | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
-| 25 | T25 | dashboard/settings (ПК): повний redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
-| 26 | T26 | Чат: список діалогів + видалення (desktop + mobile) | ⬜ | `spec-driven-workflow` + `senior-frontend` | — | — |
-| 27 | T27 | Чат: мобайл keyboard UX (Telegram-like) | ⬜ | `senior-frontend` + `emil-design-eng` | — | — |
-| 28 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | — | — |
-| 29 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | — | — |
-| 30 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
-| 31 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | — | Три глобальних паттерни: adaptive contrast (mix-blend/hook), smart tooltip hook (viewport-aware flip+shift), fit-text component (ResizeObserver scale) |
-| 32 | T32 | Smart Slots: авто Flash Deal при скасуванні | ✅ | `spec-driven-workflow` + `create-migration` + `senior-backend` | `e7645f9` | migration 141 (auto_flash_on_cancel + discount_pct); createFlashDealInternal; RPC bug fix (p_slot_timestamp); AutoFlashSettingsCard toggle+pills; encoding hotfix 6 landing files |
-| 33 | T33 | Лендинг: повна консистентність тарифів | ⬜ | `humanizer` + `senior-frontend` | — | — |
+| 18 | T19 | /my/bookings: повний аудит + premium redesign | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer` | `9118000` | B+D+C hybrid: hero zone (72px avatar, isToday), master groups (visit count, expand), smart CTAs; Sheet variant=bottom; STATUS_CFG WCAG AA fixed |
+| 19 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ✅ | merged into T19 | `9118000` | ReviewSheet (5-star animated, textarea), CancelSheet confirm; "Записатись знову" router.push /[slug]?services=ids pre-fill |
+| 20 | T21 | /my/profile: Identity Card redesign + avatar upload + IG/TG fields | ✅ | `design-taste-frontend` + `impeccable` | `4e8d0c5` | Identity Card hero (96px avatar upload), social fields (instagram_url+telegram_handle), collapsible health, isDirty sticky save bar; migration profile_social_fields applied |
+
+---
+**═══ CLIENT ZONE REDESIGN — Залишилось (Deploy #20-22) ═══**
+
+| Іт | ID | Назва | Статус | Скіл | Commit | Brief |
+|----|----|-------|--------|------|--------|-------|
+| 21 | **T-chat** | **/my/support/chat: redesign з нуля (Deploy-20)** | **▶ NEXT** | `design-taste-frontend` + `impeccable` + `emil-design-eng` | — | Новий chat UI: Telegram-like bubbles, read receipts, attach, real-time |
+| 22 | T-chat-kbd | /my/support/chat: мобайл keyboard UX (Telegram-like) | ⬜ | `senior-frontend` + `emil-design-eng` | — | iOS safe-area + keyboard push-up + smooth scroll-to-bottom |
+| 23 | **T-phone** | **/my/setup/phone: onboarding redesign з нуля (Deploy-21)** | ⬜ | `design-taste-frontend` + `impeccable` | — | NEW — phone verification form redesign; Frost theme; elegant step UI |
+| 24 | T24 | Клієнтська зона: desktop layout — всі 8 сторінок (Deploy-22) | ⬜ | `design-taste-frontend` + `impeccable` | — | 2-col / side panels / wide grid для /my/* + /explore |
+
+---
+**═══ Інші задачі Sprint-04 ═══**
+
+| Іт | ID | Назва | Статус | Скіл | Commit | Brief |
+|----|----|-------|--------|------|--------|-------|
+| 25 | T18 | Оптимізація завантаження сторінки послуг | ⬜ | `performance-profiler` + `senior-backend` | — | — |
+| 26 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | — | — |
+| 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | — | — |
+| 28 | T25 | dashboard/settings (ПК): повний redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
+| 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | — | — |
+| 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | — | — |
+| 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
+| 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | — | Три глобальних паттерни: adaptive contrast (mix-blend/hook), smart tooltip hook (viewport-aware flip+shift), fit-text component (ResizeObserver scale) |
+| 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | ✅ | `spec-driven-workflow` + `create-migration` + `senior-backend` | `e7645f9` | migration 141 (auto_flash_on_cancel + discount_pct); createFlashDealInternal; RPC bug fix (p_slot_timestamp); AutoFlashSettingsCard toggle+pills; encoding hotfix 6 landing files |
+| 34 | T33 | Лендинг: повна консистентність тарифів | ⬜ | `humanizer` + `senior-frontend` | — | — |
 
 ---
 
