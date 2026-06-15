@@ -17,6 +17,54 @@ import { haversineKm, formatDistance } from '@/lib/utils/haversine';
 const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
 const PAGE_SIZE = 12;
 
+// ─── Auto-scroll hook ─────────────────────────────────────────────────────────
+
+function useAutoScroll() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isPausedRef = useRef(false);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const tickRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+
+  const pauseFor10s = useCallback(() => {
+    isPausedRef.current = true;
+    clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      isPausedRef.current = false;
+    }, 10_000);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    tickRef.current = setInterval(() => {
+      if (isPausedRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      const atEnd = scrollLeft + clientWidth >= scrollWidth - 4;
+      if (atEnd) {
+        el.scrollLeft = 0;
+      } else {
+        const child = el.firstElementChild as HTMLElement | null;
+        const step = child ? child.offsetWidth + 8 : 96;
+        el.scrollBy({ left: step, behavior: 'smooth' });
+      }
+    }, 1500);
+
+    el.addEventListener('touchstart', pauseFor10s, { passive: true });
+    el.addEventListener('pointerdown', pauseFor10s);
+
+    return () => {
+      clearInterval(tickRef.current);
+      clearTimeout(resumeTimerRef.current);
+      el.removeEventListener('touchstart', pauseFor10s);
+      el.removeEventListener('pointerdown', pauseFor10s);
+    };
+  }, [pauseFor10s]);
+
+  return ref;
+}
+
 const CATEGORY_ALIASES: Record<string, string[]> = {
   brows: ['Брови/Вії', 'Брови'],
 };
@@ -100,6 +148,7 @@ function CategoryPills({
   categoryCounts: Record<string, number>;
   totalCount: number;
 }) {
+  const scrollRef = useAutoScroll();
   const pillCls = (active: boolean) =>
     `flex items-center gap-1 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] flex-shrink-0 whitespace-nowrap transition-colors duration-150 active:scale-[0.95] ${
       active
@@ -109,6 +158,7 @@ function CategoryPills({
 
   return (
     <div
+      ref={scrollRef}
       role="group"
       aria-label="Фільтр за категорією"
       className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5 -mx-4 px-4"
@@ -572,6 +622,8 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
   const [proOnly,        setProOnly]        = useState(false);
   const [withReviews,    setWithReviews]    = useState(false);
 
+  const filterRowRef = useAutoScroll();
+
   const isFiltered = !!(activeCategory || slotToday || slotTomorrow || nearbyActive || searchQuery || priceMax !== null || proOnly || withReviews);
 
   useEffect(() => {
@@ -798,7 +850,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
             className="flex flex-col gap-2 mb-6"
           >
             {/* Row 1: toggle pills — scrollable */}
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            <div ref={filterRowRef} className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
               <button
                 type="button"
                 onClick={toggleNearby}
