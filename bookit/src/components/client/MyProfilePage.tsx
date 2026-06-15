@@ -1,18 +1,32 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Check, Loader2, CalendarDays, Mail, ArrowLeft, LogOut, Send, AlertTriangle, Palette, Sun, Moon, Sparkles } from 'lucide-react';
+import { useState, useTransition, useRef, useCallback } from 'react';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Camera, Check, Loader2, Mail, CalendarDays,
+  AlertTriangle, Link2, AtSign, ChevronDown,
+  LogOut, Send,
+} from 'lucide-react';
 import { updateClientProfile, disconnectClientTelegram } from '@/app/my/profile/actions';
-import { createClient } from '@/lib/supabase/client';
 import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
 import { LegalFooterLinks } from '@/components/shared/LegalFooterLinks';
 import { useToast } from '@/lib/toast/context';
-import { e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
+import {
+  e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, toFullPhone,
+} from '@/lib/utils/phone';
 import { parseError } from '@/lib/utils/errors';
+import { cn } from '@/lib/utils/cn';
+import { createClient } from '@/lib/supabase/client';
 import Cookies from 'js-cookie';
+
+const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
+
+const THEMES = [
+  { key: 'frost',   label: 'Frost',   color: '#EFF2FF', wip: false },
+  { key: 'default', label: 'Blossom', color: '#DDD5C6', wip: true },
+  { key: 'studio',  label: 'Studio',  color: '#0E1D21', wip: true },
+];
 
 interface Props {
   profile: {
@@ -22,31 +36,43 @@ interface Props {
     memberSince: string;
     telegramChatId: string | null;
     userId: string;
-    lastMasterId: string | null;
     medicalNotes: string;
     healthNotes: string;
+    avatarUrl: string | null;
+    instagramUrl: string;
+    telegramHandle: string;
   };
 }
 
-const inputCls = 'w-full px-4 py-3 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder-muted-foreground outline-none focus:bg-secondary focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all';
+const inputCls = [
+  'w-full px-4 py-3 rounded-2xl bg-secondary border border-border',
+  'text-sm text-foreground placeholder:text-muted-foreground/50',
+  'outline-none focus:border-accent focus:ring-2 focus:ring-accent/20',
+  'transition-all min-h-[44px]',
+].join(' ');
 
-const THEMES = [
-  { key: 'default', label: 'Blossom', color: '#DDD5C6', icon: Sun,      iconColor: '#28201A', wip: true },
-  { key: 'studio',  label: 'Studio',  color: '#0E1D21', icon: Moon,     iconColor: '#D3A376', wip: true },
-  { key: 'frost',   label: 'Frost',   color: '#EFF2FF', icon: Sparkles, iconColor: '#0F172A' },
-];
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50 px-1 mb-3">
+      {children}
+    </p>
+  );
+}
 
 export function MyProfilePage({ profile }: Props) {
-  const router = useRouter();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [healthExpanded, setHealthExpanded] = useState(
+    !!(profile.medicalNotes || profile.healthNotes),
+  );
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [themeKey, setThemeKey] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return Cookies.get('client_theme') || 'frost';
-    }
+    if (typeof window !== 'undefined') return Cookies.get('client_theme') || 'frost';
     return 'frost';
   });
 
@@ -54,28 +80,10 @@ export function MyProfilePage({ profile }: Props) {
   const [phone, setPhone] = useState(() => e164ToInputPhone(profile.phone));
   const [medicalNotes, setMedicalNotes] = useState(profile.medicalNotes);
   const [healthNotes, setHealthNotes] = useState(profile.healthNotes);
-
-  const handleThemeChange = (key: string) => {
-    const theme = THEMES.find(t => t.key === key);
-    if (theme?.wip) {
-      showToast({ type: 'info', title: 'Незабаром', message: 'Ця тема зараз у розробці' });
-      return;
-    }
-    setThemeKey(key);
-    if (key === 'frost' || key === 'default') {
-      Cookies.remove('client_theme', { path: '/' });
-      document.documentElement.setAttribute('data-theme', 'frost');
-    } else {
-      Cookies.set('client_theme', key, { expires: 365, path: '/' });
-      document.documentElement.setAttribute('data-theme', key);
-    }
-    const colors = { studio: '#0E1D21', frost: '#EFF2FF', default: '#EFF2FF' };
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) {
-      meta.setAttribute('content', colors[key as 'studio' | 'frost' | 'default'] || '#EFF2FF');
-    }
-    router.refresh();
-  };
+  const [instagramUrl, setInstagramUrl] = useState(profile.instagramUrl);
+  const [telegramHandle, setTelegramHandle] = useState(profile.telegramHandle);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const memberSinceFormatted = profile.memberSince
     ? new Date(profile.memberSince).toLocaleDateString('uk-UA', {
@@ -83,21 +91,73 @@ export function MyProfilePage({ profile }: Props) {
       })
     : '';
 
+  const handleAvatarChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarUploading(true);
+
+    try {
+      const supabase = createClient();
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${profile.userId}.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadErr) {
+        showToast({ type: 'error', title: 'Не вдалося завантажити фото', message: uploadErr.message });
+        setAvatarPreview(null);
+        return;
+      }
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+      setAvatarUrl(data.publicUrl);
+      setIsDirty(true);
+    } catch {
+      showToast({ type: 'error', title: 'Не вдалося завантажити фото', message: '' });
+      setAvatarPreview(null);
+    } finally {
+      setAvatarUploading(false);
+    }
+  }, [profile.userId, showToast]);
+
+  const handleThemeChange = (key: string) => {
+    const theme = THEMES.find(t => t.key === key);
+    if (theme?.wip) {
+      showToast({ type: 'info', title: 'Скоро', message: 'Ця тема зараз у розробці' });
+      return;
+    }
+    setThemeKey(key);
+    Cookies.remove('client_theme', { path: '/' });
+    if (key !== 'frost') Cookies.set('client_theme', key, { expires: 365, path: '/' });
+    document.documentElement.setAttribute('data-theme', key === 'default' ? 'frost' : key);
+    const colors: Record<string, string> = { studio: '#0E1D21', frost: '#EFF2FF', default: '#EFF2FF' };
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colors[key] ?? '#EFF2FF');
+  };
+
   function handleSave() {
     startTransition(async () => {
       const { error } = await updateClientProfile(
         fullName,
         toFullPhone(phone),
         medicalNotes,
-        healthNotes
+        healthNotes,
+        avatarUrl ?? undefined,
+        instagramUrl,
+        telegramHandle,
       );
       if (error) {
         showToast({ type: 'error', title: 'Помилка збереження', message: parseError(error) });
         return;
       }
       setSaved(true);
-      router.refresh();
-      setTimeout(() => setSaved(false), 2500);
+      setTimeout(() => {
+        setSaved(false);
+        setIsDirty(false);
+      }, 1800);
     });
   }
 
@@ -105,83 +165,104 @@ export function MyProfilePage({ profile }: Props) {
     setDisconnecting(true);
     try {
       await disconnectClientTelegram();
-      router.refresh();
     } finally {
       setDisconnecting(false);
     }
   }
 
+  const displayAvatar = avatarPreview ?? avatarUrl;
   const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME;
 
   return (
-    <div className="flex flex-col gap-4 pt-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/my/bookings"
-          aria-label="Назад до записів"
-          className="size-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.88] cursor-pointer transition-all flex-shrink-0"
-        >
-          <ArrowLeft size={16} />
-        </Link>
-        <div className="bento-card p-4 flex-1">
-          <h1 className="heading-serif text-xl text-foreground leading-none">Мій профіль</h1>
+    <div className="flex flex-col gap-6 pt-4 pb-28">
+
+      <div className="bg-surface rounded-3xl p-6 flex flex-col items-center gap-4">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            aria-label="Змінити фото профілю"
+            className="relative size-24 rounded-full overflow-hidden bg-accent/15 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            {displayAvatar ? (
+              <Image
+                src={displayAvatar}
+                alt=""
+                fill
+                className={cn('object-cover transition-opacity duration-200', avatarUploading && 'opacity-40')}
+              />
+            ) : (
+              <span className="heading-serif text-3xl font-bold text-accent">
+                {fullName ? fullName.charAt(0).toUpperCase() : '?'}
+              </span>
+            )}
+            {avatarUploading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 size={22} className="animate-spin text-accent" />
+              </div>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            aria-label="Завантажити фото"
+            className="absolute -bottom-0.5 -right-0.5 size-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer"
+          >
+            <Camera size={14} />
+          </button>
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handleAvatarChange}
+          />
+        </div>
+
+        <div className="text-center space-y-2">
+          <h1 className="heading-serif text-2xl text-foreground leading-tight">
+            {fullName || 'Мій профіль'}
+          </h1>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            {!profile.email.endsWith('@bookit.app') && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60 bg-secondary/80 px-2.5 py-1 rounded-full">
+                <Mail size={10} />
+                {profile.email}
+              </span>
+            )}
+            {memberSinceFormatted && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60 bg-secondary/80 px-2.5 py-1 rounded-full">
+                <CalendarDays size={10} />
+                з {memberSinceFormatted}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Avatar + meta */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bento-card p-5 flex items-center gap-4"
-      >
-        <div className="size-16 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 bg-accent/15 text-accent font-bold">
-          {fullName ? fullName.charAt(0).toUpperCase() : ''}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-base font-semibold text-foreground truncate">
-            {fullName || 'Ваше ім\'я'}
-          </p>
-          {!profile.email.endsWith('@bookit.app') && (
-            <div className="flex items-center gap-1 mt-1">
-              <Mail size={11} className="text-muted-foreground/60" />
-              <span className="text-xs text-muted-foreground/60 truncate">{profile.email}</span>
-            </div>
-          )}
-          {memberSinceFormatted && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <CalendarDays size={11} className="text-muted-foreground/60" />
-              <span className="text-xs text-muted-foreground/60">З {memberSinceFormatted}</span>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Особисті дані */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bento-card p-5"
-      >
-        <p className="text-sm font-semibold text-foreground mb-4">Особисті дані</p>
-
+      <div>
+        <SectionLabel>Про вас</SectionLabel>
         <div className="flex flex-col gap-3">
           <div>
-            <label htmlFor="profile-fullname" className="text-xs font-medium text-muted-foreground mb-1.5 block">{"Ім'я та прізвище"}</label>
+            <label htmlFor="profile-fullname" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              {"Ім'я та прізвище"}
+            </label>
             <input
               id="profile-fullname"
               value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              placeholder="Ваше повне ім'я"
+              onChange={e => { setFullName(e.target.value); setIsDirty(true); }}
+              placeholder="Ім'я та прізвище"
               className={inputCls}
             />
           </div>
 
           <div>
-            <label htmlFor="profile-phone" className="text-xs font-medium text-muted-foreground mb-1.5 block">Телефон</label>
-            <div className="flex items-center gap-0 rounded-lg border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all">
+            <label htmlFor="profile-phone" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              Телефон
+            </label>
+            <div className="flex items-center rounded-2xl border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all min-h-[44px]">
               <span className="pl-4 pr-2 text-muted-foreground font-medium text-sm select-none shrink-0">+38</span>
               <input
                 id="profile-phone"
@@ -189,248 +270,281 @@ export function MyProfilePage({ profile }: Props) {
                 inputMode="numeric"
                 placeholder="0XX XXX XX XX"
                 value={formatPhoneDisplay(phone)}
-                onChange={e => setPhone(normalizePhoneInput(e.target.value))}
-                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
+                onChange={e => { setPhone(normalizePhoneInput(e.target.value)); setIsDirty(true); }}
+                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/50"
               />
             </div>
           </div>
 
           {!profile.email.endsWith('@bookit.app') && (
             <div>
-              <label htmlFor="profile-email" className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
+              <label htmlFor="profile-email" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                Email
+              </label>
               <input
                 id="profile-email"
                 value={profile.email}
                 disabled
-                className={`${inputCls} opacity-50 cursor-not-allowed`}
+                className={cn(inputCls, 'opacity-50 cursor-not-allowed')}
               />
-              <p className="text-[11px] text-muted-foreground/60 mt-1">Email змінити неможливо</p>
+              <p className="text-[11px] text-muted-foreground/50 mt-1.5 px-1">Email не можна змінити</p>
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
 
-      {/* Block: Safety & Health */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bento-card p-5 relative overflow-hidden"
-      >
-        <div
-          className="absolute inset-0 opacity-[0.02] pointer-events-none"
-          style={{ backgroundColor: medicalNotes ? 'var(--destructive)' : 'transparent' }}
-        />
-        <div className="flex items-center gap-2 mb-4">
-          <div className={`p-2 rounded-xl flex items-center justify-center ${medicalNotes ? 'bg-destructive/10 text-destructive' : 'bg-warning/10 text-warning'}`}>
-            <AlertTriangle size={16} />
-          </div>
+      <div>
+        <SectionLabel>Соцмережі</SectionLabel>
+        <div className="flex flex-col gap-3">
           <div>
-            <p className={`text-sm font-semibold ${medicalNotes ? 'text-destructive' : 'text-foreground'}`}>Safety & Health</p>
-            <p className="text-[11px] text-muted-foreground/60">Важлива інформація для вашої безпеки</p>
+            <label htmlFor="profile-instagram" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              Instagram
+            </label>
+            <div className="flex items-center rounded-2xl border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all min-h-[44px]">
+              <span className="pl-4 pr-2 flex-shrink-0">
+                <Link2 size={15} className="text-muted-foreground/50" />
+              </span>
+              <input
+                id="profile-instagram"
+                value={instagramUrl}
+                onChange={e => { setInstagramUrl(e.target.value); setIsDirty(true); }}
+                placeholder="@нікнейм або посилання"
+                className="flex-1 py-3 pr-4 text-sm text-foreground bg-transparent outline-none placeholder:text-muted-foreground/50"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="profile-tg-handle" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              Telegram
+            </label>
+            <div className="flex items-center rounded-2xl border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all min-h-[44px]">
+              <span className="pl-4 pr-2 flex-shrink-0">
+                <AtSign size={15} className="text-muted-foreground/50" />
+              </span>
+              <input
+                id="profile-tg-handle"
+                value={telegramHandle}
+                onChange={e => { setTelegramHandle(e.target.value); setIsDirty(true); }}
+                placeholder="@нікнейм"
+                className="flex-1 py-3 pr-4 text-sm text-foreground bg-transparent outline-none placeholder:text-muted-foreground/50"
+              />
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-col gap-4">
-          <div>
-            <label htmlFor="profile-medical" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
-              Алергії та критичні застереження
-            </label>
-            <textarea
-              id="profile-medical"
-              value={medicalNotes}
-              onChange={e => setMedicalNotes(e.target.value)}
-              placeholder="Наприклад: алергія на певні компоненти фарби, діабет..."
-              rows={2}
-              className={`w-full px-4 py-3 rounded-lg bg-secondary border text-sm text-foreground placeholder-muted-foreground outline-none transition-all resize-none ${
-                medicalNotes ? 'border-destructive/30 focus:border-destructive focus:ring-2 focus:ring-destructive/10' : 'border-border focus:border-accent focus:ring-2 focus:ring-accent/20'
-              }`}
-            />
-          </div>
+      <div>
+        <SectionLabel>{"Здоров'я та безпека"}</SectionLabel>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {!healthExpanded ? (
+            <motion.button
+              key="health-add"
+              type="button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={SPRING}
+              onClick={() => setHealthExpanded(true)}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-dashed border-border text-sm text-muted-foreground hover:border-accent/50 hover:text-foreground transition-colors cursor-pointer min-h-[44px]"
+            >
+              <ChevronDown size={15} />
+              Додати нотатки
+            </motion.button>
+          ) : (
+            <motion.div
+              key="health-content"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={SPRING}
+              className="flex flex-col gap-4"
+            >
+              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-warning/10 border border-warning/20">
+                <AlertTriangle size={16} className="text-warning flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground leading-none mb-0.5">{"Здоров'я та безпека"}</p>
+                  <p className="text-[11px] text-muted-foreground/70">Для безпечного візиту</p>
+                </div>
+              </div>
 
-          <div>
-            <label htmlFor="profile-health" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
-              Загальні нотатки про стан здоров'я
-            </label>
-            <textarea
-              id="profile-health"
-              value={healthNotes}
-              onChange={e => setHealthNotes(e.target.value)}
-              placeholder="Чутливість, особливості постави тощо..."
-              rows={2}
-              className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder-muted-foreground outline-none focus:bg-secondary focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
-            />
-          </div>
+              <div>
+                <label htmlFor="profile-medical" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
+                  Алергії та протипоказання
+                </label>
+                <textarea
+                  id="profile-medical"
+                  value={medicalNotes}
+                  onChange={e => { setMedicalNotes(e.target.value); setIsDirty(true); }}
+                  placeholder="Наприклад, алергія на фарбу або діабет"
+                  rows={2}
+                  className={cn(
+                    'w-full px-4 py-3 rounded-2xl bg-secondary border text-sm text-foreground',
+                    'placeholder:text-muted-foreground/50 outline-none transition-all resize-none',
+                    medicalNotes
+                      ? 'border-destructive/30 focus:border-destructive focus:ring-2 focus:ring-destructive/10'
+                      : 'border-border focus:border-accent focus:ring-2 focus:ring-accent/20',
+                  )}
+                />
+              </div>
 
-          <p className="text-[11px] text-muted-foreground/70 italic px-1 leading-relaxed">
-            Ці дані будуть доступні майстрам, до яких ви записуєтесь, щоб вони могли забезпечити найкращий та безпечний сервіс.
-          </p>
-        </div>
-      </motion.div>
+              <div>
+                <label htmlFor="profile-health" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
+                  Загальні нотатки
+                </label>
+                <textarea
+                  id="profile-health"
+                  value={healthNotes}
+                  onChange={e => { setHealthNotes(e.target.value); setIsDirty(true); }}
+                  placeholder="Чутлива шкіра, хронічні проблеми..."
+                  rows={2}
+                  className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
+                />
+              </div>
 
-      {/* Оформлення (Вибір теми) */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bento-card p-5"
-      >
-        <p className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Palette size={16} className="text-accent" /> Оформлення
-        </p>
-        <div className="flex gap-3">
-          {THEMES.map((theme) => {
-            const Icon = theme.icon;
+              <p className="text-[11px] text-muted-foreground/60 px-1">
+                Майстер побачить це перед вашим записом
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div>
+        <SectionLabel>Вигляд</SectionLabel>
+        <div className="flex gap-2">
+          {THEMES.map(theme => {
             const isSelected = themeKey === theme.key;
             return (
               <button
-                type="button"
                 key={theme.key}
+                type="button"
                 onClick={() => handleThemeChange(theme.key)}
-                className={`flex-1 p-3 rounded-xl border transition-all text-left ${
+                className={cn(
+                  'flex-1 p-3 rounded-2xl border transition-all text-left',
                   theme.wip
-                    ? 'cursor-not-allowed opacity-35 bg-secondary/40 border-border'
+                    ? 'opacity-35 cursor-not-allowed border-border bg-secondary/40'
                     : isSelected
-                      ? 'bg-surface border-accent shadow-sm cursor-pointer active:scale-[0.95]'
-                      : 'bg-secondary/40 border-border grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60 cursor-pointer active:scale-[0.95]'
-                }`}
+                      ? 'border-accent bg-surface shadow-sm cursor-pointer active:scale-[0.97]'
+                      : 'border-border bg-secondary/40 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 cursor-pointer active:scale-[0.97]',
+                )}
               >
-                <div
-                  className="w-full h-12 rounded-xl mb-3 shadow-inner flex items-center justify-center"
-                  style={{ backgroundColor: theme.color }}
-                >
-                  <span style={{ color: theme.iconColor }}><Icon size={18} /></span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground">{theme.label}</span>
+                <div className="w-full h-10 rounded-xl mb-2.5" style={{ backgroundColor: theme.color }} />
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-xs font-bold text-foreground leading-none">{theme.label}</span>
                   {theme.wip ? (
-                    <span className="text-[9px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full leading-none">
-                      Розробка
+                    <span className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full leading-none">
+                      Скоро
                     </span>
                   ) : isSelected ? (
-                    <Check size={14} className="text-accent" />
+                    <Check size={12} className="text-accent flex-shrink-0" />
                   ) : null}
                 </div>
               </button>
             );
           })}
         </div>
-      </motion.div>
+      </div>
 
-      {/* Telegram */}
-      {botName && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="bento-card p-5"
-        >
-          <p className="text-sm font-semibold text-foreground mb-4">Сповіщення в Telegram</p>
-          {profile.telegramChatId ? (
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-success/10 border border-success/20">
-              <span className="text-xs text-success font-medium flex-1">Підключено</span>
-              <button
-                type="button"
-                onClick={handleDisconnectTelegram}
-                disabled={disconnecting}
-                className="text-[11px] text-destructive hover:underline disabled:opacity-50 active:scale-[0.88] cursor-pointer transition-all"
-              >
-                {disconnecting ? 'Відключення...' : 'Відключити'}
-              </button>
+      <div>
+        <SectionLabel>Сповіщення</SectionLabel>
+        <div className="flex flex-col gap-3">
+          {botName && (
+            <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+              <p className="text-sm font-semibold text-foreground mb-3">Сповіщення в Telegram</p>
+              {profile.telegramChatId ? (
+                <div className="flex items-center gap-3">
+                  <span className="flex-1 inline-flex items-center gap-1.5 text-xs text-success font-medium bg-success/10 border border-success/20 px-3 py-2 rounded-full">
+                    <span className="size-1.5 rounded-full bg-success inline-block" />
+                    Підключено
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleDisconnectTelegram}
+                    disabled={disconnecting}
+                    className="text-xs text-destructive hover:underline disabled:opacity-50 transition-opacity min-h-[44px] px-2 cursor-pointer"
+                  >
+                    {disconnecting ? 'Відключення...' : 'Відключити'}
+                  </button>
+                </div>
+              ) : (
+                <a
+                  href={`https://t.me/${botName}?start=${profile.userId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full h-11 rounded-full bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all"
+                >
+                  <Send size={14} />
+                  Підключити Telegram
+                </a>
+              )}
+              <p className="text-[11px] text-muted-foreground/60 mt-2.5">
+                Сповіщення про записи приходять у Telegram
+              </p>
             </div>
-          ) : (
-            <a
-              href={`https://t.me/${botName}?start=${profile.userId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-accent text-accent-on text-sm font-semibold hover:opacity-90 active:scale-[0.95] cursor-pointer transition-all shadow-md"
-            >
-              <Send size={14} /> Підключити бота
-            </a>
           )}
-          <p className="text-[11px] text-muted-foreground/60 mt-2">
-            Отримуйте сповіщення про ваші записи прямо в Telegram
-          </p>
-        </motion.div>
-      )}
+          <PushSubscribeCard userRole="client" />
+        </div>
+      </div>
 
-      {/* Push notifications */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-      >
-        <PushSubscribeCard userRole="client" />
-      </motion.div>
+      <div>
+        <SectionLabel>Акаунт</SectionLabel>
+        <div className="flex flex-col gap-2">
+          <div className="rounded-2xl border border-border bg-secondary/20 p-4">
+            <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">
+              Юридична інформація
+            </p>
+            <LegalFooterLinks variant="list" />
+          </div>
 
-      {/* Save */}
-      <motion.button
-        type="button"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        onClick={handleSave}
-        disabled={isPending || !fullName.trim()}
-        className={`w-full py-4 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
-          saved
-            ? 'bg-success text-white animate-none'
-            : 'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.95] cursor-pointer shadow-sm'
-        } disabled:opacity-60`}
-      >
-        {isPending ? (
-          <><Loader2 size={16} className="animate-spin" /> Збереження...</>
-        ) : saved ? (
-          <><Check size={16} /> Збережено</>
-        ) : (
-          'Зберегти зміни'
+          <button
+            type="button"
+            onClick={async () => {
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              document.cookie = 'user_role=; path=/; max-age=0';
+              window.location.href = '/login';
+            }}
+            className="w-full h-12 rounded-full text-sm font-medium text-destructive bg-destructive/10 hover:bg-destructive/15 border border-destructive/20 active:scale-[0.97] cursor-pointer transition-all flex items-center justify-center gap-2"
+          >
+            <LogOut size={15} />
+            Вийти з акаунту
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isDirty && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={SPRING}
+            className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+4rem)] left-0 right-0 z-50 px-4"
+          >
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isPending || !fullName.trim()}
+              className={cn(
+                'w-full h-14 rounded-full font-semibold text-sm flex items-center justify-center gap-2',
+                'shadow-lg transition-all active:scale-[0.97] cursor-pointer',
+                saved
+                  ? 'bg-success text-white'
+                  : 'bg-accent text-accent-foreground hover:opacity-95 disabled:opacity-60 disabled:cursor-not-allowed',
+              )}
+            >
+              {isPending ? (
+                <><Loader2 size={16} className="animate-spin" /> Зберігаємо...</>
+              ) : saved ? (
+                <><Check size={16} /> Збережено</>
+              ) : (
+                'Зберегти зміни'
+              )}
+            </button>
+          </motion.div>
         )}
-      </motion.button>
-
-      {/* Navigation */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bento-card p-4"
-      >
-        <p className="text-xs font-semibold text-muted-foreground mb-2.5">Мої записи</p>
-        <Link
-          href="/my/bookings"
-          className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-secondary active:scale-[0.95] cursor-pointer transition-all"
-        >
-          <span className="text-sm text-foreground">Переглянути всі записи</span>
-          <span className="text-accent text-sm">→</span>
-        </Link>
-      </motion.div>
-
-      {/* Legal links */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bento-card p-4"
-      >
-        <p className="text-xs font-semibold text-muted-foreground/60 mb-2">Юридична інформація</p>
-        <LegalFooterLinks variant="list" />
-      </motion.div>
-
-      {/* Вийти */}
-      <motion.button
-        type="button"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        onClick={async () => {
-          const supabase = createClient();
-          await supabase.auth.signOut();
-          document.cookie = 'user_role=; path=/; max-age=0';
-          window.location.href = '/login';
-        }}
-        className="w-full py-3.5 rounded-lg text-sm font-medium text-destructive bg-destructive/10 hover:bg-destructive/15 border border-destructive/20 active:scale-[0.95] cursor-pointer transition-all flex items-center justify-center gap-2"
-      >
-        <LogOut size={15} />
-        Вийти з акаунту
-      </motion.button>
+      </AnimatePresence>
     </div>
   );
 }

@@ -10,21 +10,11 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const [{ data: profile }, { data: lastBooking }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('full_name, phone, email, created_at, telegram_chat_id, medical_notes, health_notes')
-      .eq('id', user!.id)
-      .single(),
-    supabase
-      .from('bookings')
-      .select('master_id')
-      .eq('client_id', user!.id)
-      .neq('status', 'cancelled')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, phone, email, created_at, telegram_chat_id, medical_notes, health_notes, avatar_url, instagram_url, telegram_handle')
+    .eq('id', user.id)
+    .single();
 
   return (
     <MyProfilePage
@@ -34,10 +24,12 @@ export default async function ProfilePage() {
         email: profile?.email ?? user?.email ?? '',
         memberSince: profile?.created_at ?? '',
         telegramChatId: profile?.telegram_chat_id ?? null,
-        userId: user!.id,
-        lastMasterId: lastBooking?.master_id ?? null,
+        userId: user.id,
         medicalNotes: profile?.medical_notes ?? '',
         healthNotes: profile?.health_notes ?? '',
+        avatarUrl: profile?.avatar_url ?? null,
+        instagramUrl: profile?.instagram_url ?? '',
+        telegramHandle: profile?.telegram_handle ?? '',
       }}
     />
   );

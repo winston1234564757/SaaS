@@ -9,15 +9,16 @@ export async function updateClientProfile(
   phone: string,
   medicalNotes?: string,
   healthNotes?: string,
+  avatarUrl?: string,
+  instagramUrl?: string,
+  telegramHandle?: string,
 ): Promise<{ error: string | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизований' };
 
-  // Нормалізуємо до E.164 (380XXXXXXXXX). Якщо формат невалідний — null.
   const cleanPhone = phone.trim() ? (normalizeToE164(phone.trim()) ?? null) : null;
 
-  // Явна перевірка дублікату до update — дає зрозумілу помилку замість Postgres 23505
   if (cleanPhone) {
     const { data: existing } = await supabase
       .from('profiles')
@@ -33,26 +34,25 @@ export async function updateClientProfile(
 
   const { error } = await supabase
     .from('profiles')
-    .update({ 
-      full_name: name.trim(), 
+    .update({
+      full_name: name.trim(),
       phone: cleanPhone,
       medical_notes: medicalNotes ?? undefined,
       health_notes: healthNotes ?? undefined,
+      avatar_url: avatarUrl ?? undefined,
+      instagram_url: instagramUrl ?? undefined,
+      telegram_handle: telegramHandle ?? undefined,
     })
     .eq('id', user.id);
 
   if (error) {
-    // Fallback: ловимо Postgres UNIQUE violation (23505) якщо явна перевірка пропустила race
     if (error.code === '23505') {
       return { error: 'Цей номер телефону вже зареєстрований в іншому акаунті' };
     }
     return { error: error.message };
   }
 
-  // СИНХРОНІЗАЦІЯ: Оновлюємо ім'я також у метаданих Auth, щоб сесія була актуальною
-  await supabase.auth.updateUser({
-    data: { full_name: name.trim() }
-  });
+  await supabase.auth.updateUser({ data: { full_name: name.trim() } });
 
   revalidatePath('/', 'layout');
   revalidatePath('/my/profile');
