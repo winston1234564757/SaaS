@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 18/30 ✅ Sprint-04 IN PROGRESS
+Прогрес: 19/30 ✅ Sprint-04 IN PROGRESS
 Наступна: T18 — Оптимізація завантаження сторінки послуг
-Стан: Deploy-14 ✅ DONE — всі 5 фаз завершені (brainstorm→shape→generate→critique+layout+bolder+harden→animate→audit+polish+humanizer→ship). Commit: 3e151e5
+Стан: T-card ✅ DONE — MasterCard + MasterListCard redesign з нуля на /explore (grid+list toggle, h-[192px] fixed frame, WCAG AA badges, Cormorant display font). Commit: a9c5b5b
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

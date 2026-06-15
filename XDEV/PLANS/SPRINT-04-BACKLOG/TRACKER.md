@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 18/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 19/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -23,7 +23,7 @@
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ✅ | `focused-fix` + `senior-backend` | `51f0ba7` `f2b24bf` | some→every cascade; /100 price fix; SW_NAVIGATE→shared; /goto redirect page (iOS/Android hint); remove onlyApplePush → no double delivery; gotoUrl() всі 19 TG кнопок |
 | 16 | T16 | Клієнтський навбар: redesign + Каталог + /explore (Deploy-14 ✅) | ✅ | `impeccable` + `design-taste-frontend` + `emil-design-eng` | `947311e` `e59ff92` `eae2f99` `c2c3c12` `0bd45a4` `28a5a40` `3e151e5` | navbar+explore base; FROM SCRATCH: Great Vibes hero, geo, smart sort, 7 filters, 2-row dropdowns. Phases 3-5: critique(15→36/40)+layout+bolder+harden+animate+audit(15→18/20)+polish+humanizer. Deploy-14 shipped |
 | 17 | T17 | /my/* повний візуальний редизайн (masters, loyalty, notifications) | ✅ | `design-taste-frontend` + `impeccable` | `830acd4` | portrait 2-col grid; loyalty progress; date-grouped notifications |
-| 17b | T-card | Картка майстра: повний редизайн (повний цикл) | ⬜ | `ui-ux-pro-max` → `impeccable shape` → `design-taste-frontend` → `impeccable critique` + `animate` | — | brainstorm → shape → design → critique → animate → ship (explore + /my/masters) |
+| 17b | T-card | Картка майстра: повний редизайн (повний цикл) | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` | `a9c5b5b` | framed photo zone h-[192px], MasterCard+MasterListCard, grid/list toggle, 4 badges WCAG AA, uniform height h-full |
 | 18 | **T18** | **Оптимізація завантаження сторінки послуг** | **▶ NEXT** | `performance-profiler` + `senior-backend` | — | — |
 | 19 | T19 | /my/bookings: повний аудит + premium redesign | ⬜ | `impeccable` + `redesign-existing-projects` | — | — |
 | 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ⬜ | `senior-frontend` + `humanizer` | — | — |

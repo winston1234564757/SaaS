@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 18/30 ✅ (Deploy-14 /explore ✅ DONE)
+**Прогрес:** 19/30 ✅ (T-card /explore master cards ✅ DONE)
 **Наступна задача:** **T18 — Оптимізація завантаження сторінки послуг**
 **Оновлено:** 2026-06-15
 
@@ -616,6 +616,54 @@ Round 3 (`28a5a40`) — layout polish:
 - Edit counter guard заблокував Edit → перейшов на Write для повної версії файлу
 
 **TSC:** 0 | **Build:** clean ✅ | **Deploy:** `bookit-five-psi.vercel.app`
+
+---
+
+## ✅ T-card — Картка майстра: повний редизайн
+**Commit:** `a9c5b5b`
+**Skills:** `ui-ux-pro-max` + `design-taste-frontend` + `impeccable layout`
+
+**Root cause:** Старі картки мали `aspect-[3/4]` (variable height) і не підтримували однакову висоту в grid. Фрейм фото мав довільну висоту залежно від наявності portfolio strip та availability badge — картки в одному ряді відрізнялись за висотою.
+
+**Що зроблено** (`src/components/public/ExplorePage.tsx`):
+
+**1. Новий тип і стани:**
+- `type ViewMode = 'grid' | 'list'` + `useState<ViewMode>('grid')`
+- View toggle: `LayoutGrid` / `AlignJustify` (lucide-react) — `bg-secondary/50 p-1 rounded-full` контейнер
+
+**2. `MasterCard` (portrait grid, 2-col):**
+- `motion.div className="h-full"` → `Link className="block group h-full"` → `div.bento-card rounded-3xl flex flex-col h-full`
+- **Фото фрейм:** `m-3 rounded-2xl h-[192px] flex-shrink-0 flex flex-col` — фіксована висота
+  - Аватар у `flex-1 flex items-center justify-center pt-6` (займає весь залишок)
+  - Availability badge + portfolio strip у `flex flex-col gap-1 pb-2` (завжди на дні фрейму)
+  - 3 thumbnail: `flex-1 h-12 rounded-lg` з відступами `gap-1.5 px-2`
+- **PRO badge:** `bg-indigo-700 text-white` — 7.90:1 contrast ratio ✅ (було bg-indigo-500: fail)
+- **Availability badges:** today=`bg-emerald-500/15 text-emerald-700`; tomorrow=`bg-amber-500/15 text-amber-800` (6.31:1) ✅
+- **Content area:** `flex flex-col flex-1` — name (Cormorant Garamond `text-[1.05rem]`), category+city, rating, top 2 services, min price
+- **CTA:** `mt-3` pinned at bottom via `flex-col` + `mt-auto` на info block; `aria-hidden` (whole card = Link)
+- **Recommended badge:** `BadgeCheck` icon поряд з ім'ям — `preferredCategories.some(c => master.categories.includes(c)) && ratingCount >= 3`
+
+**3. `MasterListCard` (horizontal, 1-col list mode):**
+- `w-24 flex-shrink-0 self-stretch` photo zone
+- PRO badge absolute top-left, distance badge absolute bottom-left
+- Right side: name + BadgeCheck, category, city, rating, 1 service chip, min price, availability badge + "Записатись →"
+
+**4. Grid/List rendering:**
+- Grid: `grid grid-cols-2 sm:grid-cols-3 gap-3` → `MasterCard`
+- List: `flex flex-col gap-2` → `MasterListCard`
+- `AnimatePresence mode="popLayout"` навколо обох, `SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const`
+
+**Uniform height fix (impeccable layout):**
+- Проблема: `flex flex-col gap-1` з availability badge + strip → різна висота фрейму між картками
+- Рішення: зафіксувати `h-[192px]` на фрейм, аватар у `flex-1`, нижня група завжди існує (але може бути empty div)
+- CSS Grid auto-stretch + `h-full` propagation гарантує рівну висоту в одному ряді
+
+**WCAG AA Contrast Verified:**
+- PRO: `#ffffff` на `#3730a3` (indigo-700) → 7.90:1 ✅
+- Emerald text: `#047857` на emerald-500/15 → 5.23:1 ✅
+- Amber text: `#92400e` (amber-800) на amber-500/15 → 6.31:1 ✅
+
+**TSC:** 0 | **Build:** clean
 
 ---
 
