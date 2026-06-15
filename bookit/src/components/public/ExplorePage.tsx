@@ -8,6 +8,7 @@ import {
   Sparkles, Scissors, Eye, Smile, Hand, Flower2, Droplets,
   Zap, Circle, PenTool, MoreHorizontal, Star, MapPin,
   ChevronDown, Navigation, ArrowRight, Clock, Search, X,
+  Calendar, MessageCircle, BadgeCheck,
 } from 'lucide-react';
 import { serviceCategories } from '@/lib/constants/categories';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -16,7 +17,6 @@ import { haversineKm, formatDistance } from '@/lib/utils/haversine';
 const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
 const PAGE_SIZE = 12;
 
-// Backwards-compat aliases for category labels that changed
 const CATEGORY_ALIASES: Record<string, string[]> = {
   brows: ['Брови/Вії', 'Брови'],
 };
@@ -226,6 +226,76 @@ function SortDropdown({
   );
 }
 
+// ─── Price Dropdown ────────────────────────────────────────────────────────────
+
+const PRICE_OPTIONS: { value: number | null; label: string }[] = [
+  { value: null, label: 'Будь-яка ціна' },
+  { value: 300,  label: 'До 300₴'       },
+  { value: 500,  label: 'До 500₴'       },
+  { value: 1000, label: 'До 1000₴'      },
+];
+
+function PriceDropdown({
+  priceMax,
+  onChange,
+}: {
+  priceMax: number | null;
+  onChange: (v: number | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const current = PRICE_OPTIONS.find(o => o.value === priceMax) ?? PRICE_OPTIONS[0]!;
+  const isActive = priceMax !== null;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 ${
+          isActive
+            ? 'bg-accent text-accent-foreground shadow-sm'
+            : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
+        }`}
+      >
+        {current.label}
+        <ChevronDown size={11} className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="listbox"
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.12 }}
+            className="absolute top-full left-0 mt-1.5 bento-card rounded-2xl p-1.5 z-30 min-w-[150px] shadow-lg"
+          >
+            {PRICE_OPTIONS.map(opt => (
+              <button
+                key={opt.value ?? 'any'}
+                type="button"
+                role="option"
+                aria-selected={priceMax === opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full text-left px-3 py-2.5 rounded-xl text-xs transition-colors duration-150 active:scale-[0.98] ${
+                  priceMax === opt.value
+                    ? 'bg-accent/10 text-accent font-semibold'
+                    : 'text-muted-foreground hover:bg-secondary/60'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ─── Featured PRO Card ─────────────────────────────────────────────────────────
 
 function FeaturedCard({ master }: { master: ExploreMaster }) {
@@ -293,7 +363,6 @@ function MasterCard({
   showDistance: boolean;
 }) {
   const mainPhoto = master.avatarUrl ?? master.portfolioPhotos[0] ?? null;
-  // If avatar is used as main, show all portfolio in strip; else skip first (already in main)
   const strip = master.avatarUrl
     ? master.portfolioPhotos.slice(0, 3)
     : master.portfolioPhotos.slice(1, 4);
@@ -392,22 +461,32 @@ function MasterCard({
 export function ExplorePage({ masters, categoryCounts, preferredCategories }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [slotToday,      setSlotToday]      = useState(false);
+  const [slotTomorrow,   setSlotTomorrow]   = useState(false);
   const [nearbyActive,   setNearbyActive]   = useState(false);
   const [geoLoading,     setGeoLoading]     = useState(false);
   const [userCoords,     setUserCoords]     = useState<{ lat: number; lng: number } | null>(null);
   const [sort,           setSort]           = useState<SortMode>('popular');
   const [page,           setPage]           = useState(1);
   const [searchQuery,    setSearchQuery]    = useState('');
+  const [priceMax,       setPriceMax]       = useState<number | null>(null);
+  const [proOnly,        setProOnly]        = useState(false);
+  const [withReviews,    setWithReviews]    = useState(false);
 
-  const isFiltered = !!(activeCategory || slotToday || nearbyActive || searchQuery);
+  const isFiltered = !!(activeCategory || slotToday || slotTomorrow || nearbyActive || searchQuery || priceMax !== null || proOnly || withReviews);
 
-  useEffect(() => { setPage(1); }, [activeCategory, slotToday, nearbyActive, sort, searchQuery]);
+  useEffect(() => {
+    setPage(1);
+  }, [activeCategory, slotToday, slotTomorrow, nearbyActive, sort, searchQuery, priceMax, proOnly, withReviews]);
 
   const resetFilters = useCallback(() => {
     setActiveCategory(null);
     setSlotToday(false);
+    setSlotTomorrow(false);
     setNearbyActive(false);
     setSearchQuery('');
+    setPriceMax(null);
+    setProOnly(false);
+    setWithReviews(false);
   }, []);
 
   const toggleNearby = useCallback(() => {
@@ -421,7 +500,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
         setNearbyActive(true);
         setGeoLoading(false);
       },
-      () => { setGeoLoading(false); }, // silent fail — no error shown
+      () => { setGeoLoading(false); },
     );
   }, [nearbyActive, userCoords]);
 
@@ -450,7 +529,13 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
       );
     }
 
-    if (slotToday) result = result.filter(m => m.availableToday);
+    if (slotToday)    result = result.filter(m => m.availableToday);
+    if (slotTomorrow) result = result.filter(m => m.availableTomorrow);
+    if (proOnly)      result = result.filter(m => m.isPro);
+    if (withReviews)  result = result.filter(m => m.ratingCount > 0);
+    if (priceMax !== null) {
+      result = result.filter(m => m.minPrice === null || m.minPrice <= priceMax);
+    }
 
     const withDist: ProcessedMaster[] = result.map(m => ({
       ...m,
@@ -489,15 +574,25 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
     }
 
     return sorted;
-  }, [masters, searchQuery, activeCategory, slotToday, nearbyActive, userCoords, sort, preferredCategories]);
+  }, [masters, searchQuery, activeCategory, slotToday, slotTomorrow, nearbyActive, userCoords, sort, preferredCategories, priceMax, proOnly, withReviews]);
 
   const visible   = processed.slice(0, page * PAGE_SIZE);
   const hasMore   = visible.length < processed.length;
   const remaining = Math.min(processed.length - visible.length, PAGE_SIZE);
 
+  const toggleClass = (active: boolean) =>
+    `flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 ${
+      active
+        ? 'bg-accent text-accent-foreground shadow-sm'
+        : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
+    }`;
+
   return (
     <div className="min-h-screen bg-transparent">
-      <div className="max-w-2xl mx-auto px-4 pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}>
+      <div
+        className="max-w-2xl mx-auto px-4 pb-24"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}
+      >
 
         {/* ── Hero ── */}
         <motion.div
@@ -569,16 +664,13 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
           transition={{ ...SPRING, delay: 0.09 }}
           className="flex items-center gap-2 mb-6 flex-wrap"
         >
+          {/* Nearby */}
           <button
             type="button"
             onClick={toggleNearby}
             aria-pressed={nearbyActive}
             disabled={geoLoading}
-            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 ${
-              nearbyActive
-                ? 'bg-accent text-accent-foreground shadow-sm'
-                : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30 disabled:opacity-60'
-            }`}
+            className={`${toggleClass(nearbyActive)} disabled:opacity-60`}
           >
             {geoLoading ? (
               <span className="size-3 rounded-full border-2 border-current border-t-transparent animate-spin" aria-hidden="true" />
@@ -588,20 +680,54 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
             Поруч
           </button>
 
+          {/* Slot today */}
           <button
             type="button"
             onClick={() => setSlotToday(v => !v)}
             aria-pressed={slotToday}
-            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 ${
-              slotToday
-                ? 'bg-accent text-accent-foreground shadow-sm'
-                : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
-            }`}
+            className={toggleClass(slotToday)}
           >
             <Clock size={12} />
-            Є час сьогодні
+            Сьогодні
           </button>
 
+          {/* Slot tomorrow */}
+          <button
+            type="button"
+            onClick={() => setSlotTomorrow(v => !v)}
+            aria-pressed={slotTomorrow}
+            className={toggleClass(slotTomorrow)}
+          >
+            <Calendar size={12} />
+            Завтра
+          </button>
+
+          {/* PRO only */}
+          <button
+            type="button"
+            onClick={() => setProOnly(v => !v)}
+            aria-pressed={proOnly}
+            className={toggleClass(proOnly)}
+          >
+            <BadgeCheck size={12} />
+            PRO
+          </button>
+
+          {/* With reviews */}
+          <button
+            type="button"
+            onClick={() => setWithReviews(v => !v)}
+            aria-pressed={withReviews}
+            className={toggleClass(withReviews)}
+          >
+            <Star size={12} />
+            З відгуками
+          </button>
+
+          {/* Price */}
+          <PriceDropdown priceMax={priceMax} onChange={setPriceMax} />
+
+          {/* Sort */}
           <div className="ml-auto">
             <SortDropdown sort={sort} onChange={setSort} hasPreferred={preferredCategories.length > 0} />
           </div>
