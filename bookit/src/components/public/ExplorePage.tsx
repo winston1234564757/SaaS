@@ -102,15 +102,16 @@ function CategoryPills({
 }) {
   return (
     <div
-      className="flex flex-wrap gap-2"
+      className="grid grid-cols-3 gap-2"
       role="group"
       aria-label="Фільтр за категорією"
     >
+      {/* "Всі" spans full row */}
       <button
         type="button"
         aria-pressed={!activeCategory}
         onClick={() => onSelect(null)}
-        className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 active:scale-[0.95] ${
+        className={`col-span-3 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold min-h-[44px] transition-all duration-150 active:scale-[0.95] ${
           !activeCategory
             ? 'bg-accent text-accent-foreground shadow-sm'
             : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
@@ -123,6 +124,7 @@ function CategoryPills({
         </span>
       </button>
 
+      {/* 12 categories — exactly 4 rows of 3 */}
       {serviceCategories.map(cat => {
         const active = activeCategory === cat.id;
         const Icon   = CAT_ICONS[cat.id] ?? MoreHorizontal;
@@ -134,7 +136,7 @@ function CategoryPills({
             type="button"
             aria-pressed={active}
             onClick={() => onSelect(active ? null : cat.id)}
-            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 active:scale-[0.95] ${
+            className={`flex items-center justify-center gap-1 px-2 py-2.5 rounded-full text-[10px] font-semibold min-h-[44px] w-full transition-all duration-150 active:scale-[0.95] ${
               cat.id === 'barber' ? '[&_svg]:rotate-90' : ''
             } ${
               active
@@ -142,11 +144,11 @@ function CategoryPills({
                 : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
             }`}
           >
-            <Icon size={11} />
-            {cat.label}
+            <Icon size={11} className="flex-shrink-0" />
+            <span className="truncate">{cat.label}</span>
             {count > 0 && (
-              <span className={`text-[10px] ${active ? 'text-accent-foreground/70' : 'text-muted-foreground/50'}`}>
-                · {count}
+              <span className={`text-[9px] flex-shrink-0 ${active ? 'text-accent-foreground/70' : 'text-muted-foreground/50'}`}>
+                ·{count}
               </span>
             )}
           </button>
@@ -495,7 +497,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
 
   return (
     <div className="min-h-screen bg-transparent">
-      <div className="max-w-2xl mx-auto px-4 pt-10 pb-24">
+      <div className="max-w-2xl mx-auto px-4 pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}>
 
         {/* ── Hero ── */}
         <motion.div
