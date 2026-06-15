@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,51 +10,69 @@ import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 const spring = { type: 'spring', stiffness: 240, damping: 26 } as const;
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-const PLANS = [
+type Plan = {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  cta: string;
+  accent: boolean;
+  waitlist?: boolean;
+};
+
+const PLANS: Plan[] = [
   {
     name: 'Starter',
     price: '0',
-    period: 'РЅР°Р·Р°РІР¶РґРё',
-    description: 'Р”Р»СЏ СЃС‚Р°СЂС‚Сѓ. Р‘РµР· РѕР±РјРµР¶РµРЅСЊ РїРѕ С‡Р°СЃСѓ.',
+    period: 'назавжди',
+    description: 'Для старту. Без обмежень по часу.',
     features: [
-      'Р”Рѕ 40 Р·Р°РїРёСЃС–РІ РЅР° РјС–СЃСЏС†СЊ',
-      'РџСѓР±Р»С–С‡РЅР° СЃС‚РѕСЂС–РЅРєР°',
-      'Telegram-СЃРїРѕРІС–С‰РµРЅРЅСЏ',
-      'Р‘Р°Р·РѕРІР° Р°РЅР°Р»С–С‚РёРєР°',
+      'До 40 записів на місяць',
+      'Публічна сторінка',
+      'Telegram-сповіщення',
+      'Нагадування клієнтам',
+      'Базова аналітика',
+      'CRM клієнтів',
+      'Флеш-акції (до 5 на місяць)',
+      'Розсилки (до 3 на місяць)',
     ],
-    cta: 'РџРѕС‡Р°С‚Рё Р±РµР·РєРѕС€С‚РѕРІРЅРѕ',
+    cta: 'Почати безкоштовно',
     accent: false,
   },
   {
     name: 'Pro',
     price: '700',
-    period: 'РјС–СЃСЏС†СЊ',
-    description: 'Р”Р»СЏ РјР°Р№СЃС‚СЂР°, СЏРєРёР№ С…РѕС‡Рµ Р±С–Р»СЊС€Рµ.',
+    period: 'місяць',
+    description: 'Для майстра, який хоче більше.',
     features: [
-      'РќРµРѕР±РјРµР¶РµРЅС– Р·Р°РїРёСЃРё',
-      'Smart Slots + Р¤Р»РµС€-Р°РєС†С–С—',
-      'РџСЂРѕРіСЂР°РјР° Р»РѕСЏР»СЊРЅРѕСЃС‚С–',
-      'CRM РєР»С–С”РЅС‚С–РІ Р· РЅРѕС‚Р°С‚РєР°РјРё',
-      'Р РѕР·С€РёСЂРµРЅР° Р°РЅР°Р»С–С‚РёРєР°',
-      'РџСЂС–РѕСЂРёС‚РµС‚РЅР° РїС–РґС‚СЂРёРјРєР°',
+      'Необмежені записи',
+      'Smart Slots + флеш-акції без ліміту',
+      'Програма лояльності',
+      'Магазин товарів',
+      'Розширена аналітика (6 місяців)',
+      'CSV-експорт',
+      'Кастомна тема оформлення',
+      'Пріоритетна підтримка',
     ],
-    cta: 'РЎРїСЂРѕР±СѓРІР°С‚Рё Pro',
+    cta: 'Спробувати Pro',
     accent: true,
   },
   {
     name: 'Studio',
-    price: '299',
-    period: 'РјР°Р№СЃС‚РµСЂ / РјС–СЃСЏС†СЊ',
-    description: 'Р”Р»СЏ СЃС‚СѓРґС–Р№ РІС–Рґ 2 РјР°Р№СЃС‚СЂС–РІ.',
+    price: '',
+    period: '',
+    description: 'Для студій від 2 майстрів. Спільна аналітика та управління командою.',
     features: [
-      'Р’СЃРµ Р· Pro РґР»СЏ РєРѕР¶РЅРѕРіРѕ РјР°Р№СЃС‚СЂР°',
-      'РЈРїСЂР°РІР»С–РЅРЅСЏ РєРѕРјР°РЅРґРѕСЋ',
-      'Р—Р°РіР°Р»СЊРЅР° Р°РЅР°Р»С–С‚РёРєР° СЃС‚СѓРґС–С—',
-      'Р‘С–Р»РёР№ Р»РµР№Р±Р» (РІР°С€ Р±СЂРµРЅРґ)',
-      'Р’РёРґС–Р»РµРЅРёР№ РјРµРЅРµРґР¶РµСЂ',
+      'Все з Pro для кожного майстра',
+      'Управління командою',
+      'Загальна аналітика студії',
+      'Власний брендинг',
+      'Виділений менеджер',
     ],
-    cta: 'РћР±РіРѕРІРѕСЂРёС‚Рё Studio',
+    cta: 'Залишити заявку',
     accent: false,
+    waitlist: true,
   },
 ];
 
@@ -85,10 +103,10 @@ export function LandingPricing() {
             className="inline-block text-[11px] font-semibold uppercase tracking-[0.15em] mb-5"
             style={{ color: 'var(--l-indigo)' }}
           >
-            РўР°СЂРёС„Рё
+            Тарифи
           </motion.span>
           <LandingSplitHeading
-            text="РћР±РµСЂС–С‚СЊ СЃРІС–Р№ РїР»Р°РЅ."
+            text="Оберіть свій план."
             className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"
             style={{ fontSize: 'clamp(2.2rem,4.5vw,3.8rem)', color: 'var(--l-ink)' }}
             stagger={80}
@@ -107,8 +125,12 @@ export function LandingPricing() {
               <div
                 className="p-1.5 rounded-[1.75rem] h-full"
                 style={{
-                  background: plan.accent ? 'var(--l-accent)' : 'rgba(26,23,16,0.03)',
-                  border: `1px solid ${plan.accent ? 'var(--l-accent)' : 'var(--l-border)'}`,
+                  background: plan.accent
+                    ? 'var(--l-accent)'
+                    : plan.waitlist
+                    ? 'rgba(92,158,122,0.04)'
+                    : 'rgba(26,23,16,0.03)',
+                  border: `1px solid ${plan.accent ? 'var(--l-accent)' : plan.waitlist ? 'rgba(92,158,122,0.18)' : 'var(--l-border)'}`,
                   boxShadow: plan.accent ? '0 24px 64px rgba(99,102,241,0.28)' : 'none',
                 }}
               >
@@ -119,33 +141,65 @@ export function LandingPricing() {
                     boxShadow: plan.accent ? 'none' : 'inset 0 1px 1px rgba(255,255,255,0.9)',
                   }}
                 >
-                  <p
-                    className="text-[11px] font-semibold uppercase tracking-widest mb-4"
-                    style={{ color: plan.accent ? 'color-mix(in srgb, var(--l-text-on-dark) 60%, transparent)' : 'var(--l-muted-2)' }}
-                  >
-                    {plan.name}
-                  </p>
-
-                  <div className="mb-2">
-                    <span
-                      className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
+                  <div className="flex items-center gap-2 mb-4">
+                    <p
+                      className="text-[11px] font-semibold uppercase tracking-widest"
                       style={{
-                        fontSize: 'clamp(2.5rem,5vw,3.5rem)',
-                        color: plan.accent ? 'var(--l-text-on-dark)' : 'var(--l-ink)',
+                        color: plan.accent
+                          ? 'color-mix(in srgb, var(--l-text-on-dark) 60%, transparent)'
+                          : plan.waitlist
+                          ? 'rgba(92,158,122,0.7)'
+                          : 'var(--l-muted-2)',
                       }}
                     >
-                      {plan.price === '0' ? 'Р‘РµР·РєРѕС€С‚РѕРІРЅРѕ' : `в‚ґ${plan.price}`}
-                    </span>
+                      {plan.name}
+                    </p>
+                    {plan.waitlist && (
+                      <span
+                        className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ color: '#2D6A4A', background: 'rgba(92,158,122,0.14)' }}
+                      >
+                        Скоро
+                      </span>
+                    )}
                   </div>
-                  <p
-                    className="text-sm mb-2"
-                    style={{ color: plan.accent ? 'var(--l-muted-on-dark)' : 'var(--l-muted-2)' }}
-                  >
-                    {plan.period}
-                  </p>
+
+                  {plan.waitlist ? (
+                    <p
+                      className="font-[family-name:var(--font-cormorant)] font-semibold leading-none mb-4"
+                      style={{ fontSize: 'clamp(1.6rem,3vw,2.2rem)', color: 'var(--l-muted)' }}
+                    >
+                      В розробці
+                    </p>
+                  ) : (
+                    <>
+                      <div className="mb-2">
+                        <span
+                          className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
+                          style={{
+                            fontSize: 'clamp(2.5rem,5vw,3.5rem)',
+                            color: plan.accent ? 'var(--l-text-on-dark)' : 'var(--l-ink)',
+                          }}
+                        >
+                          {plan.price === '0' ? 'Безкоштовно' : `₴${plan.price}`}
+                        </span>
+                      </div>
+                      <p
+                        className="text-sm mb-2"
+                        style={{ color: plan.accent ? 'var(--l-muted-on-dark)' : 'var(--l-muted-2)' }}
+                      >
+                        {plan.period}
+                      </p>
+                    </>
+                  )}
+
                   <p
                     className="text-sm leading-relaxed mb-8"
-                    style={{ color: plan.accent ? 'color-mix(in srgb, var(--l-text-on-dark) 75%, transparent)' : 'var(--l-muted)' }}
+                    style={{
+                      color: plan.accent
+                        ? 'color-mix(in srgb, var(--l-text-on-dark) 75%, transparent)'
+                        : 'var(--l-muted)',
+                    }}
                   >
                     {plan.description}
                   </p>
@@ -162,18 +216,34 @@ export function LandingPricing() {
                         <div
                           className="size-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                           style={{
-                            background: plan.accent ? 'color-mix(in srgb, var(--l-text-on-dark) 18%, transparent)' : 'color-mix(in srgb, var(--l-indigo-glow) 10%, transparent)',
+                            background: plan.accent
+                              ? 'color-mix(in srgb, var(--l-text-on-dark) 18%, transparent)'
+                              : plan.waitlist
+                              ? 'rgba(92,158,122,0.08)'
+                              : 'color-mix(in srgb, var(--l-indigo-glow) 10%, transparent)',
                           }}
                           aria-hidden="true"
                         >
                           <Check
                             size={11}
-                            style={{ color: plan.accent ? 'var(--l-text-on-dark)' : 'var(--l-accent)' }}
+                            style={{
+                              color: plan.accent
+                                ? 'var(--l-text-on-dark)'
+                                : plan.waitlist
+                                ? 'rgba(92,158,122,0.45)'
+                                : 'var(--l-accent)',
+                            }}
                           />
                         </div>
                         <span
                           className="text-sm leading-snug"
-                          style={{ color: plan.accent ? 'rgba(255,255,255,0.85)' : 'var(--l-ink-2)' }}
+                          style={{
+                            color: plan.accent
+                              ? 'rgba(255,255,255,0.85)'
+                              : plan.waitlist
+                              ? 'var(--l-muted)'
+                              : 'var(--l-ink-2)',
+                          }}
                         >
                           {f}
                         </span>
@@ -181,7 +251,8 @@ export function LandingPricing() {
                     ))}
                   </ul>
 
-                  <button type="button"
+                  <button
+                    type="button"
                     onClick={() => router.push('/register')}
                     className="w-full h-12 rounded-full font-semibold text-sm transition-all active:scale-[0.97]"
                     style={
@@ -190,6 +261,12 @@ export function LandingPricing() {
                             background: 'var(--l-surface)',
                             color: 'var(--l-accent)',
                             boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                          }
+                        : plan.waitlist
+                        ? {
+                            background: 'rgba(92,158,122,0.10)',
+                            color: '#2D6A4A',
+                            border: '1.5px solid rgba(92,158,122,0.22)',
                           }
                         : {
                             background: 'transparent',
@@ -213,7 +290,7 @@ export function LandingPricing() {
           className="text-center text-sm mt-8"
           style={{ color: 'var(--l-muted)' }}
         >
-          Р’СЃС– С‚Р°СЂРёС„Рё Р±РµР· РїСЂРёС…РѕРІР°РЅРёС… РєРѕРјС–СЃС–Р№. Р—РјС–РЅРёС‚Рё Р°Р±Рѕ СЃРєР°СЃСѓРІР°С‚Рё вЂ” РІ РґРІР° РєР»С–РєРё.
+          Всі тарифи без прихованих комісій. Змінити або скасувати — в два кліки.
         </motion.p>
       </div>
     </section>
