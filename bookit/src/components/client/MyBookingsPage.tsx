@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays, CalendarSearch, Clock, MapPin, Navigation,
-  ShoppingBag, Star, ChevronDown, Package,
+  ShoppingBag, Star, ChevronDown, Package, MessageCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
@@ -506,6 +506,13 @@ function MasterGroup({ group, index }: { group: MasterGroupData; index: number }
             {group.bookings.length} {pluralUk(group.bookings.length, 'візит', 'візити', 'візитів')}
           </p>
         </div>
+        <Link
+          href={`/my/messages?to=${group.masterId}`}
+          aria-label="Написати майстру"
+          className="size-9 flex items-center justify-center rounded-full bg-secondary border border-border text-foreground flex-shrink-0 active:scale-[0.94] transition-transform"
+        >
+          <MessageCircle size={16} />
+        </Link>
         <button
           type="button"
           onClick={() => router.push(rebookHref)}

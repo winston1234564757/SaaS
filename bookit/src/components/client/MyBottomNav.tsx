@@ -3,20 +3,21 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, Gift, User, Search, LogIn, Bell } from 'lucide-react';
+import { CalendarDays, MessageCircle, User, Search, LogIn, Bell } from 'lucide-react';
 import { motion, LayoutGroup } from 'framer-motion';
 import type { Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { NavLoginSheet } from '@/components/public/NavLoginSheet';
+import { useUnreadDMCount } from '@/lib/hooks/useUnreadDMCount';
 
 const SPRING = { type: 'spring', stiffness: 400, damping: 30 } as const;
 
 const MY_NAV = [
-  { href: '/my/bookings',       icon: CalendarDays, label: 'Записи'      },
-  { href: '/explore',           icon: Search,       label: 'Каталог'     },
-  { href: '/my/loyalty',        icon: Gift,         label: 'Бонуси'      },
-  { href: '/my/notifications',  icon: Bell,         label: 'Сповіщення'  },
-  { href: '/my/profile',        icon: User,         label: 'Профіль'     },
+  { href: '/my/bookings',       icon: CalendarDays,  label: 'Записи'      },
+  { href: '/explore',           icon: Search,        label: 'Каталог'     },
+  { href: '/my/messages',       icon: MessageCircle, label: 'Чат'         },
+  { href: '/my/notifications',  icon: Bell,          label: 'Сповіщення'  },
+  { href: '/my/profile',        icon: User,          label: 'Профіль'     },
 ];
 
 const PUBLIC_AUTH_NAV = [
@@ -41,9 +42,18 @@ export function MyBottomNav({ initialIsAuth }: Props) {
   const pathname = usePathname();
   const [isAuth, setIsAuth] = useState(initialIsAuth ?? false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const isMyRoute = pathname.startsWith('/my');
   const isPublic = isPublicB2CRoute(pathname);
+
+  const unreadDM = useUnreadDMCount(userId);
+
+  useEffect(() => {
+    if (!isMyRoute) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: { id: string } | null } }) => setUserId(user?.id ?? null));
+  }, [isMyRoute]);
 
   useEffect(() => {
     if (!isPublic) return;
@@ -98,6 +108,11 @@ export function MyBottomNav({ initialIsAuth }: Props) {
                         strokeWidth={active ? 2.5 : 2}
                         className={active ? 'text-foreground' : 'text-muted-foreground/50'}
                       />
+                      {href === '/my/messages' && unreadDM > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] rounded-full bg-accent text-accent-foreground text-[8px] font-bold flex items-center justify-center px-0.5 leading-none pointer-events-none">
+                          {unreadDM > 9 ? '9+' : unreadDM}
+                        </span>
+                      )}
                     </div>
                     <span className={`relative z-10 text-[10px] font-medium truncate transition-colors duration-150 ${
                       active ? 'text-foreground' : 'text-muted-foreground/50'

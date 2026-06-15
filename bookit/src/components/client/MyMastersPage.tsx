@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, MessageCircle } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface Master {
@@ -42,7 +42,6 @@ function relativeDate(dateStr: string): string {
 export function MyMastersPage({ masters }: { masters: Master[] }) {
   return (
     <div className="flex flex-col gap-4">
-      {/* Header */}
       <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-foreground mb-0.5">Мої майстри</h1>
         <p className="text-sm text-muted-foreground/60">
@@ -52,7 +51,6 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
         </p>
       </div>
 
-      {/* Empty state */}
       {masters.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -75,7 +73,6 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
         </motion.div>
       )}
 
-      {/* Portrait grid */}
       {masters.length > 0 && (
         <>
           <div className="grid grid-cols-2 gap-3">
@@ -104,67 +101,68 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.3), ...SPRING }}
     >
-      <Link href={`/${master.slug}`} className="block">
-        <div className="bento-card overflow-hidden hover:-translate-y-0.5 transition-transform duration-150 active:scale-[0.97]">
-
-          {/* Photo zone */}
-          <div className="relative h-40 bg-accent/10">
-            {master.avatarUrl ? (
-              <Image
-                src={master.avatarUrl}
-                alt={master.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 50vw, 33vw"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                {master.avatarEmoji}
-              </div>
-            )}
-
-            {/* Visit count badge — top right */}
-            <div className="absolute top-2 right-2 flex items-center bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
-              <span className="text-[10px] font-semibold text-white">
-                {master.visitCount} {pluralUk(master.visitCount, 'візит', 'візити', 'візитів')}
-              </span>
+      <div className="bento-card overflow-hidden">
+        <Link href={`/${master.slug}`} className="block relative h-40 bg-accent/10 hover:opacity-95 transition-opacity">
+          {master.avatarUrl ? (
+            <Image
+              src={master.avatarUrl}
+              alt={master.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-4xl">
+              {master.avatarEmoji}
             </div>
+          )}
 
-            {/* Last visit badge — bottom left */}
-            <div className="absolute bottom-2 left-2 flex items-center bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
-              <span className="text-[10px] font-medium text-white/90">
-                {relativeDate(master.lastVisitDate)}
-              </span>
-            </div>
+          <div className="absolute top-2 right-2 flex items-center bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold text-white">
+              {master.visitCount} {pluralUk(master.visitCount, 'візит', 'візити', 'візитів')}
+            </span>
           </div>
 
-          {/* Text zone */}
-          <div className="p-3">
-            <p className="text-sm font-semibold text-foreground truncate">{master.name}</p>
+          <div className="absolute bottom-2 left-2 flex items-center bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium text-white/90">
+              {relativeDate(master.lastVisitDate)}
+            </span>
+          </div>
+        </Link>
 
-            {master.categories.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-1.5">
-                {master.categories.slice(0, 2).map((cat) => (
-                  <span
-                    key={cat}
-                    className="text-[10px] font-medium text-muted-foreground/70 border border-border/60 px-1.5 py-0.5 rounded-full"
-                  >
-                    {cat}
-                  </span>
-                ))}
-              </div>
-            )}
+        <div className="p-3">
+          <p className="text-sm font-semibold text-foreground truncate">{master.name}</p>
 
+          {master.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {master.categories.slice(0, 2).map((cat) => (
+                <span
+                  key={cat}
+                  className="text-[10px] font-medium text-muted-foreground/70 border border-border/60 px-1.5 py-0.5 rounded-full"
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-2.5 flex items-center gap-2">
             <Link
               href={`/${master.slug}`}
-              onClick={(e) => e.stopPropagation()}
-              className="mt-2.5 flex items-center justify-center w-full py-2 rounded-xl bg-accent text-accent-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.97] transition-all min-h-[36px]"
+              className="flex-1 flex items-center justify-center py-2 rounded-xl bg-accent text-accent-foreground text-xs font-semibold hover:opacity-90 active:scale-[0.97] transition-all min-h-[44px]"
             >
               Записатись
             </Link>
+            <Link
+              href={`/my/messages?to=${master.id}`}
+              aria-label="Написати майстру"
+              className="size-11 flex items-center justify-center rounded-xl bg-secondary border border-border text-foreground active:scale-[0.94] transition-transform shrink-0"
+            >
+              <MessageCircle size={15} />
+            </Link>
           </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 }
