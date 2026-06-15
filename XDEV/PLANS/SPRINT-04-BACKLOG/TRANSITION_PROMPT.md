@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 23/34 ✅ Sprint-04 IN PROGRESS
-Наступна: T-chat — /my/support/chat redesign з нуля (CLIENT ZONE Deploy #20)
-Стан: T21 ✅ DONE — /my/profile Identity Card redesign: avatar upload (Supabase avatars bucket), instagram_url+telegram_handle fields, collapsible health, isDirty sticky save bar. Commit: 4e8d0c5. T32 ✅ DONE також (попередня сесія).
+Прогрес: 25/34 ✅ Sprint-04 IN PROGRESS
+Наступна: T-phone — /my/setup/phone onboarding redesign з нуля (CLIENT ZONE Deploy #21)
+Стан: T-chat ✅ DONE — /my/messages client↔master direct messaging: conversations+direct_messages tables, MessagesListPage+DirectChatPage+ConversationRow, useDMChat+useUnreadDMCount hooks, Бонуси→Чат nav swap, read receipts, iOS keyboard push-up, image attachments. T-chat-kbd merged. Commit: e3273aa.
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

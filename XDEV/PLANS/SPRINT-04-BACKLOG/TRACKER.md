@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 23/34 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 25/34 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -33,9 +33,9 @@
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
-| 21 | **T-chat** | **/my/support/chat: redesign з нуля (Deploy-20)** | **▶ NEXT** | `design-taste-frontend` + `impeccable` + `emil-design-eng` | — | Новий chat UI: Telegram-like bubbles, read receipts, attach, real-time |
-| 22 | T-chat-kbd | /my/support/chat: мобайл keyboard UX (Telegram-like) | ⬜ | `senior-frontend` + `emil-design-eng` | — | iOS safe-area + keyboard push-up + smooth scroll-to-bottom |
-| 23 | **T-phone** | **/my/setup/phone: onboarding redesign з нуля (Deploy-21)** | ⬜ | `design-taste-frontend` + `impeccable` | — | NEW — phone verification form redesign; Frost theme; elegant step UI |
+| 21 | **T-chat** | **/my/messages: client↔master direct messaging (Deploy-20)** | ✅ | `design-taste-frontend` + `impeccable` + `emil-design-eng` | `e3273aa` | conversations+direct_messages tables; MessagesListPage+DirectChatPage+ConversationRow; useDMChat+useUnreadDMCount; Бонуси→Чат nav; read receipts; iOS keyboard push-up; attachments |
+| 22 | T-chat-kbd | /my/messages: мобайл keyboard UX (Telegram-like) | ✅ | merged into T-chat | `e3273aa` | h-dvh + visualViewport resize listener + safe-area-inset-bottom — included in T-chat |
+| 23 | **T-phone** | **/my/setup/phone: onboarding redesign з нуля (Deploy-21)** | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | NEW — phone verification form redesign; Frost theme; elegant step UI |
 | 24 | T24 | Клієнтська зона: desktop layout — всі 8 сторінок (Deploy-22) | ⬜ | `design-taste-frontend` + `impeccable` | — | 2-col / side panels / wide grid для /my/* + /explore |
 
 ---

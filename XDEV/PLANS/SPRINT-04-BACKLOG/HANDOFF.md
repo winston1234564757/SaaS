@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 23/33 ✅ (T32 Smart Slots авто Flash Deal ✅ DONE)
-**Наступна задача:** **T33 — Лендинг: повна консистентність тарифів**
+**Прогрес:** 25/34 ✅ (T-chat + T-chat-kbd DONE)
+**Наступна задача:** **T-phone — /my/setup/phone: onboarding redesign з нуля (Deploy #21)**
 **Оновлено:** 2026-06-15
 
 ---
@@ -14,6 +14,39 @@
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
   - Якщо CLI не працює → Dashboard SQL Editor
 - Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+
+---
+
+## ✅ T-chat + T-chat-kbd — Client↔Master Direct Messaging (Deploy #20)
+**Commit:** `e3273aa`
+
+**Що зроблено:**
+1. **Migration 20260615000002** — `conversations` (client_id, master_id, last_message, client_unread, master_unread, UNIQUE client+master) + `direct_messages` (conversation_id, sender_id, message, attachment_url, read_at). RLS: participants only. Realtime enabled. Applied to Supabase Cloud via MCP.
+2. **`src/lib/actions/messages.ts`** — 4 server actions: `getOrCreateConversation(otherUserId)` (auto-detects client vs master role via master_profiles check), `getConversations()` (FK join profiles for participant), `sendDirectMessage(convId, msg, attachUrl?)` (inserts msg + updates last_message + increments other party unread), `markConversationRead(convId)` (bulk UPDATE read_at + reset unread counter).
+3. **`src/lib/hooks/useDMChat.ts`** — Realtime hook: initial fetch + postgres_changes INSERT/UPDATE subscription on direct_messages. Mirrors useLiveChat.ts pattern.
+4. **`src/lib/hooks/useUnreadDMCount.ts`** — Lightweight unread badge: SELECT conversations filtered by userId, sum client_unread/master_unread. Realtime UPDATE subscription refreshes count.
+5. **`src/components/shared/messages/`** — 3 shared components:
+   - `ConversationRow.tsx` — 72px row (avatar+name+preview+timestamp+unread pill), fmtTime relative dates
+   - `MessagesListPage.tsx` — list with empty state (CTA to /my/bookings for client), userRole prop
+   - `DirectChatPage.tsx` — full chat: h-dvh flex-col, fixed header, scroll area, AnimatePresence bubbles (own=accent/rounded-br-sm, theirs=secondary/rounded-bl-sm), read receipts (Check→CheckCheck), file upload to support_attachments bucket, iOS visualViewport resize listener, sticky input bar with safe-area-inset-bottom
+6. **Routes** — `/my/messages` (list), `/my/messages/[id]` (chat), `/dashboard/messages` (list), `/dashboard/messages/[id]` (chat). Server pages fetch conversation with FK join profiles.
+7. **`MyBottomNav.tsx`** — Gift/Бонуси/my/loyalty → MessageCircle/Чат/my/messages. Added userId state (fetched on isMyRoute mount), useUnreadDMCount hook, badge overlay on Чат icon.
+8. **`MyBookingsPage.tsx`** — MasterGroup header: added MessageCircle Link button → `/my/messages?to={masterId}` before "Записатись знову".
+9. **`MyMastersPage.tsx`** — MasterCard restructured: removed outer Link wrapper (was nested `<a>` inside `<a>` — invalid HTML). Photo zone is now a separate Link. Text zone has "Записатись" + MessageCircle "Написати" buttons side by side.
+
+**Key decisions:**
+- `getOrCreateConversation`: role detection via `master_profiles` lookup on current user — avoids requiring role param from client
+- Unread increment: SELECT current value then UPDATE +1 (race condition acceptable for badge counts)
+- `markConversationRead` called in `useEffect` on mount — marks messages read automatically when chat opens
+- T-chat-kbd merged: keyboard push-up via `visualViewport` resize listener + `h-dvh flex flex-col` + `pb-[calc(env(safe-area-inset-bottom,0px)+12px)]` on input bar
+- TSC: 0 errors | Build: clean
+
+---
+
+## ▶ T-phone — /my/setup/phone: Onboarding Phone Redesign (Deploy #21)
+**Статус:** NEXT
+**Скіли:** `design-taste-frontend` + `impeccable`
+**Деталі:** /my/setup/phone redesign з нуля — Frost theme, elegant step UI, phone verification form.
 
 ---
 

@@ -513,6 +513,8 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 ### Platform Admin & Support
 | Таблиця / Bucket | Призначення |
 |---|---|
+| `conversations` | DM між клієнтом і майстром: `client_id` + `master_id` (UNIQUE pair), `last_message`, `client_unread`, `master_unread`. RLS: учасники тільки. Realtime увімкнено. |
+| `direct_messages` | Повідомлення DM: `conversation_id` FK, `sender_id` FK, `message`, `attachment_url`, `read_at`. RLS via conversations. |
 | `support_tickets` | Тікети підтримки: `user_id` FK, `type` (feedback/bug/idea/chat), `status` (open/active/resolved), `created_at`, `updated_at` |
 | `support_messages` | Повідомлення підтримки: `ticket_id` FK, `sender_id` FK, `message`, `attachment_url` (скріншоти) |
 | `content_reports` | Скарги на контент: `reporter_id` FK, `target_type` (review/portfolio_item), `target_id` UUID, `reason`, `status` (pending/resolved) |
