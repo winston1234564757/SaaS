@@ -584,7 +584,16 @@ Round 2 (`0bd45a4`) — 4 нових фільтри:
 - `toggleClass(active)` helper екстрактований для DRY filter bar
 - "Є час сьогодні" → "Сьогодні" (коротше для filter row)
 
-**TSC:** 0 | **Build:** pending deploy
+Round 3 (`28a5a40`) — layout polish:
+- Hero `paddingTop`: `3rem` → `2rem` (заголовок ~20% вищий)
+- "Всі" button: `col-span-3` (full width) → `w-[60%] mx-auto` — centered, окремо над grid
+- Filter bar: `flex-wrap` → `flex-col gap-2` з двома рядками:
+  - Row 1: toggles у `overflow-x-auto` (горизонтальний scroll, `flex-shrink-0` на кожній pill)
+  - Row 2: `PriceDropdown fullWidth` + `SortDropdown fullWidth` — рівні 50/50
+- `SortDropdown` + `PriceDropdown`: новий `fullWidth?: boolean` prop → `w-full justify-between` на кнопці
+- Edit counter guard заблокував Edit → перейшов на Write для повної версії файлу
+
+**TSC:** 0 | **Build:** clean ✅ | **Deploy:** `bookit-five-psi.vercel.app`
 
 ---
 

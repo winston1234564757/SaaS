@@ -17,7 +17,7 @@
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 17/30 ✅ Sprint-04 IN PROGRESS
 Наступна: T18 — Оптимізація завантаження сторінки послуг
-Щойно завершено: T-explore (Deploy-14 ext) — /explore polish: Great Vibes font, search, grid-cols-3 pills, safe-area, 4 filters (commits c2c3c12 0bd45a4)
+Щойно завершено: T-explore (Deploy-14 ✅ DONE) — /explore повний редизайн + polish rounds: Great Vibes, search, grid pills, safe-area, 4 filters, dropdowns 2-row (commits eae2f99 c2c3c12 0bd45a4 28a5a40)
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
