@@ -1,10 +1,7 @@
 {
-  "edit_counts": {
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\PhotoLightbox.tsx": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\public\\portfolio\\PortfolioPhotoViewer.tsx": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\portfolio\\PortfolioPhotoUploader.tsx": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\portfolio\\PortfolioPage.tsx": 0
-  },
-  "consecutive_reads": 0,
-  "read_files": []
+  "edit_counts": {},
+  "consecutive_reads": 1,
+  "read_files": [
+    "SYSTEM_MAP.md"
+  ]
 }

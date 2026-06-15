@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc --noEmit)",
+      "Bash(node *)",
       "mcp__mempalace__mempalace_search",
       "mcp__mempalace__mempalace_status",
       "mcp__mempalace__mempalace_get_drawer",

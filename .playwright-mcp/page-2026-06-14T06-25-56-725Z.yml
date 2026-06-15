@@ -1,0 +1,17 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - img [ref=e6]
+    - paragraph [ref=e9]: Ініціалізація...
+    - paragraph [ref=e11]: Шукаємо вільне віконечко...
+  - generic [ref=e18] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e19]:
+      - img [ref=e20]
+    - generic [ref=e23]:
+      - button "Open issues overlay" [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]: "0"
+          - generic [ref=e27]: "1"
+        - generic [ref=e28]: Issue
+      - button "Collapse issues badge" [ref=e29]:
+        - img [ref=e30]
+  - alert [ref=e32]

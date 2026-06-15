@@ -1,0 +1,361 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - main [ref=e4]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - heading "Краса поруч" [level=1] [ref=e9]
+          - paragraph [ref=e10]: Нігті · Волосся · Брови · Макіяж
+        - generic [ref=e11]:
+          - img
+          - textbox "Пошук майстра або послуги" [ref=e12]:
+            - /placeholder: Яку послугу або майстра шукаєш?
+        - generic [ref=e13]:
+          - button "Місто" [ref=e15]:
+            - img [ref=e16]
+            - text: Місто
+            - img [ref=e19]
+          - button "За популярністю" [ref=e22]:
+            - text: За популярністю
+            - img [ref=e23]
+          - generic [ref=e25]:
+            - button "Сітка" [pressed] [ref=e26]:
+              - img [ref=e27]
+            - button "Список" [ref=e32]:
+              - img [ref=e33]
+            - button "Стрічка" [ref=e34]:
+              - img [ref=e35]
+        - generic [ref=e41]:
+          - button "Всі" [pressed] [ref=e42]:
+            - img [ref=e43]
+            - text: Всі
+          - button "Нігті" [ref=e46]:
+            - img [ref=e47]
+            - text: Нігті
+          - button "Волосся" [ref=e50]:
+            - img [ref=e51]
+            - text: Волосся
+          - button "Брови/Вії" [ref=e57]:
+            - img [ref=e58]
+            - text: Брови/Вії
+          - button "Макіяж" [ref=e61]:
+            - img [ref=e62]
+            - text: Макіяж
+          - button "Масаж" [ref=e64]:
+            - img [ref=e65]
+            - text: Масаж
+          - button "Барбер" [ref=e68]:
+            - img [ref=e69]
+            - text: Барбер
+          - button "Інше" [ref=e75]:
+            - img [ref=e76]
+            - text: Інше
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]: Рекомендуємо
+            - generic [ref=e82]: 8 PRO майстрів
+          - generic [ref=e83]:
+            - link "PRO E2E CRM Studio Манікюр CRM E2E 4.9" [ref=e84] [cursor=pointer]:
+              - /url: /e2e-crm-master
+              - generic [ref=e85]:
+                - generic [ref=e86]:
+                  - generic [ref=e88]: E
+                  - generic [ref=e89]: PRO
+                - generic [ref=e90]:
+                  - paragraph [ref=e91]: E2E CRM Studio
+                  - paragraph [ref=e92]: Манікюр CRM E2E
+                  - generic [ref=e93]:
+                    - img [ref=e94]
+                    - generic [ref=e96]: "4.9"
+            - link "PRO E2E Audit Studio Гель-покриття E2E 4.9" [ref=e97] [cursor=pointer]:
+              - /url: /e2e-audit-master
+              - generic [ref=e98]:
+                - generic [ref=e99]:
+                  - generic [ref=e101]: E
+                  - generic [ref=e102]: PRO
+                - generic [ref=e103]:
+                  - paragraph [ref=e104]: E2E Audit Studio
+                  - paragraph [ref=e105]: Гель-покриття E2E
+                  - generic [ref=e106]:
+                    - img [ref=e107]
+                    - generic [ref=e109]: "4.9"
+            - link "PRO E2E Studio Admin Studio Service E2E 4.9" [ref=e110] [cursor=pointer]:
+              - /url: /e2e-studioadmin
+              - generic [ref=e111]:
+                - generic [ref=e112]:
+                  - generic [ref=e114]: E
+                  - generic [ref=e115]: PRO
+                - generic [ref=e116]:
+                  - paragraph [ref=e117]: E2E Studio Admin
+                  - paragraph [ref=e118]: Studio Service E2E
+                  - generic [ref=e119]:
+                    - img [ref=e120]
+                    - generic [ref=e122]: "4.9"
+            - link "PRO E2E Referral Studio Послуга Referral E2E 4.9" [ref=e123] [cursor=pointer]:
+              - /url: /e2e-referral-master
+              - generic [ref=e124]:
+                - generic [ref=e125]:
+                  - generic [ref=e127]: E
+                  - generic [ref=e128]: PRO
+                - generic [ref=e129]:
+                  - paragraph [ref=e130]: E2E Referral Studio
+                  - paragraph [ref=e131]: Послуга Referral E2E
+                  - generic [ref=e132]:
+                    - img [ref=e133]
+                    - generic [ref=e135]: "4.9"
+            - link "PRO E2E TimeTravel Studio Манікюр E2E 4.9" [ref=e136] [cursor=pointer]:
+              - /url: /e2e-timetravel-master
+              - generic [ref=e137]:
+                - generic [ref=e138]:
+                  - generic [ref=e140]: E
+                  - generic [ref=e141]: PRO
+                - generic [ref=e142]:
+                  - paragraph [ref=e143]: E2E TimeTravel Studio
+                  - paragraph [ref=e144]: Манікюр E2E
+                  - generic [ref=e145]:
+                    - img [ref=e146]
+                    - generic [ref=e148]: "4.9"
+            - link "Your Beauty Studio PRO Your Beauty Studio Топова послуга 5.0" [ref=e149] [cursor=pointer]:
+              - /url: /viktor-koshel
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - img "Your Beauty Studio" [ref=e152]
+                  - generic [ref=e153]: PRO
+                - generic [ref=e154]:
+                  - paragraph [ref=e155]: Your Beauty Studio
+                  - paragraph [ref=e156]: Топова послуга
+                  - generic [ref=e157]:
+                    - img [ref=e158]
+                    - generic [ref=e160]: "5.0"
+            - link "PRO Катя Бондар" [ref=e161] [cursor=pointer]:
+              - /url: /master-92a9188a
+              - generic [ref=e162]:
+                - generic [ref=e163]:
+                  - generic [ref=e165]: К
+                  - generic [ref=e166]: PRO
+                - paragraph [ref=e168]: Катя Бондар
+            - link "PRO Катя Саратяну 1D" [ref=e169] [cursor=pointer]:
+              - /url: /master-781e1c9a
+              - generic [ref=e170]:
+                - generic [ref=e171]:
+                  - generic [ref=e173]: К
+                  - generic [ref=e174]: PRO
+                - generic [ref=e175]:
+                  - paragraph [ref=e176]: Катя Саратяну
+                  - paragraph [ref=e177]: 1D
+        - generic [ref=e178]:
+          - link "PRO E2E CRM Studio Манікюр CRM E2E 600₴ 4.9 · 5 від 600₴" [ref=e180] [cursor=pointer]:
+            - /url: /e2e-crm-master
+            - generic [ref=e181]:
+              - generic:
+                - generic [ref=e182]: E
+                - generic [ref=e183]: PRO
+              - generic [ref=e184]:
+                - paragraph [ref=e185]: E2E CRM Studio
+                - generic [ref=e186]:
+                  - generic [ref=e187]: Манікюр CRM E2E
+                  - generic [ref=e188]: 600₴
+                - generic [ref=e189]:
+                  - generic [ref=e190]:
+                    - img [ref=e191]
+                    - generic [ref=e193]: "4.9"
+                    - generic [ref=e194]: ·
+                    - generic [ref=e195]: "5"
+                  - generic [ref=e196]: від 600₴
+          - link "PRO E2E Audit Studio Гель-покриття E2E 35000₴ Манікюр Аудит E2E 50000₴ 4.9 · 5 від 35000₴" [ref=e198] [cursor=pointer]:
+            - /url: /e2e-audit-master
+            - generic [ref=e199]:
+              - generic:
+                - generic [ref=e200]: E
+                - generic [ref=e201]: PRO
+              - generic [ref=e202]:
+                - paragraph [ref=e203]: E2E Audit Studio
+                - generic [ref=e204]:
+                  - generic [ref=e205]: Гель-покриття E2E
+                  - generic [ref=e206]: 35000₴
+                - generic [ref=e207]:
+                  - generic [ref=e208]: Манікюр Аудит E2E
+                  - generic [ref=e209]: 50000₴
+                - generic [ref=e210]:
+                  - generic [ref=e211]:
+                    - img [ref=e212]
+                    - generic [ref=e214]: "4.9"
+                    - generic [ref=e215]: ·
+                    - generic [ref=e216]: "5"
+                  - generic [ref=e217]: від 35000₴
+          - link "PRO E2E Studio Admin Studio Service E2E 1000₴ 4.9 · 5 від 1000₴" [ref=e219] [cursor=pointer]:
+            - /url: /e2e-studioadmin
+            - generic [ref=e220]:
+              - generic:
+                - generic [ref=e221]: E
+                - generic [ref=e222]: PRO
+              - generic [ref=e223]:
+                - paragraph [ref=e224]: E2E Studio Admin
+                - generic [ref=e225]:
+                  - generic [ref=e226]: Studio Service E2E
+                  - generic [ref=e227]: 1000₴
+                - generic [ref=e228]:
+                  - generic [ref=e229]:
+                    - img [ref=e230]
+                    - generic [ref=e232]: "4.9"
+                    - generic [ref=e233]: ·
+                    - generic [ref=e234]: "5"
+                  - generic [ref=e235]: від 1000₴
+          - link "PRO E2E Referral Studio Послуга Referral E2E 400₴ 4.9 · 5 від 400₴" [ref=e237] [cursor=pointer]:
+            - /url: /e2e-referral-master
+            - generic [ref=e238]:
+              - generic:
+                - generic [ref=e239]: E
+                - generic [ref=e240]: PRO
+              - generic [ref=e241]:
+                - paragraph [ref=e242]: E2E Referral Studio
+                - generic [ref=e243]:
+                  - generic [ref=e244]: Послуга Referral E2E
+                  - generic [ref=e245]: 400₴
+                - generic [ref=e246]:
+                  - generic [ref=e247]:
+                    - img [ref=e248]
+                    - generic [ref=e250]: "4.9"
+                    - generic [ref=e251]: ·
+                    - generic [ref=e252]: "5"
+                  - generic [ref=e253]: від 400₴
+          - link "PRO E2E TimeTravel Studio Манікюр E2E 500₴ 4.9 · 5 від 500₴" [ref=e255] [cursor=pointer]:
+            - /url: /e2e-timetravel-master
+            - generic [ref=e256]:
+              - generic:
+                - generic [ref=e257]: E
+                - generic [ref=e258]: PRO
+              - generic [ref=e259]:
+                - paragraph [ref=e260]: E2E TimeTravel Studio
+                - generic [ref=e261]:
+                  - generic [ref=e262]: Манікюр E2E
+                  - generic [ref=e263]: 500₴
+                - generic [ref=e264]:
+                  - generic [ref=e265]:
+                    - img [ref=e266]
+                    - generic [ref=e268]: "4.9"
+                    - generic [ref=e269]: ·
+                    - generic [ref=e270]: "5"
+                  - generic [ref=e271]: від 500₴
+          - link "Your Beauty Studio PRO Your Beauty Studio Топова послуга 800₴ Брови 400₴ 5.0 · 4 · Березівка від 400₴" [ref=e273] [cursor=pointer]:
+            - /url: /viktor-koshel
+            - generic [ref=e274]:
+              - generic:
+                - img "Your Beauty Studio"
+                - generic [ref=e275]: PRO
+              - generic [ref=e276]:
+                - img [ref=e278]
+                - img [ref=e280]
+                - img [ref=e282]
+              - generic [ref=e283]:
+                - paragraph [ref=e284]: Your Beauty Studio
+                - generic [ref=e285]:
+                  - generic [ref=e286]: Топова послуга
+                  - generic [ref=e287]: 800₴
+                - generic [ref=e288]:
+                  - generic [ref=e289]: Брови
+                  - generic [ref=e290]: 400₴
+                - generic [ref=e291]:
+                  - generic [ref=e292]:
+                    - img [ref=e293]
+                    - generic [ref=e295]: "5.0"
+                    - generic [ref=e296]: ·
+                    - generic [ref=e297]: "4"
+                    - generic [ref=e298]: ·
+                    - generic [ref=e299]: Березівка
+                  - generic [ref=e300]: від 400₴
+          - link "PRO Катя Бондар Волосся" [ref=e302] [cursor=pointer]:
+            - /url: /master-92a9188a
+            - generic [ref=e303]:
+              - generic:
+                - generic [ref=e304]: К
+                - generic [ref=e305]: PRO
+              - generic [ref=e306]:
+                - paragraph [ref=e307]: Катя Бондар
+                - paragraph [ref=e308]: Волосся
+          - link "PRO Приймає сьогодні Катя Саратяну 1D 450₴ від 450₴" [ref=e311] [cursor=pointer]:
+            - /url: /master-781e1c9a
+            - generic [ref=e312]:
+              - generic:
+                - generic [ref=e313]: К
+                - generic [ref=e314]: PRO
+                - generic [ref=e315]: Приймає сьогодні
+              - generic [ref=e317]:
+                - paragraph [ref=e318]: Катя Саратяну
+                - generic [ref=e319]:
+                  - generic [ref=e320]: 1D
+                  - generic [ref=e321]: 450₴
+                - generic [ref=e323]: від 450₴
+          - link "E2E Auth Studio Послуга AuthMaster E2E 300₴ 4.9 · 5 від 300₴" [ref=e325] [cursor=pointer]:
+            - /url: /e2e-auth-master
+            - generic [ref=e326]:
+              - generic [ref=e327]: E
+              - generic [ref=e328]:
+                - paragraph [ref=e329]: E2E Auth Studio
+                - generic [ref=e330]:
+                  - generic [ref=e331]: Послуга AuthMaster E2E
+                  - generic [ref=e332]: 300₴
+                - generic [ref=e333]:
+                  - generic [ref=e334]:
+                    - img [ref=e335]
+                    - generic [ref=e337]: "4.9"
+                    - generic [ref=e338]: ·
+                    - generic [ref=e339]: "5"
+                  - generic [ref=e340]: від 300₴
+          - link "Octus Octus Класичний масаж 800₴ \"Сексуальний майстер\" 5.0 · 1 · Вікторівка від 800₴" [ref=e342] [cursor=pointer]:
+            - /url: /kvitkamagnolii
+            - generic [ref=e343]:
+              - generic:
+                - img "Octus"
+              - img [ref=e346]
+              - generic [ref=e347]:
+                - paragraph [ref=e348]: Octus
+                - generic [ref=e349]:
+                  - generic [ref=e350]: Класичний масаж
+                  - generic [ref=e351]: 800₴
+                - paragraph [ref=e352]: "\"Сексуальний майстер\""
+                - generic [ref=e353]:
+                  - generic [ref=e354]:
+                    - img [ref=e355]
+                    - generic [ref=e357]: "5.0"
+                    - generic [ref=e358]: ·
+                    - generic [ref=e359]: "1"
+                    - generic [ref=e360]: ·
+                    - generic [ref=e361]: Вікторівка
+                  - generic [ref=e362]: від 800₴
+          - link "Виктор Кошель Манікюр з гель-лаком 500₴ від 300₴" [ref=e364] [cursor=pointer]:
+            - /url: /master-1e78837e
+            - generic [ref=e365]:
+              - generic [ref=e366]: В
+              - generic [ref=e367]:
+                - paragraph [ref=e368]: Виктор Кошель
+                - generic [ref=e369]:
+                  - generic [ref=e370]: Манікюр з гель-лаком
+                  - generic [ref=e371]: 500₴
+                - generic [ref=e373]: від 300₴
+          - link "C2C Test Master" [ref=e375] [cursor=pointer]:
+            - /url: /test-master-1777229929795
+            - generic [ref=e376]:
+              - generic [ref=e377]: C
+              - paragraph [ref=e379]: C2C Test Master
+        - button "Показати ще 4" [ref=e382]
+    - navigation "Навігація":
+      - generic [ref=e383]:
+        - link "Каталог" [ref=e384] [cursor=pointer]:
+          - /url: /explore
+          - img [ref=e385]
+          - generic [ref=e388]: Каталог
+        - button "Увійти" [ref=e389]:
+          - img [ref=e390]
+          - generic [ref=e393]: Увійти
+  - generic [ref=e398] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e399]:
+      - img [ref=e400]
+    - generic [ref=e403]:
+      - button "Open issues overlay" [ref=e404]:
+        - generic [ref=e405]:
+          - generic [ref=e406]: "0"
+          - generic [ref=e407]: "1"
+        - generic [ref=e408]: Issue
+      - button "Collapse issues badge" [ref=e409]:
+        - img [ref=e410]
+  - alert [ref=e412]
