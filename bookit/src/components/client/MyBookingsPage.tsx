@@ -5,21 +5,32 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, Clock, ExternalLink, X, Star, ChevronRight, Check, MapPin, Navigation } from 'lucide-react';
-import { cancelBooking, submitReview } from '@/app/my/bookings/actions';
+import {
+  CalendarDays, CalendarSearch, Clock, MapPin, Navigation,
+  ShoppingBag, Star, ChevronDown, Package,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
+import { cancelBooking, submitReview } from '@/app/my/bookings/actions';
+import { Sheet } from '@/components/ui/Sheet';
+import { pluralUk } from '@/lib/utils/pluralUk';
+import { cn } from '@/lib/utils/cn';
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: 'Очікує', color: 'var(--warning)', bg: 'color-mix(in srgb, var(--warning) 12%, transparent)' },
-  confirmed: { label: 'Підтверджено', color: 'var(--success)', bg: 'color-mix(in srgb, var(--success) 12%, transparent)' },
-  completed: { label: 'Завершено', color: 'var(--muted-foreground)', bg: 'color-mix(in srgb, var(--muted-foreground) 12%, transparent)' },
-  cancelled: { label: 'Скасовано', color: 'var(--destructive)', bg: 'color-mix(in srgb, var(--destructive) 12%, transparent)' },
-  no_show: { label: 'Не прийшов', color: 'var(--text-tertiary)', bg: 'color-mix(in srgb, var(--text-tertiary) 12%, transparent)' },
-};
+const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
 
-interface OrderProduct { id: string | null; name: string; price: number; qty: number; }
-interface BookingService { id: string | null; name: string; price: number; duration: number; }
+interface BookingService {
+  id: string | null;
+  name: string;
+  price: number;
+  duration: number;
+}
+
+interface OrderProduct {
+  id: string | null;
+  name: string;
+  price: number;
+  qty: number;
+}
 
 interface UnifiedOrder {
   id: string;
@@ -46,369 +57,783 @@ interface UnifiedOrder {
   masterLng?: number;
 }
 
-function formatDate(iso: string) {
-  const d = new Date(iso + 'T00:00:00');
-  const result = format(d, 'EEEE, d MMMM', { locale: uk });
-  return result.charAt(0).toUpperCase() + result.slice(1);
+interface MasterGroupData {
+  masterId: string;
+  masterName: string;
+  masterSlug: string;
+  masterAvatarUrl?: string | null;
+  bookings: UnifiedOrder[];
 }
 
-function formatPrice(price: number) {
-  return price.toLocaleString('uk-UA') + ' ₴';
+const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
+  pending:   { label: 'Очікує',       color: 'var(--warning, #b45309)',   bg: 'color-mix(in srgb, var(--warning, #b45309) 12%, transparent)' },
+  confirmed: { label: 'Підтверджено', color: 'var(--success, #047857)',   bg: 'color-mix(in srgb, var(--success, #047857) 12%, transparent)' },
+  completed: { label: 'Завершено',    color: 'var(--muted-foreground)',    bg: 'color-mix(in srgb, var(--muted-foreground) 12%, transparent)' },
+  cancelled: { label: 'Скасовано',    color: 'var(--destructive)',         bg: 'color-mix(in srgb, var(--destructive) 12%, transparent)' },
+  no_show:   { label: 'Не прийшов',  color: 'var(--muted-foreground)',    bg: 'color-mix(in srgb, var(--muted-foreground) 8%, transparent)' },
+  shipped:   { label: 'Відправлено', color: 'var(--primary)',              bg: 'color-mix(in srgb, var(--primary) 12%, transparent)' },
+  new:       { label: 'Нове',        color: 'var(--primary)',              bg: 'color-mix(in srgb, var(--primary) 12%, transparent)' },
+};
+
+function getToday() {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+}
+
+function fmtDate(iso: string) {
+  const r = format(new Date(iso + 'T00:00:00'), 'EEEE, d MMMM', { locale: uk });
+  return r.charAt(0).toUpperCase() + r.slice(1);
+}
+
+function fmtShort(iso: string) {
+  return format(new Date(iso + 'T00:00:00'), 'd MMM', { locale: uk });
+}
+
+function fmtPrice(p: number) {
+  return p.toLocaleString('uk-UA') + ' ₴';
+}
+
+function getCfg(status: string) {
+  return STATUS_CFG[status] ?? STATUS_CFG.pending;
+}
+
+function Avatar({ url, name, size }: { url?: string | null; name: string; size: number }) {
+  if (url) {
+    return (
+      <div
+        className="relative flex-shrink-0 rounded-full overflow-hidden border border-border"
+        style={{ width: size, height: size }}
+      >
+        <Image src={url} alt={name} fill className="object-cover" sizes={`${size}px`} />
+      </div>
+    );
+  }
+  return (
+    <div
+      className="flex-shrink-0 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
+    >
+      {name.charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const c = getCfg(status);
+  return (
+    <span
+      className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
+      style={{ color: c.color, background: c.bg }}
+    >
+      {c.label}
+    </span>
+  );
+}
+
+function StarRow({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map(n => (
+        <Star
+          key={n}
+          size={11}
+          className={n <= rating ? 'fill-amber-400 text-amber-400' : 'text-border'}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CancelSheet({
+  open,
+  onOpenChange,
+  bookingId,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  bookingId: string;
+}) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange} variant="bottom" title="Скасувати запис?">
+      <div className="flex flex-col gap-4 pb-2">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Майстра повідомлять про скасування.
+        </p>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            start(async () => {
+              await cancelBooking(bookingId);
+              onOpenChange(false);
+              router.refresh();
+            });
+          }}
+          className="h-11 w-full rounded-full bg-destructive text-white text-sm font-bold active:scale-[0.97] transition-transform disabled:opacity-50"
+        >
+          {pending ? '...' : 'Так, скасувати'}
+        </button>
+        <button
+          type="button"
+          onClick={() => onOpenChange(false)}
+          className="h-11 w-full rounded-full bg-secondary border border-border text-foreground text-sm font-bold active:scale-[0.97] transition-transform"
+        >
+          Не скасовувати
+        </button>
+      </div>
+    </Sheet>
+  );
+}
+
+function ReviewSheet({
+  open,
+  onOpenChange,
+  bookingId,
+  orderId,
+  masterId,
+  onSuccess,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  bookingId?: string;
+  orderId?: string;
+  masterId: string;
+  onSuccess: (rating: number) => void;
+}) {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState('');
+  const [pending, start] = useTransition();
+
+  function reset() {
+    setRating(0);
+    setHover(0);
+    setComment('');
+  }
+
+  function handleClose(v: boolean) {
+    if (!v) reset();
+    onOpenChange(v);
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={handleClose} variant="bottom" title="Як пройшов візит?">
+      <div className="flex flex-col gap-6 pb-2">
+        <p className="text-sm text-muted-foreground">Ваш відгук допоможе іншим клієнтам</p>
+
+        <div className="flex items-center justify-center gap-2">
+          {[1, 2, 3, 4, 5].map(n => (
+            <motion.button
+              key={n}
+              type="button"
+              aria-label={`${n} ${pluralUk(n, 'зірка', 'зірки', 'зірок')}`}
+              aria-pressed={rating === n}
+              animate={{ scale: rating === n ? [1, 1.28, 1] : 1 }}
+              transition={SPRING}
+              onClick={() => setRating(n)}
+              onMouseEnter={() => setHover(n)}
+              onMouseLeave={() => setHover(0)}
+              className="p-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Star
+                size={38}
+                className={cn(
+                  'transition-colors duration-150',
+                  n <= (hover || rating) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/25'
+                )}
+              />
+            </motion.button>
+          ))}
+        </div>
+
+        <textarea
+          value={comment}
+          onChange={e => setComment(e.target.value)}
+          rows={3}
+          placeholder="Розкажіть детальніше — необов'язково"
+          className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none resize-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+        />
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => handleClose(false)}
+            className="min-h-[44px] flex items-center text-sm text-muted-foreground font-medium active:opacity-60 transition-opacity"
+          >
+            Не зараз
+          </button>
+          <button
+            type="button"
+            disabled={!rating || pending}
+            onClick={() => {
+              if (!rating) return;
+              const r = rating;
+              start(async () => {
+                await submitReview({ bookingId, orderId, masterId, rating: r, comment });
+                onSuccess(r);
+                reset();
+                onOpenChange(false);
+              });
+            }}
+            className="ml-auto h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-[0.97] transition-transform disabled:opacity-40 shadow-sm"
+          >
+            {pending ? '...' : 'Надіслати'}
+          </button>
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+
+function HeroCard({ order }: { order: UnifiedOrder }) {
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const isToday = order.date === getToday();
+  const services = order.services ?? [];
+  const shown = services.slice(0, 2);
+  const extra = services.length - 2;
+  const canCancel = ['pending', 'confirmed'].includes(order.status);
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SPRING}
+        className="relative rounded-3xl border border-primary/20 bg-primary/[0.06] p-5 overflow-hidden"
+      >
+        {isToday && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none">
+            <span className="bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
+              Сьогодні
+            </span>
+          </div>
+        )}
+
+        <div className={cn('flex items-start gap-4', isToday && 'mt-7')}>
+          <Avatar url={order.masterAvatarUrl} name={order.masterName} size={72} />
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <p className="heading-serif text-xl text-foreground leading-tight">{order.masterName}</p>
+              <StatusPill status={order.status} />
+            </div>
+
+            <div className="mt-2 flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <CalendarDays size={13} className="text-primary flex-shrink-0" />
+                <span className="text-[13px] font-semibold text-foreground">{fmtDate(order.date)}</span>
+              </div>
+              {order.startTime && (
+                <div className="flex items-center gap-1.5">
+                  <Clock size={13} className="text-muted-foreground flex-shrink-0" />
+                  <span className="text-xs text-muted-foreground">
+                    {order.startTime}{order.endTime ? ` — ${order.endTime}` : ''}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {shown.length > 0 && (
+              <div className="mt-2.5 flex flex-col gap-0.5">
+                {shown.map((s, i) => (
+                  <p key={i} className="text-xs text-muted-foreground truncate">{s.name}</p>
+                ))}
+                {extra > 0 && (
+                  <p className="text-xs text-muted-foreground/50">
+                    і ще {extra} {pluralUk(extra, 'послуга', 'послуги', 'послуг')}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {order.masterAddress && (
+              <div className="mt-3 flex items-start gap-2 p-2.5 rounded-2xl bg-background/60 border border-border">
+                <MapPin size={13} className="text-muted-foreground flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-semibold text-foreground">Де зустрічаємось</p>
+                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">{order.masterAddress}</p>
+                  <a
+                    href={
+                      order.masterLat && order.masterLng
+                        ? `https://www.google.com/maps/dir/?api=1&destination=${order.masterLat},${order.masterLng}`
+                        : `https://maps.google.com/?q=${encodeURIComponent(order.masterAddress)}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-primary"
+                  >
+                    <Navigation size={9} />
+                    Маршрут
+                  </a>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-base font-bold text-foreground">{fmtPrice(order.totalPrice)}</span>
+              {canCancel && (
+                <button
+                  type="button"
+                  onClick={() => setCancelOpen(true)}
+                  className="min-h-[44px] flex items-center text-xs text-muted-foreground/60 hover:text-destructive transition-colors font-medium"
+                >
+                  Скасувати запис
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <CancelSheet open={cancelOpen} onOpenChange={setCancelOpen} bookingId={order.id} />
+    </>
+  );
+}
+
+function CompactUpcomingRow({ order, index }: { order: UnifiedOrder; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...SPRING, delay: index * 0.04 }}
+      className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-background border border-border"
+    >
+      <Avatar url={order.masterAvatarUrl} name={order.masterName} size={40} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground truncate">{order.masterName}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {fmtShort(order.date)}{order.startTime ? ` · ${order.startTime}` : ''}
+        </p>
+      </div>
+      <StatusPill status={order.status} />
+    </motion.div>
+  );
+}
+
+function CompactBookingRow({ order }: { order: UnifiedOrder }) {
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedRating, setSubmittedRating] = useState(0);
+
+  const services = order.services ?? [];
+  const first = services[0];
+  const extra = services.length - 1;
+  const canReview = order.status === 'completed' && !order.hasReview && !submitted;
+  const reviewed = order.hasReview || submitted;
+
+  return (
+    <>
+      <div className="flex flex-col gap-2 py-3 border-t border-border/40 first:border-t-0 first:pt-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="text-xs text-muted-foreground font-medium flex-shrink-0">{fmtShort(order.date)}</span>
+            {first && (
+              <span className="text-xs text-foreground truncate">
+                {first.name}
+                {extra > 0 && <span className="text-muted-foreground/50 ml-1">+{extra}</span>}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <StatusPill status={order.status} />
+            <span className="text-xs font-bold text-foreground whitespace-nowrap">{fmtPrice(order.totalPrice)}</span>
+          </div>
+        </div>
+
+        {canReview && (
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            className="self-start h-11 px-4 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold active:scale-[0.97] transition-transform flex items-center gap-1.5"
+          >
+            <Star size={11} className="text-amber-400" />
+            Поділитись враженнями
+          </button>
+        )}
+
+        {reviewed && (
+          <div className="flex items-center gap-1.5">
+            {submitted ? (
+              <>
+                <span className="text-[11px] text-muted-foreground">Ваша оцінка:</span>
+                <StarRow rating={submittedRating} />
+              </>
+            ) : (
+              <span className="text-[11px] text-muted-foreground">Ви вже залишили відгук</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <ReviewSheet
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        bookingId={order.id}
+        masterId={order.masterId}
+        onSuccess={r => { setSubmitted(true); setSubmittedRating(r); }}
+      />
+    </>
+  );
+}
+
+function MasterGroup({ group, index }: { group: MasterGroupData; index: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const router = useRouter();
+
+  const shown = expanded ? group.bookings : group.bookings.slice(0, 3);
+  const hasMore = group.bookings.length > 3;
+
+  const rebookIds = group.bookings[0]?.services?.map(s => s.id).filter(Boolean).join(',') ?? '';
+  const rebookHref = rebookIds
+    ? `/${group.masterSlug}?services=${rebookIds}`
+    : `/${group.masterSlug}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...SPRING, delay: index * 0.05 }}
+      className="rounded-3xl border border-border bg-background overflow-hidden"
+    >
+      <div className="flex items-center gap-3 p-4">
+        <Avatar url={group.masterAvatarUrl} name={group.masterName} size={44} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{group.masterName}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {group.bookings.length} {pluralUk(group.bookings.length, 'візит', 'візити', 'візитів')}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push(rebookHref)}
+          className="h-9 px-4 rounded-full bg-primary text-primary-foreground text-xs font-bold active:scale-[0.97] transition-transform whitespace-nowrap flex-shrink-0"
+        >
+          Записатись знову
+        </button>
+      </div>
+
+      <div className="px-4 pb-3">
+        <AnimatePresence mode="popLayout" initial={false}>
+          {shown.map(b => (
+            <CompactBookingRow key={b.id} order={b} />
+          ))}
+        </AnimatePresence>
+
+        {hasMore && (
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            className="mt-2 flex items-center gap-1 text-xs text-primary font-semibold active:opacity-70 transition-opacity"
+          >
+            <motion.span
+              animate={{ rotate: expanded ? 180 : 0 }}
+              transition={SPRING}
+              className="flex"
+            >
+              <ChevronDown size={14} />
+            </motion.span>
+            {expanded ? 'Сховати' : `Всі записи (${group.bookings.length})`}
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function ShopOrderCard({ order, index }: { order: UnifiedOrder; index: number }) {
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedRating, setSubmittedRating] = useState(0);
+
+  const products = order.products ?? [];
+  const shown = products.slice(0, 2);
+  const extra = products.length - 2;
+  const canReview = ['completed', 'shipped'].includes(order.status) && !order.hasReview && !submitted;
+  const reviewed = order.hasReview || submitted;
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING, delay: index * 0.04 }}
+        className="rounded-3xl border border-border bg-background p-4"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar url={order.masterAvatarUrl} name={order.masterName} size={40} />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">{order.masterName}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{fmtShort(order.date)}</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <StatusPill status={order.status} />
+            <span className="text-sm font-bold text-foreground">{fmtPrice(order.totalPrice)}</span>
+          </div>
+        </div>
+
+        {shown.length > 0 && (
+          <div className="mt-3 flex flex-col gap-1.5 border-t border-border/40 pt-3">
+            {shown.map((p, i) => (
+              <div key={i} className="flex justify-between items-center gap-2">
+                <span className="text-xs text-muted-foreground truncate">
+                  {p.name}
+                  <span className="ml-1 text-muted-foreground/50">×{p.qty}</span>
+                </span>
+                <span className="text-xs text-muted-foreground/70 flex-shrink-0">{fmtPrice(p.price * p.qty)}</span>
+              </div>
+            ))}
+            {extra > 0 && (
+              <p className="text-xs text-muted-foreground/50">
+                і ще {extra} {pluralUk(extra, 'товар', 'товари', 'товарів')}
+              </p>
+            )}
+          </div>
+        )}
+
+        {order.deliveryType === 'pickup' && order.pickupAt && (
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Package size={12} className="flex-shrink-0" />
+            <span>Самовивіз: {fmtShort(order.pickupAt.split('T')[0])}</span>
+          </div>
+        )}
+
+        {canReview && (
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            className="mt-3 h-11 px-4 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold active:scale-[0.97] transition-transform flex items-center gap-1.5"
+          >
+            <Star size={11} className="text-amber-400" />
+            Поділитись враженнями
+          </button>
+        )}
+
+        {reviewed && (
+          <div className="mt-2 flex items-center gap-1.5">
+            {submitted ? (
+              <>
+                <span className="text-[11px] text-muted-foreground">Ваша оцінка:</span>
+                <StarRow rating={submittedRating} />
+              </>
+            ) : (
+              <span className="text-[11px] text-muted-foreground">Ви вже залишили відгук</span>
+            )}
+          </div>
+        )}
+      </motion.div>
+
+      <ReviewSheet
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        orderId={order.id}
+        masterId={order.masterId}
+        onSuccess={r => { setSubmitted(true); setSubmittedRating(r); }}
+      />
+    </>
+  );
+}
+
+function UpcomingEmpty() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={SPRING}
+      className="rounded-3xl border border-dashed border-border bg-secondary/30 p-8 flex flex-col items-center gap-3 text-center"
+    >
+      <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center">
+        <CalendarSearch size={22} className="text-muted-foreground" />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-foreground">Поки нічого не заплановано</p>
+        <p className="text-xs text-muted-foreground mt-1">Оберіть майстра і заплануйте наступний візит</p>
+      </div>
+      <Link
+        href="/explore"
+        className="h-10 px-5 rounded-full bg-primary text-primary-foreground text-xs font-bold inline-flex items-center active:scale-[0.97] transition-transform"
+      >
+        Знайти майстра
+      </Link>
+    </motion.div>
+  );
 }
 
 export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
   const [tab, setTab] = useState<'bookings' | 'shop'>('bookings');
+  const today = getToday();
 
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const bookingItems = bookings.filter(b => b.type === 'booking');
+  const shopItems = bookings.filter(b => b.type === 'shop');
 
-  const filtered = bookings.filter(b => {
-    if (tab === 'bookings') return b.type === 'booking';
-    return b.type === 'shop' || (b.products && b.products.length > 0);
-  });
-
-  const upcoming = filtered.filter(b =>
-    b.date >= today && ['pending', 'confirmed', 'new'].includes(b.status)
+  const upcoming = bookingItems.filter(
+    b => b.date >= today && ['pending', 'confirmed', 'new'].includes(b.status)
   );
-  const past = filtered.filter(b =>
-    b.date < today || !['pending', 'confirmed', 'new'].includes(b.status)
+  const past = bookingItems.filter(
+    b => b.date < today || ['completed', 'cancelled', 'no_show'].includes(b.status)
   );
+
+  const pendingShop = shopItems.filter(b => ['pending', 'new'].includes(b.status)).length;
+
+  const masterGroups: MasterGroupData[] = [];
+  const seenMasters = new Map<string, number>();
+  for (const b of past) {
+    const idx = seenMasters.get(b.masterId);
+    if (idx !== undefined) {
+      masterGroups[idx].bookings.push(b);
+    } else {
+      seenMasters.set(b.masterId, masterGroups.length);
+      masterGroups.push({
+        masterId: b.masterId,
+        masterName: b.masterName,
+        masterSlug: b.masterSlug,
+        masterAvatarUrl: b.masterAvatarUrl,
+        bookings: [b],
+      });
+    }
+  }
+
+  const heroCard = upcoming[0];
+  const extraUpcoming = upcoming.slice(1);
 
   return (
-    <div className="flex flex-col gap-4 pb-12">
-      <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-foreground mb-0.5">Мої замовлення</h1>
-        <p className="text-sm text-muted-foreground/60">Історія ваших візитів та покупок</p>
-
-        {/* Tab switcher */}
-        <div className="flex gap-2 mt-4 p-1 rounded-xl bg-secondary/50">
+    <div data-theme="frost" className="flex flex-col min-h-full bg-background">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border px-4 py-2">
+        <div className="flex gap-1 p-1 rounded-xl bg-secondary/60">
           <button
             type="button"
             aria-pressed={tab === 'bookings'}
             onClick={() => setTab('bookings')}
             className={cn(
-              "flex-1 py-2 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer flex items-center justify-center gap-1.5",
-              tab === 'bookings' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
+              'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all active:scale-[0.97]',
+              tab === 'bookings'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground'
             )}
           >
-            <CalendarDays size={14} /> Записи
+            <CalendarDays size={13} />
+            Записи
           </button>
           <button
             type="button"
             aria-pressed={tab === 'shop'}
             onClick={() => setTab('shop')}
             className={cn(
-              "flex-1 py-2 text-xs font-bold rounded-lg transition-all active:scale-[0.95] cursor-pointer flex items-center justify-center gap-1.5",
-              tab === 'shop' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
+              'flex-1 relative flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all active:scale-[0.97]',
+              tab === 'shop'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground'
             )}
           >
-            <Clock size={14} /> Магазин
+            <ShoppingBag size={13} />
+            Замовлення
+            {pendingShop > 0 && (
+              <span className="absolute -top-0.5 right-2 size-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
+                {pendingShop}
+              </span>
+            )}
           </button>
         </div>
       </div>
 
-      {filtered.length === 0 && (
-        <div className="bento-card p-10 text-center flex flex-col items-center justify-center">
-          <div className="text-muted-foreground/30 mb-4">
-            {tab === 'bookings' ? <CalendarDays size={32} /> : <Clock size={32} />}
-          </div>
-          <p className="text-sm font-bold text-foreground">
-            {tab === 'bookings' ? 'Записів поки немає' : 'Замовлень поки немає'}
-          </p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Знайдіть майстра та оберіть {tab === 'bookings' ? 'послугу' : 'товар'}</p>
-        </div>
-      )}
-
-      {upcoming.length > 0 && (
-        <section>
-          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-3 px-1">
-            {tab === 'bookings' ? 'Найближчі записи' : 'Нові замовлення'}
-          </p>
-          <div className="flex flex-col gap-3">
-            {upcoming.map((b, i) => <OrderCard key={b.id} order={b} index={i} />)}
-          </div>
-        </section>
-      )}
-
-      {past.length > 0 && (
-        <section className="mt-2">
-          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-3 px-1">
-            Минулі
-          </p>
-          <div className="flex flex-col gap-3">
-            {past.map((b, i) => <OrderCard key={b.id} order={b} index={i} />)}
-          </div>
-        </section>
-      )}
-    </div>
-  );
-}
-
-function cn(...args: any[]) { return args.filter(Boolean).join(' '); }
-
-function OrderCard({ order: b, index }: { order: UnifiedOrder; index: number }) {
-  const router = useRouter();
-  const [cancelPending, startCancelTransition] = useTransition();
-  const [reviewPending, startReviewTransition] = useTransition();
-
-  const [confirmCancel, setConfirmCancel] = useState(false);
-  const [showReview, setShowReview] = useState(false);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-
-  const status = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.pending;
-  const canCancel = b.type === 'booking' && ['pending', 'confirmed'].includes(b.status);
-  const canReview = ['completed', 'shipped'].includes(b.status) && !b.hasReview && !reviewSubmitted;
-
-  function handleCancel() {
-    startCancelTransition(async () => {
-      await cancelBooking(b.id);
-      setConfirmCancel(false);
-      router.refresh();
-    });
-  }
-
-  function handleSubmitReview() {
-    if (reviewRating === 0) return;
-    startReviewTransition(async () => {
-      await submitReview({
-        bookingId: b.type === 'booking' ? b.id : undefined,
-        orderId: b.type === 'shop' ? b.id : undefined,
-        masterId: b.masterId,
-        rating: reviewRating,
-        comment: reviewComment,
-      });
-      setReviewSubmitted(true);
-      setShowReview(false);
-      router.refresh();
-    });
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, type: 'spring' as const, stiffness: 300, damping: 24 }}
-      className="bento-card p-4 relative overflow-hidden"
-    >
-      {/* Type badge */}
-      <div className="absolute top-0 right-0 px-3 py-1 rounded-bl-xl bg-secondary text-[9px] font-bold uppercase text-muted-foreground/60 tracking-tighter">
-        {b.type === 'booking' ? 'Запис' : 'Магазин'}
-      </div>
-
-      <div className="flex items-start gap-3">
-        <div className="size-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 bg-accent/10 overflow-hidden relative">
-          {b.masterAvatarUrl ? (
-            <Image src={b.masterAvatarUrl} alt={b.masterName} fill className="object-cover" />
-          ) : (
-            b.masterEmoji
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 pr-12">
-            <p className="text-sm font-bold text-foreground truncate">{b.masterName}</p>
-          </div>
-
-          <div className="flex flex-col gap-1 mt-1.5">
-            <div className="flex items-center gap-1.5">
-              <CalendarDays size={12} className="text-muted-foreground/60" />
-              <span className="text-xs text-muted-foreground font-medium">{formatDate(b.date)}</span>
-              {b.type === 'booking' && (
-                <span className="text-xs text-muted-foreground">· {b.startTime} – {b.endTime}</span>
-              )}
-            </div>
-
-            {b.deliveryType === 'pickup' && b.pickupAt && (
-              <div className="flex items-center gap-1.5">
-                <Clock size={12} className="text-primary" />
-                <span className="text-xs text-primary font-bold">Самовивіз: {formatDate(b.pickupAt.split('T')[0])}</span>
-              </div>
-            )}
-
-            {(b.deliveryType === 'pickup' || b.type === 'booking') && b.masterAddress && (
-              <div className="flex items-start gap-1.5 mt-1 p-3 rounded-xl bg-secondary/40 border border-secondary">
-                <MapPin size={14} className="text-muted-foreground/60 mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-[11px] font-bold text-foreground leading-tight">Місце зустрічі</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{b.masterAddress}</p>
-                  <a
-                    href={b.masterLat && b.masterLng
-                      ? `https://www.google.com/maps/dir/?api=1&destination=${b.masterLat},${b.masterLng}`
-                      : `https://maps.google.com/?q=${encodeURIComponent(b.masterAddress)}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-primary hover:underline"
-                  >
-                    <Navigation size={10} /> Маршрут
-                  </a>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-2 flex items-center gap-2">
-              <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={{ color: status.color, background: status.bg }}
-              >
-                {status.label}
-              </span>
-            </div>
-          </div>
-
-          {/* Services/Products list */}
-          <div className="mt-3 flex flex-col gap-1.5 border-t border-secondary pt-3">
-            {b.services?.map((s, i) => (
-              <div key={i} className="flex justify-between items-center text-[11px]">
-                <span className="text-muted-foreground font-medium">{s.name}</span>
-                <span className="text-muted-foreground/60">{formatPrice(s.price)}</span>
-              </div>
-            ))}
-            {b.products?.map((p, i) => (
-              <div key={i} className="flex justify-between items-center text-[11px]">
-                <span className="text-muted-foreground font-medium">
-                  {p.name} <span className="text-[10px] opacity-60">×{p.qty}</span>
-                </span>
-                <span className="text-muted-foreground/60">{formatPrice(p.price * p.qty)}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-between mt-3 gap-2">
-            <span className="text-base font-bold text-foreground">{formatPrice(b.totalPrice)}</span>
-            {b.masterSlug && b.status === 'completed' && b.type === 'booking' && (() => {
-              const ids = b.services?.map(s => s.id).filter(Boolean).join(',');
-              const href = ids ? `/${b.masterSlug}?services=${ids}` : `/${b.masterSlug}`;
-              return (
-                <Link
-                  href={href}
-                  className="flex items-center gap-1 text-[11px] font-bold text-primary hover:text-primary/90 transition-colors"
-                >
-                  Записатися знову <ChevronRight size={12} />
-                </Link>
-              );
-            })()}
-          </div>
-
-          {/* Actions */}
-          <div className="mt-4 flex flex-col gap-2">
-            {canCancel && (
-              <div>
-                {!confirmCancel ? (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmCancel(true)}
-                    className="text-[11px] text-destructive hover:underline"
-                  >
-                    Скасувати запис
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 bg-destructive/8 rounded-xl px-3 py-2">
-                    <p className="text-[11px] text-destructive flex-1 font-medium">Скасувати цей запис?</p>
-                    <button
-                      type="button"
-                      onClick={handleCancel}
-                      disabled={cancelPending}
-                      className="px-3 py-1 bg-destructive text-white rounded-lg text-[10px] font-bold disabled:opacity-40 active:scale-[0.95] cursor-pointer transition-all"
-                    >
-                      {cancelPending ? '...' : 'Так'}
-                    </button>
-                    <button type="button" onClick={() => setConfirmCancel(false)} aria-label="Закрити" className="text-muted-foreground/60 p-1 active:scale-[0.95] cursor-pointer">
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(canReview || reviewSubmitted) && (
-              <div>
-                {reviewSubmitted ? (
-                  <div className="flex items-center gap-1.5 text-success bg-success/8 px-3 py-1.5 rounded-xl">
-                    <Check size={12} />
-                    <span className="text-[11px] font-bold">Дякуємо за відгук!</span>
-                  </div>
-                ) : !showReview ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowReview(true)}
-                    className="w-full py-2.5 rounded-lg bg-secondary text-foreground text-xs font-bold hover:bg-secondary/80 active:scale-[0.95] cursor-pointer transition-all flex items-center justify-center gap-2"
-                  >
-                    <Star size={14} className="text-warning" />
-                    Залишити відгук
-                  </button>
-                ) : (
-                  <AnimatePresence>
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="bg-secondary/50 rounded-xl p-4 overflow-hidden"
-                    >
-                      <div className="flex items-center gap-1.5 mb-3 justify-center">
-                        {[1, 2, 3, 4, 5].map(n => (
-                          <button
-                            type="button"
-                            key={n}
-                            aria-label={`${n} ${n === 1 ? 'зірка' : n < 5 ? 'зірки' : 'зірок'}`}
-                            aria-pressed={reviewRating === n}
-                            onClick={() => setReviewRating(n)}
-                            onMouseEnter={() => setHoverRating(n)}
-                            onMouseLeave={() => setHoverRating(0)}
-                            className="transition-transform active:scale-[0.95] cursor-pointer"
-                          >
-                            <Star
-                              size={28}
-                              className={
-                                n <= (hoverRating || reviewRating)
-                                  ? 'fill-accent text-accent'
-                                  : 'text-muted-foreground/30'
-                              }
-                            />
-                          </button>
+      <div className="flex-1 px-4 pt-4 pb-28">
+        <AnimatePresence mode="popLayout" initial={false}>
+          {tab === 'bookings' ? (
+            <motion.div
+              key="bookings"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={SPRING}
+              className="flex flex-col gap-4"
+            >
+              <section className="flex flex-col gap-3">
+                {heroCard ? (
+                  <>
+                    <HeroCard order={heroCard} />
+                    {extraUpcoming.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-1">
+                          Майбутні візити
+                        </p>
+                        {extraUpcoming.map((b, i) => (
+                          <CompactUpcomingRow key={b.id} order={b} index={i} />
                         ))}
                       </div>
-
-                      <textarea
-                        value={reviewComment}
-                        onChange={e => setReviewComment(e.target.value)}
-                        placeholder="Як вам сервіс? (необов'язково)..."
-                        rows={2}
-                        className="w-full px-4 py-3 rounded-md bg-secondary border border-border text-xs text-foreground placeholder-muted-foreground outline-none resize-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
-                      />
-
-                      <div className="flex items-center gap-3 mt-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowReview(false)}
-                          className="text-[11px] text-muted-foreground/60 font-bold active:scale-[0.95] cursor-pointer"
-                        >
-                          Скасувати
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleSubmitReview}
-                          disabled={reviewRating === 0 || reviewPending}
-                          className="ml-auto px-5 py-2 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold disabled:opacity-50 shadow-lg shadow-primary/20 active:scale-[0.95] cursor-pointer transition-all"
-                        >
-                          {reviewPending ? '...' : 'Надіслати'}
-                        </button>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
+                    )}
+                  </>
+                ) : (
+                  <UpcomingEmpty />
                 )}
-              </div>
-            )}
+              </section>
 
-            {b.hasReview && !reviewSubmitted && (
-              <p className="text-[10px] text-muted-foreground/60 font-medium italic">Ви вже залишили відгук про це замовлення</p>
-            )}
-          </div>
-        </div>
+              {masterGroups.length > 0 && (
+                <section className="flex flex-col gap-3">
+                  <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-1">
+                    Раніше
+                  </p>
+                  {masterGroups.map((g, i) => (
+                    <MasterGroup key={g.masterId} group={g} index={i} />
+                  ))}
+                </section>
+              )}
+
+              {bookingItems.length === 0 && (
+                <div className="flex flex-col items-center gap-4 py-16 text-center">
+                  <div className="size-16 rounded-3xl bg-secondary/60 flex items-center justify-center">
+                    <CalendarSearch size={28} className="text-muted-foreground/40" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-foreground">Тут поки порожньо</p>
+                    <p className="text-sm text-muted-foreground mt-1">Ваша історія візитів з'явиться тут</p>
+                  </div>
+                  <Link
+                    href="/explore"
+                    className="h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold inline-flex items-center active:scale-[0.97] transition-transform"
+                  >
+                    Знайти майстра
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="shop"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={SPRING}
+              className="flex flex-col gap-3"
+            >
+              {shopItems.length > 0 ? (
+                shopItems.map((o, i) => (
+                  <ShopOrderCard key={o.id} order={o} index={i} />
+                ))
+              ) : (
+                <div className="flex flex-col items-center gap-4 py-16 text-center">
+                  <div className="size-16 rounded-3xl bg-secondary/60 flex items-center justify-center">
+                    <ShoppingBag size={28} className="text-muted-foreground/40" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-foreground">Замовлень ще немає</p>
+                    <p className="text-sm text-muted-foreground mt-1">Ваша історія замовлень з'явиться тут</p>
+                  </div>
+                  <Link
+                    href="/explore"
+                    className="h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold inline-flex items-center active:scale-[0.97] transition-transform"
+                  >
+                    Знайти майстра
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </motion.div>
+    </div>
   );
 }
