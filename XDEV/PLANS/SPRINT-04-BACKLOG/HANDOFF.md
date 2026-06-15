@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (30 ітерацій)
 **Розпочато:** 2026-06-12
-**Прогрес:** 21/30 ✅ (T19+T20 /my/bookings premium redesign ✅ DONE)
-**Наступна задача:** **T18 — Оптимізація завантаження сторінки послуг**
+**Прогрес:** 22/30 ✅ (T21 /my/profile Identity Card redesign ✅ DONE)
+**Наступна задача:** **T22 — Стандартизація завантаження фото (всі сутності)**
 **Оновлено:** 2026-06-15
 
 ---
@@ -14,6 +14,32 @@
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
   - Якщо CLI не працює → Dashboard SQL Editor
 - Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+
+---
+
+## ✅ T21 — Профіль клієнта: Identity Card redesign + avatar upload + social fields
+**Commit:** `4e8d0c5`
+
+**Що зроблено:**
+1. `MyProfilePage.tsx` — повний rewrite з нуля (Identity Card concept):
+   - Hero zone: 96px round avatar + tap-to-upload (camera FAB) + heading-serif ім'я + email/memberSince chips
+   - Avatar upload: inline client-side через Supabase browser client, bucket `avatars`, path `{userId}.{ext}`, upsert=true; preview через `URL.createObjectURL`, `publicUrl` зберігається після успіху
+   - Section 2 "Соцмережі": `instagram_url` (Link2 icon) + `telegram_handle` (AtSign icon) inputs
+   - Section 3 "Здоров'я та безпека": collapsible (колапсована якщо обидва поля порожні), Warning badge
+   - Section 4 "Вигляд": Frost active (checkmark), Blossom+Studio → "Скоро" badge + disabled
+   - Section 5 "Сповіщення": TG bot connect/disconnect + PushSubscribeCard embed
+   - Section 6 "Акаунт": LegalFooterLinks + sign out button
+   - isDirty sticky save bar: `AnimatePresence` + `fixed bottom-[calc(env(safe-area-inset-bottom,0px)+4rem)]`
+   - `saved` state: green checkmark 1800ms після успіху → reset isDirty
+2. `actions.ts`: `updateClientProfile` розширено — `avatarUrl?, instagramUrl?, telegramHandle?`
+3. `page.tsx`: select додано `avatar_url, instagram_url, telegram_handle`; removed `lastMasterId`
+4. `20260615000001_profile_social_fields.sql`: ADD COLUMN instagram_url text + telegram_handle text on profiles — applied to Supabase Cloud
+
+**Key decisions:**
+- Avatar upload: client-side (не server action) — File не серіалізується через server boundary
+- `instagram_url`/`telegram_handle` відсутні в profiles — міграція потрібна (не лише master_profiles)
+- Bucket name: `avatars` (не `client-avatars`) — перевірено migration 025
+- TSC: 0 errors | Build: clean (всі роути ✅)
 
 ---
 

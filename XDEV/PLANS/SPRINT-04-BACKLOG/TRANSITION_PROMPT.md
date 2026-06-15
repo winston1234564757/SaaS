@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 21/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T18 — Оптимізація завантаження сторінки послуг
-Стан: T19+T20 ✅ DONE — MyBookingsPage повний redesign з нуля: B+D+C hybrid, hero zone, master groups, smart CTAs, ReviewSheet + CancelSheet (Sheet variant=bottom), "Записатись знову" router.push pre-fill. Commit: 9118000
+Прогрес: 22/30 ✅ Sprint-04 IN PROGRESS
+Наступна: T22 — Стандартизація завантаження фото (всі сутності)
+Стан: T21 ✅ DONE — MyProfilePage Identity Card redesign: avatar upload (Supabase avatars bucket, client-side), instagram_url+telegram_handle fields+migration, collapsible health section, isDirty sticky save bar. Commit: 4e8d0c5
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

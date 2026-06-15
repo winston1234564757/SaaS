@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 21/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 22/30 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
@@ -27,7 +27,7 @@
 | 18 | **T18** | **Оптимізація завантаження сторінки послуг** | **▶ NEXT** | `performance-profiler` + `senior-backend` | — | — |
 | 19 | T19 | /my/bookings: повний аудит + premium redesign | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer` | `9118000` | B+D+C hybrid: hero zone (72px avatar, isToday), master groups (visit count, expand), smart CTAs; Sheet variant=bottom; STATUS_CFG WCAG AA fixed |
 | 20 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ✅ | merged into T19 | `9118000` | ReviewSheet (5-star animated, textarea), CancelSheet confirm; "Записатись знову" router.push /[slug]?services=ids pre-fill |
-| 21 | T21 | Профіль клієнта: фото/IG/TG + impeccable аудит | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
+| 21 | T21 | Профіль клієнта: фото/IG/TG + impeccable аудит | ✅ | `design-taste-frontend` + `impeccable` | `4e8d0c5` | Identity Card hero (96px avatar upload), social fields (instagram_url+telegram_handle), collapsible health, isDirty sticky save bar; migration profile_social_fields applied |
 | 22 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | — | — |
 | 23 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | — | — |
 | 24 | T24 | Клієнтська зона: desktop layout (/my/* + /explore) | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
@@ -38,6 +38,8 @@
 | 29 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | — | — |
 | 30 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
 | 31 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | — | Три глобальних паттерни: adaptive contrast (mix-blend/hook), smart tooltip hook (viewport-aware flip+shift), fit-text component (ResizeObserver scale) |
+| 32 | T32 | Smart Slots: авто Flash Deal при скасуванні | ⬜ | `spec-driven-workflow` + `create-migration` + `senior-backend` | — | — |
+| 33 | T33 | Лендинг: повна консистентність тарифів | ⬜ | `humanizer` + `senior-frontend` | — | — |
 
 ---
 
