@@ -19,11 +19,11 @@ const PAGE_SIZE = 12;
 
 // ─── Auto-scroll hook ─────────────────────────────────────────────────────────
 
-function useAutoScroll() {
+function useAutoScroll(speed = 0.5) {
   const ref = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const tickRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const rafRef = useRef<number | undefined>(undefined);
 
   const pauseFor10s = useCallback(() => {
     isPausedRef.current = true;
@@ -38,29 +38,29 @@ function useAutoScroll() {
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    tickRef.current = setInterval(() => {
-      if (isPausedRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = el;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - 4;
-      if (atEnd) {
-        el.scrollLeft = 0;
-      } else {
-        const child = el.firstElementChild as HTMLElement | null;
-        const step = child ? child.offsetWidth + 8 : 96;
-        el.scrollBy({ left: step, behavior: 'smooth' });
+    const tick = () => {
+      if (!isPausedRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = el;
+        const max = scrollWidth - clientWidth;
+        if (max > 0) {
+          el.scrollLeft = scrollLeft >= max ? 0 : scrollLeft + speed;
+        }
       }
-    }, 1500);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
 
     el.addEventListener('touchstart', pauseFor10s, { passive: true });
     el.addEventListener('pointerdown', pauseFor10s);
 
     return () => {
-      clearInterval(tickRef.current);
+      if (rafRef.current !== undefined) cancelAnimationFrame(rafRef.current);
       clearTimeout(resumeTimerRef.current);
       el.removeEventListener('touchstart', pauseFor10s);
       el.removeEventListener('pointerdown', pauseFor10s);
     };
-  }, [pauseFor10s]);
+  }, [pauseFor10s, speed]);
 
   return ref;
 }
