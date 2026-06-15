@@ -101,59 +101,59 @@ function CategoryPills({
   totalCount: number;
 }) {
   return (
-    <div
-      className="grid grid-cols-3 gap-2"
-      role="group"
-      aria-label="Фільтр за категорією"
-    >
-      {/* "Всі" spans full row */}
-      <button
-        type="button"
-        aria-pressed={!activeCategory}
-        onClick={() => onSelect(null)}
-        className={`col-span-3 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold min-h-[44px] transition-all duration-150 active:scale-[0.95] ${
-          !activeCategory
-            ? 'bg-accent text-accent-foreground shadow-sm'
-            : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
-        }`}
-      >
-        <Sparkles size={11} />
-        Всі
-        <span className={`text-[10px] ${!activeCategory ? 'text-accent-foreground/70' : 'text-muted-foreground/50'}`}>
-          · {totalCount}
-        </span>
-      </button>
+    <div role="group" aria-label="Фільтр за категорією" className="flex flex-col gap-2">
+      {/* "Всі" — centered, 60% width */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          aria-pressed={!activeCategory}
+          onClick={() => onSelect(null)}
+          className={`w-[60%] flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold min-h-[44px] transition-all duration-150 active:scale-[0.95] ${
+            !activeCategory
+              ? 'bg-accent text-accent-foreground shadow-sm'
+              : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
+          }`}
+        >
+          <Sparkles size={11} />
+          Всі
+          <span className={`text-[10px] ${!activeCategory ? 'text-accent-foreground/70' : 'text-muted-foreground/50'}`}>
+            · {totalCount}
+          </span>
+        </button>
+      </div>
 
-      {/* 12 categories — exactly 4 rows of 3 */}
-      {serviceCategories.map(cat => {
-        const active = activeCategory === cat.id;
-        const Icon   = CAT_ICONS[cat.id] ?? MoreHorizontal;
-        const count  = categoryCounts[cat.id] ?? 0;
+      {/* 12 categories — 4 rows of 3 */}
+      <div className="grid grid-cols-3 gap-2">
+        {serviceCategories.map(cat => {
+          const active = activeCategory === cat.id;
+          const Icon   = CAT_ICONS[cat.id] ?? MoreHorizontal;
+          const count  = categoryCounts[cat.id] ?? 0;
 
-        return (
-          <button
-            key={cat.id}
-            type="button"
-            aria-pressed={active}
-            onClick={() => onSelect(active ? null : cat.id)}
-            className={`flex items-center justify-center gap-1 px-2 py-2.5 rounded-full text-[10px] font-semibold min-h-[44px] w-full transition-all duration-150 active:scale-[0.95] ${
-              cat.id === 'barber' ? '[&_svg]:rotate-90' : ''
-            } ${
-              active
-                ? 'bg-accent text-accent-foreground shadow-sm'
-                : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
-            }`}
-          >
-            <Icon size={11} className="flex-shrink-0" />
-            <span className="truncate">{cat.label}</span>
-            {count > 0 && (
-              <span className={`text-[9px] flex-shrink-0 ${active ? 'text-accent-foreground/70' : 'text-muted-foreground/50'}`}>
-                ·{count}
-              </span>
-            )}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onSelect(active ? null : cat.id)}
+              className={`flex items-center justify-center gap-1 px-2 py-2.5 rounded-full text-[10px] font-semibold min-h-[44px] w-full transition-all duration-150 active:scale-[0.95] ${
+                cat.id === 'barber' ? '[&_svg]:rotate-90' : ''
+              } ${
+                active
+                  ? 'bg-accent text-accent-foreground shadow-sm'
+                  : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
+              }`}
+            >
+              <Icon size={11} className="flex-shrink-0" />
+              <span className="truncate">{cat.label}</span>
+              {count > 0 && (
+                <span className={`text-[9px] flex-shrink-0 ${active ? 'text-accent-foreground/70' : 'text-muted-foreground/50'}`}>
+                  ·{count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -164,10 +164,12 @@ function SortDropdown({
   sort,
   onChange,
   hasPreferred,
+  fullWidth,
 }: {
   sort: SortMode;
   onChange: (s: SortMode) => void;
   hasPreferred: boolean;
+  fullWidth?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -181,13 +183,13 @@ function SortDropdown({
   const current = options.find(o => o.value === sort) ?? options[0]!;
 
   return (
-    <div className="relative">
+    <div className={`relative${fullWidth ? ' w-full' : ''}`}>
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30 transition-all duration-150"
+        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30 transition-all duration-150${fullWidth ? ' w-full justify-between' : ''}`}
       >
         {current.label}
         <ChevronDown size={11} className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
@@ -238,22 +240,24 @@ const PRICE_OPTIONS: { value: number | null; label: string }[] = [
 function PriceDropdown({
   priceMax,
   onChange,
+  fullWidth,
 }: {
   priceMax: number | null;
   onChange: (v: number | null) => void;
+  fullWidth?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const current = PRICE_OPTIONS.find(o => o.value === priceMax) ?? PRICE_OPTIONS[0]!;
   const isActive = priceMax !== null;
 
   return (
-    <div className="relative">
+    <div className={`relative${fullWidth ? ' w-full' : ''}`}>
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150 ${
+        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap transition-all duration-150${fullWidth ? ' w-full justify-between' : ''} ${
           isActive
             ? 'bg-accent text-accent-foreground shadow-sm'
             : 'bg-white/60 border border-border/50 text-foreground/70 hover:border-accent/30'
@@ -591,7 +595,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
     <div className="min-h-screen bg-transparent">
       <div
         className="max-w-2xl mx-auto px-4 pb-24"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 2rem)' }}
       >
 
         {/* ── Hero ── */}
@@ -662,74 +666,70 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...SPRING, delay: 0.09 }}
-          className="flex items-center gap-2 mb-6 flex-wrap"
+          className="flex flex-col gap-2 mb-6"
         >
-          {/* Nearby */}
-          <button
-            type="button"
-            onClick={toggleNearby}
-            aria-pressed={nearbyActive}
-            disabled={geoLoading}
-            className={`${toggleClass(nearbyActive)} disabled:opacity-60`}
-          >
-            {geoLoading ? (
-              <span className="size-3 rounded-full border-2 border-current border-t-transparent animate-spin" aria-hidden="true" />
-            ) : (
-              <Navigation size={12} />
-            )}
-            Поруч
-          </button>
+          {/* Row 1: toggle pills — scrollable */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            <button
+              type="button"
+              onClick={toggleNearby}
+              aria-pressed={nearbyActive}
+              disabled={geoLoading}
+              className={`${toggleClass(nearbyActive)} disabled:opacity-60 flex-shrink-0`}
+            >
+              {geoLoading ? (
+                <span className="size-3 rounded-full border-2 border-current border-t-transparent animate-spin" aria-hidden="true" />
+              ) : (
+                <Navigation size={12} />
+              )}
+              Поруч
+            </button>
 
-          {/* Slot today */}
-          <button
-            type="button"
-            onClick={() => setSlotToday(v => !v)}
-            aria-pressed={slotToday}
-            className={toggleClass(slotToday)}
-          >
-            <Clock size={12} />
-            Сьогодні
-          </button>
+            <button
+              type="button"
+              onClick={() => setSlotToday(v => !v)}
+              aria-pressed={slotToday}
+              className={`${toggleClass(slotToday)} flex-shrink-0`}
+            >
+              <Clock size={12} />
+              Сьогодні
+            </button>
 
-          {/* Slot tomorrow */}
-          <button
-            type="button"
-            onClick={() => setSlotTomorrow(v => !v)}
-            aria-pressed={slotTomorrow}
-            className={toggleClass(slotTomorrow)}
-          >
-            <Calendar size={12} />
-            Завтра
-          </button>
+            <button
+              type="button"
+              onClick={() => setSlotTomorrow(v => !v)}
+              aria-pressed={slotTomorrow}
+              className={`${toggleClass(slotTomorrow)} flex-shrink-0`}
+            >
+              <Calendar size={12} />
+              Завтра
+            </button>
 
-          {/* PRO only */}
-          <button
-            type="button"
-            onClick={() => setProOnly(v => !v)}
-            aria-pressed={proOnly}
-            className={toggleClass(proOnly)}
-          >
-            <BadgeCheck size={12} />
-            PRO
-          </button>
+            <button
+              type="button"
+              onClick={() => setProOnly(v => !v)}
+              aria-pressed={proOnly}
+              className={`${toggleClass(proOnly)} flex-shrink-0`}
+            >
+              <BadgeCheck size={12} />
+              PRO
+            </button>
 
-          {/* With reviews */}
-          <button
-            type="button"
-            onClick={() => setWithReviews(v => !v)}
-            aria-pressed={withReviews}
-            className={toggleClass(withReviews)}
-          >
-            <Star size={12} />
-            З відгуками
-          </button>
+            <button
+              type="button"
+              onClick={() => setWithReviews(v => !v)}
+              aria-pressed={withReviews}
+              className={`${toggleClass(withReviews)} flex-shrink-0`}
+            >
+              <Star size={12} />
+              З відгуками
+            </button>
+          </div>
 
-          {/* Price */}
-          <PriceDropdown priceMax={priceMax} onChange={setPriceMax} />
-
-          {/* Sort */}
-          <div className="ml-auto">
-            <SortDropdown sort={sort} onChange={setSort} hasPreferred={preferredCategories.length > 0} />
+          {/* Row 2: price + sort — equal width side by side */}
+          <div className="flex gap-2">
+            <PriceDropdown priceMax={priceMax} onChange={setPriceMax} fullWidth />
+            <SortDropdown sort={sort} onChange={setSort} hasPreferred={preferredCategories.length > 0} fullWidth />
           </div>
         </motion.div>
 
