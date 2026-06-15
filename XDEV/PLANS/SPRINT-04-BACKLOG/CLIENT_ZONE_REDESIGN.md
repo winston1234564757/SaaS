@@ -316,7 +316,7 @@ npm run build             # clean build — не deploy без цього
 
 | Deploy # | Task ID | Сторінка | Статус |
 |----------|---------|----------|--------|
-| 14 | T-explore | `/explore` — з нуля | ✅ |
+| 14 | T-explore | `/explore` — з нуля | 🔄 Phase 3/5 |
 | 15 | T19 + T20 | `/my/bookings` — з нуля + логіка | ⬜ |
 | 16 | T21 | `/my/profile` — з нуля + avatar/socials | ⬜ |
 | 17 | T-masters | `/my/masters` — з нуля | ⬜ |

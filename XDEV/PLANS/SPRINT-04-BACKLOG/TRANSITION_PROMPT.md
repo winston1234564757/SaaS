@@ -16,8 +16,8 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 17/30 ✅ Sprint-04 IN PROGRESS
-Наступна: T18 — Оптимізація завантаження сторінки послуг
-Щойно завершено: T-explore (Deploy-14 ✅ DONE) — /explore повний редизайн + polish rounds: Great Vibes, search, grid pills, safe-area, 4 filters, dropdowns 2-row (commits eae2f99 c2c3c12 0bd45a4 28a5a40)
+Наступна: T16 — /explore PHASE 3 (critique → layout → bolder) → PHASE 4 (animate) → PHASE 5 (audit → ship)
+Стан: Deploy-14 🔄 Phase 2/5 done — PHASE 0 (brainstorm) + PHASE 1 (shape) + PHASE 2 (generate+polish) ✅. Лишається: critique, layout, bolder, animate, audit, polish, harden, humanizer final pass.
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
