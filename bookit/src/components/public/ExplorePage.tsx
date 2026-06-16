@@ -492,13 +492,8 @@ function MasterCard({
   isRecommended: boolean;
 }) {
   const [mainPhotoError, setMainPhotoError] = useState(false);
-  const [stripErrors, setStripErrors] = useState<Set<number>>(new Set());
 
   const mainPhoto = !mainPhotoError ? (master.avatarUrl ?? master.portfolioPhotos[0] ?? null) : null;
-  const strip = (master.avatarUrl
-    ? master.portfolioPhotos.slice(0, 3)
-    : master.portfolioPhotos.slice(1, 4)
-  ).filter(url => url.trim());
 
   return (
     <motion.div
@@ -512,8 +507,8 @@ function MasterCard({
       <Link href={`/${master.slug}`} className="block group h-full">
         <div className="bento-card rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md active:scale-[0.97]">
 
-          {/* ── Photo Frame — fixed h-[192px], flex-col inside ── */}
-          <div className="m-3 rounded-2xl bg-accent/5 overflow-hidden relative flex flex-col h-[192px] flex-shrink-0">
+          {/* ── Photo Frame — fixed h-[134px], flex-col inside ── */}
+          <div className="m-3 rounded-2xl bg-accent/5 overflow-hidden relative flex flex-col h-[134px] flex-shrink-0">
 
             {/* Badges — absolute overlay */}
             <div className="absolute top-2 left-2 right-2 flex items-start justify-between z-10 pointer-events-none">
@@ -548,43 +543,38 @@ function MasterCard({
               </div>
             </div>
 
-            {/* Bottom: availability + portfolio strip — always at bottom of frame */}
-            <div className="flex flex-col gap-1 pb-2">
-              {(master.availableToday || master.availableTomorrow) && (
-                <div className="flex justify-center">
-                  <span className={`flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-full leading-none ${
-                    master.availableToday
-                      ? 'bg-emerald-500/15 text-emerald-700'
-                      : 'bg-amber-500/15 text-amber-800'
-                  }`}>
-                    {master.availableToday
-                      ? <><Clock size={7} aria-hidden="true" /> Є місця сьогодні</>
-                      : <><Calendar size={7} aria-hidden="true" /> Є місця на завтра</>
-                    }
-                  </span>
-                </div>
-              )}
-              {strip.length > 0 && (
-                <div className="flex gap-1.5 px-2">
-                  {strip.slice(0, 3).map((url, i) => (
-                    <div key={i} className="relative flex-1 h-12 rounded-lg overflow-hidden bg-muted/20">
-                      {!stripErrors.has(i) && (
-                        <Image
-                          src={url}
-                          alt=""
-                          fill
-                          className="object-cover"
-                          sizes="25vw"
-                          aria-hidden="true"
-                          onError={() => setStripErrors(prev => new Set(prev).add(i))}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
+
+          {/* ── Tags Strip ── */}
+          {(master.isPro || isRecommended || master.availableToday || master.availableTomorrow) && (
+            <div className="px-3.5 pt-2.5 pb-0">
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                {master.isPro && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-indigo-700 px-2 py-1 rounded-full leading-none flex-shrink-0">
+                    PRO
+                  </span>
+                )}
+                {isRecommended && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent bg-accent/10 px-2 py-1 rounded-full leading-none flex-shrink-0">
+                    <BadgeCheck size={10} aria-hidden="true" />
+                    Рекомендований
+                  </span>
+                )}
+                {master.availableToday && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-500/15 px-2 py-1 rounded-full leading-none flex-shrink-0">
+                    <Clock size={10} aria-hidden="true" />
+                    Є слот сьогодні
+                  </span>
+                )}
+                {!master.availableToday && master.availableTomorrow && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800 bg-amber-500/15 px-2 py-1 rounded-full leading-none flex-shrink-0">
+                    <Calendar size={10} aria-hidden="true" />
+                    Є слот завтра
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ── Content — flex-1, CTA pinned to bottom ── */}
           <div className="px-3.5 pb-4 flex flex-col flex-1">
