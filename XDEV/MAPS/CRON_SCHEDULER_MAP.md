@@ -24,6 +24,14 @@
 
 ---
 
+## ⚡ Event-Triggered Background Actions (не cron, але фонова логіка)
+
+| Тригер | Де | Дія | Умова |
+|--------|-----|-----|-------|
+| `cancelBooking()` → Auto Flash Deal | `bookings/actions.ts` | Якщо `master_profiles.auto_flash_on_cancel = true` → `createFlashDealInternal(slot, discount_pct)` async (не блокує відповідь) | T32, 2026-06-15 |
+
+---
+
 ## 📊 Notification Cascade у Нагадуваннях (`/reminders`)
 
 Нагадування надсилаються суворо за каскадним принципом для оптимізації витрат на SMS:

@@ -23,6 +23,8 @@
 | `payments` | ✅ Active | Немає доступу | Немає доступу | SELECT (свої платежі за підписку) |
 | `master_subscriptions` | ✅ Active | Немає доступу | Немає доступу | SELECT (своя підписка) |
 | `master_alliances` | ✅ Active | Немає доступу | Немає доступу | SELECT (своя участь в альянсі B2B) |
+| `conversations` | ✅ Active | Немає доступу | SELECT/INSERT (розмови де є учасником) | SELECT/INSERT (розмови зі своїми клієнтами) |
+| `direct_messages` | ✅ Active | Немає доступу | SELECT/INSERT/UPDATE `read_at` (свої повідомлення) | SELECT/INSERT/UPDATE `read_at` (свої) |
 
 ---
 
@@ -67,7 +69,17 @@
     }
     ```
 
-### 3. SMS OTP Auth Flow (Автентифікація)
+### 3. Direct Chat (T-chat, 2026-06-15)
+*   **Нові таблиці**: `conversations` (migration 20260615000002), `direct_messages`.
+*   **Realtime**: `useDMChat` підписується на `INSERT` + `UPDATE` в `direct_messages` для конкретного `conversation_id`.
+*   **Bucket**: `support_attachments` для image attachments у DM (шлях: `dm/{conversationId}/{ts}.ext`).
+*   **Захист**: RLS на обох таблицях — учасники бачать тільки свої розмови через `auth.uid()`.
+
+### 4. T32 Auto Flash Deal on Cancellation (2026-06-15)
+*   **Тригер**: `cancelBooking()` → паралельний fetch `auto_flash_on_cancel` + `auto_flash_discount_pct` → якщо ввімкнено → `createFlashDealInternal()` через `createAdminClient()`.
+*   **Нові поля на `master_profiles`**: `auto_flash_on_cancel BOOLEAN DEFAULT false`, `auto_flash_discount_pct INT DEFAULT 15` (migration 141).
+
+### 5. SMS OTP Auth Flow (Автентифікація)
 *   **Захист від флуду (Rate Limiting)**:
     *   **По номеру телефону**: максимум 3 SMS за 15 хвилин.
     *   **По IP-адресі**: максимум 10 SMS за 1 годину.

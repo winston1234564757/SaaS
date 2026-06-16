@@ -9,11 +9,13 @@
 
 ```
 /my/*                              — Client portal (auth required)
-  /my/bookings                     — Unified orders (bookings + shop)
+  /my/bookings                     — Unified orders (bookings + shop) [redesigned T17, vaul Sheets]
+  /my/messages                     — Direct messages list (client-master chat) [T-chat, 2026-06-15]
+  /my/messages/[id]                — Direct chat with specific master (Realtime, read receipts, image attachments)
   /my/masters                      — My masters list
   /my/loyalty                      — Loyalty + C2C/C2B referrals
   /my/notifications                — Notification feed + portfolio consent
-  /my/profile                      — Profile editor
+  /my/profile                      — Profile editor [T21: avatar upload, social fields, identity card]
   /my/setup/phone                  — Phone setup (post-OAuth)
 
 Public pages (client-facing):
@@ -49,11 +51,22 @@ Auth:
 - **Output**: Normalized `UnifiedOrder[]` → `<MyBookingsPage>`
 - **Actions**: `cancelBooking(bookingId)`, `submitReview({bookingId?, orderId?, masterId, rating, comment})`
 
+### `src/app/my/messages/page.tsx` (T-chat, 2026-06-15)
+- **Query**: `getConversations(userId)` → list of conversations з `last_message`, `unread_count`
+- **Output**: `<MessagesListPage>`
+- **Entry points**: MasterGroup header + MasterCard у `/my/bookings` та `/my/masters`
+
+### `src/app/my/messages/[id]/page.tsx` (T-chat, 2026-06-15)
+- **Query**: `getOrCreateConversation(masterId)` → conversation + messages history
+- **Realtime**: `useDMChat(conversationId)` — Supabase Realtime INSERT+UPDATE on `direct_messages`
+- **Actions**: `sendDirectMessage(conversationId, text, imageUrl?)`, `markConversationRead(conversationId)`
+- **Output**: `<DirectChatPage>` (iOS keyboard push-up via visualViewport resize, check/checkcheck read receipts)
+
 ### `src/app/my/profile/page.tsx`
-- **Query**: `profiles` → `full_name, phone, email, telegram_chat_id, medical_notes, health_notes`
+- **Query**: `profiles` → `full_name, phone, email, telegram_chat_id, medical_notes, health_notes, avatar_url, social_links`
 - **Query**: last booking's `master_id` from `bookings`
-- **Output**: `<MyProfilePage>`
-- **Actions**: `updateClientProfile(name, phone, medicalNotes?, healthNotes?)`, `disconnectClientTelegram()`
+- **Output**: `<MyProfilePage>` [T21: Identity Card redesign, avatar upload → `avatars` bucket, social fields]
+- **Actions**: `updateClientProfile(name, phone, medicalNotes?, healthNotes?)`, `disconnectClientTelegram()`, `updateAvatar(file)`
 
 ### `src/app/my/notifications/page.tsx`
 - **Query**: `notifications` (50 most recent) via admin client

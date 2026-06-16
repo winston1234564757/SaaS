@@ -1,6 +1,6 @@
 # NOTIFICATION_MAP — Система сповіщень BookIT
 
-> Оновлено: 2026-05-27 · Статус: NotificationOrchestrator v7.0 (Фази 1–4 завершено)
+> Оновлено: 2026-06-16 · Статус: NotificationOrchestrator v7.0 + Direct Messaging (T-chat)
 
 Цей документ визначає повну архітектуру сповіщень: канали, каскад, реєстр подій, механіки підключення та логіку Orchestrator.
 
@@ -14,6 +14,7 @@
 | **Push** | `src/lib/push.ts` → `sendPush`, `broadcastPush` | `push_subscriptions` | Безкоштовний, основний |
 | **Telegram** | `src/lib/telegram.ts` → `sendTelegramMessage` | `profiles.telegram_chat_id` (клієнт) / `master_profiles.telegram_chat_id` (майстер) | Безкоштовний |
 | **SMS** | `src/lib/turbosms.ts` | `profiles.phone` (E.164) | **Платний** — тільки critical |
+| **Direct Message** | `useDMChat` → Supabase Realtime INSERT+UPDATE | `conversations` + `direct_messages` таблиці | Безкоштовний, P2P (поза Orchestrator) |
 
 ---
 

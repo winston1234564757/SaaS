@@ -68,20 +68,21 @@ def get_graphify_summary() -> str:
 
 
 def get_current_task() -> str:
-    """Extract ▶ NEXT task section from HANDOFF.md."""
+    """Extract current task section from HANDOFF.md."""
     try:
         if not HANDOFF_FILE.exists():
             return ""
         content = HANDOFF_FILE.read_text(encoding="utf-8")
-        # Find ▶ NEXT marker
-        idx = content.find("▶ NEXT")
-        if idx == -1:
-            idx = content.find("**▶")
-        if idx == -1:
-            return ""
-        snippet = content[idx: idx + 700]
-        lines = snippet.split("\n")[:14]
-        return "=== CURRENT TASK (from HANDOFF.md) ===\n" + "\n".join(lines) + "\n"
+        # Try multiple markers in priority order
+        for marker in ("▶ NEXT", "**▶", "Наступна задача:", "## ▶", "NEXT TASK"):
+            idx = content.find(marker)
+            if idx != -1:
+                snippet = content[idx: idx + 700]
+                lines = snippet.split("\n")[:14]
+                return "=== CURRENT TASK (from HANDOFF.md) ===\n" + "\n".join(lines) + "\n"
+        # Fallback: first 10 lines of file
+        lines = content.split("\n")[:10]
+        return "=== HANDOFF (top) ===\n" + "\n".join(lines) + "\n"
     except Exception:
         return ""
 
@@ -101,12 +102,104 @@ def get_tracker_progress() -> str:
         return ""
 
 
+MAPS_DIR = Path("C:/Users/Vitossik/SaaS/XDEV/MAPS")
+
+MAP_KEYWORD_ROUTES: dict[str, str] = {
+    "billing": "BILLING_FLOW_MAP.md",
+    "payment": "BILLING_FLOW_MAP.md",
+    "subscription": "BILLING_FLOW_MAP.md",
+    "mono": "BILLING_FLOW_MAP.md",
+    "chat": "CLIENT_ZONE_MAP.md",
+    "message": "CLIENT_ZONE_MAP.md",
+    "my/": "CLIENT_ZONE_MAP.md",
+    "client zone": "CLIENT_ZONE_MAP.md",
+    "profile": "CLIENT_ZONE_MAP.md",
+    "notification": "NOTIFICATION_MAP.md",
+    "push": "NOTIFICATION_MAP.md",
+    "telegram": "NOTIFICATION_MAP.md",
+    "orchestrator": "NOTIFICATION_MAP.md",
+    "cron": "CRON_SCHEDULER_MAP.md",
+    "background": "CRON_SCHEDULER_MAP.md",
+    "flash deal": "CRON_SCHEDULER_MAP.md",
+    "flash": "CRON_SCHEDULER_MAP.md",
+    "rls": "DATABASE_SECURITY_RLS_MAP.md",
+    "security": "DATABASE_SECURITY_RLS_MAP.md",
+    "migration": "DATABASE_SECURITY_RLS_MAP.md",
+    "supabase": "DATABASE_SECURITY_RLS_MAP.md",
+    "booking": "MODALS_MAP.md",
+    "modal": "MODALS_MAP.md",
+    "drawer": "MODALS_MAP.md",
+    "sheet": "MODALS_MAP.md",
+    "onboarding": "ONBOARDING_FLOW_MAP.md",
+    "wizard": "ONBOARDING_FLOW_MAP.md",
+    "referral": "REFERRAL_MAP.md",
+    "c2c": "REFERRAL_MAP.md",
+    "b2b": "REFERRAL_MAP.md",
+    "shop": "SHOP_ORDER_FLOW_MAP.md",
+    "order": "SHOP_ORDER_FLOW_MAP.md",
+    "design": "DESIGN_SYSTEM_TOKENS_MAP.md",
+    "token": "DESIGN_SYSTEM_TOKENS_MAP.md",
+    "theme": "DESIGN_SYSTEM_TOKENS_MAP.md",
+    "frost": "DESIGN_SYSTEM_TOKENS_MAP.md",
+    "test": "TESTING_MAP.md",
+    "e2e": "TESTING_MAP.md",
+    "playwright": "TESTING_MAP.md",
+    "deep link": "DEEP_LINK_MAP.md",
+    "url": "DEEP_LINK_MAP.md",
+    "slug": "DEEP_LINK_MAP.md",
+    "explore": "CLIENT_ZONE_MAP.md",
+    "landing": "CLIENT_ZONE_MAP.md",
+    "release": "PAGE_RELEASE_ROADMAP.md",
+    "launch": "PAGE_RELEASE_ROADMAP.md",
+}
+
+
+def get_relevant_maps(task_text: str) -> str:
+    """Match current task + HANDOFF keywords to relevant MAP files."""
+    try:
+        if not MAPS_DIR.exists():
+            return ""
+        # Extract only the "Наступна задача:" line for keyword matching
+        raw = ""
+        if HANDOFF_FILE.exists():
+            try:
+                handoff = HANDOFF_FILE.read_text(encoding="utf-8", errors="replace")
+                for line in handoff.split("\n")[:15]:
+                    if "наступна задача" in line.lower() or "next task" in line.lower():
+                        raw = line
+                        break
+            except Exception:
+                pass
+        if not raw and task_text:
+            # Fallback: first line of task_text that looks like a task name
+            for line in task_text.split("\n"):
+                if "T-" in line or "task" in line.lower() or "задач" in line.lower():
+                    raw = line[:200]
+                    break
+        t = raw.lower()
+        seen: set[str] = set()
+        matched: list[str] = []
+        for kw, fname in MAP_KEYWORD_ROUTES.items():
+            if kw in t and fname not in seen:
+                seen.add(fname)
+                matched.append(fname)
+            if len(matched) >= 3:
+                break
+        if not matched:
+            return ""
+        names = " | ".join(matched)
+        return f"RELEVANT MAPS for this task: {names}\n"
+    except Exception:
+        return ""
+
+
 STARTUP_PROTOCOL = """\
 === MANDATORY SESSION STARTUP — execute before anything else ===
 
 STEP 1: Call mcp__mempalace__mempalace_status (tool call, not just mention)
 STEP 2: Read XDEV/MAPS/SYSTEM_MAP.md (last 50 lines, offset mode)
-STEP 3: Write in your first response: "STARTUP OK: Palace [N drawers] | SYSTEM_MAP current | Ready"
+STEP 3: If RELEVANT MAPS shown above — read the first 30 lines of each
+STEP 4: Write in your first response: "STARTUP OK: Palace [N drawers] | SYSTEM_MAP current | Ready"
 
 CRITICAL: No file reads for tasks, no code, no answers until STARTUP OK is confirmed.
 This is IRON RULE -1. It cannot be skipped, deferred, or abbreviated.
@@ -119,12 +212,15 @@ def main() -> int:
     graphify_ctx   = get_graphify_summary()
     current_task   = get_current_task()
     tracker_prog   = get_tracker_progress()
+    relevant_maps  = get_relevant_maps(current_task)
 
     parts = []
     if graphify_ctx:
         parts.append(graphify_ctx)
     if tracker_prog:
         parts.append(tracker_prog)
+    if relevant_maps:
+        parts.append(relevant_maps)
     if current_task:
         parts.append(current_task)
     parts.append(STARTUP_PROTOCOL)
