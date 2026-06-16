@@ -11,10 +11,17 @@
 
 | Що | Хук | Опис |
 |---|---|---|
-| **DEV RULES & TASK.md** | `UserPromptSubmit` | Claude завжди тримає в голові обов'язковість скілів з [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md), плагіни та бачить прев'ю поточних задач спринту з `XDEV/TASK.md`. |
-| **Graphify Auto-Rebuild** | `PreToolUse` (Glob/Grep) | Автоматично оновлює та підказує [GOD_NODES.md](file:///C:/Users/Vitossik/SaaS/bookit/graphify-out/GOD_NODES.md) для швидкої навігації без читання зайвих файлів. |
-| **Encoding Guard** | `PreToolUse` (Edit/Write) | Блокує будь-який запис, якщо виявлено cp1251 mojibake (захист від пошкодження кирилиці). |
-| **MemPalace Checkpoint** | `PostToolUse` (Edit/Write) | Нагадує Claude зберегти нетривіальні рішення в довгострокову пам'ять (`mempalace_add_drawer`). |
+| **DEV RULES + TASK.md** | `UserPromptSubmit` `dev_rules_hook.py` | Iron Rules, QA-GATE з task-type routing (bug/feature/DB → різні скіли), TASK.md задачі |
+| **Skill Router (257 скілів)** | `UserPromptSubmit` `skill_router_hook.py` | Автоматично обирає категорію та топ-скіл з 257 по ключових словах промпту і шляху файлу |
+| **Context7 / MCP Hints** | `UserPromptSubmit` `context7_hint_hook.py` | Детектує бібліотечні ключові слова → підказує context7, supabase MCP, vercel CLI, gh CLI |
+| **Session Start** | `SessionStart` `session_start_hook.py` | Graphify hot-files + TRACKER прогрес + поточна задача з HANDOFF + startup protocol |
+| **Graphify Auto-Rebuild** | `PreToolUse` (Glob/Grep) `graphify_hook.py` | Оновлює граф залежностей і підказує GOD_NODES.md |
+| **Encoding Guard** | `PreToolUse` (Edit/Write) `env_guard_hook.py` | Блокує запис якщо виявлено cp1251 mojibake |
+| **Humanizer Guard** | `PreToolUse` (Edit/Write) `humanizer_guard_hook.py` | Попереджає якщо UI-текст не пройшов /humanizer |
+| **Edit Counter** | `PreToolUse` (Edit/Write) `edit_counter_guard.py` | Рахує зміни сесії для session-end звіту |
+| **MemPalace Checkpoint** | `PostToolUse` (Edit/Write) `post_edit_hook.py` | Нагадує зберегти рішення в `mempalace_add_drawer` |
+| **Session End (diary)** | `Stop` `self_improving_hook.py` | ЗАВЖДИ diary_write; якщо edits≥1 → add_drawer + sprint pipeline + git+vercel check |
+| **Skill Guard** | `Stop` `skill_guard_hook.py` | Перевіряє чи скіл оголошений текстом — також викликаний як tool call |
 
 ---
 
@@ -82,4 +89,4 @@ npx supabase db push           # Застосувати міграції до Su
 - **Claude "забув" архітектуру попередніх сесій:** Скажи йому: *"знайди в palace [тема]"*. У довгостроковій пам'яті MemPalace накопичено понад 11,000+ drawers.
 
 ---
-*Останнє оновлення: 2026-05-24 · Версія: 8.2.0 · BookIT v8.2*
+*Останнє оновлення: 2026-06-16 · Версія: 10.0.0 · v10 hooks (13 Python scripts, 257 skills routing)*

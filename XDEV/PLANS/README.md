@@ -8,16 +8,17 @@
 
 | ID | Назва | Статус | Папка |
 |---|---|---|---|
-| SPRINT-02-2026-06-08 | Backlog Sprint 02 (16 задач + 9 desktop layouts) | 🟡 IN PROGRESS | [SPRINT-02-BACKLOG/](./SPRINT-02-BACKLOG/) |
+| SPRINT-04-2026-06-12 | Sprint-04 (37 задач, 19/37 ✅ активний) | 🟡 IN PROGRESS | [SPRINT-04-BACKLOG/](./SPRINT-04-BACKLOG/) |
 
 ## Завершені плани (архів)
 
 | ID | Назва | Статус |
 |---|---|---|
+| SPRINT-02-2026-06-08 | Sprint-02 (16 задач + 9 desktop layouts) | ✅ COMPLETE |
+| SPRINT-03-2026-06-09 | Sprint-03 (18/18 tasks) | ✅ COMPLETE |
 | IRP-2026-06-07 | Impeccable Remediation Plan (8 phases A-H) | ✅ COMPLETE |
 | MTRP-2026-06-02 | Master Technical Remediation Plan | ✅ COMPLETE |
 | FROST-POLISH-2026-05-19 | Theme Polish Sprint | ✅ COMPLETE |
-| Backlog-2026-06-09 | Partners + C2B/C2C | ✅ COMPLETE |
 
 ---
 
