@@ -11,7 +11,8 @@
 ```
 КРОК 1 → Виклик mempalace_status (перший tool call, без винятків)
 КРОК 2 → Read XDEV/MAPS/SYSTEM_MAP.md (offset: останні 50 рядків)
-КРОК 3 → Відповідь: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
+КРОК 3 → Якщо hook показав "RELEVANT MAPS" — прочитай перші 30 рядків кожного
+КРОК 4 → Відповідь: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 ```
 
 Без підтвердження STARTUP OK — жодного читання файлів і жодного коду.
