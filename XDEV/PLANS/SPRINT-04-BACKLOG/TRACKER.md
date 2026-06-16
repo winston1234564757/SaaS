@@ -1,62 +1,91 @@
-﻿# Sprint-04 TRACKER
+# Sprint-04 TRACKER
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 27/34 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-15
+**Прогрес:** 18/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-16
+
+> ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
+
+---
+
+## ✅ Фаза 1–2 — Швидкі фікси + UX (T01–T15)
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
 | 1 | T01 | Frost тема: всі клієнти → міграція | ✅ | `code-reviewer` | `490a108` | rawTheme fallback '' → 'frost'; DB migration 20260609000001 |
-| 2 | T02 | In-app сповіщення: unread кольорові + z-index | ✅ | `code-reviewer` | `b7c1d25` `f88b444` `185d78a` `2746e21` | text-accent unread bell; badge z-10; markAllRead on close; optimistic setQueryData; X button explicit markAllRead call |
-| 3 | T03 | Портфоліо → Сторіс: редірект замість drawer | ✅ | `code-reviewer` | `55ce2f9` | drawer removed; redirect to /dashboard/marketing?tab=stories&portfolioId |
-| 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle уніфікація | ✅ | `senior-frontend` | `df27107` `3c26ff6` | inline btn + TabBtn outlined + уніфікація всіх 5 pill-тоглів: role=switch/bg-accent/44px |
+| 2 | T02 | In-app сповіщення: unread кольорові + z-index | ✅ | `code-reviewer` | `b7c1d25` `2746e21` | text-accent unread bell; badge z-10; optimistic setQueryData; X→markAllRead |
+| 3 | T03 | Портфоліо → Сторіс: редірект замість drawer | ✅ | `code-reviewer` | `55ce2f9` | drawer removed; redirect /dashboard/marketing?tab=stories&portfolioId |
+| 4 | T04 | Мобайл магазин: кнопка "Додати товар" + toggle уніфікація | ✅ | `senior-frontend` | `df27107` `3c26ff6` | inline btn + TabBtn outlined; уніфікація 5 pill-тоглів role=switch/bg-accent/44px |
 | 5 | T05 | Клієнти (список): стандартизація кнопок + smart кнопка | ✅ | `code-reviewer` | `c239ae4` | MessageSquare→Sparkles; size-11 rounded-full; onSmartAction wired |
-| 6 | T06 | Меню > Система > Студія: redesign + alpha/beta | ✅ | `design-taste-frontend` + `humanizer` | `875f512` | StudioBetaCard.tsx new: beta form (name/contact/size) → submitBetaRequest; WaitlistButton replaced; #1E5C3F badge for a11y |
-| 7 | T07 | Записи мобайл: safe area top + opacity при скролі | ✅ | `senior-frontend` + `impeccable` | `224b0f9` `5be8ae1` `cc50914` `0167e17` | widget-card controls (no sticky); safe-area paddingTop; hotfix-2: sticky fully removed |
-| 8 | T08 | Дашборд: tooltip safe area (кліп на краях) | ✅ | `senior-frontend` + `impeccable` | `acce085` `3743331` `5a5971f` | WeeklyChart: fixed outside bento-card (backdrop-filter trap); useLayoutEffect clamp; hotfix-4: FM overrides style.transform when y/scale in initial/animate → split into 2 nested motion.div (outer=position, inner=animation) |
-| 9 | T09 | Мобайл послуги: кнопка + toggle a11y + компакт + sep | ✅ | `design-taste-frontend` | `99cbd6c` `decf6fd` | FAB→inline bg-accent btn; groupBy category + multi-Droppable; compact p-3/size-10; knob bg-white; hotfix: x=26 sym + ProductCard/ProductFormDrawer bg-white |
-| 10 | T10 | Портфоліо: кольори стандарт + mobile photo actions | ✅ | `design-taste-frontend` + `impeccable` | `69f072e` `39cc4e9` `3cb5502` `438a2f7` | PhotoLightbox shared; tap overlay + ←→ reorder; bg-accent tokens; ProductFormDrawer lightbox; hotfix: lightbox 90vw/80vh + grid-cols-2 gap-4 |
-| 11 | T11 | GrowthHub мобайл: tab layout redesign | ✅ | `design-taste-frontend` | `fae6e9a` | grid-cols-3 widget blocks; icon+label+desc; bg-accent active; Rocket header removed |
-| 12 | T12 | Профіль: відпустка/вихідні overlap fix (3 таби) | ✅ | `redesign-existing-projects` | `8533ce4` `b9b3b86` `1af1b3e` | always-open form; flex segmented control equal-height; "Короткий" label; hotfix-2: py-2/text-xs inputs, p-5 form padding, gap-4 fields |
-| 13 | T13 | Записи: баг буферу 10 хв між записами | ✅ | `focused-fix` | `9b5fdde` | smartSlots.ts: `b.end` → `b.end + bufferMinutes` — backward buffer enforcement |
-| 14 | T14 | Конструктор сторіс (ПК+мобайл): розширення робочої зони | ✅ | `senior-frontend` + `impeccable` | `6cc91f2` `aeb10fa` `8d39a4d` `51e8875` `0fa2aab` | Two-column sticky desktop; ResizeObserver scale; hotfix-5: lg:flex-wrap; **mobile redesign (51e8875)**: two-section split lg:hidden/hidden lg:flex; preview-first (ResizeObserver mobileScale); grid-cols-4 photo picker; flex-wrap mode tabs (no page h-scroll); **hotfix-6 (0fa2aab)**: grid-cols-2 pos/text + glass full-width + pill switches (motion.div knob, role=switch) |
-| 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ✅ | `focused-fix` + `senior-backend` | `51f0ba7` `f2b24bf` | some→every cascade; /100 price fix; SW_NAVIGATE→shared; /goto redirect page (iOS/Android hint); remove onlyApplePush → no double delivery; gotoUrl() всі 19 TG кнопок |
-| 16 | T16 | Клієнтський навбар: redesign + Каталог + /explore (Deploy-14 ✅) | ✅ | `impeccable` + `design-taste-frontend` + `emil-design-eng` | `947311e` `e59ff92` `eae2f99` `c2c3c12` `0bd45a4` `28a5a40` `3e151e5` | navbar+explore base; FROM SCRATCH: Great Vibes hero, geo, smart sort, 7 filters, 2-row dropdowns. Phases 3-5: critique(15→36/40)+layout+bolder+harden+animate+audit(15→18/20)+polish+humanizer. Deploy-14 shipped |
-| 17 | T17 | /my/* повний візуальний редизайн (masters, loyalty, notifications) | ✅ | `design-taste-frontend` + `impeccable` | `830acd4` | portrait 2-col grid; loyalty progress; date-grouped notifications |
-| 17b | T-card | Картка майстра: повний редизайн (повний цикл) | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` | `a9c5b5b` | framed photo zone h-[192px], MasterCard+MasterListCard, grid/list toggle, 4 badges WCAG AA, uniform height h-full |
-| 18 | T19 | /my/bookings: повний аудит + premium redesign | ✅ | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer` | `9118000` | B+D+C hybrid: hero zone (72px avatar, isToday), master groups (visit count, expand), smart CTAs; Sheet variant=bottom; STATUS_CFG WCAG AA fixed |
-| 19 | T20 | /my/bookings: модалка відгуку + "Записатись знову" | ✅ | merged into T19 | `9118000` | ReviewSheet (5-star animated, textarea), CancelSheet confirm; "Записатись знову" router.push /[slug]?services=ids pre-fill |
-| 20 | T21 | /my/profile: Identity Card redesign + avatar upload + IG/TG fields | ✅ | `design-taste-frontend` + `impeccable` | `4e8d0c5` | Identity Card hero (96px avatar upload), social fields (instagram_url+telegram_handle), collapsible health, isDirty sticky save bar; migration profile_social_fields applied |
+| 6 | T06 | Меню > Система > Студія: redesign + alpha/beta | ✅ | `design-taste-frontend` + `humanizer` | `875f512` | StudioBetaCard.tsx; beta form (name/contact/size) → submitBetaRequest |
+| 7 | T07 | Записи мобайл: safe area top + widget-card controls | ✅ | `senior-frontend` + `impeccable` | `224b0f9` `0167e17` | paddingTop env(safe-area); sticky fully removed; widget-card controls |
+| 8 | T08 | Дашборд: tooltip safe area (кліп на краях) | ✅ | `senior-frontend` + `impeccable` | `acce085` `5a5971f` | WeeklyChart fixed outside bento-card; outer=position inner=animation (FM pattern) |
+| 9 | T09 | Мобайл послуги: кнопка + toggle a11y + компакт + sep | ✅ | `design-taste-frontend` | `99cbd6c` `decf6fd` | FAB→inline btn; groupBy category + multi-Droppable; compact p-3/size-10; knob bg-white |
+| 10 | T10 | Портфоліо: кольори стандарт + mobile photo actions | ✅ | `design-taste-frontend` + `impeccable` | `69f072e` `438a2f7` | PhotoLightbox shared; tap overlay + ChevronLeft/Right reorder; bg-accent tokens |
+| 11 | T11 | GrowthHub мобайл: tab layout redesign | ✅ | `design-taste-frontend` | `fae6e9a` | grid-cols-3 widget blocks; icon+label+desc; bg-accent active; Rocket removed |
+| 12 | T12 | Профіль: відпустка/вихідні overlap fix (3 таби) | ✅ | `redesign-existing-projects` | `8533ce4` `1af1b3e` | always-open form; flex segmented control equal-height; "Короткий" label |
+| 13 | T13 | Записи: баг буферу 10 хв між записами | ✅ | `focused-fix` | `9b5fdde` | smartSlots.ts: b.end → b.end + bufferMinutes — backward buffer enforcement |
+| 14 | T14 | Конструктор сторіс (ПК+мобайл): розширення робочої зони | ✅ | `senior-frontend` + `impeccable` | `6cc91f2` `0fa2aab` | two-column sticky desktop; ResizeObserver scale; mobile preview-first; grid-cols-4 picker; pill switches |
+| 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | ✅ | `focused-fix` + `senior-backend` | `51f0ba7` `f2b24bf` | some→every cascade; /100 price fix; /goto redirect page; gotoUrl() 19 TG buttons |
 
 ---
-**═══ CLIENT ZONE REDESIGN — Залишилось (Deploy #20-22) ═══**
+
+## ✅ Smart Slots + Лендинг
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
-| 21 | **T-chat** | **/my/messages: client↔master direct messaging (Deploy-20)** | ✅ | `design-taste-frontend` + `impeccable` + `emil-design-eng` | `e3273aa` | conversations+direct_messages tables; MessagesListPage+DirectChatPage+ConversationRow; useDMChat+useUnreadDMCount; Бонуси→Чат nav; read receipts; iOS keyboard push-up; attachments |
-| 22 | T-chat-kbd | /my/messages: мобайл keyboard UX (Telegram-like) | ✅ | merged into T-chat | `e3273aa` | h-dvh + visualViewport resize listener + safe-area-inset-bottom — included in T-chat |
-| 22.1 | **T-QA-bookings** | **/my/bookings: 6 QA fixes** | ✅ | `design-taste-frontend` | `731ea92` | MasterGroup 2-row; service pills; cross-master conflict check; HeroCard single-row; tab border; orders admin client |
-| 22.2 | **T-QA-explore** | **/explore: фото -30% + теги** | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | photo h-[192px]→h-[134px]; tags in scrollable strip |
-| 22.3 | **T-QA-chat** | **/my/messages: Мої майстри + UX fixes** | ⬜ | `design-taste-frontend` + `impeccable` | — | masters section at top; header border; nav hide on chat; keyboard UX |
-| 22.4 | **T-QA-navbar** | **MyBottomNav FAB redesign** | ⬜ | `design-taste-frontend` + `impeccable` | — | FAB center (Каталог+Майстри+Сповіщення); Записи|Бонуси|[FAB]|Чат|Профіль |
-| 23 | **T-phone** | **/my/setup/phone: onboarding redesign з нуля (Deploy-21)** | ⬜ | `design-taste-frontend` + `impeccable` | — | NEW — phone verification form redesign; Frost theme; elegant step UI |
-| 24 | T24 | Клієнтська зона: desktop layout — всі 8 сторінок (Deploy-22) | ⬜ | `design-taste-frontend` + `impeccable` | — | 2-col / side panels / wide grid для /my/* + /explore |
+| 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | ✅ | `spec-driven-workflow` + `senior-backend` | `e7645f9` | migration 141 (auto_flash_on_cancel + discount_pct); createFlashDealInternal; AutoFlashSettingsCard |
+| 34 | T33 | Лендинг: повна консистентність тарифів | ✅ | `humanizer` + `senior-frontend` | `e01e138` `e2b3bd1` | LandingPricing Studio→Waitlist+betaForm; Pro 13 фіч; BillingPage sync; mojibake fix |
 
 ---
-**═══ Інші задачі Sprint-04 ═══**
+
+## ▶ QA Sprint — Клієнтська Зона (ПОТОЧНИЙ ФОКУС)
 
 | Іт | ID | Назва | Статус | Скіл | Commit | Brief |
 |----|----|-------|--------|------|--------|-------|
-| 25 | T18 | Оптимізація завантаження сторінки послуг | ⬜ | `performance-profiler` + `senior-backend` | — | — |
-| 26 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | — | — |
-| 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | — | — |
-| 28 | T25 | dashboard/settings (ПК): повний redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
-| 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | — | — |
-| 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | — | — |
-| 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | — | — |
-| 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | — | Три глобальних паттерни: adaptive contrast (mix-blend/hook), smart tooltip hook (viewport-aware flip+shift), fit-text component (ResizeObserver scale) |
-| 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | ✅ | `spec-driven-workflow` + `create-migration` + `senior-backend` | `e7645f9` | migration 141 (auto_flash_on_cancel + discount_pct); createFlashDealInternal; RPC bug fix (p_slot_timestamp); AutoFlashSettingsCard toggle+pills; encoding hotfix 6 landing files |
-| 34 | T33 | Лендинг: повна консистентність тарифів | ✅ | `humanizer` + `senior-frontend` | `e01e138` `e2b3bd1` | LandingPricing Studio→Waitlist+betaForm; Pro 13 фіч; 27% скрізь; Economy mojibake fix; BillingPage sync |
+| 22.1 | **T-QA-bookings** | /my/bookings: 6 QA fixes | ✅ | `design-taste-frontend` | `731ea92` | MasterGroup 2-row; service pills; cross-master conflict check; HeroCard single-row; tab border removed; orders admin client |
+| 22.2 | **T-QA-explore** | /explore: фото -30% + теги в strip | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | h-[192px]→h-[134px] (-30%); теги/статуси (PRO, Рекомендований, є слот) в scrollable strip під фото |
+| 22.3 | **T-QA-chat** | /my/messages: Мої майстри + UX fixes | ⬜ | `design-taste-frontend` + `impeccable` | — | masters section at top; header border; nav hide on chat; keyboard UX polish |
+| 22.4 | **T-QA-navbar** | MyBottomNav FAB redesign | ⬜ | `design-taste-frontend` + `impeccable` | — | FAB center button; Записи|Бонуси|[FAB]|Чат|Профіль layout |
+| 23 | **T-phone** | /my/setup/phone: onboarding redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | — | phone verification form redesign; Frost theme; elegant step UI |
+| 24 | **T24** | Клієнтська зона: desktop layout — всі 8 сторінок | ⬜ | `design-taste-frontend` + `impeccable` | — | 2-col / side panels / wide grid для /my/* + /explore |
+
+---
+
+## ⬜ Інші задачі Sprint-04
+
+| Іт | ID | Назва | Статус | Скіл | Brief |
+|----|----|-------|--------|------|-------|
+| 25 | T18 | Оптимізація завантаження сторінки послуг | ⬜ | `performance-profiler` + `senior-backend` | Lighthouse trace: TRACE json в Screens/TRACE/ |
+| 26 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | Єдиний PhotoUploader компонент; bucket routing per entity |
+| 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | Deliverable: spec document, не код |
+| 28 | T25 | dashboard/settings (ПК): повний redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
+| 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | Deliverable: spec + business analysis |
+| 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | Залежить від T28 spec approved |
+| 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | Залежить від T29 deployed |
+| 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | useSmartTooltip + FitText + .adaptive-text |
+
+---
+
+## ##ClientDesign — Клієнтська Зона: Потрібне Повне Переосмислення
+
+> ⚠️ **Статус:** Над цими задачами велась робота в ітераціях 16–22, коміти існують, але бажаний дизайн-результат не досягнуто.
+>
+> **Дія:** Повне переосмислення UX/UI з нуля. Процес: `CLIENT_ZONE_REDESIGN.md` Phase 0→5 (Brainstorm → Shape → Generate → Critique → Motion → Ship).
+>
+> **Технічний стан (зберегти):**
+> - `/my/messages` backend: `conversations` + `direct_messages` таблиці ✅, RLS ✅, server actions ✅, hooks ✅ — тільки UI переробляти
+> - `/my/profile` schema: `instagram_url` + `telegram_handle` міграція ✅, avatar upload logic ✅ — тільки UI переробляти
+> - `/my/bookings` `submitReview` action ✅, `cancelBooking` action ✅ — тільки UI переробляти
+
+| Іт | ID | Назва | Статус | Скіл | Ref Commit | Scope |
+|----|----|-------|--------|------|-----------|-------|
+| 16 | **T16-redo** | /explore + клієнтський навбар: повний редизайн | ⬜ redo | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `emil-design-eng` | `3e151e5` | ExplorePage + MyBottomNav + ClientNotificationsBell |
+| 17 | **T17-redo** | /my/masters + loyalty + notifications: redesign | ⬜ redo | `design-taste-frontend` + `impeccable` + `emil-design-eng` | `830acd4` | MyMastersPage + MyLoyaltyPage + ClientNotificationsPage |
+| 17b | **T-card-redo** | Картка майстра (MasterCard + MasterListCard): redesign | ⬜ redo | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` | `a9c5b5b` | MasterCard + MasterListCard в ExplorePage; uniform height; WCAG badges |
+| 18 | **T-bookings-redo** | /my/bookings: premium redesign + review modal + "Записатись знову" | ⬜ redo | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer` | `9118000` | MyBookingsPage; HeroCard; MasterGroup; ReviewSheet; CancelSheet |
+| 20 | **T-profile-redo** | /my/profile: Identity Card redesign (schema ✅) | ⬜ redo | `design-taste-frontend` + `impeccable` | `4e8d0c5` | MyProfilePage; avatar upload; socials; collapsible health; isDirty bar |
+| 21 | **T-chat-redo** | /my/messages: UI redesign + keyboard UX (backend ✅) | ⬜ redo | `design-taste-frontend` + `impeccable` + `emil-design-eng` | `e3273aa` | DirectChatPage + MessagesListPage + ConversationRow + keyboard h-dvh |
 
 ---
 
