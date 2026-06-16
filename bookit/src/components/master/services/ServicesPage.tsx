@@ -1,13 +1,28 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Plus, Scissors, Loader2 } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { AlertTriangle, Plus, Scissors } from 'lucide-react';
+import type { DropResult } from '@hello-pangea/dnd';
 import { type Service, CATEGORIES } from './types';
 import { ServiceCard } from './ServiceCard';
-import { useServices } from '@/lib/supabase/hooks/useServices';
+import { useServices, type ServiceRow } from '@/lib/supabase/hooks/useServices';
+
+// DnD is excluded from the initial bundle — loads async after hydration
+const DragDropContext = dynamic(
+  () => import('@hello-pangea/dnd').then(m => ({ default: m.DragDropContext })),
+  { ssr: false }
+);
+const Droppable = dynamic(
+  () => import('@hello-pangea/dnd').then(m => ({ default: m.Droppable })),
+  { ssr: false }
+);
+const Draggable = dynamic(
+  () => import('@hello-pangea/dnd').then(m => ({ default: m.Draggable })),
+  { ssr: false }
+);
 
 const CATEGORY_ORDER = CATEGORIES as readonly string[];
 
@@ -22,13 +37,17 @@ function groupByCategory(services: Service[]): Map<string, Service[]> {
   return map;
 }
 
-export function ServicesPage() {
+interface ServicesPageProps {
+  initialServicesData?: ServiceRow[];
+}
+
+export function ServicesPage({ initialServicesData }: ServicesPageProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
   const router = useRouter();
 
-  const _s = useServices();
+  const _s = useServices({ initialRows: initialServicesData });
   const services: Service[] = _s.services;
   const { isLoading: sLoading, error: sError, deleteService, toggleService, reorderServices } = _s;
 
@@ -182,9 +201,33 @@ function CategoryHeader({ name, count }: { name: string; count: number }) {
 
 function LoadingState() {
   return (
-    <div className="bento-card p-10 flex flex-col items-center gap-3">
-      <Loader2 size={24} className="text-primary animate-spin" />
-      <p className="text-sm text-muted-foreground/60">Завантаження...</p>
+    <div className="flex flex-col gap-6 animate-pulse">
+      {[0, 1].map(g => (
+        <div key={g}>
+          <div className="h-3 w-24 rounded-full bg-secondary/80 mb-3 mx-1" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="bento-card p-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="size-10 rounded-xl bg-secondary/80 flex-shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-28 rounded-full bg-secondary/80" />
+                    <div className="h-2 w-20 rounded-full bg-secondary/60" />
+                  </div>
+                  <div className="h-3 w-12 rounded-full bg-secondary/80 flex-shrink-0" />
+                </div>
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-secondary/40">
+                  <div className="flex gap-1">
+                    <div className="size-8 rounded-xl bg-secondary/60" />
+                    <div className="size-8 rounded-xl bg-secondary/60" />
+                  </div>
+                  <div className="w-11 h-6 rounded-full bg-secondary/60" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

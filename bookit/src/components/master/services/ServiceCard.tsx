@@ -26,7 +26,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring' as const, stiffness: 300, damping: 24 } as const}
+      transition={{ delay: Math.min(index * 0.05, 0.25), type: 'spring' as const, stiffness: 300, damping: 24 } as const}
       className={cn(
         "bento-card p-3 transition-all duration-300 group",
         !service.active && "opacity-55"
@@ -45,7 +45,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
             <GripVertical size={8} className="text-white" />
           </button>
           {service.imageUrl ? (
-            <Image src={service.imageUrl} alt={service.name} width={40} height={40} className="w-full h-full object-cover" unoptimized />
+            <Image src={service.imageUrl} alt={service.name} width={40} height={40} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xl">
               <ServiceIcon name={service.icon_name} size={16} />

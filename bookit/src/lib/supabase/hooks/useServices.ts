@@ -7,7 +7,7 @@ import { type Service } from '@/components/master/services/types';
 import type { ServiceIconName } from '@/lib/service-icons';
 import { safeQuery, safeMutation } from '../safeQuery';
 
-interface ServiceRow {
+export interface ServiceRow {
   id: string;
   name: string;
   icon_name: string;
@@ -51,14 +51,18 @@ function serviceToRow(data: Omit<Service, 'id'>, masterId: string) {
   };
 }
 
-export function useServices() {
+export function useServices(opts?: { initialRows?: ServiceRow[] }) {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
   const key = ['services', masterId] as const;
 
+  const initialData = opts?.initialRows?.map(rowToService);
+
   const query = useQuery<Service[]>({
     queryKey: key,
+    initialData: initialData,
+    initialDataUpdatedAt: initialData ? Date.now() : undefined,
     queryFn: async () => {
       const supabase = createClient();
 
