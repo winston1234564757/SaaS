@@ -28,7 +28,13 @@ def reset_session_state():
     try:
         STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
         STATE_FILE.write_text(
-            json.dumps({"edit_counts": {}, "consecutive_reads": 0, "read_files": []}, indent=2),
+            json.dumps({
+                "edit_counts": {},
+                "consecutive_reads": 0,
+                "read_files": [],
+                "qa_gate_passed": False,
+                "skills_called": [],
+            }, indent=2),
             encoding="utf-8"
         )
     except Exception:

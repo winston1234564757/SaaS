@@ -152,6 +152,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/qa_gate_guard_hook.py",
+            "statusMessage": "QA Gate check..."
+          },
+          {
+            "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/env_guard_hook.py",
             "statusMessage": "Checking sensitive file protection..."
           },
@@ -177,6 +182,16 @@
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_tracker_hook.py",
+            "statusMessage": "Tracking skill call..."
+          }
+        ]
+      },
       {
         "matcher": "Glob|Grep|Read",
         "hooks": [
