@@ -42,6 +42,14 @@ export function parseError(err: unknown): string {
   }
   
   if (typeof err === 'string') {
+    const lower = err.toLowerCase();
+    if (lower.includes('duplicate key value')) return 'Такий запис вже існує в системі';
+    if (lower.includes('violates foreign key')) return 'Неможливо виконати дію через зв\'язані дані';
+    if (lower.includes('violates check constraint')) return 'Перевірте правильність введених даних';
+    if (lower.includes('timeout')) return 'Час очікування минув. Перевірте інтернет та спробуйте ще раз';
+    if (lower.includes('failed to fetch') || lower.includes('network request failed')) {
+      return 'Помилка мережі. Перевірте підключення до інтернету';
+    }
     if (/^[А-Яа-яІіЇїЄєҐґ]/.test(err)) return err;
     return 'Щось пішло не так';
   }

@@ -39,7 +39,14 @@ export async function saveOnboardingProfile(params: {
     .from('profiles')
     .upsert(profileData, { onConflict: 'id' });
 
-  if (profileError) return { error: profileError.message };
+  if (profileError) {
+    if (profileError.message.includes('idx_profiles_phone_unique') ||
+        profileError.message.includes('profiles_phone_key') ||
+        profileError.message.includes('profiles_phone_unique')) {
+      return { error: 'Цей номер вже прив\'язаний до іншого акаунту. Увійдіть через нього або вкажіть інший номер.' };
+    }
+    return { error: profileError.message };
+  }
 
   // Preserve existing referral_code if already set
   const { data: existing } = await supabase
