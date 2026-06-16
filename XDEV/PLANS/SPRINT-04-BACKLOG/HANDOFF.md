@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 18/37 ✅ | Іт.16-22 → ##ClientDesign (технічно виконано, дизайн-результат не досягнуто)
-**Наступна задача:** **T-QA-explore — /explore: фото h-[192px]→h-[134px] (-30%) + теги/статуси (Deploy #20)**
+**Прогрес:** 19/37 ✅ | Іт.16-22 → ##ClientDesign (технічно виконано, дизайн-результат не досягнуто)
+**Наступна задача:** **T-QA-explore — /explore: фото h-[192px]→h-[134px] (-30%) + теги/статуси**
 **Оновлено:** 2026-06-16
 
 ---
@@ -75,7 +75,32 @@
 **UI slot blocking (defer):** marking client-blocked slots in DateTimePicker requires threading clientBlockedRanges through /[slug]/page.tsx → PublicMasterPage → wizard state → useBookingScheduleData → slot rendering. Separate mini-task.
 
 ---
-## ▶ T-QA-explore — /explore: фото -30% + теги/статуси (Deploy #20)
+## ✅ T18 — Оптимізація завантаження сторінки послуг
+**Commit:** `cd8cd54`
+
+**Root causes (mobile 5s load):**
+1. `unoptimized` на `next/image` в ServiceCard → full-size фото без CDN → 3-4s
+2. `@hello-pangea/dnd` (~50KB) в initial JS bundle → main thread blocked → TTI gap
+3. Services data фетчилась client-side після hydration (зайвий round-trip)
+4. Animation stagger `index*0.05` → 20 послуг = 1s затримка на останній картці
+
+**Що зроблено:**
+1. **ServiceCard**: прибрано `unoptimized` → Next.js оптимізує webp 40x40 через CDN (*.supabase.co в remotePatterns) → фото <500ms
+2. **ServiceCard**: стagger delay обмежений: `Math.min(index * 0.05, 0.25)` → max 250ms
+3. **ServicesPage**: dynamic import `DragDropContext/Droppable/Draggable` → виключено з initial bundle → TTI покращення
+4. **ServicesPage**: accepts `initialServicesData?: ServiceRow[]` → передається в `useServices({ initialRows })`
+5. **ServicesPage**: `LoadingState` spinner → skeleton grid що відповідає реальному layout карток
+6. **useServices**: `ServiceRow` — exported; `opts.initialRows` → `useQuery initialData + initialDataUpdatedAt` → дані вбудовані в SSR HTML
+7. **page.tsx**: async Server Component; `getSession()` (cookie-only, без network call) → prefetch services → `initialServicesData` prop
+
+**Key decisions:**
+- `getSession()` а не `getUser()` — уникаємо дублікат network call (layout вже викликав getUser)
+- 3 окремих `dynamic()` для DnD компонентів → webpack deduplicates в один chunk автоматично
+- `initialDataUpdatedAt: Date.now()` → TanStack Query вважає дані свіжими, background refetch через staleTime=60s
+
+---
+
+## ▶ T-QA-explore — /explore: фото -30% + теги/статуси
 **Статус:** NEXT
 **Скіли:** `design-taste-frontend` + `impeccable`
 **Деталі:** /explore: фото h-[192px]→h-[134px] (-30%); теги/статуси (PRO, Рекомендований, є слот) в scrollable strip нижче фото. Скіл: design-taste-frontend + impeccable.
@@ -513,304 +538,6 @@ TG inline keyboard buttons завжди відкриваються у власн
 - Android Telegram: "Відкрити в Chrome" (⋮→Відкрити у Chrome) + кнопка
 - Не-Telegram UA: `window.location.replace(targetUrl)` — миттєвий редірект
 - Security: `rawUrl.startsWith('/')` guard — тільки відносні шляхи (захист від open redirect)
-
----
-
-## ✅ T16 — Клієнтський навбар: redesign + Каталог + desktop notif + /explore redesign
-**Commit:** `e5e15d8`
-
-**Що зроблено:**
-
-**1. MyBottomNav.tsx (повний redesign)**
-- Nav items: Записи / Каталог (`/explore`) / Бонуси / Сповіщення / Профіль (5 items, Майстри прибрано)
-- LayoutGroup id="client-nav" + `motion.div layoutId="client-nav-active"` spring pill — sliding active indicator
-- `SPRING = { type: 'spring', stiffness: 400, damping: 30 } as const` (RULE 4)
-- Active: `text-foreground`, inactive: `text-muted-foreground/50`
-- `transition-all` → `transition-colors duration-150` (perf fix)
-
-**2. ExplorePage.tsx (повний redesign)**
-- `max-w-lg` → `max-w-2xl mx-auto` — ширший контейнер для discovery
-- Grid: `grid grid-cols-2 sm:grid-cols-3 gap-3` (портретні картки замість горизонтального списку)
-- MasterCard: `h-36` photo zone (object-cover / emoji centered) + `p-3` text zone (name + city + 2 chips)
-- Rating badge: overlay `bg-black/50 backdrop-blur-sm` в photo zone
-- `getCategoryIcon` switch → `CATEGORY_ICONS: Record<string, CatIconEntry>` data object + `CategoryIcon` component
-- Category chips: LayoutGroup id="explore-cats" + `layoutId="explore-cat-pill"` spring pill
-- `transition-all` → `transition-colors duration-150` всюди
-
-**3. ClientNotificationsBell.tsx (новий компонент)**
-- `hidden md:inline-flex` — desktop-only wrapper
-- `useClientNotifications(userId)` hook (новий, не MasterContext залежний)
-- Shake animation на нові unread: `motion.div animate={shaking ? { rotate: [...] } : { rotate: 0 }}`
-- Warning badge: `motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}`
-- Vaul drawer: `z-[140]` overlay, `z-[150]` content, `max-h-[78dvh]`, `rounded-t-[28px]`
-- Click routing: bookingId → `/my/bookings?bookingId=...`, else → `/my/notifications`
-- TYPE_CONFIG: booking_confirmed / booking_created / booking_cancelled / booking_reminder / support_reply
-
-**4. PublicNavbar.tsx + my/layout.tsx**
-- PublicNavbar: `{ notifBell?: React.ReactNode }` prop — RSC slot pattern (Server stays server)
-- `{notifBell}` рендериться між "Мої записи" і profile avatar
-- my/layout.tsx: `<PublicNavbar notifBell={<ClientNotificationsBell userId={user.id} />} />`
-- ClientNotificationsBell (Client) передається як ReactNode з Server Component (valid RSC pattern)
-
-**5. useClientNotifications.ts (новий хук)**
-- Path: `src/lib/supabase/hooks/useClientNotifications.ts`
-- `userId: string | null` prop (не MasterContext — клієнтська зона)
-- QueryKey: `['client-notifications', userId]`, staleTime: 30s
-- markAllRead(): optimistic setQueryData + DB update + invalidateQueries
-- Повертає: `{ notifications, unreadCount, markAllRead }`
-
-**Root cause:** `useNotifications` використовує `useMasterContext()` → недоступний для клієнтів. Рішення: окремий хук з `userId` prop.
-
-**TSC:** 0 | **Build:** clean
-
-**T16-ext (commits `947311e` `c78f6d0` `39b7a4c` `a1390d2` `e115959`) — /explore deep enhancement:**
-- Direction 3 selected: category icon grid + CTA ArrowUpRight + minPrice badge + availableToday pill
-- **Schema hotfix** (`c78f6d0`): wrong columns `master_schedules`/`price_kopecks` → correct `schedule_templates`/`price`; `is_enabled`→`is_working`; caused null masters. Fixed in `src/app/explore/page.tsx` SELECT + mapping
-- **3 view modes** (`39b7a4c`): grid (`grid-cols-2`) / list (size-20 row) / tiktok (snap-y snap-mandatory, height `calc(100svh - 220px)`)
-- Comprehensive MasterCard: topServices (3 rows with price), latestReview snippet, portfolioPhotos
-- Search now indexes `serviceNames` (all active service names joined) via `m.serviceNames.toLowerCase().includes(q)`
-- `AvatarFallback`: gradient bg + initial letter (no emoji — RULE 4)
-- `day_of_week` DAY_MAP: `['sun','mon','tue','wed','thu','fri','sat']` — `new Date().getDay()` offset 0=sun
-- **Portfolio photos** (`a1390d2`): strip h-16 in TikTok / avatar fallback in grid+list; Supabase nested SELECT `portfolio_items (is_published, portfolio_item_photos (url, display_order))`
-- **pb-20 fix** (`e115959`): TikTok info zone CTA was hidden behind bottom navbar (64px). Added `pb-20` to scrollable info container.
-
----
-
-## ✅ T17 — /my/* full visual redesign (impeccable craft)
-**Commit:** `830acd4`
-
-**Що зроблено** (3 компоненти):
-
-**1. MyMastersPage.tsx — portrait 2-col grid**
-- `grid grid-cols-2 gap-3` — як ExplorePage
-- MasterCard: `bento-card overflow-hidden` / `h-40` photo zone / visit count badge top-right (`bg-black/50 backdrop-blur-sm`) / last visit badge bottom-left / `p-3` text zone з category chips + full-width Записатись CTA (`bg-accent rounded-xl`)
-- `SPRING = { type: 'spring', stiffness: 300, damping: 24 } as const`
-- Stagger: `delay: Math.min(index * 0.04, 0.3)`
-
-**2. MyLoyaltyPage.tsx — LoyaltyCard redesign + token fix**
-- LoyaltyCard: `h-16 bg-accent/8` top avatar strip / `size-12` centered avatar / visit counter `text-2xl font-bold tabular-nums` / progress bar `h-1.5` (thinner) / Записатись `bg-accent text-accent-foreground`
-- isCompleted: badge в avatar strip `top-2 right-2 bg-success`
-- Tab "Refer & Earn" → "Ділись та заробляй" (humanizer)
-- Всі `bg-primary` → `bg-accent` у файлі (6 місць)
-
-**3. ClientNotificationsPage.tsx — date-grouped feed**
-- `groupByDate()` helper: групує по дню → `[{label, items}]`
-- Labels: "Сьогодні" / "Вчора" / uk-UA date
-- `DateSeparator` компонент: hr + label (`aria-hidden`)
-- Type dot: `size-2 rounded-full` кольоровий по типу (accent/destructive/warning/muted)
-- Unread: `bg-accent/5 border-accent/10` tint
-- Touch targets: `min-h-[44px] rounded-xl`
-
-**TSC:** 0 | **Build:** clean
-
----
-
-## ✅ T16-ext-2 — /explore full redesign (impeccable craft)
-**Commit:** `e59ff92`
-
-**Що зроблено** (`src/components/public/ExplorePage.tsx` — +307/-126):
-
-1. **Category section redesign** — square tiles 76×68px → horizontal pill chips (`rounded-full px-3.5 py-2 h-36px`); count number removed; active = `bg-accent`
-2. **MasterCard photo zone** — `h-40` → `h-56` (224px); portfolio strip `h-10` завжди видимий (навіть якщо є avatarUrl); inner divs `h-full` для Image fill
-3. **PRO badge** — `bg-warning` → `bg-accent text-accent-foreground` (Frost brand, committed color strategy)
-4. **FeaturedCard + featured row** — новий `FeaturedCard` (w-36, h-24 photo) + `РЕКОМЕНДУЄМО` row: показується коли `!isFiltered && grid && proMasters.length >= 2`
-5. **Pagination** — `PAGE_SIZE=12`; `useEffect` скидає page при зміні фільтрів; "Показати ще N" button внизу
-6. **Search upgrade** — `bg-white/70` glass + focus: `py-3.5 bg-white shadow-md border-accent/50 ring-2 ring-accent/15`
-7. **Result count** — `AnimatePresence` з'являється під search при `isFiltered` (opacity+y, без height animation)
-8. **Empty state** — Sparkles icon в `rounded-2xl bg-accent/10` + "Скинути фільтри" CTA button
-9. **Footer** — показується тільки коли `!hasMore && filtered.length>0`; accent card блок з Link
-10. **Header** — `text-4xl` → `text-3xl`; subtitle "Нігті · Волосся · Брови · Макіяж"
-11. **List card** — `size-20` → `size-[88px]`; `ArrowUpRight` видалено
-12. **Dropdowns** — `bg-secondary` → `bg-white/60 border border-border/50`
-
-**Design brief** (impeccable shape → craft):
-- Register: product | Color: Committed (Frost accent indigo 30-60%)
-- Scene: girl on metro, daylight, phone vertical, 5 min between stops
-- References: Behance portfolio discovery + Linear precision filter
-
-**Removed imports:** `ArrowUpRight` | **Added:** `ArrowRight`, `useEffect`
-**TSC:** 0 | **Build:** clean
-
----
-
-## ✅ T-explore (Deploy-14) — /explore повний редизайн з нуля
-**Commit:** `eae2f99`
-
-**Що зроблено** (4 файли, CLIENT_ZONE_REDESIGN.md Deploy-14):
-
-**1. `src/lib/utils/haversine.ts`** — NEW
-- `haversineKm(lat1, lng1, lat2, lng2): number` — straight-line km
-- `formatDistance(km): string` — "~1.2 км" / "350 м"
-
-**2. `src/lib/constants/categories.ts`** — 7 → 12 категорій
-- Додано: barber, cosmetology, spa, waxing, piercing, tattoo
-- label 'Брови/Вії' → 'Брови і вії' (CATEGORY_ALIASES в ExplorePage для backwards compat)
-
-**3. `src/app/explore/page.tsx`** — server rewrite
-- SELECT: додано `latitude, longitude`
-- Паралельний `bookings` запит (для `preferredCategories` smart sort, тільки при авторизації)
-- DAY_MAP: `['sun','mon','tue','wed','thu','fri','sat']` → `availableToday` + `availableTomorrow`
-- `categoryCounts` нормалізовані по category `id` (через `serviceCategories.find`)
-- Props: `masters`, `categoryCounts`, `preferredCategories`
-
-**4. `src/components/public/ExplorePage.tsx`** — повний rewrite
-- `ExploreMaster` interface (замінює старий `Master` type): +`availableTomorrow`, +`latitude`, +`longitude`; -`avatarEmoji`, -`serviceCount`, -`serviceNames`, -`latestReview`, -`bio`
-- `CATEGORY_ALIASES = { brows: ['Брови/Вії', 'Брови'] }` — backwards compat при зміні label
-- `ProcessedMaster = ExploreMaster & { distance: number | null }`
-- **Hero:** `heading-serif text-[3.25rem] uppercase tracking-wide` — "Майстри\nпоруч"
-- **Category pills:** горизонтальний `overflow-x-auto`, pill `rounded-full`, count suffix `·N`
-- **Filter bar:** "Поруч" toggle (геолокація → haversineKm, silent fail on deny), "Є слот сьогодні" toggle, sort dropdown (Популярні / Рейтинг / Новинки / Для тебе)
-- **Smart sort:** "Для тебе" показується тільки при `preferredCategories.length > 0`; майстри з preferred категоріями підіймаються вгору
-- **Nearby:** `navigator.geolocation.getCurrentPosition` → `haversineKm` → sort by distance; відстань на картці; no error on deny
-- **MasterCard:** `aspect-[3/4]` photo zone + portfolio strip (`h-10`, 3 фото, fallback = avatar) + badge "Є слот / Вільно завтра" + PRO badge
-- **States:** skeleton 2-col, empty state + "Скинути фільтри" CTA
-- **Pagination:** `PAGE_SIZE=12`, "Показати ще N" button
-
-**Key decisions:**
-- Haversine (straight-line) замість Google Maps Distance Matrix — немає зайвого API call, lat/lng вже є в `master_profiles`
-- Geolocation deny → silent fail — toggle stays OFF, no error UI
-- Smart sort → тільки для авторизованих (server queries bookings if `user` exists)
-- `CATEGORY_ALIASES` — мастери зі старим label 'Брови/Вії' продовжують показуватись у фільтрі 'brows'
-
-**TSC:** 0 errors | **Build:** clean
-
-**Deploy-14 Phases 3-5 (commit `3e151e5`) — critique → animate → ship:**
-
-**Phase 3 — Critique + Layout + Bolder + Harden:**
-- `critique` 15/40 → 36/40: photos cut-off fix (aspect-[3/4]), minPrice guard (`> 0`), empty `<span />` → `<span aria-hidden="true" />`, BottomNav gap (`pb-24`)
-- `layout`: CategoryPills → `overflow-x-auto scrollbar-hide` horizontal scroll (removed grid); FeaturedCard `w-[140px] h-[90px]` compact; safe-area paddingTop formula
-- `bolder`: Great Vibes hero `text-[3.5rem]` → `text-[4rem] leading-[0.88]`; subtitle `text-[11px] uppercase tracking-wider text-muted-foreground/40`; `РЕКОМЕНДУЄМО` → `Рекомендуємо` (`font-black text-accent tracking-[0.2em]`)
-- `harden`: `MotionConfig reducedMotion="user"` wrapper; `FeaturedCard` + `MasterCard` `useState` photo error + `onError` fallback; `stripErrors: Set<number>` per-image; `minPrice > 0` guard; geolocation deny → `geoError` nudge (не silent fail); `haversineKm` called only when both coords present
-
-**Phase 4 — Animate (emil-design-eng):**
-- Filter chips `ActiveFiltersBar`: `scale: 0.85→0.92` (from 0.85 felt too aggressive)
-- SortDropdown: `transformOrigin: 'top right'`; PriceDropdown: `transformOrigin: 'top left'`
-- Dropdowns: click-outside + Escape key via `useRef` + `useEffect`
-- Search clear button: `<AnimatePresence><motion.button>` scale 0.6→1→0.6, duration 0.12s
-- Empty state icon: `motion.div` scale 0.8→1 + delay 0.06s
-- Load more button: `active:scale-[0.97]`
-
-**Phase 5 — Audit + Polish + Humanizer:**
-- `audit` 15/20 → 18/20: search `aria-label` added; `focus-visible:ring-2 ring-accent/50 ring-offset-1`; chip × button `size-4→size-5`
-- `polish`: category label `/45→/60` contrast; CTA `text-[11px]→text-xs`
-- `humanizer`: geo error em dash removed — "Геолокацію заблоковано — дозволь..." → "...заблоковано. Дозволь..."
-- TSC: 0 | Build: clean | Deploy: `3e151e5` → bookit-k57ww43im-winston1234564757s-projects.vercel.app
-
-**Deploy-14 ext (commits `c2c3c12` `0bd45a4`) — explore UI polish iterations:**
-
-Round 1 (`c2c3c12`):
-- Text search input повернуто (пошук по імені/місту/сервісах)
-- Category pills: `flex-wrap` → `grid grid-cols-3 gap-2` з `col-span-3` для "Всі" — рівний відступ від країв
-- Hero: `heading-serif text-[3.25rem] uppercase` → inline `style={{ fontFamily: 'var(--font-great-vibes, cursive)' }} text-[3.5rem]` (Frost theme переовзначував .greeting-script → Geist)
-- Subtitle "Краса поруч — запис до перевіреного майстра за пару кліків" → "Краса поруч. Твій майстер чекає." (коротше)
-- Safe area: `pt-10` → `style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}`
-
-Round 2 (`0bd45a4`) — 4 нових фільтри:
-- `slotTomorrow` state + "Завтра" toggle (Calendar icon) — фільтрує `m.availableTomorrow`
-- `priceMax` state + `PriceDropdown` component — опції: null/300/500/1000₴; `minPrice === null` → pass
-- `proOnly` state + "PRO" toggle (BadgeCheck icon) — фільтрує `m.isPro`
-- `withReviews` state + "З відгуками" toggle (Star icon) — фільтрує `m.ratingCount > 0`
-- `toggleClass(active)` helper екстрактований для DRY filter bar
-- "Є час сьогодні" → "Сьогодні" (коротше для filter row)
-
-Round 3 (`28a5a40`) — layout polish:
-- Hero `paddingTop`: `3rem` → `2rem` (заголовок ~20% вищий)
-- "Всі" button: `col-span-3` (full width) → `w-[60%] mx-auto` — centered, окремо над grid
-- Filter bar: `flex-wrap` → `flex-col gap-2` з двома рядками:
-  - Row 1: toggles у `overflow-x-auto` (горизонтальний scroll, `flex-shrink-0` на кожній pill)
-  - Row 2: `PriceDropdown fullWidth` + `SortDropdown fullWidth` — рівні 50/50
-- `SortDropdown` + `PriceDropdown`: новий `fullWidth?: boolean` prop → `w-full justify-between` на кнопці
-- Edit counter guard заблокував Edit → перейшов на Write для повної версії файлу
-
-**TSC:** 0 | **Build:** clean ✅ | **Deploy:** `bookit-five-psi.vercel.app`
-
----
-
-## ✅ T-card — Картка майстра: повний редизайн
-**Commit:** `a9c5b5b`
-**Skills:** `ui-ux-pro-max` + `design-taste-frontend` + `impeccable layout`
-
-**Root cause:** Старі картки мали `aspect-[3/4]` (variable height) і не підтримували однакову висоту в grid. Фрейм фото мав довільну висоту залежно від наявності portfolio strip та availability badge — картки в одному ряді відрізнялись за висотою.
-
-**Що зроблено** (`src/components/public/ExplorePage.tsx`):
-
-**1. Новий тип і стани:**
-- `type ViewMode = 'grid' | 'list'` + `useState<ViewMode>('grid')`
-- View toggle: `LayoutGrid` / `AlignJustify` (lucide-react) — `bg-secondary/50 p-1 rounded-full` контейнер
-
-**2. `MasterCard` (portrait grid, 2-col):**
-- `motion.div className="h-full"` → `Link className="block group h-full"` → `div.bento-card rounded-3xl flex flex-col h-full`
-- **Фото фрейм:** `m-3 rounded-2xl h-[192px] flex-shrink-0 flex flex-col` — фіксована висота
-  - Аватар у `flex-1 flex items-center justify-center pt-6` (займає весь залишок)
-  - Availability badge + portfolio strip у `flex flex-col gap-1 pb-2` (завжди на дні фрейму)
-  - 3 thumbnail: `flex-1 h-12 rounded-lg` з відступами `gap-1.5 px-2`
-- **PRO badge:** `bg-indigo-700 text-white` — 7.90:1 contrast ratio ✅ (було bg-indigo-500: fail)
-- **Availability badges:** today=`bg-emerald-500/15 text-emerald-700`; tomorrow=`bg-amber-500/15 text-amber-800` (6.31:1) ✅
-- **Content area:** `flex flex-col flex-1` — name (Cormorant Garamond `text-[1.05rem]`), category+city, rating, top 2 services, min price
-- **CTA:** `mt-3` pinned at bottom via `flex-col` + `mt-auto` на info block; `aria-hidden` (whole card = Link)
-- **Recommended badge:** `BadgeCheck` icon поряд з ім'ям — `preferredCategories.some(c => master.categories.includes(c)) && ratingCount >= 3`
-
-**3. `MasterListCard` (horizontal, 1-col list mode):**
-- `w-24 flex-shrink-0 self-stretch` photo zone
-- PRO badge absolute top-left, distance badge absolute bottom-left
-- Right side: name + BadgeCheck, category, city, rating, 1 service chip, min price, availability badge + "Записатись →"
-
-**4. Grid/List rendering:**
-- Grid: `grid grid-cols-2 sm:grid-cols-3 gap-3` → `MasterCard`
-- List: `flex flex-col gap-2` → `MasterListCard`
-- `AnimatePresence mode="popLayout"` навколо обох, `SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const`
-
-**Uniform height fix (impeccable layout):**
-- Проблема: `flex flex-col gap-1` з availability badge + strip → різна висота фрейму між картками
-- Рішення: зафіксувати `h-[192px]` на фрейм, аватар у `flex-1`, нижня група завжди існує (але може бути empty div)
-- CSS Grid auto-stretch + `h-full` propagation гарантує рівну висоту в одному ряді
-
-**WCAG AA Contrast Verified:**
-- PRO: `#ffffff` на `#3730a3` (indigo-700) → 7.90:1 ✅
-- Emerald text: `#047857` на emerald-500/15 → 5.23:1 ✅
-- Amber text: `#92400e` (amber-800) на amber-500/15 → 6.31:1 ✅
-
-**TSC:** 0 | **Build:** clean
-
----
-
-## ✅ T19+T20 — /my/bookings: повний redesign + review + "Записатись знову"
-**Commit:** `9118000`
-**Skills:** `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer`
-
-**Root cause:** Старий MyBookingsPage мав хронологічний список без групування, без smart CTAs, без review flow. Дизайн не відповідав Frost theme та impeccable standards.
-
-**Архітектура (B+D+C hybrid):**
-- **B — Hero Zone:** перший upcoming запис → `HeroCard` (72px avatar, isToday badge, primary/6% bg, cancel ghost button min-h-[44px])
-- **D — Smart Status CTAs:** `completed + !hasReview` → "Поділитись враженнями" h-11 | `completed + hasReview` → StarRow display | `cancelled` → нічого | `pending/confirmed` → cancel ghost
-- **C — Master Groups:** past bookings згруповані по `masterId` (Map<string, UnifiedOrder[]>), master header row (44px avatar + name + visit count через `pluralUk` + "Записатись знову" pill), max 3 CompactBookingRows + ChevronDown expand
-
-**Ключові компоненти (`MyBookingsPage.tsx`):**
-- `Avatar`: Image якщо `masterAvatarUrl` існує, інакше перша літера `masterName` (NO emoji)
-- `StatusPill`: кольори через `STATUS_CFG` з CSS var fallbacks; WCAG AA fix: `#f59e0b`→`#b45309` (4.70:1), `#10b981`→`#047857` (5.00:1)
-- `CancelSheet`: `Sheet` з `variant="bottom"` (vaul), "Так, скасувати" destructive h-11, "Не скасовувати" secondary h-11
-- `ReviewSheet`: 5 animated stars (`motion.button` scale:[1,1.28,1] spring), textarea 3 rows, "Надіслати"/"Не зараз"; `onSuccess(rating)` callback → батько оновлює `submittedRating` state → показує `StarRow`
-- `HeroCard`: upcoming[0], CancelSheet trigger; `CompactUpcomingRow`: upcoming[1..] — компактні рядки
-- `MasterGroup`: header row + `CompactBookingRow` список + expand (max 3 default)
-- `ShopOrderCard`: shop items окремий компонент, хронологічно
-- Tab `"Записи" | "Замовлення"` з pending count badge
-
-**Критичні рішення:**
-- `Sheet` з `variant="bottom"` — НЕ `BottomSheet` (не існує). Реальний vaul wrapper з `@/components/ui/Sheet.tsx`
-- `first:border-t-0` в `CompactBookingRow` — `AnimatePresence` не додає DOM nodes → CSS :first-child коректний
-- `"Записатись знову"` → `router.push('/[slug]?services=id1,id2')` — pre-fill сервіси з останнього запису
-- `onSuccess(rating)` pattern → оптимістичне оновлення UI після review без refetch
-- `pluralUk(count, 'візит', 'візити', 'візитів')` для кількості відвідувань
-
-**A11y виправлення:**
-- STATUS_CFG fallbacks: `#f59e0b` → `#b45309` (WCAG AA 4.70:1 ✅), `#10b981` → `#047857` (5.00:1 ✅)
-- Всі CTA кнопки: `h-11` (44px touch target ✅)
-- Cancel ghost button: `min-h-[44px] flex items-center`
-- Star icons (fill-amber-400) = декоративні → WCAG check не потрібен
-
-**TSC:** 0 | **Build:** clean
-
----
 
 ## ▶ T18 — Оптимізація завантаження сторінки послуг
 

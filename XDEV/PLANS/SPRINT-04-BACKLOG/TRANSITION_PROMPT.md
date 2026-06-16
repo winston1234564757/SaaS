@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 18/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
+Прогрес: 19/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
 Наступна: T-QA-explore — /explore: фото h-[192px]→h-[134px] (-30%) + теги/статуси в scrollable strip (сесія 2/4 QA спринту)
-Стан: РЕСТРУКТУРИЗАЦІЯ 2026-06-16 — іт.16-22 переміщено в ##ClientDesign (дизайн-результат не досягнуто). T-QA-bookings ✅ Commit: 731ea92. T33 ✅ Commit: e01e138.
+Стан: T18 ✅ Commit: cd8cd54 (server prefetch + DnD lazy + image opt → 5s→<2s). T-QA-bookings ✅ Commit: 731ea92. T33 ✅ Commit: e01e138.
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 

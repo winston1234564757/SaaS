@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-15 · Джерело: живий код (v9.0.0 "Sprint-04: 27/34 ✅ — GLOBAL AUDIT COMPLETE") · Sprint-04 commit: `731ea92` (T-QA-bookings)
+> Оновлено: 2026-06-16 · Джерело: живий код (v9.0.0 "Sprint-04: 19/37 ✅") · Sprint-04 commit: `cd8cd54` (T18: server prefetch + DnD lazy + image opt)
 > 
-> **⚡ Sprint-04 Status:** 27/34 ✅ | Next: T-QA-explore | Skills: TOP 50 configured (settings.json v9.0.0)
+> **⚡ Sprint-04 Status:** 19/37 ✅ | Next: T-QA-explore | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 | Sprint-05 + Sprint-06 remaining post-launch
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
 > 

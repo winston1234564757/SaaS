@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 18/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-16
+**Прогрес:** 19/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-16
 
 > ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
 
@@ -39,24 +39,11 @@
 
 ---
 
-## ▶ QA Sprint — Клієнтська Зона (ПОТОЧНИЙ ФОКУС)
-
-| Іт | ID | Назва | Статус | Скіл | Commit | Brief |
-|----|----|-------|--------|------|--------|-------|
-| 22.1 | **T-QA-bookings** | /my/bookings: 6 QA fixes | ✅ | `design-taste-frontend` | `731ea92` | MasterGroup 2-row; service pills; cross-master conflict check; HeroCard single-row; tab border removed; orders admin client |
-| 22.2 | **T-QA-explore** | /explore: фото -30% + теги в strip | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | h-[192px]→h-[134px] (-30%); теги/статуси (PRO, Рекомендований, є слот) в scrollable strip під фото |
-| 22.3 | **T-QA-chat** | /my/messages: Мої майстри + UX fixes | ⬜ | `design-taste-frontend` + `impeccable` | — | masters section at top; header border; nav hide on chat; keyboard UX polish |
-| 22.4 | **T-QA-navbar** | MyBottomNav FAB redesign | ⬜ | `design-taste-frontend` + `impeccable` | — | FAB center button; Записи|Бонуси|[FAB]|Чат|Профіль layout |
-| 23 | **T-phone** | /my/setup/phone: onboarding redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | — | phone verification form redesign; Frost theme; elegant step UI |
-| 24 | **T24** | Клієнтська зона: desktop layout — всі 8 сторінок | ⬜ | `design-taste-frontend` + `impeccable` | — | 2-col / side panels / wide grid для /my/* + /explore |
-
----
-
 ## ⬜ Інші задачі Sprint-04
 
 | Іт | ID | Назва | Статус | Скіл | Brief |
 |----|----|-------|--------|------|-------|
-| 25 | T18 | Оптимізація завантаження сторінки послуг | ⬜ | `performance-profiler` + `senior-backend` | Lighthouse trace: TRACE json в Screens/TRACE/ |
+| 25 | T18 | Оптимізація завантаження сторінки послуг | ✅ | `senior-frontend` + `senior-backend` | Server prefetch + DnD lazy + unoptimized removed → 5s→<2s TTI |
 | 26 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | Єдиний PhotoUploader компонент; bucket routing per entity |
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | Deliverable: spec document, не код |
 | 28 | T25 | dashboard/settings (ПК): повний redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
@@ -86,7 +73,12 @@
 | 18 | **T-bookings-redo** | /my/bookings: premium redesign + review modal + "Записатись знову" | ⬜ redo | `ui-ux-pro-max` + `design-taste-frontend` + `impeccable` + `humanizer` | `9118000` | MyBookingsPage; HeroCard; MasterGroup; ReviewSheet; CancelSheet |
 | 20 | **T-profile-redo** | /my/profile: Identity Card redesign (schema ✅) | ⬜ redo | `design-taste-frontend` + `impeccable` | `4e8d0c5` | MyProfilePage; avatar upload; socials; collapsible health; isDirty bar |
 | 21 | **T-chat-redo** | /my/messages: UI redesign + keyboard UX (backend ✅) | ⬜ redo | `design-taste-frontend` + `impeccable` + `emil-design-eng` | `e3273aa` | DirectChatPage + MessagesListPage + ConversationRow + keyboard h-dvh |
-
+| 22.1 | **T-QA-bookings** | /my/bookings: 6 QA fixes | ✅ | `design-taste-frontend` | `731ea92` | MasterGroup 2-row; service pills; cross-master conflict check; HeroCard single-row; tab border removed; orders admin client |
+| 22.2 | **T-QA-explore** | /explore: фото -30% + теги в strip | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | h-[192px]→h-[134px] (-30%); теги/статуси (PRO, Рекомендований, є слот) в scrollable strip під фото |
+| 22.3 | **T-QA-chat** | /my/messages: Мої майстри + UX fixes | ⬜ | `design-taste-frontend` + `impeccable` | — | masters section at top; header border; nav hide on chat; keyboard UX polish |
+| 22.4 | **T-QA-navbar** | MyBottomNav FAB redesign | ⬜ | `design-taste-frontend` + `impeccable` | — | FAB center button; Записи|Бонуси|[FAB]|Чат|Профіль layout |
+| 23 | **T-phone** | /my/setup/phone: onboarding redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | — | phone verification form redesign; Frost theme; elegant step UI |
+| 24 | **T24** | Клієнтська зона: desktop layout — всі 8 сторінок | ⬜ | `design-taste-frontend` + `impeccable` | — | 2-col / side panels / wide grid для /my/* + /explore |
 ---
 
 ## ⚠️ Pending post-deploy (з Sprint-03)

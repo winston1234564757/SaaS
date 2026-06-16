@@ -16,7 +16,7 @@
 
 | Прогрес | Поточна задача |
 |---|---|
-| **18/37** ✅ | **T-QA-explore** — /explore: фото h-[192px]→h-[134px] (-30%) + теги в scrollable strip |
+| **19/37** ✅ | **T-QA-explore** — /explore: фото h-[192px]→h-[134px] (-30%) + теги в scrollable strip |
 
 ---
 
