@@ -17,11 +17,19 @@
       "mcp__mempalace__mempalace_kg_stats",
       "mcp__mempalace__mempalace_kg_timeline",
       "mcp__mempalace__mempalace_diary_read",
+      "mcp__mempalace__mempalace_diary_write",
+      "mcp__mempalace__mempalace_add_drawer",
+      "mcp__mempalace__mempalace_update_drawer",
+      "mcp__mempalace__mempalace_kg_add",
+      "mcp__mempalace__mempalace_kg_invalidate",
+      "mcp__mempalace__mempalace_sync",
       "mcp__mempalace__mempalace_get_taxonomy",
       "mcp__mempalace__mempalace_graph_stats",
       "mcp__mempalace__mempalace_get_aaak_spec",
       "mcp__mempalace__mempalace_memories_filed_away",
       "mcp__mempalace__mempalace_check_duplicate",
+      "mcp__mempalace__mempalace_reconnect",
+      "mcp__mempalace__mempalace_hook_settings",
       "mcp__ide__getDiagnostics",
       "mcp__ide__executeCode",
       "mcp__a11y__get-color-contrast",
@@ -33,19 +41,51 @@
       "mcp__supabase__list_migrations",
       "mcp__supabase__get_project_url",
       "mcp__supabase__get_anon_key",
+      "mcp__supabase__get_publishable_keys",
       "mcp__supabase__execute_sql",
       "mcp__supabase__apply_migration",
       "mcp__supabase__list_edge_functions",
       "mcp__supabase__get_logs",
+      "mcp__supabase__get_advisors",
+      "mcp__supabase__list_branches",
+      "mcp__supabase__generate_typescript_types",
+      "mcp__supabase__search_docs",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "mcp__tailwind__get_tailwind_colors",
+      "mcp__tailwind__generate_color_palette",
+      "mcp__tailwind__generate_component_template",
+      "mcp__tailwind__get_tailwind_utilities",
+      "mcp__tailwind__search_tailwind_docs",
+      "mcp__tailwind__get_tailwind_config_guide",
+      "mcp__tailwind__install_tailwind",
+      "mcp__tailwind__convert_css_to_tailwind",
+      "mcp__universal-icons__search_icons",
+      "mcp__universal-icons__get_icon",
+      "mcp__universal-icons__health_check",
+      "mcp__magic__21st_magic_component_builder",
+      "mcp__magic__21st_magic_component_inspiration",
+      "mcp__magic__21st_magic_component_refiner",
+      "mcp__magic__logo_search",
       "WebFetch",
+      "WebSearch",
       "Bash(npm run build)",
       "Bash(npm run lint)",
+      "Bash(npm run dev)",
+      "Bash(npm test)",
+      "Bash(npm run test:e2e)",
       "Bash(git status)",
       "Bash(git log*)",
       "Bash(git diff*)",
       "Bash(git add*)",
       "Bash(git commit*)",
-      "Bash(vercel --prod)"
+      "Bash(git push*)",
+      "Bash(vercel --prod)",
+      "Bash(vercel*)",
+      "Bash(gh pr*)",
+      "Bash(gh issue*)",
+      "Bash(gh workflow*)",
+      "Bash(npx supabase*)"
     ]
   },
   "hooks": {
@@ -65,6 +105,24 @@
           {
             "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/dev_rules_hook.py"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_router_hook.py",
+            "statusMessage": "Routing skills..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/context7_hint_hook.py",
+            "statusMessage": "Checking library hints..."
           }
         ]
       }
@@ -108,7 +166,12 @@
           {
             "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/edit_counter_guard.py",
-            "statusMessage": "Checking edit count (RULE 5)..."
+            "statusMessage": "Tracking edit count..."
+          },
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_router_hook.py",
+            "statusMessage": "Checking skill route for file..."
           }
         ]
       }
@@ -157,7 +220,7 @@
           {
             "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/self_improving_hook.py",
-            "statusMessage": "Checking for session memory curation..."
+            "statusMessage": "Session-end protocol..."
           }
         ]
       }

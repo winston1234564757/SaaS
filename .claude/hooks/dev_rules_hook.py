@@ -96,13 +96,36 @@ def main():
             "",
         ]
 
-    # Task-type prompt → inject mandatory gate
+    # Task-type prompt → inject mandatory gate with skill routing
     if task_mode:
+        t = prompt_text.lower()
+
+        # Detect task type for specific QA-GATE skills
+        bug_kw     = ['fix', 'bug', 'broken', 'error', 'crash', 'виправ', 'фікс', 'баг']
+        design_kw  = ['redesign', 'design', 'ui ', 'component', 'дизайн', 'компонент', 'зовніш']
+        feature_kw = ['feature', 'add ', 'implement', 'create', 'фіча', 'додай', 'реалізу', 'зроби', 'налаштуван']
+        db_kw      = ['migration', 'schema', 'rls', ' sql', 'database', 'міграці']
+        refactor_kw= ['refactor', 'рефактор', 'simplify', 'cleanup']
+
+        is_bug     = any(kw in t for kw in bug_kw)
+        is_design  = any(kw in t for kw in design_kw) or any(kw in t for kw in feature_kw)
+        is_db      = any(kw in t for kw in db_kw)
+        is_refactor= any(kw in t for kw in refactor_kw)
+
+        if is_db:
+            qa_skills = "Skill('grill-me') + Skill('security-review')"
+        elif is_bug or is_refactor:
+            qa_skills = "Skill('grill-me') + Skill('adversarial-reviewer')"
+        elif is_design:
+            qa_skills = "Skill('brainstorming') + Skill('grill-me')"
+        else:
+            qa_skills = "Skill('grill-me')"
+
         lines += [
             "=== MANDATORY TASK GATE (complete BEFORE opening any file) ===",
             "  [ ] 1. mempalace_search — search relevant context for THIS task",
-            "  [ ] 2. QA Gate — ask user 3-5 clarifying questions",
-            "  [ ] 3. Declare skill — output 'SKILL: [name]' and invoke it",
+            f" [ ] 2. QA Gate — invoke {qa_skills} (task-type detected from prompt)",
+            "  [ ] 3. Skill Route — check SKILL ROUTE suggestion above, declare + invoke",
             "  [ ] 4. Humanizer — list ALL UI strings, run /humanizer, confirm",
             "  [ ] 5. Wait for user approval",
             "",
