@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-SKILL_ROUTER_HOOK v1.0 — UserPromptSubmit + PreToolUse (Edit|Write)
-Reads skills-taxonomy.json → context scoring → outputs:
-  SKILL ROUTE: Category → skill:subtool1+subtool2 (alt: X, Y)
-  QA-GATE SKILLS: grill-me + brainstorming  (task-type specific)
-Token-efficient: 1-2 lines max output.
+SKILL_ROUTER_HOOK v2.0 — UserPromptSubmit + PreToolUse (Edit|Write)
+Reads skills-taxonomy.json -> context scoring -> outputs MANDATORY directives:
+  [MANDATORY] Invoke Skill(skill='X') for this task.
+  SEQUENCE: grill-me -> X -> code-reviewer -> ship-gate
+Token-efficient: 3 lines max output.
 """
 import sys
 import json
@@ -16,7 +16,7 @@ if hasattr(sys.stdout, "reconfigure"):
 TAXONOMY_FILE = Path(__file__).parent / "skills-taxonomy.json"
 
 # QA-GATE task-type routing
-BUG_KW     = ['fix', 'bug', 'broken', 'error', 'crash', 'fail', 'виправ', 'фікс', 'баг', 'не працює', 'зламан']
+BUG_KW     = ['fix', 'bug', 'broken', 'error', 'crash', 'fail', 'vyprав', 'фікс', 'баг', 'не працює', 'зламан', 'виправ']
 DESIGN_KW  = ['redesign', 'design', 'ui ', 'layout', 'component', 'дизайн', 'компонент', 'переробити', 'зовніш']
 FEATURE_KW = ['feature', 'add ', 'implement', 'create', 'build ', 'фіча', 'додай', 'реалізу', 'зроби', 'створ', 'налашту']
 DB_KW      = ['migration', 'schema', 'rls', ' table', ' sql', 'database', 'міграці', 'суп', 'migrate', 'alter table']
@@ -31,7 +31,28 @@ TASK_KW    = BUG_KW + DESIGN_KW + FEATURE_KW + DB_KW + REFACTOR_KW + [
     'task', 'задач', 'sprint', 'implement', 'build', 'create', 'redesign',
     'fix', 'make', 'update', 'change', 'add', 'remove', 'delete', 'move',
     'setup', 'configure', 'deploy', 'refactor', 'optimize', 'review', 'audit',
+    # Copy-UX triggers
+    'humanize', 'copy', 'текст', 'label', 'кнопка', 'toast', 'message text',
+    # Workflow triggers
+    'plan', 'triage', 'diagnose', 'handoff', 'sprint end',
 ]
+
+# MANDATORY sequences per category
+CATEGORY_SEQUENCES = {
+    "UI-Design":        "grill-me --> {skill} --> impeccable:critique --> code-reviewer",
+    "Frontend-Code":    "grill-me --> {skill} --> code-reviewer --> ship-gate",
+    "Backend-API":      "grill-me --> {skill} --> security-review --> code-reviewer",
+    "Security":         "grill-me --> security-review --> {skill} --> code-reviewer",
+    "Database":         "grill-me --> {skill} --> security-review",
+    "Testing":          "grill-me --> {skill} --> verify",
+    "DevOps-Deploy":    "grill-me --> {skill} --> ship-gate",
+    "Performance":      "grill-me --> {skill} --> pagespeed-enhancer",
+    "Architecture":     "grill-me --> {skill} --> code-reviewer",
+    "Copy-UX":          "humanizer --> {skill}",
+    "Workflow-Session": "{skill}",
+    "Billing-SaaS":     "grill-me --> {skill} --> security-review --> code-reviewer",
+    "Code-Quality":     "grill-me --> code-reviewer --> {skill}",
+}
 
 
 def load_taxonomy():
@@ -81,16 +102,6 @@ def detect_task_type(text: str) -> str | None:
     return None
 
 
-def get_qa_gate(task_type: str | None) -> str | None:
-    if task_type in ("BUG", "REFACTOR"):
-        return "grill-me + adversarial-reviewer"
-    if task_type == "DESIGN_FEATURE":
-        return "brainstorming + grill-me"
-    if task_type == "DB":
-        return "grill-me + security-review"
-    return None
-
-
 def score_category(cat_data: dict, text: str, file_path: str) -> int:
     score = 0
     t = text.lower()
@@ -126,7 +137,7 @@ def detect_subtools(skill_data: dict, text: str) -> list[str]:
 
 def route(taxonomy, prompt_text: str, file_path: str):
     if not taxonomy:
-        return None, None, None
+        return None, None, [], None
 
     # Score all categories
     cat_scores = {}
@@ -136,14 +147,23 @@ def route(taxonomy, prompt_text: str, file_path: str):
             cat_scores[cat_name] = s
 
     if not cat_scores:
-        return None, None, None
+        # Fallback: detect task type and use default category
+        text_lower = prompt_text.lower() + file_path.lower()
+        if any(kw in text_lower for kw in DB_KW):
+            cat_scores["Database"] = 1
+        elif any(kw in text_lower for kw in BUG_KW):
+            cat_scores["Frontend-Code"] = 1
+        elif any(kw in text_lower for kw in REFACTOR_KW):
+            cat_scores["Code-Quality"] = 1
+        else:
+            return None, None, [], None
 
     best_cat = max(cat_scores, key=cat_scores.get)
     cat_data = taxonomy["categories"][best_cat]
     skills = cat_data.get("skills", [])
 
     if not skills:
-        return best_cat, None, []
+        return best_cat, None, [], None
 
     # Score skills within category
     scored = [(s["name"], score_skill(s, prompt_text), s) for s in skills]
@@ -158,7 +178,14 @@ def route(taxonomy, prompt_text: str, file_path: str):
     if subtools:
         skill_str += ":" + "+".join(subtools)
 
-    return best_cat, skill_str, alts
+    raw_seq = CATEGORY_SEQUENCES.get(best_cat, "grill-me --> {skill} --> code-reviewer")
+    raw_seq = raw_seq.replace("{skill}", skill_str)
+    # Deduplicate consecutive identical steps
+    steps = [s.strip() for s in raw_seq.split("-->")]
+    deduped = [steps[0]] + [s for i, s in enumerate(steps[1:], 1) if s != steps[i - 1]]
+    sequence = " --> ".join(deduped)
+
+    return best_cat, skill_str, alts, sequence
 
 
 def main() -> int:
@@ -190,18 +217,14 @@ def main() -> int:
             return 0
 
     taxonomy = load_taxonomy()
-    category, skill_str, alts = route(taxonomy, prompt_text, file_path)
+    category, skill_str, alts, sequence = route(taxonomy, prompt_text, file_path)
 
     lines = []
     if skill_str:
-        alt_str = f" (alt: {', '.join(alts)})" if alts else ""
-        lines.append(f"SKILL ROUTE: {category} → {skill_str}{alt_str}")
-
-    if prompt_text:
-        task_type = detect_task_type(prompt_text)
-        qa = get_qa_gate(task_type)
-        if qa:
-            lines.append(f"QA-GATE SKILLS: {qa}")
+        primary = skill_str.split(":")[0]
+        alt_str = f" | alt: {', '.join(alts)}" if alts else ""
+        lines.append(f"[MANDATORY] Task: {category}. Invoke Skill(skill='{primary}') BEFORE writing code.{alt_str}")
+        lines.append(f"SEQUENCE: {sequence}")
 
     if not lines:
         print(json.dumps({}))
