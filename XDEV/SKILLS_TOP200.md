@@ -1,346 +1,503 @@
-﻿# SKILLS MASTER — BookIT SaaS
+# SKILLS MASTER — BookIT SaaS
 
-> Curated for: **Next.js 16 · React 19+Compiler · Tailwind v4 · Supabase · Framer Motion v12 · GSAP · TanStack Query v5 · Zustand v5 · Monobank · Vercel Fluid Compute**
-> **Updated:** 2026-06-16 | **227 local skills** in `bookit/.claude/skills/` | packages: vercel · supabase · si · playwright · claude-code-setup · frontend-design
-> **Sources:** boraoztunc/skills · bear2u/my-skills · NickCrew/claude-cortex · antigravity (unpackaged→local) · engineering-skills (unpackaged→local) · engineering-advanced-skills (unpackaged→local)
+> Curated for: **Next.js 16 · React 19+Compiler · Tailwind v4 · Supabase · Framer Motion v12 · TanStack Query v5 · Zustand v5 · Monobank · Vercel**
+> **Updated:** 2026-06-16 | **LOCAL skills** in `bookit/.claude/skills/` | packages: vercel · supabase · si · playwright
+> **QA GATE enforced by hook:** `grill-me` або `adversarial-reviewer` ОБОВ'ЯЗКОВО перед першим Edit/Write .ts/.tsx/.sql
+
+---
+
+## DECISION GUIDE — ЯКЩО ... ТО ...
+
+> Основне правило: спочатку знайди свою ситуацію тут, потім бери скіл зі списку нижче.
+
+### ПЕРЕД КОДОМ (QA Gate — фізично enforced)
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| Новий таск, є план — перевірити чи все врахував | `grill-me` | Задає 5-10 гострих питань, знаходить дірки до коду |
+| Готовий PR або фіча — фінальний стрес-тест | `adversarial-reviewer` | 3 ворожих персони: Saboteur / New Hire / Security Auditor |
+| Задача нечітка, не розумієш scope | `ask-questions-if-underspecified` | Структуровані уточнення перед роботою |
+| Треба spec перед складною фічею | `spec-driven-workflow` | Spec IS the contract — нічого не будується поза spec |
+| Не знаєш з чого почати великий таск | `writing-plans` | Крок за кроком план з deliverables |
+
+### UI / ДИЗАЙН
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| Будуєш новий компонент / сторінку з нуля | `design-taste-frontend` | PRIMARY UI генератор — Frost/Blossom/Studio токени, vaul, spring |
+| Анімації, micro-interactions, polish | `emil-design-eng` | Emil Kowalski стиль — spring const, popLayout, GPU layers |
+| Аудит готового UI (виглядає дешево/погано) | `impeccable` | 27-rule audit — pixel-perfect, anti-pattern detection |
+| Преміум landing/hero/portfolio блоки | `high-end-visual-design` | Agency-grade — rhythm, depth, fluid effects |
+| Будь-який текст для UI: кнопки, лейбли, помідомлення | `humanizer` | ЗАЛІЗНЕ ПРАВИЛО — весь UI copy через humanizer |
+| UX flow, user journey, drop-off аналіз | `ux-flow` | User journey design, touchpoints |
+| Micro-copy: empty states, errors, placeholders | `ux-copy` | Conversational, helpful tone |
+| CTA, конверсія onboarding | `onboarding-cro` | Aha-moment, activation, friction reduction |
+| Upgrade / Pro upsell сторінки | `paywall-upgrade-cro` | Paywall design, upgrade triggers |
+
+### КОД / ФІЧІ
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| React компонент + хуки | `react-best-practices` | React 19 patterns, hooks, Server Components |
+| Next.js App Router: layouts, RSC, streaming | `nextjs-app-router-patterns` | App Router patterns — наш primary stack |
+| Supabase auth, cookie sessions | `nextjs-supabase-auth` | Cookie auth + server components + RLS |
+| TanStack Query: кеш, мутації | `tanstack-query-expert` | v5 patterns — optimistic updates, invalidation |
+| Zustand state management | `zustand-store-ts` | v5 slices, devtools, persist |
+| TypeScript: складні типи | `typescript-expert` | Strict mode, generics, utility types |
+| Tailwind v4: CSS-first config | `tailwind-patterns` | v4 specific — no tailwind.config.ts |
+| Vaul BottomSheets, drawer pattern | `mobile-design` | touch targets 44px, safe-area, vaul |
+| Zod validation + React Hook Form | `zod-validation-expert` | Schema validation, form integration |
+| Framer Motion: анімації не плавні | `fixing-motion-performance` | GPU layers, popLayout, spring as const |
+| PWA, Web Push VAPID | `progressive-web-app` | VAPID push notifications |
+| Accessibility: div замість button | `fixing-accessibility` | IRON RULE: div→button, aria-label |
+
+### BACKEND / DB
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| Server Actions, API routes | `senior-backend` | Server Actions patterns, error handling |
+| Нова Supabase міграція | `create-migration` | search_path, SECURITY DEFINER, RLS — наш формат |
+| RLS policies | `supabase-automation` | RLS design, edge functions, storage |
+| Повільні SQL запити | `postgresql-optimization` | EXPLAIN ANALYZE, indexes, vacuum |
+| Складний SQL (CTE, window functions) | `sql-optimization-patterns` | Query optimization patterns |
+| Типізовані помилки, parseError() | `error-handling-patterns` | IRON RULE: parseError() для всіх помилок |
+| Background jobs, notifications | `inngest` | Durable workflows, retries |
+| Cron jobs (check-uncompleted) | `trigger-dev` | Scheduled tasks patterns |
+| Monobank webhook, payments | `payment-integration` | Webhooks, idempotency, Ed25519 |
+
+### БАГИ / DEBUG
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| Конкретна фіча не працює | `focused-fix` | Глибокий repair БЕЗ cleanup навколо |
+| Не розумієш root cause | `root-cause-tracing` | Why→why→why chain |
+| Race condition, async баг | `condition-based-waiting` | Polling vs sleep — Playwright race bugs |
+| Playwright тести падають | `systematic-debugging` | 4-phase debug: root cause → pattern → hypothesis → fix |
+| Діагностика помилки зі stack trace | `error-detective` | Stack trace analysis, error patterns |
+| Суспільний аналіз проблеми | `diagnose` | Multi-angle diagnosis |
+
+### БЕЗПЕКА
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| Security review нового endpoint / RLS | `security-audit` | Комплексний audit: RLS, injection, auth |
+| OWASP checklist перед деплоєм | `owasp-top-10` | Top 10: injection, auth, XSS, IDOR |
+| Auth implementation | `auth-implementation-patterns` | Cookie sessions, OTP, refresh tokens |
+| Secrets, env vars | `env-secrets-manager` | Never inline service key |
+| SQL injection / RLS bypass | `sql-injection-testing` | Prevention + RLS bypass detection |
+| Швидкий security check | `vibe-security` | Fast security checks |
+
+### ТЕСТИ
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| Playwright E2E тести | `playwright-skill` | Selectors, assertions, tracing |
+| Vitest unit тести | `javascript-testing-patterns` | Mocking, coverage, snapshots |
+| TDD workflow | `tdd-workflow` | Red-green-refactor, test-first |
+| Генерація тестів | `test-generation` | Coverage goals для нового коду |
+| Фікс падаючих тестів | `test-fixing` | Root cause, не suppress |
+| A11y audit | `accessibility-compliance-accessibility-audit` | WCAG 2.1 AA, Playwright a11y |
+
+### ДЕПЛОЙ / RELEASE
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| ПЕРЕД vercel --prod (завжди) | `ship-gate` | 8-category pre-deploy checklist |
+| Vercel проблеми, logs | `devops-troubleshooter` | Vercel logs, function errors |
+| Git commit формат | `atomic-commits` | Conventional commits, одна логічна зміна |
+| Changelog з commits | `changelog-generator` | Auto-changelog |
+| Release checklist | `release-prep` | Validation → versioning → deploy |
+
+### CODE REVIEW / ЯКІСТЬ
+
+| Ситуація | Скіл | Чому |
+|----------|------|------|
+| Code review перед merge | `code-reviewer` | Correctness, patterns, security |
+| Спростити код | `simplify-code` | Зменшення складності |
+| Dead code, cleanup | `repo-cleanup` | Stale deps, unused code |
+| Витягнути реусабельний паттерн | `si:extract` | Extract → reusable skill package |
+| Верифікація "done" | `verification-before-completion` | Checklist перед закриттям |
+| AI-sycophancy в відповідях | `anti-sycophancy` | Критичне мислення |
+
+---
+
+## MANDATORY CHAINS (завжди комбінуй)
+
+```
+НОВИЙ ТАСК:
+  grill-me → [код] → code-reviewer → ship-gate → vercel --prod
+
+UI КОМПОНЕНТ:
+  grill-me → design-taste-frontend → humanizer → impeccable → emil-design-eng (якщо анімації)
+
+НОВА ФІЧА:
+  spec-driven-workflow → grill-me → senior-frontend|senior-backend → code-reviewer → ship-gate
+
+КРИТИЧНИЙ БАГ:
+  focused-fix → root-cause-tracing → systematic-debugging → test-generation
+
+DB МІГРАЦІЯ:
+  create-migration → supabase-automation → sql-injection-testing → security-audit
+
+SECURITY SENSITIVE:
+  security-audit → owasp-top-10 → adversarial-reviewer → ship-gate
+
+СЕСІЯ ЗАВЕРШЕНА (автоматично після Stop):
+  si:self-improving-agent → mempalace_add_drawer → TRACKER.md → HANDOFF.md
+```
+
+---
+
+## LOCAL SKILLS (bookit/.claude/skills/) — Найвищий пріоритет
+
+> Ці скіли налаштовані КОНКРЕТНО під BookIT: Frost/Blossom/Studio теми, Supabase RLS, vaul drawers, Ukrainian copy.
+
+| Скіл | КОЛИ використовувати | Ланцюг |
+|------|----------------------|--------|
+| `grill-me` | **ПЕРШИМ** перед будь-яким кодом — стрес-тест плану | → design-taste-frontend або senior-frontend |
+| `adversarial-reviewer` | Перед merge складної фічі, 3 ворожих персони | → ship-gate |
+| `design-taste-frontend` | Новий UI компонент, сторінка, redesign з нуля | → humanizer → impeccable |
+| `emil-design-eng` | Framer Motion анімації, spring, micro-interactions | Після design-taste-frontend |
+| `impeccable` | Аудит готового UI: pixel-perfect, anti-patterns | Завжди після дизайн-ітерації |
+| `high-end-visual-design` | Преміум блоки: landing hero, portfolio showcase | → impeccable |
+| `humanizer` | БУДЬ-ЯКИЙ UI текст: кнопки, лейбли, повідомлення | Після написання copy |
+| `focused-fix` | Конкретна фіча зламана в кількох файлах | Самостійно або → code-reviewer |
+| `spec-driven-workflow` | Складна нова фіча — spec ПЕРЕД кодом | → grill-me → senior-frontend |
+| `code-reviewer` | Code review перед коммітом | Завжди перед merge |
+| `senior-frontend` | React/Next.js архітектурні рішення | → code-reviewer |
+| `senior-backend` | Server Actions, API, Supabase RPC | → security-audit |
+| `ui-ux-pro-max` | Комплексний UX + системне мислення | На початку складного UI таску |
+| `create-migration` | Нова Supabase міграція (search_path, SECURITY DEFINER) | → supabase-automation |
+| `handoff` | Кінець сесії → handoff doc | → si:self-improving-agent |
 
 ---
 
 ## PLANNING & THINKING (12)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 2 | `ask-questions-if-underspecified` | Задає уточнюючі питання якщо завдання недоозначено |
-| 3 | `clarity-gate` | Gate-check перед будь-якою дією — зупиняє рух без ясності |
-| 4 | `writing-plans` | Структуровані плани реалізації з кроками |
-| 5 | `progressive-estimation` | Прогресивна оцінка складності задач |
-| 6 | `brainstorming` | Генерація ідей без самоцензури |
-| 7 | `multi-perspective-analysis` | Симулює кількох радників з різними поглядами |
-| 9 | `product-manager` | PM-мислення: пріоритети, impact, roadmap |
-| 10 | `goal-analyzer` | Аналіз цілей задач відносно бізнес-метрик |
-| 11 | `architecture-decision-records` | ADR: фіксація архітектурних рішень з обгрунтуванням |
-| 12 | `dos-verify-done-claims` | Верифікація заявлених "done" — протидія самообману |
-| 13 | `requirements-discovery` | Виявлення вимог: питання, edge cases, constraints |
-| 14 | `constructive-dissent` | Конструктивне несхвалення: "ні, але..." |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `grill-me` | Перед будь-яким кодом | 5-10 гострих питань: scope, edge cases, dependencies, risks |
+| `ask-questions-if-underspecified` | Задача нечітка | Структуровані уточнення: scope, style, palette, motion, priority |
+| `writing-plans` | Складний таск без чіткого шляху | Покроковий план з deliverables і критеріями done |
+| `progressive-estimation` | Оцінка складності | Прогресивна оцінка: quick win / medium / complex |
+| `brainstorming` | Генерація ідей | Без самоцензури — всі варіанти на стіл |
+| `multi-perspective-analysis` | Стратегічне рішення | Симулює кількох радників: tech / business / user |
+| `product-manager` | Пріоритизація фіч | PM-мислення: impact vs effort, roadmap |
+| `goal-analyzer` | Перевірка задачі vs бізнес-мета | Чи цей таск справді рухає метрику? |
+| `architecture-decision-records` | Архітектурне рішення | ADR: options → decision → consequences |
+| `requirements-discovery` | Нова складна фіча | Edge cases, constraints, non-functional requirements |
+| `constructive-dissent` | Потрібна критика плану | "Ні, але..." — конструктивне незгодження |
+| `anti-sycophancy` | Claude занадто погоджується | Протидія угодовству, критичний аналіз |
 
 ---
 
-## FRONTEND DEVELOPMENT (40) ★ EXPANDED
+## FRONTEND DEVELOPMENT (40)
 
-> **Контекст:** Next.js 16+ App Router · React 19 + React Compiler · TypeScript strict · Tailwind v4 (CSS-first, no config.ts) · TanStack Query v5 · Zustand v5 · Framer Motion v12.35.1 (mode=popLayout, spring as const) · GSAP + ScrollTrigger (landing) · React Hook Form + Zod v4 · vaul BottomSheets (not bare framer) · Recharts · Lucide React (no emoji)
+> **Stack:** Next.js 16 App Router · React 19+Compiler · Tailwind v4 (CSS-first, no tailwind.config.ts) · TanStack Query v5 · Zustand v5 · Framer Motion v12.35.1 (mode=popLayout, spring as const) · vaul BottomSheets · React Hook Form + Zod v4 · Recharts · Lucide React (no emoji)
 
-| # | Skill | Опис | Relevance |
-|---|-------|------|-----------|
-| 15 | `senior-frontend` | Старший frontend: повний стек React/Next.js | CORE |
-| 16 | `nextjs-app-router-patterns` | App Router: RSC, layouts, streaming, parallel routes | CORE — наш primary pattern |
-| 17 | `nextjs-best-practices` | Next.js: caching strategies, SEO metadata API, routing | CORE |
-| 18 | `nextjs-supabase-auth` | Next.js + Supabase: cookie auth, server components | CRITICAL — наш auth stack |
-| 19 | `react-best-practices` | React 19: hooks, Server Components, composition | CORE |
-| 20 | `react-patterns` | Compound components, portals, context patterns | HIGH |
-| 21 | `react-state-management` | Zustand v5, server state, optimistic updates | CORE — Zustand v5 used |
-| 22 | `react-component-performance` | React Compiler aware: memo, useMemo, Suspense | HIGH — React 19 Compiler |
-| 23 | `react-performance-optimization` | Virtualization (useWindowVirtualizer!), code splitting | CRITICAL — ClientsPage uses it |
-| 24 | `react-ui-patterns` | Lists, forms, modals, drawer patterns | HIGH |
-| 25 | `tanstack-query-expert` | TanStack Query v5: caching, mutations, invalidation | CRITICAL — primary data layer |
-| 26 | `typescript-expert` | TypeScript strict: generics, utility types, noImplicitAny | CRITICAL — strict mode always |
-| 27 | `typescript-advanced-patterns` | Discriminated unions, branded types, template literals | HIGH — complex domain types |
-| 28 | `tailwind-patterns` | Tailwind v4: CSS-first config, new syntax, variants | CRITICAL — v4 specific |
-| 29 | `tailwind` | Tailwind v4.2 browser-runtime: arbitrary values, plugins | HIGH — v4 migration ref |
-| 30 | `tailwind-design-system` | Design tokens на Tailwind: CSS vars, scale | HIGH |
-| 31 | `shadcn` | shadcn/ui: компоненти, кастомізація, theming | HIGH |
-| 32 | `radix-ui-design-system` | Radix UI: accessible primitives, composition | HIGH |
-| 33 | `zustand-store-ts` | Zustand v5 + TypeScript: slices, devtools, persist | CORE — primary UI state |
-| 34 | `zod-validation-expert` | Zod v4: schema validation, form integration, infer | CRITICAL — React Hook Form + Zod |
-| 35 | `native-data-fetching` | Next.js fetch: cache(), revalidate, ISR patterns | HIGH |
-| 36 | `web-performance-optimization` | Core Web Vitals: LCP, CLS, INP — Vercel dashboard | HIGH |
-| 37 | `frontend-api-integration-patterns` | Error boundaries, loading states, suspense | HIGH |
-| 38 | `scroll-experience` | Scroll UX: GSAP ScrollTrigger, parallax, pin | HIGH — landing GSAP stack |
-| 39 | `fixing-motion-performance` | Framer Motion: GPU layers, popLayout, spring const | CRITICAL — iron rule |
-| 40 | `i18n-localization` | Локалізація: Ukrainian plurals (pluralUk!), SSR | CRITICAL — pluralUk always |
-| 41 | `modern-javascript-patterns` | ES2024: async/await, optional chaining, structuredClone | HIGH |
-| 42 | `form-cro` | React Hook Form UX: validation feedback, completion | HIGH |
-| 43 | `progressive-web-app` | PWA: Web Push (VAPID!), service workers, install | CRITICAL — push notifications |
-| 44 | `mobile-design` | Mobile-first: touch targets ≥44px, safe-area, vaul | CRITICAL — vaul rule |
-| 45 | `frontend-design` | Production-grade interfaces від нуля | HIGH |
-| 46 | `vercel-react-best-practices` | Vercel-specific: streaming, PPR, cache headers | HIGH — our hosting |
-| 47 | `make-interfaces-feel-better` | UI polish: spacing rhythm, micro-interactions, "juice" | HIGH — premium SaaS feel |
-| 48 | `linear-local-first-architecture` | Local-first: optimistic updates, instant UI | HIGH — booking wizard |
-| 49 | `landing-page-guide-v2` | Landing page конверсія: 11 elements framework | HIGH — landing optimization |
-| 50 | `nextjs15-init` | Next.js 15/16 init: App Router, shadcn, Zustand setup | MED — new project ref |
-| 51 | `interaction-design` | Micro-interactions: hover, focus, transitions, feedback | HIGH — premium feel |
-| 52 | `animejs-animation` | Anime.js: timeline, stagger (used in landing) | MED |
-| 53 | `scroll-experience` | Infinite scroll, snap, parallax patterns | MED |
-| 54 | `fixing-accessibility` | div→button (IRON RULE!), focus, keyboard nav | CRITICAL |
-
----
-
-## BACKEND & API (24) ★ EXPANDED
-
-> **Контекст:** Next.js Server Actions (primary) · Supabase RPC (search_path critical!) · proxy.ts edge guard · Monobank webhook (Ed25519 signature) · Web Push API (VAPID) · Telegram Bot API · TurboSMS · NotificationOrchestrator · SmartSlots engine · DynamicPricing engine · safeQuery/safeMutation wrappers · parseError() для всіх помилок
-
-| # | Skill | Опис | Relevance |
-|---|-------|------|-----------|
-| 55 | `senior-backend` | Старший backend: архітектура, Server Actions, scalability | CORE |
-| 56 | `senior-backend` | Backend engineering: patterns, performance, reliability | CORE |
-| 57 | `nodejs-best-practices` | Node.js: error handling, async patterns, structure | HIGH |
-| 58 | `nodejs-backend-patterns` | Service layer, repositories, dependency injection | HIGH |
-| 59 | `api-design-principles` | REST/RPC design: versioning, errors, rate limiting | HIGH |
-| 60 | `api-design-reviewer` | API review: consistency, DX, security, contracts | HIGH |
-| 61 | `openapi-specification` | OpenAPI 3.x: spec design, validation, documentation | MED |
-| 62 | `api-gateway-patterns` | API gateway: routing, auth, rate limiting, composition | MED |
-| 63 | `error-handling-patterns` | Typed errors, parseError(), boundaries (iron rule!) | CRITICAL |
-| 64 | `backend-architect` | Backend архітектура: layers, bounded contexts | HIGH |
-| 65 | `hono` | Hono: edge-ready TypeScript API (for RPC endpoints) | MED |
-| 66 | `api-patterns` | Auth, rate limiting, pagination, cursor patterns | HIGH |
-| 67 | `inngest` | Durable workflows: background jobs, retries | HIGH — notifications |
-| 68 | `trigger-dev` | Scheduled tasks: check-uncompleted cron | HIGH — cron jobs |
-| 69 | `bullmq-specialist` | Queue management: retry, concurrency, DLQ | MED |
-| 70 | `domain-driven-design` | DDD: entities, aggregates, domain events | HIGH |
-| 71 | `cqrs-event-sourcing` | CQRS + Event Sourcing: read/write separation | MED — analytics |
-| 72 | `cqrs-implementation` | CQRS implementation паттерни | MED |
-| 73 | `microservices-patterns` | Communication, resilience, circuit breakers | MED |
-| 74 | `feature-implementation` | Structured workflow: spec → code → test → deploy | HIGH |
-| 75 | `workflow-feature` | Step-by-step workflow для нової фічі | HIGH |
-| 76 | `workflow-bug-fix` | Structured bug fix: reproduce → isolate → fix | CRITICAL |
-| 77 | `root-cause-tracing` | Why→why→why chain для складних багів | HIGH |
-| 78 | `event-sourcing-architect` | Event sourcing: audit log, temporal queries | MED |
+| Скіл | КОЛИ | Relevance |
+|------|------|-----------|
+| `senior-frontend` | Архітектурні рішення React/Next.js, senior code review | CORE |
+| `nextjs-app-router-patterns` | RSC, layouts, streaming, parallel routes, loading.tsx | CORE — primary pattern |
+| `nextjs-best-practices` | Caching strategies, SEO metadata API, routing guards | CORE |
+| `nextjs-supabase-auth` | Cookie auth, server components, middleware | CRITICAL — наш auth stack |
+| `react-best-practices` | React 19: hooks rules, Server Components, hydration | CORE |
+| `react-patterns` | Compound components, portals, render props, composition | HIGH |
+| `react-state-management` | Zustand v5: слайси, devtools, persist, optimistic | CORE — Zustand primary |
+| `react-component-performance` | memo, useMemo, React Compiler aware, Suspense boundaries | HIGH |
+| `react-performance-optimization` | useWindowVirtualizer (ClientsPage!), code splitting, lazy | CRITICAL |
+| `react-ui-patterns` | Lists, forms, modals, infinite scroll, skeleton | HIGH |
+| `tanstack-query-expert` | TanStack Query v5: caching, mutations, prefetch, stale | CRITICAL — primary data |
+| `typescript-expert` | Strict mode: generics, utility types, discriminated unions | CRITICAL — strict always |
+| `typescript-advanced-patterns` | Branded types, template literals, conditional types | HIGH |
+| `tailwind-patterns` | Tailwind v4: @import syntax, arbitrary values, variants | CRITICAL — v4 specific |
+| `tailwind` | v4 browser-runtime: plugins, JIT, migration refs | HIGH |
+| `tailwind-design-system` | CSS vars, design tokens, theme scaling | HIGH |
+| `shadcn` | shadcn/ui: components, customization, theming | HIGH |
+| `radix-ui-design-system` | Accessible primitives: Dialog, Select, Popover | HIGH |
+| `zustand-store-ts` | Zustand v5 + TypeScript: slices, middleware, immer | CORE |
+| `zod-validation-expert` | Zod v4: schema design, form integration, .infer | CRITICAL |
+| `native-data-fetching` | Next.js fetch: cache(), revalidate tags, ISR | HIGH |
+| `web-performance-optimization` | Core Web Vitals: LCP, CLS, INP — Vercel dashboard | HIGH |
+| `frontend-api-integration-patterns` | Error boundaries, loading states, suspense, retry | HIGH |
+| `scroll-experience` | GSAP ScrollTrigger, parallax, pin — landing sections | HIGH |
+| `fixing-motion-performance` | Framer Motion: GPU layers, will-change, layout thrash | CRITICAL — iron rule |
+| `i18n-localization` | Ukrainian plurals (pluralUk()!), date formats, SSR | CRITICAL — pluralUk завжди |
+| `modern-javascript-patterns` | ES2024: async/await, optional chaining, WeakRef | HIGH |
+| `form-cro` | React Hook Form UX: real-time validation, completion % | HIGH |
+| `progressive-web-app` | PWA: Web Push (VAPID!), service workers, install prompt | CRITICAL — push enabled |
+| `mobile-design` | Touch targets ≥44px, safe-area-inset, vaul BottomSheets | CRITICAL — vaul rule |
+| `frontend-design` | Production-grade frontend від нуля | HIGH |
+| `vercel-react-best-practices` | Vercel: streaming, PPR, cache headers, middleware | HIGH |
+| `make-interfaces-feel-better` | UI polish: spacing rhythm, micro-interactions, "juice" | HIGH |
+| `linear-local-first-architecture` | Optimistic updates, instant UI без skeleton | HIGH |
+| `landing-page-guide-v2` | Landing conversion: 11 elements framework | HIGH |
+| `nextjs15-init` | Next.js 15/16 init: App Router, shadcn, Zustand setup | MED — new project ref |
+| `interaction-design` | Hover states, focus rings, press feedback, transitions | HIGH |
+| `animejs-animation` | Anime.js: timeline, stagger (landing animations) | MED |
+| `fixing-accessibility` | div→button (IRON RULE!), focus management, keyboard nav | CRITICAL |
+| `react-doctor` | React health score: lint, dead code, a11y, bundle, arch | HIGH — periodic audit |
 
 ---
 
-## DATABASE (16) ★ EXPANDED
+## BACKEND & API (24)
 
-> **Контекст:** Supabase PostgreSQL · RLS policies (2 P0 BLOCKERS знайдено в AUDIT!) · 126+ міграцій (npx supabase db push) · 19 RPC функцій з search_path (security fix pending!) · Realtime subscriptions · Supabase Storage · admin client bypass RLS (тільки server) · safeQuery/safeMutation обгортки · `createAdminClient()` — єдине джерело
+> **Stack:** Next.js Server Actions · Supabase RPC (search_path CRITICAL!) · proxy.ts edge guard · Monobank webhook (Ed25519) · Web Push API (VAPID) · Telegram Bot API · NotificationOrchestrator · SmartSlots · DynamicPricing · safeQuery/safeMutation · parseError()
 
-| # | Skill | Опис | Relevance |
-|---|-------|------|-----------|
-| 79 | `supabase:supabase` | Supabase MCP: execute SQL, RLS, migrations, functions | CRITICAL — primary DB |
-| 80 | `supabase:supabase-postgres-best-practices` | Supabase best practices: RLS design, indexes, RPC | CRITICAL |
-| 81 | `postgres-best-practices` | PostgreSQL: indexes, constraints, normalization | HIGH |
-| 82 | `postgresql-optimization` | EXPLAIN ANALYZE, indexes, vacuum, statistics | HIGH |
-| 83 | `sql-optimization-patterns` | CTE, window functions, joins, partitioning | HIGH |
-| 84 | `database-designer` | ER diagram, relationships, normalization | HIGH |
-| 85 | `database-schema-designer` | Migration-friendly schema: zero-downtime changes | CRITICAL — 126+ migrations |
-| 86 | `sql-database-assistant` | SQL queries: complex joins, aggregations, debugging | HIGH |
-| 87 | `database-design-patterns` | Schema patterns: multi-tenant, audit log, polymorphic | HIGH |
-| 88 | `database-migration` | Safe migrations: rollback, zero-downtime, RLS fixes | CRITICAL |
-| 89 | `database-optimizer` | Комплексна оптимізація: slow queries, N+1, indexes | HIGH |
-| 90 | `database-design` | Design principles for SaaS: tenant isolation, RLS | HIGH |
-| 91 | `supabase-automation` | RLS policies, edge functions, storage rules | HIGH |
-| 92 | `neon-postgres` | Postgres advanced patterns (reference for Supabase) | MED |
-| 93 | `sql-injection-testing` | SQL injection prevention (search_path attack!) | CRITICAL — P0 blocker |
-| 94 | `security-scanning-security-sast` | SAST: статичний аналіз RLS та RPC | HIGH |
+| Скіл | КОЛИ | Relevance |
+|------|------|-----------|
+| `senior-backend` | Server Actions архітектура, service layer, RPC design | CORE |
+| `nodejs-best-practices` | Error handling, async patterns, project structure | HIGH |
+| `nodejs-backend-patterns` | Service layer, repositories, dependency injection | HIGH |
+| `api-design-principles` | REST/RPC design: versioning, errors, rate limiting | HIGH |
+| `api-design-reviewer` | API review: consistency, DX, security, contracts | HIGH |
+| `openapi-specification` | OpenAPI 3.x: spec design, validation, docs | MED |
+| `api-gateway-patterns` | Gateway: routing, auth, rate limiting, composition | MED |
+| `error-handling-patterns` | parseError() для ВСІХ помилок, typed errors, boundaries | CRITICAL — iron rule |
+| `backend-architect` | Backend layers, bounded contexts, service design | HIGH |
+| `hono` | Edge-ready TypeScript API (для RPC endpoint) | MED |
+| `api-patterns` | Auth patterns, pagination, cursor, rate limiting | HIGH |
+| `inngest` | Durable workflows: notifications, background jobs | HIGH |
+| `trigger-dev` | Scheduled tasks: check-uncompleted cron (Vercel Pro) | HIGH |
+| `bullmq-specialist` | Queue: retry, concurrency, DLQ, fan-out | MED |
+| `domain-driven-design` | DDD: entities, aggregates, domain events | HIGH |
+| `cqrs-event-sourcing` | CQRS + Event Sourcing: read/write separation | MED |
+| `cqrs-implementation` | CQRS implementation patterns | MED |
+| `microservices-patterns` | Communication, resilience, circuit breakers | MED |
+| `feature-implementation` | Structured: spec → code → test → deploy | HIGH |
+| `workflow-feature` | Step-by-step workflow для нової фічі | HIGH |
+| `workflow-bug-fix` | Structured bug fix: reproduce → isolate → fix → test | CRITICAL |
+| `root-cause-tracing` | Why→why→why chain для складних багів | HIGH |
+| `event-sourcing-architect` | Event sourcing: audit log, temporal queries | MED |
+
+---
+
+## DATABASE (16)
+
+> **Stack:** Supabase PostgreSQL · RLS (P0 BLOCKERS знайдено!) · 126+ міграцій · 19 RPC з search_path · Realtime · Storage · admin client bypass RLS (тільки server) · `createAdminClient()` ЄДИНЕ джерело
+
+| Скіл | КОЛИ | Relevance |
+|------|------|-----------|
+| `create-migration` | Будь-яка нова міграція: search_path, SECURITY DEFINER, RLS | CRITICAL — наш формат |
+| `supabase-automation` | RLS policies, edge functions, storage rules, triggers | CRITICAL |
+| `postgres-best-practices` | Indexes, constraints, normalization | HIGH |
+| `postgresql-optimization` | EXPLAIN ANALYZE, indexes, vacuum, statistics | HIGH |
+| `sql-optimization-patterns` | CTE, window functions, joins, partitioning | HIGH |
+| `database-designer` | ER diagram, relationships, normalization | HIGH |
+| `database-schema-designer` | Migration-friendly: zero-downtime, backwards compat | CRITICAL |
+| `sql-database-assistant` | Complex SQL: joins, aggregations, debugging queries | HIGH |
+| `database-design-patterns` | Multi-tenant, audit log, polymorphic, soft delete | HIGH |
+| `database-migration` | Safe migrations: rollback, zero-downtime, RLS fixes | CRITICAL |
+| `database-optimizer` | Slow queries, N+1, missing indexes, cardinality | HIGH |
+| `database-design` | SaaS schema principles: tenant isolation, RLS design | HIGH |
+| `neon-postgres` | Postgres advanced (reference for Supabase patterns) | MED |
+| `sql-injection-testing` | SQLi prevention + RLS bypass detection | CRITICAL |
+| `security-scanning-security-sast` | SAST: статичний аналіз RLS та RPC | HIGH |
+| `domain-driven-design` | Schema design aligned with domain model | MED |
 
 ---
 
 ## DESIGN & UX (11)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 95 | `ui-ux-pro-max` | Топ UI/UX: системне мислення, patterns, flows |
-| 97 | `emil-design-eng` | Emil Kowalski стиль: spring animations, micro-interactions |
-| 98 | `high-end-visual-design` | High-end visual: premium aesthetics, craft |
-| 99 | `impeccable` | Аудит UI: виявлення pixel-perfect проблем |
-| 100 | `humanizer` | Гуманізація UI-тексту: кнопки, лейбли, повідомлення |
-| 103 | `ux-copy` | UX копірайтинг: мікро-copy, CTA, feedback |
-| 104 | `ux-flow` | User flow design: journeys, touchpoints, drop-offs |
-| 109 | `ux-persuasion-engineer` | Persuasion design: nudges, social proof, anchoring |
-| 110 | `signup-flow-cro` | Signup flow CRO: конверсія, friction reduction |
-| 111 | `onboarding-cro` | Onboarding CRO: activation, aha-moment |
-| 113 | `paywall-upgrade-cro` | Paywall & upgrade CRO: Pro/Studio upsell |
-
-
----
-
-## SECURITY (22) ★ EXPANDED
-
-> **Контекст:** RLS policies (2 P0 BLOCKERS!) · Cookie→DB role check (не тільки cookie!) · 19 RPC з search_path (pending fix) · `createAdminClient()` — ЄДИНЕ джерело admin (ніколи inline) · `parseError()` — ВСІ помилки через нього · `generateSecureToken()` — ніколи crypto.randomUUID().slice() · Ed25519 webhook verification (Monobank) · Phone OTP auth · Monobank payments
-
-| # | Skill | Опис | Relevance |
-|---|-------|------|-----------|
-| 117 | `cloud-security` | Cloud security: IAM, secrets, network policies | CORE |
-| 118 | `security-pen-testing` | Pentest: OWASP, SQLi, XSS, auth bypass | HIGH |
-| 119 | `security-audit` | Комплексний security audit коду та RLS | CRITICAL |
-| 120 | `owasp-top-10` | OWASP Top 10: injection, auth, XSS, IDOR checklist | CRITICAL — P0 blockers |
-| 121 | `secure-coding-practices` | Secure coding: input validation, crypto, auth patterns | CRITICAL |
-| 122 | `vibe-security` | Швидкі security перевірки для vibe coders | HIGH |
-| 123 | `workflow-security-audit` | Security audit workflow для кожної нової фічі | HIGH |
-| 124 | `adversarial-review` | Скептичний review: "що тут може зламатись?" | HIGH — перед deploy |
-| 125 | `auth-implementation-patterns` | Auth: cookie sessions, JWT, OTP, refresh tokens | CRITICAL |
-| 126 | `broken-authentication` | Broken auth: session fixation, token leakage | CRITICAL |
-| 127 | `pci-compliance` | PCI DSS: payments, card data, Monobank webhooks | HIGH |
-| 128 | `gdpr-data-handling` | GDPR: data minimization, consent, retention | HIGH |
-| 129 | `api-security-best-practices` | API security: rate limiting, CORS, validation | HIGH |
-| 130 | `privacy-by-design` | Privacy by design: PII, minimal data collection | HIGH |
-| 131 | `env-secrets-manager` | Secrets: env vars rotation, never inline service key | CRITICAL |
-| 132 | `secrets-management` | Secret management patterns у codebase | CRITICAL |
-| 133 | `security-scanning-security-sast` | SAST: статичний аналіз на вразливості | HIGH |
-| 134 | `cc-skill-security-review` | Security review workflow для Claude Code | HIGH |
-| 135 | `sql-injection-testing` | SQLi prevention + RLS bypass detection | CRITICAL |
-| 136 | `security-requirement-extraction` | Витягування security вимог з задач | HIGH |
-| 137 | `threat-modeling-expert` | Threat modeling: STRIDE, attack trees | MED |
-| 138 | `security-compliance-compliance-check` | Compliance check перед релізом | MED |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `design-taste-frontend` | **PRIMARY** — новий UI компонент/сторінка від нуля | Frost/Studio/Blossom tokens, vaul, premium components |
+| `ui-ux-pro-max` | Системний UX: flows, patterns, architecture | Комплексний UX + системне мислення |
+| `emil-design-eng` | Анімації: spring, micro-interactions, GPU layers | Emil Kowalski стиль — spring as const, popLayout |
+| `high-end-visual-design` | Landing hero, portfolio showcase, premium blocks | Agency-grade: rhythm, depth, fluid |
+| `impeccable` | Аудит готового UI: pixel-perfect, anti-patterns | 27-rule audit — запускати після кожного дизайну |
+| `humanizer` | БУДЬ-ЯКИЙ UI текст без винятків | Кнопки, лейбли, повідомлення, заголовки |
+| `ux-copy` | Empty states, error messages, placeholders | Conversational, helpful micro-copy |
+| `ux-flow` | User journey, touchpoints, drop-off analysis | Flow design, conversion paths |
+| `ux-persuasion-engineer` | Nudges, social proof, anchoring | Behavioral psychology in UI |
+| `onboarding-cro` | Onboarding activation, aha-moment design | Friction reduction, step completion |
+| `paywall-upgrade-cro` | Pro/Studio upgrade screens | Upgrade triggers, value demonstration |
 
 ---
 
-## TESTING & QA (22) ★ EXPANDED
+## SECURITY (22)
 
-> **Контекст:** 42 unit tests (Vitest) · 55 E2E tests (Playwright) · 19 audit specs (Playwright) · `npm test` = Vitest · `npm run test:e2e` = seed + Playwright · Основні баги від відсутності condition-based waiting · race conditions у auth flow
+> **Critical context:** RLS (P0 BLOCKERS!), Cookie→DB role check, 19 RPC з search_path, `createAdminClient()` ЄДИНЕ джерело, `parseError()` ВСІ помилки, `generateSecureToken()` ніколи slice(), Ed25519 Monobank webhook
 
-| # | Skill | Опис | Relevance |
-|---|-------|------|-----------|
-| 139 | `e2e-testing` | E2E: Playwright workflow, test structure | CRITICAL — 55 E2E tests |
-| 140 | `e2e-testing-patterns` | Page objects, fixtures, auth setup, parallelism | CRITICAL |
-| 141 | `playwright-skill` | Playwright: selectors, assertions, tracing | CRITICAL |
-| 142 | `playwright` | Playwright browser automation: forms, screenshots | HIGH |
-| 143 | `webapp-testing` | Local web app testing toolkit з Playwright | HIGH |
-| 144 | `javascript-testing-patterns` | Vitest: mocking, coverage, snapshot testing | CRITICAL — unit tests |
-| 145 | `tdd-workflow` | TDD: red-green-refactor, test-first design | HIGH |
-| 146 | `senior-qa` | QA strategy: risk-based, test pyramid, coverage | HIGH |
-| 147 | `test-automator` | Test automation: CI integration, flaky detection | HIGH |
-| 148 | `test-fixing` | Фікс тестів: root cause, не просто suppress | CRITICAL |
-| 149 | `test-generation` | Генерація тестів для нового коду: coverage goals | HIGH |
-| 150 | `test-review` | Audit якості тестів: gaps, anti-patterns, coverage | HIGH |
-| 151 | `testing-anti-patterns` | Анти-паттерни: mock abuse, test pollution, duplication | CRITICAL |
-| 152 | `condition-based-waiting` | Race condition fix: polling vs sleep — Playwright! | CRITICAL — auth race bugs |
-| 153 | `systematic-debugging` | 4-phase debug: root cause → pattern → hypothesis → fix | CRITICAL |
-| 154 | `api-test-suite-builder` | API test suite: server actions testing | HIGH |
-| 155 | `k6-load-testing` | Load testing: k6, stress tests, booking endpoints | MED |
-| 156 | `accessibility-compliance-accessibility-audit` | A11y audit: WCAG 2.1 AA, Playwright a11y | HIGH |
-| 157 | `performance-testing-review-ai-review` | Performance testing AI review | MED |
-| 158 | `testing-qa` | QA стратегія: пріоритети, acceptance criteria | HIGH |
-| 159 | `testing-patterns` | Testing паттерни: unit, integration, e2e pyramid | HIGH |
-| 160 | `dev-workflows` | Build/test execution: npm scripts, DX improvement | MED |
+| Скіл | КОЛИ | Relevance |
+|------|------|-----------|
+| `security-audit` | Новий endpoint, нова RLS, будь-яка auth зміна | CRITICAL |
+| `owasp-top-10` | Перед кожним деплоєм: injection, XSS, IDOR | CRITICAL |
+| `adversarial-reviewer` | Pre-merge для security-sensitive змін | CRITICAL |
+| `auth-implementation-patterns` | Cookie sessions, JWT, OTP, refresh tokens | CRITICAL |
+| `broken-authentication` | Session fixation, token leakage, privilege escalation | CRITICAL |
+| `sql-injection-testing` | Нові RPC, нові запити, search_path | CRITICAL |
+| `env-secrets-manager` | Секрети, env vars, ніколи inline service key | CRITICAL |
+| `secrets-management` | Secret management patterns у codebase | CRITICAL |
+| `vibe-security` | Швидкий security check нового коду | HIGH |
+| `workflow-security-audit` | Security audit workflow для кожної нової фічі | HIGH |
+| `cloud-security` | IAM, secrets, network policies | HIGH |
+| `security-pen-testing` | Pentest: OWASP, SQLi, XSS, auth bypass | HIGH |
+| `pci-compliance` | Payments, card data, Monobank webhooks | HIGH |
+| `gdpr-data-handling` | Data minimization, consent, retention | HIGH |
+| `api-security-best-practices` | Rate limiting, CORS, validation, auth | HIGH |
+| `privacy-by-design` | PII, minimal data collection | HIGH |
+| `security-scanning-security-sast` | SAST: статичний аналіз | HIGH |
+| `cc-skill-security-review` | Security review workflow Claude Code | HIGH |
+| `security-requirement-extraction` | Security вимоги з задач | HIGH |
+| `threat-modeling-expert` | STRIDE, attack trees | MED |
+| `security-compliance-compliance-check` | Compliance перед релізом | MED |
+
+---
+
+## TESTING & QA (22)
+
+> **Stack:** 42 unit tests (Vitest) · 55 E2E (Playwright) · 19 audit specs · `npm test` = Vitest · `npm run test:e2e` = seed + Playwright
+
+| Скіл | КОЛИ | Relevance |
+|------|------|-----------|
+| `playwright-skill` | Playwright E2E: selectors, assertions, tracing | CRITICAL |
+| `e2e-testing` | E2E workflow, test structure, test plan | CRITICAL |
+| `e2e-testing-patterns` | Page objects, fixtures, auth setup, parallelism | CRITICAL |
+| `javascript-testing-patterns` | Vitest: mocking, coverage, snapshot testing | CRITICAL |
+| `condition-based-waiting` | Race conditions в Playwright, auth flow bugs | CRITICAL — auth race bugs |
+| `systematic-debugging` | 4-phase: root cause → pattern → hypothesis → fix | CRITICAL |
+| `tdd-workflow` | Red-green-refactor, test-first design | HIGH |
+| `tdd-guide` | TDD workflow + Vitest guide | HIGH |
+| `test-fixing` | Падаючі тести: root cause, не suppress! | CRITICAL |
+| `test-generation` | Coverage goals для нового коду | HIGH |
+| `senior-qa` | QA strategy: risk-based, test pyramid | HIGH |
+| `test-automator` | CI integration, flaky detection | HIGH |
+| `test-review` | Audit тестів: gaps, anti-patterns, coverage | HIGH |
+| `testing-anti-patterns` | Mock abuse, test pollution, duplication | CRITICAL |
+| `webapp-testing` | Local web app testing toolkit | HIGH |
+| `playwright` | Playwright browser automation | HIGH |
+| `api-test-suite-builder` | API test suite, server actions testing | HIGH |
+| `k6-load-testing` | Load testing: k6, stress tests, booking endpoints | MED |
+| `accessibility-compliance-accessibility-audit` | WCAG 2.1 AA, Playwright a11y | HIGH |
+| `performance-testing-review-ai-review` | Performance testing AI review | MED |
+| `testing-qa` | QA стратегія, acceptance criteria | HIGH |
+| `testing-patterns` | Unit, integration, e2e pyramid | HIGH |
 
 ---
 
 ## CODE QUALITY & REVIEW (11)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 161 | `code-reviewer` | Code review: correctness, patterns, security |
-| 162 | `code-review-excellence` | Глибокий code review з поясненнями |
-| 163 | `focused-fix` | Тільки проблему, без cleanup навколо |
-| 164 | `clean-code` | Clean code: naming, functions, principles |
-| 165 | `simplify-code` | Спрощення коду: зменшення складності |
-| 166 | `complexity-cuts` | Різання складності: рефакторинг, abstractions |
-| 169 | `bug-hunter` | Пошук багів: edge cases, race conditions |
-| 170 | `error-detective` | Діагностика помилок: stack trace, root cause |
-| 172 | `si:self-improving-agent` | Self-improving: витягує паттерни в скіли |
-| 173 | `verification-before-completion` | Верифікація перед "done": checklist |
-| 174 | `repo-cleanup` | Dead code, stale deps, unused tests cleanup |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `code-reviewer` | Перед кожним коммітом | Correctness, patterns, security, OWASP audit |
+| `code-review-excellence` | Глибокий pre-merge review | Детально з поясненнями та пропозиціями |
+| `focused-fix` | Конкретна фіча зламана в кількох файлах | Тільки проблему, без cleanup навколо |
+| `clean-code` | Код важко читати / підтримувати | Naming, functions, SRP, dry |
+| `simplify-code` | Код надто складний | Зменшення складності, abstractions |
+| `complexity-cuts` | Архітектурна складність | Рефакторинг, boundary reduction |
+| `bug-hunter` | Потрібен свіжий погляд на bugs | Edge cases, race conditions, off-by-one |
+| `error-detective` | Error з незрозумілим stack trace | Stack trace analysis, error patterns |
+| `si:self-improving-agent` | Кінець сесії (автоматично) | Self-improving: паттерни у MemPalace |
+| `verification-before-completion` | Перед "done" | Checklist: tsc + build + tests + docs |
+| `repo-cleanup` | Мертвий код, stale deps | Dead code, unused imports, tests cleanup |
 
 ---
 
-## DEVOPS & DEPLOYMENT (23) ★ EXPANDED
+## DEVOPS & DEPLOYMENT (23)
 
-> **Контекст:** Vercel Fluid Compute (300s timeout, Node.js 24) · GitHub Actions CI · Supabase CLI (npx supabase db push) · Turbopack (dev) · Vercel Pro (pending — cron `0 * * * *`) · One task = one `vercel --prod` deploy (sprint rule)
+> **Stack:** Vercel Fluid Compute (300s, Node.js 24) · GitHub Actions CI · Supabase CLI · Turbopack (dev) · One task = one `vercel --prod`
 
-| # | Skill | Опис | Relevance |
-|---|-------|------|-----------|
-| 175 | `vercel:deploy` | Vercel deploy: prod, preview, rollback | CRITICAL — наш hosting |
-| 176 | `vercel:env-vars` | Vercel env: pull, push, secrets management | CRITICAL |
-| 177 | `vercel:nextjs` | Next.js on Vercel: ISR, Fluid Compute, functions | CRITICAL |
-| 178 | `vercel:deployments-cicd` | CI/CD: GitHub Actions + Vercel, preview URLs | HIGH |
-| 179 | `vercel:runtime-cache` | Vercel caching: CDN, stale-while-revalidate, tags | HIGH |
-| 180 | `vercel:vercel-functions` | Fluid Compute: 300s timeout, concurrency reuse | HIGH |
-| 181 | `ci-cd-pipeline-builder` | CI/CD pipeline: build → test → deploy → notify | HIGH |
-| 182 | `github-actions-workflows` | GitHub Actions: matrix builds, reusable workflows | HIGH |
-| 183 | `build-optimization` | Build times: Turbopack config, caching, incremental | HIGH |
-| 184 | `atomic-commits` | Atomic commits: один commit = одна логічна зміна | CRITICAL — sprint rule |
-| 185 | `git-ops` | Git operations: smart commits, conventional format | HIGH |
-| 186 | `smart-git-automation` | Git hooks, workflows, aliases, auto-staging | HIGH |
-| 187 | `git-advanced-workflows` | Advanced git: rebase, cherry-pick, bisect, stash | HIGH |
-| 188 | `using-git-worktrees` | Git worktrees: isolated feature work | MED |
-| 189 | `release-manager` | Release: semantic versioning, tagging, changelogs | HIGH |
-| 190 | `changelog-generator` | Автогенерація changelog з commits | HIGH |
-| 191 | `release-prep` | Release checklist: validation → versioning → deploy | HIGH |
-| 192 | `release-analysis` | Аналіз promotion paths, rollback story | MED |
-| 193 | `deployment-engineer` | Zero-downtime deployment, rollback strategies | HIGH |
-| 194 | `devops-troubleshooter` | DevOps debug: Vercel logs, function errors | HIGH |
-| 195 | `code-changelog` | Changelog generation з git history | MED |
-| 196 | `dev-workflows` | DX improvement: npm scripts, tooling setup | MED |
-| 197 | `gitops-workflows` | GitOps: declarative deployment practices | MED |
+| Скіл | КОЛИ | Relevance |
+|------|------|-----------|
+| `ship-gate` | **ПЕРЕД vercel --prod завжди** | 8-category checklist: tsc, build, tests, security, perf, a11y, UX, docs |
+| `devops-troubleshooter` | Vercel помилки, function timeouts, logs | HIGH |
+| `atomic-commits` | Кожен коміт | Conventional format, one logical change |
+| `git-ops` | Git операції, merge conflicts | Smart commits, conventional format |
+| `smart-git-automation` | Автоматизація git workflow | Hooks, aliases, auto-staging |
+| `git-advanced-workflows` | Rebase, cherry-pick, bisect, stash | HIGH |
+| `using-git-worktrees` | Паралельна робота над фічами | Isolated feature work |
+| `release-manager` | Semantic versioning, tagging | HIGH |
+| `changelog-generator` | Автогенерація changelog з commits | HIGH |
+| `release-prep` | Release checklist: validation → versioning → deploy | HIGH |
+| `release-analysis` | Promotion paths, rollback story | MED |
+| `deployment-engineer` | Zero-downtime, rollback strategies | HIGH |
+| `ci-cd-pipeline-builder` | CI/CD: build → test → deploy → notify | HIGH |
+| `github-actions-workflows` | GitHub Actions: matrix builds, reusable | HIGH |
+| `build-optimization` | Build times: Turbopack, caching, incremental | HIGH |
+| `gitops-workflows` | GitOps: declarative deployment | MED |
+| `code-changelog` | Changelog з git history | MED |
 
 ---
 
 ## PAYMENTS & BUSINESS LOGIC (11)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 199 | `payment-integration` | Payment паттерни: webhooks, idempotency |
-| 200 | `billing-automation` | Billing: invoices, dunning, trial management |
-| 201 | `pricing-strategy` | Pricing: tiers, freemium, Starter/Pro/Studio |
-| 202 | `monetization` | Монетизація SaaS: LTV, ARPU, conversion |
-| 203 | `saas-multi-tenant` | Multi-tenant: RLS isolation, per-master data |
-| 204 | `saas-mvp-launcher` | SaaS launch: MVP checklist, go-to-market |
-| 205 | `referral-program` | Referral: C2C/C2B mechanics, attribution |
-| 206 | `churn-prevention` | Churn: signals, interventions, re-engagement |
-| 207 | `startup-metrics-framework` | Metrics: MRR, CAC, LTV, retention, NPS |
-| 208 | `analytics-tracking` | Analytics: PostHog events, funnels, cohorts |
-| 209 | `paywall-upgrade-cro` | Paywall CRO: upgrade triggers, Pro upsell |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `payment-integration` | Monobank webhooks, invoices, idempotency | Ed25519 signature, payment states |
+| `billing-automation` | Billing: invoices, dunning, trial management | Subscription lifecycle |
+| `pricing-strategy` | Pricing tiers: Starter/Pro/Studio | Freemium, upsell, trial |
+| `monetization` | Монетизація SaaS: LTV, ARPU, conversion | Growth metrics |
+| `saas-multi-tenant` | Multi-tenant: RLS isolation, per-master data | CRITICAL — наша архітектура |
+| `saas-mvp-launcher` | SaaS launch checklist, go-to-market | MED |
+| `referral-program` | Referral: C2C/C2B mechanics, attribution | Bounty, codes, tracking |
+| `churn-prevention` | Churn signals, interventions, re-engagement | Rebooking reminders |
+| `startup-metrics-framework` | MRR, CAC, LTV, retention, NPS | Analytics setup |
+| `paywall-upgrade-cro` | Paywall: upgrade triggers, Pro upsell | CRO design |
 
 ---
 
 ## WORKFLOW & AGENT PATTERNS (10)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 210 | `si:extract` | Extract reusable patterns у skill файли |
-| 211 | `si:review` | Review memory: що застаріло, що перенести |
-| 212 | `self-eval` | Self-evaluation: якість рішень, альтернативи |
-| 213 | `ship-gate` | Ship gate: checklist перед деплоєм |
-| 214 | `context-manager` | Context management в довгих сесіях |
-| 216 | `context-window-management` | Управління контекстним вікном LLM |
-| 217 | `dispatching-parallel-agents` | Паралельна відправка агентів |
-| 218 | `multi-agent-patterns` | Multi-agent: orchestration, handoffs |
-| 220 | `anti-sycophancy` | Протидія угодовству: критичне мислення |
-| 221 | `token-efficiency` | Стисла комунікація: символи, абревіатури |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `si:extract` | Знайдений reusable паттерн | Extract → portable skill package |
+| `si:review` | Раз на спринт | Review memory: застаріле → видалити |
+| `self-eval` | Сумніваєшся в рішенні | Self-evaluation: якість, альтернативи |
+| `ship-gate` | ПЕРЕД vercel --prod | 8-category pre-deploy audit |
+| `context-manager` | Довга сесія, context наближається до ліміту | Context management, pruning |
+| `context-window-management` | LLM context optimization | Управління контекстним вікном |
+| `dispatching-parallel-agents` | Незалежні задачі можна паралелити | Multi-agent dispatch |
+| `multi-agent-patterns` | Orchestration, handoffs між агентами | Coordination patterns |
+| `anti-sycophancy` | Claude занадто погоджується | Критичне мислення, push-back |
+| `token-efficiency` | Context window майже повний | Стисла комунікація |
+| `handoff` | Кінець сесії, потрібен handoff | Compact → handoff doc |
 
 ---
 
 ## CONTENT, SEO & MARKETING (10)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 222 | `stop-slop` | Видаляє AI-паттерни: "leverage", "comprehensive" |
-| 223 | `ai-tells-scan` | Швидке сканування тексту на AI-fingerprints |
-| 224 | `ai-tells-review` | Детальний review: rhythm, hedging, reflexes |
-| 225 | `ogilvy` | Огілві: benefits-first headlines, long-form copy |
-| 226 | `humanizer` | UI copy: кнопки, лейбли — людською мовою |
-| 227 | `ux-copy` | UX мікро-copy: empty states, errors, tooltips |
-| 228 | `seo-technical` | Технічний SEO: structured data, crawl, speed |
-| 229 | `nextjs-seo-indexing` | SEO Next.js: metadata API, OG, JSON-LD |
-| 230 | `schema-markup-generator` | Schema.org: LocalBusiness, SaaS markup |
-| 231 | `social-proof-architect` | Social proof: testimonials, ratings, badges |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `humanizer` | Будь-який UI текст | Видаляє AI-паттерни, humans copy |
+| `stop-slop` | AI-generated text: "leverage", "comprehensive" | Видалення AI fingerprints |
+| `ai-tells-scan` | Швидка перевірка тексту | AI fingerprints detection |
+| `ai-tells-review` | Детальний текстовий review | Rhythm, hedging, reflexes |
+| `ogilvy` | Landing copy, headlines, long-form | Benefits-first, Ogilvy principles |
+| `ux-copy` | Micro-copy: errors, empty states | Conversational, helpful |
+| `seo-technical` | Technical SEO: structured data, crawl | Speed, indexing |
+| `nextjs-seo-indexing` | Next.js SEO: metadata API, OG, JSON-LD | App Router SEO |
+| `schema-markup-generator` | Schema.org: LocalBusiness, SaaS | Structured data |
+| `social-proof-architect` | Testimonials, ratings, trust badges | Conversion elements |
 
 ---
 
 ## OBSERVABILITY & PERFORMANCE (8)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 234 | `observability-engineer` | Observability: logs, metrics, traces |
-| 235 | `performance-optimizer` | Performance: frontend + backend profiling |
-| 236 | `performance-profiling` | Profiling: bottlenecks, memory, CPU |
-| 237 | `sentry-automation` | Sentry: error tracking, source maps, alerts |
-| 238 | `pagespeed-enhancer` | PageSpeed: Core Web Vitals, Lighthouse |
-| 239 | `grafana-dashboards` | Grafana: метрики, alerting для prod |
-| 240 | `slo-implementation` | SLO: service level objectives, error budgets |
-| 241 | `architectural-analysis` | Deep architecture analysis: 8 modes, mermaid diagrams |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `observability-engineer` | Logs, metrics, traces setup | Observability stack |
+| `performance-optimizer` | Frontend + backend profiling | Bottleneck identification |
+| `performance-profiling` | CPU/memory bottlenecks | Profiling tools |
+| `sentry-automation` | Error tracking, source maps, alerts | Sentry setup |
+| `pagespeed-enhancer` | Core Web Vitals, Lighthouse | LCP, CLS, INP optimization |
+| `grafana-dashboards` | Production metrics, alerting | Grafana setup |
+| `slo-implementation` | SLO: service level objectives | Error budgets |
+| `architectural-analysis` | Deep architecture analysis, mermaid | 8 modes, C4 diagrams |
 
 ---
 
 ## DOCUMENTATION & ARCHITECTURE (7)
 
-| # | Skill | Опис |
-|---|-------|------|
-| 242 | `mermaid-diagramming` | Mermaid: flowchart, sequence, ER, C4, state |
-| 243 | `doc-health-audit` | Audit документації: completeness, freshness |
-| 244 | `doc-quality-review` | Review якості: clarity, structure, examples |
-| 246 | `brand-library-architect` | Brand library: tokens, voice, visual identity |
-| 247 | `claude-api` | Claude API: models, pricing, streaming, tools |
-| 248 | `prompt-engineering` | Prompt engineering: CoT, RAG, structured output |
-| 249 | `context7-auto-research` | Авто-research через Context7 docs |
+| Скіл | КОЛИ | Опис |
+|------|------|------|
+| `mermaid-diagramming` | Flowchart, sequence, ER, C4, state | Будь-яка діаграма |
+| `doc-health-audit` | Документація застаріла | Completeness, freshness audit |
+| `doc-quality-review` | Review якості docs | Clarity, structure, examples |
+| `brand-library-architect` | Brand system: tokens, voice, identity | Design system docs |
+| `claude-api` | Claude API: models, pricing, tools | API usage reference |
+| `prompt-engineering` | Prompt design: CoT, RAG, tools | LLM prompt patterns |
+| `context7-auto-research` | Research через Context7 MCP | Auto-research library docs |
 
 ---
 
@@ -348,48 +505,20 @@
 
 | Категорія | Кількість |
 |---|---|
+| Decision Guide / Chains | — |
+| **LOCAL Skills (BookIT)** | **15** |
 | Planning & Thinking | 12 |
-| **Frontend Development ★** | **40** |
-| **Backend & API ★** | **24** |
-| **Database ★** | **16** |
+| **Frontend Development** | **40** |
+| **Backend & API** | **23** |
+| **Database** | **16** |
 | Design & UX | 11 |
-| **Security ★** | **22** |
-| **Testing & QA ★** | **22** |
+| **Security** | **21** |
+| **Testing & QA** | **22** |
 | Code Quality & Review | 11 |
-| **DevOps & Deployment ★** | **23** |
-| Payments & Business Logic | 11 |
+| **DevOps & Deployment** | **17** |
+| Payments & Business Logic | 10 |
 | Workflow & Agent Patterns | 10 |
 | Content, SEO & Marketing | 10 |
 | Observability & Performance | 8 |
 | Documentation & Architecture | 7 |
-| **TOTAL** | **227** |
-
----
-
-## LOCAL SKILLS INSTALLED (203 у `~/.claude/skills/`)
-
-**Мігровано та очищено 2026-06-16:**
-- **Core** (10): design-taste-frontend · emil-design-eng · high-end-visual-design · humanizer · impeccable · minimalist-ui · senior-frontend · senior-backend · ui-ux-pro-max · code-reviewer
-- **boraoztunc/skills** (7): stop-slop · ogilvy · make-interfaces-feel-better · linear-local-first-architecture · frontend-design · vercel-react-best-practices · tailwind
-- **bear2u/my-skills** (3): code-changelog · landing-page-guide-v2 · nextjs15-init
-- **NickCrew/claude-cortex** (41): ai-tells-scan · ai-tells-review · architectural-analysis · interaction-design · atomic-commits · feature-implementation · workflow-bug-fix · workflow-feature · requirements-discovery · root-cause-tracing · condition-based-waiting · owasp-top-10 · secure-coding-practices · vibe-security · workflow-security-audit · react-performance-optimization · typescript-advanced-patterns · doc-health-audit · doc-quality-review · mermaid-diagramming · brand-library-architect · multi-perspective-analysis · constructive-dissent · token-efficiency · test-generation · test-review · testing-anti-patterns · webapp-testing · playwright · systematic-debugging · git-ops · github-actions-workflows · gitops-workflows · release-prep · release-analysis · using-git-worktrees · build-optimization · dev-workflows · repo-cleanup · database-design-patterns · cqrs-event-sourcing · openapi-specification · api-gateway-patterns
-- **antigravity-awesome-skills** (126 unpackaged): nextjs-app-router-patterns · nextjs-supabase-auth · react-best-practices · react-patterns · react-state-management · tanstack-query-expert · typescript-expert · tailwind-patterns · zustand-store-ts · zod-validation-expert · fixing-motion-performance · progressive-web-app · mobile-design · animejs-animation · fixing-accessibility · nodejs-best-practices · api-design-principles · error-handling-patterns · postgres-best-practices · database-migration · security-audit · auth-implementation-patterns · e2e-testing · playwright-skill · javascript-testing-patterns · smart-git-automation · payment-integration · billing-automation · context-manager · anti-sycophancy · + 96 more
-- **engineering-skills** (3 unpackaged): cloud-security · security-pen-testing · senior-qa
-- **engineering-advanced-skills** (13 unpackaged): api-design-reviewer · database-designer · database-schema-designer · sql-database-assistant · env-secrets-manager · focused-fix · ci-cd-pipeline-builder · changelog-generator · release-manager · observability-designer · self-eval · api-test-suite-builder · pr-review-expert · ship-gate
-- **Packages kept** (for MCP + skills): vercel · supabase · si (self-improving-agent) · playwright · frontend-design
-
----
-
-## IRON CORE — 30 скілів що ЗАВЖДИ потрібні
-
-```
-senior-frontend · senior-backend · impeccable · humanizer · code-reviewer
-supabase:supabase · nextjs-best-practices · ui-ux-pro-max · design-taste-frontend
-emil-design-eng · high-end-visual-design · minimalist-ui · stop-slop
-si:self-improving-agent · si:extract · engineering-advanced-skills:focused-fix
-engineering-advanced-skills:ship-gate · clarity-gate · systematic-debugging
-owasp-top-10 · secure-coding-practices · adversarial-review
-condition-based-waiting · test-generation · atomic-commits
-vercel:deploy · antigravity-awesome-skills:playwright-skill
-antigravity-awesome-skills:e2e-testing · workflow-bug-fix · feature-implementation
-```
+| **TOTAL** | **~233** |
