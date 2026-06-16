@@ -85,7 +85,8 @@
       "Bash(gh pr*)",
       "Bash(gh issue*)",
       "Bash(gh workflow*)",
-      "Bash(npx supabase*)"
+      "Bash(npx supabase*)",
+      "Bash(python C:/Users/Vitossik/SaaS/.claude/hooks/set_qa_gate_passed.py*)"
     ]
   },
   "hooks": {

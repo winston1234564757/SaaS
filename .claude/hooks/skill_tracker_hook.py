@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-SKILL_TRACKER_HOOK v1.0 — PostToolUse:Skill
+SKILL_TRACKER_HOOK v1.1 — PostToolUse:Skill
 Tracks which skills were called this session.
 Sets qa_gate_passed=True when a QA-gate skill (grill-me, adversarial-reviewer) is called.
+
+FIX v1.1: Strip namespace prefix "bookit:grill-me" -> "grill-me" before matching.
 """
 import sys
 import json
@@ -20,6 +22,11 @@ QA_GATE_SKILLS = {
     "grill_me",
     "adversarial_reviewer",
 }
+
+
+def strip_namespace(skill: str) -> str:
+    """Remove plugin namespace prefix: 'bookit:grill-me' -> 'grill-me'."""
+    return skill.split(":")[-1] if ":" in skill else skill
 
 
 def load_state() -> dict:
@@ -45,19 +52,23 @@ def main() -> int:
         raw = sys.stdin.buffer.read()
         data = json.loads(raw.decode("utf-8", errors="replace"))
         tool_input = data.get("tool_input", {})
-        skill_name = tool_input.get("skill", "").strip().lower()
+        skill_name_raw = tool_input.get("skill", "").strip().lower()
 
-        if not skill_name:
+        if not skill_name_raw:
+            print(json.dumps({}, ensure_ascii=False))
             return 0
+
+        # Strip namespace prefix for matching (e.g. "bookit:grill-me" -> "grill-me")
+        skill_name_short = strip_namespace(skill_name_raw)
 
         state = load_state()
         skills_called = state.setdefault("skills_called", [])
 
-        if skill_name not in skills_called:
-            skills_called.append(skill_name)
+        if skill_name_raw not in skills_called:
+            skills_called.append(skill_name_raw)
 
-        # Mark QA gate passed if a gate skill was called
-        if skill_name in QA_GATE_SKILLS:
+        # Match on short name (without namespace) for QA gate
+        if skill_name_short in QA_GATE_SKILLS or skill_name_raw in QA_GATE_SKILLS:
             state["qa_gate_passed"] = True
 
         save_state(state)

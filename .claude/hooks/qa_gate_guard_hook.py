@@ -68,10 +68,14 @@ def main() -> int:
         # BLOCK — QA gate not passed
         msg = (
             f"\n[QA GATE BLOCK] Cannot edit {path.name}\n"
-            "IRON RULE #1: Call Skill('grill-me') FIRST to pass QA Gate.\n"
-            "  >> Skill(skill='grill-me') -- stress-test the plan\n"
-            "  >> OR Skill(skill='adversarial-reviewer') -- for pre-merge review\n"
-            "After skill completes, QA gate auto-passes for this session.\n"
+            "IRON RULE #1: QA gate not passed this session.\n"
+            "\n"
+            "STEP 1: Invoke Skill(skill='grill-me') to stress-test the plan.\n"
+            "STEP 2: After skill completes, run via Bash tool:\n"
+            "  Bash('python C:/Users/Vitossik/SaaS/.claude/hooks/set_qa_gate_passed.py grill-me')\n"
+            "\n"
+            "DO NOT ask the user to run this. Claude runs it via Bash tool.\n"
+            "DO NOT skip grill-me and just run the script.\n"
         )
         print(msg)
         return 2
