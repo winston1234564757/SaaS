@@ -53,7 +53,8 @@ def get_git_status() -> str:
     try:
         result = subprocess.run(
             ["git", "status", "--short"],
-            cwd=str(REPO_DIR), capture_output=True, text=True, timeout=10, shell=True,
+            cwd=str(REPO_DIR), capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=10, shell=True,
         )
         return result.stdout.strip() if result.returncode == 0 else ""
     except Exception:
@@ -61,15 +62,11 @@ def get_git_status() -> str:
 
 
 def get_recent_commits(n: int = 5) -> str:
-    """Get last N git commits for this session context."""
     try:
         result = subprocess.run(
-            ["git", "log", f"--oneline", f"-{n}"],
-            cwd=str(REPO_DIR),
-            capture_output=True,
-            text=True,
-            timeout=10,
-            shell=True,
+            ["git", "log", "--oneline", f"-{n}"],
+            cwd=str(REPO_DIR), capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=10, shell=True,
         )
         return result.stdout.strip() if result.returncode == 0 else ""
     except Exception:
