@@ -1,7 +1,7 @@
 {
-  "description": "Bookit Master Configuration — 30+ Skills, XDEV Protocol, Iron Rules (v8.2.2)",
-  "version": "8.2.2",
-  "lastUpdated": "2026-05-26",
+  "description": "Bookit Master Configuration — TOP 50 Skills, Full MCP Auto-Use, Iron Rules (v9.0.0)",
+  "version": "9.0.0",
+  "lastUpdated": "2026-06-15",
   "modelPreferences": {
     "default": "haiku",
     "forDesign": "opus",
@@ -167,7 +167,288 @@
         "triggerKeywords": ["review pr", "code review", "pr"],
         "priority": 2
       }
+    },
+    "tier5_local_skills": {
+      "focusedFix": {
+        "primary": "focused-fix",
+        "type": "LOCAL",
+        "rank": 20,
+        "stars": 5,
+        "description": "Systematic deep-dive repair for broken features across multiple files",
+        "triggerKeywords": ["feature broken", "make X work", "fix Y feature", "module broken"],
+        "priority": 1
+      },
+      "specDrivenWorkflow": {
+        "primary": "spec-driven-workflow",
+        "type": "LOCAL",
+        "rank": 21,
+        "stars": 4,
+        "description": "Spec BEFORE code — acceptance criteria first, nothing built without spec",
+        "triggerKeywords": ["new feature", "spec first", "plan feature", "design new system"],
+        "priority": 2
+      },
+      "diagnose": {
+        "primary": "diagnose",
+        "type": "LOCAL",
+        "rank": 22,
+        "stars": 4,
+        "description": "Disciplined debug loop: reproduce → minimise → hypothesise → instrument → fix",
+        "triggerKeywords": ["diagnose", "debug", "bug", "broken", "failing", "regression"],
+        "priority": 2
+      },
+      "adversarialReviewer": {
+        "primary": "adversarial-reviewer",
+        "type": "LOCAL",
+        "rank": 4,
+        "stars": 5,
+        "description": "3 hostile personas (Saboteur/New Hire/Security Auditor) — mandatory findings each",
+        "triggerKeywords": ["merge", "pre-merge", "deep review", "adversarial", "hostile review"],
+        "priority": 1
+      },
+      "tddGuide": {
+        "primary": "tdd-guide",
+        "type": "LOCAL",
+        "rank": 26,
+        "stars": 4,
+        "description": "TDD red-green-refactor with Vitest (BookIT primary test runner)",
+        "triggerKeywords": ["tdd", "test", "vitest", "unit test", "red green", "test coverage"],
+        "priority": 2
+      },
+      "tdd": {
+        "primary": "tdd",
+        "type": "LOCAL",
+        "rank": 27,
+        "stars": 4,
+        "description": "Full TDD workflow with integration tests",
+        "triggerKeywords": ["tdd workflow", "integration test", "test first"],
+        "priority": 2
+      },
+      "reactDoctor": {
+        "primary": "react-doctor",
+        "type": "LOCAL",
+        "rank": 28,
+        "stars": 4,
+        "description": "React health score 0-100 — lint, dead code, a11y, bundle size, architecture",
+        "triggerKeywords": ["react health", "react quality", "component audit", "dead code"],
+        "priority": 2
+      },
+      "shipGate": {
+        "primary": "ship-gate",
+        "type": "LOCAL",
+        "rank": 29,
+        "stars": 5,
+        "description": "Pre-deploy 8-category audit — MANDATORY before every Vercel production deploy",
+        "triggerKeywords": ["pre-deploy", "before deploy", "ship gate", "ready to ship"],
+        "priority": 1,
+        "mandatory": true
+      },
+      "createMigration": {
+        "primary": "create-migration",
+        "type": "LOCAL",
+        "rank": 32,
+        "stars": 5,
+        "description": "Production-safe Supabase SQL migration — search_path, SECURITY DEFINER, RLS",
+        "triggerKeywords": ["migration", "new table", "alter table", "new rpc", "db schema change"],
+        "priority": 1
+      },
+      "grillMe": {
+        "primary": "grill-me",
+        "type": "LOCAL",
+        "rank": 45,
+        "stars": 4,
+        "description": "Relentless plan stress-testing — resolves all branches of decision tree",
+        "triggerKeywords": ["grill me", "stress test plan", "challenge plan"],
+        "priority": 2
+      },
+      "handoff": {
+        "primary": "handoff",
+        "type": "LOCAL",
+        "rank": 46,
+        "stars": 4,
+        "description": "Compact conversation → handoff document for another agent/session",
+        "triggerKeywords": ["handoff", "handover", "end session", "context compact"],
+        "priority": 2
+      },
+      "selfImprovingAgent": {
+        "primary": "si:self-improving-agent",
+        "type": "LOCAL+AUTO",
+        "rank": 47,
+        "stars": 5,
+        "description": "MemPalace curator — auto-triggered on Stop if ≥3 edits",
+        "triggerKeywords": ["end session", "curate memory", "save decisions"],
+        "priority": 1,
+        "auto": true
+      },
+      "siExtract": {
+        "primary": "si:extract",
+        "type": "LOCAL",
+        "rank": 48,
+        "stars": 4,
+        "description": "Extract proven pattern → reusable portable skill package",
+        "triggerKeywords": ["extract pattern", "make reusable", "skill from pattern"],
+        "priority": 2
+      },
+      "improveArchitecture": {
+        "primary": "improve-codebase-architecture",
+        "type": "LOCAL",
+        "rank": 25,
+        "stars": 3,
+        "description": "Find refactoring opportunities, consolidate tightly-coupled modules",
+        "triggerKeywords": ["architecture refactor", "consolidate", "improve structure"],
+        "priority": 3
+      }
+    },
+    "tier6_marketplace_engineering": {
+      "seniorFullstack": {
+        "primary": "engineering-skills:senior-fullstack",
+        "type": "MKT",
+        "rank": 18,
+        "stars": 4,
+        "description": "Next.js + Supabase fullstack features — DB design to UI in one flow",
+        "triggerKeywords": ["fullstack", "feature end to end", "db to ui"],
+        "priority": 2
+      },
+      "seniorArchitect": {
+        "primary": "engineering-skills:senior-architect",
+        "type": "MKT",
+        "rank": 41,
+        "stars": 4,
+        "description": "System design — scalability, module boundaries, tech decisions",
+        "triggerKeywords": ["architecture", "system design", "scalability"],
+        "priority": 2
+      },
+      "aiSecurity": {
+        "primary": "engineering-skills:ai-security",
+        "type": "MKT",
+        "rank": 37,
+        "stars": 4,
+        "description": "AI/LLM security audit",
+        "triggerKeywords": ["ai security", "llm security", "prompt injection"],
+        "priority": 2
+      },
+      "cloudSecurity": {
+        "primary": "engineering-skills:cloud-security",
+        "type": "MKT",
+        "rank": 38,
+        "stars": 4,
+        "description": "Vercel/Supabase cloud security — env vars, CORS, edge functions",
+        "triggerKeywords": ["vercel security", "supabase security", "cloud security", "cors"],
+        "priority": 2
+      },
+      "apiDesignReviewer": {
+        "primary": "engineering-advanced-skills:api-design-reviewer",
+        "type": "MKT",
+        "rank": 42,
+        "stars": 4,
+        "description": "API contract review — REST conventions, Server Actions design, RPC interfaces",
+        "triggerKeywords": ["api design", "rpc design", "server action design"],
+        "priority": 2
+      },
+      "performanceProfiler": {
+        "primary": "engineering-advanced-skills:performance-profiler",
+        "type": "MKT",
+        "rank": 43,
+        "stars": 4,
+        "description": "Node.js, bundle size, DB query profiling",
+        "triggerKeywords": ["performance", "bundle size", "slow", "db query slow"],
+        "priority": 2
+      },
+      "databaseSchemaDesigner": {
+        "primary": "engineering-advanced-skills:database-schema-designer",
+        "type": "MKT",
+        "rank": 35,
+        "stars": 4,
+        "description": "Schema + RLS design — table relationships, policies, normalization",
+        "triggerKeywords": ["schema design", "database design", "rls policy design"],
+        "priority": 2
+      },
+      "migrationArchitect": {
+        "primary": "engineering-advanced-skills:migration-architect",
+        "type": "MKT",
+        "rank": 36,
+        "stars": 3,
+        "description": "Zero-downtime migration plan — rollback strategy, phased migration",
+        "triggerKeywords": ["zero downtime", "migration plan", "rollback"],
+        "priority": 3
+      },
+      "dependencyAuditor": {
+        "primary": "engineering-advanced-skills:dependency-auditor",
+        "type": "MKT",
+        "rank": 39,
+        "stars": 3,
+        "description": "CVE audit, npm upgrades, outdated packages",
+        "triggerKeywords": ["cve", "npm audit", "dependency", "outdated"],
+        "priority": 3
+      },
+      "changelogGenerator": {
+        "primary": "engineering-advanced-skills:changelog-generator",
+        "type": "MKT",
+        "rank": 49,
+        "stars": 3,
+        "description": "Transform git commits → release notes (use after Sprint completion)",
+        "triggerKeywords": ["changelog", "release notes", "sprint summary"],
+        "priority": 3
+      },
+      "releaseManager": {
+        "primary": "engineering-advanced-skills:release-manager",
+        "type": "MKT",
+        "rank": 50,
+        "stars": 3,
+        "description": "Release coordination — versioning, deploy checklist, communication",
+        "triggerKeywords": ["release", "launch", "version", "production deploy"],
+        "priority": 3
+      },
+      "observabilityDesigner": {
+        "primary": "engineering-advanced-skills:observability-designer",
+        "type": "MKT",
+        "rank": 44,
+        "stars": 3,
+        "description": "Logging, monitoring, alerting design",
+        "triggerKeywords": ["logging", "monitoring", "observability", "alerting"],
+        "priority": 3
+      }
     }
+  },
+  "testingInfrastructure": {
+    "unitTests": {
+      "runner": "Vitest",
+      "command": "npm test",
+      "count": "42 test files",
+      "location": "src/**/*.test.ts",
+      "singleRun": "npx vitest run src/lib/billing/pricing.test.ts"
+    },
+    "e2eTests": {
+      "runner": "Playwright",
+      "command": "npm run test:e2e",
+      "count": "55 spec files + 19 audit specs",
+      "location": "e2e/tests/*.spec.ts + e2e/audit/*.spec.ts",
+      "browsers": ["chromium (Desktop)", "webkit (Safari smoke)", "mobile-safari (iPhone 14)", "mobile-chrome (Pixel 7)"],
+      "singleRun": "npx playwright test tests/booking.spec.ts",
+      "safetyGuard": "E2E_ALLOW_REMOTE guard — blocks production DB runs"
+    },
+    "preDeployPipeline": {
+      "step1": "npx tsc --noEmit (TypeScript strict)",
+      "step2": "npm run build (Next.js build)",
+      "step3": "npm test (42 Vitest unit tests)",
+      "step4": "npm run test:e2e (55 Playwright E2E + 19 audit)",
+      "step5": "ship-gate skill (8-category pre-deploy audit)",
+      "step6": "git push → Vercel production deploy"
+    }
+  },
+  "sprintPipeline": {
+    "description": "ЗАЛІЗНЕ ПРАВИЛО #6 — auto after every git commit",
+    "steps": [
+      "TRACKER.md: T[N] ⬜→✅ + commit hash",
+      "HANDOFF.md: T[N] ✅ + root cause; T[N+1] ▶ з деталями",
+      "TRANSITION_PROMPT.md: Наступна → T[N+1]",
+      "git commit 'docs(sprint-04): T[N] done — TRACKER [X]/34'",
+      "mempalace_add_drawer (key decisions)",
+      "si:extract (if reusable pattern found)",
+      "SYSTEM_MAP.md (if architecture changed)"
+    ],
+    "activeSprint": "Sprint-04 (27/34 ✅)",
+    "sprintDir": "XDEV/PLANS/SPRINT-04-BACKLOG/",
+    "nextTask": "T-QA-explore — /explore: photo h-[192px]→h-[134px] + scrollable tags strip"
   },
   "mcpServers": {
     "mempalace": {
@@ -198,7 +479,49 @@
       "description": "Icon search (10+ collections: Lucide, Material, Heroicons, Phosphor, FontAwesome)",
       "functions": ["search_icons", "get_icon"],
       "priority": 2,
-      "usagePattern": "Find icons from any collection; prefer Lucide for BookIT"
+      "usagePattern": "Find icons from any collection; prefer Lucide for BookIT",
+      "autoUse": "mcp__universal-icons__search_icons when choosing UI icon"
+    },
+    "context7": {
+      "rank": 6,
+      "description": "Current library docs — Next.js, Supabase, Framer Motion, Tailwind, Vaul, TanStack Query",
+      "functions": ["resolve-library-id", "query-docs"],
+      "priority": 1,
+      "usagePattern": "MANDATORY before answering any library-specific question — never answer from training memory",
+      "autoUse": {
+        "trigger": "Any question about Next.js/Supabase/Framer Motion/Tailwind API, config, or version differences",
+        "keyLibraries": ["next.js", "supabase", "@supabase/ssr", "framer-motion", "tailwindcss", "vaul", "tanstack-query", "zustand", "nuqs", "typescript"]
+      }
+    },
+    "magic": {
+      "rank": 7,
+      "description": "21st.dev Magic — component builder, inspiration, refiner (UI design reference for BookIT)",
+      "functions": ["21st_magic_component_builder", "21st_magic_component_inspiration", "21st_magic_component_refiner", "logo_search"],
+      "priority": 2,
+      "usagePattern": "Use for component inspiration BEFORE design-taste-frontend; refine output AFTER",
+      "autoUse": {
+        "inspiration": "mcp__magic__21st_magic_component_inspiration when starting new premium component",
+        "logo": "mcp__magic__logo_search when need brand/partner logo SVGs"
+      }
+    },
+    "playwright": {
+      "rank": 8,
+      "description": "Playwright browser automation — E2E execution, screenshots, visual verification in browser",
+      "functions": ["browser_navigate", "browser_click", "browser_fill_form", "browser_take_screenshot", "browser_snapshot", "browser_wait_for", "browser_type"],
+      "priority": 2,
+      "usagePattern": "After UI changes: take screenshot to visually verify; for manual E2E flows",
+      "autoUse": {
+        "afterDesignChange": "mcp__playwright__browser_take_screenshot to verify UI looks correct",
+        "goldenPath": "mcp__playwright__browser_navigate + browser_fill_form for booking flow verification"
+      }
+    },
+    "ide": {
+      "rank": 9,
+      "description": "VS Code IDE integration — TypeScript diagnostics, real-time error detection",
+      "functions": ["getDiagnostics", "executeCode"],
+      "priority": 2,
+      "usagePattern": "Alternative to npx tsc --noEmit — faster inline type error detection",
+      "autoUse": "mcp__ide__getDiagnostics after code changes to catch TypeScript errors early"
     }
   },
   "clarificationFramework": {

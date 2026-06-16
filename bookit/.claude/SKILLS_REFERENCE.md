@@ -1,165 +1,215 @@
-# SKILLS REFERENCE — Quick Guide
-> **Повний каталог:** `XDEV/SKILL_PROTOCOL.md` (авторитетний документ)
-> **Оновлено:** 2026-06-12 · v9.0.0
+# SKILLS REFERENCE — TOP 50 Definitive Selection
+> **Авторитетний каталог:** `XDEV/SKILL_PROTOCOL.md` (Decision Tree)
+> **Оновлено:** 2026-06-15 · v9.0.0 · **Sprint-04: 27/34 ✅ → Sprint-05 ready**
+
+---
+
+## 🏆 TOP 50 — Відібрані для BookIT (з 1500+ у marketplace)
+
+### TIER 1 — Критичні (запускаються ЗАВЖДИ)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 1 | `humanizer` | ★★★★★ | built-in | Кожен UI-текст (ЗАЛІЗНЕ ПРАВИЛО 0.5) |
+| 2 | `impeccable` | ★★★★★ | built-in | Після будь-якої дизайн-генерації |
+| 3 | `code-reviewer` | ★★★★★ | built-in | Перед кожним комітом |
+| 4 | `adversarial-reviewer` | ★★★★★ | LOCAL | Перед merge — 3 hostile personas |
+| 5 | `security-review` | ★★★★★ | built-in | Auth/RLS/webhooks/payments |
+
+### TIER 2 — Дизайн та UI (10 скілів)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 6 | `design-taste-frontend` | ★★★★★ | built-in | **PRIMARY** — будь-який новий UI |
+| 7 | `emil-design-eng` | ★★★★★ | built-in | Framer Motion, popLayout, springs |
+| 8 | `ui-ux-pro-max` | ★★★★ | built-in | Складний UX зі стилями та варіантами |
+| 9 | `redesign-existing-projects` | ★★★★ | built-in | Апгрейд існуючого UI |
+| 10 | `high-end-visual-design` | ★★★★ | built-in | Landing/marketing сторінки |
+| 11 | `minimalist-ui` | ★★★ | built-in | Editorial стиль (Frost тема) |
+| 12 | `industrial-brutalist-ui` | ★★★ | built-in | Harsh/brutal (Studio тема) |
+| 13 | `image-to-code` | ★★★★ | built-in | Screenshot → production code |
+| 14 | `imagegen-frontend-mobile` | ★★★ | built-in | iOS/Android mockups |
+| 15 | `imagegen-frontend-web` | ★★★ | built-in | Web UI mockups |
+
+### TIER 3 — Код та Реалізація (10 скілів)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 16 | `senior-frontend` | ★★★★★ | built-in | React/Next.js/TS компоненти |
+| 17 | `senior-backend` | ★★★★★ | built-in | Server Actions/Supabase RPC/API |
+| 18 | `engineering-skills:senior-fullstack` | ★★★★ | MKT | Next.js + Supabase fullstack фічі |
+| 19 | `nextjs-best-practices` | ★★★★ | built-in | App Router, ISR, caching, streaming |
+| 20 | `focused-fix` | ★★★★★ | LOCAL | Зламана фіча — систематичний ремонт |
+| 21 | `spec-driven-workflow` | ★★★★ | LOCAL | Нова фіча — spec BEFORE code |
+| 22 | `diagnose` | ★★★★ | LOCAL | Систематичний debug (reproduce→fix) |
+| 23 | `simplify` | ★★★★ | built-in | Прибрати overengineering |
+| 24 | `full-output-enforcement` | ★★★ | built-in | Без обрізання великих файлів |
+| 25 | `improve-codebase-architecture` | ★★★ | LOCAL | Refactor opportunities |
+
+### TIER 4 — Тестування (6 скілів)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 26 | `tdd-guide` | ★★★★ | LOCAL | Vitest TDD (червоний→зелений→рефактор) |
+| 27 | `tdd` | ★★★★ | LOCAL | TDD workflow з integration tests |
+| 28 | `react-doctor` | ★★★★ | LOCAL | React health score 0-100 |
+| 29 | `ship-gate` | ★★★★★ | LOCAL | Pre-deploy 8-category audit |
+| 30 | `verify` | ★★★★ | built-in | Ручна перевірка в браузері |
+| 31 | `run` | ★★★★ | built-in | Запуск dev server |
+
+### TIER 5 — База Даних та Міграції (5 скілів)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 32 | `create-migration` | ★★★★★ | LOCAL | Production Supabase SQL міграція |
+| 33 | `supabase:supabase` | ★★★★ | plugin | Supabase операції (execute_sql, etc.) |
+| 34 | `supabase:supabase-postgres-best-practices` | ★★★★ | plugin | PostgreSQL best practices |
+| 35 | `engineering-advanced-skills:database-schema-designer` | ★★★★ | MKT | Schema + RLS design |
+| 36 | `engineering-advanced-skills:migration-architect` | ★★★ | MKT | Zero-downtime migration plan |
+
+### TIER 6 — Безпека (4 скіли)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 37 | `engineering-skills:ai-security` | ★★★★ | MKT | AI/LLM security audit |
+| 38 | `engineering-skills:cloud-security` | ★★★★ | MKT | Vercel/Supabase cloud security |
+| 39 | `engineering-advanced-skills:dependency-auditor` | ★★★ | MKT | CVE / npm upgrades |
+| 40 | `engineering-advanced-skills:skill-security-auditor` | ★★★ | MKT | Automated security scan |
+
+### TIER 7 — Архітектура та Перформанс (4 скіли)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 41 | `engineering-skills:senior-architect` | ★★★★ | MKT | System design рішення |
+| 42 | `engineering-advanced-skills:api-design-reviewer` | ★★★★ | MKT | API design review |
+| 43 | `engineering-advanced-skills:performance-profiler` | ★★★★ | MKT | Node/bundle/DB profiling |
+| 44 | `engineering-advanced-skills:observability-designer` | ★★★ | MKT | Logging/monitoring design |
+
+### TIER 8 — Workflow та Сесія (6 скілів)
+| # | Скіл | Зірки | Тип | Коли |
+|---|------|-------|-----|------|
+| 45 | `grill-me` | ★★★★ | LOCAL | Stress-test план перед реалізацією |
+| 46 | `handoff` | ★★★★ | LOCAL | Compact conversation → handoff doc |
+| 47 | `si:self-improving-agent` | ★★★★★ | LOCAL+AUTO | MemPalace curator (≥3 edits → auto) |
+| 48 | `si:extract` | ★★★★ | LOCAL | Pattern → reusable skill |
+| 49 | `engineering-advanced-skills:changelog-generator` | ★★★ | MKT | Commits → release notes |
+| 50 | `engineering-advanced-skills:release-manager` | ★★★ | MKT | Release coordination |
 
 ---
 
 ## ⚡ Decision Tree (ultra-compact)
 
 | Задача | Скіл |
-|---|---|
-| Будь-який текст / copy / label | `humanizer` |
-| Аудит / polish існуючого UI | `impeccable` |
-| Анімації / Framer Motion | `emil-design-eng` |
-| Новий UI компонент / сторінка | `design-taste-frontend` |
-| Апгрейд існуючого UI | `redesign-existing-projects` |
-| **Ціла фіча зламана** | `focused-fix` [LOCAL] |
-| **Нотифікації — mark as read** | `mark-as-read-on-close` [LOCAL] |
-| **Нова фіча (spec first)** | `spec-driven-workflow` [LOCAL] |
-| React/Next.js код | `senior-frontend` |
-| Backend/API/Supabase | `senior-backend` |
-| **Тести / TDD / Vitest** | `tdd-guide` [LOCAL] |
-| Code review (strict) | `code-reviewer` |
-| **Deep adversarial review** | `adversarial-reviewer` [LOCAL] |
-| Security audit | `security-review` |
-| Нова міграція | `create-migration` [LOCAL] |
-| **Pre-deploy чеклист** | `ship-gate` [LOCAL] |
-| **Кінець сесії / memory** | `self-improving-agent` [LOCAL + AUTO] |
-| E2E тести | `playwright-pro` [MKT] |
-| Performance / bundle | `performance-profiler` [MKT] |
-| Production incident | `incident-commander` [MKT] |
+|--------|------|
+| Будь-який текст / copy / label | `humanizer` (#1) |
+| Аудит / polish існуючого UI | `impeccable` (#2) |
+| Перед комітом | `code-reviewer` (#3) |
+| Deep review (merge) | `adversarial-reviewer` (#4) |
+| Auth/Payments/RLS | `security-review` (#5) |
+| Новий UI компонент / сторінка | `design-taste-frontend` (#6) |
+| Анімації / Framer Motion | `emil-design-eng` (#7) |
+| Складний UX вибір | `ui-ux-pro-max` (#8) |
+| Апгрейд існуючого UI | `redesign-existing-projects` (#9) |
+| Landing / marketing | `high-end-visual-design` (#10) |
+| Screenshot → код | `image-to-code` (#13) |
+| React/Next.js компоненти | `senior-frontend` (#16) |
+| Backend/API/Server Actions | `senior-backend` (#17) |
+| Ціла фіча зламана | `focused-fix` (#20) |
+| Нова фіча (spec first) | `spec-driven-workflow` (#21) |
+| Debug / bug regression | `diagnose` (#22) |
+| Тести / Vitest TDD | `tdd-guide` (#26) |
+| **Pre-deploy чеклист** | `ship-gate` (#29) |
+| Нова SQL міграція | `create-migration` (#32) |
+| Stress-test плану | `grill-me` (#45) |
+| Кінець сесії | `si:self-improving-agent` (#47) |
 
 ---
 
-## 🗂 Всі скіли по тирах
+## 🔗 Ключові ланцюги Sprint-04+ стилю
 
-### TIER 1 — Критичні (завжди)
-- `humanizer` ★★★★★ — UI text (MANDATORY)
-- `impeccable` ★★★★★ — Design QA gate
-- `code-reviewer` ★★★★★ — Pre-commit review
-- `adversarial-reviewer` ★★★★★ `[LOCAL]` — 3 hostile personas
-- `security-review` ★★★★ — Auth/RLS/webhooks
+### New Feature Chain
+```
+spec-driven-workflow → senior-frontend / senior-backend → adversarial-reviewer → ship-gate → humanizer
+```
 
-### TIER 2 — Дизайн
-- `design-taste-frontend` ★★★★★ — PRIMARY UI generator
-- `emil-design-eng` ★★★★ — Framer Motion
-- `redesign-existing-projects` ★★★★ — UI upgrades
-- `ui-ux-pro-max` ★★★★ — Complex UX decisions
-- `high-end-visual-design` ★★★★ — Landing/marketing
-- `minimalist-ui` / `industrial-brutalist-ui` ★★★
-- `imagegen-frontend-web` / `imagegen-frontend-mobile` ★★★★
-- `image-to-code` ★★★★
-- `brandkit` ★★★
+### Design Polish Chain
+```
+design-taste-frontend → emil-design-eng → impeccable → mcp__a11y → humanizer → run
+```
 
-### TIER 3 — Код та реалізація
-- `senior-frontend` ★★★★★ — React/Next.js/TS
-- `senior-backend` ★★★★ — API/Supabase/Server Actions
-- `nextjs-best-practices` ★★★★ — App Router expert
-- `senior-fullstack` ★★★★ `[MKT]` — Next.js + Supabase combined
-- `senior-architect` ★★★★ `[MKT]` — System design
-- `simplify` ★★★★ — Remove overengineering
-- `full-output-enforcement` ★★ — No truncation
-- `claude-api` ★★★ — Anthropic SDK
+### Broken Feature Chain
+```
+diagnose → focused-fix → tdd-guide (regression test) → code-reviewer → ship-gate
+```
 
-### TIER 3 — Тести
-- `tdd-guide` ★★★★ `[LOCAL]` — Red-green-refactor (Vitest)
-- `senior-qa` ★★★★ `[MKT]` — QA automation
-- `playwright-pro` ★★★★ `[MKT]` — E2E toolkit (10 sub-commands)
-- `react-doctor` ★★★ `[LOCAL]` — React health score (0-100)
-- `spec-driven-workflow` ★★★★ `[LOCAL]` — Spec before code
+### Migration Chain
+```
+create-migration → supabase:supabase (apply) → security-review (RLS check)
+```
 
-### TIER 4 — Безпека
-- `skill-security-auditor` ★★★★ `[MKT]` — Automated scan
-- `ai-security` ★★★★ `[MKT]` — AI/LLM security
-- `dependency-auditor` ★★★ `[MKT]` — CVE/upgrades
-- `cloud-security` ★★★ `[MKT]` — Vercel/Supabase
+### Pre-Deploy Chain
+```
+adversarial-reviewer → ship-gate → verify → run → engineering-advanced-skills:changelog-generator
+```
 
-### TIER 5 — БД та міграції
-- `create-migration` ★★★★★ `[LOCAL]` — Production SQL migration
-- `migration-architect` ★★★★ `[MKT]` — Zero-downtime plan
-- `database-schema-designer` ★★★★ `[MKT]` — Schema + RLS
-- `sql-database-assistant` ★★★ `[MKT]` — SQL optimization
-- `observability-designer` ★★★ `[MKT]` — Logging/monitoring
-
-### TIER 6 — Перформанс
-- `performance-profiler` ★★★★ `[MKT]` — Node/bundle/DB profiling
-- `pr-review-expert` ★★★★ `[MKT]` — Blast radius analysis
-- `tech-debt-tracker` ★★★ `[MKT]` — Debt audit/prioritize
-- `focused-fix` ★★★★ `[LOCAL]` — Feature repair
-- `mark-as-read-on-close` ★★★★ `[LOCAL]` — Notification drawer read-state timing fix
-
-### TIER 7 — DevOps та релізи
-- `ship-gate` ★★★★★ `[LOCAL]` — Pre-deploy 8-category audit
-- `changelog-generator` ★★★ `[MKT]` — Commits → release notes
-- `release-manager` ★★★ `[MKT]` — Release coordination
-- `senior-devops` ★★★ `[MKT]` — Vercel/CI optimization
-- `incident-commander` ★★★★ `[MKT]` — Production incident
-
-### TIER 8 — Пам'ять та сесія
-- `self-improving-agent` ★★★★★ `[LOCAL+AUTO]` — MemPalace curator
-- `codebase-onboarding` ★★★ `[MKT]` — Auto onboarding docs
-
-### TIER 9 — Інфраструктура
-- `update-config` ★★★ — settings.json/hooks
-- `schedule` ★★★ — Cron jobs
-- `loop` ★★★ — Recurring loops
-- `run` + `verify` ★★★★ — Dev server + browser test
-- `review` ★★★★ — PR review
-- `keybindings-help` ★★ — Keybindings
+### Session End Chain
+```
+si:self-improving-agent → si:extract (якщо новий патерн) → handoff
+```
 
 ---
 
-## 🪝 Автоматичні хуки
+## 🪝 Автоматичні хуки (налаштовано)
 
 | Коли | Хук | Що робить |
-|---|---|---|
-| Кожен prompt | `dev_rules_hook.py` | IRON RULES нагадування |
-| Edit/Write | `humanizer_guard_hook.py` | Перевіряє humanizer rule |
-| Edit/Write | `env_guard_hook.py` | Блокує .env запис |
-| Edit/Write | `edit_counter_guard.py` | Bulk edit protocol |
-| Після Edit/Write | `a11y_hook.py` | A11y color check |
-| Session Stop | `skill_guard_hook.py` | SKILL declaration vs tool call |
-| **Session Stop** | **`self_improving_hook.py`** | **≥3 edits → curate MemPalace** |
+|------|-----|-----------|
+| Кожен prompt | UserPromptSubmit | IRON RULES нагадування + mempalace status |
+| Edit/Write | PostToolUse | Encoding check + graphify track |
+| Session Stop | Stop | si:self-improving-agent якщо ≥3 edits |
+| Pre-compact | PreCompact | mempalace hook run |
 
 ---
 
-## 📥 Інсталяція marketplace
+## 📦 MCP серверні інструменти (auto-use)
+
+| MCP | Коли автоматично |
+|-----|-----------------|
+| `mcp__mempalace__*` | ОБОВ'ЯЗКОВО: status на старті, search перед рішенням |
+| `mcp__supabase__*` | Міграції, SQL виконання, table lists |
+| `mcp__tailwind__*` | CSS → Tailwind конверсія, кольорова палітра |
+| `mcp__a11y__*` | Після кожного кольорового вибору (WCAG AA) |
+| `mcp__universal-icons__*` | Пошук іконок (Lucide, Material, Phosphor) |
+| `mcp__context7__*` | Next.js/Supabase/Framer Motion документація |
+| `mcp__magic__*` | 21st.dev component inspiration |
+| `mcp__playwright__*` | E2E test automation |
+| `mcp__ide__*` | VS Code diagnostics (TypeScript errors) |
+
+---
+
+## 📥 Інсталяція marketplace (одноразово)
 
 ```bash
-/plugin marketplace add alirezarezvani/claude-skills
+# Engineering skills (вже активні)
 /plugin install engineering-skills@claude-code-skills
 /plugin install engineering-advanced-skills@claude-code-skills
-/plugin install playwright-pro@claude-code-skills
 /plugin install self-improving-agent@claude-code-skills
+
+# Якщо потрібно встановити додатково
+/plugin install playwright@claude-plugins-official
+/plugin install supabase@claude-plugins-official
 ```
 
 ---
 
-## 🔗 Ключові ланцюги
+## 🗂 Стара довідка (архів)
 
-```
-НОВА ФІЧА:
-spec-driven-workflow → senior-frontend/backend → tdd-guide
-→ adversarial-reviewer → ship-gate → deploy → self-improving-agent
-
-НОВИЙ UI:
-design-taste-frontend → [emil-design-eng] → impeccable
-→ humanizer → run+verify
-
-CODE REVIEW:
-code-reviewer → adversarial-reviewer → [security-review]
-→ ship-gate → PR
-
-DB CHANGE:
-create-migration → database-schema-designer
-→ migration-architect (complex only) → npx supabase db push
-
-SESSION END (AUTO):
-self_improving_hook.py → self-improving-agent extract
-→ mempalace_add_drawer → SYSTEM_MAP update
-```
-
----
-
-**Повний каталог:** `XDEV/SKILL_PROTOCOL.md`  
-**Локальні скіли:** `bookit/.claude/skills/`
+Скіли не в TOP 50 але доступні для спеціальних задач:
+- `mark-as-read-on-close` — конкретний notification pattern
+- `git-guardrails-claude-code` — git safety hooks
+- `to-prd` — PRD creation
+- `triage` — issue management
+- `write-a-skill` — створення нових skills
+- `grill-with-docs` — plan vs domain model
+- `gpt-taste` / `stitch-design-taste` — alternative design styles
+- `brandkit` — brand consistency
+- `engineering-skills:incident-commander` — production incidents
+- `engineering-advanced-skills:tech-debt-tracker` — debt audit
+- `engineering-advanced-skills:pr-review-expert` — blast radius PR
+- `si:promote` / `si:remember` / `si:review` — memory management
+- `claude-api` — Anthropic SDK reference
+- `engineering-skills:tdd-guide` — додатковий TDD guide
+- `engineering-skills:senior-qa` — QA automation
+- `engineering-advanced-skills:api-test-suite-builder` — API tests

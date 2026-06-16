@@ -165,6 +165,8 @@
   },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": false,
-    "frontend-design@claude-plugins-official": true
+    "frontend-design@claude-plugins-official": true,
+    "antigravity-awesome-skills@antigravity-awesome-skills": true,
+    "vercel@claude-plugins-official": true
   }
 }

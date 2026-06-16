@@ -103,8 +103,22 @@
 │   └─ Triage + communication → incident-commander [MKT]
 │
 ├─ ПАМ'ЯТЬ / СЕСІЯ?
-│   ├─ Кінець сесії / curate memory → self-improving-agent [LOCAL]
+│   ├─ Кінець сесії / curate memory → self-improving-agent / si:self-improving-agent [LOCAL+AUTO]
+│   ├─ Compact session → handoff doc → handoff [LOCAL]
+│   ├─ Extract pattern → reusable skill → si:extract [LOCAL]
 │   └─ Онбординг нового контексту → codebase-onboarding [MKT]
+│
+├─ ПЛАНУВАННЯ / STRESS-TEST ПЛАНУ?
+│   ├─ Relentless plan interview → grill-me [LOCAL]
+│   ├─ Plan vs domain model + docs update → grill-with-docs [LOCAL]
+│   └─ Create PRD from conversation → to-prd [LOCAL]
+│
+├─ УПРАВЛІННЯ ЗАДАЧАМИ?
+│   ├─ Issue triage → triage [LOCAL]
+│   └─ Create new skill → write-a-skill [LOCAL]
+│
+├─ СПЕЦИФІЧНІ NOTIFICATION PATTERNS?
+│   └─ Mark-as-read drawer anti-pattern → mark-as-read-on-close [LOCAL]
 │
 └─ ІНФРАСТРУКТУРА / КОНФІГ?
     ├─ settings.json, hooks, env → update-config
@@ -116,6 +130,63 @@
 ```
 
 > **Мітки:** `[LOCAL]` = є в `bookit/.claude/skills/` · `[MKT]` = потребує інсталяції
+
+---
+
+## 📊 TOP 50 SKILLS — Ранжований список для BookIT
+
+| Rank | Скіл | Тип | Зірки | Ключове використання |
+|------|------|-----|-------|---------------------|
+| #1 | `humanizer` | built-in | ★★★★★ | Весь UI текст |
+| #2 | `impeccable` | built-in | ★★★★★ | Design QA gate |
+| #3 | `code-reviewer` | built-in | ★★★★★ | Pre-commit |
+| #4 | `adversarial-reviewer` | LOCAL | ★★★★★ | Pre-merge |
+| #5 | `security-review` | built-in | ★★★★★ | Auth/RLS/payments |
+| #6 | `design-taste-frontend` | built-in | ★★★★★ | PRIMARY UI |
+| #7 | `emil-design-eng` | built-in | ★★★★★ | Framer Motion |
+| #8 | `ui-ux-pro-max` | built-in | ★★★★ | Complex UX |
+| #9 | `redesign-existing-projects` | built-in | ★★★★ | UI upgrade |
+| #10 | `high-end-visual-design` | built-in | ★★★★ | Landing/marketing |
+| #11 | `minimalist-ui` | built-in | ★★★ | Frost editorial |
+| #12 | `industrial-brutalist-ui` | built-in | ★★★ | Studio brutal |
+| #13 | `image-to-code` | built-in | ★★★★ | Screenshot→code |
+| #14 | `imagegen-frontend-mobile` | built-in | ★★★ | Mobile mockups |
+| #15 | `imagegen-frontend-web` | built-in | ★★★ | Web mockups |
+| #16 | `senior-frontend` | built-in | ★★★★★ | React/Next.js/TS |
+| #17 | `senior-backend` | built-in | ★★★★★ | Server Actions/RPC |
+| #18 | `engineering-skills:senior-fullstack` | MKT | ★★★★ | Fullstack features |
+| #19 | `nextjs-best-practices` | built-in | ★★★★ | App Router/ISR |
+| #20 | `focused-fix` | LOCAL | ★★★★★ | Broken feature |
+| #21 | `spec-driven-workflow` | LOCAL | ★★★★ | New feature spec |
+| #22 | `diagnose` | LOCAL | ★★★★ | Systematic debug |
+| #23 | `simplify` | built-in | ★★★★ | Remove complexity |
+| #24 | `full-output-enforcement` | built-in | ★★★ | No truncation |
+| #25 | `improve-codebase-architecture` | LOCAL | ★★★ | Refactor opps |
+| #26 | `tdd-guide` | LOCAL | ★★★★ | Vitest TDD |
+| #27 | `tdd` | LOCAL | ★★★★ | TDD workflow |
+| #28 | `react-doctor` | LOCAL | ★★★★ | React health 0-100 |
+| #29 | `ship-gate` | LOCAL | ★★★★★ | Pre-deploy audit |
+| #30 | `verify` | built-in | ★★★★ | Browser verify |
+| #31 | `run` | built-in | ★★★★ | Dev server |
+| #32 | `create-migration` | LOCAL | ★★★★★ | SQL migration |
+| #33 | `supabase:supabase` | plugin | ★★★★ | Supabase ops |
+| #34 | `supabase:supabase-postgres-best-practices` | plugin | ★★★★ | PostgreSQL |
+| #35 | `engineering-advanced-skills:database-schema-designer` | MKT | ★★★★ | Schema+RLS |
+| #36 | `engineering-advanced-skills:migration-architect` | MKT | ★★★ | Zero-downtime |
+| #37 | `engineering-skills:ai-security` | MKT | ★★★★ | AI/LLM security |
+| #38 | `engineering-skills:cloud-security` | MKT | ★★★★ | Cloud security |
+| #39 | `engineering-advanced-skills:dependency-auditor` | MKT | ★★★ | CVE/upgrades |
+| #40 | `engineering-advanced-skills:skill-security-auditor` | MKT | ★★★ | Automated scan |
+| #41 | `engineering-skills:senior-architect` | MKT | ★★★★ | System design |
+| #42 | `engineering-advanced-skills:api-design-reviewer` | MKT | ★★★★ | API review |
+| #43 | `engineering-advanced-skills:performance-profiler` | MKT | ★★★★ | Profiling |
+| #44 | `engineering-advanced-skills:observability-designer` | MKT | ★★★ | Logging/monitoring |
+| #45 | `grill-me` | LOCAL | ★★★★ | Plan stress-test |
+| #46 | `handoff` | LOCAL | ★★★★ | Session handoff |
+| #47 | `si:self-improving-agent` | LOCAL+AUTO | ★★★★★ | MemPalace curator |
+| #48 | `si:extract` | LOCAL | ★★★★ | Pattern→skill |
+| #49 | `engineering-advanced-skills:changelog-generator` | MKT | ★★★ | Release notes |
+| #50 | `engineering-advanced-skills:release-manager` | MKT | ★★★ | Release coord |
 
 ---
 

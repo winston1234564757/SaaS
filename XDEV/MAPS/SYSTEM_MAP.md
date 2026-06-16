@@ -1,6 +1,16 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-05-30 · Джерело: живий код (v8.3.0 "STEP 04 — Dashboard tour overlay, Academy v2, empty states, deep links fixed") · Commit: `65acf29`
+> Оновлено: 2026-06-15 · Джерело: живий код (v9.0.0 "Sprint-04: 27/34 ✅ — GLOBAL AUDIT COMPLETE") · Sprint-04 commit: `731ea92` (T-QA-bookings)
+> 
+> **⚡ Sprint-04 Status:** 27/34 ✅ | Next: T-QA-explore | Skills: TOP 50 configured (settings.json v9.0.0)
+> **🎯 Launch:** 2026-06-22 | Sprint-05 + Sprint-06 remaining post-launch
+> **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
+> 
+> **LOCAL Skills (bookit/.claude/skills/):**
+> adversarial-reviewer · create-migration · diagnose · focused-fix · git-guardrails-claude-code · grill-me · grill-with-docs · handoff · improve-codebase-architecture · mark-as-read-on-close · react-doctor · self-improving-agent · ship-gate · spec-driven-workflow · tdd · tdd-guide · to-prd · triage · write-a-skill
+>
+> **MCP Servers (auto-use configured):**
+> mempalace (27k drawers) · supabase · tailwind · a11y · universal-icons · context7 · magic (21st.dev) · playwright · ide
 
 ---
 
