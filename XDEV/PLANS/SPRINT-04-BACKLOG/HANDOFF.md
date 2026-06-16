@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 19/37 ✅ | Іт.16-22 → ##ClientDesign (технічно виконано, дизайн-результат не досягнуто)
-**Наступна задача:** **T-QA-explore — /explore: фото h-[192px]→h-[134px] (-30%) + теги/статуси**
+**Прогрес:** 20/37 ✅ | Іт.16-22 → ##ClientDesign (технічно виконано, дизайн-результат не досягнуто)
+**Наступна задача:** **T-QA-chat — /my/messages: Мої майстри + UX fixes**
 **Оновлено:** 2026-06-16
 
 ---
@@ -58,6 +58,20 @@
 
 ---
 
+
+## ✅ T-QA-explore — /explore: фото -30% + tags strip
+**Commit:** `8cada91`
+
+**Що зроблено:**
+1. **Photo frame** — `h-[192px]` → `h-[134px]` (-30%). Більше майстрів на екрані.
+2. **Bottom section видалено з фото-фрейму** — при h-[134px] залишається ~38px після аватара (96px), портфоліо strip (h-12=48px) не вміщується. Вилучено: availability badge + portfolio strip + `stripErrors` state + `strip` variable.
+3. **Tags strip** — новий блок між фото та контентом. Conditional (рендериться тільки якщо є хоч один тег). Чотири типи пілюль: PRO (indigo-700) | Рекомендований (accent/10 + BadgeCheck icon) | Є слот сьогодні (emerald) | Є слот завтра (amber). `overflow-x-auto scrollbar-hide flex gap-1.5`.
+
+**Root cause:** Зменшення висоти на 30% фізично не дозволяє зберегти bottom section всередині фото-фрейму → природно переносимо в зовнішній tags strip.
+**A11y:** Всі 3 кольорові пари ✅ WCAG AA (white/#4338ca | #047857/#d1fae5 | #92400e/#fffbeb).
+**TSC:** 0 errors | **Build:** clean
+
+---
 
 ## T-QA-bookings - /my/bookings: 6 QA fixes (post T-chat deploy)
 **Commit:** `731ea92`

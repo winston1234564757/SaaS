@@ -46,7 +46,7 @@
 | 25 | T18 | Оптимізація завантаження сторінки послуг | ✅ | `senior-frontend` + `senior-backend` | Server prefetch + DnD lazy + unoptimized removed → 5s→<2s TTI |
 | 26 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | Єдиний PhotoUploader компонент; bucket routing per entity |
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | Deliverable: spec document, не код |
-| 28 | T25 | dashboard/settings (ПК): повний redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
+| 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
 | 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | Deliverable: spec + business analysis |
 | 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | Залежить від T28 spec approved |
 | 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | Залежить від T29 deployed |
@@ -74,7 +74,7 @@
 | 20 | **T-profile-redo** | /my/profile: Identity Card redesign (schema ✅) | ⬜ redo | `design-taste-frontend` + `impeccable` | `4e8d0c5` | MyProfilePage; avatar upload; socials; collapsible health; isDirty bar |
 | 21 | **T-chat-redo** | /my/messages: UI redesign + keyboard UX (backend ✅) | ⬜ redo | `design-taste-frontend` + `impeccable` + `emil-design-eng` | `e3273aa` | DirectChatPage + MessagesListPage + ConversationRow + keyboard h-dvh |
 | 22.1 | **T-QA-bookings** | /my/bookings: 6 QA fixes | ✅ | `design-taste-frontend` | `731ea92` | MasterGroup 2-row; service pills; cross-master conflict check; HeroCard single-row; tab border removed; orders admin client |
-| 22.2 | **T-QA-explore** | /explore: фото -30% + теги в strip | **▶ NEXT** | `design-taste-frontend` + `impeccable` | — | h-[192px]→h-[134px] (-30%); теги/статуси (PRO, Рекомендований, є слот) в scrollable strip під фото |
+| 22.2 | **T-QA-explore** | /explore: фото -30% + теги в strip | ✅ | `design-taste-frontend` | `8cada91` | h-[192px]→h-[134px]; bottom section removed (не вміщується); tags strip: PRO+Рекомендований+Є слот |
 | 22.3 | **T-QA-chat** | /my/messages: Мої майстри + UX fixes | ⬜ | `design-taste-frontend` + `impeccable` | — | masters section at top; header border; nav hide on chat; keyboard UX polish |
 | 22.4 | **T-QA-navbar** | MyBottomNav FAB redesign | ⬜ | `design-taste-frontend` + `impeccable` | — | FAB center button; Записи|Бонуси|[FAB]|Чат|Профіль layout |
 | 23 | **T-phone** | /my/setup/phone: onboarding redesign з нуля | ⬜ | `design-taste-frontend` + `impeccable` | — | phone verification form redesign; Frost theme; elegant step UI |

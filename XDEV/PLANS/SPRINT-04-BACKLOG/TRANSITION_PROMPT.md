@@ -16,7 +16,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 19/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
-Наступна: T-QA-explore — /explore: фото h-[192px]→h-[134px] (-30%) + теги/статуси в scrollable strip (сесія 2/4 QA спринту)
+Наступна: T-QA-chat — /my/messages: Мої майстри section at top + header border + nav hide on chat + keyboard UX polish (сесія 3/4 QA спринту)
 Стан: T18 ✅ Commit: cd8cd54 (server prefetch + DnD lazy + image opt → 5s→<2s). T-QA-bookings ✅ Commit: 731ea92. T33 ✅ Commit: e01e138.
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
