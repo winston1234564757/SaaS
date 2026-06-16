@@ -31,7 +31,7 @@
 | `IRON_RULES.md` | T1 | active | 8 залізних правил: encoding, humanizer, QA-GATE, skills, bulk-edit, a11y, read-min, impeccable |
 | `DESIGN.md` | T2 | active | Огляд дизайн-системи: 3 теми Blossom/Studio/Frost, токени, посилання на UX_STANDARDS |
 | `PRODUCT.md` | T2 | active | Продуктовий брандбук (root-level, дублює bookit/PRODUCT.md) |
-| `Vitos.md` | T2 | stale | Власницький гайд по взаємодії з AI; описує хуки v8 — **не включає v10.0.0** |
+| `Vitos.md` | T2 | active | Власницький гайд по взаємодії з AI; хуки v10.0.0, 11 hooks, skills, MCPs |
 | `PLANSET.md` | T3 | stale | Тимчасовий план v10.0.0 (Claude plan mode output); реалізовано — можна видалити |
 
 ---
@@ -48,7 +48,7 @@
 | `XDEV/TASK.md` | T1 | active | Поточні задачі Sprint-04 + прогрес 19/37 ✅ (оновлюється після кожної ітерації) |
 | `XDEV/UX_STANDARDS.md` | T1 | active | UX стандарти: no-emoji, Vaul BottomSheets, анімації Emil Kowalski, кольорові токени |
 | `XDEV/WHITEPAPER.md` | T3 | active | Технічний whitepaper продукту (публічний документ) |
-| `XDEV/XDEV_PROTOCOL.md` | T2 | stale | Інструкція по XDEV папці: тири, workflow — **v8.2.0, не включає нові файли** |
+| `XDEV/XDEV_PROTOCOL.md` | T2 | active | Інструкція по XDEV папці: тири, workflow — v10.0.0, включає SKILLS_TOP200 + DOCS_INDEX |
 | `XDEV/DOCS_INDEX.md` | T1 | active | **Цей файл** — каталог усіх .md файлів проекту |
 
 ---
@@ -140,7 +140,7 @@
 |------|------|--------|------|
 | `SPRINT-02-BACKLOG/*.md` | T3 | archive | Sprint-02 backlog: 16 задач + desktop layouts — COMPLETE |
 | `SPRINT-03-BACKLOG/*.md` | T3 | archive | Sprint-03: 18/18 задач — COMPLETE (2026-06-09/12) |
-| `PLANS/README.md` | T3 | stale | Індекс планів — **застарів: Sprint-02 позначений як IN PROGRESS** |
+| `PLANS/README.md` | T3 | active | Індекс планів — Sprint-02 DONE, Sprint-03 DONE, Sprint-04 IN PROGRESS |
 
 ---
 
@@ -202,14 +202,14 @@
 
 ## Priority Actions (за результатами аудиту)
 
-| # | Файл | Проблема | Дія |
-|---|------|----------|-----|
-| 1 | `Vitos.md` | Описує хуки v8, не v10.0.0 | Оновити розділ "Що відбувається АВТОМАТИЧНО" |
-| 2 | `XDEV/XDEV_PROTOCOL.md` | v8.2.0 — не включає SKILLS_TOP200, WHITEPAPER, INVESTMENT_MEMORANDUM | Додати у Tier-таблицю |
-| 3 | `XDEV/PLANS/README.md` | Sprint-02 = "IN PROGRESS" (насправді DONE) | Виправити статус |
-| 4 | `PLANSET.md` | Дублікат plan mode output; реалізовано | Можна видалити |
-| 5 | `XDEV/PLANS/SPRINT-04-BACKLOG/BACKLOG.md` | Сирі нотатки без структури | Не редагувати — archive після Sprint-04 |
+| # | Файл | Статус | Дія |
+|---|------|--------|-----|
+| 1 | `PLANSET.md` | OPEN | Видалити — plan mode output реалізовано (v10.0.0) |
+| 2 | `XDEV/PLANS/SPRINT-04-BACKLOG/BACKLOG.md` | DEFERRED | Archive після закриття Sprint-04 |
+| ~~3~~ | ~~`Vitos.md`~~ | ✅ DONE | Оновлено до v10.0.0 (commit c265ac7) |
+| ~~4~~ | ~~`XDEV_PROTOCOL.md`~~ | ✅ DONE | Оновлено до v10.0.0 (commit c265ac7) |
+| ~~5~~ | ~~`PLANS/README.md`~~ | ✅ DONE | Sprint статуси виправлено (commit c265ac7) |
 
 ---
 
-*Створено: 2026-06-16 · doc-health-audit v1.0 · 5/5 фаз · Needs Attention*
+*Оновлено: 2026-06-16 · doc-health-audit v1.0 · 5/5 фаз · Healthy (0 stale)*

@@ -241,6 +241,8 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/app/my/masters/` → мої майстри
 - `src/app/my/loyalty/` → прогрес лояльності
 - `src/app/my/notifications/` → `ClientNotificationsPage.tsx` — in-app нотифікації + pending portfolio consent requests
+- `src/app/my/messages/` → `MessagesListPage.tsx` — список DM-розмов клієнта з майстрами (T-chat, migration 20260615000002)
+- `src/app/my/messages/[id]/` → `DirectChatPage.tsx` — переписка з майстром; `useDMChat` (Supabase Realtime INSERT+UPDATE); read receipts; iOS visualViewport keyboard push-up; bucket `support_attachments` для вкладень
 - `src/app/my/portfolio-consent/actions.ts` → `approvePortfolioConsent`, `declinePortfolioConsent`
 
 ### Публічний Магазин
