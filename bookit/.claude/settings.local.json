@@ -117,5 +117,9 @@
       "Bash(grep -rn \"workingHours\\\\|working_hours\\\\|BookingFlow\" C:UsersVitossikSaaSbookitsrcapp[slug])",
       "Bash(npx playwright:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }
