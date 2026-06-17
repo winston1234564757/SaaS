@@ -33,7 +33,7 @@ export function SharePageCard() {
   }
 
   return (
-    <div className="bento-card p-4">
+    <div className="bento-card p-4" data-tour-step="act-1">
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Моя публічна сторінка</p>
         <Link

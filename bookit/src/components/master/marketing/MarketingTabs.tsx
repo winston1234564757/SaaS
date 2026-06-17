@@ -79,7 +79,7 @@ export function MarketingTabs({ initialTab, initialMode, initialPortfolioId, isS
       </div>
 
       {/* Right: tab content */}
-      <div>
+      <div data-tour-step="act-5">
         {tab === 'stories' ? (
           <StoryGenerator initialMode={initialMode} initialPortfolioId={initialPortfolioId} />
         ) : (

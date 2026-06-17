@@ -192,7 +192,7 @@ export function ClientsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-10 pb-32">
+    <div className="flex flex-col gap-6 lg:gap-10 pb-32" data-tour-step="act-3">
       {/* Header */}
       <div className="flex flex-col gap-6 lg:gap-8">
         <div className="flex items-end justify-between">

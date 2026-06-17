@@ -83,7 +83,7 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
   }
 
   return (
-    <div className="bento-card overflow-hidden flex flex-col">
+    <div className="bento-card overflow-hidden flex flex-col" data-tour-step="act-0">
       <div className="px-4 pt-4 pb-0">
         <div className="flex items-start justify-between gap-2 mb-3">
           <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)]">

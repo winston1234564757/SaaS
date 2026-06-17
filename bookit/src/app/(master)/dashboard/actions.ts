@@ -161,3 +161,34 @@ export async function getActiveReferralCount(): Promise<number> {
 
   return count ?? 0;
 }
+
+export async function saveActivationTourStep(step: number): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const admin = createAdminClient();
+  await admin
+    .from('master_profiles')
+    .update({ activation_tour_step: step } as never)
+    .eq('id', user.id);
+}
+
+export async function completeActivationTour(): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const admin = createAdminClient();
+  const { data: current } = await admin
+    .from('master_profiles')
+    .select('seen_tours')
+    .eq('id', user.id)
+    .maybeSingle();
+  const currentTours = (current?.seen_tours as Record<string, boolean> | null) ?? {};
+  await admin
+    .from('master_profiles')
+    .update({
+      activation_tour_step: null,
+      seen_tours: { ...currentTours, activation_v1: true },
+    } as never)
+    .eq('id', user.id);
+}

@@ -224,7 +224,7 @@ export function FlashDealPage({
   };
 
   return (
-    <div className="flex flex-col gap-4 pb-8">
+    <div className="flex flex-col gap-4 pb-8" data-tour-step="act-4">
       {!isDrawer && (
         <FlashDealHeader
           activeCount={activeDeals.length}

@@ -205,5 +205,14 @@ export async function saveOnboardingProgress(
     .eq('id', user.id);
 
   if (error) return { error: error.message };
+
+  // When wizard completes → initialize activation tour (step 0)
+  if (step === 'SUCCESS') {
+    await admin
+      .from('master_profiles')
+      .update({ activation_tour_step: 0 } as never)
+      .eq('id', user.id);
+  }
+
   return { error: null };
 }
