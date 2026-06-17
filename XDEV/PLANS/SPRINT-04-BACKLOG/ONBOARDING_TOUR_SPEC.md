@@ -125,6 +125,50 @@ Step 6 → Finish: completeTour() → seen_tours.activation_v1 = true, activatio
 ### Step 2 CTA — "Підключити"
 На кроці 2 (TG) CTA кнопка не "Далі" а "Підключити" — відкриває TG flow inline (не завершує тур). Після підключення або skip — тур продовжується до кроку 3.
 
+### Per-Step DB Persistence (ОБОВ'ЯЗКОВО)
+**Кожен крок вперед → негайно зберігати в DB.** Не тільки при завершенні.
+
+```ts
+// В handleNextStep() — перед setTourStep:
+await saveActivationTourStep(next);   // UPDATE master_profiles SET activation_tour_step = next
+setTourStep(next);
+```
+
+**Чому не after:** якщо майстер закриє PWA після router.push але до наступного рендеру — крок вже збережений.
+
+**Порядок операцій:**
+1. `saveActivationTourStep(next)` → DB UPDATE (await, ~100ms)
+2. `setTourStep(next)` → React state update
+3. `router.push(step.route)` → навігація (якщо потрібна)
+
+**При закритті туру (X кнопка):** `completeActivationTour()` → `activation_tour_step = NULL` + `seen_tours.activation_v1 = true`. Тур більше не з'явиться.
+
+---
+
+## 3.5. Onboarding Wizard — DB Persistence (вже реалізовано)
+
+> **Статус: ✅ вже в коді.** Секція для довідки.
+
+Wizard (`src/components/master/onboarding/OnboardingWizard.tsx`) вже зберігає крок у DB при кожному переході вперед:
+
+```ts
+// Рядок 126-130 — вже існує:
+function persistStep(step: Step, snapshot: OnboardingData) {
+  saveOnboardingProgress(step, snapshot)  // profiles.onboarding_step + profiles.onboarding_data
+    .then(({ error }) => { if (error) console.error(...) })
+    .catch(...);
+}
+
+// Виклики (вже існують):
+persistStep('SERVICES', { ...buildSnapshot(), slug: finalSlug });  // після збереження профілю
+persistStep('SCHEDULE', buildSnapshot());                           // після збереження послуг
+// і т.д. на кожному кроці
+```
+
+`saveOnboardingProgress` у `src/app/(master)/dashboard/onboarding/actions.ts` — admin client UPDATE `profiles` (bypassує RLS). При поверненні до незавершеного wizard → `initialStep` читається з DB → wizard стартує з потрібного кроку.
+
+**Що потрібно додати (одне місце):** при SUCCESS wizard → встановити `activation_tour_step = 0` в `master_profiles` (Task 2 implementation plan). Це bridge між wizard і activation tour.
+
 ---
 
 ## 5. UI/UX Spec
