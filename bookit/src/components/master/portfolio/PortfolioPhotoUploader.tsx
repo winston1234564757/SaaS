@@ -5,6 +5,10 @@ import Image from 'next/image';
 import { Plus, Loader2, Star, Expand, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
+import { getCroppedImg } from '@/components/master/settings/utils/cropImage';
+import { uploadPhoto } from '@/lib/upload/uploadPhoto';
+import { CropDrawer } from '@/components/shared/CropDrawer';
+import type { Area } from 'react-easy-crop';
 import { addPortfolioPhoto, deletePortfolioPhoto, reorderPortfolioPhotos } from '@/app/(master)/dashboard/portfolio/actions';
 import { PhotoLightbox } from '@/components/shared/PhotoLightbox';
 import type { PortfolioItemPhoto } from '@/types/database';
@@ -127,54 +131,64 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+  // tracks photos added in current session (React state updates are async)
+  const pendingCountRef = useRef(0);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    if (!files.length) return;
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    e.target.value = '';
+    pendingCountRef.current = 0;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setCropOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
 
-    const slots = MAX_PHOTOS - photos.length;
-    const toUpload = files.slice(0, slots);
-
+  const handleCropConfirm = async (croppedAreaPixels: Area) => {
+    if (!cropSrc) return;
     setUploading(true);
     setUploadError(null);
-    const currentPhotos = [...photos];
     try {
-      for (const file of toUpload) {
-        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-        const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
-        const path = `${masterId}/items/${itemId}/${Date.now()}-${crypto.randomUUID()}.${safeExt}`;
+      const blob = await getCroppedImg(cropSrc, croppedAreaPixels);
+      if (!blob) throw new Error('crop failed');
 
-        const { error: upErr } = await supabase.storage
-          .from('portfolios')
-          .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type || 'image/jpeg' });
+      const displayOrder = photos.length + pendingCountRef.current;
+      const result = await uploadPhoto(supabase, { type: 'portfolio', masterId, itemId }, blob);
 
-        if (upErr) {
-          setUploadError(upErr.message);
-          continue;
-        }
-
-        const { data: urlData } = supabase.storage.from('portfolios').getPublicUrl(path);
-        const result = await addPortfolioPhoto(itemId, path, urlData.publicUrl, currentPhotos.length);
-        if (result.error) {
-          setUploadError(`DB error: ${result.error}`);
+      if ('error' in result) {
+        setUploadError(result.error);
+      } else {
+        const dbResult = await addPortfolioPhoto(itemId, result.path, result.url, displayOrder);
+        if (dbResult.error) {
+          setUploadError(`DB error: ${dbResult.error}`);
         } else {
           const newPhoto: PortfolioItemPhoto = {
             id: crypto.randomUUID(),
             portfolio_item_id: itemId,
-            storage_path: path,
-            url: urlData.publicUrl,
-            display_order: currentPhotos.length,
+            storage_path: result.path,
+            url: result.url,
+            display_order: displayOrder,
             created_at: new Date().toISOString(),
           };
-          currentPhotos.push(newPhoto);
-          onPhotosChange([...currentPhotos]);
+          pendingCountRef.current++;
+          onPhotosChange([...photos, newPhoto]);
         }
       }
+      setCropOpen(false);
+      setCropSrc(null);
+    } catch {
+      setUploadError('Помилка завантаження');
+      setCropOpen(false);
+      setCropSrc(null);
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = '';
     }
   };
 
@@ -256,11 +270,19 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
         ref={fileRef}
         type="file"
         accept="image/jpeg,image/jpg,image/png,image/webp,image/heic"
-        multiple
         className="hidden"
         aria-hidden="true"
         tabIndex={-1}
-        onChange={handleUpload}
+        onChange={handleFilesSelected}
+      />
+
+      <CropDrawer
+        open={cropOpen}
+        onOpenChange={open => { if (!open && !uploading) { setCropOpen(false); setCropSrc(null); } }}
+        imageSrc={cropSrc}
+        onConfirm={handleCropConfirm}
+        onCancel={() => { setCropOpen(false); setCropSrc(null); }}
+        uploading={uploading}
       />
 
       <AnimatePresence>

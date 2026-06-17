@@ -15,6 +15,10 @@ import {
 } from '@/app/(master)/dashboard/onboarding/actions';
 import { e164ToInputPhone, toFullPhone } from '@/lib/utils/phone';
 import { generateSecureToken } from '@/lib/utils/token';
+import { getCroppedImg } from '@/components/master/settings/utils/cropImage';
+import { uploadPhoto } from '@/lib/upload/uploadPhoto';
+import { CropDrawer } from '@/components/shared/CropDrawer';
+import type { Area } from 'react-easy-crop';
 import type { OnboardingData } from '@/types/onboarding';
 import type { BreakWindow } from '@/types/database';
 import {
@@ -87,7 +91,9 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
   const [saving, setSaving] = useState(false);
 
   // PROFILE state
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropUploading, setCropUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(initialData.avatarUrl ?? '');
   const [avatarCdnUrl, setAvatarCdnUrl] = useState(initialData.avatarUrl ?? '');
   const [fullName, setFullName] = useState(initialData.fullName ?? profile?.full_name ?? '');
@@ -146,6 +152,33 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
     };
   }
 
+  // ── Avatar crop confirm — uploads immediately ────────────────────────────────
+  async function handleAvatarCropConfirm(croppedAreaPixels: Area) {
+    if (!cropSrc) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const uid = profile?.id ?? user.id;
+
+    setCropUploading(true);
+    try {
+      const blob = await getCroppedImg(cropSrc, croppedAreaPixels);
+      if (!blob) throw new Error('crop failed');
+      const result = await uploadPhoto(supabase, { type: 'master-avatar', masterId: uid }, blob);
+      if ('url' in result) {
+        setAvatarCdnUrl(result.url);
+        setAvatarPreview(result.url);
+      } else {
+        showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше' });
+      }
+    } catch {
+      showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше' });
+    } finally {
+      setCropUploading(false);
+      setCropOpen(false);
+      setCropSrc(null);
+    }
+  }
+
   // ── Step 1: Profile ─────────────────────────────────────────────────────────
   async function handleSaveProfile() {
     if (!fullName.trim()) return;
@@ -154,32 +187,6 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const uid = profile?.id ?? user.id;
-
-      let avatarUrl: string | null = null;
-      if (avatarFile) {
-        const ext = avatarFile.name.split('.').pop() ?? 'jpg';
-        const path = `avatars/${uid}/${uid}.${ext}`;
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        try {
-          const { data: up, error: upError } = await Promise.race([
-            supabase.storage.from('images').upload(path, avatarFile, { upsert: true }),
-            new Promise<never>((_, reject) => {
-              timeoutId = setTimeout(() => reject(new Error('Timeout')), 10_000);
-            }),
-          ]);
-          clearTimeout(timeoutId);
-          if (up) {
-            const { data: urlData } = supabase.storage.from('images').getPublicUrl(path);
-            avatarUrl = urlData.publicUrl;
-            setAvatarCdnUrl(urlData.publicUrl);
-          } else if (upError) {
-            showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше' });
-          }
-        } catch {
-          clearTimeout(timeoutId);
-          showToast({ type: 'error', title: 'Аватар не завантажено', message: 'Спробуйте пізніше' });
-        }
-      }
 
       const nameSlug = fullName.trim()
         .toLowerCase()
@@ -194,7 +201,7 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
       const { error } = await saveOnboardingProfile({
         fullName: fullName.trim(),
         phone: phone.trim() ? toFullPhone(phone) : null,
-        avatarUrl,
+        avatarUrl: avatarCdnUrl || null,
         avatarEmoji: '',
         slug: finalSlug,
         referralCode,
@@ -321,7 +328,13 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
               selectedCategories={selectedCategories}
               onAvatarChange={e => {
                 const f = e.target.files?.[0];
-                if (f) { setAvatarFile(f); setAvatarPreview(URL.createObjectURL(f)); }
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  setCropSrc(reader.result as string);
+                  setCropOpen(true);
+                };
+                reader.readAsDataURL(f);
               }}
               onFullNameChange={setFullName}
               onPhoneChange={setPhone}
@@ -391,6 +404,16 @@ export function OnboardingWizard({ initialStep, initialData }: OnboardingWizardP
           )}
         </AnimatePresence>
       </div>
+
+      <CropDrawer
+        open={cropOpen}
+        onOpenChange={open => { if (!open && !cropUploading) { setCropOpen(false); setCropSrc(null); } }}
+        imageSrc={cropSrc}
+        onConfirm={handleAvatarCropConfirm}
+        onCancel={() => { setCropOpen(false); setCropSrc(null); }}
+        uploading={cropUploading}
+        aspectRatio={1}
+      />
     </div>
   );
 }

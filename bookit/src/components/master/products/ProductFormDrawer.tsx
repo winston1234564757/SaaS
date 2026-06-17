@@ -6,6 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ImagePlus, Trash2, Loader2, Package, Link2 } from 'lucide-react';
 import { createProduct, updateProduct, deleteProduct, saveProductLinks } from '@/app/(master)/dashboard/products/actions';
 import { createClient } from '@/lib/supabase/client';
+import { getCroppedImg } from '@/components/master/settings/utils/cropImage';
+import { uploadPhoto } from '@/lib/upload/uploadPhoto';
+import { CropDrawer } from '@/components/shared/CropDrawer';
+import type { Area } from 'react-easy-crop';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useServices } from '@/lib/supabase/hooks/useServices';
@@ -46,6 +50,8 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
   const [recommendAlways, setRecommendAlways] = useState(true);
   const [linkedServiceIds, setLinkedServiceIds] = useState<string[]>([]);
   const [uploading, setUploading]     = useState(false);
+  const [cropSrc, setCropSrc]         = useState<string | null>(null);
+  const [cropOpen, setCropOpen]       = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const [isPending, startTransition]  = useTransition();
   const [showDelete, setShowDelete]   = useState(false);
@@ -82,31 +88,45 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
     }
   }, [isEdit, links]);
 
-  async function handlePhotoUpload(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    if (photos.length + files.length > 5) {
-      setError('Максимум 5 фото'); return;
-    }
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) { setError('Файл більше 5 МБ'); return; }
+    if (photos.length >= 5) return;
+    e.target.value = '';
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setCropOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropConfirm = async (croppedAreaPixels: Area) => {
+    if (!cropSrc) return;
     setUploading(true);
     setError(null);
-    const supabase = createClient();
-    const newUrls: string[] = [];
-
-    for (const file of Array.from(files)) {
-      if (file.size > 5 * 1024 * 1024) { setError('Файл більше 5 МБ'); continue; }
-      const ext  = file.name.split('.').pop();
-      const path = `${masterProfile!.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from('product-photos')
-        .upload(path, file, { upsert: false });
-      if (upErr) { setError(upErr.message); continue; }
-      const { data } = supabase.storage.from('product-photos').getPublicUrl(path);
-      newUrls.push(data.publicUrl);
+    try {
+      const blob = await getCroppedImg(cropSrc, croppedAreaPixels);
+      if (!blob) throw new Error('crop failed');
+      const supabase = createClient();
+      const masterId = masterProfile?.id ?? '';
+      const result = await uploadPhoto(supabase, { type: 'product', masterId }, blob);
+      if ('error' in result) {
+        setError(result.error);
+      } else {
+        setPhotos(prev => [...prev, result.url]);
+      }
+      setCropOpen(false);
+      setCropSrc(null);
+    } catch {
+      setError('Помилка завантаження фото');
+      setCropOpen(false);
+      setCropSrc(null);
+    } finally {
+      setUploading(false);
     }
-
-    setPhotos(prev => [...prev, ...newUrls]);
-    setUploading(false);
-  }
+  };
 
   function removePhoto(url: string) {
     setPhotos(prev => prev.filter(p => p !== url));
@@ -154,7 +174,6 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
         productId = res.id!;
       }
 
-      // Persist service links via server action (admin client, no RLS issues)
       const linksRes = await saveProductLinks(productId, recommendAlways ? [] : linkedServiceIds.map(id => ({ serviceId: id, quantity: 1 })));
       if (linksRes.error) { setError(linksRes.error); return; }
       invalidateLinks();
@@ -246,11 +265,10 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                   ref={fileRef}
                   type="file"
                   accept="image/*"
-                  multiple
                   className="hidden"
                   aria-hidden="true"
                   tabIndex={-1}
-                  onChange={e => handlePhotoUpload(e.target.files)}
+                  onChange={handleFilesSelected}
                 />
               </div>
 
@@ -457,6 +475,16 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               />
             )}
           </AnimatePresence>
+
+          <CropDrawer
+            open={cropOpen}
+            onOpenChange={open => { if (!open && !uploading) { setCropOpen(false); setCropSrc(null); } }}
+            imageSrc={cropSrc}
+            onConfirm={handleCropConfirm}
+            onCancel={() => { setCropOpen(false); setCropSrc(null); }}
+            uploading={uploading}
+            aspectRatio={1}
+          />
         </>
       )}
     </AnimatePresence>

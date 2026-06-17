@@ -6,10 +6,10 @@ import Cropper, { Area, Point } from 'react-easy-crop';
 interface ImageCropperProps {
   image: string;
   onCropComplete: (croppedAreaPixels: Area) => void;
-  aspect?: number;
+  aspect?: number; // undefined = free crop
 }
 
-export function ImageCropper({ image, onCropComplete, aspect = 3 / 4 }: ImageCropperProps) {
+export function ImageCropper({ image, onCropComplete, aspect }: ImageCropperProps) {
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
 

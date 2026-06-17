@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef, useCallback } from 'react';
+import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,6 +11,7 @@ import {
 import { updateClientProfile, disconnectClientTelegram } from '@/app/my/profile/actions';
 import { PushSubscribeCard } from '@/components/shared/PushSubscribeCard';
 import { LegalFooterLinks } from '@/components/shared/LegalFooterLinks';
+import { PhotoUploader } from '@/components/shared/PhotoUploader';
 import { useToast } from '@/lib/toast/context';
 import {
   e164ToInputPhone, formatPhoneDisplay, normalizePhoneInput, toFullPhone,
@@ -65,11 +66,9 @@ export function MyProfilePage({ profile }: Props) {
   const [saved, setSaved] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
-  const [avatarUploading, setAvatarUploading] = useState(false);
   const [healthExpanded, setHealthExpanded] = useState(
     !!(profile.medicalNotes || profile.healthNotes),
   );
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [themeKey, setThemeKey] = useState<string>(() => {
     if (typeof window !== 'undefined') return Cookies.get('client_theme') || 'frost';
@@ -83,46 +82,12 @@ export function MyProfilePage({ profile }: Props) {
   const [instagramUrl, setInstagramUrl] = useState(profile.instagramUrl);
   const [telegramHandle, setTelegramHandle] = useState(profile.telegramHandle);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const memberSinceFormatted = profile.memberSince
     ? new Date(profile.memberSince).toLocaleDateString('uk-UA', {
         day: 'numeric', month: 'long', year: 'numeric',
       })
     : '';
-
-  const handleAvatarChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setAvatarPreview(URL.createObjectURL(file));
-    setAvatarUploading(true);
-
-    try {
-      const supabase = createClient();
-      const ext = file.name.split('.').pop() ?? 'jpg';
-      const path = `${profile.userId}.${ext}`;
-
-      const { error: uploadErr } = await supabase.storage
-        .from('avatars')
-        .upload(path, file, { upsert: true, contentType: file.type });
-
-      if (uploadErr) {
-        showToast({ type: 'error', title: 'Не вдалося завантажити фото', message: uploadErr.message });
-        setAvatarPreview(null);
-        return;
-      }
-
-      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-      setAvatarUrl(data.publicUrl);
-      setIsDirty(true);
-    } catch {
-      showToast({ type: 'error', title: 'Не вдалося завантажити фото', message: '' });
-      setAvatarPreview(null);
-    } finally {
-      setAvatarUploading(false);
-    }
-  }, [profile.userId, showToast]);
 
   const handleThemeChange = (key: string) => {
     const theme = THEMES.find(t => t.key === key);
@@ -170,56 +135,59 @@ export function MyProfilePage({ profile }: Props) {
     }
   }
 
-  const displayAvatar = avatarPreview ?? avatarUrl;
   const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME;
 
   return (
     <div className="flex flex-col gap-6 pt-4 pb-28">
 
       <div className="bg-surface rounded-3xl p-6 flex flex-col items-center gap-4">
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            aria-label="Змінити фото профілю"
-            className="relative size-24 rounded-full overflow-hidden bg-accent/15 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          >
-            {displayAvatar ? (
-              <Image
-                src={displayAvatar}
-                alt=""
-                fill
-                className={cn('object-cover transition-opacity duration-200', avatarUploading && 'opacity-40')}
-              />
-            ) : (
-              <span className="heading-serif text-3xl font-bold text-accent">
-                {fullName ? fullName.charAt(0).toUpperCase() : '?'}
-              </span>
-            )}
-            {avatarUploading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Loader2 size={22} className="animate-spin text-accent" />
-              </div>
-            )}
-          </button>
+        <PhotoUploader
+          entity={{ type: 'client-avatar', userId: profile.userId }}
+          value={avatarUrl}
+          aspectRatio={1}
+          onChange={url => {
+            setAvatarUrl(url);
+            setIsDirty(true);
+          }}
+        >
+          {({ triggerUpload, uploading }) => (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={triggerUpload}
+                aria-label="Змінити фото профілю"
+                className="relative size-24 rounded-full overflow-hidden bg-accent/15 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              >
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt=""
+                    fill
+                    className={cn('object-cover transition-opacity duration-200', uploading && 'opacity-40')}
+                  />
+                ) : (
+                  <span className="heading-serif text-3xl font-bold text-accent">
+                    {fullName ? fullName.charAt(0).toUpperCase() : '?'}
+                  </span>
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 size={22} className="animate-spin text-accent" />
+                  </div>
+                )}
+              </button>
 
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            aria-label="Завантажити фото"
-            className="absolute -bottom-0.5 -right-0.5 size-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer"
-          >
-            <Camera size={14} />
-          </button>
-
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={handleAvatarChange}
-          />
-        </div>
+              <button
+                type="button"
+                onClick={triggerUpload}
+                aria-label="Завантажити фото"
+                className="absolute -bottom-0.5 -right-0.5 size-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-md active:scale-90 transition-transform cursor-pointer"
+              >
+                <Camera size={14} />
+              </button>
+            </div>
+          )}
+        </PhotoUploader>
 
         <div className="text-center space-y-2">
           <h1 className="heading-serif text-2xl text-foreground leading-tight">

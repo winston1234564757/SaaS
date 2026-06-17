@@ -28,6 +28,10 @@ import { useProducts } from '@/lib/supabase/hooks/useProducts';
 import { useProductLinks } from '@/lib/supabase/hooks/useProductLinks';
 import { createProduct, updateProduct, deleteProduct, saveProductLinks } from '@/app/(master)/dashboard/products/actions';
 import { createClient } from '@/lib/supabase/client';
+import { getCroppedImg } from '@/components/master/settings/utils/cropImage';
+import { uploadPhoto } from '@/lib/upload/uploadPhoto';
+import { CropDrawer } from '@/components/shared/CropDrawer';
+import type { Area } from 'react-easy-crop';
 import type { Product, ProductCategory } from '@/types/database';
 import { PRODUCT_ICON_OPTIONS, ProductIcon, type ProductIconName } from '@/lib/product-icons';
 
@@ -66,16 +70,18 @@ export function ProductEditor({ id }: Props) {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<ProductCategory>('other');
   const [priceStr, setPriceStr] = useState('');
-  const [costStr, setCostStr] = useState('');        // собівартість (для consumable)
+  const [costStr, setCostStr] = useState('');
   const [stockStr, setStockStr] = useState('0');
   const [photos, setPhotos] = useState<string[]>([]);
   const [recommendAlways, setRecommendAlways] = useState(true);
   const [linkedServiceIds, setLinkedServiceIds] = useState<string[]>([]);
   const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
   const [productType, setProductType] = useState<'retail' | 'consumable'>('retail');
-  const [autoDeduct, setAutoDeduct] = useState(true);  // автосписання при booking
+  const [autoDeduct, setAutoDeduct] = useState(true);
   const [iconName, setIconName] = useState<ProductIconName>('package');
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
   const [, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -117,42 +123,49 @@ export function ProductEditor({ id }: Props) {
         ? prev.filter(s => s !== serviceId)
         : [...prev, serviceId]
     );
-    // default quantity = 1 when linking new service
     if (!linkedServiceIds.includes(serviceId)) {
       setServiceQuantities(prev => ({ ...prev, [serviceId]: prev[serviceId] ?? 1 }));
     }
   }
 
-  async function handlePhotoUpload(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    if (photos.length + files.length > 5) {
-      setError('Максимум 5 фото');
-      return;
-    }
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) { setError('Файл більший за 5 МБ'); return; }
+    if (photos.length >= 5) return;
+    e.target.value = '';
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setCropOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropConfirm = async (croppedAreaPixels: Area) => {
+    if (!cropSrc) return;
     setUploading(true);
     setError(null);
-    const supabase = createClient();
-    const newUrls: string[] = [];
-
-    for (const file of Array.from(files)) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Файл більший за 5 МБ');
-        continue;
+    try {
+      const blob = await getCroppedImg(cropSrc, croppedAreaPixels);
+      if (!blob) throw new Error('crop failed');
+      const supabase = createClient();
+      const result = await uploadPhoto(supabase, { type: 'product', masterId }, blob);
+      if ('error' in result) {
+        setError(result.error);
+      } else {
+        setPhotos(prev => [...prev, result.url]);
       }
-      const ext = file.name.split('.').pop();
-      const path = `${masterId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('product-photos').upload(path, file, { upsert: false });
-      if (upErr) {
-        setError(upErr.message);
-        continue;
-      }
-      const { data } = supabase.storage.from('product-photos').getPublicUrl(path);
-      newUrls.push(data.publicUrl);
+      setCropOpen(false);
+      setCropSrc(null);
+    } catch {
+      setError('Помилка завантаження фото');
+      setCropOpen(false);
+      setCropSrc(null);
+    } finally {
+      setUploading(false);
     }
-
-    setPhotos(prev => [...prev, ...newUrls]);
-    setUploading(false);
-  }
+  };
 
   async function handleSave() {
     const price = parseFloat(priceStr);
@@ -383,11 +396,10 @@ export function ProductEditor({ id }: Props) {
               ref={fileRef}
               type="file"
               accept="image/*"
-              multiple
               className="hidden"
               aria-hidden="true"
               tabIndex={-1}
-              onChange={e => handlePhotoUpload(e.target.files)}
+              onChange={handleFilesSelected}
             />
           </div>
 
@@ -656,6 +668,16 @@ export function ProductEditor({ id }: Props) {
           </motion.div>
         </div>
       )}
+
+      <CropDrawer
+        open={cropOpen}
+        onOpenChange={open => { if (!open && !uploading) { setCropOpen(false); setCropSrc(null); } }}
+        imageSrc={cropSrc}
+        onConfirm={handleCropConfirm}
+        onCancel={() => { setCropOpen(false); setCropSrc(null); }}
+        uploading={uploading}
+        aspectRatio={1}
+      />
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { type Service, CATEGORIES, DURATIONS, formatDuration, serviceSchema } from './types';
-import { ImageUploader } from './ImageUploader';
+import { PhotoUploader } from '@/components/shared/PhotoUploader';
 import { useMasterContext } from '@/lib/supabase/context';
 import { SERVICE_ICON_OPTIONS, ServiceIcon } from '@/lib/service-icons';
 
@@ -271,10 +271,9 @@ export function ServiceEditor({ id }: Props) {
               Фото послуги
             </label>
             <div className="min-h-[160px]">
-              <ImageUploader
-                folder="services"
-                masterId={masterId}
-                value={form.imageUrl}
+              <PhotoUploader
+                entity={{ type: 'service', masterId }}
+                value={form.imageUrl ?? null}
                 onChange={url => setForm(f => ({ ...f, imageUrl: url ?? undefined }))}
               />
             </div>
