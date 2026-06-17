@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 24/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-18
+**Прогрес:** 24/37 ✅ (T23-impl-v2 🔄 30%) | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-18
 
 > ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
 
@@ -47,7 +47,7 @@
 | 26 | T22 | Стандартизація завантаження фото (всі сутності) | ✅ | `senior-fullstack` + `impeccable` | `52dbb4b` `87f3901` | uploadPhoto.ts + PhotoUploader + CropDrawer; 9 files; preview cache-bust; multi-select cropQueue; silent save fix; dismissible=false |
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ✅ | `brainstorming` + `writing-plans` + `ui-ux-pro-max` | ONBOARDING_TOUR_SPEC.md: 7-step cross-page activation tour, DB-first persistence (activation_tour_step), master layout provider, replaces 17-step Dashboard Tour |
 | 27.5 | T23-impl | Activation Tour: повна реалізація (7 tasks) | ✅ | `senior-fullstack` + `create-migration` | `b5f8ec6` | DB migration + ActivationTourContext + ActivationTourBanner + data-tour-step×7 + DashboardLayout swap + onboarding bridge |
-| 27.6 | T23-impl-v2 | Per-page TourBanner: замінює cross-page Activation Tour | ✅ | `grill-me` + `senior-frontend` | `7b9886e` | TourBanner.tsx generic ResizeObserver spotlight; data-tour-key; dashboard_v3 tour; Academy in navbars; resetTourSeen |
+| 27.6 | T23-impl-v2 | Per-page TourBanner: замінює cross-page Activation Tour | 🔄 30% | `grill-me` + `senior-frontend` | `7b9886e` `7da4fdc` | TourBanner.tsx generic ResizeObserver spotlight; data-tour-key; dashboard_v3 tour (5 steps) ✅; Academy navbars ✅; resetTourSeen ✅; Settings/Clients/Marketing tours ❌ |
 | 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
 | 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | Deliverable: spec + business analysis |
 | 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | Залежить від T28 spec approved |

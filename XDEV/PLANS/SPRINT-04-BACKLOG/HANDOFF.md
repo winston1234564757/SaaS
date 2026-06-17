@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 24/37 ✅
+**Прогрес:** 24/37 ✅ (T23-impl-v2 🔄 30%)
 **Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
 **Оновлено:** 2026-06-18
 
@@ -17,8 +17,20 @@
 
 ---
 
-## ✅ T23-impl-v2 — Per-page TourBanner (замінює cross-page Activation Tour)
-**Commit:** `7b9886e` | **Дата:** 2026-06-18
+## 🔄 T23-impl-v2 — Per-page TourBanner: 30% (dashboard tour ✅, destination tours ❌)
+**Commits:** `7b9886e` (impl) + `7da4fdc` (bugfix) | **Дата:** 2026-06-18
+
+**Статус:** Dashboard tour повністю реалізований. Але navigator картки (Settings/Clients/Marketing) мають вести на сторінки з ВЛАСНИМИ індивідуальними турами — їх ще немає.
+
+**Що залишилось (70%):**
+- [ ] `/dashboard/settings` — `useTour('settings_v1', N)` + steps + `data-tour-key` на елементах
+- [ ] `/dashboard/clients` — `useTour('clients_v1', N)` + steps + `data-tour-key`
+- [ ] `/dashboard/marketing` — `useTour('marketing_v1', N)` + steps + `data-tour-key`
+
+**Поведінка після завершення:**
+- Натискання картки navigator → `onClose` dashboard туру (він виконаний) → перехід на сторінку → сторінковий тур стартує (якщо `seen_tours['page_v1']` не встановлено)
+
+**Bugfix `7da4fdc`:** Прибрано `onClick={onClose}` з navigator Link карток (was causing dashboard tour to be marked done before destination page tours existed). Повернути `onClick={onClose}` назад ПІСЛЯ реалізації destination page tours.
 
 **Що зроблено:**
 1. **`TourBanner.tsx`** — `src/components/master/onboarding/`. Generic, props-driven. ResizeObserver + scroll/resize listeners для точного spotlight (замість one-shot getBCR). `data-tour-key` атрибут (не `data-tour-step` — щоб уникнути конфлікту з legacy DashboardTour). Navigator last step: isNavigator=true → 3 link cards grid.
