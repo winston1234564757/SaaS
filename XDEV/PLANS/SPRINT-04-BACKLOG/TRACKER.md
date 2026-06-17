@@ -44,7 +44,7 @@
 | Іт | ID | Назва | Статус | Скіл | Brief |
 |----|----|-------|--------|------|-------|
 | 25 | T18 | Оптимізація завантаження сторінки послуг | ✅ | `senior-frontend` + `senior-backend` | Server prefetch + DnD lazy + unoptimized removed → 5s→<2s TTI |
-| 26 | T22 | Стандартизація завантаження фото (всі сутності) | ⬜ | `senior-fullstack` + `impeccable` | Єдиний PhotoUploader компонент; bucket routing per entity |
+| 26 | T22 | Стандартизація завантаження фото (всі сутності) | ✅ | `senior-fullstack` + `impeccable` | `52dbb4b` | uploadPhoto.ts + PhotoUploader + CropDrawer; 9 files refactored, ImageUploader deleted |
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ | `spec-driven-workflow` + `ui-ux-pro-max` | Deliverable: spec document, не код |
 | 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
 | 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | Deliverable: spec + business analysis |

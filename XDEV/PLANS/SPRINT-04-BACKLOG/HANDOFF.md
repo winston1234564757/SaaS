@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 20/37 ✅ | Іт.16-22 → ##ClientDesign (технічно виконано, дизайн-результат не досягнуто)
-**Наступна задача:** **T-QA-chat — /my/messages: Мої майстри + UX fixes**
-**Оновлено:** 2026-06-16
+**Прогрес:** 21/37 ✅
+**Наступна задача:** **T23 — Онбординг тур: persona simulation + brainstorm + spec**
+**Оновлено:** 2026-06-17
 
 ---
 
@@ -14,6 +14,27 @@
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
   - Якщо CLI не працює → Dashboard SQL Editor
 - Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+
+---
+
+## ✅ T22 — Стандартизація завантаження фото (всі сутності)
+**Commit:** `52dbb4b`
+
+**Що зроблено:**
+1. **`src/lib/upload/uploadPhoto.ts`** — єдина функція upload з routing по 5 entities: `master-avatar` (images/avatars/{id}, upsert), `client-avatar` (avatars/{id}, upsert), `service` (images/services/{id}), `product` (product-photos/{id}), `portfolio` (portfolios/{id}/items/{itemId}).
+2. **`src/components/shared/PhotoUploader.tsx`** — render-prop компонент: приймає entity + value + onChange + children. Сам відкриває file picker → FileReader → CropDrawer → getCroppedImg → uploadPhoto → onChange(url).
+3. **`src/components/shared/CropDrawer.tsx`** — reusable vaul Drawer crop UI (z-[200]/[210]). `aspectRatio` без default — undefined = free crop, 1 = square.
+4. **`ImageCropper.tsx`** — `aspect` тепер optional (undefined = free crop у react-easy-crop).
+5. **Рефакторинг 9 файлів:** ProfileHero, MyProfilePage, OnboardingWizard, ServiceEditor, PortfolioPhotoUploader, ProductEditor, ProductFormDrawer — всі використовують uploadPhoto + CropDrawer замість inline upload.
+6. **Видалено:** `ImageUploader.tsx` (legacy services-only компонент).
+
+**Root cause видалення inline upload:** Кожен компонент мав свій supabase.storage call, без crop, без уніфікованого bucket routing.
+
+**Ключові рішення:**
+- OnboardingWizard: crop + upload при виборі фото (не defer на save) → аватар вже є CDN URL коли handleSaveProfile викликається
+- PortfolioPhotoUploader: `pendingCountRef` для display_order між sequential async uploads
+- Multi-photo (portfolio, products): one-at-a-time crop UX (no multi-select queue)
+- Free crop (aspectRatio=undefined) для portfolio; square (1:1) для продуктів та аватарів
 
 ---
 

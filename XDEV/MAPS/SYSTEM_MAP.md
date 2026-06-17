@@ -259,6 +259,9 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/components/public/portfolio/PublicPortfolioGallery.tsx` — горизонтальний strip: 2 items + "Всі роботи" (на сторінці майстра, після Shop Banner)
 - `src/components/public/portfolio/PortfolioBookingButton.tsx` — client component: кнопка + inline BookingFlow з pre-selected послугою
 - `src/components/shared/PhotoLightbox.tsx` — shared full-screen lightbox (fixed z-[100], keyboard nav Esc/←→, safe-area); used by PortfolioPhotoUploader + PortfolioPhotoViewer + ProductFormDrawer
+- `src/components/shared/PhotoUploader.tsx` — universal upload component (T22): render-prop pattern, entity routing, CropDrawer integration; entities: master-avatar, client-avatar, service
+- `src/components/shared/CropDrawer.tsx` — reusable vaul crop bottom sheet (z-[200]/[210]); aspectRatio optional (undefined=free crop, 1=square)
+- `src/lib/upload/uploadPhoto.ts` — single upload fn: 5 PhotoEntity types → 4 Supabase buckets (images, avatars, product-photos, portfolios); upsert only for avatars
 
 ### Auth Flow
 - `src/app/(auth)/layout.tsx` — split-screen Frost layout: 45% dark brand panel (#0F172A + aurora blobs) + 55% form panel; mobile single-column (updated 2026-05-28)
