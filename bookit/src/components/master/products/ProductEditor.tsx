@@ -31,8 +31,9 @@ import { createClient } from '@/lib/supabase/client';
 import { getCroppedImg } from '@/components/master/settings/utils/cropImage';
 import { uploadPhoto } from '@/lib/upload/uploadPhoto';
 import { CropDrawer } from '@/components/shared/CropDrawer';
+import { useToast } from '@/lib/toast/context';
 import type { Area } from 'react-easy-crop';
-import type { Product, ProductCategory } from '@/types/database';
+import type { ProductCategory } from '@/types/database';
 import { PRODUCT_ICON_OPTIONS, ProductIcon, type ProductIconName } from '@/lib/product-icons';
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
@@ -58,6 +59,7 @@ interface Props {
 export function ProductEditor({ id }: Props) {
   const router = useRouter();
   const qc = useQueryClient();
+  const { showToast } = useToast();
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id ?? '';
   const { services } = useServices();
@@ -82,6 +84,7 @@ export function ProductEditor({ id }: Props) {
   const [uploading, setUploading] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
+  const [cropQueue, setCropQueue] = useState<string[]>([]);
   const [, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -129,17 +132,24 @@ export function ProductEditor({ id }: Props) {
   }
 
   const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    if (file.size > 5 * 1024 * 1024) { setError('Файл більший за 5 МБ'); return; }
-    if (photos.length >= 5) return;
+    const files = Array.from(e.target.files ?? []);
     e.target.value = '';
-    const reader = new FileReader();
-    reader.onload = () => {
-      setCropSrc(reader.result as string);
+    const valid = files.filter(f => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024);
+    const slots = 5 - photos.length;
+    const toProcess = valid.slice(0, slots);
+    if (!toProcess.length) return;
+
+    const readers = toProcess.map(file => new Promise<string>(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    }));
+
+    Promise.all(readers).then(urls => {
+      setCropSrc(urls[0]);
+      setCropQueue(urls.slice(1));
       setCropOpen(true);
-    };
-    reader.readAsDataURL(file);
+    });
   };
 
   const handleCropConfirm = async (croppedAreaPixels: Area) => {
@@ -153,15 +163,24 @@ export function ProductEditor({ id }: Props) {
       const result = await uploadPhoto(supabase, { type: 'product', masterId }, blob);
       if ('error' in result) {
         setError(result.error);
+        setCropOpen(false);
+        setCropSrc(null);
+        setCropQueue([]);
       } else {
         setPhotos(prev => [...prev, result.url]);
+        if (cropQueue.length > 0) {
+          setCropSrc(cropQueue[0]);
+          setCropQueue(prev => prev.slice(1));
+        } else {
+          setCropOpen(false);
+          setCropSrc(null);
+        }
       }
-      setCropOpen(false);
-      setCropSrc(null);
     } catch {
       setError('Помилка завантаження фото');
       setCropOpen(false);
       setCropSrc(null);
+      setCropQueue([]);
     } finally {
       setUploading(false);
     }
@@ -214,6 +233,7 @@ export function ProductEditor({ id }: Props) {
 
       invalidateLinks();
       qc.invalidateQueries({ queryKey: ['products', masterProfile?.id] });
+      showToast({ type: 'success', title: 'Товар збережено' });
       router.replace(`/dashboard/products/${productId}`, { scroll: false });
     } finally {
       setIsSaving(false);
@@ -396,6 +416,7 @@ export function ProductEditor({ id }: Props) {
               ref={fileRef}
               type="file"
               accept="image/*"
+              multiple
               className="hidden"
               aria-hidden="true"
               tabIndex={-1}
@@ -671,10 +692,10 @@ export function ProductEditor({ id }: Props) {
 
       <CropDrawer
         open={cropOpen}
-        onOpenChange={open => { if (!open && !uploading) { setCropOpen(false); setCropSrc(null); } }}
+        onOpenChange={open => { if (!open && !uploading) { setCropOpen(false); setCropSrc(null); setCropQueue([]); } }}
         imageSrc={cropSrc}
         onConfirm={handleCropConfirm}
-        onCancel={() => { setCropOpen(false); setCropSrc(null); }}
+        onCancel={() => { setCropOpen(false); setCropSrc(null); setCropQueue([]); }}
         uploading={uploading}
         aspectRatio={1}
       />

@@ -150,7 +150,7 @@ export function MyProfilePage({ profile }: Props) {
             setIsDirty(true);
           }}
         >
-          {({ triggerUpload, uploading }) => (
+          {({ triggerUpload, uploading, preview }) => (
             <div className="relative">
               <button
                 type="button"
@@ -158,9 +158,9 @@ export function MyProfilePage({ profile }: Props) {
                 aria-label="Змінити фото профілю"
                 className="relative size-24 rounded-full overflow-hidden bg-accent/15 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               >
-                {avatarUrl ? (
+                {(preview ?? avatarUrl) ? (
                   <Image
-                    src={avatarUrl}
+                    src={preview ?? avatarUrl ?? ''}
                     alt=""
                     fill
                     className={cn('object-cover transition-opacity duration-200', uploading && 'opacity-40')}

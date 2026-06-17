@@ -133,22 +133,32 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
+  const [cropQueue, setCropQueue] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
   // tracks photos added in current session (React state updates are async)
   const pendingCountRef = useRef(0);
 
   const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
+    const files = Array.from(e.target.files ?? []);
     e.target.value = '';
+    const valid = files.filter(f => f.type.startsWith('image/'));
+    const slots = MAX_PHOTOS - photos.length;
+    const toProcess = valid.slice(0, slots);
+    if (!toProcess.length) return;
     pendingCountRef.current = 0;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setCropSrc(reader.result as string);
+
+    const readers = toProcess.map(file => new Promise<string>(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    }));
+
+    Promise.all(readers).then(urls => {
+      setCropSrc(urls[0]);
+      setCropQueue(urls.slice(1));
       setCropOpen(true);
-    };
-    reader.readAsDataURL(file);
+    });
   };
 
   const handleCropConfirm = async (croppedAreaPixels: Area) => {
@@ -181,12 +191,18 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
           onPhotosChange([...photos, newPhoto]);
         }
       }
-      setCropOpen(false);
-      setCropSrc(null);
+      if (cropQueue.length > 0) {
+        setCropSrc(cropQueue[0]);
+        setCropQueue(prev => prev.slice(1));
+      } else {
+        setCropOpen(false);
+        setCropSrc(null);
+      }
     } catch {
       setUploadError('Помилка завантаження');
       setCropOpen(false);
       setCropSrc(null);
+      setCropQueue([]);
     } finally {
       setUploading(false);
     }
@@ -270,6 +286,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
         ref={fileRef}
         type="file"
         accept="image/jpeg,image/jpg,image/png,image/webp,image/heic"
+        multiple
         className="hidden"
         aria-hidden="true"
         tabIndex={-1}
@@ -278,10 +295,10 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
 
       <CropDrawer
         open={cropOpen}
-        onOpenChange={open => { if (!open && !uploading) { setCropOpen(false); setCropSrc(null); } }}
+        onOpenChange={open => { if (!open && !uploading) { setCropOpen(false); setCropSrc(null); setCropQueue([]); } }}
         imageSrc={cropSrc}
         onConfirm={handleCropConfirm}
-        onCancel={() => { setCropOpen(false); setCropSrc(null); }}
+        onCancel={() => { setCropOpen(false); setCropSrc(null); setCropQueue([]); }}
         uploading={uploading}
       />
 

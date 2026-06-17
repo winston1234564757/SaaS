@@ -17,7 +17,7 @@ interface PhotoUploaderProps {
   value?: string | null;
   onChange: (url: string | null) => void;
   aspectRatio?: number;
-  children?: (props: { triggerUpload: () => void; uploading: boolean }) => React.ReactNode;
+  children?: (props: { triggerUpload: () => void; uploading: boolean; preview: string | null }) => React.ReactNode;
 }
 
 export function PhotoUploader({
@@ -59,7 +59,7 @@ export function PhotoUploader({
       if (!blob) throw new Error('crop failed');
       const result = await uploadPhoto(supabase, entity, blob);
       if ('error' in result) throw new Error(result.error);
-      setPreview(result.url);
+      setPreview(result.url + '?t=' + Date.now());
       onChange(result.url);
       setCropOpen(false);
       setCropSrc(null);
@@ -81,12 +81,12 @@ export function PhotoUploader({
     onChange(null);
   };
 
-  const triggerUpload = () => fileInputRef.current?.click();
+  const triggerUpload = () => { fileInputRef.current?.click(); };
 
   return (
     <>
       {children ? (
-        children({ triggerUpload, uploading })
+        children({ triggerUpload, uploading, preview })
       ) : (
         <div className="flex flex-col gap-2">
           {preview ? (

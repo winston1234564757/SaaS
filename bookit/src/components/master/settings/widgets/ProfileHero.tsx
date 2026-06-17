@@ -51,16 +51,16 @@ export function ProfileHero({
         value={avatarUrl}
         onChange={(url) => { if (url) onAvatarChange(url); }}
       >
-        {({ triggerUpload, uploading }) => (
+        {({ triggerUpload, uploading, preview }) => (
           <button
             type="button"
             onClick={triggerUpload}
             aria-label="Змінити фото профілю"
             className="absolute inset-0 z-[1] group"
           >
-            {avatarUrl ? (
+            {(preview ?? avatarUrl) ? (
               <Image
-                src={avatarUrl}
+                src={preview ?? avatarUrl ?? ''}
                 alt={displayName}
                 fill
                 className="object-cover"

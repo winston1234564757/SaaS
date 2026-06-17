@@ -33,7 +33,7 @@ export function CropDrawer({
   };
 
   return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange}>
+    <Drawer.Root open={open} onOpenChange={handleOpenChange} dismissible={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200]" />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 max-h-[96vh] bg-background rounded-t-[40px] flex flex-col z-[210] outline-none shadow-2xl">
