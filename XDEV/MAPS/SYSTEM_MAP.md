@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-16 · Джерело: живий код (v9.0.0 "Sprint-04: 19/37 ✅") · Sprint-04 commit: `cd8cd54` (T18: server prefetch + DnD lazy + image opt)
+> Оновлено: 2026-06-18 · Джерело: живий код (v9.0.0 "Sprint-04: 23/37 ✅") · Sprint-04 commit: `b5f8ec6` (T23-impl: Activation Tour 7-step — context + banner + migration + 7 data-tour-step attrs + DashboardLayout swap)
 > 
-> **⚡ Sprint-04 Status:** 19/37 ✅ | Next: T-QA-explore | Skills: TOP 50 configured (settings.json v9.0.0)
+> **⚡ Sprint-04 Status:** 23/37 ✅ | Next: T25 — dashboard/settings ПК redesign | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 | Sprint-05 + Sprint-06 remaining post-launch
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
 > 
@@ -33,7 +33,7 @@
 
 | Route | Відповідальність | Page | Actions | Key Component |
 |---|---|---|---|---|
-| `/dashboard` | Editorial dashboard: greeting, schedule, weekly chart, monthly calendar, sidebar widgets, adaptive strip, tour | `dashboard/page.tsx` | `dashboard/actions.ts` | `FrostDashboard.tsx`, `DashboardGreeting.tsx`, `DashboardDrawers.tsx`, `DashboardTourBanner.tsx` (DOM overlay highlight, position:fixed, z-48), `DashboardTourContext.tsx` (startTour/closeTour/steps 0-7), `TodaySchedule.tsx`, `widgets/EarningsPulseWidget.tsx`, `widgets/AdaptiveContextStrip.tsx` (4 states: empty/quiet/moderate/busy), `widgets/FrostMetricsStrip.tsx` (ticker, touch-drag), `widgets/frost/WeeklyChartWidget.tsx`, `widgets/frost/PeakHoursWidget.tsx`, `widgets/frost/CancellationRateWidget.tsx`, `widgets/frost/NextFreeDaysWidget.tsx`, `widgets/frost/InsightsRow.tsx`, `widgets/frost/ChannelHealthWidget.tsx`, `widgets/frost/TopServicesWidget.tsx` |
+| `/dashboard` | Editorial dashboard: greeting, schedule, weekly chart, monthly calendar, sidebar widgets, adaptive strip, tour | `dashboard/page.tsx` | `dashboard/actions.ts` | `FrostDashboard.tsx`, `DashboardGreeting.tsx`, `DashboardDrawers.tsx`, `ActivationTourBanner.tsx` (cross-page spotlight, progress bar, pathname-aware re-spotlight, z-48), `ActivationTourContext.tsx` (7-step activation tour, router.push between routes, fire-and-forget DB persist, backward compat seen_tours.dashboard_v2), `TodaySchedule.tsx`, `widgets/EarningsPulseWidget.tsx`, `widgets/AdaptiveContextStrip.tsx` (4 states: empty/quiet/moderate/busy), `widgets/FrostMetricsStrip.tsx` (ticker, touch-drag), `widgets/frost/WeeklyChartWidget.tsx`, `widgets/frost/PeakHoursWidget.tsx`, `widgets/frost/CancellationRateWidget.tsx`, `widgets/frost/NextFreeDaysWidget.tsx`, `widgets/frost/InsightsRow.tsx`, `widgets/frost/ChannelHealthWidget.tsx`, `widgets/frost/TopServicesWidget.tsx` |
 | `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching | `bookings/page.tsx` | `bookings/actions.ts` | `BookingsPage.tsx`, `BookingCard.tsx`, `PeriodAnalyticsView.tsx` |
 | `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` | `master/clients/ClientsPage.tsx` (useWindowVirtualizer list), `ClientListRow.tsx` (React.memo), `ClientGridCard.tsx` (React.memo), `clientsUtils.tsx` (shared RETENTION_CONFIG/getAutoTags/getSmartAction/ClientIconStack), `ClientDetailSheet.tsx`, `ClientWidgets.tsx` |
 | `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` |
@@ -337,8 +337,10 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `useTour.ts` — Generic per-page tour hook: step state + localStorage cache + optional DB persist via `markTourSeen`. 6 consumers: AnalyticsPage · FlashDealPage · LoyaltyPage · DynamicPricingPage · ReferralPage · ReviewsPage (1-2 кроки кожна).
 - **Tour Architecture (P1.5)** — 2 системи, різний scope:
   - **`useTour.ts`** — single-component tours. Кожна сторінка сама управляє станом. Коли потрібна ізольована підказка без координації між компонентами.
-  - **`DashboardTourContext.tsx`** — React Context + Provider (8 кроків). Дашборд-wide тур де кілька компонентів реагують на той самий крок: `DashboardTourBanner` + `TodayScheduleWithHint` + `QuickActionsWithHint` + `ShareCardWithHint`. Mounted by `DashboardLayout`. `AcademyPage` може запустити тур через `useTourStep().startTour()`. НЕ будується на `useTour` — незалежне управління станом. DB persist: `useMutation(markTourSeen)` + `refresh()`.
-  - **Правило вибору:** одна сторінка → `useTour`. Кілька компонентів одночасно → `DashboardTourContext` pattern.
+  - **`DashboardTourContext.tsx`** — ~~DEPRECATED (T23-impl 2026-06-18)~~ — замінено на `ActivationTourContext`. `DashboardTourBanner.tsx` також виведено з `DashboardLayout`. `AcademyPage` лінк "Пройти тур знову" → pending update.
+  - **`ActivationTourContext.tsx`** — `src/components/master/onboarding/`. Cross-page 7-step activation tour. `ACTIVATION_STEPS[]` — route + tourKey + title/text/cta. `router.push` між сторінками. Fire-and-forget DB: `saveActivationTourStep(step).catch()`. Backward compat: skip if `seen_tours.dashboard_v2=true` OR `has_seen_tour=true`. Trigger: `activation_tour_step=0` set on wizard SUCCESS. Mounted by `DashboardLayout` via `ActivationTourProvider`.
+  - **`ActivationTourBanner.tsx`** — `src/components/master/onboarding/`. Progress bar (не dots). `useEffect([tourStep, pathname])` — re-spotlight після cross-page navigation. Last step = "Завершити" (writes `seen_tours.activation_v1=true`, clears `activation_tour_step=null`).
+  - **Правило вибору:** одна сторінка → `useTour`. Cross-page multi-step → `ActivationTourContext` pattern.
 - `useLiveChat.ts` — real-time чат підтримки через Supabase Realtime з можливістю надсилання тексту та медіа-вкладень
 - Provider: `src/lib/providers/QueryProvider.tsx`
 
@@ -455,7 +457,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | Таблиця | Призначення |
 |---|---|
 | `profiles` | Всі юзери: `full_name`, `phone` (E.164), `role`, `telegram_chat_id` (клієнт), `onboarding_step`, `onboarding_data`, `health_notes`, `medical_notes` |
-| `master_profiles` | Бізнес-профіль: `slug`, `subscription_tier`, `working_hours` (jsonb), `pricing_rules` (jsonb), `categories` (text[]), `business_name`, `telegram_chat_id` (бізнес), `theme`, `retention_cycle_days`, `lifetime_discount`, `auto_flash_on_cancel BOOLEAN`, `auto_flash_discount_pct INT (10–30%)` (T32 migration 141) |
+| `master_profiles` | Бізнес-профіль: `slug`, `subscription_tier`, `working_hours` (jsonb), `pricing_rules` (jsonb), `categories` (text[]), `business_name`, `telegram_chat_id` (бізнес), `theme`, `retention_cycle_days`, `lifetime_discount`, `auto_flash_on_cancel BOOLEAN`, `auto_flash_discount_pct INT (10–30%)` (T32 migration 141), `activation_tour_step smallint DEFAULT NULL` (T23-impl: 0–6=active step, NULL=not started/completed), `seen_tours JSONB` (ключі: `dashboard_v2`, `activation_v1`, per-page tour names) |
 | `client_master_relations` | CRM: `total_visits`, `total_spent`, `average_check`, `last_visit_at`, `is_vip`, `tags[]`, `health_notes`, `medical_notes`, `is_archived` |
 | **Identity Note** | Пріоритет відображення імені: `business_name` (якщо є) → `full_name`. Застосовується в `Explore`, `PublicMasterPage`, `Sidebar`. |
 
@@ -576,3 +578,6 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `139_products_full_fix.sql` — Повний фікс `products`: `product_type`, `icon_name`, `is_archived`, `cost_kopecks`, `auto_deduct`; `stock_qty` numeric→integer; `product_service_links.quantity`; partial index; оновлення тригера списання (consumable + auto_deduct only) with category-based backfill
 - `20260524124500_get_master_referral_history.sql` — `get_master_referral_history` RPC function
 - `20260605000000_analytics_system.sql` — Mega analytics functions and orchestrator `get_analytics_extras` RPC
+- `20260607000000_security_search_path_fix.sql` — 19 RPC `SET search_path = public` fixes (⚠️ pending `npx supabase db push` або Dashboard SQL Editor)
+- `20260614000000_auto_flash_on_cancel.sql` — `auto_flash_on_cancel BOOLEAN`, `auto_flash_discount_pct INT` на `master_profiles` (T32 migration 141)
+- `20260618000000_activation_tour_step.sql` — `activation_tour_step smallint DEFAULT NULL` на `master_profiles` + sparse index; Activation Tour persistence (T23-impl 2026-06-18)

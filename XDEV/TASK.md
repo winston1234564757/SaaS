@@ -1,14 +1,14 @@
 # TASK.md — Поточні задачі
 
 > Оновлюється після кожної ітерації Sprint-04.
-> **Updated:** 2026-06-16 | **[РЕСТРУКТУРИЗАЦІЯ: іт. 16-22 → ##ClientDesign]**
+> **Updated:** 2026-06-18 | **Прогрес: 23/37 ✅**
 
 ---
 
 ## Активний спринт
 
 **Sprint-04** — 37 задач (one task = one vercel --prod deploy)
-**Прогрес:** 18/37 ✅
+**Прогрес:** 23/37 ✅
 **Повний план:** `XDEV/PLANS/SPRINT-04-BACKLOG/SPRINT-04-PLAN.md`
 **Живий трекер:** `XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md`
 **Handoff:** `XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md`
@@ -16,7 +16,7 @@
 
 | Прогрес | Поточна задача |
 |---|---|
-| **19/37** ✅ | **T-QA-explore** — /explore: фото h-[192px]→h-[134px] (-30%) + теги в scrollable strip |
+| **23/37** ✅ | **T25** — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout) |
 
 ---
 
@@ -40,35 +40,25 @@
 | 14 | T14 | Конструктор сторіс (ПК+мобайл): розширення робочої зони | `6cc91f2` `0fa2aab` |
 | 15 | T15 | Сповіщення: каскад Push→TG + тексти + PWA deep link | `51f0ba7` `f2b24bf` |
 | 22.1 | T-QA-bookings | /my/bookings: 6 QA fixes | `731ea92` |
+| 22.2 | T-QA-explore | /explore: фото h-[192px]→h-[134px] (-30%) + теги в strip | `8cada91` |
+| 25 | T18 | Оптимізація завантаження сторінки послуг | `cd8cd54` |
+| 26 | T22 | Стандартизація завантаження фото (всі сутності) | `52dbb4b` `87f3901` |
+| 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | — |
+| 27.5 | T23-impl | Activation Tour: повна реалізація (7 tasks) | `b5f8ec6` |
 | 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | `e7645f9` |
 | 34 | T33 | Лендинг: повна консистентність тарифів | `e01e138` `e2b3bd1` |
 
 ---
 
-## ▶ NEXT — QA Sprint + Клієнтська Зона
+## ▶ NEXT
 
 | Іт | ID | Назва | Статус |
 |----|----|-------|--------|
-| 22.2 | **T-QA-explore** | **/explore: фото h-[192px]→h-[134px] (-30%) + теги в strip** | **▶ NEXT** |
-| 22.3 | T-QA-chat | /my/messages: Мої майстри + UX fixes | ⬜ |
-| 22.4 | T-QA-navbar | MyBottomNav FAB redesign | ⬜ |
-| 23 | T-phone | /my/setup/phone: onboarding redesign з нуля | ⬜ |
-| 24 | T24 | Клієнтська зона: desktop layout — всі 8 сторінок | ⬜ |
-
----
-
-## ⬜ Інші задачі Sprint-04 (pending)
-
-| ID | Назва | Статус |
-|----|-------|--------|
-| T18 | Оптимізація завантаження сторінки послуг | ⬜ |
-| T22 | Стандартизація завантаження фото (всі сутності) | ⬜ |
-| T23 | Онбординг тур: persona simulation + brainstorm + spec | ⬜ |
-| T25 | dashboard/settings (ПК): повний redesign | ⬜ |
-| T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ |
-| T29 | Розхідники: міграції + серверна логіка | ⬜ |
-| T30 | Розхідники: UX/UI реалізація | ⬜ |
-| T31 | Smart Design System: Context-Adaptive UI | ⬜ |
+| 28 | **T25** | **dashboard/settings (ПК): повний redesign з нуля** | **▶ NEXT** |
+| 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ |
+| 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ |
+| 31 | T30 | Розхідники: UX/UI реалізація | ⬜ |
+| 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ |
 
 ---
 
@@ -86,6 +76,10 @@
 | 18 | T-bookings-redo | /my/bookings: premium redesign + review + "Записатись знову" | ⬜ redo | `9118000` |
 | 20 | T-profile-redo | /my/profile: Identity Card redesign (schema ✅) | ⬜ redo | `4e8d0c5` |
 | 21 | T-chat-redo | /my/messages: UI redesign + keyboard UX (backend ✅) | ⬜ redo | `e3273aa` |
+| 22.3 | T-QA-chat | /my/messages: Мої майстри + UX fixes | ⬜ | — |
+| 22.4 | T-QA-navbar | MyBottomNav FAB redesign | ⬜ | — |
+| 23 | T-phone | /my/setup/phone: onboarding redesign з нуля | ⬜ | — |
+| 24 | T24 | Клієнтська зона: desktop layout — всі 8 сторінок | ⬜ | — |
 
 ---
 
@@ -93,6 +87,7 @@
 
 | Спринт | Дата | Результат |
 |---|---|---|
+| Sprint-04 (in progress) | 2026-06-12/... | 23/37 ✅ |
 | Sprint-03 (18 tasks) | 2026-06-09/12 | ✅ Complete (18/18) |
 | Sprint-02 (25 tasks) | 2026-06-08/09 | ✅ Complete |
 | IRP (8 phases A–H) | 2026-06-07/08 | ✅ Security, Frost-only, wizard, no-emoji, a11y, audit |
@@ -103,3 +98,4 @@
 ## ⚠️ Pending (cross-sprint)
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
 - Vercel Pro → cron `0 * * * *` для check-uncompleted
+- T23-impl QA: wizard SUCCESS → tour auto-starts → cross-page nav → step persistence on PWA close/reopen
