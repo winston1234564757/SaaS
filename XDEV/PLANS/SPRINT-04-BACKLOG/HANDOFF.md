@@ -5,7 +5,7 @@
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
 **Прогрес:** 21/37 ✅
-**Наступна задача:** **T23 — Онбординг тур: persona simulation + brainstorm + spec**
+**Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
 **Оновлено:** 2026-06-17
 
 ---
@@ -41,6 +41,25 @@
 - PortfolioPhotoUploader: `pendingCountRef` для display_order між sequential async uploads
 - Multi-photo (portfolio, products): `cropQueue` sequential processing — файли читаються разом через Promise.all, кроп показується один за одним
 - Free crop (aspectRatio=undefined) для portfolio; square (1:1) для продуктів та аватарів
+
+---
+
+## ✅ T23 — Онбординг тур: persona simulation + brainstorm + spec
+**Deliverable:** `XDEV/PLANS/SPRINT-04-BACKLOG/ONBOARDING_TOUR_SPEC.md`
+
+**Що зроблено:**
+1. **Persona simulation** — 3 персони (Анна/Марина/Олена). AHA moment для всіх = перший автоматичний booking поки майстер не в додатку. Ключовий insight: 17-step Dashboard Tour з пустими графіками — демотивує і вбиває activation.
+2. **Мультирольовий аналіз** — CRO (activation journey), PM (D1/D7 retention metrics), UX (journey map).
+3. **Spec документ** — 7-кроковий Activation Tour: замінює Dashboard Tour (17 steps), навігує між сторінками (/dashboard → /settings → /clients → /flash → /marketing → /dashboard), DB-first persistence у новій колонці `activation_tour_step smallint`.
+
+**Архітектурні рішення:**
+- `ActivationTourProvider` у `src/app/(master)/layout.tsx` (глобально для всіх master сторінок)
+- Новий файл: `src/components/master/onboarding/ActivationTourContext.tsx` (7 steps, router.push між сторінками)
+- Новий файл: `src/components/master/onboarding/ActivationTourBanner.tsx` (progress bar замість dots)
+- Migration: `activation_tour_step smallint DEFAULT NULL` на `master_profiles`
+- `seen_tours.activation_v1 = true` при завершенні; backward compat з `dashboard_v2`
+
+**Root cause проблеми:** Gap між wizard SUCCESS і першим booking — майстер не знає що робити далі, а Dashboard Tour показує пусті метрики замість activation path.
 
 ---
 

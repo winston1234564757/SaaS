@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 21/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
-Наступна: T23 — Онбординг тур: persona simulation + brainstorm + spec (deliverable: spec document, не код)
-Стан: T22 ✅ Commit: 52dbb4b + bug fixes 87f3901 (avatar preview cache-bust, ProductEditor silent save, multi-select cropQueue, CropDrawer dismissible=false)
+Прогрес: 22/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
+Наступна: T25 — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout)
+Стан: T23 ✅ Spec: XDEV/PLANS/SPRINT-04-BACKLOG/ONBOARDING_TOUR_SPEC.md (7-step activation tour, replaces Dashboard Tour 17-step, DB-first persistence activation_tour_step, master layout provider)
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
