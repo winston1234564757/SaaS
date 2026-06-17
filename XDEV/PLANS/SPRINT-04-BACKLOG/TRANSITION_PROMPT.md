@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 19/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
-Наступна: T-QA-chat — /my/messages: Мої майстри section at top + header border + nav hide on chat + keyboard UX polish (сесія 3/4 QA спринту)
-Стан: T18 ✅ Commit: cd8cd54 (server prefetch + DnD lazy + image opt → 5s→<2s). T-QA-bookings ✅ Commit: 731ea92. T33 ✅ Commit: e01e138.
+Прогрес: 21/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
+Наступна: T23 — Онбординг тур: persona simulation + brainstorm + spec (deliverable: spec document, не код)
+Стан: T22 ✅ Commit: 52dbb4b + bug fixes 87f3901 (avatar preview cache-bust, ProductEditor silent save, multi-select cropQueue, CropDrawer dismissible=false)
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
