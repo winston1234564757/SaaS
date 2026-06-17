@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 21/37 ✅
+**Прогрес:** 23/37 ✅
 **Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
-**Оновлено:** 2026-06-17
+**Оновлено:** 2026-06-18
 
 ---
 
@@ -14,6 +14,31 @@
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
   - Якщо CLI не працює → Dashboard SQL Editor
 - Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+
+---
+
+## ✅ T23-impl — Activation Tour: повна реалізація
+**Commit:** `b5f8ec6` | **Дата:** 2026-06-18
+
+**Що зроблено:**
+1. **DB migration** `20260618000000_activation_tour_step.sql` — нова колонка `activation_tour_step smallint DEFAULT NULL` на `master_profiles`. Застосовано через Supabase MCP. Sparse index для аналітики.
+2. **`src/types/database.ts`** — додано `activation_tour_step?: number | null` до `MasterProfile`.
+3. **`src/app/(master)/dashboard/actions.ts`** — нові server actions: `saveActivationTourStep(step)` + `completeActivationTour()` (обидва через admin client, merged `seen_tours`).
+4. **`src/app/(master)/dashboard/onboarding/actions.ts`** — `saveOnboardingProgress` при step=`SUCCESS` тепер також ставить `activation_tour_step = 0` у `master_profiles`.
+5. **`src/app/(master)/layout.tsx`** — додано `activation_tour_step` до SELECT query.
+6. **`src/components/master/onboarding/ActivationTourContext.tsx`** — новий Context/Provider. 7 кроків ACTIVATION_STEPS (route + tourKey + title + text). Cross-page router.push. Backward compat: skip if `seen_tours.dashboard_v2 = true` OR `activation_v1 = true`.
+7. **`src/components/master/onboarding/ActivationTourBanner.tsx`** — новий Banner. Progress bar (h-1 rounded). Spotlight DOM overlay з `data-tour-step="${tourKey}"`. Re-triggers on `[tourStep, pathname]` — cross-page spotlighting.
+8. **`src/components/master/DashboardLayout.tsx`** — замінено `DashboardTourProvider/Banner` → `ActivationTourProvider/Banner`.
+9. **data-tour-step атрибути** на 7 компонентах: `act-0` FreeSlotsWidget, `act-1` SharePageCard, `act-2` TechnicalIsland (TG section), `act-3` ClientsPage, `act-4` FlashDealPage, `act-5` MarketingTabs, `act-6` ScheduleWidget (frost).
+
+**Root cause / мотивація:** 17-кроковий Dashboard Tour з пустими графіками демотивує нових майстрів. 7-крокова cross-page Activation Tour веде через критичний шлях: FreeSlots → PublicLink → TG → CRM → Flash → Stories → Schedule.
+
+**Post-deploy QA:**
+- [ ] Новий майстер: wizard SUCCESS → /dashboard → тур через 1.2s
+- [ ] Крок 2: `router.push('/dashboard/settings')` + spotlight на TG block
+- [ ] Close PWA на кроці 3, перезайти → продовжується з кроку 3
+- [ ] Всі 7 кроків → `seen_tours.activation_v1=true`, `activation_tour_step=null`
+- [ ] Старий майстер (`dashboard_v2=true`): тур НЕ показується
 
 ---
 

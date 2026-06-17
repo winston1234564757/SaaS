@@ -15,9 +15,9 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 22/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
+Прогрес: 23/37 ✅ | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
 Наступна: T25 — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout)
-Стан: T23 ✅ Spec: XDEV/PLANS/SPRINT-04-BACKLOG/ONBOARDING_TOUR_SPEC.md (7-step activation tour, replaces Dashboard Tour 17-step, DB-first persistence activation_tour_step, master layout provider)
+Стан: T23-impl ✅ Commit b5f8ec6 — 7-step Activation Tour РЕАЛІЗОВАНО: ActivationTourContext + ActivationTourBanner + migration + 7 data-tour-step attrs + DashboardLayout swap. Потребує deploy + QA.
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
