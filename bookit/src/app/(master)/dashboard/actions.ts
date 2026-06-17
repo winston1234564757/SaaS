@@ -76,6 +76,31 @@ export async function markTourSeen(tourName: string = 'dashboard'): Promise<{ er
   return { error: error?.message ?? null };
 }
 
+export async function resetTourSeen(tourName: string): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Unauthorized' };
+
+  const admin = createAdminClient();
+
+  const { data: current } = await admin
+    .from('master_profiles')
+    .select('seen_tours')
+    .eq('id', user.id)
+    .single();
+
+  const currentTours = (current?.seen_tours as Record<string, boolean> | null) ?? {};
+  const updated = { ...currentTours };
+  delete updated[tourName];
+
+  const { error } = await admin
+    .from('master_profiles')
+    .update({ seen_tours: updated })
+    .eq('id', user.id);
+
+  return { error: error?.message ?? null };
+}
+
 export interface ClientAlert {
   type: 'no_review' | 'long_absence';
   clientName: string;

@@ -1,15 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   CalendarDays, Users, BarChart2, Zap, Scissors, Settings,
   UserPlus, TrendingUp, Bell, Heart,
   GraduationCap, ChevronDown, ArrowRight, Play,
 } from 'lucide-react';
-import { useTourStep } from '@/components/master/dashboard/DashboardTourContext';
+import { resetTourSeen } from '@/app/(master)/dashboard/actions';
 
 // ── Emil Kowalski spring configs ─────────────────────────────────────────────
 const SPRING_TAB     = { type: 'spring' as const, duration: 0.3,  bounce: 0    };
@@ -558,12 +557,10 @@ function SectionGroup({ section, index }: { section: Section; index: number }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export function AcademyPage() {
   const [activeTab, setActiveTab] = useState<'functions' | 'goals'>('functions');
-  const { startTour } = useTourStep();
-  const router = useRouter();
-
-  function handleRestartTour() {
-    startTour();
-    router.push('/dashboard');
+  async function handleRestartTour() {
+    localStorage.removeItem('tour_dashboard_v3');
+    await resetTourSeen('dashboard_v3');
+    window.location.href = '/dashboard';
   }
 
   const sections = activeTab === 'functions' ? FUNCTION_SECTIONS : GOAL_SECTIONS;

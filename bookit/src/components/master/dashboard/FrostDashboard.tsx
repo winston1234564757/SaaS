@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
@@ -222,7 +222,7 @@ function FrostMobile({
 }) {
   return (
     <div className="frost-mobile-view flex flex-col gap-3 lg:hidden">
-      <motion.div custom={0} variants={rise} initial="hidden" animate="visible" data-tour-step={0}>
+      <motion.div custom={0} variants={rise} initial="hidden" animate="visible" data-tour-step={0} data-tour-key="dash-0">
         <FrostGreeting />
       </motion.div>
 
@@ -230,15 +230,15 @@ function FrostMobile({
         <FrostMetricsStrip />
       </motion.div>
 
-      <motion.div custom={2} variants={rise} initial="hidden" animate="visible" data-tour-step={2}>
+      <motion.div custom={2} variants={rise} initial="hidden" animate="visible" data-tour-step={2} data-tour-key="dash-2">
         <AdaptiveContextStrip />
       </motion.div>
 
-      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={3}>
+      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={3} data-tour-key="dash-3">
         <QuickActionsWidget />
       </motion.div>
 
-      <motion.div custom={4} variants={rise} initial="hidden" animate="visible" data-tour-step={4}>
+      <motion.div custom={4} variants={rise} initial="hidden" animate="visible" data-tour-step={4} data-tour-key="dash-1">
         <FreeSlotsWidget onSlotClick={onSlotClick} />
       </motion.div>
 
@@ -300,7 +300,7 @@ function FrostDesktop({
   return (
     <div className="hidden lg:block">
 
-      <motion.div custom={0} variants={rise} initial="hidden" animate="visible" className="mb-4" data-tour-step={0}>
+      <motion.div custom={0} variants={rise} initial="hidden" animate="visible" className="mb-4" data-tour-step={0} data-tour-key="dash-0">
         <FrostGreeting />
       </motion.div>
 
@@ -310,14 +310,14 @@ function FrostDesktop({
 
       <motion.div custom={2} variants={rise} initial="hidden" animate="visible" className="mb-4">
         <div className="grid gap-4" style={{ gridTemplateColumns: '3fr 2fr' }}>
-          <div data-tour-step={2} className="flex flex-col">
+          <div data-tour-step={2} data-tour-key="dash-2" className="flex flex-col">
             <AdaptiveContextStrip />
           </div>
           <EarningsPulseWidget />
         </div>
       </motion.div>
 
-      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={3}>
+      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={3} data-tour-key="dash-3">
         <FrostActionsBar />
       </motion.div>
 
@@ -328,7 +328,7 @@ function FrostDesktop({
           <div data-tour-step={5} className="flex flex-col h-full">
             <ScheduleWidget />
           </div>
-          <div data-tour-step={4}>
+          <div data-tour-step={4} data-tour-key="dash-1">
             <FreeSlotsWidget onSlotClick={onSlotClick} />
           </div>
         </div>

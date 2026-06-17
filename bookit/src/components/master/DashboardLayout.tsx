@@ -11,8 +11,6 @@ import { MobileHub } from '@/components/shared/MobileHub';
 import { InstallBanner } from '@/components/shared/InstallBanner';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
-import { ActivationTourProvider } from '@/components/master/onboarding/ActivationTourContext';
-import { ActivationTourBanner } from '@/components/master/onboarding/ActivationTourBanner';
 import type { Profile, MasterProfile } from '@/types/database';
 
 function ThemeApplier() {
@@ -69,7 +67,6 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ActivationTourProvider>
       <div className="min-h-dvh flex flex-col" style={{ background: 'transparent' }}>
         <ImpersonationBanner />
         <ThemeApplier />
@@ -97,13 +94,11 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         </div>
 
         <SupportWidget />
-        <ActivationTourBanner />
 
         <Suspense>
           <BookingDetailsModal />
         </Suspense>
       </div>
-    </ActivationTourProvider>
   );
 }
 

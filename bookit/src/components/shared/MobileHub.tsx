@@ -7,7 +7,7 @@ import {
   LayoutDashboard, CalendarDays, Users, Settings,
   X, BarChart2, Scissors, ShoppingBag, Wallet,
   GalleryVerticalEnd, Rocket, Sparkles, MessageSquare,
-  Building2, CreditCard, HelpCircle, Scale, Zap, TrendingUp,
+  Building2, CreditCard, HelpCircle, Scale, Zap, TrendingUp, GraduationCap,
   ExternalLink, User,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,11 +41,12 @@ const MARKETING = [
 ];
 
 const SYSTEM = [
-  { href: '/dashboard/settings',   icon: Settings,   label: 'Налаштування' },
-  { href: '/dashboard/billing',    icon: CreditCard,  label: 'Тариф'        },
-  { href: '/dashboard/studio',     icon: Building2,   label: 'Студія'       },
-  { href: '/dashboard/support',    icon: HelpCircle,  label: 'Підтримка'    },
-  { href: '/dashboard/documents',  icon: Scale,       label: 'Документи'    },
+  { href: '/dashboard/settings',   icon: Settings,       label: 'Налаштування' },
+  { href: '/dashboard/billing',    icon: CreditCard,     label: 'Тариф'        },
+  { href: '/dashboard/studio',     icon: Building2,      label: 'Студія'       },
+  { href: '/dashboard/support',    icon: HelpCircle,     label: 'Підтримка'    },
+  { href: '/dashboard/documents',  icon: Scale,          label: 'Документи'    },
+  { href: '/dashboard/academy',    icon: GraduationCap,  label: 'Академія'     },
 ];
 
 /* ─── Animations ─────────────────────────────────── */

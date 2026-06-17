@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, CalendarDays, Users, Scissors,
   BarChart2, GalleryVerticalEnd, Settings, ChevronDown, User,
-  Sparkles, ShoppingBag, Wallet, MessageSquare, Rocket, ArrowLeft,
+  Sparkles, ShoppingBag, Wallet, MessageSquare, Rocket, ArrowLeft, GraduationCap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -29,10 +29,11 @@ const ACTIVITY = [
 ];
 
 const GROWTH = [
-  { href: '/dashboard/marketing',  icon: Sparkles,           label: 'Маркетинг' },
-  { href: '/dashboard/revenue',    icon: Wallet,              label: 'Дохід'     },
-  { href: '/dashboard/growth',     icon: Rocket,              label: 'Ріст'      },
-  { href: '/dashboard/reviews',    icon: MessageSquare,       label: 'Відгуки'   },
+  { href: '/dashboard/marketing',  icon: Sparkles,        label: 'Маркетинг' },
+  { href: '/dashboard/revenue',    icon: Wallet,          label: 'Дохід'     },
+  { href: '/dashboard/growth',     icon: Rocket,          label: 'Ріст'      },
+  { href: '/dashboard/reviews',    icon: MessageSquare,   label: 'Відгуки'   },
+  { href: '/dashboard/academy',    icon: GraduationCap,   label: 'Академія'  },
 ];
 
 const TIER_LABELS: Record<string, string> = {
