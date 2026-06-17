@@ -1,7 +1,7 @@
 # TASK.md — Поточні задачі
 
 > Оновлюється після кожної ітерації Sprint-04.
-> **Updated:** 2026-06-18 | **Прогрес: 23/37 ✅**
+> **Updated:** 2026-06-18 | **Прогрес: 24/37 ✅**
 
 ---
 
@@ -45,6 +45,7 @@
 | 26 | T22 | Стандартизація завантаження фото (всі сутності) | `52dbb4b` `87f3901` |
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | — |
 | 27.5 | T23-impl | Activation Tour: повна реалізація (7 tasks) | `b5f8ec6` |
+| 27.6 | T23-impl-v2 | Per-page TourBanner: generic ResizeObserver spotlight | `7b9886e` |
 | 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | `e7645f9` |
 | 34 | T33 | Лендинг: повна консистентність тарифів | `e01e138` `e2b3bd1` |
 

@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 23/37 ✅
+**Прогрес:** 24/37 ✅
 **Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
 **Оновлено:** 2026-06-18
 
@@ -14,6 +14,23 @@
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
   - Якщо CLI не працює → Dashboard SQL Editor
 - Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+
+---
+
+## ✅ T23-impl-v2 — Per-page TourBanner (замінює cross-page Activation Tour)
+**Commit:** `7b9886e` | **Дата:** 2026-06-18
+
+**Що зроблено:**
+1. **`TourBanner.tsx`** — `src/components/master/onboarding/`. Generic, props-driven. ResizeObserver + scroll/resize listeners для точного spotlight (замість one-shot getBCR). `data-tour-key` атрибут (не `data-tour-step` — щоб уникнути конфлікту з legacy DashboardTour). Navigator last step: isNavigator=true → 3 link cards grid.
+2. **`DashboardView.tsx`** — інтегрує `useTour('dashboard_v3', 5)` + рендерить `<TourBanner>`. 4 контент-кроки: FrostGreeting/FreeSlotsWidget/AdaptiveContextStrip/QuickActionsWidget. 5-й крок = navigator → Settings/Клієнти/Маркетинг.
+3. **`FrostDashboard.tsx`** — `data-tour-key` додано до 8 wrappers (4 mobile + 4 desktop): dash-0, dash-1, dash-2, dash-3.
+4. **`DashboardLayout.tsx`** — видалено `ActivationTourProvider` + `ActivationTourBanner`. Спрощено.
+5. **`MobileHub.tsx`** — Академія (GraduationCap) додана до SYSTEM секції.
+6. **`DashboardTopBar.tsx`** — Академія додана до GROWTH dropdown.
+7. **`actions.ts`** — `resetTourSeen(tourName)` server action: видаляє ключ з `seen_tours` JSONB.
+8. **`AcademyPage.tsx`** — "Пройти тур знову" → `resetTourSeen('dashboard_v3')` + `window.location.href='/dashboard'` (full reload для fresh SSR).
+
+**Root cause попередньої проблеми:** Cross-page activation tour (7 steps, ActivationTourContext) не давав відчуття "tour на кожній сторінці". Замінено на per-page архітектуру — кожна сторінка має власний TourBanner.
 
 ---
 

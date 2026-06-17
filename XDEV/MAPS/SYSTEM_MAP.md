@@ -334,13 +334,13 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 ### Session / PWA Hooks (`src/lib/hooks/`)
 - `useSessionWakeup.ts` — visibility change → `resetFetchController` → `invalidateQueries` (усуває нескінченні скелетони після переключення вкладок)
 - `useDeepSleepWakeup.ts` — JS freeze detection → `onlineManager` + `invalidateQueries`
-- `useTour.ts` — Generic per-page tour hook: step state + localStorage cache + optional DB persist via `markTourSeen`. 6 consumers: AnalyticsPage · FlashDealPage · LoyaltyPage · DynamicPricingPage · ReferralPage · ReviewsPage (1-2 кроки кожна).
-- **Tour Architecture (P1.5)** — 2 системи, різний scope:
-  - **`useTour.ts`** — single-component tours. Кожна сторінка сама управляє станом. Коли потрібна ізольована підказка без координації між компонентами.
-  - **`DashboardTourContext.tsx`** — ~~DEPRECATED (T23-impl 2026-06-18)~~ — замінено на `ActivationTourContext`. `DashboardTourBanner.tsx` також виведено з `DashboardLayout`. `AcademyPage` лінк "Пройти тур знову" → pending update.
-  - **`ActivationTourContext.tsx`** — `src/components/master/onboarding/`. Cross-page 7-step activation tour. `ACTIVATION_STEPS[]` — route + tourKey + title/text/cta. `router.push` між сторінками. Fire-and-forget DB: `saveActivationTourStep(step).catch()`. Backward compat: skip if `seen_tours.dashboard_v2=true` OR `has_seen_tour=true`. Trigger: `activation_tour_step=0` set on wizard SUCCESS. Mounted by `DashboardLayout` via `ActivationTourProvider`.
-  - **`ActivationTourBanner.tsx`** — `src/components/master/onboarding/`. Progress bar (не dots). `useEffect([tourStep, pathname])` — re-spotlight після cross-page navigation. Last step = "Завершити" (writes `seen_tours.activation_v1=true`, clears `activation_tour_step=null`).
-  - **Правило вибору:** одна сторінка → `useTour`. Cross-page multi-step → `ActivationTourContext` pattern.
+- `useTour.ts` — Generic per-page tour hook: step state + localStorage cache + optional DB persist via `markTourSeen`. 7 consumers: DashboardView (dashboard_v3) · AnalyticsPage · FlashDealPage · LoyaltyPage · DynamicPricingPage · ReferralPage · ReviewsPage.
+- **Tour Architecture (2026-06-18 T23-impl v2)** — per-page tours via `useTour` + generic `TourBanner`:
+  - **`TourBanner.tsx`** — `src/components/master/onboarding/`. Generic, props-driven. Props: `steps: TourStep[]`, `currentStep`, `onNext`, `onClose`. Spotlight via `data-tour-key` attr (NOT `data-tour-step` — that's used by legacy DashboardTour). ResizeObserver + scroll/resize listeners for continuous tracking. Navigator last step: `isNavigator:true` → 3 link cards, no CTA, no spotlight.
+  - **`DashboardView.tsx`** — integrates `useTour('dashboard_v3', 5)` + renders `<TourBanner>`. 4 content steps + navigator. Keys: `dash-0`=FrostGreeting, `dash-1`=FreeSlotsWidget, `dash-2`=AdaptiveContextStrip, `dash-3`=QuickActionsWidget/FrostActionsBar. Both mobile+desktop wrappers tagged in `FrostDashboard.tsx`.
+  - **`resetTourSeen(tourName)`** — new server action in `dashboard/actions.ts`. Deletes key from `seen_tours` JSONB. Used by Academy "Пройти тур знову" + `window.location.href='/dashboard'` for full-reload fresh SSR.
+  - **`ActivationTourContext.tsx` / `ActivationTourBanner.tsx`** — RETIRED. Removed from `DashboardLayout`. Files kept for reference.
+  - **Правило вибору:** одна сторінка → `useTour` + `TourBanner`. Cross-page → deprecated pattern.
 - `useLiveChat.ts` — real-time чат підтримки через Supabase Realtime з можливістю надсилання тексту та медіа-вкладень
 - Provider: `src/lib/providers/QueryProvider.tsx`
 
