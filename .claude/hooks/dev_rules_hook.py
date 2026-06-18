@@ -21,11 +21,6 @@ TASK_KEYWORDS = [
     'build ', 'implement', 'реалізу',
 ]
 
-SESSION_KEYWORDS = [
-    'привіт', 'hello', 'hi ', 'ок продовжу', 'нова сесія', 'починаємо',
-    'start', 'wake', 'старт', 'почни',
-]
-
 
 def get_prompt_text(stdin_data: bytes) -> str:
     try:
@@ -49,10 +44,6 @@ def is_task_prompt(text: str) -> bool:
     return any(kw.lower() in t for kw in TASK_KEYWORDS)
 
 
-def is_session_start(text: str) -> bool:
-    t = text.lower()
-    return any(kw.lower() in t for kw in SESSION_KEYWORDS) or len(t.strip()) < 20
-
 
 def main():
     try:
@@ -62,7 +53,6 @@ def main():
 
     prompt_text = get_prompt_text(raw_stdin)
     task_mode = is_task_prompt(prompt_text)
-    session_start = is_session_start(prompt_text) or not prompt_text
 
     lines = [
         "=== IRON RULES ACTIVE (no exceptions) ===",
@@ -83,18 +73,6 @@ def main():
         "If you declare a skill → the very next tool call in that turn MUST be Skill(skill='...').",
         "",
     ]
-
-    # Session start → force mempalace + SYSTEM_MAP
-    if session_start:
-        lines += [
-            "=== SESSION START PROTOCOL (MANDATORY — first response) ===",
-            "You MUST complete these before any other action:",
-            "  1. Call mempalace_status NOW (tool call, not just mention)",
-            "  2. Read last 40 lines of XDEV/MAPS/SYSTEM_MAP.md",
-            "  3. Reply: 'STARTUP OK: Palace [N drawers] | SYSTEM_MAP current'",
-            "NO CODE until startup confirmed.",
-            "",
-        ]
 
     # Task-type prompt → inject mandatory gate with skill routing
     if task_mode:

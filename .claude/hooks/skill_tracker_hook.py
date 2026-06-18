@@ -21,6 +21,8 @@ QA_GATE_SKILLS = {
     "adversarial-review",
     "grill_me",
     "adversarial_reviewer",
+    "brainstorming",
+    "ask-questions-if-underspecified",
 }
 
 

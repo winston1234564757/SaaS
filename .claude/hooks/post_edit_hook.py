@@ -24,6 +24,7 @@ except ImportError:
 TS_EXTENSIONS = {".ts", ".tsx"}
 STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
 BOOKIT_DIR = Path("C:/Users/Vitossik/SaaS/bookit")
+AUTO_TSC_DISABLED = True  # disabled: 60s block per edit is too expensive; run manually
 
 
 def reset_consecutive_reads():
@@ -76,13 +77,28 @@ def main():
         if file_path:
             track_file(file_path, tool_name.lower())
             reset_consecutive_reads()
+            # Mark TS files as "edited since tsc" for TSC gate
+            if Path(file_path).suffix in TS_EXTENSIONS:
+                try:
+                    if STATE_FILE.exists():
+                        s = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+                    else:
+                        s = {}
+                    s["ts_edited_since_tsc"] = True
+                    STATE_FILE.write_text(json.dumps(s, ensure_ascii=False, indent=2), encoding="utf-8")
+                except Exception:
+                    pass
 
         # Post-change protocol — TypeScript files only
         if file_path and Path(file_path).suffix in TS_EXTENSIONS:
             fname = Path(file_path).name
 
             # Auto-run TSC
-            tsc_result = run_tsc_auto()
+            tsc_result = (
+                "AUTO-TSC: disabled — run manually: npx tsc --noEmit"
+                if AUTO_TSC_DISABLED
+                else run_tsc_auto()
+            )
 
             context = (
                 f"[POST-CHANGE] {fname} was just modified. "

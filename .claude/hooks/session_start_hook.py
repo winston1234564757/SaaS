@@ -34,6 +34,14 @@ def reset_session_state():
                 "read_files": [],
                 "qa_gate_passed": False,
                 "skills_called": [],
+                # Startup gate flags — reset every session
+                "startup_confirmed": False,
+                "mempalace_done": False,
+                "systemmap_done": False,
+                # Task gate
+                "mempalace_searched": False,
+                # TSC gate
+                "ts_edited_since_tsc": False,
             }, indent=2),
             encoding="utf-8"
         )

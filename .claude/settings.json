@@ -52,7 +52,6 @@
       "mcp__supabase__search_docs",
       "mcp__context7__resolve-library-id",
       "mcp__context7__query-docs",
-      "mcp__tailwind__get_tailwind_colors",
       "mcp__tailwind__generate_color_palette",
       "mcp__tailwind__generate_component_template",
       "mcp__tailwind__get_tailwind_utilities",
@@ -63,9 +62,6 @@
       "mcp__universal-icons__search_icons",
       "mcp__universal-icons__get_icon",
       "mcp__universal-icons__health_check",
-      "mcp__magic__21st_magic_component_builder",
-      "mcp__magic__21st_magic_component_inspiration",
-      "mcp__magic__21st_magic_component_refiner",
       "mcp__magic__logo_search",
       "WebFetch",
       "WebSearch",
@@ -140,6 +136,16 @@
         ]
       },
       {
+        "matcher": "Read|Glob|Grep|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/startup_gate_hook.py",
+            "statusMessage": "Startup gate check..."
+          }
+        ]
+      },
+      {
         "matcher": "Glob|Grep",
         "hooks": [
           {
@@ -151,6 +157,11 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/tsc_gate_hook.py",
+            "statusMessage": "TSC gate check..."
+          },
           {
             "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/qa_gate_guard_hook.py",
@@ -173,16 +184,19 @@
             "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/edit_counter_guard.py",
             "statusMessage": "Tracking edit count..."
-          },
-          {
-            "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_router_hook.py",
-            "statusMessage": "Checking skill route for file..."
           }
         ]
       }
     ],
     "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/startup_tracker_hook.py"
+          }
+        ]
+      },
       {
         "matcher": "Skill",
         "hooks": [
@@ -226,26 +240,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_guard_hook.py",
-            "statusMessage": "Checking skill invocation..."
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/self_improving_hook.py",
             "statusMessage": "Session-end protocol..."
           }
         ]
       }
     ]
-  },
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": false,
-    "frontend-design@claude-plugins-official": true,
-    "antigravity-awesome-skills@antigravity-awesome-skills": true,
-    "vercel@claude-plugins-official": true
   }
 }
