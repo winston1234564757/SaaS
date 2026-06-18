@@ -2,22 +2,13 @@
   "edit_counts": {
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_tracker_hook.py": 1,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\qa_gate_guard_hook.py": 1,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\self_improving_hook.py": 1
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\self_improving_hook.py": 1,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\settings.json": 1,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\humanizer_guard_hook.py": 1,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_router_hook.py": 1
   },
-  "consecutive_reads": 11,
-  "read_files": [
-    "a11y_hook.py",
-    "edit_counter_guard.py",
-    "edit_rules_hook.py",
-    "humanizer_guard_hook.py",
-    "read_limit_hook.py",
-    "skill_guard_hook.py",
-    "env_guard_hook.py",
-    "graphify_hook.py",
-    "graphify_post_hook.py",
-    "context7_hint_hook.py",
-    "skill_router_hook.py"
-  ],
+  "consecutive_reads": 0,
+  "read_files": [],
   "qa_gate_passed": false,
   "skills_called": [],
   "startup_confirmed": true,
