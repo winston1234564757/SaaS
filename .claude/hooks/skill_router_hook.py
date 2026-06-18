@@ -221,10 +221,9 @@ def main() -> int:
         print(json.dumps({}))
         return 0
 
-    hook_event = "PreToolUse" if tool_name in ("Edit", "Write") else "UserPromptSubmit"
     output = {
         "hookSpecificOutput": {
-            "hookEventName": hook_event,
+            "hookEventName": "UserPromptSubmit",
             "additionalContext": "\n".join(lines)
         }
     }
