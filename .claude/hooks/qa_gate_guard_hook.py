@@ -65,26 +65,31 @@ def main() -> int:
         if state.get("qa_gate_passed", False):
             return 0
 
-        # Detect task type from file extension for skill suggestion
+        # Auto-pass: any skill was called this session = QA intent was declared
+        skills_called = state.get("skills_called", [])
+        if skills_called:
+            state["qa_gate_passed"] = True
+            try:
+                STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+            except Exception:
+                pass
+            return 0
+
+        # BLOCK — no skill called, no QA done at all
         if path.suffix == ".sql":
             skill_suggest = "Skill(skill='grill-me')  [DB/migration task]"
         else:
             skill_suggest = "Skill(skill='brainstorming')  [design/feature task]  OR  Skill(skill='grill-me')  [bug/refactor task]"
 
-        # BLOCK — QA gate not passed
         msg = (
             f"\n[QA GATE BLOCK] Cannot edit {path.name}\n"
-            "IRON RULE #1: QA gate not passed this session.\n"
+            "IRON RULE #1: No skill invoked this session — QA gate is closed.\n"
             "\n"
-            "OPTION A — Formal skill (preferred, auto-unlocks gate):\n"
-            f"  Invoke {skill_suggest}\n"
-            "  Gate unlocks automatically after skill completes.\n"
+            "REQUIRED: Invoke a skill first (auto-unlocks gate):\n"
+            f"  {skill_suggest}\n"
             "\n"
-            "OPTION B — Self-QA (if discussion already happened in context):\n"
-            "  Run via Bash tool (do NOT ask the user):\n"
-            "  python C:/Users/Vitossik/SaaS/.claude/hooks/set_qa_gate_passed.py self-qa\n"
-            "  Use ONLY if: scope/risks/approach were already discussed with the user.\n"
-            "  Do NOT use to skip QA entirely.\n"
+            "Write 'SKILL: [name]' AND call Skill(skill='[name]') in the SAME response.\n"
+            "Gate opens automatically once any skill is called.\n"
         )
         print(msg)
         return 2
