@@ -2,13 +2,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { useTour } from '@/lib/hooks/useTour';
-import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
+import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 import { cn } from '@/lib/utils/cn';
 import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import { useQueryState, parseAsString } from 'nuqs';
 import {
   BarChart2, Download, Loader2, RefreshCw,
-  Crown, Star, Users, TrendingUp, TrendingDown,
+  Crown, Star, Users, TrendingUp,
   AlertTriangle, Clock, ShoppingBag, ShieldAlert,
   ChevronDown, ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -239,15 +239,40 @@ function ServiceRow({ svc, maxRev }: { svc: any; maxRev: number }) {
   );
 }
 
+// ── Tour Steps ────────────────────────────────────────────────────────────────
+
+// humanized
+const ANALYTICS_STEPS: TourStep[] = [
+  {
+    title: 'Аналітика',
+    text: 'Повна картина бізнесу — виручка, записи, клієнти. Тут все в одному місці.',
+    tourKey: 'anl-header',
+  },
+  {
+    title: 'KPI в реальному часі',
+    text: 'Ключові показники оновлюються щоразу як з\'являється новий запис.',
+    tourKey: 'anl-kpi',
+  },
+  {
+    title: 'Графік виручки',
+    text: 'Тренд за місяцями — бачиш де зростаєш i де є резерви для росту.',
+    tourKey: 'anl-chart',
+  },
+  {
+    title: 'Аналітика готова',
+    text: 'Відкривай будь-який таб — Зростання, Поведінка, Відгуки — i копай глибше.',
+  },
+];
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  
-  const { currentStep, nextStep, closeTour } = useTour('analytics', 2, {
-    initialSeen: seenTours?.analytics ?? false,
+
+  const { currentStep, nextStep, closeTour } = useTour('analytics_v1', ANALYTICS_STEPS.length, {
+    initialSeen: !!(seenTours?.['analytics_v1']),
     masterId,
   });
 
@@ -311,11 +336,11 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         .gte('created_at', range.startDate)
         .lte('created_at', range.endDate);
       if (error) throw error;
-      
+
       if (!b || b.length === 0) {
         return { sent: 0, opened: 0, converted: 0 };
       }
-      
+
       const ids = b.map((item: any) => item.id);
       const { data: recipients, error: rError } = await supabase
         .from('broadcast_recipients')
@@ -367,11 +392,11 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         .select('status')
         .eq('master_id', masterId!);
       if (e1) throw e1;
-      
+
       const totalSent = sent?.length ?? 0;
       const signedUp = sent?.filter((r: any) => r.status === 'signed_up' || r.status === 'activated').length ?? 0;
       const activated = sent?.filter((r: any) => r.status === 'activated').length ?? 0;
-      
+
       return { totalSent, signedUp, activated };
     },
     staleTime: 5 * 60_000,
@@ -395,7 +420,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
   const lastMonthRev = monthStats[monthStats.length - 1]?.revenue ?? 0;
   const forecastDelta = forecast ? forecast.forecast - lastMonthRev : 0;
   const forecastPct = lastMonthRev > 0 ? Math.round((forecastDelta / lastMonthRev) * 100) : null;
-  
+
   const nextMonthName = useMemo(() => {
     const d = new Date();
     d.setMonth(d.getMonth() + 1);
@@ -508,21 +533,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
   return (
     <div className="flex flex-col gap-4 pb-8 w-full max-w-full overflow-x-hidden">
-      
+
       {/* ── Вступний заголовок та контроль періодів ── */}
-      <div className={cn(
-        'relative bento-card p-5 transition duration-500',
-        currentStep === 0 && 'tour-glow z-40 scale-[1.02]'
-      )}>
-        <AnchoredTooltip
-          isOpen={currentStep === 0}
-          onClose={closeTour}
-          title="Контроль доходів"
-          text="Тримайте фінанси під контролем. Тут ви побачите реальний графік ваших доходів за місяць."
-          position="bottom"
-          primaryButtonText="Далі"
-          onPrimaryClick={nextStep}
-        />
+      <div className="bento-card p-5" data-tour-key="anl-header">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h1 className="heading-serif text-xl text-foreground mb-0.5">Аналітика</h1>
@@ -597,7 +610,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       {/* ── Main Pro / Ready Dashboard Content ── */}
       {!isLoading && !isError && summary.bookings > 0 && (!isLockedDateRange || isPro) && (
         <div data-testid="stats-ready" className="flex flex-col gap-4">
-          
+
           {isPro && extras?.business_health && (
             <BusinessHealthScoreWidget health={extras.business_health} />
           )}
@@ -605,12 +618,14 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           <MorningBriefing onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })} />
 
           {/* KPI Ticker & stories (Pro-only insights) */}
-          <KpiTicker
-            bookings={summary.bookings}
-            orders={summary.orders}
-            revenue={summary.revenue}
-            activeClients={summary.activeClients}
-          />
+          <div data-tour-key="anl-kpi">
+            <KpiTicker
+              bookings={summary.bookings}
+              orders={summary.orders}
+              revenue={summary.revenue}
+              activeClients={summary.activeClients}
+            />
+          </div>
 
           {isPro && storiesList.length > 0 && (
             <HeroStory stories={storiesList} />
@@ -686,25 +701,27 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               onDragEnd={handleDragEnd}
               className="w-full cursor-grab active:cursor-grabbing"
             >
-              
+
               {/* Tab 1: OVERVIEW */}
               {activeTab === 'overview' && (
                 <div className="flex flex-col gap-4">
                   {/* Revenue Line Chart */}
-                  <BentoCell className="p-5">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Графік виручки</p>
-                        <p className="text-[11px] text-muted-foreground/50 mt-0.5">Динаміка за період з прогнозом</p>
+                  <div data-tour-key="anl-chart">
+                    <BentoCell className="p-5">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Графік виручки</p>
+                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Динаміка за період з прогнозом</p>
+                        </div>
                       </div>
-                    </div>
-                    <RevenueLineChart
-                      data={monthStats}
-                      forecastRevenue={forecast?.forecast}
-                      forecastMonthName={nextMonthName}
-                      isPro={isPro}
-                    />
-                  </BentoCell>
+                      <RevenueLineChart
+                        data={monthStats}
+                        forecastRevenue={forecast?.forecast}
+                        forecastMonthName={nextMonthName}
+                        isPro={isPro}
+                      />
+                    </BentoCell>
+                  </div>
 
                   {isPro && (
                     <SmartPricingOptimizer occupancyHeatmap={extras?.occupancy_heatmap} />
@@ -969,6 +986,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         />
       )}
 
+      <TourBanner steps={ANALYTICS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }

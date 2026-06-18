@@ -13,7 +13,32 @@ import { RestockDrawer } from './RestockDrawer';
 import { OrderCard } from './OrderCard';
 import type { Product, OrderStatus } from '@/types/database';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
+import { useMasterContext } from '@/lib/supabase/context';
+import { useTour } from '@/lib/hooks/useTour';
+import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 
+// humanized
+const PRODUCTS_STEPS: TourStep[] = [
+  {
+    title: 'Магазин',
+    text: 'Продавай товари через свій лінк — засоби, аксесуари, подарункові сертифікати.',
+    tourKey: 'prd-sidebar',
+  },
+  {
+    title: 'Додати товар',
+    text: 'Фото, назва, ціна, залишок. Клієнт бачить товар на твоїй сторінці і робить замовлення.',
+    tourKey: 'prd-add',
+  },
+  {
+    title: 'Товари i замовлення',
+    text: 'Вкладка Замовлення покаже нові та активні замовлення від клієнтів.',
+    tourKey: 'prd-list',
+  },
+  {
+    title: 'Магазин готовий',
+    text: 'Товари одразу доступні на твоїй публічній сторінці після збереження.',
+  },
+];
 
 export function ProductsPage() {
   const router = useRouter();
@@ -22,6 +47,13 @@ export function ProductsPage() {
 
   const tab = (searchParams.get('tab') as 'products' | 'orders') || 'products';
   const restockId = searchParams.get('restockId');
+
+  const { masterProfile } = useMasterContext();
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('products_v1', PRODUCTS_STEPS.length, {
+    initialSeen: !!(seenTours?.['products_v1']),
+    masterId: masterProfile?.id ?? '',
+  });
 
   const { products, isLoading: pLoading, toggleActive, reorderProducts } = useProducts();
   const { orders, isLoading: oLoading, updateStatus } = useOrders(orderFilter);
@@ -85,7 +117,7 @@ export function ProductsPage() {
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[260px_1fr] lg:gap-6 lg:items-start">
 
         {/* Left sidebar: header + stats + tabs */}
-        <div className="bento-card p-5">
+        <div className="bento-card p-5" data-tour-key="prd-sidebar">
           <div className="flex items-start justify-between mb-3">
             <div>
               <h1 className="heading-serif text-xl text-foreground">Магазин</h1>
@@ -133,6 +165,7 @@ export function ProductsPage() {
           {tab === 'products' && (
             <button
               type="button"
+              data-tour-key="prd-add"
               onClick={() => router.push('/dashboard/products/new')}
               className="mt-3 w-full flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-accent text-accent-foreground text-sm font-semibold hover:bg-accent/90 transition-colors active:scale-[0.98]"
             >
@@ -143,7 +176,7 @@ export function ProductsPage() {
         </div>
 
         {/* Right: content */}
-        <div>
+        <div data-tour-key="prd-list">
           <AnimatePresence mode="popLayout">
             {tab === 'products' ? (
               <motion.div
@@ -245,6 +278,8 @@ export function ProductsPage() {
           onClose={closeRestock}
         />
       )}
+
+      <TourBanner steps={PRODUCTS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }

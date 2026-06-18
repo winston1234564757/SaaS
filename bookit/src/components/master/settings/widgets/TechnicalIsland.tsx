@@ -121,7 +121,7 @@ export function TechnicalIsland({
       </div>
 
       {/* Telegram Bot Section */}
-      <div data-tour-step="act-2">
+      <div data-tour-step="act-2" data-tour-key="set-telegram">
         <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
           <Bot size={12} /> Сповіщення
         </h4>

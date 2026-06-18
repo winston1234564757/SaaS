@@ -189,6 +189,7 @@ export function TourBanner({ steps, currentStep, onNext, onClose }: TourBannerPr
                     <Link
                       key={link.href}
                       href={link.href}
+                      onClick={onClose}
                       className="flex flex-col items-center gap-2 py-3.5 px-1 rounded-2xl text-center transition-all duration-150 active:scale-[0.93]"
                       style={{
                         background: 'color-mix(in srgb, var(--accent) 7%, transparent)',

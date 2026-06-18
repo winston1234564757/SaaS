@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 
 import { useMasterContext } from '@/lib/supabase/context';
+import { useTour } from '@/lib/hooks/useTour';
+import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 import { useBookingsDashboardLogic } from './hooks/useBookingsDashboardLogic';
 import { DashboardWidgets } from './dashboard/DashboardWidgets';
 import { VerticalTimeline } from './dashboard/VerticalTimeline';
@@ -49,10 +51,39 @@ const SPRING = { type: 'spring' as const, duration: 0.35, bounce: 0 };
 const toLocalDateStr = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
+// humanized
+const BOOKINGS_STEPS: TourStep[] = [
+  {
+    title: 'Записи',
+    text: 'Всі записи в одному місці — день, тиждень або місяць. Переключай вигляд як зручно.',
+    tourKey: 'bok-header',
+  },
+  {
+    title: 'Статистика',
+    text: 'Виручка, кількість записів і завантаженість — завжди перед очима.',
+    tourKey: 'bok-stats',
+  },
+  {
+    title: 'Список записів',
+    text: 'Клікни на запис щоб переглянути деталі, підтвердити або скасувати.',
+    tourKey: 'bok-list',
+  },
+  {
+    title: 'Записи готові',
+    text: 'Новий запис — кнопка вгорі. Таймлайн покаже твій день по годинах.',
+  },
+];
+
 export function BookingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { masterProfile } = useMasterContext();
+
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('bookings_v1', BOOKINGS_STEPS.length, {
+    initialSeen: !!(seenTours?.['bookings_v1']),
+    masterId: masterProfile?.id ?? '',
+  });
 
   const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
@@ -198,7 +229,7 @@ export function BookingsPage() {
     <div className="flex flex-col gap-6 lg:gap-10 pb-32 [overflow-x:clip]">
       {/* 1. Header & Quick Switcher */}
       <div className="flex flex-col gap-6 lg:gap-8">
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between" data-tour-key="bok-header">
           <div className="flex flex-col">
             <h1
               className="text-[60px] lg:text-[100px] text-foreground font-display"
@@ -228,7 +259,9 @@ export function BookingsPage() {
           </div>
         </div>
 
-        <DashboardWidgets stats={stats} isLoading={isLoading} />
+        <div data-tour-key="bok-stats">
+          <DashboardWidgets stats={stats} isLoading={isLoading} />
+        </div>
       </div>
 
       {/* 2. Controls — Mobile */}
@@ -454,7 +487,7 @@ export function BookingsPage() {
           </div>
 
           {/* Main View Area */}
-          <div className="min-h-[500px] lg:widget-card lg:p-6">
+          <div className="min-h-[500px] lg:widget-card lg:p-6" data-tour-key="bok-list">
             <AnimatePresence mode="popLayout">
               {isLoading ? (
                 <motion.div
@@ -586,6 +619,8 @@ export function BookingsPage() {
       />
 
       <BookingDetailsModal />
+
+      <TourBanner steps={BOOKINGS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }

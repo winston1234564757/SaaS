@@ -30,11 +30,21 @@ import {
   type SmartSegment,
   type AutoTag,
 } from './clientsUtils';
+import { useTour } from '@/lib/hooks/useTour';
+import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 
 // Re-exports for backward compatibility (ClientDetailSheet, ClientWidgets, AnalyticsPage, etc.)
 export type { ClientRow };
 export { RETENTION_CONFIG, getAutoTags, ClientIconStack, formatClientName };
 export type { AutoTag };
+
+// humanized
+const CLIENTS_STEPS: TourStep[] = [
+  { title: 'Клієнтська база', text: 'Всі хто записується через твій лінк — автоматично з\'являться тут.', tourKey: 'cli-header' },
+  { title: 'Пошук i фільтри', text: 'Знаходь клієнтів за іменем, телефоном або тегом. VIP — одразу видно.', tourKey: 'cli-list' },
+  { title: 'Розсилка до клієнтів', text: 'Відправ акцію або нагадування всій базі одним натиском.', tourKey: 'cli-broadcast' },
+  { title: 'CRM готовий', text: 'Кожен новий запис поповнює базу автоматично. Нічого вводити вручну.' },
+];
 
 const SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const;
 
@@ -82,6 +92,11 @@ export function ClientsPage() {
   const router       = useRouter();
   const { clients, isLoading } = useClients();
   const { masterProfile } = useMasterContext();
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('clients_v1', CLIENTS_STEPS.length, {
+    initialSeen: !!(seenTours?.['clients_v1']),
+    masterId: masterProfile?.id ?? '',
+  });
 
   const customSegments: CustomSegment[] = Array.isArray(masterProfile?.segment_config)
     ? (masterProfile.segment_config as unknown as CustomSegment[])
@@ -195,7 +210,7 @@ export function ClientsPage() {
     <div className="flex flex-col gap-6 lg:gap-10 pb-32" data-tour-step="act-3">
       {/* Header */}
       <div className="flex flex-col gap-6 lg:gap-8">
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between" data-tour-key="cli-header">
           <div className="flex flex-col">
             <h1
               className="text-[60px] lg:text-[100px] text-foreground font-display transition-all duration-500"
@@ -211,6 +226,7 @@ export function ClientsPage() {
           <div className="flex gap-3 mb-1">
             <button
               type="button"
+              data-tour-key="cli-broadcast"
               onClick={() => router.push('/dashboard/marketing?tab=broadcasts')}
               className="group relative flex items-center gap-2 px-5 py-3 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-bold text-sm shadow-xl shadow-black/10 transition-all hover:scale-105 active:scale-[0.95] overflow-hidden"
             >
@@ -225,7 +241,7 @@ export function ClientsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start" data-tour-key="cli-list">
 
         {/* Sidebar (Desktop) */}
         <div className="hidden lg:flex lg:col-span-4 flex-col gap-6 sticky top-[104px]">
@@ -656,6 +672,8 @@ export function ClientsPage() {
         initialClientName={bookingClient?.client_name}
         initialClientPhone={bookingClient?.client_phone}
       />
+
+      <TourBanner steps={CLIENTS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }

@@ -9,6 +9,9 @@ import type { DropResult } from '@hello-pangea/dnd';
 import { type Service, CATEGORIES } from './types';
 import { ServiceCard } from './ServiceCard';
 import { useServices, type ServiceRow } from '@/lib/supabase/hooks/useServices';
+import { useMasterContext } from '@/lib/supabase/context';
+import { useTour } from '@/lib/hooks/useTour';
+import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 
 // DnD is excluded from the initial bundle — loads async after hydration
 const DragDropContext = dynamic(
@@ -41,11 +44,41 @@ interface ServicesPageProps {
   initialServicesData?: ServiceRow[];
 }
 
+// humanized
+const SERVICES_STEPS: TourStep[] = [
+  {
+    title: 'Послуги',
+    text: 'Тут ти додаєш послуги — вони одразу з\'являться на твоїй публічній сторінці.',
+    tourKey: 'svc-sidebar',
+  },
+  {
+    title: 'Додати послугу',
+    text: 'Натисни кнопку щоб створити нову послугу: назва, ціна, тривалість.',
+    tourKey: 'svc-add',
+  },
+  {
+    title: 'Список послуг',
+    text: 'Перетягуй картки щоб змінити порядок. Вимикай послуги без їх видалення.',
+    tourKey: 'svc-list',
+  },
+  {
+    title: 'Послуги готові',
+    text: 'Клієнти побачать їх одразу після збереження. Мінімум 1 послуга — щоб запис працював.',
+  },
+];
+
 export function ServicesPage({ initialServicesData }: ServicesPageProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
   const router = useRouter();
+  const { masterProfile } = useMasterContext();
+
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('services_v1', SERVICES_STEPS.length, {
+    initialSeen: !!(seenTours?.['services_v1']),
+    masterId: masterProfile?.id ?? '',
+  });
 
   const _s = useServices({ initialRows: initialServicesData });
   const services: Service[] = _s.services;
@@ -140,7 +173,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[260px_1fr] lg:gap-6 lg:items-start">
 
         {/* Left sidebar: header + add button */}
-        <div className="widget-card p-4 md:p-5 mt-4 lg:mt-0 flex flex-col gap-3 lg:gap-4">
+        <div className="widget-card p-4 md:p-5 mt-4 lg:mt-0 flex flex-col gap-3 lg:gap-4" data-tour-key="svc-sidebar">
           <div>
             <h1 className="heading-serif text-xl text-foreground mb-0.5">Послуги</h1>
             <p className="text-sm text-muted-foreground/60">
@@ -152,6 +185,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
           <button
             type="button"
             id="tour-services-add"
+            data-tour-key="svc-add"
             onClick={() => router.push('/dashboard/services/new')}
             className="w-full flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-accent text-accent-foreground text-sm font-semibold hover:bg-accent/90 transition-colors active:scale-[0.98]"
           >
@@ -165,6 +199,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-8"
+          data-tour-key="svc-list"
         >
           {sError && (
             <ErrorBanner message="Не вдалося завантажити послуги. Перезавантажте сторінку або перевірте підключення/RLS-права." />
@@ -186,6 +221,8 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
           )}
         </motion.div>
       </div>
+
+      <TourBanner steps={SERVICES_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }

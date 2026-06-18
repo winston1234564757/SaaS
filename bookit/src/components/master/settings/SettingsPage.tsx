@@ -24,9 +24,25 @@ import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils/cn';
+import { useTour } from '@/lib/hooks/useTour';
+import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
+
+// humanized
+const SETTINGS_STEPS: TourStep[] = [
+  { title: 'Твій профіль', text: 'Це твоя публічна сторінка — саме так тебе бачать клієнти. Додай фото i заповни опис.', tourKey: 'set-profile' },
+  { title: 'Графік роботи', text: 'Встанови свої робочі години — клієнти зможуть записуватись тільки в цей час.', tourKey: 'set-schedule' },
+  { title: 'Telegram-сповіщення', text: 'Підключи Telegram — дізнавайся про кожен новий запис миттєво.', tourKey: 'set-telegram' },
+  { title: 'Публічний статус', text: 'Увімкни прийом записів. Без цього клієнти не зможуть записатись до тебе.', tourKey: 'set-status' },
+  { title: 'Готово до роботи', text: 'Профіль налаштовано. Почни ділитись посиланням з клієнтами.' },
+];
 
 export default function SettingsPage() {
   const { masterProfile } = useMasterContext();
+  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
+  const { currentStep, nextStep, closeTour } = useTour('settings_v1', SETTINGS_STEPS.length, {
+    initialSeen: !!(seenTours?.['settings_v1']),
+    masterId: masterProfile?.id ?? '',
+  });
   const queryClient = useQueryClient();
   const { state, actions } = useSettingsForm();
   const [analyticsDate, setAnalyticsDate] = useState(new Date());
@@ -62,7 +78,7 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 auto-rows-auto items-start">
 
           {/* Row 1: ProfileHero (rowspan 2) | SmartAdvisor | PublicStatus */}
-          <section id="hero" className="lg:col-span-1 lg:row-span-2">
+          <section id="hero" className="lg:col-span-1 lg:row-span-2" data-tour-key="set-profile">
             <ProfileHero
               masterId={masterProfile.id}
               fullName={state.fullName}
@@ -91,7 +107,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          <section id="status" className="md:col-span-1 lg:col-span-1">
+          <section id="status" className="md:col-span-1 lg:col-span-1" data-tour-key="set-status">
             <PublicStatusWidget
               slug={state.slug}
               isPublished={state.isPublished}
@@ -111,7 +127,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          <section id="schedule" className="md:col-span-1 lg:col-span-2 order-first lg:order-none">
+          <section id="schedule" className="md:col-span-1 lg:col-span-2 order-first lg:order-none" data-tour-key="set-schedule">
             <ScheduleWidget
               schedule={state.schedule}
               bufferTime={state.bufferTime}
@@ -344,6 +360,7 @@ export default function SettingsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <TourBanner steps={SETTINGS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }
