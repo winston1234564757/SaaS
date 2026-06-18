@@ -10,6 +10,7 @@ import type { ReferralHistoryItem } from '@/components/master/referral/ReferralP
 import { useMasterContext } from '@/lib/supabase/context';
 import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
+import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
 
 const LoyaltyPage = dynamic(() => import('@/components/master/loyalty/LoyaltyPage').then(m => m.LoyaltyPage), {
   loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>,
@@ -84,10 +85,13 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
 
   const { masterProfile } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('growth_v1', GROWTH_STEPS.length, {
+  const { currentStep, nextStep, closeTour } = useTour('growth_v1', GROWTH_STEPS.length + 1, {
     initialSeen: !!(seenTours?.['growth_v1']),
     masterId: masterProfile?.id ?? '',
   });
+  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'growth_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
+  // humanized — navigator step
+  const dynamicSteps: TourStep[] = [...GROWTH_STEPS, { title: 'Growth Hub — ок', text: 'Що ще не бачив?', isNavigator: true, links: nextTours }];
 
   useEffect(() => {
     if (drawerParam) {
@@ -232,7 +236,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
         </div>
       </div>
 
-      <TourBanner steps={GROWTH_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
+      <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </>
   );
 }

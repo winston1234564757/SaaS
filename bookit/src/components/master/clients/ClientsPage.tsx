@@ -32,6 +32,7 @@ import {
 } from './clientsUtils';
 import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
+import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
 
 // Re-exports for backward compatibility (ClientDetailSheet, ClientWidgets, AnalyticsPage, etc.)
 export type { ClientRow };
@@ -93,10 +94,13 @@ export function ClientsPage() {
   const { clients, isLoading } = useClients();
   const { masterProfile } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('clients_v1', CLIENTS_STEPS.length, {
+  const { currentStep, nextStep, closeTour } = useTour('clients_v1', CLIENTS_STEPS.length + 1, {
     initialSeen: !!(seenTours?.['clients_v1']),
     masterId: masterProfile?.id ?? '',
   });
+  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'clients_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
+  // humanized — navigator step
+  const dynamicSteps: TourStep[] = [...CLIENTS_STEPS, { title: 'Клієнти є. Що ще?', text: 'Вибери куди заглянути наступним.', isNavigator: true, links: nextTours }];
 
   const customSegments: CustomSegment[] = Array.isArray(masterProfile?.segment_config)
     ? (masterProfile.segment_config as unknown as CustomSegment[])
@@ -673,7 +677,7 @@ export function ClientsPage() {
         initialClientPhone={bookingClient?.client_phone}
       />
 
-      <TourBanner steps={CLIENTS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
+      <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }

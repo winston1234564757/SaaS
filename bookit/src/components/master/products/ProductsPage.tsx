@@ -16,6 +16,7 @@ import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
+import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
 
 // humanized
 const PRODUCTS_STEPS: TourStep[] = [
@@ -50,10 +51,13 @@ export function ProductsPage() {
 
   const { masterProfile } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('products_v1', PRODUCTS_STEPS.length, {
+  const { currentStep, nextStep, closeTour } = useTour('products_v1', PRODUCTS_STEPS.length + 1, {
     initialSeen: !!(seenTours?.['products_v1']),
     masterId: masterProfile?.id ?? '',
   });
+  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'products_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
+  // humanized — navigator step
+  const dynamicSteps: TourStep[] = [...PRODUCTS_STEPS, { title: 'Магазин готовий', text: 'Залишилось кілька місць.', isNavigator: true, links: nextTours }];
 
   const { products, isLoading: pLoading, toggleActive, reorderProducts } = useProducts();
   const { orders, isLoading: oLoading, updateStatus } = useOrders(orderFilter);
@@ -279,7 +283,7 @@ export function ProductsPage() {
         />
       )}
 
-      <TourBanner steps={PRODUCTS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
+      <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }

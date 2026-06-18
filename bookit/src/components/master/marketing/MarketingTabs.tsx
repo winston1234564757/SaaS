@@ -9,6 +9,7 @@ import { BroadcastsTab } from './BroadcastsTab';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
+import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
 
 interface Product { id: string; name: string; price: number }
 
@@ -56,10 +57,13 @@ export function MarketingTabs({ initialTab, initialMode, initialPortfolioId, isS
 
   const { masterProfile } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('marketing_v1', MARKETING_STEPS.length, {
+  const { currentStep, nextStep, closeTour } = useTour('marketing_v1', MARKETING_STEPS.length + 1, {
     initialSeen: !!(seenTours?.['marketing_v1']),
     masterId: masterProfile?.id ?? '',
   });
+  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'marketing_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
+  // humanized — navigator step
+  const dynamicSteps: TourStep[] = [...MARKETING_STEPS, { title: 'Маркетинг ок', text: 'Залишилось кілька розділів.', isNavigator: true, links: nextTours }];
 
   function switchTab(id: 'stories' | 'broadcasts') {
     const params = new URLSearchParams(searchParams.toString());
@@ -136,7 +140,7 @@ export function MarketingTabs({ initialTab, initialMode, initialPortfolioId, isS
       </div>
 
       <TourBanner
-        steps={MARKETING_STEPS}
+        steps={dynamicSteps}
         currentStep={currentStep}
         onNext={nextStep}
         onClose={closeTour}

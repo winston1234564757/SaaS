@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
+import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
 
 const FlashDealPage = dynamic(() => import('@/components/master/flash/FlashDealPage').then(m => m.FlashDealPage), {
   loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо бандл...</div>,
@@ -65,10 +66,13 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
 
   const { masterProfile } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('revenue_v1', REVENUE_STEPS.length, {
+  const { currentStep, nextStep, closeTour } = useTour('revenue_v1', REVENUE_STEPS.length + 1, {
     initialSeen: !!(seenTours?.['revenue_v1']),
     masterId: masterProfile?.id ?? '',
   });
+  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'revenue_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
+  // humanized — navigator step
+  const dynamicSteps: TourStep[] = [...REVENUE_STEPS, { title: 'Дохід під контролем', text: 'Що далі?', isNavigator: true, links: nextTours }];
 
   useEffect(() => {
     if (drawerParam) {
@@ -198,7 +202,7 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
         </div>
       </div>
 
-      <TourBanner steps={REVENUE_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
+      <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </>
   );
 }

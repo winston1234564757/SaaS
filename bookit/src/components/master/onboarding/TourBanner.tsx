@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight } from 'lucide-react';
+import { X, ChevronRight, Check } from 'lucide-react';
 
 export interface TourNavLink {
   icon: React.ComponentType<{ size?: number }>;
@@ -29,6 +29,20 @@ interface TourBannerProps {
 }
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
+const STAGGER = { type: 'spring' as const, stiffness: 280, damping: 26 };
+
+// humanized — completion screen copy and CTA labels below
+const COMPLETION_COPY = {
+  counter: '9 / 9 розділів',
+  title: 'Все. Bookit вивчено.',
+  subtitle: 'Знаєш де що. Час пускати перших клієнтів.',
+  cta: 'До роботи',
+  secondary: 'Будь-який розділ — у меню',
+  dismiss: 'Пропустити',
+  close: 'Закрити тур',
+  next: 'Далі',
+  finish: 'Завершити',
+} as const;
 
 export function TourBanner({ steps, currentStep, onNext, onClose }: TourBannerProps) {
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -37,9 +51,9 @@ export function TourBanner({ steps, currentStep, onNext, onClose }: TourBannerPr
   const isVisible   = currentStep >= 0 && !!stepData;
   const isLast      = currentStep === steps.length - 1;
   const total       = steps.length;
-  const progressPct = total > 1 ? ((currentStep + 1) / total) * 100 : 100;
   const tourKey     = stepData?.tourKey;
   const isNavigator = stepData?.isNavigator;
+  const isCompletion = !!(stepData?.isNavigator && (!stepData?.links || stepData?.links.length === 0));
 
   // Spotlight with ResizeObserver + scroll/resize for continuous accurate tracking
   useEffect(() => {
@@ -71,7 +85,7 @@ export function TourBanner({ steps, currentStep, onNext, onClose }: TourBannerPr
         'pointer-events:none',
         'z-index:48',
         'opacity:0',
-        'transition:top 320ms cubic-bezier(0.34,1.56,0.64,1),left 320ms cubic-bezier(0.34,1.56,0.64,1),width 280ms cubic-bezier(0.25,0.46,0.45,0.94),height 280ms cubic-bezier(0.25,0.46,0.45,0.94),opacity 220ms ease',
+        'transition:top 320ms cubic-bezier(0.25,0.46,0.45,0.94),left 320ms cubic-bezier(0.25,0.46,0.45,0.94),width 280ms cubic-bezier(0.25,0.46,0.45,0.94),height 280ms cubic-bezier(0.25,0.46,0.45,0.94),opacity 220ms ease',
       ].join(';');
       document.body.appendChild(overlay);
       overlayRef.current = overlay;
@@ -98,7 +112,6 @@ export function TourBanner({ steps, currentStep, onNext, onClose }: TourBannerPr
       ov.style.opacity = '1';
     };
 
-    // Scroll into view once on step change, then position
     const initTimer = setTimeout(() => {
       const el = findVisible();
       if (el) el.scrollIntoView({ behavior: 'instant', block: 'center' });
@@ -136,131 +149,209 @@ export function TourBanner({ steps, currentStep, onNext, onClose }: TourBannerPr
           transition={SPRING}
           className="fixed bottom-[calc(var(--bottom-nav-height,76px)+12px)] left-4 right-4 z-50 lg:left-auto lg:right-6 lg:w-[320px]"
         >
-          <div
-            className="rounded-2xl overflow-hidden shadow-2xl"
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border-strong)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.18), 0 0 0 1px var(--border-strong)',
-            }}
-          >
-            {/* Accent top strip */}
+          {isCompletion ? (
             <div
-              className="h-[3px] w-full"
-              style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }}
-            />
+              className="rounded-2xl overflow-hidden shadow-2xl relative"
+              style={{
+                background: 'var(--accent)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.22), 0 0 0 1px color-mix(in srgb, var(--accent-on) 12%, transparent)',
+              }}
+            >
+              <div
+                className="absolute top-0 right-0 size-40 pointer-events-none"
+                style={{ background: 'radial-gradient(circle at top right, color-mix(in srgb, var(--accent-on) 10%, transparent), transparent 65%)' }}
+              />
 
-            <div className="p-4">
-              {/* Progress */}
-              <div className="flex items-center gap-2.5 mb-3.5">
-                <div className="flex gap-1 flex-1">
-                  {steps.map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex-1 h-[3px] rounded-full transition-all duration-500"
-                      style={{
-                        background: i <= currentStep
-                          ? 'var(--accent)'
-                          : 'color-mix(in srgb, var(--accent) 18%, transparent)',
-                      }}
-                    />
-                  ))}
+              <div className="p-5 relative z-10">
+                <div
+                  className="h-[3px] rounded-full mb-4 overflow-hidden"
+                  style={{ background: 'color-mix(in srgb, var(--accent-on) 18%, transparent)' }}
+                >
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: 'var(--accent-on)', transformOrigin: 'left center' }}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ ...STAGGER, delay: 0.05 }}
+                  />
                 </div>
-                <span className="text-[10px] font-bold tabular-nums shrink-0" style={{ color: 'var(--text-tertiary)' }}>
-                  {currentStep + 1}/{total}
-                </span>
-              </div>
 
-              {/* Content */}
-              <p className="text-[14px] font-bold leading-snug mb-1.5" style={{ color: 'var(--text-primary)' }}>
-                {stepData.title}
-              </p>
-              <p className="text-[12px] leading-relaxed mb-3.5" style={{ color: 'var(--text-secondary)' }}
-              >
-                {stepData.text}
-              </p>
-
-              {/* Navigator: 3 destination cards */}
-              {stepData.isNavigator && stepData.links && (
-                <div className="grid grid-cols-3 gap-2 mt-3.5">
-                  {stepData.links.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={onClose}
-                      className="flex flex-col items-center gap-2 py-3.5 px-1 rounded-2xl text-center transition-all duration-150 active:scale-[0.93]"
-                      style={{
-                        background: 'color-mix(in srgb, var(--accent) 7%, transparent)',
-                        border: '1px solid color-mix(in srgb, var(--accent) 14%, transparent)',
-                      }}
-                    >
-                      <div
-                        className="size-8 rounded-xl flex items-center justify-center"
-                        style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}
-                      >
-                        <span style={{ color: 'var(--accent)', display: 'flex' }}>
-                          <link.icon size={16} />
-                        </span>
-                      </div>
-                      <span
-                        className="text-[10px] font-semibold leading-tight"
-                        style={{ color: 'var(--text-primary)' }}
-                      >
-                        {link.label}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              {/* CTA row */}
-              {!stepData.isNavigator && (
-                <div className="flex items-center gap-2 mt-3.5">
-                  <button
-                    type="button"
-                    onClick={onNext}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all active:scale-[0.95] cursor-pointer"
+                <motion.div
+                  className="flex items-center gap-3 mb-3"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...STAGGER, delay: 0.12 }}
+                >
+                  <div
+                    className="size-9 rounded-full flex items-center justify-center shrink-0"
                     style={{
-                      background: 'var(--accent)',
-                      color: 'var(--accent-on)',
-                      boxShadow: '0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)',
+                      background: 'color-mix(in srgb, var(--accent-on) 14%, transparent)',
+                      border: '1.5px solid color-mix(in srgb, var(--accent-on) 28%, transparent)',
                     }}
                   >
-                    {stepData.cta ?? (isLast ? 'Завершити' : 'Далі')}
-                    {!isLast && !stepData.cta && <ChevronRight size={14} />}
-                  </button>
+                    <Check size={16} style={{ color: 'var(--accent-on)' }} />
+                  </div>
+                  <span className="text-[11px] font-bold" style={{ color: 'color-mix(in srgb, var(--accent-on) 55%, transparent)' }}>
+                    {COMPLETION_COPY.counter}
+                  </span>
+                </motion.div>
 
+                <motion.p
+                  className="text-[16px] font-bold leading-snug mb-1.5"
+                  style={{ color: 'var(--accent-on)' }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...STAGGER, delay: 0.2 }}
+                >
+                  {COMPLETION_COPY.title}
+                </motion.p>
+
+                <motion.p
+                  className="text-[12px] leading-relaxed mb-4"
+                  style={{ color: 'color-mix(in srgb, var(--accent-on) 62%, transparent)' }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...STAGGER, delay: 0.27 }}
+                >
+                  {COMPLETION_COPY.subtitle}
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...STAGGER, delay: 0.34 }}
+                >
+                  <Link
+                    href="/dashboard"
+                    onClick={onClose}
+                    className="block w-full text-center py-2.5 rounded-xl text-[13px] font-semibold transition-all active:scale-[0.97] hover:opacity-90"
+                    style={{ background: 'var(--accent-on)', color: 'var(--accent)' }}
+                  >
+                    {COMPLETION_COPY.cta}
+                  </Link>
+                  <p className="text-center text-[11px] mt-2.5" style={{ color: 'color-mix(in srgb, var(--accent-on) 38%, transparent)' }}>
+                    {COMPLETION_COPY.secondary}
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="rounded-2xl overflow-hidden shadow-2xl"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border-strong)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.18), 0 0 0 1px var(--border-strong)',
+              }}
+            >
+              <div
+                className="h-[3px] w-full"
+                style={{ background: 'linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent))' }}
+              />
+
+              <div className="p-4">
+                <div className="flex items-center gap-2.5 mb-3.5">
+                  <div className="flex gap-1 flex-1">
+                    {steps.map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 h-[3px] rounded-full transition-all duration-500"
+                        style={{
+                          background: i <= currentStep
+                            ? 'var(--accent)'
+                            : 'color-mix(in srgb, var(--accent) 18%, transparent)',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-bold tabular-nums shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+                    {currentStep + 1}/{total}
+                  </span>
+                </div>
+
+                <p className="text-[14px] font-bold leading-snug mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                  {stepData.title}
+                </p>
+                <p className="text-[12px] leading-relaxed mb-3.5" style={{ color: 'var(--text-secondary)' }}>
+                  {stepData.text}
+                </p>
+
+                {stepData.isNavigator && stepData.links && stepData.links.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-3.5">
+                    {stepData.links.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={onClose}
+                        className="flex flex-col items-center gap-2 py-3.5 px-1 rounded-2xl text-center transition-all duration-150 active:scale-[0.93]"
+                        style={{
+                          background: 'color-mix(in srgb, var(--accent) 7%, transparent)',
+                          border: '1px solid color-mix(in srgb, var(--accent) 14%, transparent)',
+                        }}
+                      >
+                        <div
+                          className="size-8 rounded-xl flex items-center justify-center"
+                          style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}
+                        >
+                          <span style={{ color: 'var(--accent)', display: 'flex' }}>
+                            <link.icon size={16} />
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
+                          {link.label}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {!stepData.isNavigator && (
+                  <div className="flex items-center gap-2 mt-3.5">
+                    <button
+                      type="button"
+                      onClick={onNext}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all active:scale-[0.95] cursor-pointer"
+                      style={{
+                        background: 'var(--accent)',
+                        color: 'var(--accent-on)',
+                        boxShadow: '0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)',
+                      }}
+                    >
+                      {stepData.cta ?? (isLast ? COMPLETION_COPY.finish : COMPLETION_COPY.next)}
+                      {!isLast && !stepData.cta && <ChevronRight size={14} />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      aria-label={COMPLETION_COPY.close}
+                      className="size-10 flex items-center justify-center rounded-xl transition-all active:scale-[0.95] cursor-pointer shrink-0"
+                      style={{
+                        background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
+                        color: 'var(--text-tertiary)',
+                        border: '1px solid var(--border)',
+                      }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {stepData.isNavigator && (
                   <button
                     type="button"
                     onClick={onClose}
-                    aria-label="Закрити тур"
-                    className="size-10 flex items-center justify-center rounded-xl transition-all active:scale-[0.95] cursor-pointer shrink-0"
-                    style={{
-                      background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
-                      color: 'var(--text-tertiary)',
-                      border: '1px solid var(--border)',
-                    }}
+                    className="w-full text-center text-[11px] mt-3 py-1 cursor-pointer transition-opacity hover:opacity-60"
+                    style={{ color: 'var(--text-tertiary)' }}
                   >
-                    <X size={14} />
+                    {COMPLETION_COPY.dismiss}
                   </button>
-                </div>
-              )}
-
-              {/* Navigator dismiss */}
-              {stepData.isNavigator && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-full text-center text-[11px] mt-3 py-1 cursor-pointer transition-opacity hover:opacity-60"
-                  style={{ color: 'var(--text-tertiary)' }}
-                >
-                  Пропустити
-                </button>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

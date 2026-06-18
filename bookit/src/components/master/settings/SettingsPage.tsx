@@ -26,6 +26,7 @@ import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils/cn';
 import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
+import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
 
 // humanized
 const SETTINGS_STEPS: TourStep[] = [
@@ -39,10 +40,13 @@ const SETTINGS_STEPS: TourStep[] = [
 export default function SettingsPage() {
   const { masterProfile } = useMasterContext();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('settings_v1', SETTINGS_STEPS.length, {
+  const { currentStep, nextStep, closeTour } = useTour('settings_v1', SETTINGS_STEPS.length + 1, {
     initialSeen: !!(seenTours?.['settings_v1']),
     masterId: masterProfile?.id ?? '',
   });
+  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'settings_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
+  // humanized — navigator step
+  const dynamicSteps: TourStep[] = [...SETTINGS_STEPS, { title: 'Куди далі?', text: 'Ще є що подивитись. Обирай наступний розділ.', isNavigator: true, links: nextTours }];
   const queryClient = useQueryClient();
   const { state, actions } = useSettingsForm();
   const [analyticsDate, setAnalyticsDate] = useState(new Date());
@@ -360,7 +364,7 @@ export default function SettingsPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <TourBanner steps={SETTINGS_STEPS} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
+      <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>
   );
 }
