@@ -8,7 +8,7 @@
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_router_hook.py": 1,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skills-taxonomy.json": 0,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_guard_hook.py": 0,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\pre_compact_hook.py": 0,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\pre_compact_hook.py": 1,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\post_compact_hook.py": 0
   },
   "consecutive_reads": 0,
@@ -17,9 +17,10 @@
   "skills_called": [
     "brainstorming"
   ],
-  "startup_confirmed": true,
-  "mempalace_done": true,
-  "systemmap_done": true,
   "mempalace_searched": false,
-  "ts_edited_since_tsc": false
+  "ts_edited_since_tsc": false,
+  "startup_confirmed": false,
+  "mempalace_done": false,
+  "systemmap_done": false,
+  "post_compact": true
 }
