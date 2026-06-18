@@ -1,207 +1,171 @@
-# 🤖 CLAUDE.md — Claude Code Instructions
+# CLAUDE.md — Claude Code Instructions
 
-> ⛔ **ЧИТАТИ ПЕРШИМ:** [IRON_RULES.md](file:///C:/Users/Vitossik/SaaS/IRON_RULES.md) (поряд з цим файлом) — абсолютні правила сесії. Encoding, humanizer, MemPalace. Порушення заборонені.
+> **Read first:** [IRON_RULES.md](file:///C:/Users/Vitossik/SaaS/IRON_RULES.md) — absolute session rules. Encoding, humanizer, MemPalace. No exceptions.
 
 ---
 
-## ⚡ SESSION START — ПЕРШИЙ ХІД (ДО БУДЬ-ЧИМ ІНШОГО)
+## Session Start
 
-**Кожна нова сесія починається ТІЛЬКИ ТАК. Порядок незмінний:**
+Execute in exact order before anything else:
 
 ```
-КРОК 1 → Виклик mempalace_status (перший tool call, без винятків)
-КРОК 2 → Read XDEV/MAPS/SYSTEM_MAP.md (offset: останні 50 рядків)
-КРОК 3 → Якщо hook показав "RELEVANT MAPS" — прочитай перші 30 рядків кожного
-КРОК 4 → Відповідь: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
+STEP 1  mempalace_status          — first tool call, no exceptions
+STEP 2  Read XDEV/MAPS/SYSTEM_MAP.md  — offset: last 50 lines
+STEP 3  If hook shows "RELEVANT MAPS" — read first 30 lines of each
+STEP 4  Reply: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 ```
 
-Без підтвердження STARTUP OK — жодного читання файлів і жодного коду.
+No files, no code until STARTUP OK is confirmed.
 
 ---
 
-## ⚡ TASK GATE — ПЕРЕД КОЖНОЮ ЗАДАЧЕЮ
+## Task Gate
 
-**Перед будь-яким Edit/Write для нової задачі:**
+Before any Edit/Write on a new task:
 
 ```
-КРОК 1 → mempalace_search по темі задачі
-КРОК 2 → Задати 3-5 уточнюючих питань (QA-GATE)
-КРОК 3 → Оголосити: "SKILL: [назва]" — і запустити скіл
-КРОК 4 → Виписати ВСІ UI-рядки → запустити /humanizer → підтвердити
-КРОК 5 → Отримати OK від користувача
+STEP 1  mempalace_search — query the task topic
+STEP 2  Ask 3–5 clarifying questions (scope, risks, approach)
+STEP 3  Declare skill: "SKILL: [name]" → call Skill(skill='[name]') in the same response
+STEP 4  List all UI strings → run /humanizer → confirm
+STEP 5  Get user approval
 ```
 
-Відповідь перед кодом: `GATE OK: search✓ | QA✓ | Skill: [name] | Humanizer: ✓`
+Reply before code: `GATE OK: search✓ | QA✓ | Skill: [name] | Humanizer: ✓`
 
 ---
 
-Цей файл є основним вхідним документом для Claude Code (claude.ai/code) при роботі з кодовою базою BookIT.
+## Reference Docs (XDEV/)
+
+Path: `C:\Users\Vitossik\SaaS\XDEV\`. Read before any task.
+
+| File | Contents |
+|------|----------|
+| [AI_MASTER_GUIDE.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_MASTER_GUIDE.md) | Tech stack, coding standards, RLS, three themes, pre-deploy checklist |
+| [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md) | Decision Tree for skill selection, Clarification Framework |
+| [UX_STANDARDS.md](file:///C:/Users/Vitossik/SaaS/XDEV/UX_STANDARDS.md) | No-Emoji Policy, Vaul BottomSheets, Emil Kowalski animation rules |
+| [MAPS/SYSTEM_MAP.md](file:///C:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md) | Routes, tables, RPC, hooks, utilities — single source of truth |
+| [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md) | Product profile: vision, business logic, referral system, Smart Slots |
 
 ---
 
-## ⛔ ОБОВ'ЯЗКОВО ЧИТАТИ НА СТАРТІ СЕСІЇ
+## MemPalace
 
-Весь детальний опис архітектури, правил кодування та дизайну знаходиться в папці `XDEV/` (шлях: `C:\Users\Vitossik\SaaS\XDEV\`). **Без прочитання XDEV — жодного коду.**
+Palace: **28,235+ drawers** of technical decisions, architecture, and fixed bugs.
 
-### Ключові документи XDEV:
-- [AI_MASTER_GUIDE.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_MASTER_GUIDE.md) — **Майстер-Конституція розробника та вхідний брифінг:** tech stack, coding standards, database RLS, three themes (Blossom, Studio, Frost), pre-deploy checklist, DB-to-DOM мислення та протоколи верифікації.
-- [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md) — **Майстер-інструкція по скілах:** Decision Tree для вибору ролі перед будь-якою ітерацією розробки чи дизайну, Clarification Framework (3-5 питань).
-- [UX_STANDARDS.md](file:///C:/Users/Vitossik/SaaS/XDEV/UX_STANDARDS.md) — **UX стандарти:** No-Emoji Policy, Vaul BottomSheets, анімаційні правила Emil Kowalski, колірні токени.
-- [SYSTEM_MAP.md](file:///C:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md) — **Архітектурна мапа:** єдине джерело технічної структури (роути, таблиці, RPC, хуки, утиліти).
-- [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md) — **Профіль продукту:** візія, бізнес-логіка, реферальна та бонусна системи, Smart Slots.
-
----
-
-## 🧠 MemPalace — Автономна Пам'ять (ОБОВ'ЯЗКОВО)
-
-Palace містить **10,338+ drawers** з технічними рішеннями, архітектурою та зафіксованими багами цього проекту.
-
-**ЗАЛІЗНЕ ПРАВИЛО — виконувати завжди, без винятків:**
-1. **Старт сесії** ➔ одразу викликати `mempalace_status` (огляд palace)
-2. **Перед будь-яким рішенням** ➔ `mempalace_search "query"` (пошук релевантних drawers)
-3. **Після важливого рішення/фіксу** ➔ `mempalace_add_drawer` (зберегти знання)
+| When | Action |
+|------|--------|
+| Session start | `mempalace_status` |
+| Before any decision | `mempalace_search "query"` |
+| After important fix or decision | `mempalace_add_drawer` |
 
 ---
 
-## 🛠️ CLI Commands
+## CLI Commands
 
-Усі команди запускаються з папки `bookit/`:
+All commands run from `bookit/`:
 
 ```bash
-cd bookit
-
 npm run dev          # Dev server (Turbopack)
-npm run build        # Production build (перевірка збірки)
-npm run lint         # Run ESLint
-npm test             # Run Vitest unit tests
+npm run build        # Production build
+npm run lint         # ESLint
+npm test             # Vitest unit tests
 npm run test:e2e     # Seed DB + Playwright e2e tests
 npx tsc --noEmit     # TypeScript type-check
 
-# Одиничні тести:
+# Single tests:
 npx vitest run src/lib/billing/pricing.test.ts
 npx playwright test tests/booking.spec.ts
 
 # Supabase:
-npx supabase db push # Застосувати локальні міграції до Supabase Cloud
+npx supabase db push  # Apply local migrations to Supabase Cloud
 ```
 
 ---
 
-## ⛔ Post-Change Protocol
+## Post-Change Protocol
 
-Після завершення будь-якої зміни коду (фікс, фіча, рефакторинг) — **обов'язковий pipeline** (автоматично, без нагадувань):
+After any code change — automatic, no reminders:
 
-1. **TypeScript check:** `npx tsc --noEmit` в папці `bookit/`.
-2. **Build check:** `npm run build` для підтвердження успішної компіляції Next.js App Router.
-3. **MemPalace update:** зберегти ключові технічні рішення через `mempalace_add_drawer`.
-4. **SYSTEM_MAP sync:** оновити `XDEV/MAPS/SYSTEM_MAP.md` якщо з'явились нові роути, компоненти, таблиці або змінилась архітектура.
-5. **si:extract:** якщо з'явився патерн, що може повторитись — викликати `Skill(skill='self-improving-agent')` з командою extract.
-6. **Project Files sync:** оновити [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md) якщо змінилась бізнес-логіка.
-
-## ⛔ Sprint Pipeline (АВТОМАТИЧНО після кожної задачі)
-
-**Залізне правило: після git commit коду → одразу без запитань:**
-
-```
-КРОК 1 → TRACKER.md: T[N] ⬜→✅, commit hash, brief (1 рядок)
-КРОК 2 → HANDOFF.md: T[N] секція ✅ + root cause; T[N+1] секція ▶ з деталями
-КРОК 3 → TRANSITION_PROMPT.md: "Наступна" → T[N+1]
-КРОК 4 → git commit "docs(sprint-04): T[N] done — TRACKER [X]/30 | HANDOFF + TRANSITION updated"
-КРОК 5 → mempalace_add_drawer для кожного key decision
-КРОК 6 → si:extract якщо є reusable pattern
-КРОК 7 → SYSTEM_MAP.md якщо змінилась архітектура
-```
-
-**Жодного кроку не пропускати. Жодного "нагадай мені оновити". Все автоматично.**
-
-Активний спринт: `XDEV/PLANS/SPRINT-04-BACKLOG/`
+1. `npx tsc --noEmit` — zero errors required
+2. `npm run build` — clean build required
+3. `mempalace_add_drawer` — one drawer per key technical decision
+4. Update `XDEV/MAPS/SYSTEM_MAP.md` if routes, components, tables, or architecture changed
+5. `Skill(skill='self-improving-agent')` with `command='extract'` if a reusable pattern emerged
+6. Update `XDEV/BOOKIT.md` if business logic changed
 
 ---
 
-## ⚡ BULK EDIT PROTOCOL — Масові зміни (3+ файлів)
+## Sprint Pipeline
 
-**Проблема:** 9 Edit замість 1 Write = 9× токенів. Encoding не перевірив = hook block = ще 3 зайвих rounds.
+After git commit of code — immediately, no prompting:
 
-**Правило (4 rounds максимум):**
 ```
-КРОК 0 → Encoding batch-check: PowerShell grep E28099|E2809C на всіх Cyrillic файлах
-КРОК 1 → Read ТІЛЬКИ файли що будеш змінювати (Grep → scope → Read)
-КРОК 2 → Write/Edit ВСІ ПАРАЛЕЛЬНО (один round)
-КРОК 3 → npx tsc --noEmit + build (один round)
+STEP 1  TRACKER.md: T[N] ⬜→✅, commit hash, one-line brief
+STEP 2  HANDOFF.md: T[N] section ✅ + root cause; T[N+1] section with details
+STEP 3  TRANSITION_PROMPT.md: update "Next task" to T[N+1]
+STEP 4  git commit "docs(sprint-NN): T[N] done — TRACKER [X]/37 | HANDOFF + TRANSITION updated"
+STEP 5  mempalace_add_drawer for each key decision
+STEP 6  si:extract if reusable pattern
+STEP 7  SYSTEM_MAP.md if architecture changed
 ```
 
-**Write vs Edit — вирішуй ДО початку (рахуй зміни):**
-- ≥ 5 змін у одному файлі → **Write** (1 round замість 5+)
-- 3+ місця у файлі → **Write** повну нову версію
-- ≤ 3 рядки з верифікованим рядком → **Edit**
-
-**Читай тільки те, що змінюєш:** `files_changed = files_read`. Не читай "для контексту".
-
-**Формула мінімуму токенів:** `rounds ≤ 4`. Кожне відхилення мінімум подвоює вартість.
+No step may be skipped. Active sprint: `XDEV/PLANS/SPRINT-04-BACKLOG/`
 
 ---
 
-## ❓ Q&A Workflow (before any skill invocation)
+## Bulk Edit Protocol
 
-Дотримуйся шаблону з [CLARIFICATION_FRAMEWORK.md](file:///C:/Users/Vitossik/SaaS/bookit/.claude/CLARIFICATION_FRAMEWORK.md):
-1. Визнач тип завдання за ключовими словами (Design / Copy / Code / Motion).
-2. Задай користувачу **3–5 чітких запитань** (Scope, Style, Palette, Motion, Priority).
-3. Обери та оголоси відповідний скіл із [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md) на основі відповідей.
-4. Проведи аудит результату перед коммітом за допомогою скілів-аудиторів (`impeccable`, `code-reviewer`, `humanizer`).
+Rule: ≤ 4 rounds maximum for any multi-file change.
+
+```
+STEP 0  Encoding batch-check: PowerShell grep E28099|E2809C on all Cyrillic files
+STEP 1  Read ONLY files you will change (Grep → scope → Read)
+STEP 2  Write/Edit ALL in parallel (one round)
+STEP 3  npx tsc --noEmit + build (one round)
+```
+
+**Write vs Edit:**
+- ≥ 5 changes in one file → **Write** the full new version
+- ≤ 3 lines with a verified match → **Edit**
+
+`files_changed = files_read` — do not read for context only.
 
 ---
-## ⛔ ACCESSIBILITY RULES (IRON — div→button = P1 блокер)
 
-### Правило 1: div → button
-Ніколи `onClick` на `<div>`, `<span>`, `<p>`. Тільки `<button type="button">` або `<Link>`.
-`cursor-pointer` на `<div>` = red flag — виправляти одразу.
+## Accessibility Rules
 
-**Обов'язкові атрибути на `<button>`:**
-- `type="button"` — завжди (без нього submit у формах)
-- `aria-label="..."` — якщо всередині немає видимого тексту (chart bar, heatmap cell, icon-only)
-- `aria-pressed={bool}` — для toggle-кнопок (tabs, chart bars, heatmap cells)
+**div → button** is a P1 blocker. Never `onClick` on `<div>`, `<span>`, `<p>`. Use `<button type="button">` or `<Link>`.
 
-### Правило 2: Touch Targets ≥ 44px
-Усі клікабельні елементи на mobile: висота ≥ 44px.
-- Compact pills/chips: `py-2` мінімум — не `py-1` / `py-0.5`
-- Slot chips: `py-2.5` мінімум
-- Перевіряти при кожному новому компоненті з `onClick`
+Required attributes on `<button>`:
+- `type="button"` — always
+- `aria-label="..."` — if no visible text inside (icon-only, chart bar, heatmap cell)
+- `aria-pressed={bool}` — for toggles (tabs, chart bars, heatmap cells)
 
-### Правило 3: Chart / Heatmap ARIA
-- Chart bars: `aria-label={\`${dayName}: ${value}\`}` + `aria-pressed={isActive}`
-- Heatmap cells: `aria-label={\`${day} ${hour}:00\`}` + `aria-pressed={isActive}`
-- Tab toggles: `aria-pressed={isActive}` або `role="tab"` у tab-group
+Touch targets: all clickable elements on mobile ≥ 44px height. Pills: `py-2` minimum. Slot chips: `py-2.5` minimum.
 
-### Заборонені конструкції
 ```tsx
-// WRONG — screen readers пропустять, клавіатура не дістане
+// Wrong
 <div onClick={fn} className="cursor-pointer">...</div>
 
-// CORRECT
+// Correct
 <button type="button" onClick={fn} aria-label="...">...</button>
 ```
 
 ---
 
-## ⛔ IMPECCABLE SKILL WORKFLOW (IRON — завжди через скіл, не вручну)
+## Impeccable Audit Workflow
 
-**Кожен impeccable аудит виконувати через скіл-воркфло, не sequential in-head.**
+Always invoke via skill — never manual in-head analysis.
 
 ```
-critique → spawn sub-agent для Assessment A (LLM Design Review)
-         → npx impeccable detect --json <target> для Assessment B
-         → об'єднати → звіт
-
-audit / animate / overdrive / polish / layout / optimize
-         → npx impeccable <cmd> <target> (якщо CLI)
-         → АБО завантажити reference скіла
-         → АБО spawn sub-agent
-
-mempalace_add_drawer → після кожного завершеного аудиту
+critique  → Skill(skill='impeccable-design-polish') subtools: critique, audit
+polish    → Skill(skill='impeccable-design-polish') subtools: polish, layout, optimize
+animate   → Skill(skill='impeccable-design-polish') subtool: animate
 ```
 
-**Заборонено:** ручний аналіз "в голові", пропуск `npx impeccable detect`, heuristic scoring без split assessment.
+`mempalace_add_drawer` after every completed audit. Skipping the skill and running heuristic scoring manually = protocol violation.
 
 ---
 
-*Останнє оновлення: 2026-06-01 · Версія: 8.4.0*
+*Updated: 2026-06-18 · Version: 9.0.0*
