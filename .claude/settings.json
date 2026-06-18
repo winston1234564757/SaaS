@@ -122,6 +122,15 @@
             "statusMessage": "Checking library hints..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_guard_hook.py",
+            "statusMessage": "Skill gate check..."
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -236,15 +245,6 @@
       }
     ],
     "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_guard_hook.py",
-            "statusMessage": "Checking skill protocol..."
-          }
-        ]
-      },
       {
         "hooks": [
           {

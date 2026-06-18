@@ -1,69 +1,129 @@
 #!/usr/bin/env python3
 """
-SKILL_GUARD_HOOK — Stop event: detects if Claude declared a skill in text
-but the Skill tool was NOT called in the same turn.
+SKILL_GUARD_HOOK v2.0 — UserPromptSubmit (early enforcement).
 
-Reads stdin JSON (Stop event payload) — checks tool_uses list for Skill calls
-vs text output containing 'SKILL:' pattern. Outputs systemMessage if mismatch.
+Fires at task START (not Stop). Checks session_state.skills_called:
+  - If no skills called yet + task prompt → inject MANDATORY skill selection notice
+  - If skills already called → inject reminder of which skills were used
+
+Goal: enforce skill selection at the BEGINNING of each task, not retroactively at session end.
 """
 import sys
 import json
-import re
+from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+STATE_FILE    = Path(__file__).parent / "state" / "session_state.json"
+TAXONOMY_FILE = Path(__file__).parent / "skills-taxonomy.json"
 
-def main():
+TASK_KEYWORDS = [
+    'зроби', 'задача', 'task', 'fix', 'фікс', 'баг', 'bug', 'створ', 'add ',
+    'покращ', 'redesign', 'рефактор', 'додай', 'виправ', 'build ', 'implement',
+    'реалізу', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9',
+    'зміни', 'оновити', 'налашту', 'конфігур', 'переробити',
+]
+
+SESSION_KEYWORDS = ['привіт', 'hello', 'hi ', 'нова сесія', 'startup ok', 'починаємо', 'wake', 'старт']
+
+
+def load_state() -> dict:
+    try:
+        if STATE_FILE.exists():
+            return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {}
+
+
+def get_prompt_text(data: dict) -> str:
+    for key in ("message", "user_message", "prompt", "content"):
+        if key in data and isinstance(data[key], str):
+            return data[key]
+    if "messages" in data:
+        msgs = data.get("messages", [])
+        if msgs and isinstance(msgs[-1], dict):
+            return msgs[-1].get("content", "")
+    return ""
+
+
+def is_session_start(text: str) -> bool:
+    t = text.lower().strip()
+    return len(t) < 15 or any(kw in t for kw in SESSION_KEYWORDS)
+
+
+def is_task_prompt(text: str) -> bool:
+    t = text.lower()
+    return any(kw in t for kw in TASK_KEYWORDS)
+
+
+def get_quick_skill_menu() -> str:
+    """Load taxonomy and return compact skill menu by category."""
+    try:
+        if not TAXONOMY_FILE.exists():
+            return ""
+        taxonomy = json.loads(TAXONOMY_FILE.read_text(encoding="utf-8"))
+        lines = []
+        for cat, data in taxonomy.get("categories", {}).items():
+            skills = [s["name"] for s in data.get("skills", [])]
+            if skills:
+                top = skills[:3]
+                lines.append(f"  {cat}: {' | '.join(top)}")
+        return "\n".join(lines)
+    except Exception:
+        return ""
+
+
+def main() -> int:
     try:
         raw = sys.stdin.buffer.read()
         data = json.loads(raw.decode("utf-8", errors="replace"))
     except Exception:
-        data = {}
+        print(json.dumps({}))
+        return 0
 
-    # Extract text content from the response
-    text_output = ""
-    tool_uses = []
+    prompt = get_prompt_text(data)
+    if not prompt or is_session_start(prompt) or not is_task_prompt(prompt):
+        print(json.dumps({}))
+        return 0
 
-    # Stop hook payload varies — try common keys
-    for key in ("response", "assistant_message", "message", "content"):
-        val = data.get(key)
-        if isinstance(val, str):
-            text_output = val
-            break
-        if isinstance(val, list):
-            for block in val:
-                if isinstance(block, dict):
-                    if block.get("type") == "text":
-                        text_output += block.get("text", "")
-                    if block.get("type") == "tool_use":
-                        tool_uses.append(block.get("name", ""))
+    state         = load_state()
+    skills_called = state.get("skills_called", [])
+    qa_passed     = state.get("qa_gate_passed", False)
 
-    # Also check top-level tool_uses
-    raw_tools = data.get("tool_uses", [])
-    if isinstance(raw_tools, list):
-        for t in raw_tools:
-            if isinstance(t, dict):
-                tool_uses.append(t.get("name", ""))
+    lines = []
 
-    # Check for SKILL: declaration in text
-    skill_declared = bool(re.search(r'\bSKILL\s*:\s*\S', text_output, re.IGNORECASE))
-
-    # Check if Skill tool was actually called
-    skill_tool_called = any("skill" in t.lower() for t in tool_uses)
-
-    if skill_declared and not skill_tool_called and tool_uses is not None:
-        # Mismatch detected — output warning
-        msg = (
-            "⚠️ SKILL PROTOCOL VIOLATION: You wrote 'SKILL: ...' in your response "
-            "but did NOT call the Skill tool. This is a zero-tolerance rule. "
-            "In your next response, call Skill(skill='[name]') immediately."
-        )
-        print(json.dumps({"systemMessage": msg}, ensure_ascii=False))
+    if not skills_called:
+        # No skill selected yet — inject mandatory notice with quick menu
+        menu = get_quick_skill_menu()
+        lines = [
+            "=== SKILL SELECTION REQUIRED (Iron Rule #2) ===",
+            "No skill invoked yet this session.",
+            "You MUST select and invoke a skill BEFORE writing code.",
+            "",
+            "QUICK MENU (top skills per category):",
+            menu,
+            "",
+            "HOW: write 'SKILL: [name]' AND call Skill(skill='[name]') in the SAME response.",
+            "DO NOT write 'SKILL: X' without immediately calling the Skill tool.",
+        ]
     else:
-        # No violation or can't determine — silent pass
-        print(json.dumps({}, ensure_ascii=False))
+        # Skills were called — show which ones as context
+        skills_str = ", ".join(skills_called[:5])
+        qa_str = "QA gate: PASSED" if qa_passed else "QA gate: NOT PASSED"
+        lines = [
+            f"Skills used this session: {skills_str} | {qa_str}",
+            "If starting a new task type, invoke the appropriate skill again.",
+        ]
 
+    output = {
+        "hookSpecificOutput": {
+            "hookEventName": "UserPromptSubmit",
+            "additionalContext": "\n".join(lines)
+        }
+    }
+    print(json.dumps(output, ensure_ascii=False))
     return 0
 
 
