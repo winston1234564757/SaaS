@@ -130,23 +130,28 @@ def main() -> int:
     # 2. Save compact handoff file
     save_compact_handoff(state, tracker, handoff)
 
-    # 3. Inject instructions for Claude
+    # 3. Inject gate instruction for Claude
     skills_str = ", ".join(state.get("skills_called", [])) or "none"
     qa_str     = "PASSED" if state.get("qa_gate_passed") else "NOT PASSED"
 
     context = (
-        f"[PRE-COMPACT] Compaction triggered ({trigger}). State saved to compact_state.json.\n"
+        "[PRE-COMPACT GATE] Compaction is about to happen.\n"
+        "IRON RULE: You MUST call /handoff skill BEFORE compaction proceeds.\n"
         "\n"
-        "MANDATORY — execute BEFORE compaction completes:\n"
-        "  STEP 1: Invoke Skill(skill='handoff') — create structured handoff of current work\n"
-        "  STEP 2: Invoke Skill(skill='context-window-management') — optimize what survives compact\n"
+        "STEP 1 — Call Skill(skill='handoff') RIGHT NOW in your next response.\n"
+        "  → Write 'SKILL: handoff' AND call Skill(skill='handoff') in the SAME turn.\n"
+        "  → Do NOT write text about handoff. CALL the skill tool.\n"
         "\n"
-        f"Current session snapshot:\n"
-        f"  skills_called: {skills_str}\n"
-        f"  qa_gate: {qa_str}\n"
+        "STEP 2 — After handoff completes, call Skill(skill='context-window-management').\n"
+        "\n"
+        "⛔ WRONG: mentioning handoff without calling Skill tool\n"
+        "✅ CORRECT: Skill(skill='handoff') tool call in this very response\n"
+        "\n"
+        f"Session snapshot (auto-saved to compact_state.json):\n"
+        f"  skills_called: {skills_str} | qa_gate: {qa_str}\n"
         f"  sprint: {tracker}\n"
         "\n"
-        "After compact: PostCompact hook will restore this context automatically."
+        "PostCompact hook will restore state automatically after compact."
     )
 
     output = {
