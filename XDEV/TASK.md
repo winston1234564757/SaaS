@@ -8,7 +8,7 @@
 ## Активний спринт
 
 **Sprint-04** — 37 задач (one task = one vercel --prod deploy)
-**Прогрес:** 23/37 ✅
+**Прогрес:** 24/37 ✅
 **Повний план:** `XDEV/PLANS/SPRINT-04-BACKLOG/SPRINT-04-PLAN.md`
 **Живий трекер:** `XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md`
 **Handoff:** `XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md`
@@ -16,7 +16,7 @@
 
 | Прогрес | Поточна задача |
 |---|---|
-| **23/37** ✅ | **T25** — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout) |
+| **24/37** ✅ | **T25** — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout) |
 
 ---
 
