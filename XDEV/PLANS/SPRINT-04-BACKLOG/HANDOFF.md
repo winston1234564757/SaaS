@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 24/37 ✅ (T23-impl-v2 🔄 30%)
+**Прогрес:** 25/37 ✅
 **Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
 **Оновлено:** 2026-06-18
 
@@ -17,32 +17,26 @@
 
 ---
 
-## 🔄 T23-impl-v2 — Per-page TourBanner: 30% (dashboard tour ✅, destination tours ❌)
-**Commits:** `7b9886e` (impl) + `7da4fdc` (bugfix) | **Дата:** 2026-06-18
+## ✅ T23-impl-v2 — Per-page TourBanner: ЗАВЕРШЕНО
+**Commits:** `7b9886e` (impl) + `7da4fdc` (bugfix) + `a102304` (destination tours) | **Дата:** 2026-06-18
 
-**Статус:** Dashboard tour повністю реалізований. Але navigator картки (Settings/Clients/Marketing) мають вести на сторінки з ВЛАСНИМИ індивідуальними турами — їх ще немає.
+**Root cause:** Cross-page activation tour (7 steps, ActivationTourContext) не давав відчуття "tour на кожній сторінці". Замінено на per-page архітектуру — кожна сторінка має власний TourBanner.
 
-**Що залишилось (70%):**
-- [ ] `/dashboard/settings` — `useTour('settings_v1', N)` + steps + `data-tour-key` на елементах
-- [ ] `/dashboard/clients` — `useTour('clients_v1', N)` + steps + `data-tour-key`
-- [ ] `/dashboard/marketing` — `useTour('marketing_v1', N)` + steps + `data-tour-key`
+**Що реалізовано:**
+1. **TourBanner.tsx** — generic props-driven; ResizeObserver spotlight; data-tour-key; navigator step (isNavigator=true → 3 link cards); onClick={onClose} повернуто на navigator cards
+2. **DashboardView.tsx** — dynamic navigator: filter DESTINATION_TOURS by !seenTours?.[tourKey], slice(0,3); dashboard_v3 tour 5 кроків
+3. **9 destination pages** — useTour + TourBanner + data-tour-key on each:
+   - `settings_v1`: SettingsPage (set-profile/set-schedule/set-telegram/set-status) + TechnicalIsland data-tour-key="set-telegram"
+   - `clients_v1`: ClientsPage (cli-header/cli-list/cli-broadcast)
+   - `marketing_v1`: MarketingTabs (mrk-tabs/mrk-story/mrk-broadcast) + force setTab('stories') on step 0
+   - `bookings_v1`: BookingsPage (bok-header/bok-stats/bok-list)
+   - `services_v1`: ServicesPage (svc-sidebar/svc-add/svc-list)
+   - `products_v1`: ProductsPage (prd-sidebar/prd-add/prd-list)
+   - `analytics_v1`: AnalyticsPage (anl-header/anl-kpi/anl-chart) — видалено старий AnchoredTooltip тур
+   - `growth_v1`: GrowthHubClient (grw-sidebar/grw-content)
+   - `revenue_v1`: RevenueHubClient (rev-sidebar/rev-content)
 
-**Поведінка після завершення:**
-- Натискання картки navigator → `onClose` dashboard туру (він виконаний) → перехід на сторінку → сторінковий тур стартує (якщо `seen_tours['page_v1']` не встановлено)
-
-**Bugfix `7da4fdc`:** Прибрано `onClick={onClose}` з navigator Link карток (was causing dashboard tour to be marked done before destination page tours existed). Повернути `onClick={onClose}` назад ПІСЛЯ реалізації destination page tours.
-
-**Що зроблено:**
-1. **`TourBanner.tsx`** — `src/components/master/onboarding/`. Generic, props-driven. ResizeObserver + scroll/resize listeners для точного spotlight (замість one-shot getBCR). `data-tour-key` атрибут (не `data-tour-step` — щоб уникнути конфлікту з legacy DashboardTour). Navigator last step: isNavigator=true → 3 link cards grid.
-2. **`DashboardView.tsx`** — інтегрує `useTour('dashboard_v3', 5)` + рендерить `<TourBanner>`. 4 контент-кроки: FrostGreeting/FreeSlotsWidget/AdaptiveContextStrip/QuickActionsWidget. 5-й крок = navigator → Settings/Клієнти/Маркетинг.
-3. **`FrostDashboard.tsx`** — `data-tour-key` додано до 8 wrappers (4 mobile + 4 desktop): dash-0, dash-1, dash-2, dash-3.
-4. **`DashboardLayout.tsx`** — видалено `ActivationTourProvider` + `ActivationTourBanner`. Спрощено.
-5. **`MobileHub.tsx`** — Академія (GraduationCap) додана до SYSTEM секції.
-6. **`DashboardTopBar.tsx`** — Академія додана до GROWTH dropdown.
-7. **`actions.ts`** — `resetTourSeen(tourName)` server action: видаляє ключ з `seen_tours` JSONB.
-8. **`AcademyPage.tsx`** — "Пройти тур знову" → `resetTourSeen('dashboard_v3')` + `window.location.href='/dashboard'` (full reload для fresh SSR).
-
-**Root cause попередньої проблеми:** Cross-page activation tour (7 steps, ActivationTourContext) не давав відчуття "tour на кожній сторінці". Замінено на per-page архітектуру — кожна сторінка має власний TourBanner.
+**TSC:** 0 errors | **Build:** clean
 
 ---
 

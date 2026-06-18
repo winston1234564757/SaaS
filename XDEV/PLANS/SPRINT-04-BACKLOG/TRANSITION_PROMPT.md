@@ -15,14 +15,12 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 24/37 ✅ (T23-impl-v2 🔄 30%) | Іт.16-22 → ##ClientDesign | Sprint-04 IN PROGRESS
+Прогрес: 25/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T25 — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout)
-Стан T23-impl-v2 (30%): Commits 7b9886e + 7da4fdc deployed.
-  ✅ TourBanner.tsx generic (ResizeObserver spotlight, data-tour-key, navigator step)
-  ✅ Dashboard tour 5 кроків (dash-0..dash-3 + navigator → Settings/Clients/Marketing)
-  ✅ Academy в MobileHub + DashboardTopBar. resetTourSeen server action.
-  ❌ ЗАЛИШИЛОСЬ: Settings / Clients / Marketing сторінкові тури (кожна потребує useTour + steps + data-tour-key)
-  ⚠️ Після реалізації destination tours — повернути onClick={onClose} на navigator Link картки (TourBanner.tsx:192)
+T23-impl-v2 ✅ ЗАВЕРШЕНО (commit a102304):
+  ✅ 9 destination tours: settings/clients/marketing/bookings/services/products/analytics/growth/revenue
+  ✅ Dynamic navigator (filters by seen_tours), onClick={onClose} restored
+  ✅ TSC:0 Build:clean
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
