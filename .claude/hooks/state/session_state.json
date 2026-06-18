@@ -9,8 +9,10 @@
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skills-taxonomy.json": 0,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_guard_hook.py": 0
   },
-  "consecutive_reads": 0,
-  "read_files": [],
+  "consecutive_reads": 1,
+  "read_files": [
+    "image.png"
+  ],
   "qa_gate_passed": true,
   "skills_called": [
     "brainstorming"
