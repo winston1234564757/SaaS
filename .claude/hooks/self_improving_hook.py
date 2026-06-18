@@ -280,19 +280,13 @@ def main() -> int:
                 f"STEP 4 [AUTO-DONE] — Git: {commit_msg}",
                 "",
             ]
-            # E. Auto-deploy (only if bookit TS files changed + commit succeeded)
-            if has_bookit_ts:
-                deployed, deploy_msg = auto_deploy()
-                status = "AUTO-DONE" if deployed else "FAILED"
-                lines += [
-                    f"STEP 5 [AUTO-{status}] — Vercel: {deploy_msg}",
-                    "",
-                ]
-            else:
-                lines += [
-                    "STEP 5 [SKIPPED] — Vercel: no bookit .ts/.tsx changes detected",
-                    "",
-                ]
+            # E. Auto-deploy after any committed changes
+            deployed, deploy_msg = auto_deploy()
+            status = "AUTO-DONE" if deployed else "FAILED"
+            lines += [
+                f"STEP 5 [AUTO-{status}] — Vercel: {deploy_msg}",
+                "",
+            ]
         else:
             lines += [
                 f"STEP 4 [AUTO-SKIPPED] — Git: {commit_msg}",
