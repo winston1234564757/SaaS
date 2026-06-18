@@ -142,7 +142,12 @@ def main() -> int:
                 "",
             ]
         else:
-            lines += [f"STEP 2 [SKIPPED -- {total_edits}/{EXTRACT_EDIT_THRESHOLD} edits]", ""]
+            ts_count = sum(1 for f in modified if f.endswith((".ts", ".tsx")))
+            if total_edits < EXTRACT_EDIT_THRESHOLD:
+                reason = f"{total_edits}/{EXTRACT_EDIT_THRESHOLD} edits"
+            else:
+                reason = f"no .ts/.tsx files ({ts_count} found)"
+            lines += [f"STEP 2 [SKIPPED -- {reason}]", ""]
 
         lines += [
             "STEP 3 [MANDATORY] -- Sprint pipeline:",
