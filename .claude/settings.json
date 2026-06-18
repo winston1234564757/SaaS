@@ -244,6 +244,28 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/pre_compact_hook.py",
+            "statusMessage": "Saving state before compaction..."
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/post_compact_hook.py",
+            "statusMessage": "Restoring context after compaction..."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
