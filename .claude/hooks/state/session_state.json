@@ -3,16 +3,16 @@
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_tracker_hook.py": 1,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\qa_gate_guard_hook.py": 1,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\self_improving_hook.py": 1,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\settings.json": 3,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\settings.json": 4,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\humanizer_guard_hook.py": 1,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_router_hook.py": 1,
     "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skills-taxonomy.json": 0,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_guard_hook.py": 0
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_guard_hook.py": 0,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\pre_compact_hook.py": 0,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\post_compact_hook.py": 0
   },
-  "consecutive_reads": 1,
-  "read_files": [
-    "image.png"
-  ],
+  "consecutive_reads": 0,
+  "read_files": [],
   "qa_gate_passed": true,
   "skills_called": [
     "brainstorming"
