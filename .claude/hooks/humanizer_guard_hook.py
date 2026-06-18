@@ -86,16 +86,17 @@ def main():
         if not ui_strings:
             return 0
 
-        print(f"[HUMANIZER GUARD] Ukrainian UI text detected in {path.name}:")
+        print(f"[HUMANIZER GUARD] BLOCKED: Ukrainian UI text in {path.name}")
+        print("These strings must go through /humanizer BEFORE editing:")
         for s in ui_strings:
             print(f"  • \"{s}\"")
         print()
-        print("REQUIRED: Confirm these strings went through /humanizer.")
-        print("If already humanized → add '// humanized' comment near the strings OR")
-        print("respond 'HUMANIZER: confirmed for [list]' before this edit proceeds.")
+        print("TO UNBLOCK — one of:")
+        print("  1. Run /humanizer on the strings, then add '// humanized' comment near them")
+        print("  2. Already humanized? Add '// humanized' anywhere in the new_string block")
         print()
-        print("Skip only for: aria-label, data-testid, date formats, status codes.")
-        return 0  # Warning only, not blocking
+        print("EXEMPT: aria-label, data-testid, date formats, console logs, status codes.")
+        return 2  # BLOCK — Iron Rule 0.5
 
     except Exception:
         return 0

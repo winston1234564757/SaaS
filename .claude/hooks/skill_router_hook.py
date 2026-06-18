@@ -196,25 +196,16 @@ def main() -> int:
         print(json.dumps({}))
         return 0
 
-    tool_name   = data.get("tool_name", "")
-    prompt_text = ""
+    # UserPromptSubmit only — Edit|Write branch removed (was dead code, not wired in settings.json)
+    prompt_text = get_prompt_text(data)
     file_path   = ""
 
-    if tool_name in ("Edit", "Write"):
-        # PreToolUse: route by file path only
-        file_path = get_file_path(data)
-        if not file_path:
-            print(json.dumps({}))
-            return 0
-    else:
-        # UserPromptSubmit
-        prompt_text = get_prompt_text(data)
-        if not prompt_text or is_session_start(prompt_text):
-            print(json.dumps({}))
-            return 0
-        if not is_task_prompt(prompt_text):
-            print(json.dumps({}))
-            return 0
+    if not prompt_text or is_session_start(prompt_text):
+        print(json.dumps({}))
+        return 0
+    if not is_task_prompt(prompt_text):
+        print(json.dumps({}))
+        return 0
 
     taxonomy = load_taxonomy()
     category, skill_str, alts, sequence = route(taxonomy, prompt_text, file_path)

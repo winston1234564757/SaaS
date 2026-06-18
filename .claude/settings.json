@@ -240,6 +240,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_guard_hook.py",
+            "statusMessage": "Checking skill protocol..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/self_improving_hook.py",
             "statusMessage": "Session-end protocol..."
           }
