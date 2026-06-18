@@ -1,1 +1,0 @@
-../../architectural-analysis/scripts/compile-pdf.sh

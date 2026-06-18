@@ -29,7 +29,6 @@
       "mcp__tailwind__convert_css_to_tailwind",
       "mcp__tailwind__generate_color_palette",
       "mcp__tailwind__generate_component_template",
-      "mcp__tailwind__get_tailwind_colors",
       "mcp__tailwind__get_tailwind_config_guide",
       "mcp__tailwind__get_tailwind_utilities",
       "mcp__tailwind__install_tailwind",
@@ -63,16 +62,7 @@
       "mcp__mempalace__mempalace_kg_add",
       "mcp__mempalace__mempalace_kg_stats",
       "mcp__mempalace__mempalace_kg_timeline",
-      "mcp__mempalace__mempalace_update_drawer",
-      "mcp__magic__21st_magic_component_inspiration",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_press_key",
-      "mcp__playwright__browser_wait_for",
-      "mcp__playwright__browser_console_messages"
+      "mcp__mempalace__mempalace_update_drawer"
     ],
     "defaultMode": "acceptEdits"
   }

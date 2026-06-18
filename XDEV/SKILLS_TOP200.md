@@ -172,7 +172,7 @@ SECURITY SENSITIVE:
 
 ---
 
-## PLANNING & THINKING (12)
+## PLANNING & THINKING (14)
 
 | Скіл | КОЛИ | Опис |
 |------|------|------|
@@ -188,6 +188,8 @@ SECURITY SENSITIVE:
 | `requirements-discovery` | Нова складна фіча | Edge cases, constraints, non-functional requirements |
 | `constructive-dissent` | Потрібна критика плану | "Ні, але..." — конструктивне незгодження |
 | `anti-sycophancy` | Claude занадто погоджується | Протидія угодовству, критичний аналіз |
+| `zoom-out` | Не розумієш як код вписується в систему | Ширший контекст, higher-level perspective для незнайомого коду |
+| `triage` | Потрібно створити / опрацювати issue | State machine: create → AFK agent → review bugs/features |
 
 ---
 
@@ -417,6 +419,7 @@ SECURITY SENSITIVE:
 | `build-optimization` | Build times: Turbopack, caching, incremental | HIGH |
 | `gitops-workflows` | GitOps: declarative deployment | MED |
 | `code-changelog` | Changelog з git history | MED |
+| `git-guardrails-claude-code` | Заблокувати небезпечні git команди в Claude Code | Push/reset --hard/clean/branch -D hooks | HIGH |
 
 ---
 
@@ -498,6 +501,7 @@ SECURITY SENSITIVE:
 | `claude-api` | Claude API: models, pricing, tools | API usage reference |
 | `prompt-engineering` | Prompt design: CoT, RAG, tools | LLM prompt patterns |
 | `context7-auto-research` | Research через Context7 MCP | Auto-research library docs |
+| `teach` | Пояснити концепцію або скіл прямо в workspace | Інтерактивне навчання всередині проекту |
 
 ---
 
@@ -507,7 +511,7 @@ SECURITY SENSITIVE:
 |---|---|
 | Decision Guide / Chains | — |
 | **LOCAL Skills (BookIT)** | **15** |
-| Planning & Thinking | 12 |
+| Planning & Thinking | 14 |
 | **Frontend Development** | **40** |
 | **Backend & API** | **23** |
 | **Database** | **16** |
@@ -515,10 +519,10 @@ SECURITY SENSITIVE:
 | **Security** | **21** |
 | **Testing & QA** | **22** |
 | Code Quality & Review | 11 |
-| **DevOps & Deployment** | **17** |
+| **DevOps & Deployment** | **18** |
 | Payments & Business Logic | 10 |
 | Workflow & Agent Patterns | 10 |
 | Content, SEO & Marketing | 10 |
 | Observability & Performance | 8 |
-| Documentation & Architecture | 7 |
-| **TOTAL** | **~233** |
+| Documentation & Architecture | 8 |
+| **TOTAL** | **~237** |
