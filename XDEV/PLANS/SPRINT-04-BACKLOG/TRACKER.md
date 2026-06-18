@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 24/37 ✅ (T23-impl-v2 🔄 30%) | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-18
+**Прогрес:** 25/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-19
 
 > ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
 
@@ -47,7 +47,7 @@
 | 26 | T22 | Стандартизація завантаження фото (всі сутності) | ✅ | `senior-fullstack` + `impeccable` | `52dbb4b` `87f3901` | uploadPhoto.ts + PhotoUploader + CropDrawer; 9 files; preview cache-bust; multi-select cropQueue; silent save fix; dismissible=false |
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | ✅ | `brainstorming` + `writing-plans` + `ui-ux-pro-max` | ONBOARDING_TOUR_SPEC.md: 7-step cross-page activation tour, DB-first persistence (activation_tour_step), master layout provider, replaces 17-step Dashboard Tour |
 | 27.5 | T23-impl | Activation Tour: повна реалізація (7 tasks) | ✅ | `senior-fullstack` + `create-migration` | `b5f8ec6` | DB migration + ActivationTourContext + ActivationTourBanner + data-tour-step×7 + DashboardLayout swap + onboarding bridge |
-| 27.6 | T23-impl-v2 | Per-page TourBanner: замінює cross-page Activation Tour | ✅ | `grill-me` + `senior-frontend` | `7b9886e` `7da4fdc` `a102304` | 9 destination tours: settings_v1/clients_v1/marketing_v1/bookings_v1/services_v1/products_v1/analytics_v1/growth_v1/revenue_v1; dynamic navigator; onClick={onClose} restored; TSC:0 Build:clean |
+| 27.6 | T23-impl-v2 | Per-page TourBanner: замінює cross-page Activation Tour | ✅ | `grill-me` + `senior-frontend` + `impeccable` | `7b9886e` `7da4fdc` `a102304` `a4ccbd9` | 9 destination tours; dynamic navigator (filters seen+current); completion screen (isCompletion); destinationTours.ts shared const; ease-out-quart + scaleX polish; TSC:0 |
 | 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
 | 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | Deliverable: spec + business analysis |
 | 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | Залежить від T28 spec approved |

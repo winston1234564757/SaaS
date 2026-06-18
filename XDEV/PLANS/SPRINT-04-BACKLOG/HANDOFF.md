@@ -6,7 +6,7 @@
 **Розпочато:** 2026-06-12
 **Прогрес:** 25/37 ✅
 **Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
-**Оновлено:** 2026-06-18
+**Оновлено:** 2026-06-19
 
 ---
 
@@ -17,8 +17,8 @@
 
 ---
 
-## ✅ T23-impl-v2 — Per-page TourBanner: ЗАВЕРШЕНО
-**Commits:** `7b9886e` (impl) + `7da4fdc` (bugfix) + `a102304` (destination tours) | **Дата:** 2026-06-18
+## ✅ T23-impl-v2 — Per-page TourBanner + Dynamic Navigator: ЗАВЕРШЕНО
+**Commits:** `7b9886e` (impl) + `7da4fdc` (bugfix) + `a102304` (destination tours) + `a4ccbd9` (navigator+completion) | **Дата:** 2026-06-19
 
 **Root cause:** Cross-page activation tour (7 steps, ActivationTourContext) не давав відчуття "tour на кожній сторінці". Замінено на per-page архітектуру — кожна сторінка має власний TourBanner.
 
@@ -35,6 +35,13 @@
    - `analytics_v1`: AnalyticsPage (anl-header/anl-kpi/anl-chart) — видалено старий AnchoredTooltip тур
    - `growth_v1`: GrowthHubClient (grw-sidebar/grw-content)
    - `revenue_v1`: RevenueHubClient (rev-sidebar/rev-content)
+
+**Navigator extension (a4ccbd9, 2026-06-19):**
+- `destinationTours.ts` — shared `DESTINATION_TOURS` const (9 entries), single source of truth
+- `DashboardView.tsx` — imports shared const; navigator always in steps (TourBanner handles empty)
+- All 9 destination pages — `dynamicSteps`: `[...PAGE_STEPS, { isNavigator: true, links: nextTours }]` where `nextTours = DESTINATION_TOURS.filter(!seen && !== current).slice(0,3)`
+- `TourBanner.tsx` — `isCompletion` (isNavigator && links.length===0) → dark accent panel with radial glow, scaleX progress bar (no layout thrash), staggered spring animation, "Все. Bookit вивчено." copy
+- Impeccable polish: ease-out-quart spotlight easing (no bounce), scaleX instead of width for progress bar
 
 **TSC:** 0 errors | **Build:** clean
 
