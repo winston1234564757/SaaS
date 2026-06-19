@@ -17,6 +17,20 @@
 
 ---
 
+## ✅ T23-impl-v3 — useDestinationTour + isTourSeen reliability fix: ЗАВЕРШЕНО
+**Commit:** `b5c5dfd` | **Дата:** 2026-06-19
+
+**Root cause:** `masterProfile.seen_tours` в контексті застарівав після `markTourSeen()` → navigator показував вже пройдені сторінки.
+
+**Що зроблено:**
+1. `isTourSeen()` — двошаровий чек (DB seen_tours + localStorage); вирішує staleness між навігаціями
+2. `useTour.onAfterSeen` — fires після markTourSeen(), використовується для `refresh()` контексту
+3. `useDestinationTour` hook — замінює 9-рядковий boilerplate на 1 виклик у всіх 9 сторінках
+4. 5 "pure tour" сторінок (Marketing/Services/Products/Growth/Revenue) — прибрано `useMasterContext`
+5. tsc_gate_hook видалено зі settings.json — заважав паралельним едітам
+
+---
+
 ## ✅ T23-impl-v2 — Per-page TourBanner + Dynamic Navigator: ЗАВЕРШЕНО
 **Commits:** `7b9886e` (impl) + `7da4fdc` (bugfix) + `a102304` (destination tours) + `a4ccbd9` (navigator+completion) | **Дата:** 2026-06-19
 
