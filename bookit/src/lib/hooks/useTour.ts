@@ -28,8 +28,11 @@ export function useTour(tourName: string, totalSteps: number, options?: UseTourO
   const [currentStep, setCurrentStep] = useState(-1);
 
   useEffect(() => {
-    // DB says done — never show, even on new device
-    if (initialSeen) return;
+    // DB says done — cancel any in-progress tour (handles late profile load after 800ms timer)
+    if (initialSeen) {
+      setCurrentStep(prev => (prev >= 0 ? -1 : prev));
+      return;
+    }
 
     // Same-device cache: if localStorage marks done, skip
     if (localStorage.getItem(`tour_${tourName}`) === 'done') return;
@@ -50,7 +53,11 @@ export function useTour(tourName: string, totalSteps: number, options?: UseTourO
     } else if (masterId) {
       // DB-primary: persist automatically — no boilerplate in callers
       markTourSeen(tourName)
-        .then(() => { onAfterSeen?.(); })
+        .then(() => {
+          Promise.resolve(onAfterSeen?.()).catch(err =>
+            console.error(`[useTour:${tourName}] onAfterSeen failed:`, err)
+          );
+        })
         .catch(err => console.error(`[useTour:${tourName}] markTourSeen failed:`, err));
     }
   }

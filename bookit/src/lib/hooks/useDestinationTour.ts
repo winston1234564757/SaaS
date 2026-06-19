@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useTour } from '@/lib/hooks/useTour';
 import { DESTINATION_TOURS, isTourSeen } from '@/components/master/onboarding/destinationTours';
@@ -11,20 +12,27 @@ export function useDestinationTour(tourKey: string, pageSteps: TourStep[]) {
 
   const { currentStep, nextStep, closeTour, resetTour } = useTour(tourKey, pageSteps.length + 1, {
     initialSeen: isTourSeen(tourKey, seenTours),
-    masterId: masterProfile?.id ?? '',
+    masterId: masterProfile?.id,
     onAfterSeen: refresh,
   });
 
-  const nextTours = DESTINATION_TOURS
-    .filter(d => !isTourSeen(d.tourKey, seenTours) && d.tourKey !== tourKey)
-    .slice(0, 3)
-    .map(d => ({ icon: d.icon, label: d.label, href: d.href }));
+  const nextTours = useMemo(
+    () =>
+      DESTINATION_TOURS
+        .filter(d => !isTourSeen(d.tourKey, seenTours) && d.tourKey !== tourKey)
+        .slice(0, 3)
+        .map(d => ({ icon: d.icon, label: d.label, href: d.href })),
+    [seenTours, tourKey]
+  );
 
   // humanized — navigator step (consistent across all destination pages)
-  const dynamicSteps: TourStep[] = [
-    ...pageSteps,
-    { title: 'Що далі?', text: 'Обери наступний розділ.', isNavigator: true, links: nextTours },
-  ];
+  const dynamicSteps = useMemo<TourStep[]>(
+    () => [
+      ...pageSteps,
+      { title: 'Що далі?', text: 'Обери наступний розділ.', isNavigator: true, links: nextTours },
+    ],
+    [pageSteps, nextTours]
+  );
 
   return { currentStep, nextStep, closeTour, resetTour, dynamicSteps };
 }
