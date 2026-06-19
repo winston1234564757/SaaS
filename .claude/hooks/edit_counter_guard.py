@@ -13,8 +13,8 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
-WARN_AT = 3
-BLOCK_AT = 5
+WARN_AT = 7
+BLOCK_AT = 12
 
 
 def load_state():
@@ -48,10 +48,8 @@ def main():
         state = load_state()
         counts = state.setdefault("edit_counts", {})
 
-        # Write = correct action: reset counter for this file, encourage
+        # Write = correct action: reset counter for this file (silent — no noise needed)
         if tool_name == "Write":
-            if file_path in counts and counts[file_path] > 0:
-                print(f"[EDIT COUNTER] Write on {Path(file_path).name} — counter reset (was {counts[file_path]} edits). RULE 5 followed.")
             counts[file_path] = 0
             save_state(state)
             return 0

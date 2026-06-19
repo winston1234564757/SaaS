@@ -15,6 +15,8 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
+# Sentinel: touch-file created when startup confirmed. Path.exists() = stat() only — no JSON parse.
+SENTINEL_FILE = Path(__file__).parent / "state" / "startup_ok"
 
 # Paths always allowed (needed for startup itself, hooks, config)
 ALWAYS_ALLOW = [
@@ -62,11 +64,11 @@ def main() -> int:
         if is_allowed_path(file_path):
             return 0
 
-        state = load_state()
-
-        # Already confirmed — allow everything
-        if state.get("startup_confirmed"):
+        # Fast-path: sentinel file is a single stat() — no JSON parse needed
+        if SENTINEL_FILE.exists():
             return 0
+
+        state = load_state()
 
         # Diagnose which step is missing
         mempalace_done = state.get("mempalace_done", False)

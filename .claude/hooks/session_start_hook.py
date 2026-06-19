@@ -25,8 +25,32 @@ STATE_FILE    = Path(__file__).parent / "state" / "session_state.json"
 
 
 def reset_session_state():
+    import datetime
+    today = datetime.date.today().isoformat()
     try:
+        # Preserve startup_confirmed if already done today (survives compaction mid-session)
+        existing = {}
+        if STATE_FILE.exists():
+            try:
+                existing = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        already_confirmed_today = (
+            existing.get("startup_confirmed") and
+            existing.get("startup_date") == today
+        )
         STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        sentinel = STATE_FILE.parent / "startup_ok"
+        if not already_confirmed_today:
+            try:
+                sentinel.unlink(missing_ok=True)
+            except Exception:
+                pass
+        elif not sentinel.exists():
+            try:
+                sentinel.touch()
+            except Exception:
+                pass
         STATE_FILE.write_text(
             json.dumps({
                 "edit_counts": {},
@@ -34,14 +58,15 @@ def reset_session_state():
                 "read_files": [],
                 "qa_gate_passed": False,
                 "skills_called": [],
-                # Startup gate flags — reset every session
-                "startup_confirmed": False,
-                "mempalace_done": False,
-                "systemmap_done": False,
+                # Startup gate — persist within same calendar day (survives compaction)
+                "startup_confirmed": already_confirmed_today,
+                "mempalace_done": already_confirmed_today,
+                "systemmap_done": already_confirmed_today,
+                "startup_date": today,
                 # Task gate
                 "mempalace_searched": False,
-                # TSC gate
-                "ts_edited_since_tsc": False,
+                # TSC batch counter (reset per session)
+                "ts_edits_since_tsc": 0,
             }, indent=2),
             encoding="utf-8"
         )
@@ -81,24 +106,22 @@ def get_graphify_summary() -> str:
         return ""
 
 
-def get_current_task() -> str:
-    """Extract current task section from HANDOFF.md."""
+def get_current_task() -> tuple[str, str]:
+    """Extract current task section from HANDOFF.md. Returns (formatted_output, raw_content)."""
     try:
         if not HANDOFF_FILE.exists():
-            return ""
+            return "", ""
         content = HANDOFF_FILE.read_text(encoding="utf-8")
-        # Try multiple markers in priority order
         for marker in ("▶ NEXT", "**▶", "Наступна задача:", "## ▶", "NEXT TASK"):
             idx = content.find(marker)
             if idx != -1:
                 snippet = content[idx: idx + 700]
                 lines = snippet.split("\n")[:14]
-                return "=== CURRENT TASK (from HANDOFF.md) ===\n" + "\n".join(lines) + "\n"
-        # Fallback: first 10 lines of file
+                return "=== CURRENT TASK (from HANDOFF.md) ===\n" + "\n".join(lines) + "\n", content
         lines = content.split("\n")[:10]
-        return "=== HANDOFF (top) ===\n" + "\n".join(lines) + "\n"
+        return "=== HANDOFF (top) ===\n" + "\n".join(lines) + "\n", content
     except Exception:
-        return ""
+        return "", ""
 
 
 def get_tracker_progress() -> str:
@@ -168,22 +191,23 @@ MAP_KEYWORD_ROUTES: dict[str, str] = {
 }
 
 
-def get_relevant_maps(task_text: str) -> str:
+def get_relevant_maps(task_text: str, handoff_content: str = "") -> str:
     """Match current task + HANDOFF keywords to relevant MAP files."""
     try:
         if not MAPS_DIR.exists():
             return ""
-        # Extract only the "Наступна задача:" line for keyword matching
+        # Use passed content to avoid re-reading HANDOFF.md (already read in get_current_task)
         raw = ""
-        if HANDOFF_FILE.exists():
+        content_to_search = handoff_content
+        if not content_to_search and HANDOFF_FILE.exists():
             try:
-                handoff = HANDOFF_FILE.read_text(encoding="utf-8", errors="replace")
-                for line in handoff.split("\n")[:15]:
-                    if "наступна задача" in line.lower() or "next task" in line.lower():
-                        raw = line
-                        break
+                content_to_search = HANDOFF_FILE.read_text(encoding="utf-8", errors="replace")
             except Exception:
                 pass
+        for line in content_to_search.split("\n")[:15]:
+            if "наступна задача" in line.lower() or "next task" in line.lower():
+                raw = line
+                break
         if not raw and task_text:
             # Fallback: first line of task_text that looks like a task name
             for line in task_text.split("\n"):
@@ -223,10 +247,10 @@ This is IRON RULE -1. It cannot be skipped, deferred, or abbreviated.
 def main() -> int:
     reset_session_state()
 
-    graphify_ctx   = get_graphify_summary()
-    current_task   = get_current_task()
-    tracker_prog   = get_tracker_progress()
-    relevant_maps  = get_relevant_maps(current_task)
+    graphify_ctx            = get_graphify_summary()
+    current_task, handoff_content = get_current_task()
+    tracker_prog            = get_tracker_progress()
+    relevant_maps           = get_relevant_maps(current_task, handoff_content)
 
     parts = []
     if graphify_ctx:

@@ -9,10 +9,8 @@ import type { DropResult } from '@hello-pangea/dnd';
 import { type Service, CATEGORIES } from './types';
 import { ServiceCard } from './ServiceCard';
 import { useServices, type ServiceRow } from '@/lib/supabase/hooks/useServices';
-import { useMasterContext } from '@/lib/supabase/context';
-import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
-import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
+import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
 
 // DnD is excluded from the initial bundle — loads async after hydration
 const DragDropContext = dynamic(
@@ -73,16 +71,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
   useEffect(() => { setMounted(true); }, []);
 
   const router = useRouter();
-  const { masterProfile } = useMasterContext();
-
-  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('services_v1', SERVICES_STEPS.length + 1, {
-    initialSeen: !!(seenTours?.['services_v1']),
-    masterId: masterProfile?.id ?? '',
-  });
-  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'services_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
-  // humanized — navigator step
-  const dynamicSteps: TourStep[] = [...SERVICES_STEPS, { title: 'Послуги є', text: 'Що ще покажемо?', isNavigator: true, links: nextTours }];
+  const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('services_v1', SERVICES_STEPS);
 
   const _s = useServices({ initialRows: initialServicesData });
   const services: Service[] = _s.services;

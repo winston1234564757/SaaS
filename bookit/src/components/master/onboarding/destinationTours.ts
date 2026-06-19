@@ -18,5 +18,14 @@ export const DESTINATION_TOURS: DestinationTour[] = [
   { tourKey: 'products_v1',  href: '/dashboard/products',  icon: ShoppingBag,  label: 'Магазин'      },
   { tourKey: 'analytics_v1', href: '/dashboard/analytics', icon: BarChart2,    label: 'Аналітика'    },
   { tourKey: 'growth_v1',    href: '/dashboard/growth',    icon: Rocket,       label: 'Ріст'         },
-  { tourKey: 'revenue_v1',   href: '/dashboard/revenue',   icon: Wallet,       label: 'Дохід'        },
+  { tourKey: 'revenue_v1',   href: '/dashboard/revenue',   icon: Wallet,       label: 'Дохід'        }, // humanized
 ];
+
+/** Two-layer check: DB seen_tours (source of truth) + localStorage (same-device, handles context staleness). */
+export function isTourSeen(tourKey: string, seenTours: Record<string, boolean> | null): boolean {
+  if (seenTours?.[tourKey]) return true;
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(`tour_${tourKey}`) === 'done';
+  }
+  return false;
+}

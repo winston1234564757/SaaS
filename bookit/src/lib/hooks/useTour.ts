@@ -14,12 +14,15 @@ interface UseTourOptions {
    * If provided — caller is responsible for DB write (backward compat for DashboardTourContext).
    */
   onComplete?: () => Promise<void>;
+  /** Fires after markTourSeen resolves — use for context refresh without taking over DB ownership. */
+  onAfterSeen?: () => void;
 }
 
 export function useTour(tourName: string, totalSteps: number, options?: UseTourOptions) {
   const initialSeen = options?.initialSeen ?? false;
   const masterId = options?.masterId;
   const onComplete = options?.onComplete;
+  const onAfterSeen = options?.onAfterSeen;
 
   // -1 = not yet initialized (avoids SSR flash)
   const [currentStep, setCurrentStep] = useState(-1);
@@ -46,9 +49,9 @@ export function useTour(tourName: string, totalSteps: number, options?: UseTourO
       }
     } else if (masterId) {
       // DB-primary: persist automatically — no boilerplate in callers
-      markTourSeen(tourName).catch(err =>
-        console.error(`[useTour:${tourName}] markTourSeen failed:`, err)
-      );
+      markTourSeen(tourName)
+        .then(() => { onAfterSeen?.(); })
+        .catch(err => console.error(`[useTour:${tourName}] markTourSeen failed:`, err));
     }
   }
 

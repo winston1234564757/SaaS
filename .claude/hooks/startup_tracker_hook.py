@@ -62,19 +62,28 @@ def main() -> int:
                 state["mempalace_searched"] = True
                 changed = True
 
-        # Track tsc run — clears ts_edited_since_tsc
+        # Track tsc run — resets batch counter
         if tool_name == "Bash":
             cmd = tool_input.get("command", "")
             if "tsc" in cmd and "--noEmit" in cmd:
-                if state.get("ts_edited_since_tsc"):
-                    state["ts_edited_since_tsc"] = False
+                if state.get("ts_edits_since_tsc", 0) > 0:
+                    state["ts_edits_since_tsc"] = 0
                     changed = True
 
-        # Confirm startup when both steps done
+        # Confirm startup when both steps done — record date for same-day persistence
         if state.get("mempalace_done") and state.get("systemmap_done"):
             if not state.get("startup_confirmed"):
+                import datetime
                 state["startup_confirmed"] = True
+                state["startup_date"] = datetime.date.today().isoformat()
                 changed = True
+                # Create sentinel file — startup_gate_hook uses stat() instead of JSON parse
+                try:
+                    SENTINEL = STATE_FILE.parent / "startup_ok"
+                    SENTINEL.parent.mkdir(parents=True, exist_ok=True)
+                    SENTINEL.touch()
+                except Exception:
+                    pass
 
         if changed:
             save_state(state)

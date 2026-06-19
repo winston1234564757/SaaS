@@ -7,7 +7,7 @@ import { StudioDashboard } from './StudioDashboard';
 import { FrostDashboard } from './FrostDashboard';
 import { DashboardDrawers } from './DashboardDrawers';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
-import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
+import { DESTINATION_TOURS, isTourSeen } from '@/components/master/onboarding/destinationTours';
 
 const BASE_STEPS: TourStep[] = [
   {
@@ -48,7 +48,7 @@ export function DashboardView() {
   const initialSeen = !!(seenTours?.['dashboard_v3']);
 
   const nextLinks = DESTINATION_TOURS
-    .filter(d => !seenTours?.[d.tourKey])
+    .filter(d => !isTourSeen(d.tourKey, seenTours))
     .slice(0, 3)
     .map(d => ({ icon: d.icon, label: d.label, href: d.href }));
 

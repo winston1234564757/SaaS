@@ -24,9 +24,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils/cn';
-import { useTour } from '@/lib/hooks/useTour';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
-import { DESTINATION_TOURS } from '@/components/master/onboarding/destinationTours';
+import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
 
 // humanized
 const SETTINGS_STEPS: TourStep[] = [
@@ -39,14 +38,7 @@ const SETTINGS_STEPS: TourStep[] = [
 
 export default function SettingsPage() {
   const { masterProfile } = useMasterContext();
-  const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
-  const { currentStep, nextStep, closeTour } = useTour('settings_v1', SETTINGS_STEPS.length + 1, {
-    initialSeen: !!(seenTours?.['settings_v1']),
-    masterId: masterProfile?.id ?? '',
-  });
-  const nextTours = DESTINATION_TOURS.filter(d => !seenTours?.[d.tourKey] && d.tourKey !== 'settings_v1').slice(0, 3).map(d => ({ icon: d.icon, label: d.label, href: d.href }));
-  // humanized — navigator step
-  const dynamicSteps: TourStep[] = [...SETTINGS_STEPS, { title: 'Куди далі?', text: 'Ще є що подивитись. Обирай наступний розділ.', isNavigator: true, links: nextTours }];
+  const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('settings_v1', SETTINGS_STEPS);
   const queryClient = useQueryClient();
   const { state, actions } = useSettingsForm();
   const [analyticsDate, setAnalyticsDate] = useState(new Date());

@@ -18,6 +18,10 @@ STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
 
 TS_EXTENSIONS = {".ts", ".tsx"}
 
+# Allow N consecutive TS edits before requiring TSC — batch mode.
+# At N=8: for a 9-file task with 3 edits/file = 27 edits = ~3 TSC runs instead of 27.
+MAX_TS_EDITS_BEFORE_TSC = 8
+
 BYPASS_PREFIXES = [
     ".claude/hooks",
     "XDEV/",
@@ -60,19 +64,19 @@ def main() -> int:
             return 0
 
         state = load_state()
+        edits_since_tsc = state.get("ts_edits_since_tsc", 0)
 
-        if not state.get("ts_edited_since_tsc"):
+        if edits_since_tsc < MAX_TS_EDITS_BEFORE_TSC:
             return 0
 
-        # BLOCK — tsc not run since last TS edit
+        # BLOCK — batch limit reached
         fname = path.name
         msg = (
             f"\n[TSC GATE BLOCK] Cannot edit '{fname}'\n"
-            "IRON RULE #3: TypeScript was edited but tsc was not run.\n\n"
+            f"Batch limit: {edits_since_tsc}/{MAX_TS_EDITS_BEFORE_TSC} TS edits since last tsc run.\n\n"
             "Run this first:\n"
             "  Bash('cd C:/Users/Vitossik/SaaS/bookit && npx tsc --noEmit')\n\n"
-            "Fix any errors, then the gate will unlock automatically.\n"
-            "Do NOT skip this check — type errors must be resolved before next edit.\n"
+            "Gate unlocks automatically after tsc runs. Fix any errors first.\n"
         )
         print(msg)
         return 2

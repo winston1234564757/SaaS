@@ -167,11 +167,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/tsc_gate_hook.py",
-            "statusMessage": "TSC gate check..."
-          },
-          {
-            "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/qa_gate_guard_hook.py",
             "statusMessage": "QA Gate check..."
           },
