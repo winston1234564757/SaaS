@@ -18,9 +18,9 @@
 ---
 
 ## ✅ T23-impl-v3 — useDestinationTour + isTourSeen reliability fix: ЗАВЕРШЕНО
-**Commit:** `b5c5dfd` | **Дата:** 2026-06-19
+**Commits:** `b5c5dfd` (refactor) + `0b6f004` (bug fixes від code-review) | **Дата:** 2026-06-19
 
-**Root cause:** `masterProfile.seen_tours` в контексті застарівав після `markTourSeen()` → navigator показував вже пройдені сторінки.
+**Root cause:** `masterProfile.seen_tours` в контексті застарівав після `markTourSeen()` → navigator показував вже пройдені сторінки. Також виявлено 3 баги через code-review skill.
 
 **Що зроблено:**
 1. `isTourSeen()` — двошаровий чек (DB seen_tours + localStorage); вирішує staleness між навігаціями
@@ -28,6 +28,10 @@
 3. `useDestinationTour` hook — замінює 9-рядковий boilerplate на 1 виклик у всіх 9 сторінках
 4. 5 "pure tour" сторінок (Marketing/Services/Products/Growth/Revenue) — прибрано `useMasterContext`
 5. tsc_gate_hook видалено зі settings.json — заважав паралельним едітам
+6. **Profile race fix** (commit 0b6f004): `initialSeen` flips true після 800ms → `setCurrentStep(prev => prev >= 0 ? -1 : prev)` — тур гаситься навіть якщо вже запустився
+7. **masterId guard**: `masterProfile?.id ?? ''` → `masterProfile?.id` — empty string більше не скіпає DB write мовчки
+8. **onAfterSeen catch**: `Promise.resolve(onAfterSeen?.()).catch(...)` — promise rejection логується
+9. **useMemo** на `nextTours` + `dynamicSteps` — localStorage reads тільки при зміні seenTours
 
 ---
 
