@@ -18,7 +18,7 @@
 ---
 
 ## ✅ T25 — SettingsPage Desktop Redesign: ЗАВЕРШЕНО
-**Commits:** `73676e3` + `50d9fef` (widget polish) | **Дата:** 2026-06-20
+**Commits:** `73676e3` + `50d9fef` + `9a1140a` + `246ca22` | **Дата:** 2026-06-20
 
 **Root cause:** `lg:grid-cols-4` просто розтягувало mobile layout на desktop — рівні 25% колонки без ієрархії.
 
@@ -37,7 +37,17 @@
 - CategoriesWidget: flex-wrap пілюлі → 3-col grid (3×3) + flex-1 заповнює висоту + h-full відновлено
 - RetentionCycle (SettingsPage): додано h-full на widget-card — вирівнює з Identity col-6 партнером
 
-TSC: 0 errors. Build: clean.
+**Widget polish v3 — 9a1140a (ScheduleWidget + StatsPulse + grid реорг):**
+- ScheduleWidget: buffer+breaks винесено в окремий full-width рядок знизу (3-col: buffer | breaks | weeklyStats)
+  - weeklyStats: workingDays, год/тиждень, ≈год/місяць — обчислюється з schedule prop без нових даних
+  - Desktop layout: `flex-col` → [2-col top: summary+days] + [3-col bottom: buffer+breaks+stats]
+- StatsPulse: 4→6 клітинок (grid-rows-2→grid-rows-3), додано Конверсія (TrendingUp, обчислюється з bookings/views) + Постійних (Users, repeatRate prop optional)
+- SettingsPage Grid row-4: Categories(col-3) | Identity(col-4 self-start) | ProductMix(col-3)
+- SettingsPage Grid row-5: RetentionCycle(col-3) | Vacations(col-3 self-start) | Segments(col-4 self-start)
+- Identity: компактніший (gap-5, py-3 inputs, без h-full, self-start)
+- Vacations: compact widget-card p-5 без h-full, розмір іконки 8→ xl
+
+TSC: 0 errors. Build: clean. Commit: `246ca22`.
 
 ---
 
