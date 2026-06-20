@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 
 interface NavItem {
@@ -88,7 +87,7 @@ export function NavigationStrip() {
       <div className="relative h-14 w-full bg-surface/40 backdrop-blur-xl border border-border/60 rounded-full shadow-lg shadow-black/5 overflow-hidden">
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-surface/40 to-transparent z-10 pointer-events-none lg:hidden" />
 
-        <div className="flex items-center gap-6 h-full overflow-x-auto scrollbar-hide px-6 justify-start lg:justify-center">
+        <div className="flex items-center gap-1 h-full overflow-x-auto scrollbar-hide px-3 justify-start lg:justify-center">
           {ITEMS.map((item) => (
             <button
               type="button"
@@ -96,17 +95,13 @@ export function NavigationStrip() {
               onClick={() => scrollTo(item.id)}
               aria-current={activeId === item.id ? 'location' : undefined}
               className={cn(
-                'relative text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors py-1 shrink-0 active:scale-[0.88] cursor-pointer',
-                activeId === item.id ? 'text-accent' : 'text-text-mute hover:text-text-sub'
+                'relative px-3 h-8 rounded-full text-[11px] font-bold uppercase tracking-wide whitespace-nowrap transition-all shrink-0 active:scale-[0.88] cursor-pointer',
+                activeId === item.id
+                  ? 'bg-accent/10 text-accent'
+                  : 'text-text-mute hover:text-text-sub hover:bg-secondary/60'
               )}
             >
               {item.label}
-              {activeId === item.id && (
-                <motion.div
-                  layoutId="nav-active"
-                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent rounded-full"
-                />
-              )}
             </button>
           ))}
         </div>

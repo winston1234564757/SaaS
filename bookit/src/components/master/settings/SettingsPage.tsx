@@ -18,7 +18,7 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useBusyness } from '@/lib/supabase/hooks/useBusyness';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Loader2, LogOut, User as UserIcon, Camera, ChevronDown, ChevronUp, RefreshCw, CalendarOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -36,12 +36,15 @@ const SETTINGS_STEPS: TourStep[] = [
   { title: 'Готово до роботи', text: 'Профіль налаштовано. Почни ділитись посиланням з клієнтами.' },
 ];
 
+const SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const;
+
 export default function SettingsPage() {
   const { masterProfile } = useMasterContext();
   const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('settings_v1', SETTINGS_STEPS);
   const queryClient = useQueryClient();
   const { state, actions } = useSettingsForm();
   const [analyticsDate, setAnalyticsDate] = useState(new Date());
+  const prefersReducedMotion = useReducedMotion();
 
   const { data: analytics } = useAnalytics(
     {
@@ -64,6 +67,12 @@ export default function SettingsPage() {
     percentage: analytics?.summary.bookings ? Math.round((s.count / analytics.summary.bookings) * 100) : 0
   }));
 
+  const motionProps = (index: number) => ({
+    initial: { opacity: 0, y: prefersReducedMotion ? 0 : 8 },
+    animate: { opacity: 1, y: 0 },
+    transition: { ...SPRING, delay: index * 0.04 },
+  });
+
   return (
     <div className="min-h-screen pb-32">
       <div className="lg:hidden">
@@ -71,10 +80,15 @@ export default function SettingsPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 mt-24 lg:mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 auto-rows-auto items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 auto-rows-auto items-start">
 
-          {/* Row 1: ProfileHero (rowspan 2) | SmartAdvisor | PublicStatus */}
-          <section id="hero" className="lg:col-span-1 lg:row-span-2" data-tour-key="set-profile">
+          {/* Row 1 col-3 row-span-2 — ProfileHero */}
+          <motion.section
+            id="hero"
+            className="lg:col-span-3 lg:row-span-2"
+            data-tour-key="set-profile"
+            {...motionProps(0)}
+          >
             <ProfileHero
               masterId={masterProfile.id}
               fullName={state.fullName}
@@ -87,9 +101,10 @@ export default function SettingsPage() {
               slug={state.slug}
               onAvatarChange={actions.setAvatarUrl}
             />
-          </section>
+          </motion.section>
 
-          <section className="md:col-span-1 lg:col-span-2">
+          {/* Row 1 col-7 — SmartAdvisor */}
+          <motion.section className="lg:col-span-7" {...motionProps(1)}>
             <SmartAdvisor
               data={{
                 bio: state.bio,
@@ -101,9 +116,15 @@ export default function SettingsPage() {
                 bufferTime: state.bufferTime
               }}
             />
-          </section>
+          </motion.section>
 
-          <section id="status" className="md:col-span-1 lg:col-span-1" data-tour-key="set-status">
+          {/* Row 2 col-7 — PublicStatus (ProfileHero continues row-span-2) */}
+          <motion.section
+            id="status"
+            className="lg:col-span-7"
+            data-tour-key="set-status"
+            {...motionProps(2)}
+          >
             <PublicStatusWidget
               slug={state.slug}
               isPublished={state.isPublished}
@@ -111,19 +132,15 @@ export default function SettingsPage() {
               onSlugChange={actions.setSlug}
               onPublishToggle={() => actions.setIsPublished(!state.isPublished)}
             />
-          </section>
+          </motion.section>
 
-          {/* Row 2: ProfileHero (cont) | StatsPulse (1col) | Schedule (2col, always expanded desktop) */}
-          <section id="stats" className="md:col-span-1 lg:col-span-1">
-            <StatsPulseWidget
-              rating={masterProfile.rating}
-              ratingCount={masterProfile.rating_count}
-              viewsCount={0}
-              bookingsCount={stats.monthCompleted}
-            />
-          </section>
-
-          <section id="schedule" className="md:col-span-1 lg:col-span-2 order-first lg:order-none" data-tour-key="set-schedule">
+          {/* Row 3 full-width — ScheduleWidget */}
+          <motion.section
+            id="schedule"
+            className="lg:col-span-10"
+            data-tour-key="set-schedule"
+            {...motionProps(3)}
+          >
             <ScheduleWidget
               schedule={state.schedule}
               bufferTime={state.bufferTime}
@@ -133,24 +150,20 @@ export default function SettingsPage() {
               onBufferChange={actions.setBufferTime}
               onBreaksChange={actions.setBreaks}
             />
-          </section>
+          </motion.section>
 
-          {/* Row 3: ProductMix | Categories | Location */}
-          <section id="services" className="lg:col-span-1">
-            <ProductMixWidget
-              services={topServices}
-              onMonthChange={setAnalyticsDate}
+          {/* Row 4 col-2 — StatsPulse */}
+          <motion.section id="stats" className="lg:col-span-2" {...motionProps(4)}>
+            <StatsPulseWidget
+              rating={masterProfile.rating}
+              ratingCount={masterProfile.rating_count}
+              viewsCount={0}
+              bookingsCount={stats.monthCompleted}
             />
-          </section>
+          </motion.section>
 
-          <section className="lg:col-span-1">
-            <CategoriesWidget
-              selected={state.selectedCategories}
-              onChange={actions.setSelectedCategories}
-            />
-          </section>
-
-          <section id="location" className="lg:col-span-2">
+          {/* Row 4 col-8 — LocationWidget */}
+          <motion.section id="location" className="lg:col-span-8" {...motionProps(5)}>
             <LocationWidget
               city={state.city}
               address={state.address}
@@ -164,51 +177,27 @@ export default function SettingsPage() {
               onCabinetChange={actions.setCabinet}
               onCoordsChange={actions.setCoords}
             />
-          </section>
+          </motion.section>
 
-          {/* Row 4: CRM Segments | Retention Cycle */}
-          <section id="segments" className="lg:col-span-2">
-            <SegmentConfigWidget
-              segments={state.segmentConfig}
-              onChange={actions.setSegmentConfig}
+          {/* Row 5 col-6 — Categories */}
+          <motion.section className="lg:col-span-6" {...motionProps(6)}>
+            <CategoriesWidget
+              selected={state.selectedCategories}
+              onChange={actions.setSelectedCategories}
             />
-          </section>
+          </motion.section>
 
-          <section id="retention" className="lg:col-span-2">
-            <div className="widget-card p-6 h-full">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                  <RefreshCw size={18} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold">Цикл повернення клієнта</h3>
-                  <p className="text-[11px] text-muted-foreground/60">Через скільки днів клієнт вважається неактивним</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {[14, 21, 30, 45, 60, 90].map((days) => (
-                  <button
-                    type="button"
-                    key={days}
-                    onClick={() => actions.setRetentionCycleDays(days)}
-                    aria-pressed={state.retentionCycleDays === days}
-                    className={cn(
-                      'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
-                      state.retentionCycleDays === days
-                        ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
-                        : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
-                    )}
-                  >
-                    {days} днів
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
+          {/* Row 5 col-4 — ProductMix */}
+          <motion.section id="services" className="lg:col-span-4" {...motionProps(7)}>
+            <ProductMixWidget
+              services={topServices}
+              onMonthChange={setAnalyticsDate}
+            />
+          </motion.section>
 
-          {/* Row 5: Identity | Vacations */}
-          <section id="identity" className="lg:col-span-2">
-            <div className="widget-card p-6 h-full flex flex-col gap-6">
+          {/* Row 6 col-6 — Identity */}
+          <motion.section id="identity" className="lg:col-span-6" {...motionProps(8)}>
+            <div className="widget-card p-5 lg:p-6 h-full flex flex-col gap-6">
               <div className="flex items-center gap-3">
                 <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
                   <UserIcon size={18} />
@@ -259,10 +248,44 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
-          </section>
+          </motion.section>
 
-          <section id="vacations" className="lg:col-span-2">
-            <div className="widget-card p-6 h-full">
+          {/* Row 6 col-4 — Retention Cycle */}
+          <motion.section id="retention" className="lg:col-span-4" {...motionProps(9)}>
+            <div className="widget-card p-5 lg:p-6 h-full">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <RefreshCw size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold">Цикл повернення клієнта</h3>
+                  <p className="text-[11px] text-muted-foreground/60">Через скільки днів клієнт вважається неактивним</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[14, 21, 30, 45, 60, 90].map((days) => (
+                  <button
+                    type="button"
+                    key={days}
+                    onClick={() => actions.setRetentionCycleDays(days)}
+                    aria-pressed={state.retentionCycleDays === days}
+                    className={cn(
+                      'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
+                      state.retentionCycleDays === days
+                        ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
+                        : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
+                    )}
+                  >
+                    {days} днів
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Row 7 col-3 — Vacations */}
+          <motion.section id="vacations" className="lg:col-span-3" {...motionProps(10)}>
+            <div className="widget-card p-5 lg:p-6 h-full">
               <div className="flex items-center gap-2.5 mb-4">
                 <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
                   <CalendarOff size={18} />
@@ -271,10 +294,18 @@ export default function SettingsPage() {
               </div>
               <VacationManager />
             </div>
-          </section>
+          </motion.section>
 
-          {/* Row 6: Technical — full width */}
-          <section id="technical" className="lg:col-span-4">
+          {/* Row 7 col-7 — SegmentConfig */}
+          <motion.section id="segments" className="lg:col-span-7" {...motionProps(11)}>
+            <SegmentConfigWidget
+              segments={state.segmentConfig}
+              onChange={actions.setSegmentConfig}
+            />
+          </motion.section>
+
+          {/* Row 8 full-width — TechnicalIsland */}
+          <motion.section id="technical" className="lg:col-span-10" {...motionProps(12)}>
             <TechnicalIsland
               instagram={state.instagram}
               telegram={state.telegram}
@@ -286,7 +317,7 @@ export default function SettingsPage() {
               onTelegramChatIdChange={actions.setTelegramChatId}
               onThemeChange={actions.setThemeKey}
             />
-          </section>
+          </motion.section>
 
         </div>
 
@@ -317,7 +348,7 @@ export default function SettingsPage() {
         </div>
       </main>
 
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {state.isDirty && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
