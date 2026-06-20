@@ -38,20 +38,20 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
   };
 
   return (
-    <div className="widget-card p-6">
-      <div className="flex items-start gap-3 mb-4">
+    <div className="widget-card p-6 h-full flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-start gap-3">
         <div className="size-9 rounded-2xl bg-accent text-[var(--accent-on)] flex items-center justify-center shadow-lg shadow-accent/20 shrink-0 mt-0.5">
           <Sparkles size={18} />
         </div>
         <div>
           <h3 className="font-bold text-sm text-text-primary">Спеціалізації</h3>
-          <p className="text-[11px] text-text-mute mt-0.5 leading-relaxed">
-            До 4 напрямків — клієнти знайдуть вас за фільтром
-          </p>
+          <p className="text-[11px] text-text-mute mt-0.5">До 4 напрямків — клієнти знаходять вас за фільтром</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      {/* 3-column grid of categories — fills available height */}
+      <div className="grid grid-cols-3 gap-2 flex-1">
         {ALL_CATEGORIES.map((cat) => {
           const isSelected = selected.includes(cat.id);
           const isDisabled = !isSelected && isMaxed;
@@ -63,27 +63,26 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
               aria-pressed={isSelected}
               disabled={isDisabled}
               className={cn(
-                'min-h-[40px] px-4 py-2 rounded-2xl text-[11px] font-bold transition-all flex items-center gap-1.5 border',
+                'flex flex-col items-center justify-center gap-1.5 rounded-2xl text-[11px] font-bold transition-all border px-2 py-3',
                 isSelected
-                  ? 'bg-accent text-[var(--accent-on)] border-accent shadow-lg shadow-accent/20 scale-105'
+                  ? 'bg-accent text-[var(--accent-on)] border-accent shadow-lg shadow-accent/20'
                   : isDisabled
                   ? 'bg-secondary border-border text-text-sub opacity-40 cursor-not-allowed'
                   : 'bg-secondary border-border text-text-sub hover:border-accent/30 hover:bg-muted/5 active:scale-[0.95] cursor-pointer'
               )}
             >
               {isSelected && <Check size={12} strokeWidth={3} />}
-              {cat.label}
+              <span className="text-center leading-tight">{cat.label}</span>
             </button>
           );
         })}
       </div>
 
+      {/* Progress bar */}
       <div>
         <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5">
           <span className="text-text-mute">Вибрано</span>
-          <span className={cn(isMaxed ? 'text-accent' : 'text-text-mute')}>
-            {validCount} / 4
-          </span>
+          <span className={cn(isMaxed ? 'text-accent' : 'text-text-mute')}>{validCount} / 4</span>
         </div>
         <div
           role="progressbar"

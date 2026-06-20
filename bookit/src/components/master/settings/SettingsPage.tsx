@@ -254,7 +254,7 @@ export default function SettingsPage() {
           <motion.section id="retention" className="lg:col-span-4" {...motionProps(9)}>{
             // humanized
           }
-            <div className="widget-card p-5 lg:p-6 flex flex-col gap-5">
+            <div className="widget-card p-5 lg:p-6 h-full flex flex-col gap-5">
               <div className="flex items-center gap-3">
                 <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
                   <RefreshCw size={18} />

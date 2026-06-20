@@ -1,8 +1,9 @@
 'use client';
+// humanized
 
 import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Globe, QrCode, Download, Loader2, Check, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Globe, QrCode, Download, Loader2, Check, ExternalLink, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToast } from '@/lib/toast/context';
 
@@ -29,6 +30,13 @@ export function PublicStatusWidget({
   const publicUrl = `https://bookit.com.ua/${slug}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(publicUrl)}&bgcolor=FFFFFF&color=2C1A14`;
 
+  const handleCopyLink = () => {
+    if (slug) {
+      navigator.clipboard.writeText(publicUrl);
+      showToast({ type: 'success', title: 'Посилання скопійовано' });
+    }
+  };
+
   const handleDownloadQr = () => {
     setDownloading(true);
     const canvas = document.createElement('canvas');
@@ -48,7 +56,7 @@ export function PublicStatusWidget({
           link.href = url;
           link.click();
           showToast({ type: 'success', title: 'Завантажено', message: 'QR-код збережено' });
-        } catch (err) {
+        } catch {
           showToast({ type: 'error', title: 'Помилка', message: 'Не вдалося зберегти QR' });
         }
       }
@@ -61,8 +69,8 @@ export function PublicStatusWidget({
   };
 
   return (
-    <div className="widget-card p-6 h-full flex flex-col gap-6">
-      {/* Header */}
+    <div className="widget-card p-6 h-full flex flex-col gap-5">
+      {/* Header + toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className={cn(
@@ -101,80 +109,94 @@ export function PublicStatusWidget({
       </div>
 
       {/* Slug Input */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <label htmlFor="settings-slug" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Ваша унікальна адреса</label>
         <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-secondary border border-border focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/5 transition-all shadow-inner-sm">
-          <span className="text-sm text-text-mute/40 font-medium select-none">bookit.ua/</span>
+          <span className="text-sm text-text-mute/40 font-medium select-none shrink-0">bookit.ua/</span>
           <input
             id="settings-slug"
             value={slug}
             onChange={(e) => onSlugChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
             aria-label="Ваша унікальна адреса"
-            className="flex-1 bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-mute/30"
+            className="flex-1 bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-mute/30 min-w-0"
             placeholder="your-name"
           />
-          {slugStatus === 'checking' && <Loader2 size={16} className="animate-spin text-accent" />}
-          {slugStatus === 'available' && <Check size={16} className="text-success" />}
+          {slugStatus === 'checking' && <Loader2 size={16} className="animate-spin text-accent shrink-0" />}
+          {slugStatus === 'available' && <Check size={16} className="text-success shrink-0" />}
         </div>
-
         {slugStatus === 'taken' && (
           <p className="text-[10px] font-bold text-destructive px-1">Ця адреса вже зайнята іншим майстром</p>
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-3 mt-auto">
+      {/* Quick link row */}
+      <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-accent/5 border border-accent/10">
+        <span className="text-[11px] text-accent/70 font-medium truncate flex-1 min-w-0">{publicUrl}</span>
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          aria-label="Скопіювати посилання"
+          className="size-7 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0 hover:bg-accent/20 active:scale-[0.88] cursor-pointer transition-all"
+        >
+          <Copy size={12} />
+        </button>
         <a
           href={publicUrl}
           target="_blank"
           rel="noreferrer"
-          className="w-full py-4 rounded-2xl bg-secondary border border-border text-text-primary text-xs font-bold flex items-center justify-center gap-2 hover:bg-muted/10 active:scale-95 transition-all shadow-sm"
+          aria-label="Відкрити профіль"
+          className="size-7 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0 hover:bg-accent/20 active:scale-[0.88] cursor-pointer transition-all"
         >
-          Відкрити сторінку <ExternalLink size={14} />
+          <ExternalLink size={12} />
         </a>
+      </div>
 
+      {/* QR Code section */}
+      <div className="flex-1 flex flex-col gap-3">
         {!showQr ? (
           <button type="button"
             onClick={() => setShowQr(true)}
             className="w-full py-4 rounded-2xl bg-accent text-[var(--accent-on)] text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-accent/20 cursor-pointer"
           >
-            <QrCode size={14} /> Керувати QR-кодом
+            <QrCode size={14} /> Показати QR-код
           </button>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-4 bg-secondary/40 p-4 rounded-xl border border-border"
-          >
-            <div className="p-4 rounded-[24px] bg-surface shadow-xl border border-border">
-              <img
-                ref={qrRef}
-                src={qrUrl}
-                alt="QR-код вашого профілю"
-                width={128}
-                height={128}
-                loading="lazy"
-                className="size-32"
-                crossOrigin="anonymous"
-              />
-            </div>
-            <div className="flex w-full gap-2">
-              <button type="button"
-                onClick={handleDownloadQr}
-                disabled={downloading}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-[var(--accent-on)] text-[11px] font-bold shadow-md shadow-accent/10 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {downloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={14} />}
-                Завантажити
-              </button>
-              <button type="button"
-                onClick={() => setShowQr(false)}
-                className="px-4 py-3 rounded-xl bg-secondary/80 text-text-mute text-[11px] font-bold border border-border active:scale-95 transition-all cursor-pointer"
-              >
-                Сховати
-              </button>
-            </div>
-          </motion.div>
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center gap-4 bg-secondary/40 p-4 rounded-2xl border border-border flex-1"
+            >
+              <div className="p-4 rounded-[24px] bg-surface shadow-xl border border-border">
+                <img
+                  ref={qrRef}
+                  src={qrUrl}
+                  alt="QR-код вашого профілю"
+                  width={128}
+                  height={128}
+                  loading="lazy"
+                  className="size-32"
+                  crossOrigin="anonymous"
+                />
+              </div>
+              <div className="flex w-full gap-2">
+                <button type="button"
+                  onClick={handleDownloadQr}
+                  disabled={downloading}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-[var(--accent-on)] text-[11px] font-bold shadow-md shadow-accent/10 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {downloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={14} />}
+                  Завантажити
+                </button>
+                <button type="button"
+                  onClick={() => setShowQr(false)}
+                  className="px-4 py-3 rounded-xl bg-secondary/80 text-text-mute text-[11px] font-bold border border-border active:scale-95 transition-all cursor-pointer"
+                >
+                  Сховати
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
     </div>
