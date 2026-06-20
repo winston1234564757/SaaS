@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 25/37 ✅
-**Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
-**Оновлено:** 2026-06-19
+**Прогрес:** 26/37 ✅
+**Наступна задача:** **T28 — Розхідники: бізнес-аналіз + persona sim + spec**
+**Оновлено:** 2026-06-20
 
 ---
 
@@ -14,6 +14,22 @@
 - `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
   - Якщо CLI не працює → Dashboard SQL Editor
 - Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+
+---
+
+## ✅ T25 — SettingsPage Desktop Redesign: ЗАВЕРШЕНО
+**Commit:** `73676e3` | **Дата:** 2026-06-20
+
+**Root cause:** `lg:grid-cols-4` просто розтягувало mobile layout на desktop — рівні 25% колонки без ієрархії.
+
+**Що зроблено:**
+1. `lg:grid-cols-10` — асиметрична 10-col сітка замість рівних 4 колонок
+2. 8 рядків з різними пропорціями: 30/70 (ProfileHero row-span-2 + Smart+Status), 100% (Schedule), 20/80 (Stats+Location), 60/40 (Categories+ProductMix), 60/40 (Identity+Retention), 30/70 (Vacations+SegmentConfig), 100% (TechnicalIsland)
+3. DOM order секцій реорганізовано під CSS Grid auto-placement
+4. `motionProps(index)` helper → Framer Motion stagger fade-in (spring 300/30, 40ms delay, useReducedMotion guard)
+5. NavigationStrip: underline `motion.div` → pill `bg-accent/10 rounded-full`, gap 6→1
+6. Mobile: widget card padding стандартизовано `p-5 lg:p-6`
+7. TSC: 0 errors. Build: clean.
 
 ---
 

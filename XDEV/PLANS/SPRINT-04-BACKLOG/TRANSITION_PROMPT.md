@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 25/37 ✅ | Sprint-04 IN PROGRESS
-Наступна: T25 — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout)
+Прогрес: 26/37 ✅ | Sprint-04 IN PROGRESS
+Наступна: T28 — Розхідники: бізнес-аналіз + persona sim + spec
 T23 (всі підзадачі) ✅ ПОВНІСТЮ ЗАВЕРШЕНО:
   ✅ T23-impl-v2 (a102304 + a4ccbd9): 9 destination tours, dynamic navigator, completion screen
   ✅ T23-impl-v3 (b5c5dfd + 0b6f004): useDestinationTour hook, isTourSeen 2-layer,

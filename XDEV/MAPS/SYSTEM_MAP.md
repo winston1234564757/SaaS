@@ -41,7 +41,7 @@
 | `/dashboard/flash` | Redirect Gateway to `/dashboard/revenue?tab=flash_deals` | `flash/page.tsx` | — | Redirect Gateway |
 | `/dashboard/pricing` | Redirect Gateway to `/dashboard/revenue?tab=dynamic_pricing` | `pricing/page.tsx` | — | Redirect Gateway |
 | `/dashboard/billing` | Підписки Monobank: tier, оплата, checkout | `billing/page.tsx` | `billing/actions.ts` | `master/billing/BillingPage.tsx` |
-| `/dashboard/settings` | Розклад, відпустки, Telegram, локація, тема | `settings/page.tsx` | `settings/actions.ts` | `master/settings/SettingsPage.tsx`, `VacationManager.tsx`, `LocationPicker.tsx` |
+| `/dashboard/settings` | Розклад, відпустки, Telegram, локація, тема | `settings/page.tsx` | `settings/actions.ts` | `master/settings/SettingsPage.tsx` — **10-col editorial grid** (lg:), 13 секцій, stagger fade-in, NavigationStrip pills; `VacationManager.tsx`, `LocationPicker.tsx` |
 | `/dashboard/loyalty` | Redirect Gateway to `/dashboard/growth?tab=loyalty` | `loyalty/page.tsx` | — | Redirect Gateway |
 | `/dashboard/referral` | Redirect Gateway to `/dashboard/growth?tab=referral` | `referral/page.tsx` | — | Redirect Gateway |
 | `/dashboard/studio` | Studio coming-soon: preview features + beta CTA form | `studio/page.tsx` | `billing/actions.ts` (submitBetaRequest) | `master/studio/StudioBetaCard.tsx` (client: beta Sheet form, submitBetaRequest, sizes 1/2-5/5+), `master/studio/WaitlistButton.tsx` (unused — replaced) |

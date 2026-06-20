@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 25/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-19
+**Прогрес:** 26/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-20
 
 > ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
 
@@ -49,7 +49,7 @@
 | 27.5 | T23-impl | Activation Tour: повна реалізація (7 tasks) | ✅ | `senior-fullstack` + `create-migration` | `b5f8ec6` | DB migration + ActivationTourContext + ActivationTourBanner + data-tour-step×7 + DashboardLayout swap + onboarding bridge |
 | 27.6 | T23-impl-v2 | Per-page TourBanner: замінює cross-page Activation Tour | ✅ | `grill-me` + `senior-frontend` + `impeccable` | `7b9886e` `7da4fdc` `a102304` `a4ccbd9` | 9 destination tours; dynamic navigator (filters seen+current); completion screen (isCompletion); destinationTours.ts shared const; ease-out-quart + scaleX polish; TSC:0 |
 | 27.7 | T23-impl-v3 | useDestinationTour hook + isTourSeen 2-layer + race fix | ✅ | `code-review` | `b5c5dfd` `0b6f004` | useDestinationTour shared hook (9 pages→1 call); isTourSeen(DB+localStorage); onAfterSeen:refresh; profile race fix; masterId undefined guard; useMemo nextTours+dynamicSteps |
-| 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ⬜ | `design-taste-frontend` + `impeccable` | 2-col або sidebar+content layout |
+| 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ✅ | `design-taste-frontend` + `impeccable` | `73676e3` | 10-col editorial grid; рядки 30/70·100%·20/80·60/40·30/70·100%; stagger fade-in; NavigationStrip pills |
 | 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | Deliverable: spec + business analysis |
 | 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | Залежить від T28 spec approved |
 | 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | Залежить від T29 deployed |
