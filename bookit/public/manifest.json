@@ -4,24 +4,24 @@
   "description": "Запис до майстрів краси онлайн",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#DDD5C6",
-  "theme_color": "#DDD5C6",
+  "background_color": "#EFF2FF",
+  "theme_color": "#6366F1",
   "orientation": "portrait",
   "categories": ["lifestyle", "beauty"],
   "lang": "uk",
   "icons": [
     {
-      "src": "/icons/192",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/512",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/icons/512",
+      "src": "/icons/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

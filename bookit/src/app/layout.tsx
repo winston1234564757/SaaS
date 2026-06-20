@@ -49,6 +49,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
   },
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icons/icon-192.png',
+    apple: '/icons/icon-180.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
