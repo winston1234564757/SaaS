@@ -152,8 +152,8 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 4 col-2 — StatsPulse */}
-          <motion.section id="stats" className="lg:col-span-2" {...motionProps(4)}>
+          {/* Row 4 col-3 — StatsPulse */}
+          <motion.section id="stats" className="lg:col-span-3" {...motionProps(4)}>
             <StatsPulseWidget
               rating={masterProfile.rating}
               ratingCount={masterProfile.rating_count}
@@ -162,8 +162,8 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 4 col-8 — LocationWidget */}
-          <motion.section id="location" className="lg:col-span-8" {...motionProps(5)}>
+          {/* Row 4 col-7 — LocationWidget */}
+          <motion.section id="location" className="lg:col-span-7" {...motionProps(5)}>
             <LocationWidget
               city={state.city}
               address={state.address}
@@ -180,7 +180,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 5 col-6 — Categories */}
-          <motion.section className="lg:col-span-6" {...motionProps(6)}>
+          <motion.section className="lg:col-span-6 lg:self-start" {...motionProps(6)}>
             <CategoriesWidget
               selected={state.selectedCategories}
               onChange={actions.setSelectedCategories}
@@ -251,32 +251,28 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 6 col-4 — Retention Cycle */}
-          <motion.section id="retention" className="lg:col-span-4" {...motionProps(9)}>{
+          <motion.section id="retention" className="lg:col-span-4 lg:self-start" {...motionProps(9)}>{
             // humanized
           }
-            <div className="widget-card p-5 lg:p-6 h-full flex flex-col gap-5">
+            <div className="widget-card p-5 flex flex-col gap-3">
               <div className="flex items-center gap-3">
-                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                  <RefreshCw size={18} />
+                <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <RefreshCw size={16} />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold">Цикл повернення</h3>
-                  <p className="text-[11px] text-muted-foreground/60">Поріг неактивного клієнта</p>
+                  <p className="text-[10px] text-muted-foreground/60">Поріг неактивного клієнта</p>
                 </div>
               </div>
 
-              <div className="flex items-end gap-3 px-1">
-                <span className="text-5xl font-bold tracking-tight text-accent leading-none tabular-nums">
+              <div className="flex items-end gap-2 px-1">
+                <span className="text-4xl font-bold tracking-tight text-accent leading-none tabular-nums">
                   {state.retentionCycleDays}
                 </span>
-                <span className="text-base font-bold text-text-mute mb-1">днів</span>
+                <span className="text-sm font-bold text-text-mute mb-0.5">днів</span>
               </div>
 
-              <p className="text-[11px] text-text-mute leading-relaxed px-1">
-                Клієнти без запису більше {state.retentionCycleDays} днів отримують нагадування повернутись
-              </p>
-
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {[14, 21, 30, 45, 60, 90].map((days) => (
                   <button
                     type="button"
@@ -284,7 +280,7 @@ export default function SettingsPage() {
                     onClick={() => actions.setRetentionCycleDays(days)}
                     aria-pressed={state.retentionCycleDays === days}
                     className={cn(
-                      'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
+                      'px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
                       state.retentionCycleDays === days
                         ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
                         : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
@@ -311,7 +307,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 7 col-7 — SegmentConfig */}
-          <motion.section id="segments" className="lg:col-span-7" {...motionProps(11)}>
+          <motion.section id="segments" className="lg:col-span-7 lg:self-start" {...motionProps(11)}>
             <SegmentConfigWidget
               segments={state.segmentConfig}
               onChange={actions.setSegmentConfig}

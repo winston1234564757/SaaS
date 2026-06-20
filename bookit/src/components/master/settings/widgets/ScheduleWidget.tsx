@@ -306,91 +306,98 @@ export function ScheduleWidget({
         ))}
       </div>
 
-      {/* Buffer time */}
-      <div className="p-5 rounded-2xl bg-accent/5 border border-accent/10">
-        <div className="flex items-center gap-2 mb-3">
-          <Clock size={15} className="text-accent" />
-          <h4 className="text-sm font-bold">Час між клієнтами</h4>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {[0, 5, 10, 15, 20, 30, 45, 60].map((min) => (
-            <button
-              type="button"
-              key={min}
-              onClick={() => onBufferChange(min)}
-              aria-pressed={bufferTime === min}
-              className={cn(
-                'px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
-                bufferTime === min
-                  ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
-                  : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
-              )}
-            >
-              {min === 0 ? 'Без буферу' : `${min} хв`}
-            </button>
-          ))}
-        </div>
-      </div>
+      {// humanized
+      }
+      {/* Buffer + Breaks — side by side on desktop */}
+      <div className="flex flex-col lg:flex-row gap-4">
 
-      {/* Breaks */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
+        {/* Buffer time */}
+        <div className="flex-1 p-4 rounded-2xl bg-accent/5 border border-accent/10 flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <Info size={14} className="text-muted-foreground/50" />
-            <h4 className="text-sm font-bold">Перерви</h4>
+            <Clock size={14} className="text-accent shrink-0" />
+            <h4 className="text-sm font-bold">Час між клієнтами</h4>
           </div>
-          <button
-            type="button"
-            onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
-          >
-            <Plus size={13} /> Додати
-          </button>
-        </div>
-        {breaks.length === 0 ? (
-          <div className="py-6 rounded-2xl border border-dashed border-muted/30 flex flex-col items-center justify-center text-muted-foreground/35 gap-1.5">
-            <Clock size={20} strokeWidth={1.2} />
-            <p className="text-[11px] font-medium">Перерв не додано</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {breaks.map((b, i) => (
-              <div key={i} className="flex items-center gap-2 p-3 rounded-2xl bg-secondary border border-border/60 shadow-sm">
-                <input
-                  type="time"
-                  value={b.start}
-                  onChange={(e) => {
-                    const nb = [...breaks];
-                    nb[i] = { ...nb[i], start: e.target.value };
-                    onBreaksChange(nb);
-                  }}
-                  aria-label={`Початок перерви ${i + 1}`}
-                  className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-sm font-medium"
-                />
-                <span className="text-muted-foreground/30">—</span>
-                <input
-                  type="time"
-                  value={b.end}
-                  onChange={(e) => {
-                    const nb = [...breaks];
-                    nb[i] = { ...nb[i], end: e.target.value };
-                    onBreaksChange(nb);
-                  }}
-                  aria-label={`Кінець перерви ${i + 1}`}
-                  className="flex-1 px-3 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-sm font-medium"
-                />
-                <button
-                  type="button"
-                  onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
-                  aria-label="Видалити перерву"
-                  className="size-9 rounded-xl bg-destructive/5 text-destructive flex items-center justify-center hover:bg-destructive/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
+          <div className="flex flex-wrap gap-1.5">
+            {[0, 5, 10, 15, 20, 30, 45, 60].map((min) => (
+              <button
+                type="button"
+                key={min}
+                onClick={() => onBufferChange(min)}
+                aria-pressed={bufferTime === min}
+                className={cn(
+                  'px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
+                  bufferTime === min
+                    ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
+                    : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
+                )}
+              >
+                {min === 0 ? 'Без' : `${min} хв`}
+              </button>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Breaks */}
+        <div className="flex-1 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Info size={14} className="text-muted-foreground/50 shrink-0" />
+              <h4 className="text-sm font-bold">Перерви</h4>
+            </div>
+            <button
+              type="button"
+              onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
+            >
+              <Plus size={12} /> Додати
+            </button>
+          </div>
+          {breaks.length === 0 ? (
+            <div className="flex-1 py-5 rounded-2xl border border-dashed border-muted/30 flex flex-col items-center justify-center text-muted-foreground/35 gap-1.5">
+              <Clock size={18} strokeWidth={1.2} />
+              <p className="text-[11px] font-medium">Перерв не додано</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {breaks.map((b, i) => (
+                <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary border border-border/60 shadow-sm">
+                  <input
+                    type="time"
+                    value={b.start}
+                    onChange={(e) => {
+                      const nb = [...breaks];
+                      nb[i] = { ...nb[i], start: e.target.value };
+                      onBreaksChange(nb);
+                    }}
+                    aria-label={`Початок перерви ${i + 1}`}
+                    className="flex-1 px-2 py-1.5 rounded-lg bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium"
+                  />
+                  <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
+                  <input
+                    type="time"
+                    value={b.end}
+                    onChange={(e) => {
+                      const nb = [...breaks];
+                      nb[i] = { ...nb[i], end: e.target.value };
+                      onBreaksChange(nb);
+                    }}
+                    aria-label={`Кінець перерви ${i + 1}`}
+                    className="flex-1 px-2 py-1.5 rounded-lg bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
+                    aria-label="Видалити перерву"
+                    className="size-8 rounded-lg bg-destructive/5 text-destructive flex items-center justify-center hover:bg-destructive/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

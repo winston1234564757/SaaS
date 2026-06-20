@@ -30,7 +30,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
 
   return (
     <>
-      <div className="widget-card p-6 flex flex-col gap-5">
+      <div className="widget-card p-5 flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
             <Plus size={18} className="text-accent" />

@@ -38,20 +38,22 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
   };
 
   return (
-    <div className="widget-card p-6 h-full flex flex-col gap-4">
+    <div className="widget-card p-5 flex flex-col gap-3">
+      {// humanized
+      }
       {/* Header */}
-      <div className="flex items-start gap-3">
-        <div className="size-9 rounded-2xl bg-accent text-[var(--accent-on)] flex items-center justify-center shadow-lg shadow-accent/20 shrink-0 mt-0.5">
-          <Sparkles size={18} />
+      <div className="flex items-center gap-3">
+        <div className="size-8 rounded-xl bg-accent text-[var(--accent-on)] flex items-center justify-center shadow-md shadow-accent/20 shrink-0">
+          <Sparkles size={16} />
         </div>
         <div>
           <h3 className="font-bold text-sm text-text-primary">Спеціалізації</h3>
-          <p className="text-[11px] text-text-mute mt-0.5">До 4 напрямків — клієнти знаходять вас за фільтром</p>
+          <p className="text-[10px] text-text-mute">До 4 напрямків</p>
         </div>
       </div>
 
-      {/* 3-column grid of categories — fills available height */}
-      <div className="grid grid-cols-3 gap-2 flex-1">
+      {/* 3-column grid of categories */}
+      <div className="grid grid-cols-3 gap-1.5">
         {ALL_CATEGORIES.map((cat) => {
           const isSelected = selected.includes(cat.id);
           const isDisabled = !isSelected && isMaxed;
@@ -63,7 +65,7 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
               aria-pressed={isSelected}
               disabled={isDisabled}
               className={cn(
-                'flex flex-col items-center justify-center gap-1.5 rounded-2xl text-[11px] font-bold transition-all border px-2 py-3',
+                'flex flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-bold transition-all border px-2 py-2.5',
                 isSelected
                   ? 'bg-accent text-[var(--accent-on)] border-accent shadow-lg shadow-accent/20'
                   : isDisabled
