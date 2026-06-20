@@ -18,7 +18,7 @@
 ---
 
 ## ✅ T25 — SettingsPage Desktop Redesign: ЗАВЕРШЕНО
-**Commits:** `73676e3` + `50d9fef` + `9a1140a` + `246ca22` | **Дата:** 2026-06-20
+**Commits:** `73676e3` + `50d9fef` + `9a1140a` + `246ca22` + `e20f7c8` | **Дата:** 2026-06-20
 
 **Root cause:** `lg:grid-cols-4` просто розтягувало mobile layout на desktop — рівні 25% колонки без ієрархії.
 
@@ -48,6 +48,16 @@
 - Vacations: compact widget-card p-5 без h-full, розмір іконки 8→ xl
 
 TSC: 0 errors. Build: clean. Commit: `246ca22`.
+
+**Рівні вертикальні відступи (e20f7c8):**
+- Причина: `lg:self-start` на коротших блоках залишає порожній простір всередині CSS Grid рядку — він зливається з реальним gap-5 і виглядає як нерівний відступ.
+- Рішення: прибрано `lg:self-start` з усіх 6 секцій (Categories, Identity, ProductMix, RetentionCycle, Vacations, Segments); додано `h-full` → всі блоки у рядку рівні за висотою.
+- CategoriesWidget: `h-full flex flex-col` + `flex-1` spacer перед progress bar — progress bar приклеюється до низу.
+- SegmentConfigWidget: `h-full flex flex-col` + `mt-auto` на кнопці — кнопка завжди знизу.
+- Identity: `flex-1 min-h-0` навколо ExpandableBio — bio заповнює вільний простір.
+- RetentionCycle: `h-full flex flex-col justify-between` — header/число/pills рівномірно розподілені; число `text-5xl`.
+- Правило: у CSS Grid `self-start` прибирає розтяжку елемента, але рядок залишається висотою найвищого → порожнеча всередині короткої клітинки. Щоб gap-5 був єдиним розривом — `h-full` обов'язковий.
+- TSC: 0 errors. Build: clean.
 
 ---
 

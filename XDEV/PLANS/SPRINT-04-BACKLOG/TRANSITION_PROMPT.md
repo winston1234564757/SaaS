@@ -17,10 +17,13 @@
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 26/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T28 — Розхідники: бізнес-аналіз + persona sim + spec
-T23 (всі підзадачі) ✅ ПОВНІСТЮ ЗАВЕРШЕНО:
-  ✅ T23-impl-v2 (a102304 + a4ccbd9): 9 destination tours, dynamic navigator, completion screen
-  ✅ T23-impl-v3 (b5c5dfd + 0b6f004): useDestinationTour hook, isTourSeen 2-layer,
-     profile race fix, masterId guard, onAfterSeen catch, useMemo nextTours+dynamicSteps
+T25 ✅ ПОВНІСТЮ ЗАВЕРШЕНО (5 commits: 73676e3 + 50d9fef + 9a1140a + 246ca22 + e20f7c8):
+  ✅ 10-col editorial grid, NavigationStrip pills, stagger fade-in
+  ✅ ScheduleWidget full-width 3-col bottom row (buffer | breaks | weeklyStats)
+  ✅ StatsPulse 6 metrics (4→6: +Конверсія +Постійних)
+  ✅ Grid row-5: Categories(col-3) | Identity(col-4) | ProductMix(col-3)
+  ✅ Grid row-6: RetentionCycle(col-3) | Vacations(col-3) | Segments(col-4)
+  ✅ h-full на всіх блоках → рівні вертикальні відступи (gap-5 єдиний розрив)
   ✅ TSC:0 Build:clean
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 

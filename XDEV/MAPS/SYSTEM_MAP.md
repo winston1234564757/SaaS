@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-18 · Джерело: живий код (v9.0.0 "Sprint-04: 23/37 ✅") · Sprint-04 commit: `b5f8ec6` (T23-impl: Activation Tour 7-step — context + banner + migration + 7 data-tour-step attrs + DashboardLayout swap)
+> Оновлено: 2026-06-20 · Джерело: живий код (v9.0.0 "Sprint-04: 26/37 ✅") · Sprint-04 commit: `e20f7c8` (T25: h-full equal gaps SettingsPage — Row5 categories/identity/productmix, Row6 retention/vacations/segments)
 > 
-> **⚡ Sprint-04 Status:** 23/37 ✅ | Next: T25 — dashboard/settings ПК redesign | Skills: TOP 50 configured (settings.json v9.0.0)
+> **⚡ Sprint-04 Status:** 26/37 ✅ | Next: T28 — Розхідники бізнес-аналіз + spec | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 | Sprint-05 + Sprint-06 remaining post-launch
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
 > 
@@ -41,7 +41,7 @@
 | `/dashboard/flash` | Redirect Gateway to `/dashboard/revenue?tab=flash_deals` | `flash/page.tsx` | — | Redirect Gateway |
 | `/dashboard/pricing` | Redirect Gateway to `/dashboard/revenue?tab=dynamic_pricing` | `pricing/page.tsx` | — | Redirect Gateway |
 | `/dashboard/billing` | Підписки Monobank: tier, оплата, checkout | `billing/page.tsx` | `billing/actions.ts` | `master/billing/BillingPage.tsx` |
-| `/dashboard/settings` | Розклад, відпустки, Telegram, локація, тема | `settings/page.tsx` | `settings/actions.ts` | `master/settings/SettingsPage.tsx` — **10-col editorial grid** (lg:), 13 секцій, stagger fade-in, NavigationStrip pills; `VacationManager.tsx`, `LocationPicker.tsx` |
+| `/dashboard/settings` | Розклад, відпустки, Telegram, локація, тема | `settings/page.tsx` | `settings/actions.ts` | `master/settings/SettingsPage.tsx` — **10-col editorial grid** (lg:), 13 секцій, stagger fade-in, NavigationStrip pills; h-full на всіх блоках → рівні вертикальні відступи (gap-5 єдиний розрив); `ScheduleWidget` 3-col bottom row (buffer/breaks/weeklyStats); `StatsPulseWidget` 6 метрик (rating, views, bookings, conversion, repeatRate, ratingCount); Row5: Categories(3)+Identity(4)+ProductMix(3); Row6: RetentionCycle(3)+Vacations(3)+Segments(4); `VacationManager.tsx`, `LocationPicker.tsx` |
 | `/dashboard/loyalty` | Redirect Gateway to `/dashboard/growth?tab=loyalty` | `loyalty/page.tsx` | — | Redirect Gateway |
 | `/dashboard/referral` | Redirect Gateway to `/dashboard/growth?tab=referral` | `referral/page.tsx` | — | Redirect Gateway |
 | `/dashboard/studio` | Studio coming-soon: preview features + beta CTA form | `studio/page.tsx` | `billing/actions.ts` (submitBetaRequest) | `master/studio/StudioBetaCard.tsx` (client: beta Sheet form, submitBetaRequest, sizes 1/2-5/5+), `master/studio/WaitlistButton.tsx` (unused — replaced) |
