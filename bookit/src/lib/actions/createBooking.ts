@@ -1,4 +1,4 @@
-// humanized
+﻿// humanized
 'use server';
 
 import { z } from 'zod';
@@ -600,7 +600,8 @@ export async function createBooking(
         })
       )
     );
-    const oversold = stockResults.find(r => !r.error && r.data === false);
+    // r.error = RPC failed; r.data === false = stock exhausted
+    const oversold = stockResults.find(r => r.error || r.data === false);
     if (oversold) {
       await admin.from('bookings').delete().eq('id', bookingId);
       return { bookingId: null, error: 'Товар щойно закінчився. Спробуйте ще раз.' };

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef, type ElementType } from 'react';
 import Link from 'next/link';
@@ -513,7 +513,7 @@ function MasterCard({
             {/* Badges — absolute overlay */}
             <div className="absolute top-2 left-2 right-2 flex items-start justify-between z-10 pointer-events-none">
               {master.isPro ? (
-                <span className="text-[8px] font-black text-white bg-indigo-700 px-1.5 py-0.5 rounded-full leading-none tracking-wide">
+                <span className="text-[8px] font-extrabold text-white bg-indigo-700 px-1.5 py-0.5 rounded-full leading-none tracking-wide">
                   PRO
                 </span>
               ) : <span aria-hidden="true" />}
@@ -696,7 +696,7 @@ function MasterListCard({
               <AvatarFallback name={master.name} />
             )}
             {master.isPro && (
-              <span className="absolute top-1.5 left-1.5 text-[7px] font-black text-white bg-indigo-700 px-1 py-0.5 rounded-full leading-none tracking-wide">
+              <span className="absolute top-1.5 left-1.5 text-[7px] font-extrabold text-white bg-indigo-700 px-1 py-0.5 rounded-full leading-none tracking-wide">
                 PRO
               </span>
             )}
@@ -1117,7 +1117,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
                 className="mb-7"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-black text-accent tracking-[0.2em] uppercase">Рекомендуємо</span>
+                  <span className="text-[11px] font-extrabold text-accent tracking-[0.2em] uppercase">Рекомендуємо</span>
                   <span className="text-[10px] text-muted-foreground/40">
                     {proMasters.length} PRO {pluralUk(proMasters.length, 'майстер', 'майстри', 'майстрів')}
                   </span>
