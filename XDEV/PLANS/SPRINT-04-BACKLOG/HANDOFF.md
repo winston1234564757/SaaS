@@ -18,18 +18,26 @@
 ---
 
 ## ✅ T25 — SettingsPage Desktop Redesign: ЗАВЕРШЕНО
-**Commit:** `73676e3` | **Дата:** 2026-06-20
+**Commits:** `73676e3` + `50d9fef` (widget polish) | **Дата:** 2026-06-20
 
 **Root cause:** `lg:grid-cols-4` просто розтягувало mobile layout на desktop — рівні 25% колонки без ієрархії.
 
-**Що зроблено:**
+**Що зроблено (73676e3):**
 1. `lg:grid-cols-10` — асиметрична 10-col сітка замість рівних 4 колонок
 2. 8 рядків з різними пропорціями: 30/70 (ProfileHero row-span-2 + Smart+Status), 100% (Schedule), 20/80 (Stats+Location), 60/40 (Categories+ProductMix), 60/40 (Identity+Retention), 30/70 (Vacations+SegmentConfig), 100% (TechnicalIsland)
 3. DOM order секцій реорганізовано під CSS Grid auto-placement
 4. `motionProps(index)` helper → Framer Motion stagger fade-in (spring 300/30, 40ms delay, useReducedMotion guard)
 5. NavigationStrip: underline `motion.div` → pill `bg-accent/10 rounded-full`, gap 6→1
 6. Mobile: widget card padding стандартизовано `p-5 lg:p-6`
-7. TSC: 0 errors. Build: clean.
+
+**Widget internal layout fixes (50d9fef):**
+- SmartAdvisor: flex-1 justify-center на 1 підказку → всі підказки стеком (перша prominent, решта compact rows)
+- PublicStatus: mt-auto видалено → quick-link pill row + QR fills flex-1; порожнеча між slug і кнопками усунена
+- StatsPulse: grid-rows-2 + justify-between → 4 клітинки рівномірно заповнюють h-full
+- CategoriesWidget: flex-wrap пілюлі → 3-col grid (3×3) + flex-1 заповнює висоту + h-full відновлено
+- RetentionCycle (SettingsPage): додано h-full на widget-card — вирівнює з Identity col-6 партнером
+
+TSC: 0 errors. Build: clean.
 
 ---
 
