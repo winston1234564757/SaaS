@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-20 · Джерело: живий код (v9.0.0 "Sprint-04: 28/37 ✅") · Sprint-04 commit: `82e04e7d` (T29: Розхідники backend — migrations 142-144, expenses.actions, completeBooking+deduction, useExpenses, useConsumablesForBooking)
+> Оновлено: 2026-06-20 · Джерело: живий код (v9.0.0 "Sprint-04: 29/37 ✅") · Sprint-04 commit: `1b1bfb8b` (T30: Розхідники UX/UI — ConsumableCard, MaterialsReviewSheet, ExpensesTab, unit selector, WaterfallChart 6th bar, FinancesTab 5 KPIs)
 > 
-> **⚡ Sprint-04 Status:** 28/37 ✅ | Next: T30 — Розхідники UX/UI | Skills: TOP 50 configured (settings.json v9.0.0)
+> **⚡ Sprint-04 Status:** 29/37 ✅ | Next: T31 — Smart Design System: Context-Adaptive UI | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 | Sprint-05 + Sprint-06 remaining post-launch
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
 > 
@@ -34,10 +34,10 @@
 | Route | Відповідальність | Page | Actions | Key Component |
 |---|---|---|---|---|
 | `/dashboard` | Editorial dashboard: greeting, schedule, weekly chart, monthly calendar, sidebar widgets, adaptive strip, tour | `dashboard/page.tsx` | `dashboard/actions.ts` | `FrostDashboard.tsx`, `DashboardGreeting.tsx`, `DashboardDrawers.tsx`, `ActivationTourBanner.tsx` (cross-page spotlight, progress bar, pathname-aware re-spotlight, z-48), `ActivationTourContext.tsx` (7-step activation tour, router.push between routes, fire-and-forget DB persist, backward compat seen_tours.dashboard_v2), `TodaySchedule.tsx`, `widgets/EarningsPulseWidget.tsx`, `widgets/AdaptiveContextStrip.tsx` (4 states: empty/quiet/moderate/busy), `widgets/FrostMetricsStrip.tsx` (ticker, touch-drag), `widgets/frost/WeeklyChartWidget.tsx`, `widgets/frost/PeakHoursWidget.tsx`, `widgets/frost/CancellationRateWidget.tsx`, `widgets/frost/NextFreeDaysWidget.tsx`, `widgets/frost/InsightsRow.tsx`, `widgets/frost/ChannelHealthWidget.tsx`, `widgets/frost/TopServicesWidget.tsx` |
-| `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching | `bookings/page.tsx` | `bookings/actions.ts` | `BookingsPage.tsx`, `BookingCard.tsx`, `PeriodAnalyticsView.tsx` |
+| `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching. MaterialsReviewSheet intercepts "Завершити" якщо є розхідники → qty review → completeBooking(id, reviewed) | `bookings/page.tsx` | `bookings/actions.ts` (completeBooking: stock deduction + product_transactions) | `BookingsPage.tsx`, `BookingCard.tsx`, `BookingActionsDropdown.tsx`, `BookingDetailsModal.tsx` (consumables chips), `MaterialsReviewSheet.tsx` (NEW T30) |
 | `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` | `master/clients/ClientsPage.tsx` (useWindowVirtualizer list), `ClientListRow.tsx` (React.memo), `ClientGridCard.tsx` (React.memo), `clientsUtils.tsx` (shared RETENTION_CONFIG/getAutoTags/getSmartAction/ClientIconStack), `ClientDetailSheet.tsx`, `ClientWidgets.tsx` |
 | `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` |
-| `/dashboard/analytics` | Аналітика Pro v2.1 (Editorial Bento з MoM порівнянням та PNG/SVG експортом): виручка, когорти, бізнес-здоров'я, фінанси, прогнози складів, розумна націнка, ранковий брифінг, CSV | `analytics/page.tsx` | — | `master/analytics/AnalyticsPage.tsx` (включає `MorningBriefing.tsx`, `BusinessHealthScoreWidget.tsx`, `SmartPricingOptimizer.tsx`, та вкладки: `FinancesTab.tsx`, `StockTab.tsx`, `ReviewsTab.tsx`, `NoShowTab.tsx`, `LeadTimeTab.tsx`, `VacationTab.tsx`, `SourceTab.tsx`) |
+| `/dashboard/analytics` | Аналітика Pro v2.1 (Editorial Bento з MoM порівнянням та PNG/SVG експортом): виручка, когорти, бізнес-здоров'я, фінанси, прогнози складів, розумна націнка, ранковий брифінг, CSV | `analytics/page.tsx` | — | `master/analytics/AnalyticsPage.tsx` (включає `MorningBriefing.tsx`, `BusinessHealthScoreWidget.tsx`, `SmartPricingOptimizer.tsx`, та вкладки: `FinancesTab.tsx` (5 KPI + WaterfallChart 6 barів incl. operationalExpenses T30), `StockTab.tsx`, `ReviewsTab.tsx`, `NoShowTab.tsx`, `LeadTimeTab.tsx`, `VacationTab.tsx`, `SourceTab.tsx`) |
 | `/dashboard/flash` | Redirect Gateway to `/dashboard/revenue?tab=flash_deals` | `flash/page.tsx` | — | Redirect Gateway |
 | `/dashboard/pricing` | Redirect Gateway to `/dashboard/revenue?tab=dynamic_pricing` | `pricing/page.tsx` | — | Redirect Gateway |
 | `/dashboard/billing` | Підписки Monobank: tier, оплата, checkout | `billing/page.tsx` | `billing/actions.ts` | `master/billing/BillingPage.tsx` |
@@ -53,8 +53,8 @@
 | `/dashboard/growth` | Growth Hub: вкладки "Лояльність", "Реферали" та "Партнери" (inline) | `growth/page.tsx` | — | `master/growth/GrowthHubClient.tsx` |
 | `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (tap-overlay + ←→ reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemPage.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` | Shared: `components/shared/PhotoLightbox.tsx` |
 | `/dashboard/portfolio/[id]` | Редагування кейсу портфоліо (No-Modals policy). Ліміт Starter = 5 публічних; захист на 3 рівнях. | `portfolio/[id]/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioItemPage.tsx` |
-| `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення, розхідники (unit system T29) | `products/page.tsx` | `products/actions.ts` (+ `unit` field T29) | `master/products/ProductsPage.tsx` |
-| `/dashboard/revenue` (expenses) | Revenue Hub + Витрати (master_expenses CRUD — T30 UI pending) | `revenue/page.tsx` | `revenue/expenses.actions.ts` (NEW T29: createExpense/updateExpense/deleteExpense/getExpenses) | `master/revenue/RevenueHubClient.tsx` |
+| `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення; Розхідники: 3-й таб ConsumablesTab з unit selector (pcs/ml/г) + low-stock warning | `products/page.tsx` | `products/actions.ts` (+ `unit` field) | `master/products/ProductsPage.tsx`, `ConsumableCard.tsx`, `ProductEditor.tsx` (unit selector) |
+| `/dashboard/revenue` (expenses) | Revenue Hub: 3 вкладки — Флеш-акції / Смарт-ціни / Фінанси (master_expenses Pro-gate CRUD + vaul Drawer) | `revenue/page.tsx` | `revenue/expenses.actions.ts` (createExpense/updateExpense/deleteExpense/getExpenses) | `master/revenue/RevenueHubClient.tsx`, `ExpensesTab.tsx` (NEW T30) |
 
 | `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |
 | `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
@@ -331,6 +331,8 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `useLeadTimeDistribution.ts` | 10 хв | Розподіл часу попереднього запису клієнтів |
 | `useVacationImpact.ts` | 10 хв | Аналіз втраченого доходу через відпустки |
 | `useSourceAttribution.ts` | 10 хв | Статистика джерел залучення клієнтів |
+| `useExpenses.ts` | — | master_expenses CRUD (NEW T29/T30): `useExpenses(month?)`, `createExpense`, `updateExpense({id, payload})`, `deleteExpense` — masterId from useMasterContext internally |
+| `useConsumablesForBooking.ts` | — | Розхідники для запису (NEW T29/T30): `useConsumablesForBooking(bookingId \| null)` — null disables query; returns `{ product_id, name, unit, total_qty }[]` |
 
 ### Session / PWA Hooks (`src/lib/hooks/`)
 - `useSessionWakeup.ts` — visibility change → `resetFetchController` → `invalidateQueries` (усуває нескінченні скелетони після переключення вкладок)
