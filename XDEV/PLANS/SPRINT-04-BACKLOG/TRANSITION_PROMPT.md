@@ -15,16 +15,23 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 28/37 ✅ | Sprint-04 IN PROGRESS
-Наступна: T30 — Розхідники: UX/UI реалізація
-T29 ✅ BACKEND ЗАВЕРШЕНО (commit: 82e04e7d):
-  ✅ Міграції 142-144: products.unit, product_service_links.quantity→NUMERIC, master_expenses+RLS
-  ✅ types/database.ts: Product.unit, MasterExpense, ReviewedConsumable, FinanceAnalytics.operational_expenses_total
-  ✅ expenses.actions.ts: createExpense/updateExpense/deleteExpense/getExpenses
-  ✅ completeBooking(id, reviewedConsumables?): stock deduction + product_transactions
-  ✅ useExpenses + useConsumablesForBooking hooks
-  ✅ get_finance_analytics RPC: +operational_expenses_total у return
+Прогрес: 29/37 ✅ | Sprint-04 IN PROGRESS
+Наступна: T31 — Smart Design System: Context-Adaptive UI
+T30 ✅ UX/UI ЗАВЕРШЕНО (commit: 1b1bfb8b):
+  ✅ ConsumableCard + ConsumablesTab (3-й таб у ProductsPage)
+  ✅ ProductEditor: unit selector pcs/ml/г
+  ✅ MaterialsReviewSheet: vaul intercept при Завершити → qty review → completeBooking(id, reviewed)
+  ✅ BookingCard + BookingActionsDropdown + BookingDetailsModal: consumables integration
+  ✅ ServiceEditor: read-only розхідники блок
+  ✅ ExpensesTab Pro-gate CRUD + RevenueHub Фінанси tab
+  ✅ WaterfallChart 6-й бар operationalExpenses + FinancesTab 5 KPI cards
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
+
+T31 деталі (у HANDOFF.md):
+  - useSmartTooltip(anchorRef, options) → viewport-aware { x, y, side }
+  - FitText компонент: ResizeObserver + canvas.measureText() бінарний пошук
+  - .adaptive-text CSS клас + useAdaptiveColor hook
+  Скіл: spec-driven-workflow + senior-frontend + impeccable
 
 
 ═══ TASK GATE (обов'язково перед кодом) ═══

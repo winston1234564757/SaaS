@@ -862,6 +862,45 @@ TG inline keyboard buttons завжди відкриваються у власн
 
 ---
 
+## ✅ T30 — Розхідники: UX/UI реалізація
+
+**Commit:** `1b1bfb8b` | **Дата:** 2026-06-20
+
+**Root cause:** Consumables існували в DB (T29), але UI для їх ведення був відсутній. Майстер не міг додавати/бачити розхідники, завершувати записи з відстеженням матеріалів, або бачити реальні операційні витрати у P&L.
+
+**Що зроблено (5 модулів, 13 файлів):**
+
+**Модуль 1 — Consumables Tab у ProductsPage:**
+- Новий компонент `ConsumableCard.tsx`: unit icon (Package2/Droplets/FlaskConical), stock qty з low-stock warning (≤3 pcs / ≤10 ml/g), кнопки Ред. + поповнення
+- `ProductsPage.tsx`: 3-й таб Розхідники, `lowConsumables` badge count, AnimatePresence 3-branch
+
+**Модуль 2 — Unit Selector у ProductEditor:**
+- `ProductEditor.tsx`: `unit` state (pcs/ml/г), init в useEffect, toggles `aria-pressed`, включено в payload saveProduct
+
+**Модуль 3 — MaterialsReviewSheet при завершенні запису:**
+- Новий компонент `MaterialsReviewSheet.tsx`: vaul Drawer, `useConsumablesForBooking(bookingId)` лише коли open, qtyMap state, Пропустити / Завершити запис
+- `BookingCard.tsx`: intercept handleComplete → sheet якщо consumables.length > 0
+- `BookingActionsDropdown.tsx`: те саме, hook розміщено ПІСЛЯ `canComplete = status === 'confirmed'` (critical ordering)
+- `BookingDetailsModal.tsx`: consumables chips для confirmed записів
+
+**Модуль 4 — Expenses у Revenue Hub:**
+- Новий компонент `ExpensesTab.tsx`: Pro gate, `useExpenses()`, `updateExpense({id, payload})`, 6 категорій (rent/utilities/tools/advertising/education/other), `grid-cols-3`, vaul Drawer add/edit
+- `RevenueHubClient.tsx`: 3-й таб Фінанси з ReceiptText icon + dynamic import (ssr:false)
+
+**Модуль 5 — Analytics інтеграція:**
+- `WaterfallChart.tsx`: 6-й бар "Операційні витрати" (#A78BFA, `operationalExpenses` prop)
+- `FinancesTab.tsx`: 5-й KPI "Операційні витрати", grid-cols-5, WaterfallChart отримує operationalExpenses
+
+**Критичні баги під час реалізації:**
+1. Hook ordering: `useConsumablesForBooking` в BookingActionsDropdown мав бути ПІСЛЯ `const canComplete` (TS2448)
+2. JSX fragment: BookingCard return потребував `<>...</>` wrapper для sibling елементів
+3. ExpenseCategory: 6 значень, не 4 — missing `utilities` + `education` (TS2739)
+4. useExpenses signature: `useExpenses()` — без params (masterId з context), updateExpense nested payload
+
+**ServiceEditor:** read-only блок "Розхідники послуги" — JOIN product_service_links+products, edit redirect → Магазин
+
+---
+
 ## ⬜ T31 — Smart Design System: Context-Adaptive UI
 
 **Концепція (2026-06-13):** Три глобальних утиліти для iOS-like адаптивного UI.

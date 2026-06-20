@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 28/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-20
+**Прогрес:** 29/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-20
 
 > ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
 
@@ -52,7 +52,7 @@
 | 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ✅ | `design-taste-frontend` + `impeccable` | `73676e3` `50d9fef` `9a1140a` `246ca22` `e20f7c8` | 10-col editorial grid; ScheduleWidget 3-col bottom row; StatsPulse 6 метрик; Identity+Categories+ProductMix row-5; h-full рівні відступи |
 | 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ✅ | `brainstorming` + `spec-driven-workflow` | `ROZKHIDNYKY_SPEC.md`: 5 модулів, 3 DB міграції, 2 RPC, unit system (pcs/ml/g), master_expenses table, MaterialsReviewSheet, Revenue Hub Фінанси tab |
 | 30 | T29 | Розхідники: міграції + серверна логіка | ✅ | `create-migration` + `senior-backend` | `82e04e7d` | migrations 142-144; Product.unit; MasterExpense; ReviewedConsumable; expenses.actions; completeBooking+deduction; useExpenses; useConsumablesForBooking; RPC +operational_expenses_total |
-| 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | Залежить від T29 deployed |
+| 31 | T30 | Розхідники: UX/UI реалізація | ✅ | `design-taste-frontend` + `impeccable` | `1b1bfb8b` | ConsumableCard + ConsumablesTab (3-й таб) + unit selector pcs/ml/г + MaterialsReviewSheet intercept + BookingCard/Dropdown/DetailsModal + ServiceEditor read-only + ExpensesTab Pro-gate CRUD + RevenueHub Фінанси tab + WaterfallChart 6-й бар + FinancesTab 5 KPI. 13 files. TSC:0 Build:clean |
 | 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | useSmartTooltip + FitText + .adaptive-text |
 
 ---
