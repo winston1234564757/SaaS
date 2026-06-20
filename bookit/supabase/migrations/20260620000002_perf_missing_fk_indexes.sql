@@ -1,0 +1,47 @@
+-- Performance: Add missing indexes on foreign key columns
+-- Fixes 43 unindexed_foreign_keys warnings from Supabase advisors
+-- Impact: prevents full table scans on JOINs (100-1000x improvement on large tables)
+
+CREATE INDEX IF NOT EXISTS idx_beta_requests_master_id               ON public.beta_requests(master_id);
+CREATE INDEX IF NOT EXISTS idx_billing_events_master_id              ON public.billing_events(master_id);
+CREATE INDEX IF NOT EXISTS idx_booking_services_service_id           ON public.booking_services(service_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_parent_booking_id            ON public.bookings(parent_booking_id);
+CREATE INDEX IF NOT EXISTS idx_broadcast_links_recipient_id          ON public.broadcast_links(recipient_id);
+CREATE INDEX IF NOT EXISTS idx_broadcasts_discount_service_id        ON public.broadcasts(discount_service_id);
+CREATE INDEX IF NOT EXISTS idx_broadcasts_product_link_id            ON public.broadcasts(product_link_id);
+CREATE INDEX IF NOT EXISTS idx_broadcasts_service_link_id            ON public.broadcasts(service_link_id);
+CREATE INDEX IF NOT EXISTS idx_c2c_bonus_uses_master_id              ON public.c2c_bonus_uses(master_id);
+CREATE INDEX IF NOT EXISTS idx_c2c_referrals_master_id               ON public.c2c_referrals(master_id);
+CREATE INDEX IF NOT EXISTS idx_c2c_referrals_referred_id             ON public.c2c_referrals(referred_id);
+CREATE INDEX IF NOT EXISTS idx_client_master_relations_fav_service   ON public.client_master_relations(favorite_service_id);
+CREATE INDEX IF NOT EXISTS idx_direct_messages_sender_id             ON public.direct_messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_flash_deals_claimed_by                ON public.flash_deals(claimed_by);
+CREATE INDEX IF NOT EXISTS idx_loyalty_programs_master_id            ON public.loyalty_programs(master_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_programs_reward_service_id    ON public.loyalty_programs(reward_service_id);
+CREATE INDEX IF NOT EXISTS idx_notification_templates_master_id      ON public.notification_templates(master_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_related_booking_id      ON public.notifications(related_booking_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_related_master_id       ON public.notifications(related_master_id);
+CREATE INDEX IF NOT EXISTS idx_payments_booking_id                   ON public.payments(booking_id);
+CREATE INDEX IF NOT EXISTS idx_payments_master_id                    ON public.payments(master_id);
+CREATE INDEX IF NOT EXISTS idx_phone_discounts_master_id             ON public.phone_discounts(master_id);
+CREATE INDEX IF NOT EXISTS idx_phone_discounts_service_id            ON public.phone_discounts(service_id);
+CREATE INDEX IF NOT EXISTS idx_portfolio_item_reviews_review_id      ON public.portfolio_item_reviews(review_id);
+CREATE INDEX IF NOT EXISTS idx_portfolio_items_service_id            ON public.portfolio_items(service_id);
+CREATE INDEX IF NOT EXISTS idx_product_transactions_order_id         ON public.product_transactions(order_id);
+CREATE INDEX IF NOT EXISTS idx_referral_bonuses_master_id            ON public.referral_bonuses(master_id);
+CREATE INDEX IF NOT EXISTS idx_referral_bonuses_referral_id          ON public.referral_bonuses(referral_id);
+CREATE INDEX IF NOT EXISTS idx_referral_links_target_master_id       ON public.referral_links(target_master_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_invited_master_id           ON public.referrals(invited_master_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_inviter_client_id           ON public.referrals(inviter_client_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_booking_id                    ON public.reviews(booking_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_client_id                     ON public.reviews(client_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_order_id                      ON public.reviews(order_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_product_id                    ON public.reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_service_categories_master_id          ON public.service_categories(master_id);
+CREATE INDEX IF NOT EXISTS idx_services_category_id                  ON public.services(category_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_master_id               ON public.subscriptions(master_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_payment_id              ON public.subscriptions(payment_id);
+CREATE INDEX IF NOT EXISTS idx_support_messages_sender_id            ON public.support_messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_support_messages_ticket_id            ON public.support_messages(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id               ON public.support_tickets(user_id);
+CREATE INDEX IF NOT EXISTS idx_telegram_webhook_logs_profile_id      ON public.telegram_webhook_logs(profile_id);
