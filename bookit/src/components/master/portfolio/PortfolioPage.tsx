@@ -1,10 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Plus, ExternalLink, Images, Lock, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import dynamic from 'next/dynamic';
+import type { DropResult } from '@hello-pangea/dnd';
+const DragDropContext = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.DragDropContext })), { ssr: false });
+const Droppable = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.Droppable })), { ssr: false });
+const Draggable = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.Draggable })), { ssr: false });
 import { usePortfolioItems, useInvalidatePortfolio } from '@/lib/supabase/hooks/usePortfolioItems';
 import { PortfolioItemCard } from './PortfolioItemCard';
 import { pluralUk } from '@/lib/utils/pluralUk';

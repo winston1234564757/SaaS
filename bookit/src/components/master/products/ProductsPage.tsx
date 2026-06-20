@@ -1,10 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Package, ShoppingBag } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import dynamic from 'next/dynamic';
+import type { DropResult } from '@hello-pangea/dnd';
+const DragDropContext = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.DragDropContext })), { ssr: false });
+const Droppable = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.Droppable })), { ssr: false });
+const Draggable = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.Draggable })), { ssr: false });
 import { useProducts } from '@/lib/supabase/hooks/useProducts';
 import { useOrders } from '@/lib/supabase/hooks/useOrders';
 import type { UnifiedSale } from '@/lib/supabase/hooks/useOrders';
