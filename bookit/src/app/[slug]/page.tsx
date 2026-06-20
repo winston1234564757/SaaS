@@ -467,7 +467,7 @@ export default async function MasterPublicPage(
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026') }}
       />
       <div id="e2e-debug-now" style={{ display: 'none' }} data-now={now.toISOString()}>
         {now.toISOString()}

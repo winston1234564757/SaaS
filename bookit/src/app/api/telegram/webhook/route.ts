@@ -44,6 +44,11 @@ async function logWebhookEvent(
 }
 
 export async function POST(req: NextRequest) {
+  const secretToken = req.headers.get('x-telegram-bot-api-secret-token');
+  if (!process.env.TELEGRAM_WEBHOOK_SECRET || secretToken !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+    return NextResponse.json({ ok: false }, { status: 403 });
+  }
+
   try {
     const body = await req.json();
     const message = body?.message;
