@@ -1,3 +1,4 @@
+// humanized
 'use server';
 
 import { z } from 'zod';
@@ -304,7 +305,7 @@ export async function createBooking(
 
     const totalVisitsWithThisOne = (pastVisitsCount ?? 0) + 1;
 
-    const qualifyingRule = (loyaltyRules ?? []).find(r => 
+    const qualifyingRule = (loyaltyRules ?? []).find(r =>
       r.reward_type === 'percent_discount' && totalVisitsWithThisOne >= r.target_visits
     );
 
@@ -570,7 +571,9 @@ export async function createBooking(
     }
   }
 
-  // 10. Insert booking_products + deduct stock
+  // 10. Insert booking_products + atomic stock decrement via RPC
+  // Uses decrement_product_stock_atomic() — a relative SQL UPDATE (stock_qty = stock_qty - qty)
+  // that is safe under concurrent requests. Returns FALSE if stock was exhausted mid-flight.
   if (canonicalProducts.length > 0) {
     const { error: pErr } = await admin.from('booking_products').insert(
       canonicalProducts.map(cp => ({
@@ -587,20 +590,17 @@ export async function createBooking(
       return { bookingId: null, error: 'Помилка збереження товарів.' };
     }
 
-    // Atomic stock decrement — checks and deducts in one operation (prevents overselling TOCTOU race)
-    // If a concurrent booking depleted stock between our check (step 6) and now,
-    // the UPDATE matches 0 rows (stock_quantity < cp.quantity) → we detect & roll back.
+    // Atomic relative stock decrement — safe under concurrent requests.
+    // Returns FALSE when stock was exhausted between our check (step 6) and now.
     const stockResults = await Promise.all(
       canonicalProducts.map(cp =>
-        admin
-          .from('products')
-          .update({ stock_qty: cp.stockQty - cp.quantity })
-          .eq('id', cp.id)
-          .gte('stock_qty', cp.quantity)
-          .select('id')
+        admin.rpc('decrement_product_stock_atomic', {
+          p_product_id: cp.id,
+          p_qty: cp.quantity,
+        })
       )
     );
-    const oversold = stockResults.find(r => !r.error && (!r.data || r.data.length === 0));
+    const oversold = stockResults.find(r => !r.error && r.data === false);
     if (oversold) {
       await admin.from('bookings').delete().eq('id', bookingId);
       return { bookingId: null, error: 'Товар щойно закінчився. Спробуйте ще раз.' };
@@ -673,7 +673,7 @@ export async function createBooking(
   // Clear Next.js server-side data cache
   revalidatePath('/', 'layout');
 
-  // 13. Сповіщення майстру про новий запис (Push → Telegram → SMS).
+  // 14. Сповіщення майстру про новий запис (Push → Telegram → SMS).
   // Обов'язково робимо await, інакше Next.js Serverless Container може "вбити" процес до завершення відправки.
   await notifyMasterNewBooking({
     masterId: p.masterId,
