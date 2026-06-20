@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createVerify } from 'node:crypto';
 import { flatUidToUuid } from '@/lib/utils/uuid';
@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
 
     // Notify master about successful payment
     const expiresFormatted = new Date(expiresAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
-    void notifyMasterBilling(userId, 'subscription_paid', tier === 'pro' ? 'Pro' : 'Studio', expiresFormatted);
+    notifyMasterBilling(userId, 'subscription_paid', tier === 'pro' ? 'Pro' : 'Studio', expiresFormatted).catch(e => console.error('[notifyMasterBilling]', e));
 
     console.log('[mono-webhook] completed OK');
     return NextResponse.json({ status: 'ok' });

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { MonoProvider } from '@/lib/billing/MonoProvider';
 import type { PaymentProvider } from '@/lib/billing/PaymentProvider';
@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
           sendTelegramMessage(chatId, msg).catch(() => {});
         }
         const freeExpiresFormatted = new Date(expiresAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
-        void notifyMasterBilling(sub.master_id, 'subscription_paid', sub.plan_id === 'pro' ? 'Pro' : 'Studio', freeExpiresFormatted);
+        notifyMasterBilling(sub.master_id, 'subscription_paid', sub.plan_id === 'pro' ? 'Pro' : 'Studio', freeExpiresFormatted).catch(e => console.error('[notifyMasterBilling]', e));
         console.log(
           `[BILLING] User ${sub.master_id} granted 30 free days.`,
           `Reserve carried over: ${decision.newReserve}`,
@@ -268,7 +268,7 @@ async function chargeAndCommit({
       });
     }
     const paidExpiresFormatted = new Date(expiresAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
-    void notifyMasterBilling(sub.master_id, 'subscription_paid', sub.plan_id === 'pro' ? 'Pro' : 'Studio', paidExpiresFormatted);
+    notifyMasterBilling(sub.master_id, 'subscription_paid', sub.plan_id === 'pro' ? 'Pro' : 'Studio', paidExpiresFormatted).catch(e => console.error('[notifyMasterBilling]', e));
     console.log(`[charge-subscriptions] OK — sub=${sub.id} master=${sub.master_id}`);
   } else {
     const newAttempts = (sub.failed_attempts ?? 0) + 1;
@@ -291,8 +291,8 @@ async function chargeAndCommit({
         payload:     { orderId, subscriptionId: sub.id, error: chargeError },
       }),
     ]);
-    void notifyMasterBilling(sub.master_id, 'subscription_failed');
-    if (isDunned) void notifyMasterBilling(sub.master_id, 'subscription_downgraded');
+    notifyMasterBilling(sub.master_id, 'subscription_failed').catch(e => console.error('[notifyMasterBilling]', e));
+    if (isDunned) notifyMasterBilling(sub.master_id, 'subscription_downgraded').catch(e => console.error('[notifyMasterBilling]', e));
     console.warn(`[charge-subscriptions] FAIL — sub=${sub.id} master=${sub.master_id} attempts=${newAttempts} error=${chargeError}`);
   }
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { notifyMasterBilling } from '@/lib/notifications';
 import { verifyCronSecret } from '@/lib/utils/verifyCronSecret';
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     // Notify each downgraded master (fire-and-forget)
     for (const { id } of expired) {
-      void notifyMasterBilling(id, 'subscription_downgraded');
+      notifyMasterBilling(id, 'subscription_downgraded').catch(e => console.error('[notifyMasterBilling]', e));
     }
   }
 
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   for (const m of expiring ?? []) {
     const formatted = new Date(m.subscription_expires_at as string).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
-    void notifyMasterBilling(m.id as string, 'subscription_expiring', undefined, formatted);
+    notifyMasterBilling(m.id as string, 'subscription_expiring', undefined, formatted).catch(e => console.error('[notifyMasterBilling]', e));
   }
 
   // 2. Прибираємо старі IP-логи (старіші 25 годин — гарантовано поза вікном rate-limit)

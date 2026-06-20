@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Bell, Send } from 'lucide-react';
 
@@ -12,7 +12,10 @@ interface Props {
 }
 
 export function ChannelBanner({ userId, hasTelegram, hasPush, botName }: Props) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('bookit_channel_banner_dismissed') === '1';
+  });
   const [tgOpened, setTgOpened] = useState(false);
   const [pushState, setPushState] = useState<'idle' | 'loading' | 'done'>('idle');
 
@@ -92,7 +95,10 @@ export function ChannelBanner({ userId, hasTelegram, hasPush, botName }: Props) 
             <button
               type="button"
               aria-label="Закрити"
-              onClick={() => setDismissed(true)}
+              onClick={() => {
+                localStorage.setItem('bookit_channel_banner_dismissed', '1');
+                setDismissed(true);
+              }}
               className="shrink-0 p-1 rounded-lg text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
             >
               <X size={14} />
