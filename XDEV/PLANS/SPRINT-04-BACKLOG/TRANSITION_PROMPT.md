@@ -15,16 +15,13 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 26/37 ✅ | Sprint-04 IN PROGRESS
-Наступна: T28 — Розхідники: бізнес-аналіз + persona sim + spec
-T25 ✅ ПОВНІСТЮ ЗАВЕРШЕНО (5 commits: 73676e3 + 50d9fef + 9a1140a + 246ca22 + e20f7c8):
-  ✅ 10-col editorial grid, NavigationStrip pills, stagger fade-in
-  ✅ ScheduleWidget full-width 3-col bottom row (buffer | breaks | weeklyStats)
-  ✅ StatsPulse 6 metrics (4→6: +Конверсія +Постійних)
-  ✅ Grid row-5: Categories(col-3) | Identity(col-4) | ProductMix(col-3)
-  ✅ Grid row-6: RetentionCycle(col-3) | Vacations(col-3) | Segments(col-4)
-  ✅ h-full на всіх блоках → рівні вертикальні відступи (gap-5 єдиний розрив)
-  ✅ TSC:0 Build:clean
+Прогрес: 27/37 ✅ | Sprint-04 IN PROGRESS
+Наступна: T29 — Розхідники: міграції + серверна логіка
+T28 ✅ SPEC ЗАВЕРШЕНО (commit: 9cd0eddc):
+  ✅ ROZKHIDNYKY_SPEC.md: 5 модулів повністю задокументовано
+  ✅ unit system (pcs/ml/g), master_expenses table, MaterialsReviewSheet, Revenue Hub Фінанси tab
+  ✅ Implementation plan: XDEV/PLANS/2026-06-20-t29-expenses-backend.md (11 tasks)
+  ✅ HANDOFF.md T29 секція: повні деталі всіх 11 tasks готові
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
