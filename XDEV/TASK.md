@@ -46,6 +46,7 @@
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | — |
 | 27.5 | T23-impl | Activation Tour: повна реалізація (7 tasks) | `b5f8ec6` |
 | 27.6 | T23-impl-v2 | Per-page TourBanner + Dynamic Navigator: повна реалізація | `7b9886e` `7da4fdc` `a102304` `a4ccbd9` |
+| 27.7 | T23-impl-v3 | useDestinationTour hook + isTourSeen 2-layer + race fix | `b5c5dfd` `0b6f004` |
 | 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | `e7645f9` |
 | 34 | T33 | Лендинг: повна консистентність тарифів | `e01e138` `e2b3bd1` |
 

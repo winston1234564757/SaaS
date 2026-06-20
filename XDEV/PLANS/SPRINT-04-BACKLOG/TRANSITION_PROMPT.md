@@ -17,11 +17,10 @@
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 25/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T25 — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout)
-T23-impl-v2 ✅ ПОВНІСТЮ ЗАВЕРШЕНО (commits a102304 + a4ccbd9):
-  ✅ 9 destination pages: динамічний navigator (filters seen + excludes current page)
-  ✅ Completion screen: isCompletion → dark accent panel "Все. Bookit вивчено."
-  ✅ destinationTours.ts: shared const — single source of truth
-  ✅ TourBanner: ease-out-quart easing, scaleX progress bar
+T23 (всі підзадачі) ✅ ПОВНІСТЮ ЗАВЕРШЕНО:
+  ✅ T23-impl-v2 (a102304 + a4ccbd9): 9 destination tours, dynamic navigator, completion screen
+  ✅ T23-impl-v3 (b5c5dfd + 0b6f004): useDestinationTour hook, isTourSeen 2-layer,
+     profile race fix, masterId guard, onAfterSeen catch, useMemo nextTours+dynamicSteps
   ✅ TSC:0 Build:clean
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
