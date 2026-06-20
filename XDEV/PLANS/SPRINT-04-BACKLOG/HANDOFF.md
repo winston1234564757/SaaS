@@ -5,7 +5,7 @@
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
 **Прогрес:** 27/37 ✅
-**Наступна задача:** **T29 — Розхідники: міграції + серверна логіка**
+**Наступна задача:** **T30 — Розхідники: UX/UI реалізація**
 **Оновлено:** 2026-06-20
 
 
@@ -30,11 +30,25 @@
 
 ---
 
-## ⬜ T29 — Розхідники: міграції + серверна логіка
+## ✅ T29 — Розхідники: міграції + серверна логіка
+**Commit:** `82e04e7d` | **Дата:** 2026-06-20
 **Залежить від:** T28 ROZKHIDNYKY_SPEC.md (approved)
-**Скіли:** `create-migration` + `senior-backend`
 
-**Що робити:**
+**Root cause:** `materials_cost` у FinancesTab показував фіктивні дані — consumables існували в DB але unit system та master_expenses були відсутні. TSC:0 Build:clean.
+
+**Що зроблено:**
+- Міграції 142-144: `products.unit TEXT DEFAULT 'pcs' CHECK(pcs/ml/g)`, `product_service_links.quantity→NUMERIC(10,2)`, нова таблиця `master_expenses` (RLS + index)
+- `types/database.ts`: `Product.unit`, `ExpenseCategory`, `MasterExpense`, `ReviewedConsumable`
+- `FinanceAnalytics.operational_expenses_total` в interface + FinancesTab fallbacks (demo net_profit скориговано)
+- `products/actions.ts`: `unit` в `ProductPayload` + `createProduct` + `updateProduct`
+- `expenses.actions.ts` (новий): `createExpense/updateExpense/deleteExpense/getExpenses` server actions
+- `bookings/actions.ts`: `completeBooking(id, reviewedConsumables?)` — stock deduction loop + `product_transactions` insert per item
+- `useProducts.ts`: `unit` в `PRODUCT_SELECT`
+- `useExpenses.ts` (новий): TanStack Query hook для `master_expenses` CRUD
+- `useConsumablesForBooking.ts` (новий): booking→services→links→products join, groups by product_id
+- `get_finance_analytics` RPC: `+v_operational_expenses` від `master_expenses`, `net_profit -= operational_expenses`, `+operational_expenses_total` у return JSON
+
+**Що робити (T29 було):**
 
 ### DB міграції (3 файли)
 1. `ALTER TABLE products ADD COLUMN unit TEXT NOT NULL DEFAULT 'pcs' CHECK (unit IN ('pcs', 'ml', 'g'))`
@@ -65,6 +79,55 @@
 - TSC: 0 errors | Build: clean
 - Міграції застосовані локально + через `npx supabase db push`
 - `get_consumables_for_booking` повертає правильний список для тестового запису
+
+---
+
+## ⬜ T30 — Розхідники: UX/UI реалізація
+**Залежить від:** T29 ✅ (backend повністю готовий)
+**Скіли:** `design-taste-frontend` + `impeccable`
+
+**Що реалізувати (5 модулів з ROZKHIDNYKY_SPEC.md):**
+
+### 1. Розхідники таб в Магазині
+- Новий таб "Розхідники" поряд з "Товари"/"Замовлення" в `/dashboard/products`
+- ConsumableCard — показує ім'я, unit (пляшка/мл/г), stock_qty, cost_kopecks
+- Фільтр/пошук по назві
+- Кнопка "Додати розхідник" → ProductEditor з `product_type='consumable'` prefilled
+
+### 2. Unit selector в ProductEditor
+- При `product_type='consumable'`: показати unit selector (pcs/ml/g)
+- Pill tabs: "шт" / "мл" / "г" → зберігається у `unit` field
+- Вже підключено до `ProductPayload.unit` через T29
+
+### 3. MaterialsReviewSheet при завершенні запису
+- Drawer що відкривається ПЕРЕД `completeBooking` (якщо є consumables для booking)
+- `useConsumablesForBooking(bookingId)` → список consumables з qty
+- Кожен item: назва + поточна qty_used (editable) + unit label
+- Confirm → `completeBooking(id, reviewedConsumables)` з реальними qty
+
+### 4. Revenue Hub Фінанси таб (Expenses CRUD)
+- Новий subtab "Витрати" в Revenue Hub
+- ExpensesList: list витрат за місяць, grouped by category
+- ExpenseForm (BottomSheet): category select + name + amount + date + note
+- CRUD через `useExpenses(month)` hook з T29
+
+### 5. FinancesTab Analytics — реальні дані
+- `operational_expenses_total` вже в `FinanceAnalytics` interface (T29)
+- Додати KPI card "Операційні витрати" до 4 тікерів → 5 тікерів
+- WaterfallChart: додати `operational_expenses_total` bar між `materials_cost` і `net_profit`
+
+**Консьюмери з T29:**
+- `useExpenses()` → ExpensesList + ExpenseForm
+- `useConsumablesForBooking(bookingId)` → MaterialsReviewSheet
+- `completeBooking(id, reviewedConsumables)` → MaterialsReviewSheet confirm
+- `Product.unit` → ConsumableCard + unit selector в ProductEditor
+- `ExpensePayload` → typed form в ExpenseForm
+
+**Acceptance criteria:**
+- TSC:0 | Build:clean
+- Можна додати витрату → вона зʼявляється в списку
+- completeBooking з reviewedConsumables → stock_qty decremented в DB
+- FinancesTab показує operational_expenses_total не 0 після додавання витрати
 
 ---
 

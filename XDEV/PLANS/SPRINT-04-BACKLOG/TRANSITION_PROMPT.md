@@ -15,13 +15,15 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 27/37 ✅ | Sprint-04 IN PROGRESS
-Наступна: T29 — Розхідники: міграції + серверна логіка
-T28 ✅ SPEC ЗАВЕРШЕНО (commit: 9cd0eddc):
-  ✅ ROZKHIDNYKY_SPEC.md: 5 модулів повністю задокументовано
-  ✅ unit system (pcs/ml/g), master_expenses table, MaterialsReviewSheet, Revenue Hub Фінанси tab
-  ✅ Implementation plan: XDEV/PLANS/2026-06-20-t29-expenses-backend.md (11 tasks)
-  ✅ HANDOFF.md T29 секція: повні деталі всіх 11 tasks готові
+Прогрес: 28/37 ✅ | Sprint-04 IN PROGRESS
+Наступна: T30 — Розхідники: UX/UI реалізація
+T29 ✅ BACKEND ЗАВЕРШЕНО (commit: 82e04e7d):
+  ✅ Міграції 142-144: products.unit, product_service_links.quantity→NUMERIC, master_expenses+RLS
+  ✅ types/database.ts: Product.unit, MasterExpense, ReviewedConsumable, FinanceAnalytics.operational_expenses_total
+  ✅ expenses.actions.ts: createExpense/updateExpense/deleteExpense/getExpenses
+  ✅ completeBooking(id, reviewedConsumables?): stock deduction + product_transactions
+  ✅ useExpenses + useConsumablesForBooking hooks
+  ✅ get_finance_analytics RPC: +operational_expenses_total у return
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
 
