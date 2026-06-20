@@ -38,11 +38,15 @@ export const metadata: Metadata = {
     template: '%s | Bookit',
   },
   description: "Твоя booking-сторінка за 2 хвилини. Запис, продаж товарів та CRM для б'юті-майстрів.",
-  metadataBase: new URL('https://bookit-five-psi.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua'),
   openGraph: {
     type: 'website',
     locale: 'uk_UA',
     siteName: 'Bookit',
+    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Bookit — онлайн запис до майстрів краси' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
   },
   manifest: '/manifest.json',
   appleWebApp: {

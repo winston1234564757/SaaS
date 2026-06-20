@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers, cookies } from 'next/headers';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 import { createClient } from '@/lib/supabase/server';
 import { DashboardLayout } from '@/components/master/DashboardLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
