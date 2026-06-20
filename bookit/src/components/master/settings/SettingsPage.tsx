@@ -179,55 +179,49 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 5 col-6 — Categories */}
-          <motion.section className="lg:col-span-6 lg:self-start" {...motionProps(6)}>
+          {/* Row 4 col-3 — Categories */}
+          <motion.section className="lg:col-span-3 lg:self-start" {...motionProps(6)}>
             <CategoriesWidget
               selected={state.selectedCategories}
               onChange={actions.setSelectedCategories}
             />
           </motion.section>
 
-          {/* Row 5 col-4 — ProductMix */}
-          <motion.section id="services" className="lg:col-span-4" {...motionProps(7)}>
-            <ProductMixWidget
-              services={topServices}
-              onMonthChange={setAnalyticsDate}
-            />
-          </motion.section>
-
-          {/* Row 6 col-6 — Identity */}
-          <motion.section id="identity" className="lg:col-span-6" {...motionProps(8)}>
-            <div className="widget-card p-5 lg:p-6 h-full flex flex-col gap-6">
+          {/* Row 4 col-4 — Identity (moved next to Categories) */}
+          <motion.section id="identity" className="lg:col-span-4 lg:self-start" {...motionProps(7)}>{
+            // humanized
+          }
+            <div className="widget-card p-5 flex flex-col gap-5">
               <div className="flex items-center gap-3">
-                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
-                  <UserIcon size={18} />
+                <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <UserIcon size={16} />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-text-primary">Особисті дані</h3>
-                  <p className="text-xs text-text-mute">Налаштування вашого імені та публічного фото</p>
+                  <p className="text-[10px] text-text-mute">Ім'я, студія, фото</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="settings-full-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Ваше повне ім'я`}</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="settings-full-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Ваше ім'я`}</label>
                   <input
                     id="settings-full-name"
                     value={state.fullName}
                     onChange={(e) => actions.setFullName(e.target.value)}
                     aria-label="Ваше повне ім'я"
-                    className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border focus:border-accent focus:ring-4 focus:ring-accent/5 outline-none text-sm font-bold shadow-inner-sm transition-all"
+                    className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border focus:border-accent focus:ring-4 focus:ring-accent/5 outline-none text-sm font-bold shadow-inner-sm transition-all"
                     placeholder="Напр. Олена Коваль"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="settings-business-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Бізнес-ім'я (Студія)`}</label>
+                <div className="space-y-1.5">
+                  <label htmlFor="settings-business-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Бізнес (Студія)`}</label>
                   <input
                     id="settings-business-name"
                     value={state.businessName}
                     onChange={(e) => actions.setBusinessName(e.target.value)}
                     aria-label="Бізнес-ім'я студії"
-                    className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border focus:border-accent focus:ring-4 focus:ring-accent/5 outline-none text-sm font-bold shadow-inner-sm transition-all"
+                    className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border focus:border-accent focus:ring-4 focus:ring-accent/5 outline-none text-sm font-bold shadow-inner-sm transition-all"
                     placeholder="Напр. Glow Studio"
                   />
                 </div>
@@ -235,25 +229,29 @@ export default function SettingsPage() {
 
               <ExpandableBio value={state.bio} onChange={actions.setBio} />
 
-              <div className="pt-2 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const heroInput = document.querySelector('#hero input[type="file"]');
-                    if (heroInput) (heroInput as HTMLElement).click();
-                  }}
-                  className="px-6 py-4 rounded-2xl bg-secondary border border-border text-text-primary text-xs font-bold flex items-center gap-2 hover:bg-muted/10 active:scale-95 transition-all shadow-sm"
-                >
-                  <Camera size={16} className="text-accent" /> Змінити головне фото
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const heroInput = document.querySelector('#hero input[type="file"]');
+                  if (heroInput) (heroInput as HTMLElement).click();
+                }}
+                className="self-start px-5 py-3 rounded-2xl bg-secondary border border-border text-text-primary text-xs font-bold flex items-center gap-2 hover:bg-muted/10 active:scale-95 transition-all shadow-sm"
+              >
+                <Camera size={15} className="text-accent" /> Змінити фото
+              </button>
             </div>
           </motion.section>
 
-          {/* Row 6 col-4 — Retention Cycle */}
-          <motion.section id="retention" className="lg:col-span-4 lg:self-start" {...motionProps(9)}>{
-            // humanized
-          }
+          {/* Row 4 col-3 — ProductMix */}
+          <motion.section id="services" className="lg:col-span-3" {...motionProps(8)}>
+            <ProductMixWidget
+              services={topServices}
+              onMonthChange={setAnalyticsDate}
+            />
+          </motion.section>
+
+          {/* Row 5 col-3 — Retention Cycle */}
+          <motion.section id="retention" className="lg:col-span-3 lg:self-start" {...motionProps(9)}>
             <div className="widget-card p-5 flex flex-col gap-3">
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
@@ -293,21 +291,21 @@ export default function SettingsPage() {
             </div>
           </motion.section>
 
-          {/* Row 7 col-3 — Vacations */}
-          <motion.section id="vacations" className="lg:col-span-3" {...motionProps(10)}>
-            <div className="widget-card p-5 lg:p-6 h-full">
+          {/* Row 5 col-3 — Vacations */}
+          <motion.section id="vacations" className="lg:col-span-3 lg:self-start" {...motionProps(10)}>
+            <div className="widget-card p-5">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                  <CalendarOff size={18} />
+                <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <CalendarOff size={16} />
                 </div>
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-text-mute">Відпустки та вихідні</h3>
+                <h3 className="text-sm font-bold text-text-primary">Відпустки</h3>
               </div>
               <VacationManager />
             </div>
           </motion.section>
 
-          {/* Row 7 col-7 — SegmentConfig */}
-          <motion.section id="segments" className="lg:col-span-7 lg:self-start" {...motionProps(11)}>
+          {/* Row 5 col-4 — SegmentConfig */}
+          <motion.section id="segments" className="lg:col-span-4 lg:self-start" {...motionProps(11)}>
             <SegmentConfigWidget
               segments={state.segmentConfig}
               onChange={actions.setSegmentConfig}

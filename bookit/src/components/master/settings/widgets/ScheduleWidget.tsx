@@ -76,6 +76,14 @@ export function ScheduleWidget({
     return result;
   }, [busynessData?.days]);
 
+  const workingDays = DAYS_ORDER.filter(d => schedule[d].is_working).length;
+  const weeklyHours = useMemo(() => DAYS_ORDER.reduce((acc, d) => {
+    if (!schedule[d].is_working) return acc;
+    const [sh, sm] = schedule[d].start_time.split(':').map(Number);
+    const [eh, em] = schedule[d].end_time.split(':').map(Number);
+    return acc + (eh + em / 60) - (sh + sm / 60);
+  }, 0), [schedule]);
+
   const now = new Date();
   const dayIndex = now.getDay();
   const normalizedDayKey = dayIndex === 0 ? 'sun' : DAYS_ORDER[dayIndex - 1];
@@ -92,10 +100,9 @@ export function ScheduleWidget({
   const setDayTime = (day: DayKey, field: 'start_time' | 'end_time', val: string) =>
     onScheduleChange({ ...schedule, [day]: { ...schedule[day], [field]: val } });
 
-  /* ─── Summary panel (left on desktop, top on mobile) ─── */
+  /* ─── Summary panel (left) ─── */
   const summaryPanel = (
     <div className="flex flex-col gap-5">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className={cn(
@@ -113,8 +120,6 @@ export function ScheduleWidget({
             </p>
           </div>
         </div>
-
-        {/* Mobile expand button */}
         <button
           type="button"
           onClick={() => setExpanded(v => !v)}
@@ -127,7 +132,6 @@ export function ScheduleWidget({
         </button>
       </div>
 
-      {/* Today hours */}
       <div className="flex items-center gap-3">
         <h2 className="text-3xl font-bold tracking-tight text-text-primary">
           {isWorkingToday ? todaySchedule.start_time : '—'}
@@ -142,7 +146,6 @@ export function ScheduleWidget({
         </p>
       </div>
 
-      {/* Week bars */}
       <div className="grid grid-cols-7 gap-1.5 px-0.5">
         {DAYS_ORDER.map((day) => {
           const isWorking = schedule[day].is_working;
@@ -170,10 +173,7 @@ export function ScheduleWidget({
                   />
                 )}
               </div>
-              <span className={cn(
-                'text-[9px] font-bold leading-none',
-                isWorking ? (isToday ? 'text-accent' : 'text-text-mute/50') : 'text-transparent',
-              )}>
+              <span className={cn('text-[9px] font-bold leading-none', isWorking ? (isToday ? 'text-accent' : 'text-text-mute/50') : 'text-transparent')}>
                 {isWorking ? `${occupancy}%` : '0%'}
               </span>
             </div>
@@ -181,258 +181,222 @@ export function ScheduleWidget({
         })}
       </div>
 
-      {/* Busyness stats */}
       {busynessData && (
         <div className="pt-4 border-t border-muted/20 space-y-4">
-          <span className="text-[10px] font-bold text-text-mute uppercase tracking-widest">
-            Завантаженість робочого часу
-          </span>
+          <span className="text-[10px] font-bold text-text-mute uppercase tracking-widest">Завантаженість</span>
           <div className="space-y-3">
-            <div className="space-y-1">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-text-secondary">За цей тиждень</span>
-                <span className={cn('font-bold font-mono', getBusynessColor(busynessData.week.rate))}>
-                  {busynessData.week.rate}%
-                </span>
+            {[
+              { label: 'Тиждень', data: busynessData.week },
+              { label: '30 днів', data: busynessData.month },
+            ].map(({ label, data }) => (
+              <div key={label} className="space-y-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-semibold text-text-secondary">{label}</span>
+                  <span className={cn('font-bold font-mono', getBusynessColor(data.rate))}>{data.rate}%</span>
+                </div>
+                <div role="progressbar" aria-valuenow={data.rate} aria-valuemin={0} aria-valuemax={100} aria-label={`Завантаженість ${label}`}
+                  className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    className={cn('h-full rounded-full', getBusynessBarColor(data.rate))}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${data.rate}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                </div>
               </div>
-              <div
-                role="progressbar"
-                aria-valuenow={busynessData.week.rate}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label="Завантаженість за тиждень"
-                className="h-1.5 rounded-full bg-secondary overflow-hidden"
-              >
-                <motion.div
-                  className={cn('h-full rounded-full', getBusynessBarColor(busynessData.week.rate))}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${busynessData.week.rate}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
-                />
-              </div>
-              <p className="text-[10px] text-text-mute">{busynessData.week.booked} з {busynessData.week.total} годин заповнено</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-text-secondary">За 30 днів</span>
-                <span className={cn('font-bold font-mono', getBusynessColor(busynessData.month.rate))}>
-                  {busynessData.month.rate}%
-                </span>
-              </div>
-              <div
-                role="progressbar"
-                aria-valuenow={busynessData.month.rate}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label="Завантаженість за 30 днів"
-                className="h-1.5 rounded-full bg-secondary overflow-hidden"
-              >
-                <motion.div
-                  className={cn('h-full rounded-full', getBusynessBarColor(busynessData.month.rate))}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${busynessData.month.rate}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                />
-              </div>
-              <p className="text-[10px] text-text-mute">{busynessData.month.booked} з {busynessData.month.total} годин заповнено</p>
-            </div>
+            ))}
           </div>
         </div>
       )}
     </div>
   );
 
-  /* ─── Editor panel (right on desktop, accordion on mobile) ─── */
-  const editorPanel = (
-    <div className="flex flex-col gap-6">
-      {/* Days + times */}
-      <div className="flex flex-col gap-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-1">Дні та години</p>
-        {DAYS_ORDER.map((day) => (
-          <div
-            key={day}
-            className={cn(
-              'flex items-center gap-2 px-3 py-2.5 rounded-2xl border transition-all',
-              schedule[day].is_working ? 'bg-secondary border-border shadow-sm' : 'bg-muted/10 border-transparent opacity-50',
-            )}
+  /* ─── Days editor (right panel on desktop) ─── */
+  const daysEditor = (
+    <div className="flex flex-col gap-3">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Дні та години</p>
+      {DAYS_ORDER.map((day) => (
+        <div
+          key={day}
+          className={cn(
+            'flex items-center gap-2 px-3 py-2.5 rounded-2xl border transition-all',
+            schedule[day].is_working ? 'bg-secondary border-border shadow-sm' : 'bg-muted/10 border-transparent opacity-50',
+          )}
+        >
+          <button
+            type="button"
+            role="switch"
+            aria-checked={schedule[day].is_working}
+            onClick={() => toggleDay(day)}
+            aria-label={schedule[day].is_working ? 'Вимкнути' : 'Увімкнути'}
+            className="py-[8px] -my-[8px] flex items-center shrink-0 active:scale-[0.88]"
           >
-            <button
-              type="button"
-              role="switch"
-              aria-checked={schedule[day].is_working}
-              onClick={() => toggleDay(day)}
-              aria-label={schedule[day].is_working ? 'Вимкнути' : 'Увімкнути'}
-              className="py-[8px] -my-[8px] flex items-center shrink-0 active:scale-[0.88]"
+            <span
+              className={cn('relative rounded-full transition-colors', schedule[day].is_working ? 'bg-accent' : 'bg-muted-foreground/25')}
+              style={{ height: '28px', width: '44px' }}
             >
-              <span
-                className={cn(
-                  'relative rounded-full transition-colors',
-                  schedule[day].is_working ? 'bg-accent' : 'bg-muted-foreground/25',
-                )}
-                style={{ height: '28px', width: '44px' }}
-              >
-                <motion.div
-                  animate={{ x: schedule[day].is_working ? 25 : 3 }}
-                  transition={{ type: 'spring' as const, stiffness: 500, damping: 35 }}
-                  className="absolute top-[3px] left-0 size-4 rounded-full bg-[var(--accent-on)] shadow-sm"
-                />
-              </span>
-            </button>
-
-            <span className="text-[11px] font-bold w-6 shrink-0">{DAYS_UA_SHORT[day]}</span>
-
-            {schedule[day].is_working ? (
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <input
-                  type="time"
-                  value={schedule[day].start_time}
-                  onChange={(e) => setDayTime(day, 'start_time', e.target.value)}
-                  aria-label={`Початок роботи ${DAYS_UA_SHORT[day]}`}
-                  className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium text-center"
-                />
-                <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
-                <input
-                  type="time"
-                  value={schedule[day].end_time}
-                  onChange={(e) => setDayTime(day, 'end_time', e.target.value)}
-                  aria-label={`Кінець роботи ${DAYS_UA_SHORT[day]}`}
-                  className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium text-center"
-                />
-              </div>
-            ) : (
-              <span className="text-[11px] text-muted-foreground/70 flex-1">Вихідний</span>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {// humanized
-      }
-      {/* Buffer + Breaks — side by side on desktop */}
-      <div className="flex flex-col lg:flex-row gap-4">
-
-        {/* Buffer time */}
-        <div className="flex-1 p-4 rounded-2xl bg-accent/5 border border-accent/10 flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <Clock size={14} className="text-accent shrink-0" />
-            <h4 className="text-sm font-bold">Час між клієнтами</h4>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {[0, 5, 10, 15, 20, 30, 45, 60].map((min) => (
-              <button
-                type="button"
-                key={min}
-                onClick={() => onBufferChange(min)}
-                aria-pressed={bufferTime === min}
-                className={cn(
-                  'px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
-                  bufferTime === min
-                    ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
-                    : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
-                )}
-              >
-                {min === 0 ? 'Без' : `${min} хв`}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Breaks */}
-        <div className="flex-1 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Info size={14} className="text-muted-foreground/50 shrink-0" />
-              <h4 className="text-sm font-bold">Перерви</h4>
-            </div>
-            <button
-              type="button"
-              onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
-            >
-              <Plus size={12} /> Додати
-            </button>
-          </div>
-          {breaks.length === 0 ? (
-            <div className="flex-1 py-5 rounded-2xl border border-dashed border-muted/30 flex flex-col items-center justify-center text-muted-foreground/35 gap-1.5">
-              <Clock size={18} strokeWidth={1.2} />
-              <p className="text-[11px] font-medium">Перерв не додано</p>
+              <motion.div
+                animate={{ x: schedule[day].is_working ? 25 : 3 }}
+                transition={{ type: 'spring' as const, stiffness: 500, damping: 35 }}
+                className="absolute top-[3px] left-0 size-4 rounded-full bg-[var(--accent-on)] shadow-sm"
+              />
+            </span>
+          </button>
+          <span className="text-[11px] font-bold w-6 shrink-0">{DAYS_UA_SHORT[day]}</span>
+          {schedule[day].is_working ? (
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <input type="time" value={schedule[day].start_time}
+                onChange={(e) => setDayTime(day, 'start_time', e.target.value)}
+                aria-label={`Початок роботи ${DAYS_UA_SHORT[day]}`}
+                className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium text-center"
+              />
+              <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
+              <input type="time" value={schedule[day].end_time}
+                onChange={(e) => setDayTime(day, 'end_time', e.target.value)}
+                aria-label={`Кінець роботи ${DAYS_UA_SHORT[day]}`}
+                className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium text-center"
+              />
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {breaks.map((b, i) => (
-                <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary border border-border/60 shadow-sm">
-                  <input
-                    type="time"
-                    value={b.start}
-                    onChange={(e) => {
-                      const nb = [...breaks];
-                      nb[i] = { ...nb[i], start: e.target.value };
-                      onBreaksChange(nb);
-                    }}
-                    aria-label={`Початок перерви ${i + 1}`}
-                    className="flex-1 px-2 py-1.5 rounded-lg bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium"
-                  />
-                  <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
-                  <input
-                    type="time"
-                    value={b.end}
-                    onChange={(e) => {
-                      const nb = [...breaks];
-                      nb[i] = { ...nb[i], end: e.target.value };
-                      onBreaksChange(nb);
-                    }}
-                    aria-label={`Кінець перерви ${i + 1}`}
-                    className="flex-1 px-2 py-1.5 rounded-lg bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))}
-                    aria-label="Видалити перерву"
-                    className="size-8 rounded-lg bg-destructive/5 text-destructive flex items-center justify-center hover:bg-destructive/10 active:scale-[0.88] cursor-pointer transition-all shrink-0"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <span className="text-[11px] text-muted-foreground/70 flex-1">Вихідний</span>
           )}
         </div>
+      ))}
+    </div>
+  );
 
+  /* ─── Bottom panels (full-width on desktop) ─── */
+  const bufferPanel = (
+    <div className="flex flex-col gap-3 h-full">
+      <div className="flex items-center gap-2">
+        <Clock size={14} className="text-accent shrink-0" />
+        <h4 className="text-sm font-bold">Між клієнтами</h4>
       </div>
+      <div className="flex flex-wrap gap-1.5">
+        {[0, 5, 10, 15, 20, 30, 45, 60].map((min) => (
+          <button type="button" key={min} onClick={() => onBufferChange(min)} aria-pressed={bufferTime === min}
+            className={cn(
+              'px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
+              bufferTime === min
+                ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
+                : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
+            )}
+          >
+            {min === 0 ? 'Без' : `${min} хв`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const breaksPanel = (
+    <div className="flex flex-col gap-3 h-full">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Info size={14} className="text-muted-foreground/50 shrink-0" />
+          <h4 className="text-sm font-bold">Перерви</h4>
+        </div>
+        <button type="button" onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent/10 text-accent text-xs font-bold active:scale-[0.88] cursor-pointer transition-all"
+        >
+          <Plus size={12} /> Додати
+        </button>
+      </div>
+      {breaks.length === 0 ? (
+        <div className="flex-1 py-4 rounded-2xl border border-dashed border-muted/30 flex flex-col items-center justify-center text-muted-foreground/35 gap-1.5">
+          <Clock size={18} strokeWidth={1.2} />
+          <p className="text-[11px] font-medium">Перерв не додано</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {breaks.map((b, i) => (
+            <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary border border-border/60 shadow-sm">
+              <input type="time" value={b.start}
+                onChange={(e) => { const nb = [...breaks]; nb[i] = { ...nb[i], start: e.target.value }; onBreaksChange(nb); }}
+                aria-label={`Початок перерви ${i + 1}`}
+                className="flex-1 px-2 py-1.5 rounded-lg bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium"
+              />
+              <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
+              <input type="time" value={b.end}
+                onChange={(e) => { const nb = [...breaks]; nb[i] = { ...nb[i], end: e.target.value }; onBreaksChange(nb); }}
+                aria-label={`Кінець перерви ${i + 1}`}
+                className="flex-1 px-2 py-1.5 rounded-lg bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium"
+              />
+              <button type="button" onClick={() => onBreaksChange(breaks.filter((_, idx) => idx !== i))} aria-label="Видалити перерву"
+                className="size-8 rounded-lg bg-destructive/5 text-destructive flex items-center justify-center hover:bg-destructive/10 active:scale-[0.88] cursor-pointer transition-all shrink-0">
+                <Trash2 size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const weeklyStatsPanel = (
+    <div className="flex flex-col gap-3 h-full">
+      <div className="flex items-center gap-2">
+        <Calendar size={14} className="text-accent shrink-0" />
+        <h4 className="text-sm font-bold">Підсумок тижня</h4>
+      </div>
+      <div className="grid grid-cols-2 gap-3 flex-1">
+        <div className="p-3 rounded-2xl bg-accent/5 border border-accent/10 flex flex-col justify-between">
+          <p className="text-[10px] font-bold text-text-mute uppercase tracking-widest">Роб. днів</p>
+          <p className="text-3xl font-bold tabular-nums text-accent">{workingDays}</p>
+        </div>
+        <div className="p-3 rounded-2xl bg-secondary border border-border flex flex-col justify-between">
+          <p className="text-[10px] font-bold text-text-mute uppercase tracking-widest">Год/тиждень</p>
+          <p className="text-3xl font-bold tabular-nums text-text-primary">{Math.round(weeklyHours)}</p>
+        </div>
+        <div className="col-span-2 p-3 rounded-2xl bg-muted/20 border border-border/60 flex items-center justify-between">
+          <span className="text-xs font-bold text-text-mute">Приблизно за місяць</span>
+          <span className="text-sm font-bold text-text-primary tabular-nums">
+            ≈ {Math.round(weeklyHours * 4.33)} год
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ─── Mobile editor panel (accordion) ─── */
+  const mobileEditorPanel = (
+    <div className="flex flex-col gap-6">
+      {daysEditor}
+      <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
+        {bufferPanel}
+      </div>
+      <div>{breaksPanel}</div>
     </div>
   );
 
   return (
     <div className="widget-card overflow-hidden">
-      {/* Desktop: 2-col horizontal layout */}
-      <div className="hidden lg:flex divide-x divide-border/20">
-        <div className="p-6 w-[38%] shrink-0">
-          {summaryPanel}
+      {/* Desktop: 2-row layout — top 2-col, bottom full-width 3-col */}
+      <div className="hidden lg:flex flex-col divide-y divide-border/20">
+        <div className="flex divide-x divide-border/20">
+          <div className="p-6 w-[38%] shrink-0">{summaryPanel}</div>
+          <div className="p-6 flex-1 min-w-0">{daysEditor}</div>
         </div>
-        <div className="p-6 flex-1 min-w-0">
-          {editorPanel}
+        <div className="grid grid-cols-3 divide-x divide-border/20">
+          <div className="p-5">{bufferPanel}</div>
+          <div className="p-5">{breaksPanel}</div>
+          <div className="p-5">{weeklyStatsPanel}</div>
         </div>
       </div>
 
-      {/* Mobile: summary + accordion editor */}
+      {/* Mobile: summary + accordion */}
       <div className="lg:hidden">
-        <div className="p-5">
-          {summaryPanel}
-        </div>
+        <div className="p-5">{summaryPanel}</div>
         <AnimatePresence initial={false}>
           {expanded && (
-            <motion.div
-              id="schedule-editor"
-              key="editor"
+            <motion.div id="schedule-editor" key="editor"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
               className="overflow-hidden"
             >
-              <div className="border-t border-muted/20 p-5">
-                {editorPanel}
-              </div>
+              <div className="border-t border-muted/20 p-5">{mobileEditorPanel}</div>
             </motion.div>
           )}
         </AnimatePresence>
