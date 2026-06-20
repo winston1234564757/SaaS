@@ -82,10 +82,10 @@ export default function SettingsPage() {
       <main className="max-w-7xl mx-auto px-4 mt-24 lg:mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-5">
 
-          {/* Row 1 col-3 row-span-2 — ProfileHero */}
+          {/* Row 1 col-3 — ProfileHero */}
           <motion.section
             id="hero"
-            className="lg:col-span-3 lg:row-span-2"
+            className="lg:col-span-3"
             data-tour-key="set-profile"
             {...motionProps(0)}
           >
@@ -103,8 +103,8 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 1 col-7 — SmartAdvisor */}
-          <motion.section className="lg:col-span-7" {...motionProps(1)}>
+          {/* Row 1 col-4 — SmartAdvisor */}
+          <motion.section className="lg:col-span-4" {...motionProps(1)}>
             <SmartAdvisor
               data={{
                 bio: state.bio,
@@ -118,10 +118,10 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 2 col-7 — PublicStatus (ProfileHero continues row-span-2) */}
+          {/* Row 1 col-3 — PublicStatus */}
           <motion.section
             id="status"
-            className="lg:col-span-7"
+            className="lg:col-span-3"
             data-tour-key="set-status"
             {...motionProps(2)}
           >
