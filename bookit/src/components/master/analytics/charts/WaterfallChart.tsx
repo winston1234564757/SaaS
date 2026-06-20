@@ -5,11 +5,12 @@ import { motion } from 'framer-motion';
 import { formatPrice } from '@/lib/utils/currency';
 
 interface WaterfallChartProps {
-  servicesRevenue: number; // копійки
-  productsRevenue: number; // копійки
-  materialsCost: number;   // копійки
-  discountAmount: number;  // копійки
-  netProfit: number;       // копійки
+  servicesRevenue: number;      // копійки
+  productsRevenue: number;      // копійки
+  materialsCost: number;        // копійки
+  discountAmount: number;       // копійки
+  operationalExpenses: number;  // копійки
+  netProfit: number;            // копійки
 }
 
 export function WaterfallChart({
@@ -17,12 +18,14 @@ export function WaterfallChart({
   productsRevenue,
   materialsCost,
   discountAmount,
+  operationalExpenses,
   netProfit,
 }: WaterfallChartProps) {
   // Усі значення переводимо в гривні для відображення
   const rev = Math.round((servicesRevenue + productsRevenue) / 100);
   const mat = Math.round(materialsCost / 100);
   const disc = Math.round(discountAmount / 100);
+  const opex = Math.round(operationalExpenses / 100);
   
   // Для No-Show втрат візьмемо умовну суму або порахуємо (наприклад, 10% від виручки для демонстрації, якщо немає прямого поля)
   // Давайте розрахуємо умовні No-Show втрати як 5% від виручки, або покажемо реальні, якщо вони є (у нас в RPC get_finance_analytics немає no-show втрат в об'єкті finances, але ми можемо їх передати або розрахувати)
@@ -36,6 +39,7 @@ export function WaterfallChart({
     { label: 'No-Show втрати', value: -noShowLoss, type: 'decrease', color: 'var(--error)' },
     { label: 'Собівартість', value: -mat, type: 'decrease', color: '#D4935A' },
     { label: 'Знижки / акції', value: -disc, type: 'decrease', color: '#E0B4B2' },
+    { label: 'Операційні витрати', value: -opex, type: 'decrease', color: '#A78BFA' },
     { label: 'Чистий прибуток', value: Math.round(netProfit / 100), type: 'total', color: 'var(--accent)' },
   ];
 
@@ -84,11 +88,11 @@ export function WaterfallChart({
               
               <div className="flex-1 h-6 bg-secondary/20 rounded-full relative overflow-hidden">
                 <motion.div
-                  initial={{ width: 0, left: `${leftPct}%` }}
-                  animate={{ width: `${widthPct}%`, left: `${leftPct}%` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${widthPct}%` }}
                   transition={{ type: 'spring', stiffness: 80, damping: 15, delay: index * 0.1 }}
                   className="h-full absolute rounded-full"
-                  style={{ backgroundColor: item.color }}
+                  style={{ backgroundColor: item.color, left: `${leftPct}%` }}
                 />
               </div>
 

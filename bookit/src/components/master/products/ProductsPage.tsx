@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Package, ShoppingBag } from 'lucide-react';
+import { Plus, Package, ShoppingBag, FlaskConical } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { DropResult } from '@hello-pangea/dnd';
 const DragDropContext = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.DragDropContext })), { ssr: false });
@@ -15,6 +15,7 @@ import type { UnifiedSale } from '@/lib/supabase/hooks/useOrders';
 import { ProductCard } from './ProductCard';
 import { RestockDrawer } from './RestockDrawer';
 import { OrderCard } from './OrderCard';
+import { ConsumableCard } from './ConsumableCard';
 import type { Product, OrderStatus } from '@/types/database';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
@@ -48,7 +49,7 @@ export function ProductsPage() {
   const searchParams = useSearchParams();
   const [orderFilter, setOrderFilter] = useState<OrderStatus | undefined>(undefined);
 
-  const tab = (searchParams.get('tab') as 'products' | 'orders') || 'products';
+  const tab = (searchParams.get('tab') as 'products' | 'orders' | 'consumables') || 'products';
   const restockId = searchParams.get('restockId');
 
   const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('products_v1', PRODUCTS_STEPS);
@@ -74,6 +75,8 @@ export function ProductsPage() {
   const restockTarget = restockId ? (products.find(p => p.id === restockId) ?? null) : null;
   const activeCount = products.filter(p => p.is_active).length;
   const lowStock = products.filter(p => p.is_active && p.stock_qty <= 3).length;
+  const consumables = products.filter(p => p.product_type === 'consumable');
+  const lowConsumables = consumables.filter(p => p.stock_qty <= (p.unit === 'pcs' ? 3 : 10)).length;
   const newOrders = orders.filter(o => o.status === 'new').length;
   const totalOrders = orders.length;
   const today = new Date().toISOString().split('T')[0];
@@ -136,6 +139,11 @@ export function ProductsPage() {
                 <StatChip label="Всього" value={products.length} />
                 {lowStock > 0 && <StatChip label="Мало на складі" value={lowStock} warn />}
               </>
+            ) : tab === 'consumables' ? (
+              <>
+                <StatChip label="Матеріали" value={consumables.length} />
+                {lowConsumables > 0 && <StatChip label="Мало" value={lowConsumables} warn />}
+              </>
             ) : (
               <>
                 <StatChip label="Сьогодні" value={todayOrdersCount} />
@@ -158,6 +166,9 @@ export function ProductsPage() {
                 </span>
               )}
             </TabBtn>
+            <TabBtn active={tab === 'consumables'} onClick={() => setParam('tab', 'consumables')}>
+              <FlaskConical size={14} /> Розхідники
+            </TabBtn>
           </div>
 
           {tab === 'products' && (
@@ -176,7 +187,7 @@ export function ProductsPage() {
         {/* Right: content */}
         <div data-tour-key="prd-list">
           <AnimatePresence mode="popLayout">
-            {tab === 'products' ? (
+            {tab === 'products' && (
               <motion.div
                 key="products"
                 initial={{ opacity: 0, y: 4 }}
@@ -223,7 +234,8 @@ export function ProductsPage() {
                   </DragDropContext>
                 )}
               </motion.div>
-            ) : (
+            )}
+            {tab === 'orders' && (
               <motion.div
                 key="orders"
                 initial={{ opacity: 0, y: 4 }}
@@ -260,6 +272,31 @@ export function ProductsPage() {
                       key={o.id}
                       order={o as UnifiedSale}
                       onStatusChange={(status) => updateStatus(o.id, status, (o as UnifiedSale).source)}
+                    />
+                  ))
+                )}
+              </motion.div>
+            )}
+            {tab === 'consumables' && (
+              <motion.div
+                key="consumables"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                className="flex flex-col gap-3"
+              >
+                {consumables.length === 0 ? (
+                  <div className="bento-card p-8 text-center text-muted-foreground/60 text-sm">
+                    Додайте перший розхідник — оберіть &quot;Розхідник&quot; при створенні товару
+                  </div>
+                ) : (
+                  consumables.map(p => (
+                    <ConsumableCard
+                      key={p.id}
+                      product={p}
+                      onEdit={openEdit}
+                      onRestock={openRestock}
                     />
                   ))
                 )}

@@ -79,6 +79,7 @@ export function ProductEditor({ id }: Props) {
   const [linkedServiceIds, setLinkedServiceIds] = useState<string[]>([]);
   const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
   const [productType, setProductType] = useState<'retail' | 'consumable'>('retail');
+  const [unit, setUnit] = useState<'pcs' | 'ml' | 'g'>('pcs');
   const [autoDeduct, setAutoDeduct] = useState(true);
   const [iconName, setIconName] = useState<ProductIconName>('package');
   const [uploading, setUploading] = useState(false);
@@ -103,6 +104,7 @@ export function ProductEditor({ id }: Props) {
       setRecommendAlways(product.recommend_always !== false);
       setIconName(product.icon_name ?? 'package');
       setProductType(product.product_type ?? 'retail');
+      setUnit(product.unit ?? 'pcs');
       setAutoDeduct(product.auto_deduct !== false);
       setShowStockLimit(true);
       setError(null);
@@ -210,6 +212,7 @@ export function ProductEditor({ id }: Props) {
         recommend_always: recommendAlways,
         sort_order: 0,
         product_type: productType,
+        unit,
         icon_name: iconName,
         auto_deduct: autoDeduct,
       };
@@ -523,6 +526,28 @@ export function ProductEditor({ id }: Props) {
                       </p>
                     </div>
                   </button>
+
+                  {/* Unit selector */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-2">Одиниця виміру</p>
+                    <div className="flex gap-2">
+                      {([['pcs', 'шт'], ['ml', 'мл'], ['g', 'г']] as const).map(([val, label]) => (
+                        <button
+                          key={val}
+                          type="button"
+                          aria-pressed={unit === val}
+                          onClick={() => setUnit(val)}
+                          className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition-all active:scale-[0.95] cursor-pointer ${
+                            unit === val
+                              ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/10'
+                              : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

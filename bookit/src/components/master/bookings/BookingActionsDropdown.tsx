@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { CheckCircle2, UserCheck, XCircle, MoreVertical, Loader2, Calendar } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -14,6 +14,8 @@ import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import type { BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { parseError } from '@/lib/utils/errors';
 import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
+import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
+import { MaterialsReviewSheet } from './MaterialsReviewSheet';
 
 type BookingSlice = Pick<
   BookingWithServices,
@@ -32,6 +34,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
 
   const defaultInvalidate = () => invalidateBookingQueries(qc);
 
@@ -60,6 +63,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
 
   const canConfirm    = status === 'pending';
   const canComplete   = status === 'confirmed';
+  const { data: consumables = [] } = useConsumablesForBooking(canComplete ? id : null);
   const canCancel     = status === 'pending' || status === 'confirmed';
   const canReschedule = status === 'pending' || status === 'confirmed';
 
@@ -82,7 +86,13 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
           {
             icon: <UserCheck size={14} />,
             label: 'Завершити',
-            onClick: () => run(() => completeBooking(id), 'Запис завершено'),
+            onClick: () => {
+              if (consumables.length > 0) {
+                setReviewSheetOpen(true);
+              } else {
+                run(() => completeBooking(id), 'Запис завершено');
+              }
+            },
             className: 'text-success',
             disabled: isPending,
           },
@@ -112,18 +122,32 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
       : []),
   ];
 
+  const handleCompleteWithConsumables = (reviewed: { product_id: string; qty_used: number }[]) => {
+    setReviewSheetOpen(false);
+    run(() => completeBooking(id, reviewed), 'Запис завершено');
+  };
+
   return (
-    <DropdownMenu
-      trigger={
-        isPending ? (
-          <Loader2 size={16} className="animate-spin text-primary" />
-        ) : (
-          <MoreVertical size={16} />
-        )
-      }
-      items={items}
-      align="right"
-      disabled={isPending}
-    />
+    <>
+      <DropdownMenu
+        trigger={
+          isPending ? (
+            <Loader2 size={16} className="animate-spin text-primary" />
+          ) : (
+            <MoreVertical size={16} />
+          )
+        }
+        items={items}
+        align="right"
+        disabled={isPending}
+      />
+
+      <MaterialsReviewSheet
+        bookingId={id}
+        open={reviewSheetOpen}
+        onConfirm={handleCompleteWithConsumables}
+        onClose={() => setReviewSheetOpen(false)}
+      />
+    </>
   );
 }

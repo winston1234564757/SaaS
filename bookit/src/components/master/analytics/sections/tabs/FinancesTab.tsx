@@ -76,7 +76,7 @@ export function FinancesTab({ start, end, isPro }: FinancesTabProps) {
       {/* Blurred Dummy Content */}
       <div className={`flex flex-col gap-5 transition-all duration-700 ${!hasData ? 'blur-[8px] opacity-40 pointer-events-none select-none grayscale-[0.2]' : ''}`}>
         {/* 4 KPI Tickers */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <div className="bento-card p-4 flex flex-col justify-between">
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Виручка послуг</p>
             <p className="text-lg font-bold text-foreground mt-2">{formatPrice(Math.round(displayFin.services_revenue / 100))}</p>
@@ -96,6 +96,11 @@ export function FinancesTab({ start, end, isPro }: FinancesTabProps) {
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Чистий прибуток</p>
             <p className="text-lg font-bold text-success mt-2">{formatPrice(Math.round(displayFin.net_profit / 100))}</p>
           </div>
+
+          <div className="bento-card p-4 flex flex-col justify-between">
+            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Операційні витрати</p>
+            <p className="text-lg font-bold text-destructive mt-2">-{formatPrice(Math.round(displayFin.operational_expenses_total / 100))}</p>
+          </div>
         </div>
 
         {/* Waterfall & Alerts */}
@@ -106,6 +111,7 @@ export function FinancesTab({ start, end, isPro }: FinancesTabProps) {
               productsRevenue={displayFin.products_revenue}
               materialsCost={displayFin.materials_cost}
               discountAmount={displayFin.discount_amount}
+              operationalExpenses={displayFin.operational_expenses_total}
               netProfit={displayFin.net_profit}
             />
           </div>

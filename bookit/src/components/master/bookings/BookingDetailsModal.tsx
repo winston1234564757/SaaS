@@ -7,8 +7,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   X, Clock, Phone, Globe, PenLine,
   CheckCircle2, XCircle, Star, Save, Loader2,
-  TrendingUp, ShoppingBag, CalendarClock, Heart,
+  TrendingUp, ShoppingBag, CalendarClock, Heart, FlaskConical,
 } from 'lucide-react';
+import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
 import { useBookingById } from '@/lib/supabase/hooks/useBookingById';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -413,6 +414,10 @@ export function BookingDetailsModal() {
   }, [notes, notesDirty, saveMasterNotesAsync]);
 
   const canAct = displayBooking && ['pending', 'confirmed'].includes(displayBooking.status);
+  const UNIT_LABEL_MODAL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
+  const { data: bookingConsumables = [] } = useConsumablesForBooking(
+    displayBooking?.status === 'confirmed' ? (bookingId ?? null) : null
+  );
   const durationMinutes = displayBooking?.services.reduce((acc: number, s: any) => acc + s.duration, 0) || 0;
 
   return (
@@ -578,6 +583,24 @@ export function BookingDetailsModal() {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Consumables */}
+          {bookingConsumables.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <FlaskConical size={14} className="text-muted-foreground/60" />
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">Матеріали сеансу</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {bookingConsumables.map(c => (
+                  <div key={c.product_id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/40 border border-border/40">
+                    <span className="text-xs font-medium text-foreground">{c.name}</span>
+                    <span className="text-[10px] text-muted-foreground/60">{c.total_qty} {UNIT_LABEL_MODAL[c.unit]}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}

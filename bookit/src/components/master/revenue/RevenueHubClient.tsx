@@ -2,7 +2,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { useQueryState, parseAsString } from 'nuqs';
-import { Wallet, Zap, BadgePercent } from 'lucide-react';
+import { Wallet, Zap, BadgePercent, ReceiptText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 import dynamic from 'next/dynamic';
@@ -11,6 +11,11 @@ import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
 
 const FlashDealPage = dynamic(() => import('@/components/master/flash/FlashDealPage').then(m => m.FlashDealPage), {
   loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо бандл...</div>,
+  ssr: false,
+});
+
+const ExpensesTab = dynamic(() => import('./ExpensesTab').then(m => m.ExpensesTab), {
+  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо...</div>,
   ssr: false,
 });
 
@@ -78,6 +83,7 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
   const tabs = [
     { id: 'flash_deals', label: 'Флеш-акції', icon: Zap },
     { id: 'dynamic_pricing', label: 'Смарт-ціни', icon: BadgePercent },
+    { id: 'expenses', label: 'Фінанси', icon: ReceiptText },
   ];
 
   return (
@@ -184,6 +190,25 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
                       initial={pricingData.rules}
                       isDrawer={false}
                     />
+                  </Suspense>
+                </motion.div>
+              )}
+
+              {activeTab === 'expenses' && (
+                <motion.div
+                  key="expenses"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
+                >
+                  <Suspense fallback={
+                    <div className="flex flex-col gap-4 p-4 animate-pulse">
+                      <div className="h-20 bg-secondary/40 border border-border rounded-[28px]" />
+                      <div className="h-40 bg-secondary/40 border border-border rounded-[28px]" />
+                    </div>
+                  }>
+                    <ExpensesTab isPro={pricingData.isPro} />
                   </Suspense>
                 </motion.div>
               )}

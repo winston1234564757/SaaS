@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
@@ -18,6 +18,8 @@ import { useServices } from '@/lib/supabase/hooks/useServices';
 import { type Service, CATEGORIES, DURATIONS, formatDuration, serviceSchema } from './types';
 import { PhotoUploader } from '@/components/shared/PhotoUploader';
 import { useMasterContext } from '@/lib/supabase/context';
+import { createClient } from '@/lib/supabase/client';
+import { FlaskConical } from 'lucide-react';
 import { SERVICE_ICON_OPTIONS, ServiceIcon } from '@/lib/service-icons';
 
 interface Props {
@@ -49,6 +51,31 @@ export function ServiceEditor({ id }: Props) {
   const [customDurationStr, setCustomDurationStr] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [linkedConsumables, setLinkedConsumables] = useState<
+    { product_id: string; name: string; unit: 'pcs' | 'ml' | 'g'; quantity: number }[]
+  >([]);
+
+  const UNIT_LABEL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
+
+  const fetchLinkedConsumables = useCallback(async () => {
+    if (!id) return;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('product_service_links')
+      .select('quantity, products!inner(id, name, unit, product_type)')
+      .eq('service_id', id)
+      .eq('products.product_type', 'consumable');
+    if (data) {
+      setLinkedConsumables(data.map((row: { quantity: number; products: { id: string; name: string; unit: 'pcs' | 'ml' | 'g' } }) => ({
+        product_id: row.products.id,
+        name: row.products.name,
+        unit: row.products.unit,
+        quantity: Number(row.quantity),
+      })));
+    }
+  }, [id]);
+
+  useEffect(() => { fetchLinkedConsumables(); }, [fetchLinkedConsumables]);
 
   useEffect(() => {
     if (id && service) {
@@ -430,6 +457,31 @@ export function ServiceEditor({ id }: Props) {
           </div>
         </div>
       </div>
+
+      {id && linkedConsumables.length > 0 && (
+        <div className="widget-card p-5 flex flex-col gap-4 border border-border rounded-[24px] bg-card">
+          <div className="flex items-center gap-2">
+            <FlaskConical size={16} className="text-muted-foreground" />
+            <p className="text-sm font-semibold text-foreground">Розхідники послуги</p>
+          </div>
+          <p className="text-xs text-muted-foreground/60 -mt-2">
+            Списуються зі складу при завершенні запису
+          </p>
+          <div className="flex flex-col gap-2">
+            {linkedConsumables.map(c => (
+              <div key={c.product_id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
+                <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                <span className="text-xs font-bold text-muted-foreground shrink-0">
+                  {c.quantity} {UNIT_LABEL[c.unit]}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground/50">
+            Редагувати прив&apos;язку можна через сторінку товару в Магазині
+          </p>
+        </div>
+      )}
 
       {showDeleteConfirm && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/40 backdrop-blur-sm">

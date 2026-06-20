@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,8 @@ import {
   updateBookingStatus,
 } from '@/app/(master)/dashboard/bookings/actions';
 import { cn } from '@/lib/utils/cn';
+import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
+import { MaterialsReviewSheet } from './MaterialsReviewSheet';
 
 interface BookingCardProps {
   booking: BookingWithServices;
@@ -64,6 +66,11 @@ export function BookingCard({
   const [isPendingNoShow, startNoShow] = useTransition();
   const isAnyPending = isPendingConfirm || isPendingCancel || isPendingComplete || isPendingNoShow;
 
+  const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
+  const { data: consumables = [] } = useConsumablesForBooking(
+    booking.status === 'confirmed' ? booking.id : null
+  );
+
   const handleConfirm = () =>
     startConfirm(async () => {
       const { error } = await confirmBooking(booking.id);
@@ -86,7 +93,11 @@ export function BookingCard({
       }
     });
 
-  const handleComplete = () =>
+  const handleComplete = () => {
+    if (consumables.length > 0) {
+      setReviewSheetOpen(true);
+      return;
+    }
     startComplete(async () => {
       const { error } = await completeBooking(booking.id);
       if (error) {
@@ -96,6 +107,20 @@ export function BookingCard({
         await invalidateAll();
       }
     });
+  };
+
+  const handleCompleteWithConsumables = (reviewed: { product_id: string; qty_used: number }[]) => {
+    setReviewSheetOpen(false);
+    startComplete(async () => {
+      const { error } = await completeBooking(booking.id, reviewed);
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+      } else {
+        showToast({ type: 'success', title: 'Запис завершено' });
+        await invalidateAll();
+      }
+    });
+  };
 
   const handleNoShow = () =>
     startNoShow(async () => {
@@ -109,6 +134,7 @@ export function BookingCard({
     });
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -268,5 +294,13 @@ export function BookingCard({
         <div className="w-3 shrink-0" />
       </div>
     </motion.div>
+
+    <MaterialsReviewSheet
+      bookingId={booking.id}
+      open={reviewSheetOpen}
+      onConfirm={handleCompleteWithConsumables}
+      onClose={() => setReviewSheetOpen(false)}
+    />
+    </>
   );
 }
