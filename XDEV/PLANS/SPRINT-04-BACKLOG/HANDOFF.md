@@ -4,10 +4,67 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 26/37 ✅
-**Наступна задача:** **T28 — Розхідники: бізнес-аналіз + persona sim + spec**
+**Прогрес:** 27/37 ✅
+**Наступна задача:** **T29 — Розхідники: міграції + серверна логіка**
 **Оновлено:** 2026-06-20
 
+
+---
+
+## ✅ T28 — Розхідники: бізнес-аналіз + spec: ЗАВЕРШЕНО
+**Spec:** `XDEV/PLANS/ROZKHIDNYKY_SPEC.md` | **Дата:** 2026-06-20
+
+**Root cause:** `materials_cost` у FinancesTab показував фіктивні дані — consumables існують у DB (`product_type='consumable'`, `auto_deduct`, тригер `decrement_product_stock_on_complete`), але UI для їх ведення відсутній повністю. Майстер не може побачити реальний P&L.
+
+**Spec вирішує:**
+- 5 модулів: Розхідники таб в Магазині + unit system (pcs/ml/g) + MaterialsReviewSheet при завершенні запису + Revenue Hub Фінанси таб + реальні дані в FinancesTab Analytics
+- 3 DB міграції: `products.unit`, `product_service_links.quantity → NUMERIC(10,2)`, нова таблиця `master_expenses`
+- 2 нові RPC: `get_analytics_extras` (оновлений scope=finances), `get_consumables_for_booking`
+- Tier gating: Розхідники таб + MaterialsReviewSheet = всі тарифи; Revenue Hub Фінанси + Analytics = Pro only
+
+**Ключові рішення:**
+- `product_service_links` вже існує — не нова таблиця, лише зміна типу quantity
+- Bidirectional linking: можна прив'язувати з ProductEditor або ServiceEditor
+- MaterialsReviewSheet = hybrid deduction (auto-list + editable before confirm)
+- `master_expenses` = окрема таблиця (не розширення products) для операційних витрат
+
+---
+
+## ⬜ T29 — Розхідники: міграції + серверна логіка
+**Залежить від:** T28 ROZKHIDNYKY_SPEC.md (approved)
+**Скіли:** `create-migration` + `senior-backend`
+
+**Що робити:**
+
+### DB міграції (3 файли)
+1. `ALTER TABLE products ADD COLUMN unit TEXT NOT NULL DEFAULT 'pcs' CHECK (unit IN ('pcs', 'ml', 'g'))`
+2. `ALTER TABLE product_service_links ALTER COLUMN quantity TYPE NUMERIC(10,2)`
+3. Нова таблиця `master_expenses` (з RLS + index) — повна DDL у ROZKHIDNYKY_SPEC.md
+
+### TypeScript типи (`database.ts`)
+- `Product.unit: 'pcs' | 'ml' | 'g'`
+- Новий interface `MasterExpense`
+- Новий interface `ReviewedConsumable`
+- Розширити `FinanceAnalytics` → додати `operational_expenses_total`
+
+### Серверні екшени
+- `products/actions.ts`: додати `unit` до `ProductPayload` + `createProduct` + `updateProduct`
+- Новий файл `revenue/expenses.actions.ts`: `createExpense`, `updateExpense`, `deleteExpense`, `getExpenses`
+- `bookings/actions.ts`: розширити `completeBooking(id, reviewedConsumables?)` — deduct consumables перед complete
+
+### RPC оновлення (Supabase)
+- `get_analytics_extras` scope='finances': реальний `materials_cost` з `product_transactions` + `operational_expenses_total` з `master_expenses`
+- Новий RPC `get_consumables_for_booking(p_booking_id)`: joins bookings → booking_services → product_service_links → products → returns grouped consumable list
+
+### Hooks
+- `useProducts.ts`: додати `unit` до PRODUCT_SELECT
+- Новий `useExpenses.ts`: React Query хук для `master_expenses`
+- Новий `useConsumablesForBooking.ts`: виклик RPC для MaterialsReviewSheet
+
+**Acceptance criteria:**
+- TSC: 0 errors | Build: clean
+- Міграції застосовані локально + через `npx supabase db push`
+- `get_consumables_for_booking` повертає правильний список для тестового запису
 
 ---
 

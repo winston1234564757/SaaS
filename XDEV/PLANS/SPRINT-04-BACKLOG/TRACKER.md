@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 26/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-20
+**Прогрес:** 27/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-20
 
 > ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
 
@@ -50,7 +50,7 @@
 | 27.6 | T23-impl-v2 | Per-page TourBanner: замінює cross-page Activation Tour | ✅ | `grill-me` + `senior-frontend` + `impeccable` | `7b9886e` `7da4fdc` `a102304` `a4ccbd9` | 9 destination tours; dynamic navigator (filters seen+current); completion screen (isCompletion); destinationTours.ts shared const; ease-out-quart + scaleX polish; TSC:0 |
 | 27.7 | T23-impl-v3 | useDestinationTour hook + isTourSeen 2-layer + race fix | ✅ | `code-review` | `b5c5dfd` `0b6f004` | useDestinationTour shared hook (9 pages→1 call); isTourSeen(DB+localStorage); onAfterSeen:refresh; profile race fix; masterId undefined guard; useMemo nextTours+dynamicSteps |
 | 28 | T25 | dashboard/settings (ПК): повний redesign з нуля  | ✅ | `design-taste-frontend` + `impeccable` | `73676e3` `50d9fef` `9a1140a` `246ca22` `e20f7c8` | 10-col editorial grid; ScheduleWidget 3-col bottom row; StatsPulse 6 метрик; Identity+Categories+ProductMix row-5; h-full рівні відступи |
-| 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ⬜ | `spec-driven-workflow` + `senior-architect` | Deliverable: spec + business analysis |
+| 29 | T28 | Розхідники: бізнес-аналіз + persona sim + spec | ✅ | `brainstorming` + `spec-driven-workflow` | `ROZKHIDNYKY_SPEC.md`: 5 модулів, 3 DB міграції, 2 RPC, unit system (pcs/ml/g), master_expenses table, MaterialsReviewSheet, Revenue Hub Фінанси tab |
 | 30 | T29 | Розхідники: міграції + серверна логіка | ⬜ | `create-migration` + `senior-backend` | Залежить від T28 spec approved |
 | 31 | T30 | Розхідники: UX/UI реалізація | ⬜ | `design-taste-frontend` + `impeccable` | Залежить від T29 deployed |
 | 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | useSmartTooltip + FitText + .adaptive-text |
