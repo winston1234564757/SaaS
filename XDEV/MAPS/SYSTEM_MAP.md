@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-20 · Джерело: живий код (v9.0.0 "Sprint-04: 26/37 ✅") · Sprint-04 commit: `e20f7c8` (T25: h-full equal gaps SettingsPage — Row5 categories/identity/productmix, Row6 retention/vacations/segments)
+> Оновлено: 2026-06-20 · Джерело: живий код (v9.0.0 "Sprint-04: 28/37 ✅") · Sprint-04 commit: `82e04e7d` (T29: Розхідники backend — migrations 142-144, expenses.actions, completeBooking+deduction, useExpenses, useConsumablesForBooking)
 > 
-> **⚡ Sprint-04 Status:** 26/37 ✅ | Next: T28 — Розхідники бізнес-аналіз + spec | Skills: TOP 50 configured (settings.json v9.0.0)
+> **⚡ Sprint-04 Status:** 28/37 ✅ | Next: T30 — Розхідники UX/UI | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 | Sprint-05 + Sprint-06 remaining post-launch
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
 > 
@@ -53,7 +53,8 @@
 | `/dashboard/growth` | Growth Hub: вкладки "Лояльність", "Реферали" та "Партнери" (inline) | `growth/page.tsx` | — | `master/growth/GrowthHubClient.tsx` |
 | `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (tap-overlay + ←→ reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemPage.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` | Shared: `components/shared/PhotoLightbox.tsx` |
 | `/dashboard/portfolio/[id]` | Редагування кейсу портфоліо (No-Modals policy). Ліміт Starter = 5 публічних; захист на 3 рівнях. | `portfolio/[id]/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioItemPage.tsx` |
-| `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення | `products/page.tsx` | `products/actions.ts` | `master/products/ProductsPage.tsx` |
+| `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення, розхідники (unit system T29) | `products/page.tsx` | `products/actions.ts` (+ `unit` field T29) | `master/products/ProductsPage.tsx` |
+| `/dashboard/revenue` (expenses) | Revenue Hub + Витрати (master_expenses CRUD — T30 UI pending) | `revenue/page.tsx` | `revenue/expenses.actions.ts` (NEW T29: createExpense/updateExpense/deleteExpense/getExpenses) | `master/revenue/RevenueHubClient.tsx` |
 
 | `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |
 | `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
