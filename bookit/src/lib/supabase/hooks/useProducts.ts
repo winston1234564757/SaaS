@@ -12,7 +12,7 @@ export type { Product };
 const KEY = (masterId: string | undefined) => ['products', masterId] as const;
 
 const PRODUCT_SELECT =
-  'id, master_id, icon_name, name, description, category, product_type, ' +
+  'id, master_id, icon_name, name, description, category, product_type, unit, ' +
   'price_kopecks, cost_kopecks, photos, stock_qty, stock_alert_threshold, ' +
   'is_active, is_archived, recommend_always, auto_deduct, sort_order, ' +
   'created_at, updated_at, product_service_links(service_id, quantity)';

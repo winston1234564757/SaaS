@@ -270,7 +270,10 @@ export async function updateBookingStatus(
   }
 }
 
-export async function completeBooking(bookingId: string): Promise<{ error: string | null }> {
+export async function completeBooking(
+  bookingId: string,
+  reviewedConsumables?: { product_id: string; qty_used: number }[],
+): Promise<{ error: string | null }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизовано' };
@@ -286,6 +289,36 @@ export async function completeBooking(bookingId: string): Promise<{ error: strin
 
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+
+    if (reviewedConsumables && reviewedConsumables.length > 0) {
+      for (const item of reviewedConsumables) {
+        if (item.qty_used <= 0) continue;
+
+        const { data: product } = await admin
+          .from('products')
+          .select('stock_qty, cost_kopecks')
+          .eq('id', item.product_id)
+          .single();
+
+        if (!product) continue;
+
+        const newQty = Math.max(0, product.stock_qty - item.qty_used);
+
+        await admin
+          .from('products')
+          .update({ stock_qty: newQty })
+          .eq('id', item.product_id);
+
+        await admin
+          .from('product_transactions')
+          .insert({
+            product_id: item.product_id,
+            type:       'sale',
+            qty_delta:  -item.qty_used,
+            note:       `Списано при завершенні запису ${bookingId}`,
+          });
+      }
+    }
 
     const { error } = await admin
       .from('bookings')

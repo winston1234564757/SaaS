@@ -46,6 +46,7 @@ export function FinancesTab({ start, end, isPro }: FinancesTabProps) {
     products_revenue: 0,
     materials_cost: 0,
     discount_amount: 0,
+    operational_expenses_total: 0,
     net_profit: 0,
     services: [],
     products: [],
@@ -58,7 +59,8 @@ export function FinancesTab({ start, end, isPro }: FinancesTabProps) {
     products_revenue: 320000,
     materials_cost: 410000,
     discount_amount: 50000,
-    net_profit: 1400000,
+    operational_expenses_total: 280000,
+    net_profit: 1120000,
     services: [
       { service_id: 's1', service_name: 'Складне фарбування', bookings_count: 12, revenue_kopecks: 600000, cost_kopecks: 200000, margin_pct: 66 },
       { service_id: 's2', service_name: 'Базовий догляд (низька маржа)', bookings_count: 5, revenue_kopecks: 100000, cost_kopecks: 70000, margin_pct: 30 },

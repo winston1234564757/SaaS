@@ -283,6 +283,7 @@ export interface Product {
   description: string | null;
   category: ProductCategory;
   product_type: 'retail' | 'consumable';
+  unit: 'pcs' | 'ml' | 'g';
   price_kopecks: number;
   cost_kopecks: number | null;        // собівартість (для consumable — важливо; retail — опційно)
   photos: string[];
@@ -328,6 +329,30 @@ export interface ProductTransaction {
   order_id: string | null;
   note: string | null;
   created_at: string;
+}
+
+export type ExpenseCategory =
+  | 'rent'
+  | 'utilities'
+  | 'advertising'
+  | 'education'
+  | 'tools'
+  | 'other';
+
+export interface MasterExpense {
+  id: string;
+  master_id: string;
+  category: ExpenseCategory;
+  name: string;
+  amount_kopecks: number;
+  expense_date: string;
+  note: string | null;
+  created_at: string;
+}
+
+export interface ReviewedConsumable {
+  product_id: string;
+  qty_used: number;
 }
 
 export interface Booking {

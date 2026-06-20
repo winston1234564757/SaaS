@@ -25,6 +25,7 @@ export interface ProductPayload {
   description?:      string | null;
   category:          ProductCategory;
   product_type?:     'retail' | 'consumable';
+  unit?:             'pcs' | 'ml' | 'g';
   price_kopecks:     number;
   cost_kopecks?:     number | null;  // собівартість (nullable — для обох типів)
   photos?:           string[];
@@ -71,6 +72,7 @@ export async function createProduct(
         description:      payload.description ?? null,
         category:         payload.category,
         product_type:     payload.product_type ?? 'retail',
+        unit:             payload.unit ?? 'pcs',
         price_kopecks:    payload.price_kopecks,
         cost_kopecks:     payload.cost_kopecks ?? null,
         photos:           payload.photos ?? [],
@@ -126,6 +128,7 @@ export async function updateProduct(
         ...(payload.description   !== undefined && { description:   payload.description }),
         ...(payload.category      !== undefined && { category:      payload.category }),
         ...(payload.product_type  !== undefined && { product_type:  payload.product_type }),
+        ...(payload.unit          !== undefined && { unit:          payload.unit }),
         ...(payload.price_kopecks !== undefined && { price_kopecks: payload.price_kopecks }),
         ...(payload.cost_kopecks  !== undefined && { cost_kopecks:  payload.cost_kopecks }),
         ...(payload.photos           !== undefined && { photos:           payload.photos }),

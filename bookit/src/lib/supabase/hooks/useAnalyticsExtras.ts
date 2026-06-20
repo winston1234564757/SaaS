@@ -102,6 +102,7 @@ export interface FinanceAnalytics {
   products_revenue: number;
   materials_cost: number;
   discount_amount: number;
+  operational_expenses_total: number;
   net_profit: number;
   services: FinanceServiceItem[];
   products: FinanceProductItem[];
