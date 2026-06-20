@@ -359,6 +359,64 @@ describe('createBooking() — server action integration', () => {
     });
   });
 
+  // ── Atomic stock decrement (RPC mid-flight) ──────────────────────────────────
+
+  describe('atomic stock decrement', () => {
+    const PRODUCT_WITH_STOCK = {
+      id:            PROD_ID,
+      name:          'Shampoo',
+      price_kopecks: 20000,
+      stock_qty:     5,
+      is_active:     true,
+    };
+    const PRODUCT_PAYLOAD = buildPayload({
+      services:  [],
+      products:  [{ id: PROD_ID, name: 'Shampoo', price: 200, quantity: 2 }],
+      date:      null,
+      startTime: null,
+    });
+
+    it('rolls back booking and returns oversold error when RPC returns data: false', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdmin(
+          {
+            master_profiles: [{ data: BASE_MASTER }],
+            products:        [{ data: [PRODUCT_WITH_STOCK] }],
+            // bookings[0]=insert (success), bookings[1]=delete (rollback)
+            bookings:        [{ error: null }, { error: null }],
+            loyalty_programs: [{ data: [] }],
+            phone_discounts:  [{ data: null }],
+          },
+          { data: false }, // RPC: stock exhausted mid-flight
+        ) as any,
+      );
+      const result = await createBooking(PRODUCT_PAYLOAD);
+      expect(result.bookingId).toBeNull();
+      expect(result.error).toBeTruthy();
+    });
+
+    it('rolls back booking and returns error when RPC returns an error object', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdmin(
+          {
+            master_profiles: [{ data: BASE_MASTER }],
+            products:        [{ data: [PRODUCT_WITH_STOCK] }],
+            // bookings[0]=insert (success), bookings[1]=delete (rollback)
+            bookings:        [{ error: null }, { error: null }],
+            loyalty_programs: [{ data: [] }],
+            phone_discounts:  [{ data: null }],
+          },
+          { error: { message: 'connection timeout', code: 'PGRST000' } }, // RPC: DB failure
+        ) as any,
+      );
+      const result = await createBooking(PRODUCT_PAYLOAD);
+      expect(result.bookingId).toBeNull();
+      expect(result.error).toBeTruthy();
+    });
+  });
+
   // ── Dynamic pricing ──────────────────────────────────────────────────────────
 
   describe('dynamic pricing', () => {
