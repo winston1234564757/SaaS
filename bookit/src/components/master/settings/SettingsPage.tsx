@@ -251,17 +251,31 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 6 col-4 — Retention Cycle */}
-          <motion.section id="retention" className="lg:col-span-4" {...motionProps(9)}>
-            <div className="widget-card p-5 lg:p-6 h-full">
-              <div className="flex items-center gap-3 mb-5">
+          <motion.section id="retention" className="lg:col-span-4" {...motionProps(9)}>{
+            // humanized
+          }
+            <div className="widget-card p-5 lg:p-6 flex flex-col gap-5">
+              <div className="flex items-center gap-3">
                 <div className="size-9 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
                   <RefreshCw size={18} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold">Цикл повернення клієнта</h3>
-                  <p className="text-[11px] text-muted-foreground/60">Через скільки днів клієнт вважається неактивним</p>
+                  <h3 className="text-sm font-bold">Цикл повернення</h3>
+                  <p className="text-[11px] text-muted-foreground/60">Поріг неактивного клієнта</p>
                 </div>
               </div>
+
+              <div className="flex items-end gap-3 px-1">
+                <span className="text-5xl font-bold tracking-tight text-accent leading-none tabular-nums">
+                  {state.retentionCycleDays}
+                </span>
+                <span className="text-base font-bold text-text-mute mb-1">днів</span>
+              </div>
+
+              <p className="text-[11px] text-text-mute leading-relaxed px-1">
+                Клієнти без запису більше {state.retentionCycleDays} днів отримують нагадування повернутись
+              </p>
+
               <div className="flex flex-wrap gap-2">
                 {[14, 21, 30, 45, 60, 90].map((days) => (
                   <button
@@ -276,7 +290,7 @@ export default function SettingsPage() {
                         : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
                     )}
                   >
-                    {days} днів
+                    {days}д
                   </button>
                 ))}
               </div>

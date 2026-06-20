@@ -1,10 +1,11 @@
 'use client';
+// humanized
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Instagram, Send, MessageSquare, Palette, CreditCard,
-  ChevronRight, ExternalLink, Bot, Check, AlertCircle, Loader2, Lock
+  ChevronRight, Bot, Check, AlertCircle, Loader2, Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { generateTelegramConnectToken } from '@/app/(master)/dashboard/settings/actions';
@@ -62,7 +63,6 @@ export function TechnicalIsland({
       const botName = (process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'BookIT_APP_bot').replace('@', '').trim();
       window.open(`https://t.me/${botName}?start=${token}`, '_blank');
 
-      // Poll for DB update every 3s after user opens the bot, up to 60s
       setWaitingForBot(true);
       let attempts = 0;
       const poll = setInterval(async () => {
@@ -90,163 +90,185 @@ export function TechnicalIsland({
   };
 
   return (
-    <div className="widget-card p-5 space-y-8">
-      {/* Social Links Section */}
-      <div>
-        <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
-          <MessageSquare size={12} /> Соціальні мережі
-        </h4>
-        <div className="grid grid-cols-1 gap-3">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/40 border border-border focus-within:border-accent/40 transition-all">
-            <Instagram size={18} className="text-[#E1306C]" />
-            <input
-              value={instagram}
-              onChange={(e) => onInstagramChange(e.target.value)}
-              placeholder="Посилання на Instagram"
-              aria-label="Посилання на Instagram"
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
-            />
-          </div>
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/40 border border-border focus-within:border-accent/40 transition-all">
-            <Send size={18} className="text-[#0088cc]" />
-            <input
-              value={telegram}
-              onChange={(e) => onTelegramChange(e.target.value)}
-              placeholder="Username в Telegram"
-              aria-label="Username в Telegram"
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
-            />
-          </div>
-        </div>
-      </div>
+    <div className="widget-card overflow-hidden">
+      {/* 3-column horizontal layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-border/20">
 
-      {/* Telegram Bot Section */}
-      <div data-tour-step="act-2" data-tour-key="set-telegram">
-        <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
-          <Bot size={12} /> Сповіщення
-        </h4>
-        <div className={cn(
-          "p-4 rounded-2xl border transition-all",
-          telegramChatId ? "bg-success/5 border-success/10" : "bg-warning/5 border-warning/10"
-        )}>
-          <div className="flex items-start gap-3 mb-4">
-            <div className={cn(
-              "size-10 rounded-xl flex items-center justify-center shrink-0",
-              telegramChatId ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-            )}>
-              {telegramChatId ? <Check size={20} /> : <AlertCircle size={20} />}
+        {/* Col 1 — Social networks */}
+        <div className="p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+              <MessageSquare size={15} className="text-accent" />
             </div>
             <div>
-              <p className="text-sm font-bold">Telegram Бот</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {telegramChatId
-                  ? "Сповіщення про нові записи підключено."
-                  : "Підключіть бота, щоб миттєво отримувати повідомлення про нові записи."}
-              </p>
+              <h4 className="text-sm font-bold text-text-primary">Соціальні мережі</h4>
+              <p className="text-[11px] text-text-mute">Посилання на ваші профілі</p>
             </div>
           </div>
 
-          {!telegramChatId && (
-            <button type="button"
-              onClick={handleConnectTelegram}
-              disabled={connectingBot || waitingForBot}
-              className="w-full py-3 rounded-xl bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.95] transition-all shadow-md shadow-accent/10 cursor-pointer"
-            >
-              {(connectingBot || waitingForBot) && <Loader2 size={14} className="animate-spin" />}
-              {!connectingBot && (waitingForBot ? "Очікуємо з'єднання..." : "Підключити бота")}
-            </button>
-          )}
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary border border-border focus-within:border-accent/40 transition-all">
+              <Instagram size={17} className="text-[#E1306C] shrink-0" />
+              <input
+                value={instagram}
+                onChange={(e) => onInstagramChange(e.target.value)}
+                placeholder="Посилання на Instagram"
+                aria-label="Посилання на Instagram"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
+              />
+            </div>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary border border-border focus-within:border-accent/40 transition-all">
+              <Send size={17} className="text-[#0088cc] shrink-0" />
+              <input
+                value={telegram}
+                onChange={(e) => onTelegramChange(e.target.value)}
+                placeholder="Username в Telegram"
+                aria-label="Username в Telegram"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="mt-3">
+        {/* Col 2 — Notifications (Telegram bot + Push) */}
+        <div className="p-6 flex flex-col gap-4" data-tour-step="act-2" data-tour-key="set-telegram">
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+              <Bot size={15} className="text-accent" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-text-primary">Сповіщення</h4>
+              <p className="text-[11px] text-text-mute">Telegram бот та push-повідомлення</p>
+            </div>
+          </div>
+
+          <div className={cn(
+            "p-4 rounded-2xl border transition-all",
+            telegramChatId ? "bg-success/5 border-success/10" : "bg-warning/5 border-warning/10"
+          )}>
+            <div className="flex items-start gap-3 mb-3">
+              <div className={cn(
+                "size-9 rounded-xl flex items-center justify-center shrink-0",
+                telegramChatId ? "bg-success/15 text-success" : "bg-warning/15 text-warning"
+              )}>
+                {telegramChatId ? <Check size={18} /> : <AlertCircle size={18} />}
+              </div>
+              <div>
+                <p className="text-sm font-bold">Telegram Бот</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+                  {telegramChatId
+                    ? "Сповіщення про нові записи підключено."
+                    : "Підключіть бота — миттєві сповіщення про записи."}
+                </p>
+              </div>
+            </div>
+
+            {!telegramChatId && (
+              <button type="button"
+                onClick={handleConnectTelegram}
+                disabled={connectingBot || waitingForBot}
+                className="w-full py-2.5 rounded-xl bg-accent text-[var(--accent-on)] text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.95] transition-all shadow-md shadow-accent/10 cursor-pointer"
+              >
+                {(connectingBot || waitingForBot) && <Loader2 size={13} className="animate-spin" />}
+                {!connectingBot && (waitingForBot ? "Очікуємо з'єднання..." : "Підключити бота")}
+              </button>
+            )}
+          </div>
+
           <PushSubscribeCard />
         </div>
-      </div>
 
-      {/* Theme Section */}
-      <div>
-        <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
-          <Palette size={12} /> Оформлення
-        </h4>
-        <div className="grid grid-cols-3 gap-3">
-          {THEMES.map((theme) => {
-            const isLocked = theme.requiresPro && !canChangeTheme;
-            const isActive = effectiveThemeKey === theme.key;
-
-            return (
-              <button type="button"
-                key={theme.key}
-                aria-pressed={isActive && !isLocked && !theme.wip}
-                onClick={() => {
-                  if (theme.wip) {
-                    showToast({ type: 'info', title: 'Незабаром', message: 'Ця тема зараз у розробці' });
-                    return;
-                  }
-                  if (isLocked) {
-                    showToast({ type: 'info', title: 'Тільки Pro', message: 'Ця тема відкривається на Pro' });
-                    return;
-                  }
-                  onThemeChange(theme.key);
-                }}
-                className={cn(
-                  "p-3 rounded-2xl border transition-all text-left min-w-0",
-                  theme.wip || isLocked
-                    ? "cursor-not-allowed"
-                    : "cursor-pointer active:scale-[0.95]",
-                  isActive && !isLocked && !theme.wip
-                    ? "bg-surface border-accent shadow-sm opacity-100"
-                    : theme.wip
-                    ? "bg-secondary/40 border-border opacity-35"
-                    : "bg-secondary/40 border-border grayscale opacity-50 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60"
-                )}
-              >
-                <div
-                  className="w-full h-12 rounded-xl mb-3 shadow-inner relative overflow-hidden"
-                  style={{ backgroundColor: theme.color }}
-                >
-                  {isLocked && !theme.wip && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
-                      <Lock size={14} className="text-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold">{theme.label}</span>
-                  {theme.wip ? (
-                    <span className="text-[9px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full leading-none">
-                      Розробка
-                    </span>
-                  ) : isLocked ? (
-                    <span className="text-[9px] font-bold text-accent bg-accent/10 px-1.5 py-0.5 rounded-full leading-none">
-                      Pro
-                    </span>
-                  ) : (
-                    isActive && <Check size={14} className="text-accent" />
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Billing Link */}
-      <div className="pt-4 border-t border-border">
-        <a
-          href="/dashboard/billing"
-          className="flex items-center justify-between p-4 rounded-2xl bg-secondary/40 border border-border hover:bg-secondary/80 transition-all group cursor-pointer active:scale-[0.95]"
-        >
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-muted/40 flex items-center justify-center text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent transition-colors">
-              <CreditCard size={18} />
+        {/* Col 3 — Theme picker */}
+        <div className="p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+              <Palette size={15} className="text-accent" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide">Мій тариф</p>
-              <p className="text-[10px] text-muted-foreground">Керування підпискою</p>
+              <h4 className="text-sm font-bold text-text-primary">Оформлення</h4>
+              <p className="text-[11px] text-text-mute">Тема вашого профілю</p>
             </div>
           </div>
-          <ChevronRight size={16} className="text-muted-foreground group-hover:text-accent transition-colors" />
-        </a>
+
+          <div className="grid grid-cols-3 gap-2.5">
+            {THEMES.map((theme) => {
+              const isLocked = theme.requiresPro && !canChangeTheme;
+              const isActive = effectiveThemeKey === theme.key;
+
+              return (
+                <button type="button"
+                  key={theme.key}
+                  aria-pressed={isActive && !isLocked && !theme.wip}
+                  onClick={() => {
+                    if (theme.wip) {
+                      showToast({ type: 'info', title: 'Незабаром', message: 'Ця тема зараз у розробці' });
+                      return;
+                    }
+                    if (isLocked) {
+                      showToast({ type: 'info', title: 'Тільки Pro', message: 'Ця тема відкривається на Pro' });
+                      return;
+                    }
+                    onThemeChange(theme.key);
+                  }}
+                  className={cn(
+                    "p-2.5 rounded-2xl border transition-all text-left min-w-0",
+                    theme.wip || isLocked
+                      ? "cursor-not-allowed"
+                      : "cursor-pointer active:scale-[0.95]",
+                    isActive && !isLocked && !theme.wip
+                      ? "bg-surface border-accent shadow-sm opacity-100"
+                      : theme.wip
+                      ? "bg-secondary/40 border-border opacity-35"
+                      : "bg-secondary/40 border-border grayscale opacity-50 hover:grayscale-0 hover:opacity-100 hover:bg-secondary/60"
+                  )}
+                >
+                  <div
+                    className="w-full h-10 rounded-xl mb-2 shadow-inner relative overflow-hidden"
+                    style={{ backgroundColor: theme.color }}
+                  >
+                    {isLocked && !theme.wip && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
+                        <Lock size={13} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold">{theme.label}</span>
+                    {theme.wip ? (
+                      <span className="text-[9px] font-bold text-muted-foreground bg-secondary px-1 py-0.5 rounded-full leading-none">
+                        WIP
+                      </span>
+                    ) : isLocked ? (
+                      <span className="text-[9px] font-bold text-accent bg-accent/10 px-1 py-0.5 rounded-full leading-none">
+                        Pro
+                      </span>
+                    ) : (
+                      isActive && <Check size={13} className="text-accent" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Billing link */}
+          <a
+            href="/dashboard/billing"
+            className="mt-auto flex items-center justify-between p-3.5 rounded-2xl bg-secondary/40 border border-border hover:bg-secondary/80 transition-all group cursor-pointer active:scale-[0.95]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-xl bg-muted/40 flex items-center justify-center text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+                <CreditCard size={16} />
+              </div>
+              <div>
+                <p className="text-xs font-bold">Мій тариф</p>
+                <p className="text-[10px] text-muted-foreground">Керування підпискою</p>
+              </div>
+            </div>
+            <ChevronRight size={15} className="text-muted-foreground group-hover:text-accent transition-colors" />
+          </a>
+        </div>
+
       </div>
     </div>
   );
