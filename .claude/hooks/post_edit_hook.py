@@ -22,8 +22,7 @@ except ImportError:
 TS_EXTENSIONS = {".ts", ".tsx"}
 STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
 
-# Must stay in sync with tsc_gate_hook.py MAX_TS_EDITS_BEFORE_TSC
-MAX_TS_EDITS_BEFORE_TSC = 8
+MAX_TS_EDITS_BEFORE_TSC = 8  # warn threshold before requiring tsc run
 
 
 def load_state() -> dict:

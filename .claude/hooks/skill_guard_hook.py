@@ -95,18 +95,11 @@ def main() -> int:
     lines = []
 
     if not skills_called:
-        # No skill selected yet — inject mandatory notice with quick menu
-        menu = get_quick_skill_menu()
+        # No skill selected yet — point to skill_router suggestion (already injected above)
         lines = [
             "=== SKILL SELECTION REQUIRED (Iron Rule #2) ===",
-            "No skill invoked yet this session.",
-            "You MUST select and invoke a skill BEFORE writing code.",
-            "",
-            "QUICK MENU (top skills per category):",
-            menu,
-            "",
+            "No skill invoked yet this session. See [MANDATORY] task route above.",
             "HOW: write 'SKILL: [name]' AND call Skill(skill='[name]') in the SAME response.",
-            "DO NOT write 'SKILL: X' without immediately calling the Skill tool.",
         ]
     else:
         # Skills were called — show which ones as context

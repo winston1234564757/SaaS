@@ -225,10 +225,6 @@
           },
           {
             "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/graphify_post_hook.py"
-          },
-          {
-            "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/a11y_hook.py",
             "statusMessage": "Checking a11y colors..."
           }

@@ -112,7 +112,7 @@ def main():
             "",
         ]
 
-    if TASK_FILE.exists():
+    if task_mode and TASK_FILE.exists():
         try:
             tasks = TASK_FILE.read_text(encoding="utf-8")
             lines.append("=== TASK.md (active tasks) ===")
