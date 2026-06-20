@@ -107,10 +107,10 @@ export async function middleware(request: NextRequest) {
           role = profileRes.data.role as string;
           const isProduction = process.env.NODE_ENV === 'production';
           supabaseResponse.cookies.set('user_role', role, {
-            path: '/', maxAge: 60 * 60 * 4, httpOnly: true, sameSite: 'lax', secure: isProduction,
+            path: '/', maxAge: 60 * 30, httpOnly: true, sameSite: 'lax', secure: isProduction,
           });
           supabaseResponse.cookies.set('user_role_uid', user.id, {
-            path: '/', maxAge: 60 * 60 * 4, httpOnly: true, sameSite: 'lax', secure: isProduction,
+            path: '/', maxAge: 60 * 30, httpOnly: true, sameSite: 'lax', secure: isProduction,
           });
         }
       } catch (err) {
