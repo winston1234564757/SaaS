@@ -38,7 +38,7 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
   };
 
   return (
-    <div className="widget-card p-5 flex flex-col gap-3">
+    <div className="widget-card p-5 h-full flex flex-col gap-3">
       {// humanized
       }
       {/* Header */}
@@ -79,6 +79,9 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
           );
         })}
       </div>
+
+      {/* Push progress bar to bottom */}
+      <div className="flex-1" />
 
       {/* Progress bar */}
       <div>

@@ -179,19 +179,19 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 4 col-3 — Categories */}
-          <motion.section className="lg:col-span-3 lg:self-start" {...motionProps(6)}>
+          {/* Row 5 col-3 — Categories */}
+          <motion.section className="lg:col-span-3" {...motionProps(6)}>
             <CategoriesWidget
               selected={state.selectedCategories}
               onChange={actions.setSelectedCategories}
             />
           </motion.section>
 
-          {/* Row 4 col-4 — Identity (moved next to Categories) */}
-          <motion.section id="identity" className="lg:col-span-4 lg:self-start" {...motionProps(7)}>{
+          {/* Row 5 col-4 — Identity */}
+          <motion.section id="identity" className="lg:col-span-4" {...motionProps(7)}>{
             // humanized
           }
-            <div className="widget-card p-5 flex flex-col gap-5">
+            <div className="widget-card p-5 h-full flex flex-col gap-5">
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
                   <UserIcon size={16} />
@@ -227,7 +227,9 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <ExpandableBio value={state.bio} onChange={actions.setBio} />
+              <div className="flex-1 min-h-0">
+                <ExpandableBio value={state.bio} onChange={actions.setBio} />
+              </div>
 
               <button
                 type="button"
@@ -242,7 +244,7 @@ export default function SettingsPage() {
             </div>
           </motion.section>
 
-          {/* Row 4 col-3 — ProductMix */}
+          {/* Row 5 col-3 — ProductMix */}
           <motion.section id="services" className="lg:col-span-3" {...motionProps(8)}>
             <ProductMixWidget
               services={topServices}
@@ -250,9 +252,9 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 5 col-3 — Retention Cycle */}
-          <motion.section id="retention" className="lg:col-span-3 lg:self-start" {...motionProps(9)}>
-            <div className="widget-card p-5 flex flex-col gap-3">
+          {/* Row 6 col-3 — Retention Cycle */}
+          <motion.section id="retention" className="lg:col-span-3" {...motionProps(9)}>
+            <div className="widget-card p-5 h-full flex flex-col justify-between">
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
                   <RefreshCw size={16} />
@@ -264,10 +266,10 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex items-end gap-2 px-1">
-                <span className="text-4xl font-bold tracking-tight text-accent leading-none tabular-nums">
+                <span className="text-5xl font-bold tracking-tight text-accent leading-none tabular-nums">
                   {state.retentionCycleDays}
                 </span>
-                <span className="text-sm font-bold text-text-mute mb-0.5">днів</span>
+                <span className="text-base font-bold text-text-mute mb-1">днів</span>
               </div>
 
               <div className="flex flex-wrap gap-1.5">
@@ -291,9 +293,9 @@ export default function SettingsPage() {
             </div>
           </motion.section>
 
-          {/* Row 5 col-3 — Vacations */}
-          <motion.section id="vacations" className="lg:col-span-3 lg:self-start" {...motionProps(10)}>
-            <div className="widget-card p-5">
+          {/* Row 6 col-3 — Vacations */}
+          <motion.section id="vacations" className="lg:col-span-3" {...motionProps(10)}>
+            <div className="widget-card p-5 h-full flex flex-col">
               <div className="flex items-center gap-2.5 mb-4">
                 <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
                   <CalendarOff size={16} />
@@ -304,15 +306,15 @@ export default function SettingsPage() {
             </div>
           </motion.section>
 
-          {/* Row 5 col-4 — SegmentConfig */}
-          <motion.section id="segments" className="lg:col-span-4 lg:self-start" {...motionProps(11)}>
+          {/* Row 6 col-4 — SegmentConfig */}
+          <motion.section id="segments" className="lg:col-span-4" {...motionProps(11)}>
             <SegmentConfigWidget
               segments={state.segmentConfig}
               onChange={actions.setSegmentConfig}
             />
           </motion.section>
 
-          {/* Row 8 full-width — TechnicalIsland */}
+          {/* Row 7 full-width — TechnicalIsland */}
           <motion.section id="technical" className="lg:col-span-10" {...motionProps(12)}>
             <TechnicalIsland
               instagram={state.instagram}

@@ -30,7 +30,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
 
   return (
     <>
-      <div className="widget-card p-5 flex flex-col gap-4">
+      <div className="widget-card p-5 h-full flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
             <Plus size={18} className="text-accent" />
@@ -77,7 +77,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
 
         <button type="button"
           onClick={openNew}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold active:scale-[0.95] cursor-pointer transition-all shadow-sm"
+          className="mt-auto w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold active:scale-[0.95] cursor-pointer transition-all shadow-sm"
         >
           <Plus size={16} />
           Новий сегмент
