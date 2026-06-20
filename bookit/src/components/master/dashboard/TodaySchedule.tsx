@@ -1,3 +1,4 @@
+// humanized
 'use client';
 
 import { useState, useMemo, useTransition } from 'react';
@@ -161,23 +162,18 @@ function BookingRow({
           <p className="metric-value text-[14px] font-semibold text-[var(--text-secondary)]">
             {formatPrice(b.total_price)}
           </p>
-          <div onClick={e => e.stopPropagation()}>
-            <BookingActionsDropdown booking={b} onSuccess={onSuccess} />
-          </div>
+          <BookingActionsDropdown booking={b} onSuccess={onSuccess} />
         </div>
       </div>
 
       {pastDue && (
-        <div
-          onClick={e => e.stopPropagation()}
-          className="flex items-center justify-between px-4 pb-3 gap-3"
-        >
+        <div className="flex items-center justify-between px-4 pb-3 gap-3">
           <div className="flex items-center gap-1.5 text-[var(--warning)]">
             <AlertCircle size={11} />
             <span className="text-[12px] font-semibold">Очікує завершення</span>
           </div>
           <button type="button"
-            onClick={() => onComplete(b.id)}
+            onClick={e => { e.stopPropagation(); onComplete(b.id); }}
             disabled={isCompleting}
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--warning)] text-white text-[10px] font-bold tracking-[0.06em] uppercase disabled:opacity-50 transition-opacity"
           >
@@ -423,7 +419,7 @@ export function TodaySchedule() {
 
   return (
     <div className="bento-card h-full">
-      {/* Header — title + link */}
+      {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)]">Записи</p>
@@ -441,7 +437,7 @@ export function TodaySchedule() {
         </Link>
       </div>
 
-      {/* Controls — date tabs + display toggle in one row */}
+      {/* Controls */}
       <div className="flex items-center justify-between gap-2 px-4 pb-3 min-w-0">
         <div className="flex items-center gap-0.5 p-0.5 rounded-full flex-shrink-0" style={{ background: 'var(--border)' }}>
           {DATE_TABS.map(tab => (
@@ -461,7 +457,7 @@ export function TodaySchedule() {
         <DisplayToggle active={display} onChange={setDisplay} />
       </div>
 
-      {/* Content — AnimatePresence for smooth tab/mode switching */}
+      {/* Content */}
       <div className="relative overflow-hidden w-full">
         <AnimatePresence mode="popLayout">
           <motion.div

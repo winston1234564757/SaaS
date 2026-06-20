@@ -398,7 +398,7 @@ Skill(skill='code-review') — gap analysis
 | # | Аудит | Пріоритет | Статус | Findings |
 |---|-------|-----------|--------|----------|
 | 1 | Security | P0 | ✅ | 3 вразливості знайдено і запатчено: debug endpoint (критично), JSON-LD XSS (високо), TG webhook (середньо). Commit: `9356822`. Потрібні env vars: DEBUG_TOKEN + TELEGRAM_WEBHOOK_SECRET |
-| 2 | Accessibility | P1 | ⬜ | — |
+| 2 | Accessibility | P1 | ✅ | div onClick: 2 violations in TodaySchedule.tsx fixed. Fix 1: redundant stopProp wrapper around BookingActionsDropdown removed (DropdownMenu already does stopProp internally). Fix 2: div onClick → stopPropagation moved directly to inner button. aria-label: 333 uses across 131 files ✅. aria-pressed: 88 uses across 45 files ✅. No span/p onClick violations found. Commit: pending |
 | 3 | Design/Visual | P2 | ⬜ | — |
 | 4 | UX Copy | P2 | ⬜ | — |
 | 5 | SEO | P3 | ⬜ | — |
