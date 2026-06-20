@@ -52,12 +52,18 @@ export interface UploadPhotoSuccess {
 
 export type UploadPhotoResult = UploadPhotoSuccess | { error: string };
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
 export async function uploadPhoto(
   supabase: SupabaseClient,
   entity: PhotoEntity,
   blob: Blob,
   originalExt = 'jpg',
 ): Promise<UploadPhotoResult> {
+  if (blob.size > MAX_FILE_SIZE) return { error: 'File too large. Maximum size is 5MB.' };
+  if (!ALLOWED_MIME_TYPES.includes(blob.type)) return { error: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF.' };
+
   const config = getConfig(entity);
   const ts = Date.now();
   const uuid = crypto.randomUUID();

@@ -59,6 +59,10 @@ const CLIENT_EVENTS: NotifEventType[] = [
 ];
 
 export async function POST(request: Request) {
+  if (process.env.VERCEL_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   if (!process.env.DEBUG_TOKEN || request.headers.get('x-debug-token') !== process.env.DEBUG_TOKEN) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
