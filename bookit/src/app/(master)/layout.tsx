@@ -83,7 +83,7 @@ export default async function MasterLayout({ children }: { children: React.React
     console.warn('[MasterLayout] Data fetch timed out:', err);
   }
 
-  if (profile?.role === 'client' && !isImpersonating) redirect('/my/bookings');
+  if (!profile || (profile.role === 'client' && !isImpersonating)) redirect('/my/bookings');
 
   // Onboarding guard — new masters must complete the multi-step onboarding.
   // Legacy masters who have an avatar_emoji but onboarding_step 'BASIC' are treated as onboarded.
