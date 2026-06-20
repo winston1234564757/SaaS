@@ -1,30 +1,18 @@
 {
   "edit_counts": {
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_tracker_hook.py": 1,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\qa_gate_guard_hook.py": 2,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\self_improving_hook.py": 1,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\settings.json": 5,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\humanizer_guard_hook.py": 1,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_router_hook.py": 1,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skills-taxonomy.json": 0,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_guard_hook.py": 0,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\pre_compact_hook.py": 1,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\post_compact_hook.py": 0,
-    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\edit_guard_hook.py": 0
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\settings.json": 1,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\dev_rules_hook.py": 1,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\skill_guard_hook.py": 1,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\hooks\\post_edit_hook.py": 1
   },
-  "consecutive_reads": 1,
-  "read_files": [
-    "self_improving_hook.py"
-  ],
-  "qa_gate_passed": true,
-  "skills_called": [
-    "brainstorming",
-    "anti-sycophancy"
-  ],
+  "consecutive_reads": 0,
+  "read_files": [],
+  "qa_gate_passed": false,
+  "skills_called": [],
+  "startup_confirmed": true,
+  "mempalace_done": true,
+  "systemmap_done": true,
+  "startup_date": "2026-06-20",
   "mempalace_searched": false,
-  "ts_edited_since_tsc": false,
-  "startup_confirmed": false,
-  "mempalace_done": false,
-  "systemmap_done": false,
-  "post_compact": true
+  "ts_edits_since_tsc": 0
 }

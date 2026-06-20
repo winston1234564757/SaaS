@@ -115,11 +115,14 @@
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d[k] for k in [''''scripts'''',''''jest'''',''''devDependencies''''] if k in d}, indent=2\\)\\)\")",
       "Bash(npx vitest:*)",
       "Bash(grep -rn \"workingHours\\\\|working_hours\\\\|BookingFlow\" C:UsersVitossikSaaSbookitsrcapp[slug])",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "PowerShell(head *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\.claude\\\\\" -Recurse | Select-Object -First 80 | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\.claude\\\\skills\\\\impeccable\\\\\" -Recurse | Select-Object -Skip 0 | ForEach-Object { $_.FullName } | Select-Object -First 60)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

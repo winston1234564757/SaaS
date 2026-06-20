@@ -1,14 +1,14 @@
 # TASK.md — Поточні задачі
 
 > Оновлюється після кожної ітерації Sprint-04.
-> **Updated:** 2026-06-18 | **Прогрес: 24/37 ✅**
+> **Updated:** 2026-06-19 | **Прогрес: 25/37 ✅**
 
 ---
 
 ## Активний спринт
 
 **Sprint-04** — 37 задач (one task = one vercel --prod deploy)
-**Прогрес:** 24/37 ✅
+**Прогрес:** 25/37 ✅
 **Повний план:** `XDEV/PLANS/SPRINT-04-BACKLOG/SPRINT-04-PLAN.md`
 **Живий трекер:** `XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md`
 **Handoff:** `XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md`
@@ -16,7 +16,7 @@
 
 | Прогрес | Поточна задача |
 |---|---|
-| **24/37** ✅ | **T25** — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout) |
+| **25/37** ✅ | **T25** — dashboard/settings (ПК): повний redesign з нуля (2-col або sidebar+content layout) |
 
 ---
 
@@ -45,7 +45,7 @@
 | 26 | T22 | Стандартизація завантаження фото (всі сутності) | `52dbb4b` `87f3901` |
 | 27 | T23 | Онбординг тур: persona simulation + brainstorm + spec | — |
 | 27.5 | T23-impl | Activation Tour: повна реалізація (7 tasks) | `b5f8ec6` |
-| 27.6 | T23-impl-v2 | Per-page TourBanner: dashboard tour ✅ (30%) | `7b9886e` `7da4fdc` |
+| 27.6 | T23-impl-v2 | Per-page TourBanner + Dynamic Navigator: повна реалізація | `7b9886e` `7da4fdc` `a102304` `a4ccbd9` |
 | 33 | T32 | Smart Slots: авто Flash Deal при скасуванні | `e7645f9` |
 | 34 | T33 | Лендинг: повна консистентність тарифів | `e01e138` `e2b3bd1` |
 
@@ -88,7 +88,7 @@
 
 | Спринт | Дата | Результат |
 |---|---|---|
-| Sprint-04 (in progress) | 2026-06-12/... | 23/37 ✅ |
+| Sprint-04 (in progress) | 2026-06-12/... | 25/37 ✅ |
 | Sprint-03 (18 tasks) | 2026-06-09/12 | ✅ Complete (18/18) |
 | Sprint-02 (25 tasks) | 2026-06-08/09 | ✅ Complete |
 | IRP (8 phases A–H) | 2026-06-07/08 | ✅ Security, Frost-only, wizard, no-emoji, a11y, audit |

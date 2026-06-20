@@ -1,0 +1,37 @@
+{
+  "edit_counts": {
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\onboarding\\destinationTours.ts": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\hooks\\useTour.ts": 3,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\hooks\\useDestinationTour.ts": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\dashboard\\DashboardView.tsx": 2,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\marketing\\MarketingTabs.tsx": 4,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\services\\ServicesPage.tsx": 4,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\products\\ProductsPage.tsx": 4,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\growth\\GrowthHubClient.tsx": 3,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\revenue\\RevenueHubClient.tsx": 3,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\settings\\SettingsPage.tsx": 3,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\clients\\ClientsPage.tsx": 3,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\bookings\\BookingsPage.tsx": 3,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\analytics\\AnalyticsPage.tsx": 4,
+    "C:\\Users\\Vitossik\\SaaS\\.claude\\settings.json": 1,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-04-BACKLOG\\HANDOFF.md": 1
+  },
+  "consecutive_reads": 2,
+  "read_files": [
+    "useTour.ts",
+    "useDestinationTour.ts"
+  ],
+  "qa_gate_passed": true,
+  "skills_called": [
+    "grilling",
+    "code-review"
+  ],
+  "mempalace_searched": false,
+  "ts_edited_since_tsc": false,
+  "startup_confirmed": false,
+  "mempalace_done": false,
+  "systemmap_done": false,
+  "post_compact": true,
+  "ts_edits_since_tsc": 0,
+  "compact_timestamp": "2026-06-19T22:40:47.826896"
+}
