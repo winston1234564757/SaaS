@@ -1,4 +1,4 @@
-# Sprint-04 HANDOFF
+﻿# Sprint-04 HANDOFF
 > Читай цей файл ПЕРШИМ на початку кожної нової сесії.
 > Тут повний стан спринту: що зроблено, що далі, всі деталі задач.
 
@@ -8,6 +8,21 @@
 **Наступна задача:** **T28 — Розхідники: бізнес-аналіз + persona sim + spec**
 **Оновлено:** 2026-06-20
 
+
+---
+
+## ✅ Pre-Launch Audit #15 — Testing Coverage: ЗАВЕРШЕНО
+**Commit:** `c7f30f5` | **Дата:** 2026-06-20
+
+**Root cause:** `decrement_product_stock_atomic` RPC mid-flight branches (data:false=oversold, error=RPC failure) — не покриті тестами. Всі happy-path тести проходили, але два критичних rollback шляхи були невидимі.
+
+**Що зроблено:**
+- +2 unit tests в `src/lib/actions/__tests__/createBooking.action.test.ts`
+  - Test 1: `rpcResult: { data: false }` → booking deleted, bookingId null, error truthy
+  - Test 2: `rpcResult: { error: { message: 'connection timeout' } }` → same rollback
+- Усі 33/33 тести проходять. TSC: 0 errors.
+
+**Pre-Launch Audit Progress:** 12/15 ✅ | Remaining: Design (#3), UX Copy (#4), Mobile (#13)
 ---
 
 ## ⚠️ Pending з Sprint-03 (ОБОВ'ЯЗКОВО закрити)

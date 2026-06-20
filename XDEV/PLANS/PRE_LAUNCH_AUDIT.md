@@ -1,4 +1,4 @@
-# Pre-Launch Audit — BookIT SaaS
+﻿# Pre-Launch Audit — BookIT SaaS
 > Runbook для запуску. Кожна секція = одна ітерація аудиту. Статус: ⬜ не почато / 🔄 в процесі / ✅ закрито.
 > Оновлено: 2026-06-20 | Sprint-04 26/37 ✅
 
@@ -401,14 +401,14 @@ Skill(skill='code-review') — gap analysis
 | 2 | Accessibility | P1 | ✅ | div onClick: 2 violations in TodaySchedule.tsx fixed. Fix 1: redundant stopProp wrapper around BookingActionsDropdown removed (DropdownMenu already does stopProp internally). Fix 2: div onClick → stopPropagation moved directly to inner button. aria-label: 333 uses across 131 files ✅. aria-pressed: 88 uses across 45 files ✅. No span/p onClick violations found. Commit: pending |
 | 3 | Design/Visual | P2 | ⬜ | — |
 | 4 | UX Copy | P2 | ⬜ | — |
-| 5 | SEO | P3 | ⬜ | — |
-| 6 | Performance | P3 | ⬜ | — |
+| 5 | SEO | P3 | ✅ | Fixed P0: metadataBase hardcoded Vercel preview URL → NEXT_PUBLIC_SITE_URL/bookit.com.ua. Created robots.ts (disallow /dashboard/ /my/ /api/ /onboarding /login). Created sitemap.ts (all published masters + /explore). Added noindex to my/layout + (master)/layout. Backlog: OG image Cyrillic font (tofu risk on Edge), JSON-LD @type array + telephone field, login/onboarding explicit noindex. Commit: 849a4ec. ACTION NEEDED: set NEXT_PUBLIC_SITE_URL=https://bookit.com.ua in Vercel env |
+| 6 | Performance | P3 | ✅ | Fixed: DnD static→dynamic() in ProductsPage+PortfolioPage (−25KB/dashboard). Solid: BookingFlow/Analytics/FlashDeal already lazy. optimizePackageImports for lucide+framer in next.config ✅. reactCompiler:true ✅. Backlog: GSAP lazy refactor in LandingPageContent, 26x img→next/image, React.cache on data fetchers. Commit: f6fce94 |
 | 7 | Database | P0 | ✅ | 4 міграції: search_path_fix + RLS 7 таблиць (OTP leak CRITICAL) + 43 FK indexes + supabase-postgres-best-practices skill. Commits: 9356822 + 4792c18 + fb93857. Залишок: 83 auth_rls_initplan (SELECT auth.uid()) — backlog |
-| 8 | Backend/API | P1 | ⬜ | — |
+| 8 | Backend/API | P1 | ✅ | TOCTOU stock race fixed via decrement_product_stock_atomic RPC (migration 20260620000003). All 5 cron endpoints have verifyCronSecret. All 8 Server Actions have 'use server'. createAdminClient convention: 100% compliant. console.log: structured observability logs only, no debug noise. Commit: d1fbf85 |
 | 9 | Auth Flows | P0 | ✅ | `auth-implementation-patterns` skill. 2 fixes: role cookie 24h→4h + MasterLayout DB timeout guard. OTP timing-safe, atomic rate-limit, FK ordering — all solid. Commit: `6e844bf` |
 | 10 | Billing | P0 | ✅ | Core engine solid: ECDSA webhook verified, 15-min replay, billing_events idempotency (23505), r2() precision, MIN_KOPECKS floor, dunning 3→past_due. 1 fix: mono-webhook inline createClient→createAdminClient. Commit: pending |
-| 11 | Notifications | P2 | ⬜ | — |
-| 12 | PWA | P3 | ⬜ | — |
+| 11 | Notifications | P2 | ✅ | Fixed: 6x void notifyMasterBilling → .catch (billing events were silently lost in serverless). Fixed: ChannelBanner dismiss localStorage persistence. Core cascade (TG→Push→SMS) logic ✅ correct. verifyCronSecret on all 5 cron endpoints ✅. Backlog: cron schedules once-daily → hourly pending Vercel Pro; permissionchange listener for push revoke; markAllRead no .catch. Commit: 4d2fdd2 |
+| 12 | PWA | P3 | ✅ | Fixed P0: manifest icon paths /icons/192 → /icons/icon-192.png (broken, no .png ext + files missing). Fixed: apple-touch-icon added to layout.tsx. SW: solid — push/click handlers, iOS postMessage, skipWaiting, cache-first for /_next/static. beforeinstallprompt ✅ (InstallBanner.tsx). Commit: d91d220. ACTION NEEDED: place icon-192.png + icon-512.png + icon-512-maskable.png + icon-180.png in public/icons/ |
 | 13 | Mobile | P2 | ⬜ | — |
-| 14 | Code Quality | P1 | ⬜ | — |
-| 15 | Testing | P3 | ⬜ | — |
+| 14 | Code Quality | P1 | ✅ | TSC: 0 errors. Fixed: RPC error guard in createBooking.ts (oversold check inverted bug). Fixed: 3x font-black→font-extrabold in ExplorePage.tsx (CLAUDE.md ban). Remaining backlog (non-blocking): pushSubs as any in clients/actions.ts + flash/actions.ts (push notifications may fail silently — worth fixing post-launch), several as any casts in explore/bookings pages. Commit: b0152bd |
+| 15 | Testing | P3 | ✅ | Gap: decrement_product_stock_atomic RPC branches untested. Fixed: +2 unit tests (data:false=oversold + error=RPC failure). 33/33 pass. Commit: c7f30f5 |
