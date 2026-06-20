@@ -80,7 +80,7 @@ export default function SettingsPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 mt-24 lg:mt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 auto-rows-auto items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-5">
 
           {/* Row 1 col-3 row-span-2 — ProfileHero */}
           <motion.section
