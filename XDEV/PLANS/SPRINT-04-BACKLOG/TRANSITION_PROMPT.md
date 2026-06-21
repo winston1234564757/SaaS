@@ -17,6 +17,9 @@
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 32/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T31 — Smart Design System: Context-Adaptive UI
+Розхідники UX Polish 🔄 50% (commit: 51c8feb5):
+  ✅ ServiceEditor: consumables compact chips під metadata card
+  ⬜ Інші сторінки — відкладено
 Design Polish ✅ ЗАВЕРШЕНО (commit: 88069921):
   ✅ 10 файлів, 28 fixes: rounded-full на всіх кнопках, min-h-[44px] touch targets
   ✅ Spring стандарт: stiffness:340/damping:26 у всіх motion компонентах

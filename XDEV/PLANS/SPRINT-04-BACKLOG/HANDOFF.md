@@ -10,6 +10,19 @@
 
 ---
 
+## 🔄 Розхідники UX Polish — 50% (в процесі)
+**Commit:** `51c8feb5` | **Дата:** 2026-06-21 | **Скіл:** `impeccable-design-polish`
+
+**Зроблено:**
+- ServiceEditor: consumables перенесено з full-width bottom section у col-span-8 (одразу під metadata card)
+- Rows → pills/chips: `[Назва 2 мл ×]` в flex-wrap
+- Компакт: px-4 py-3, лічильник, empty state як текстовий рядок
+
+**Залишилось (після поточного завдання):**
+- Інші сторінки де показуються/редагуються розхідники — додатковий pass
+
+---
+
 ## ✅ Design Polish Pass — Frost System Compliance: ЗАВЕРШЕНО
 **Commit:** `88069921` | **Дата:** 2026-06-21 | **Скіл:** `impeccable-design-polish`
 
