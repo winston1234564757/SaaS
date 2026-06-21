@@ -15,8 +15,20 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 31/37 ✅ | Sprint-04 IN PROGRESS
+Прогрес: 32/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T31 — Smart Design System: Context-Adaptive UI
+T30-v3 ✅ ЗАВЕРШЕНО (commit: 4d1d2898):
+  ✅ ConsumableCard: progress bar + threshold hint + pill redesign
+  ✅ RestockDrawer: direct number input + presets +10/+50/+100 (ml/g)
+  ✅ StockWidget: inline restock via RestockDrawer (no navigation)
+  ✅ ExpensesTab: full CRUD (vaul Drawer + 3×2 category grid + filter pills)
+  ✅ ServiceCard: "Заховати послугу?" + extended tooltip
+  ✅ ServiceEditor: consumables always-visible (disabled+lock for new)
+  ✅ ServicesPage: drag reorder + toast feedback
+  ✅ ProductsPage: consumable search filter
+  ✅ ProductEditor: sticky save bar + bulk pricing help text animation
+  ✅ NEW: useProductTransactions hook
+  ✅ NEW: TransactionHistoryDrawer (grouped by month)
 T30-v2 ✅ ЗАВЕРШЕНО (commit: 1b8d4e11):
   ✅ ProductEditor v2: bulk pricing (закупка→собівартість мл auto-calc), alert threshold, Step 2 service linking full-width
   ✅ ServiceEditor v2: повний CRUD vaul BottomSheet + X remove per row + empty state

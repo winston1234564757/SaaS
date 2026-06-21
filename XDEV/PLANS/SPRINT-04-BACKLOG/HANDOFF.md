@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 31/37 ✅
+**Прогрес:** 32/37 ✅
 **Наступна задача:** **T31 — Smart Design System: Context-Adaptive UI**
 **Оновлено:** 2026-06-21
 
@@ -946,6 +946,37 @@ TG inline keyboard buttons завжди відкриваються у власн
 4. useExpenses signature: `useExpenses()` — без params (masterId з context), updateExpense nested payload
 
 **ServiceEditor:** read-only блок "Розхідники послуги" — JOIN product_service_links+products, edit redirect → Магазин
+
+---
+
+## ✅ T30-v3 — UX Audit: послуги/товари/розхідники
+**Commit:** `4d1d2898` | **Дата:** 2026-06-21 | **Скіл:** `multi-perspective-analysis` + `design-taste-frontend`
+
+**Root cause:** Після T30-v2 проведено повний UX аудит 3 модулів (послуги/товари/розхідники) через multi-perspective-analysis. Виявлено 11 проблем різного рівня: C (critical), M (major), P (moderate).
+
+**Зроблено (12 файлів, TSC:0):**
+
+**ConsumableCard** — редизайн: progress bar завжди (critical=destructive/70, normal=accent/30), threshold hint "мін: X мл", pill кнопки "Поповнити"/"Редагувати", motion stagger entry.
+
+**RestockDrawer** — прямий ввід: `<input type="number">` поверх числа, step=10 для ml/g, quick presets +10/+50/+100 (тільки для рідин), правильний unit в header та CTA ("Додати +N мл").
+
+**StockWidget** — inline restock: `useState<Product | null>` замість Link→navigate, кнопка "Поповнити" (hover on desktop / always on mobile), RestockDrawer рендериться inline.
+
+**ExpensesTab** — повна CRUD форма: `Drawer` від vaul, 3×2 category grid (6 категорій з іконками), filter pills, expense list з анімацією AnimatePresence popLayout, delete з toast.
+
+**ServiceCard** — "Заховати послугу?" + розширений tooltip "Послуга буде захована — записи та статистика збережуться".
+
+**ServiceEditor** — consumables section always-visible: `opacity-50 pointer-events-none` для нових + Lock hint "Спочатку збережіть".
+
+**ServicesPage** — drag reorder async + toast: try/catch навколо `reorderServices()`, showToast success/error.
+
+**ProductsPage** — search filter в consumables tab: rounded-full input + `filteredConsumables` + empty state "Нічого не знайдено".
+
+**ProductEditor** — sticky save bar (bottom-0, backdrop-blur) + animated bulk pricing help text (motion.div height animation, Bell icon, cost/unit display).
+
+**NEW `useProductTransactions.ts`** — React Query hook: `['product-transactions', productId]`, select last 50 DESC, staleTime 30s, enabled: !!productId.
+
+**NEW `TransactionHistoryDrawer.tsx`** — grouped-by-month журнал: ArrowUp (emerald, restock/return) / ArrowDown (accent, sale/adjustment), skeleton loader, empty state, correct unit label.
 
 ---
 
