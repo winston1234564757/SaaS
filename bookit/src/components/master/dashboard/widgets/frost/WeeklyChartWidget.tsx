@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWeeklyOverview } from '@/lib/supabase/hooks/useWeeklyOverview';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
 import { getNow } from '@/lib/utils/now';
 import { BarChart2 } from 'lucide-react';
+import { useSmartTooltip } from '@/lib/hooks/useSmartTooltip';
 
 const DAYS    = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const BAR_MAX = 96;
@@ -43,6 +44,7 @@ export function WeeklyChartWidget() {
   const [activeBar, setActiveBar] = useState<number | null>(null);
   const [tooltip, setTooltip]   = useState<BarTooltipInfo | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const clampedLeft = useSmartTooltip(tooltipRef, tooltip?.left ?? null);
   const today     = getTodayIdx();
   const prevRange = useMemo(() => getPrevWeekRange(), []);
   const { bookings: prevBookings } = useBookings(prevRange.from, prevRange.to);
@@ -69,17 +71,6 @@ export function WeeklyChartWidget() {
     return () => window.removeEventListener('scroll', dismiss);
   }, [tooltip]);
 
-  // Measure actual tooltip width after render (opacity:0) and clamp to viewport
-  useLayoutEffect(() => {
-    if (!tooltipRef.current || !tooltip) return;
-    const halfW = tooltipRef.current.offsetWidth / 2;
-    const vw = window.innerWidth;
-    const clamped = Math.max(halfW + 8, Math.min(vw - halfW - 8, tooltip.left));
-    if (Math.abs(clamped - tooltip.left) > 0.5) {
-      setTooltip(prev => prev ? { ...prev, left: clamped } : null);
-    }
-  }, [tooltip?.left]);
-
   const handleBarClick = (i: number, e: React.MouseEvent<HTMLButtonElement>) => {
     if (activeBar === i) { setActiveBar(null); setTooltip(null); return; }
     const rect = e.currentTarget.getBoundingClientRect();
@@ -105,7 +96,7 @@ export function WeeklyChartWidget() {
           <motion.div
             key="weekly-tooltip"
             className="pointer-events-none fixed z-[9000]"
-            style={{ left: tooltip.left, top: tooltip.top, transform: 'translateX(-50%)' }}
+            style={{ left: clampedLeft ?? tooltip.left, top: tooltip.top, transform: 'translateX(-50%)' }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.12 }}
           >

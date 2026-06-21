@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { subDays, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBookings } from '@/lib/supabase/hooks/useBookings';
 import { getNow } from '@/lib/utils/now';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { Clock } from 'lucide-react';
+import { useSmartTooltip } from '@/lib/hooks/useSmartTooltip';
 
 const DAYS  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
@@ -28,6 +29,7 @@ export function PeakHoursWidget() {
     Array.from({ length: 7 }, () => Array(HOURS.length).fill(null))
   );
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const clampedLeft = useSmartTooltip(tooltipRef, tooltipPos?.left ?? null);
 
   const { grid, max } = useMemo<{ grid: number[][]; max: number }>(() => {
     const g: number[][] = Array.from({ length: 7 }, () => Array(HOURS.length).fill(0));
@@ -49,17 +51,6 @@ export function PeakHoursWidget() {
     window.addEventListener('scroll', dismiss, { passive: true });
     return () => window.removeEventListener('scroll', dismiss);
   }, [activeCell]);
-
-  // Measure actual tooltip width after render (opacity:0) and clamp to viewport
-  useLayoutEffect(() => {
-    if (!tooltipRef.current || !tooltipPos) return;
-    const halfW = tooltipRef.current.offsetWidth / 2;
-    const vw = window.innerWidth;
-    const clamped = Math.max(halfW + 8, Math.min(vw - halfW - 8, tooltipPos.left));
-    if (Math.abs(clamped - tooltipPos.left) > 0.5) {
-      setTooltipPos(prev => prev ? { ...prev, left: clamped } : null);
-    }
-  }, [tooltipPos?.left]);
 
   const handleCell = (dIdx: number, hIdx: number, target: HTMLElement) => {
     const isSame = activeCell?.dIdx === dIdx && activeCell?.hIdx === hIdx;
@@ -123,7 +114,7 @@ export function PeakHoursWidget() {
           <motion.div
             key="peak-tooltip"
             className="pointer-events-none fixed z-[9000]"
-            style={{ left: tooltipInfo.left, top: tooltipInfo.top, transform: 'translateX(-50%)' }}
+            style={{ left: clampedLeft ?? tooltipInfo.left, top: tooltipInfo.top, transform: 'translateX(-50%)' }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.12 }}
           >

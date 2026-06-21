@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { format, addDays } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import Link from 'next/link';
+import { FitText } from '@/components/shared/FitText';
+import { useAdaptiveColor } from '@/lib/hooks/useAdaptiveColor';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { getNow } from '@/lib/utils/now';
@@ -119,6 +121,8 @@ export function GreetingWidget() {
   );
 
   const firstName = (profile?.full_name ?? 'Майстре').split(' ')[0];
+  const greetingRef = useRef<HTMLDivElement>(null);
+  const colorScheme = useAdaptiveColor(greetingRef);
 
   return (
     <div className="pb-4">
@@ -163,16 +167,21 @@ export function GreetingWidget() {
       </motion.div>
 
       {/* Greeting */}
-      <motion.p
+      <motion.div
+        ref={greetingRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.15 }}
-        className="text-[26px] font-semibold"
-        style={{ color: 'var(--text-primary)' }}
         suppressHydrationWarning
       >
-        {greetingText}, {firstName}
-      </motion.p>
+        <FitText
+          text={`${greetingText}, ${firstName}`}
+          minSize={16}
+          maxSize={28}
+          className="font-semibold"
+          style={{ color: colorScheme === 'light' ? 'white' : 'var(--text-primary)' }}
+        />
+      </motion.div>
 
       {nextBooking && (
         <motion.div

@@ -752,6 +752,12 @@ body::before {
   transition: transform 0.1s ease;
 }
 
+/* Adaptive text — auto-inverts text relative to any background */
+.adaptive-text {
+  mix-blend-mode: difference;
+  color: white;
+}
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
