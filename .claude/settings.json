@@ -108,26 +108,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_router_hook.py",
-            "statusMessage": "Routing skills..."
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/context7_hint_hook.py",
             "statusMessage": "Checking library hints..."
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_guard_hook.py",
-            "statusMessage": "Skill gate check..."
           }
         ]
       }
@@ -175,12 +157,7 @@
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/env_guard_hook.py",
             "statusMessage": "Checking sensitive file protection..."
           },
-          {
-            "type": "command",
-            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/edit_guard_hook.py",
-            "statusMessage": "Encoding + humanizer check..."
-          },
-          {
+{
             "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/edit_counter_guard.py",
             "statusMessage": "Tracking edit count..."
@@ -260,6 +237,15 @@
             "type": "command",
             "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/self_improving_hook.py",
             "statusMessage": "Session-end protocol..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/skill_guard_hook.py",
+            "statusMessage": "Skill enforcement check..."
           }
         ]
       }

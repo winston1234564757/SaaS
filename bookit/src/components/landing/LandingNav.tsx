@@ -33,7 +33,7 @@ export function LandingNav() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spring, delay: 0.1 }}
           className={cn(
-            'grid items-center px-5 py-3 rounded-full transition-all duration-500',
+            'grid items-center gap-x-2.5 sm:gap-x-0 px-5 py-3 rounded-full transition-all duration-500',
             scrolled ? 'shadow-[0_8px_32px_rgba(15,23,42,0.10)]' : ''
           )}
           style={{
@@ -60,7 +60,7 @@ export function LandingNav() {
           <Link
             href="/register"
             className={cn(
-              'group flex items-center gap-2 text-sm font-semibold pl-5 pr-2.5 py-2 rounded-full transition-all active:scale-[0.97] mx-auto',
+              'group flex items-center gap-2 text-sm font-semibold pl-5 pr-2.5 py-2 min-h-[44px] sm:min-h-0 rounded-full transition-all active:scale-[0.97] mx-auto',
               focusRing
             )}
             style={{
@@ -70,7 +70,8 @@ export function LandingNav() {
               whiteSpace: 'nowrap',
             }}
           >
-            Спробувати безкоштовно
+            <span className="sm:hidden">Поїхали</span>
+            <span className="hidden sm:inline">Спробувати безкоштовно</span>
             <span
               className="size-6 rounded-full flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
               style={{ background: 'rgba(248,250,252,0.18)' }}

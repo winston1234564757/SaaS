@@ -87,8 +87,8 @@ npx supabase db push  # Apply local migrations to Supabase Cloud
 
 After any code change — automatic, no reminders:
 
-1. `npx tsc --noEmit` — zero errors required
-2. `npm run build` — clean build required
+1. `npx tsc --noEmit` — zero errors required (кожна зміна)
+2. `npm run build` — **за тіром задачі** (`SPRINT-05-BACKLOG/WORKFLOW.md`): Тір 0 (дрібний CSS/copy) → пропустити, повний build одним батчем перед деплоєм; Тір 1-2 → повний build обов'язковий
 3. `mempalace_add_drawer` — one drawer per key technical decision
 4. Update `XDEV/MAPS/SYSTEM_MAP.md` if routes, components, tables, or architecture changed
 5. `Skill(skill='self-improving-agent')` with `command='extract'` if a reusable pattern emerged
@@ -110,7 +110,7 @@ STEP 6  si:extract if reusable pattern
 STEP 7  SYSTEM_MAP.md if architecture changed
 ```
 
-No step may be skipped. Active sprint: `XDEV/PLANS/SPRINT-04-BACKLOG/`
+No step may be skipped. Active sprint: `XDEV/PLANS/SPRINT-05-BACKLOG/` · виконання за `WORKFLOW.md` (Tiers + Task Brief)
 
 ---
 

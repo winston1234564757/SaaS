@@ -1,25 +1,24 @@
-# COMPACT HANDOFF — 2026-06-19T22:40:47.827960
+# COMPACT HANDOFF — 2026-06-21T18:58:24.122466
 
 ## Session State (restored after compact)
-- skills_called: grilling, code-review
+- skills_called: senior-frontend
 - qa_gate_passed: PASSED
 - ts_edited_since_tsc: clean
 - startup_confirmed: False (must re-confirm after compact)
 
 ## Sprint Progress
-**Прогрес:** 25/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-19
+**Прогрес:** 33/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-21
 
 ## Next Task
-Наступна задача:** **T25 — dashboard/settings (ПК): повний redesign з нуля**
-**Оновлено:** 2026-06-19
+Наступна задача:** **T16-redo — /explore + клієнтський навбар: повний редизайн**
+**Оновлено:** 2026-06-21
 
 ---
 
-## ⚠️ Pending з Sprint-03 (ОБОВ'ЯЗКОВО закрити)
-- `npx supabase db push` — міграція `20260607000000_security_search_path_fix.sql` (19 RPC search_path functions)
-  - Якщо CLI не працює → Dashboard SQL Editor
-- Vercel Pro upgrade → cron `0 * * * *` для `check-uncompleted` endpoint
+## ✅ T31 — Smart Design System: Context-Adaptive UI: ЗАВЕРШЕНО
+**Commit:** `21158d98` | **Дата:** 2026-06-21 | **Скіл:** `senior-frontend`
 
+**Root cause:** WeeklyChartWidget + PeakHoursWidget мали ідентичний `useLayoutEffect` clamp boilerplate продубльований у двох місцях (T08 фіксував per-widget, але не централізував). Greeting використовував фіксований `text-[26px]` без масштабування
 
 ## Iron Rules Reminder
 - RULE -1: mempalace_status + SYSTEM_MAP before any work

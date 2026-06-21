@@ -1,0 +1,333 @@
+# Sprint-05 BACKLOG — Загальний (Зона Майстра + Клієнтська Зона)
+
+> **Принцип:** ONE TASK = ONE SESSION = ONE VERCEL DEPLOY.
+> **Старт:** 2026-06-22
+> **Деталі виконання:** `HANDOFF.md` | Живий трекер: `TRACKER.md`
+>
+> **Структура беклогу:** 3 секції —
+> **A. ЗОНА МАЙСТРА (B2B)** · **B. КЛІЄНТСЬКА ЗОНА (B2C)** · **C. СПІЛЬНЕ / ГЛОБАЛЬНЕ**.
+> Усередині кожної — групування за сторінкою. Кожна задача має ID, тег пріоритету `[P0/P1/P2]` і спеціаліст-скіли.
+>
+> **Легенда пріоритетів:**
+> `[P0]` — баг/блокер (ламає функціонал або робить дію неможливою) · `[P1]` — ключовий редизайн/щоденний UX · `[P2]` — полиш, nice-to-have.
+
+---
+
+## Скіл-стратегія
+
+Джерело: `XDEV/SKILLS_REFERENCE.md` (повний реальний каталог) + `XDEV/SKILL_PROTOCOL.md` (Decision Tree).
+
+### Універсальні гейти — застосовуються до КОЖНОЇ задачі (не дублюються в таблицях)
+
+| Етап | Скіл | Коли |
+|------|------|------|
+| 0. План | `grilling` | Завжди першим — стрес-тест плану до коду |
+| 0.5 Scope нечіткий | `brainstorming` | Будь-який повний редизайн / нова фіча (позначені 🔄) |
+| Робота | *спеціаліст-скіли з таблиці* | — |
+| QA дизайну | `impeccable` | Після будь-якої UI-генерації |
+| QA коду | `code-review` | Перед кожним комітом з кодом |
+| Безпека | `security-review` | Якщо торкається auth / RLS / payments / referrals |
+| Копірайт | `humanizer` | Весь user-facing текст (крім aria-label / data-testid / дат) |
+| Колір | `mcp__a11y__*` | Після кожного вибору кольору (контраст ≥ 4.5:1) |
+| Pre-deploy | `ship-gate` | 8-категорійний аудит перед `vercel --prod` |
+| Кінець сесії | `self-improving-agent` | Auto на Stop при ≥3 edits |
+
+> Колонка **"Спеціаліст-скіли"** у таблицях нижче = тільки скіли, специфічні для задачі. Гейти вище маються на увазі завжди.
+> Позначення: `→` послідовність (один після іншого) · `+` паралельно/разом · `impeccable (X)` — субтул impeccable.
+
+### Розшифровка спеціаліст-скілів (де неочевидно)
+
+- `scroll-experience` — преміальні горизонтальні/вертикальні скроли, sticky, progress-індикація
+- `domain-expert-scheduling` — логіка слотів/розкладів/заповненості
+- `payment-gateway-integration` — Monobank webhooks, billing UI під бренд
+- `auth-implementation-patterns` — OTP / phone verification flow
+- `landing-page-guide-v2` — value prop, social proof, CTA hierarchy
+- `progressive-web-app` — safe area, service worker, web push, offline
+- `inngest` — фонові/заплановані джоби (auto flash deals)
+- `improve-codebase-architecture` — refactor / consolidation tightly-coupled модулів
+- `database-optimizer` — важкі агрегації / повільні SQL
+- `impeccable (layout)` — рівні висоти, alignment, grid · `(distill)` — прибрати шум · `(colorize)` — кольорова гармонія
+
+---
+
+## ⛔ P0 — БАГИ / БЛОКЕРИ (робити першими)
+
+| ID | Сторінка | Проблема | Спеціаліст-скіли |
+|----|----------|----------|------------------|
+| `M-SVC-01` | Послуги | Аналітика/статистика по послугах не передається на бекенд / не відображається. Зламаний пайплайн. | `diagnose` → `senior-backend` |
+| `M-DASH-06` | Дашборд / Пікові години | Тултіп спрацьовує лише з 2-го тапу (перший раз блимає). | `diagnose` → `senior-frontend` |
+| `M-SHOP-04` | Магазин | Модалка поповнення — кнопка підтвердження ховається за навбар на мобільному. | `senior-frontend` (vaul) |
+| `G-LOGIN-02` | Логін (мобільний) | Фокус не падає на інпут; зазор між інпутом і клавіатурою. | `diagnose` → `senior-frontend` |
+| `G-LAND-02` | Лендинг (шапка) | Кнопка "Спробувати безкоштовно" завелика; немає чітких відступів. | `design-taste-frontend` |
+
+---
+
+# A. ЗОНА МАЙСТРА (B2B)
+
+`/dashboard/...` — внутрішня зона майстра.
+
+## A1. Дашборд (Home — Mobile + Desktop)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-DASH-01` | P1 | Динамічні блоки рекомендацій (top): лейаут, адаптивне форматування тексту/елементів за контекстом. Smart Design System. | `design-taste-frontend` + `impeccable (layout)` |
+| `M-DASH-02` | P2 | Quick Actions: преміальна анімація при тапі (мінімальне тертя). | `emilkowalski-motion` |
+| `M-DASH-03` | P1 | Блок "Вільно сьогодні": UX-стрілки, перемикачі, статус скролу (крихти/прогрес). → `G-PWA-02`. | `scroll-experience` + `design-taste-frontend` |
+| `M-DASH-04` | P2 | Блок "Записи" (статистика): прибрати капс ("всього", "очікують") → нормальний регістр. | `humanizer` |
+| `M-DASH-05` | P1 | Блок "Доходи і записи": колоризувати стовпці статус-кольорами; fix переносу "грн". | `impeccable (colorize)` |
+| `M-DASH-06` | **P0** | Блок "Пікові години" (BUGFIX): тултіп лише з 2-го тапу. | `diagnose` → `senior-frontend` |
+| `M-DASH-07` | P1 | Блок "Скасування": overlay при тапі — хто і коли скасував. | `senior-frontend` |
+| `M-DASH-08` | P1 | Блок "Середній чек": overlay з додатковою інфо при тапі. | `senior-frontend` |
+| `M-DASH-09` | P1 | Календар (десктоп): квадратна сітка + блок рефералів поряд. | `design-taste-frontend` + `impeccable (layout)` |
+
+## A2. Клієнти (CRM — Desktop & Mobile)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-CLI-01` | P1 | Картки клієнтів (grid ПК): єдиний лейаут незалежно від контексту (кнопки різної висоти). Smart Design System. | `impeccable (layout)` + `design-taste-frontend` |
+| `M-CLI-02` | P1 | Віджет "Важливі / Амбасадори": свайп рухає віджет + вертикальні індикатори статусу. | `emilkowalski-motion` |
+| `M-CLI-03` | P2 | Блоки "Пора почистити базу" & "Потрібен follow up": системні інфо-меседжі з dismiss; повертаються раз/12год або при зміні даних. | `senior-frontend` + патерн `mark-as-read-on-close` |
+| `M-CLI-04` | P1 | Мобільні статуси/теги (горизонтальний скрол): кнопки-перемикачі + індикація. → `G-PWA-02`. | `scroll-experience` + `design-taste-frontend` |
+| `M-CLI-05` | P1 | Кольорова корекція карток: прибрати фіолет + шум; пастельний колір статусу через ніжні тіні / радіальні градієнти. | `impeccable (distill + colorize)` |
+| `M-CLI-06` | P1 🔄 | Сторінка клієнта (деталі) у CRM майстра: повний глибокий редизайн. | `design-taste-frontend` + `impeccable` |
+
+## A3. Записи (Bookings)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-BOOK-01` | P1 | Кольорова корекція карток (аналог `M-CLI-05`): пастель + прибрати шум. | `impeccable (distill + colorize)` |
+| `M-BOOK-02` | P1 | Таймлайн на день: bolder редизайн. | `impeccable (bolder)` + `design-taste-frontend` |
+| `M-BOOK-03` | P1 | Верхні віджети (заповненість/прогноз/лояльність/ефективність): клікабельні + overlay. | `senior-frontend` |
+| `M-BOOK-04` | P2 | Кнопка "Додати запис": зробити справжньою кнопкою з текстом + іконкою (a11y div→button). | `senior-frontend` |
+| `M-BOOK-05` | P1 🔄 | Сторінка деталі запису (зона майстра): повний глибокий редизайн. | `design-taste-frontend` + `impeccable` |
+
+## A4. Послуги (Services)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-SVC-01` | **P0** | Синхронізація даних (BUGFIX): аналітика по послугах не передається на бекенд. Налагодити пайплайн. | `diagnose` → `senior-backend` |
+| `M-SVC-02` | P1 | Картки послуг: редизайн у стилі топ-карток маркетплейсу. | `design-taste-frontend` + `impeccable` |
+| `M-SVC-03` | P1 🔄 | Режим "картка товару" (відгуки/описи) + доступний клієнтам на онлайн-записі. | `spec-driven-workflow` → `design-taste-frontend` |
+
+## A5. Аналітика (Analytics)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-ANL-01` | P1 🔄 | Повний фундаментальний редизайн усього модуля. | `spec-driven-workflow` → `design-taste-frontend` + `impeccable-design-polish` |
+
+## A6. Магазин (Shop / Products)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-SHOP-01` | P1 | Аналітика/статистика по кожному товару на його сторінці. | `senior-backend` + `design-taste-frontend` |
+| `M-SHOP-02` | P1 | Картки товарів: редизайн у стилі топ-карток маркетплейсу. | `design-taste-frontend` + `impeccable` |
+| `M-SHOP-03` | P1 🔄 | Режим "картка товару" + редизайн клієнтської сторінки магазину. | `design-taste-frontend` + `impeccable` |
+| `M-SHOP-04` | **P0** | Модалка поповнення → `vaul` (кнопка під навбаром) + додати собівартість. | `senior-frontend` (vaul) |
+
+## A7. Замовлення (Orders)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-ORD-01` | P2 | Сортування замовлень (сума / час) на додачу до фільтра по статусу. | `senior-frontend` |
+
+## A8. Портфоліо (Portfolio)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-PORT-01` | P1 | Стандартизувати всі картки за єдиним розміром незалежно від наповнення. | `impeccable (layout)` + `design-taste-frontend` |
+| `M-PORT-02` | P2 | Сторінка роботи: відгуки з пагінацією (без вертикального скролу). | `senior-frontend` + `design-taste-frontend` |
+
+## A9. Маркетинг (Сторіс + Розсилки)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-MKT-01` | P1 | Сторіс: усі типи у рівний грід відносно країв блоку. | `impeccable (layout)` + `design-taste-frontend` |
+| `M-MKT-02` | P2 | Зменшити розмір превью сторіс на 30%. | `design-taste-frontend` |
+| `M-MKT-03` | P2 | Додати кольорів до палітри сторіс. | `impeccable (colorize)` |
+| `M-MKT-04` | P1 🔄 | Покроковий проф-едітор сторіс (краще за IG Stories). | `spec-driven-workflow` → `senior-frontend` + `emilkowalski-motion` + `fixing-motion-performance` |
+| `M-MKT-05` | P1 | Розсилки: статистика inline + деталі по клієнтах inline (без редіректів). | `senior-frontend` + `senior-backend` |
+| `M-MKT-06` | P1 | Преміальні картки розсилок. | `design-taste-frontend` + `impeccable` |
+
+## A10. Revenue Hub (Флеш-акції + Смарт-ціни)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-REV-01` | P1 | Флеш-акції: преміальний редизайн. | `design-taste-frontend` + `impeccable-design-polish` |
+| `M-REV-02` | P1 | Дослідження працездатності авто-flash-deal. | `diagnose` + `inngest` / `senior-backend` |
+| `M-REV-03` | P1 | Детальна статистика кожної флеш-акції. | `senior-backend` + `database-optimizer` |
+| `M-REV-04` | P1 | Смарт-ціни: преміальний редизайн. | `design-taste-frontend` + `impeccable-design-polish` |
+| `M-REV-05` | P1 | Статистика по типах ціноутворення (+ціна → прибуток/записи; знижки → врятовані вікна). | `senior-backend` + `design-taste-frontend` |
+| `M-REV-06` | P2 | Редизайн інфо-блоку "ціноутворення". | `impeccable (distill)` |
+
+## A11. Ріст (Лояльність + Реферали + Партнери)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-GROW-01` | P1 | Лояльність: преміальний редизайн, картки-сутності, статистика досягнень + реферальна стата клієнтів. | `senior-backend` + `design-taste-frontend` |
+| `M-GROW-02` | P1 (HARD) | Об'єднати Реферали + Партнери в одну сутність/логіку. | `improve-codebase-architecture` → `senior-backend` + `security-review` (referral FK) |
+
+## A12. Відгуки (Reviews)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-REVW-01` | P1 | Редизайн + фільтрація і сортування. | `senior-frontend` + `design-taste-frontend` |
+| `M-REVW-02` | P2 | Клікабельні картки відгуків → детальна інформація. | `senior-frontend` + `impeccable` |
+
+## A13. Налаштування профілю (Settings — мобільний)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-SET-01` | P2 | "Графік роботи" нижче блоку інфо профілю. | `design-taste-frontend` |
+| `M-SET-02` | P1 | Допрацювання дизайну блоку інфо профілю. | `impeccable-design-polish` + `design-taste-frontend` |
+| `M-SET-03` | P1 | bookit assistant: активний, з посиланнями на елемент. | `senior-frontend` + `humanizer` |
+| `M-SET-04` | P1 🔄 | Відпустки + вихідні: повний редизайн з нуля, особливо інпути. | `design-taste-frontend` + `impeccable` |
+| `M-SET-05` | P1 | Аналіз логіки розрахунку заповненості по днях у графіку. | `domain-expert-scheduling` + `diagnose` |
+
+## A14. Тариф (Billing)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-BILL-01` | P1 | Спосіб оплати: стилізувати під бренд Monobank (`SaaS/docs`). | `payment-gateway-integration` + `design-taste-frontend` |
+| `M-BILL-02` | P2 | Pro-тариф у двічі довший за Starter, опис усього функціоналу. | `humanizer` + `design-taste-frontend` |
+
+## A15. Документи (Documents)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-DOC-01` | P2 | impeccable quieter + distill для всіх карток документів. | `impeccable (distill)` |
+
+## A16. Підтримка + Академія (Help)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `M-HELP-01` | P1 | Підтримка vs Академія: дедуп; пріоритет Академії — перенести все, навігація, проф-документація. | `humanizer` + `design-taste-frontend` |
+| `M-HELP-02` | P2 | Підтримка: зручна комунікація юзерів з власником. | `design-taste-frontend` + `humanizer` |
+
+---
+
+# B. КЛІЄНТСЬКА ЗОНА (B2C)
+
+`/explore`, `/my/*` — публічна частина BookIT. Бекенд готовий, задача — UI/UX.
+
+**Що вже готово на рівні даних:**
+- `/my/messages`: таблиці `conversations` + `direct_messages`, RLS, server actions, hooks
+- `/my/profile`: міграції `instagram_url` + `telegram_handle`, avatar upload logic
+- `/my/bookings`: `submitReview` action, `cancelBooking` action
+- `/explore`: фото `h-[134px]`, tags strip (PRO + Рекомендований + Є слот)
+
+## B1. /explore + Картки майстрів
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `C-EXPL-01` | P1 🔄 | `/explore` + клієнтський навбар: повний редизайн (пошук, фільтри, карточки; `MyBottomNav` FAB; `ClientNotificationsBell`). | `design-taste-frontend` + `emilkowalski-motion` |
+| `C-EXPL-02` | P1 | `MasterCard` + `MasterListCard`: redesign (однакова висота, WCAG badges, slot indicator, photo-first). | `design-taste-frontend` + `impeccable (layout)` |
+
+## B2. /my/bookings
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `C-BOOK-01` | P1 | Premium redesign: hero-card, grouping by master, статуси; `ReviewSheet` (vaul), `CancelSheet`, CTA "Записатись знову". | `design-taste-frontend` + `emilkowalski-motion` |
+
+## B3. /my/profile
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `C-PROF-01` | P1 | Identity Card redesign: avatar, ім'я, телефон, instagram, telegram; collapsible "Здоров'я та безпека"; isDirty save bar. | `design-taste-frontend` + `impeccable` |
+
+## B4. /my/messages
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `C-MSG-01` | P1 | UI redesign + keyboard UX: `MessagesListPage`, `DirectChatPage`, `ConversationRow`; `h-dvh`, input не перекривається клавіатурою. | `senior-frontend` (h-dvh) + `design-taste-frontend` + `emilkowalski-motion` |
+| `C-MSG-02` | P1 | Секція "Мої майстри" вгорі (горизонтальний скрол); header border fix; навбар ховається під час чату. | `scroll-experience` + `design-taste-frontend` |
+
+## B5. /my/masters + loyalty + notifications
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `C-MAST-01` | P1 | `MyMastersPage` + `MyLoyaltyPage` + `ClientNotificationsPage`: redesign. | `design-taste-frontend` + `impeccable` |
+
+## B6. Навбар + Onboarding
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `C-NAV-01` | P1 | `MyBottomNav` FAB redesign: Записи \| Бонуси \| [FAB] \| Чат \| Профіль; iOS-spring tap; safe area bottom. | `emilkowalski-motion` + `design-taste-frontend` |
+| `C-PHONE-01` | P1 | `/my/setup/phone`: редизайн верифікації (номер → OTP → success), Frost, мінімалістично. | `auth-implementation-patterns` + `design-taste-frontend` |
+
+## B7. Desktop layout
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `C-DESK-01` | P1 | Десктоп-лейаут усіх 8 сторінок (`lg:` 1024px+): explore 3-col, bookings 2-col, masters grid, messages Telegram-like, тощо. | `impeccable (layout)` + `design-taste-frontend` |
+
+---
+
+# C. СПІЛЬНЕ / ГЛОБАЛЬНЕ
+
+Лендинг, логін, PWA — не належать ані зоні майстра, ані клієнтській.
+
+## C1. Лендинг (Landing)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `G-LAND-01` | P1 | Блок "Для кого": нова секція з переліком спеціалізацій б'юті-сфери та суміжних ніш. | `landing-page-guide-v2` + `humanizer` |
+| `G-LAND-02` | **P0** | Мобільна шапка (BUGFIX): кнопку "Спробувати безкоштовно" компактнішою + відступи 10px. | `design-taste-frontend` |
+| `G-LAND-03` | P1 | Impeccable full pipeline audit + landing-page-guide-v2. | `impeccable` (full) + `landing-page-guide-v2` + `scroll-experience` |
+
+## C2. Логін (Login)
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `G-LOGIN-01` | P1 | Тексти: глобальний копірайт-редизайн (тон, заклики, преміальність). | `humanizer` |
+| `G-LOGIN-02` | **P0** | Мобільна версія (BUGFIX): фокус на інпут телефону; прибрати зазор над клавіатурою. | `diagnose` → `senior-frontend` |
+
+## C3. PWA / App-wide
+
+| ID | P | Задача | Спеціаліст-скіли |
+|----|---|--------|------------------|
+| `G-PWA-01` | P1 | Скляна Safe Area: при скролі контенту вгору зона працює як матове скло (blur/backdrop-filter). | `progressive-web-app` + `scroll-experience` |
+| `G-PWA-02` | P1 | Уніфікація горизонтальних скролів: ВСІ скроли проекту → кнопки-перемикачі + індикація. Парасолька для `M-DASH-03`, `M-CLI-04`. | `scroll-experience` + `design-taste-frontend` |
+
+---
+
+## Рекомендований порядок старту
+
+```
+ФАЗА 0 — P0 БАГИ (розблокувати функціонал)
+  M-SVC-01   Послуги: пайплайн даних зламаний (критично)
+  M-DASH-06  Пікові години: тултіп з 2-го тапу
+  M-SHOP-04  Магазин: модалка під навбаром → vaul + собівартість
+  G-LOGIN-02 Логін мобільний: фокус + зазор
+  G-LAND-02  Лендинг: мобільна шапка
+
+ФАЗА 1 — ГЛОБАЛЬНІ ОСНОВИ (потім спираються інші)
+  G-PWA-02   Уніфікація горизонтальних скролів (парасолька для M-DASH-03, M-CLI-04)
+  G-PWA-01   Скляна Safe Area
+
+ФАЗА 2 — ЗОНА МАЙСТРА: щоденні екрани
+  Дашборд (A1) → Клієнти (A2) → Записи (A3) → Послуги (A4) → Магазин (A6)
+
+ФАЗА 3 — ЗОНА МАЙСТРА: інструменти росту
+  Revenue Hub (A10) → Ріст (A11) → Маркетинг (A9) → Відгуки (A12) → Аналітика (A5)
+
+ФАЗА 4 — ЗОНА МАЙСТРА: налаштування + допоміжне
+  Settings (A13) → Тариф (A14) → Портфоліо (A8) → Замовлення (A7) → Документи (A15) → Help (A16)
+
+ФАЗА 5 — КЛІЄНТСЬКА ЗОНА (B)
+  C-NAV-01 → C-EXPL-01 → C-EXPL-02 → C-BOOK-01 → C-PROF-01 → C-MSG-02 → C-MSG-01
+  → C-MAST-01 → C-PHONE-01 → C-DESK-01
+
+ФАЗА 6 — ЛЕНДИНГ
+  G-LAND-01 → G-LAND-03 → G-LOGIN-01
+```
+
+---
+
+## Зведення
+
+- **Зона Майстра (A):** 16 розділів, 57 задач
+- **Клієнтська Зона (B):** 7 розділів, 10 задач
+- **Спільне / Глобальне (C):** 3 розділи, 7 задач
+- **Усього:** 74 задачі · з них **5 P0-багів** · 🔄 = повний редизайн/нова фіча (старт з `brainstorming`)
+
+> ✅ `TRACKER.md`, `HANDOFF.md`, `TASK.md`, `TRANSITION_PROMPT.md` синхронізовані під нову систему ID (M-/C-/G-) і фазовий порядок. ▶ NEXT = `M-SVC-01`.

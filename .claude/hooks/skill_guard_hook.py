@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-SKILL_GUARD_HOOK v2.0 — UserPromptSubmit (early enforcement).
+SKILL_GUARD_HOOK v3.0 — Stop event (end-of-turn enforcement).
 
-Fires at task START (not Stop). Checks session_state.skills_called:
-  - If no skills called yet + task prompt → inject MANDATORY skill selection notice
-  - If skills already called → inject reminder of which skills were used
-
-Goal: enforce skill selection at the BEGINNING of each task, not retroactively at session end.
+Replaces the old per-prompt nag (which fired on every task-keyword prompt and
+added noise). Now runs on Stop. Stays SILENT unless there is a real violation:
+code files were edited this session but no specialist work-skill was ever
+invoked. In that case it surfaces a single systemMessage.
 """
 import sys
 import json
@@ -15,17 +14,21 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-STATE_FILE    = Path(__file__).parent / "state" / "session_state.json"
-TAXONOMY_FILE = Path(__file__).parent / "skills-taxonomy.json"
+STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
 
-TASK_KEYWORDS = [
-    'зроби', 'задача', 'task', 'fix', 'фікс', 'баг', 'bug', 'створ', 'add ',
-    'покращ', 'redesign', 'рефактор', 'додай', 'виправ', 'build ', 'implement',
-    'реалізу', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9',
-    'зміни', 'оновити', 'налашту', 'конфігур', 'переробити',
-]
+CODE_EXT = (".ts", ".tsx", ".js", ".jsx", ".css")
 
-SESSION_KEYWORDS = ['привіт', 'hello', 'hi ', 'нова сесія', 'startup ok', 'починаємо', 'wake', 'старт']
+# Skills that count as real implementation/design work (not pure meta/workflow).
+WORK_SKILLS = {
+    "design-taste-frontend", "impeccable", "impeccable-design-polish",
+    "emilkowalski-motion", "senior-frontend", "senior-backend", "nextjs",
+    "nextjs-app-router-patterns", "scroll-experience", "landing-page-guide-v2",
+    "diagnose", "focused-fix", "spec-driven-workflow", "create-migration",
+    "react-best-practices", "tanstack-query", "zustand-state-management",
+    "tailwind-v4-shadcn", "progressive-web-app", "auth-implementation-patterns",
+    "payment-gateway-integration", "domain-expert-scheduling", "security-review",
+    "humanizer", "supabase-automation", "react-doctor", "improve-codebase-architecture",
+}
 
 
 def load_state() -> dict:
@@ -37,86 +40,34 @@ def load_state() -> dict:
     return {}
 
 
-def get_prompt_text(data: dict) -> str:
-    for key in ("message", "user_message", "prompt", "content"):
-        if key in data and isinstance(data[key], str):
-            return data[key]
-    if "messages" in data:
-        msgs = data.get("messages", [])
-        if msgs and isinstance(msgs[-1], dict):
-            return msgs[-1].get("content", "")
-    return ""
-
-
-def is_session_start(text: str) -> bool:
-    t = text.lower().strip()
-    return len(t) < 15 or any(kw in t for kw in SESSION_KEYWORDS)
-
-
-def is_task_prompt(text: str) -> bool:
-    t = text.lower()
-    return any(kw in t for kw in TASK_KEYWORDS)
-
-
-def get_quick_skill_menu() -> str:
-    """Load taxonomy and return compact skill menu by category."""
-    try:
-        if not TAXONOMY_FILE.exists():
-            return ""
-        taxonomy = json.loads(TAXONOMY_FILE.read_text(encoding="utf-8"))
-        lines = []
-        for cat, data in taxonomy.get("categories", {}).items():
-            skills = [s["name"] for s in data.get("skills", [])]
-            if skills:
-                top = skills[:3]
-                lines.append(f"  {cat}: {' | '.join(top)}")
-        return "\n".join(lines)
-    except Exception:
-        return ""
-
-
 def main() -> int:
+    # Drain the Stop payload; we don't need it.
     try:
-        raw = sys.stdin.buffer.read()
-        data = json.loads(raw.decode("utf-8", errors="replace"))
+        sys.stdin.buffer.read()
     except Exception:
-        print(json.dumps({}))
+        pass
+
+    state = load_state()
+    edit_counts = state.get("edit_counts", {})
+    skills_called = set(state.get("skills_called", []))
+
+    code_edited = any(
+        cnt > 0 and str(path).lower().endswith(CODE_EXT)
+        for path, cnt in edit_counts.items()
+    )
+    has_work_skill = bool(skills_called & WORK_SKILLS)
+
+    if code_edited and not has_work_skill:
+        msg = (
+            "Skill gate: code files were edited this session without any specialist "
+            "skill (design-taste-frontend / senior-frontend / senior-backend / "
+            "diagnose / ...). Per IRON RULE #2, declare + invoke the right skill "
+            "from SPRINT-05-BACKLOG/BACKLOG.md before the next code change."
+        )
+        print(json.dumps({"systemMessage": msg}, ensure_ascii=False))
         return 0
 
-    prompt = get_prompt_text(data)
-    if not prompt or is_session_start(prompt) or not is_task_prompt(prompt):
-        print(json.dumps({}))
-        return 0
-
-    state         = load_state()
-    skills_called = state.get("skills_called", [])
-    qa_passed     = state.get("qa_gate_passed", False)
-
-    lines = []
-
-    if not skills_called:
-        # No skill selected yet — point to skill_router suggestion (already injected above)
-        lines = [
-            "=== SKILL SELECTION REQUIRED (Iron Rule #2) ===",
-            "No skill invoked yet this session. See [MANDATORY] task route above.",
-            "HOW: write 'SKILL: [name]' AND call Skill(skill='[name]') in the SAME response.",
-        ]
-    else:
-        # Skills were called — show which ones as context
-        skills_str = ", ".join(skills_called[:5])
-        qa_str = "QA gate: PASSED" if qa_passed else "QA gate: NOT PASSED"
-        lines = [
-            f"Skills used this session: {skills_str} | {qa_str}",
-            "If starting a new task type, invoke the appropriate skill again.",
-        ]
-
-    output = {
-        "hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": "\n".join(lines)
-        }
-    }
-    print(json.dumps(output, ensure_ascii=False))
+    print(json.dumps({}))
     return 0
 
 

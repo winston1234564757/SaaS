@@ -55,72 +55,21 @@ def main():
     task_mode = is_task_prompt(prompt_text)
 
     lines = [
-        "=== IRON RULES ACTIVE (no exceptions) ===",
-        "- RULE -1: mempalace_status on wake-up | mempalace_search before decisions",
-        "- RULE 0:  encoding check before Edit/Write Cyrillic files",
-        "- RULE 0.5: all UI text -> /humanizer (except aria-label, data-testid, dates)",
-        "- RULE 1:  QA-GATE: clarify -> plan -> user ok -> code",
-        "- RULE 2:  Skills Decision Tree -> declare skill before iteration",
-        "- RULE 3:  Post-Change: tsc -> build -> mempalace_add_drawer -> SYSTEM_MAP",
-        "- RULE 4:  Framer: mode='popLayout' | spring as const | no emoji in UI",
-        "",
-        "=== SKILL INVOCATION ENFORCEMENT (ZERO TOLERANCE) ===",
-        "Writing 'SKILL: [name]' in text WITHOUT calling the Skill tool = PROTOCOL VIOLATION.",
-        "CORRECT: write 'SKILL: impeccable' → in the SAME response, call Skill tool with skill='impeccable'",
-        "WRONG:   write 'SKILL: impeccable' → explain what you'll do → forget to call the tool",
-        "WRONG:   write 'Invoking skill...' → never actually invoke",
-        "RULE: text declaration + Skill tool call MUST appear in the same response turn.",
-        "If you declare a skill → the very next tool call in that turn MUST be Skill(skill='...').",
-        "",
+        "Active protocol: CLAUDE.md (IRON RULES) + XDEV/PLANS/SPRINT-05-BACKLOG/WORKFLOW.md (task types + Task Brief gate).",
     ]
 
-    # Task-type prompt → inject mandatory gate with skill routing
+    # Task-type prompt → inject concise gate pointing to WORKFLOW.md Task Brief flow
     if task_mode:
-        t = prompt_text.lower()
-
-        # Detect task type for specific QA-GATE skills
-        bug_kw     = ['fix', 'bug', 'broken', 'error', 'crash', 'виправ', 'фікс', 'баг']
-        design_kw  = ['redesign', 'design', 'ui ', 'component', 'дизайн', 'компонент', 'зовніш']
-        feature_kw = ['feature', 'add ', 'implement', 'create', 'фіча', 'додай', 'реалізу', 'зроби', 'налаштуван']
-        db_kw      = ['migration', 'schema', 'rls', ' sql', 'database', 'міграці']
-        refactor_kw= ['refactor', 'рефактор', 'simplify', 'cleanup']
-
-        is_bug     = any(kw in t for kw in bug_kw)
-        is_design  = any(kw in t for kw in design_kw) or any(kw in t for kw in feature_kw)
-        is_db      = any(kw in t for kw in db_kw)
-        is_refactor= any(kw in t for kw in refactor_kw)
-
-        if is_db:
-            qa_skills = "Skill('grill-me') + Skill('security-review')"
-        elif is_bug or is_refactor:
-            qa_skills = "Skill('grill-me') + Skill('adversarial-reviewer')"
-        elif is_design:
-            qa_skills = "Skill('brainstorming') + Skill('grill-me')"
-        else:
-            qa_skills = "Skill('grill-me')"
-
         lines += [
-            "=== MANDATORY TASK GATE (complete BEFORE opening any file) ===",
-            "  [ ] 1. mempalace_search — search relevant context for THIS task",
-            f" [ ] 2. QA Gate — invoke {qa_skills} (task-type detected from prompt)",
-            "  [ ] 3. Skill Route — check SKILL ROUTE suggestion above, declare + invoke",
-            "  [ ] 4. Humanizer — list ALL UI strings, run /humanizer, confirm",
-            "  [ ] 5. Wait for user approval",
             "",
-            "After gate: reply 'GATE OK: search✓ | QA✓ | Skill: [name] | Humanizer: [status]'",
-            "ONLY THEN: open files and write code.",
-            "",
+            "=== TASK GATE (before code) ===",
+            "1. mempalace_search the task topic",
+            "2. Read current files (+ screenshot for REDESIGN)",
+            "3. Write BRIEFS/[ID].md (Task Brief) -> user APPROVE",
+            "4. Declare + invoke specialist skill from BACKLOG (same response)",
+            "5. UI text -> humanizer. Per-type depth + Tiers: WORKFLOW.md",
+            "Active task + NEXT: SPRINT-05-BACKLOG/HANDOFF.md (ignore XDEV/TASK.md, stale Sprint-04).",
         ]
-
-    if task_mode and TASK_FILE.exists():
-        try:
-            tasks = TASK_FILE.read_text(encoding="utf-8")
-            lines.append("=== TASK.md (active tasks) ===")
-            lines.append(tasks[:MAX_TASK_CHARS])
-            if len(tasks) > MAX_TASK_CHARS:
-                lines.append("... (truncated)")
-        except Exception as e:
-            lines.append(f"WARNING: TASK.md unreadable — {e}")
 
     context_text = "\n".join(lines)
 
