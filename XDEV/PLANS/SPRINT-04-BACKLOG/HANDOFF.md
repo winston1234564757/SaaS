@@ -10,6 +10,25 @@
 
 ---
 
+## ✅ Design Polish Pass — Frost System Compliance: ЗАВЕРШЕНО
+**Commit:** `88069921` | **Дата:** 2026-06-21 | **Скіл:** `impeccable-design-polish`
+
+**Root cause:** Після T30-v3 + bug fix аудит виявив 28 системних відхилень від дизайн-системи Frost: `#F0DDD6` hardcoded замість `var(--border)`, spring params 260/28 та 380/32 замість стандарту 340/26, всі кнопки дій `rounded-lg/xl` замість `rounded-full`, touch targets < 44px на 8 компонентах, overlay `bg-black/30` без `backdrop-blur-sm`.
+
+**Зроблено (10 файлів, 28 fixes):**
+- **BookingCard:** hardcoded pink divider → token, spring, 4 action btns → rounded-full
+- **StockWidget:** minHeight:20 inline style → removed (CSS class)
+- **ConsumableCard:** pills py-1.5 → py-2.5 min-h-[44px]
+- **RestockDrawer:** overlay + spring + preset buttons py-1 → py-2
+- **TransactionHistoryDrawer:** overlay + spring + close btn size-9 → size-11
+- **ServiceCard:** spring + size-8 icon btns → size-11 + rounded-full + confirm h-7 → h-8
+- **ServiceEditor:** checkbox size-6 → size-8, drawer action/confirm btns → rounded-full
+- **ProductEditor:** header back/delete/save + confirm dialog → rounded-full
+- **ProductsPage:** add button + EmptyProducts CTA → rounded-full
+- **ExpensesTab:** add btn h-9 → h-11, filter pills py-1.5 → py-2.5, delete size-8 → size-10
+
+---
+
 ## ✅ T30-v2 — Розхідники v2: структурний оверхол: ЗАВЕРШЕНО
 **Commit:** `1b8d4e11` | **Дата:** 2026-06-21 | **Скіл:** `design-taste-frontend`
 

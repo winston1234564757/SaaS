@@ -17,6 +17,11 @@
 ═══ ПОТОЧНИЙ СТАН ═══
 Прогрес: 32/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T31 — Smart Design System: Context-Adaptive UI
+Design Polish ✅ ЗАВЕРШЕНО (commit: 88069921):
+  ✅ 10 файлів, 28 fixes: rounded-full на всіх кнопках, min-h-[44px] touch targets
+  ✅ Spring стандарт: stiffness:340/damping:26 у всіх motion компонентах
+  ✅ Overlays: bg-black/40 backdrop-blur-sm (замість bg-black/30)
+  ✅ bg-[#F0DDD6] → bg-[var(--border)] токен в BookingCard
 T30-v3 ✅ ЗАВЕРШЕНО (commit: 4d1d2898):
   ✅ ConsumableCard: progress bar + threshold hint + pill redesign
   ✅ RestockDrawer: direct number input + presets +10/+50/+100 (ml/g)
