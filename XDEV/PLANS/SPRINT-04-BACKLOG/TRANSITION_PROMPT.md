@@ -15,8 +15,13 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 29/37 ✅ | Sprint-04 IN PROGRESS
+Прогрес: 30/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T31 — Smart Design System: Context-Adaptive UI
+T30-ux ✅ ЗАВЕРШЕНО (commit: 94627928):
+  ✅ ProductEditor: pre-select ?type=consumable, isConsumable, dynamic title, hide retail fields, unit suffix, price optional
+  ✅ ProductsPage: "Додати розхідник" CTA + low-stock badge на Розхідники tab
+  ✅ ConsumableCard: "+" → "Поповнити"
+  ✅ ServiceEditor: inline "Змінити" link per consumable, видалено bottom note
 T30 ✅ UX/UI ЗАВЕРШЕНО (commit: 1b1bfb8b):
   ✅ ConsumableCard + ConsumablesTab (3-й таб у ProductsPage)
   ✅ ProductEditor: unit selector pcs/ml/г

@@ -4,10 +4,38 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 27/37 ✅
-**Наступна задача:** **T30 — Розхідники: UX/UI реалізація**
-**Оновлено:** 2026-06-20
+**Прогрес:** 30/37 ✅
+**Наступна задача:** **T31 — Smart Design System: Context-Adaptive UI**
+**Оновлено:** 2026-06-21
 
+
+---
+
+## ✅ T30-ux — Розхідники: 10 UX-фіксів: ЗАВЕРШЕНО
+**Commit:** `94627928` | **Дата:** 2026-06-21 | **Скіл:** `design-taste-frontend`
+
+**Root cause:** T30 реалізував всі 5 модулів, але UX-дірки залишились: на таб Розхідники не було CTA; ProductEditor показував retail-поля (опис, фото, direct-link) для consumable; назва сторінки не мінялась; поле stock qty не показувало одиницю виміру; ServiceEditor не мав посилання для редагування прив'язки. 10 проблем виявлено через UX-аналіз від першої особи (маршрут «Додати розхідник»).
+
+**Зроблено:**
+- **ProductEditor (Write — повна заміна):**
+  - `useSearchParams` → pre-select `?type=consumable` при відкритті /new
+  - `const isConsumable = productType === 'consumable'` — derived var
+  - Динамічний `pageTitle` / `pageSubtitle` залежно від типу та `id`
+  - `{!isConsumable && <description>}` — опис прихований для consumable
+  - `{!isConsumable && <photos>}` — фото приховані для consumable
+  - Consumable block: unit selector першим, потім cost+price, потім auto-deduct
+  - `{isConsumable && <span>{UNIT_LABEL[unit]}</span>}` — суфікс на stock qty
+  - Label «Рекомендації клієнтам» → «Прив'язка до послуг» для consumable
+  - Toggle copy: «До всіх послуг» / «Конкретні послуги» для consumable
+  - Price валідація: `!isConsumable && price <= 0` — ціна необов'язкова для consumable
+  - `{id && !isConsumable && <"Пряме посилання">}` — direct-link тільки для retail
+- **ProductsPage (2 Edits):**
+  - Кнопка «Додати розхідник» для consumables tab → `/dashboard/products/new?type=consumable`
+  - Low-stock badge (warning circle) на TabBtn «Розхідники»
+- **ConsumableCard (1 Edit):** `+` → `Поповнити`
+- **ServiceEditor (2 Edits):** `import Link from 'next/link'` + inline «Змінити» посилання per consumable; видалено bottom note
+
+**4 файли. TSC:0. Build:clean.**
 
 ---
 
