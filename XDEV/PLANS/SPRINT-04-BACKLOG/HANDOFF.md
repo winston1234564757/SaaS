@@ -4,9 +4,24 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 32/37 ✅
-**Наступна задача:** **T31 — Smart Design System: Context-Adaptive UI**
+**Прогрес:** 33/37 ✅
+**Наступна задача:** **T16-redo — /explore + клієнтський навбар: повний редизайн**
 **Оновлено:** 2026-06-21
+
+---
+
+## ✅ T31 — Smart Design System: Context-Adaptive UI: ЗАВЕРШЕНО
+**Commit:** `21158d98` | **Дата:** 2026-06-21 | **Скіл:** `senior-frontend`
+
+**Root cause:** WeeklyChartWidget + PeakHoursWidget мали ідентичний `useLayoutEffect` clamp boilerplate продубльований у двох місцях (T08 фіксував per-widget, але не централізував). Greeting використовував фіксований `text-[26px]` без масштабування — довгі імена (Вероніка-Валентина) могли не вписатись.
+
+**Що зроблено (7 файлів, TSC:0 Build:clean):**
+- **useSmartTooltip.ts** (`src/lib/hooks/`): централізований hook для viewport clamp — `useLayoutEffect` видалено з обох widget-ів, замінено одним рядком `const clampedLeft = useSmartTooltip(tooltipRef, rawLeft)`
+- **useAdaptiveColor.ts** (`src/lib/hooks/`): WCAG luminance walk — йде вгору по DOM, знаходить перший непрозорий фон, обчислює відносну яскравість → повертає `'light' | 'dark'`. Поріг 0.179 (WCAG). Default: `'dark'` (безпечно для Frost)
+- **FitText.tsx** (`src/components/shared/`): ResizeObserver + canvas.measureText() бінарний пошук → max font-size що влізає в container. Budget = `width × maxLines`
+- **WeeklyChartWidget + PeakHoursWidget**: видалено useLayoutEffect clamp, додано `useSmartTooltip`
+- **GreetingWidget**: FitText замінює `text-[26px]` — весь рядок `"${greetingText}, ${firstName}"` масштабується (minSize:16, maxSize:28). `useAdaptiveColor` для адаптивного кольору тексту
+- **globals.css**: `.adaptive-text { mix-blend-mode: difference; color: white; }` — CSS-only zero-JS інверсія
 
 ---
 

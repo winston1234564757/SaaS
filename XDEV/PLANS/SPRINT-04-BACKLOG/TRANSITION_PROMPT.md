@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 32/37 ✅ | Sprint-04 IN PROGRESS
-Наступна: T31 — Smart Design System: Context-Adaptive UI
+Прогрес: 33/37 ✅ | Sprint-04 IN PROGRESS
+Наступна: T16-redo — /explore + клієнтський навбар: повний редизайн
 Розхідники UX Polish 🔄 50% (commit: 51c8feb5):
   ✅ ServiceEditor: consumables compact chips під metadata card
   ⬜ Інші сторінки — відкладено
@@ -60,11 +60,17 @@ T30 ✅ UX/UI ЗАВЕРШЕНО (commit: 1b1bfb8b):
   ✅ WaterfallChart 6-й бар operationalExpenses + FinancesTab 5 KPI cards
 Деталі: XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md
 
-T31 деталі (у HANDOFF.md):
-  - useSmartTooltip(anchorRef, options) → viewport-aware { x, y, side }
-  - FitText компонент: ResizeObserver + canvas.measureText() бінарний пошук
-  - .adaptive-text CSS клас + useAdaptiveColor hook
-  Скіл: spec-driven-workflow + senior-frontend + impeccable
+T31 ✅ ЗАВЕРШЕНО (commit: 21158d98):
+  ✅ useSmartTooltip: viewport clamp hook → замінив useLayoutEffect у Weekly+PeakHours
+  ✅ useAdaptiveColor: WCAG luminance walk → 'light'|'dark' text scheme
+  ✅ FitText: canvas binary search → auto-scale greeting text у GreetingWidget
+  ✅ .adaptive-text CSS class: mix-blend-mode:difference
+
+T16-redo деталі (у HANDOFF.md + TRACKER ##ClientDesign):
+  - ExplorePage повний редизайн (над нею вже є commit 3e151e5 але результат неприйнятний)
+  - MyBottomNav + ClientNotificationsBell
+  - Потрібне повне переосмислення з нуля: brainstorm → shape → generate → critique → motion → ship
+  Скіл: ui-ux-pro-max + design-taste-frontend + impeccable + emil-design-eng
 
 
 ═══ TASK GATE (обов'язково перед кодом) ═══

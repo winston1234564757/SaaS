@@ -334,6 +334,11 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `useExpenses.ts` | — | master_expenses CRUD (NEW T29/T30): `useExpenses(month?)`, `createExpense`, `updateExpense({id, payload})`, `deleteExpense` — masterId from useMasterContext internally |
 | `useConsumablesForBooking.ts` | — | Розхідники для запису (NEW T29/T30): `useConsumablesForBooking(bookingId \| null)` — null disables query; returns `{ product_id, name, unit, total_qty }[]` |
 
+### Design System Hooks (`src/lib/hooks/`) — NEW T31
+- `useSmartTooltip.ts` — viewport-aware tooltip clamp: `useSmartTooltip(tooltipRef, rawLeft, safeArea=8) → number | null`. Replaces duplicated useLayoutEffect in WeeklyChartWidget + PeakHoursWidget.
+- `useAdaptiveColor.ts` — WCAG luminance walk: `useAdaptiveColor(ref) → 'light' | 'dark'`. Walks DOM to first opaque background, computes relative luminance (threshold 0.179). Default: 'dark'.
+- `FitText.tsx` (shared): `src/components/shared/FitText.tsx` — `<FitText text minSize maxSize maxLines className style />`. ResizeObserver + canvas.measureText() binary search. Applied in GreetingWidget (frost).
+
 ### Session / PWA Hooks (`src/lib/hooks/`)
 - `useSessionWakeup.ts` — visibility change → `resetFetchController` → `invalidateQueries` (усуває нескінченні скелетони після переключення вкладок)
 - `useDeepSleepWakeup.ts` — JS freeze detection → `onlineManager` + `invalidateQueries`
