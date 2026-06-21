@@ -105,7 +105,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
                 exit={{ opacity: 0, width: 0 }}
                 className="flex items-center gap-1 overflow-hidden"
               >
-                <span className="text-xs text-destructive font-medium whitespace-nowrap ml-1">Видалити?</span>
+                <span className="text-xs text-muted-foreground/70 whitespace-nowrap ml-1">Заховати послугу?</span>
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onDelete(service.id); }}
@@ -122,7 +122,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
                 </button>
               </motion.div>
             ) : (
-              <Tooltip key="btn" content={<p className="text-xs text-foreground">Видалити послугу</p>} position="top">
+              <Tooltip key="btn" content={<p className="text-xs text-foreground max-w-[180px]">Послуга буде захована — записи та статистика збережуться</p>} position="top">
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}

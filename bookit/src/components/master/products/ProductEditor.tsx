@@ -581,12 +581,23 @@ export function ProductEditor({ id }: Props) {
                     </div>
 
                     {costPerUsageKopecks != null && (
-                      <div className="bg-primary/8 rounded-xl px-4 py-2.5 flex items-center justify-between border border-primary/20">
-                        <span className="text-[10px] text-muted-foreground/70 font-semibold">Собівартість</span>
-                        <span className="text-sm font-bold text-primary">
-                          {(costPerUsageKopecks / 100).toFixed(2)} ₴ / {UNIT_LABEL[unit]}
-                        </span>
-                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        transition={{ type: 'spring' as const, stiffness: 340, damping: 28 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[var(--accent-light)] border border-[var(--border)]">
+                          <Bell size={14} className="text-[var(--accent)] mt-0.5 shrink-0" />
+                          <p className="text-xs text-[var(--text-secondary)]">
+                            Собівартість:{' '}
+                            <span className="font-bold text-[var(--text-primary)]">
+                              {(costPerUsageKopecks / 100).toFixed(2)} ₴ / {UNIT_LABEL[unit]}
+                            </span>
+                            {' '}— автоматично підставиться в поле нижче і піде в розрахунок маржинальності послуг
+                          </p>
+                        </div>
+                      </motion.div>
                     )}
                   </div>
                 </div>
@@ -898,6 +909,31 @@ export function ProductEditor({ id }: Props) {
           </motion.div>
         </div>
       )}
+
+      {/* Sticky save bar */}
+      <div className="sticky bottom-0 z-10 bg-[var(--background)]/80 backdrop-blur-xl border-t border-[var(--border)] -mx-4 px-4 py-3 mt-2" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          {id && (
+            <button
+              type="button"
+              onClick={() => setShowDelete(v => !v)}
+              aria-label="Видалити"
+              className="size-11 rounded-full border border-[var(--border-strong)] flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors active:scale-[0.93]"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving || uploading}
+            className="flex-1 h-11 rounded-full bg-[var(--accent)] text-[var(--accent-on)] font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.97] transition-transform"
+          >
+            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+            {isSaving ? 'Зберігаємо...' : (id ? 'Зберегти зміни' : 'Створити')}
+          </button>
+        </div>
+      </div>
 
       <CropDrawer
         open={cropOpen}

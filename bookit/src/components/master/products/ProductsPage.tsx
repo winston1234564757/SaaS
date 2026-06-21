@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Package, ShoppingBag, FlaskConical } from 'lucide-react';
+import { Plus, Package, ShoppingBag, FlaskConical, Search } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { DropResult } from '@hello-pangea/dnd';
 const DragDropContext = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.DragDropContext })), { ssr: false });
@@ -54,6 +54,7 @@ export function ProductsPage() {
 
   const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('products_v1', PRODUCTS_STEPS);
 
+  const [consumableSearch, setConsumableSearch] = useState('');
   const { products, isLoading: pLoading, toggleActive, reorderProducts } = useProducts();
   const { orders, isLoading: oLoading, updateStatus } = useOrders(orderFilter);
 
@@ -76,6 +77,9 @@ export function ProductsPage() {
   const activeCount = products.filter(p => p.is_active).length;
   const lowStock = products.filter(p => p.is_active && p.stock_qty <= 3).length;
   const consumables = products.filter(p => p.product_type === 'consumable');
+  const filteredConsumables = consumables.filter(p =>
+    p.name.toLowerCase().includes(consumableSearch.toLowerCase())
+  );
   const lowConsumables = consumables.filter(p => p.stock_qty <= (p.unit === 'pcs' ? 3 : 10)).length;
   const newOrders = orders.filter(o => o.status === 'new').length;
   const totalOrders = orders.length;
@@ -291,15 +295,33 @@ export function ProductsPage() {
                 transition={{ duration: 0.15 }}
                 className="flex flex-col gap-3"
               >
+                {consumables.length > 0 && (
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Пошук розхідника..."
+                      value={consumableSearch}
+                      onChange={e => setConsumableSearch(e.target.value)}
+                      aria-label="Пошук розхідника"
+                      className="w-full h-10 pl-9 pr-4 rounded-full bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 outline-none transition-all"
+                    />
+                  </div>
+                )}
                 {consumables.length === 0 ? (
                   <div className="bento-card p-8 text-center text-muted-foreground/60 text-sm">
                     Додайте перший розхідник — оберіть &quot;Розхідник&quot; при створенні товару
                   </div>
+                ) : filteredConsumables.length === 0 ? (
+                  <div className="bento-card p-6 text-center text-muted-foreground/60 text-sm">
+                    Нічого не знайдено
+                  </div>
                 ) : (
-                  consumables.map(p => (
+                  filteredConsumables.map((p, i) => (
                     <ConsumableCard
                       key={p.id}
                       product={p}
+                      index={i}
                       onEdit={openEdit}
                       onRestock={openRestock}
                     />

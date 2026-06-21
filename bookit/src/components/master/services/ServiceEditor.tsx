@@ -15,6 +15,7 @@ import {
   FlaskConical,
   Plus,
   X,
+  Lock as LockIcon,
 } from 'lucide-react';
 import { Drawer } from 'vaul';
 import { motion } from 'framer-motion';
@@ -536,14 +537,19 @@ export function ServiceEditor({ id }: Props) {
         </div>
       </div>
 
-      {/* Consumables section — always shown for existing service */}
-      {id ? (
-        <div className="widget-card p-5 flex flex-col gap-4 border border-border rounded-[24px] bg-card">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FlaskConical size={16} className="text-muted-foreground" />
-              <p className="text-sm font-semibold text-foreground">Розхідники послуги</p>
-            </div>
+      {/* Consumables section — always visible, disabled for unsaved services */}
+      <div className={`widget-card p-5 flex flex-col gap-4 border border-border rounded-[24px] bg-card ${!id ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FlaskConical size={16} className="text-muted-foreground" />
+            <p className="text-sm font-semibold text-foreground">Розхідники послуги</p>
+          </div>
+          {!id ? (
+            <span className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
+              <LockIcon size={11} />
+              Спочатку збережіть
+            </span>
+          ) : (
             <button
               type="button"
               onClick={handleOpenAddSheet}
@@ -552,55 +558,48 @@ export function ServiceEditor({ id }: Props) {
               <Plus size={13} />
               Додати матеріал
             </button>
-          </div>
-
-          <p className="text-xs text-muted-foreground/60 -mt-2">
-            Списуються зі складу при завершенні запису
-          </p>
-
-          {linkedConsumables.length === 0 ? (
-            <div className="py-6 text-center">
-              <FlaskConical size={28} className="text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground/50">Розхідники не налаштовано</p>
-              <p className="text-[10px] text-muted-foreground/40 mt-0.5">Натисніть «Додати матеріал» вище</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {linkedConsumables.map(c => (
-                <div key={c.product_id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
-                  <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-bold text-muted-foreground">
-                      {c.quantity} {UNIT_LABEL[c.unit]}
-                    </span>
-                    <Link
-                      href={`/dashboard/products/${c.product_id}`}
-                      className="text-xs font-semibold text-primary hover:underline"
-                    >
-                      Змінити
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveConsumable(c.product_id)}
-                      aria-label={`Видалити ${c.name}`}
-                      className="size-6 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors active:scale-95"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
           )}
         </div>
-      ) : (
-        <div className="widget-card p-5 border border-dashed border-border rounded-[24px] bg-card/50">
-          <div className="flex items-center gap-2 text-muted-foreground/50">
-            <FlaskConical size={15} />
-            <p className="text-xs">Збережіть послугу, щоб прив&apos;язати розхідники</p>
+
+        <p className="text-xs text-muted-foreground/60 -mt-2">
+          Списуються зі складу при завершенні запису
+        </p>
+
+        {linkedConsumables.length === 0 ? (
+          <div className="py-6 text-center">
+            <FlaskConical size={28} className="text-muted-foreground/20 mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground/50">Розхідники не налаштовано</p>
+            <p className="text-[10px] text-muted-foreground/40 mt-0.5">Натисніть «Додати матеріал» вище</p>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-col gap-2">
+            {linkedConsumables.map(c => (
+              <div key={c.product_id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
+                <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    {c.quantity} {UNIT_LABEL[c.unit]}
+                  </span>
+                  <Link
+                    href={`/dashboard/products/${c.product_id}`}
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    Змінити
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveConsumable(c.product_id)}
+                    aria-label={`Видалити ${c.name}`}
+                    className="size-6 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors active:scale-95"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Delete confirm */}
       {showDeleteConfirm && (

@@ -11,6 +11,7 @@ import { ServiceCard } from './ServiceCard';
 import { useServices, type ServiceRow } from '@/lib/supabase/hooks/useServices';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
+import { useToast } from '@/lib/toast/context';
 
 // DnD is excluded from the initial bundle — loads async after hydration
 const DragDropContext = dynamic(
@@ -73,13 +74,14 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
   const router = useRouter();
   const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('services_v1', SERVICES_STEPS);
 
+  const { showToast } = useToast();
   const _s = useServices({ initialRows: initialServicesData });
   const services: Service[] = _s.services;
   const { isLoading: sLoading, error: sError, deleteService, toggleService, reorderServices } = _s;
 
   const grouped = useMemo(() => groupByCategory(services), [services]);
 
-  function handleServiceDragEnd(result: DropResult) {
+  async function handleServiceDragEnd(result: DropResult) {
     if (!result.destination) return;
     if (result.source.droppableId !== result.destination.droppableId) return;
     if (result.source.index === result.destination.index) return;
@@ -96,7 +98,13 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
 
     const next = [...services];
     positions.forEach((pos, i) => { next[pos] = reordered[i]; });
-    reorderServices(next);
+
+    try {
+      await reorderServices(next);
+      showToast({ type: 'success', title: 'Порядок збережено', duration: 1500 });
+    } catch {
+      showToast({ type: 'error', title: 'Не вдалося зберегти порядок' });
+    }
   }
 
   function openEditService(s: Service) {
