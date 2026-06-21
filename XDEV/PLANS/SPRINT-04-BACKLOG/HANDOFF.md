@@ -4,10 +4,30 @@
 
 **Спринт:** Sprint-04 (37 задач)
 **Розпочато:** 2026-06-12
-**Прогрес:** 30/37 ✅
+**Прогрес:** 31/37 ✅
 **Наступна задача:** **T31 — Smart Design System: Context-Adaptive UI**
 **Оновлено:** 2026-06-21
 
+---
+
+## ✅ T30-v2 — Розхідники v2: структурний оверхол: ЗАВЕРШЕНО
+**Commit:** `1b8d4e11` | **Дата:** 2026-06-21 | **Скіл:** `design-taste-frontend`
+
+**Root cause:** Після T30-ux виявлено 5 глибших структурних проблем: тип товару обирався вручну (мав визначатись з URL); bulk pricing відсутній (майстер не міг розрахувати собівартість мл/г з ціни за кг/L); прив'язка до послуг — другорядний елемент у сайдбарі; ServiceEditor read-only (неможливо змінити список розхідників); ExpensesTab — сирий CRUD для launch; StockWidget на dashboard відсутній; stock alert check — cron замість server-side.
+
+**Зроблено:**
+- **ProductEditor (Write — повна заміна v2):** bulk pricing блок (5 purchase units: шт/мл/г/л/кг + qty + price + live «Собівартість: X₴/мл»); alert threshold з unit суфіксом + hint; service linking як Step 2 full-width section нижче grid; no type toggle; cost auto-fill з bulk pricing
+- **ServiceEditor (Write — повна заміна):** consumables section завжди показується (empty state якщо нема); per-row X remove (`removeServiceConsumableLink`); «Додати матеріал» → vaul BottomSheet з checkboxes + qty inputs; для нового сервісу — placeholder «Збережіть послугу»
+- **services/actions.ts (new):** `removeServiceConsumableLink` + `addServiceConsumableLinks` (admin client, upsert on conflict)
+- **products/actions.ts:** `purchase_unit/qty/purchase_price_kopecks` у payload; `recommend_always` default=false для consumable; price validation `!isConsumable && price <= 0`
+- **bookings/actions.ts:** `notifyMasterStockAlert` import; select + `name, unit, stock_alert_threshold`; post-decrement check `if stock_qty <= threshold → notifyMasterStockAlert`
+- **StockWidget.tsx (new):** frost widget зі складом — critical items червоні progress bar, «X мало» badge; `Link` до products
+- **FrostDashboard.tsx:** `<StockWidget />` після FrostMetricsStrip (mobile + desktop)
+- **ExpensesTab.tsx:** placeholder «Незабаром» — BarChart3 icon + 4 bullets + warning badge
+- **RevenueHubClient.tsx:** видалено stale `isPro` prop
+- **Migration 145:** `purchase_unit TEXT CHECK`, `purchase_qty NUMERIC(10,3)`, `purchase_price_kopecks INT`
+- **useProducts.ts:** PRODUCT_SELECT + 3 нові поля; database.ts + 3 нові поля на Product
+- **12 files. TSC:0. Build:clean.**
 
 ---
 

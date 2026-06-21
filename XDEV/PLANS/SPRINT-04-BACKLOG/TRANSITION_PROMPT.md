@@ -15,8 +15,16 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: T[N] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 30/37 ✅ | Sprint-04 IN PROGRESS
+Прогрес: 31/37 ✅ | Sprint-04 IN PROGRESS
 Наступна: T31 — Smart Design System: Context-Adaptive UI
+T30-v2 ✅ ЗАВЕРШЕНО (commit: 1b8d4e11):
+  ✅ ProductEditor v2: bulk pricing (закупка→собівартість мл auto-calc), alert threshold, Step 2 service linking full-width
+  ✅ ServiceEditor v2: повний CRUD vaul BottomSheet + X remove per row + empty state
+  ✅ services/actions: removeServiceConsumableLink + addServiceConsumableLinks
+  ✅ bookings/actions: stock alert post-decrement check
+  ✅ StockWidget frost + FrostDashboard integration
+  ✅ ExpensesTab: "Незабаром" placeholder
+  ✅ Migration 145: purchase_unit/qty/price_kopecks на products
 T30-ux ✅ ЗАВЕРШЕНО (commit: 94627928):
   ✅ ProductEditor: pre-select ?type=consumable, isConsumable, dynamic title, hide retail fields, unit suffix, price optional
   ✅ ProductsPage: "Додати розхідник" CTA + low-stock badge на Розхідники tab

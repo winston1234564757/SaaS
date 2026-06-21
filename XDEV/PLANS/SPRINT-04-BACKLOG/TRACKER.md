@@ -2,7 +2,7 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план + acceptance: `SPRINT-04-PLAN.md`
 
-**Прогрес:** 30/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-21
+**Прогрес:** 31/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-21
 
 > ⚠️ **РЕСТРУКТУРИЗАЦІЯ 2026-06-16:** Ітерації 16–22 переміщено в `##ClientDesign` — над ними велась робота, але бажаний дизайн-результат не досягнуто. Потрібне повне переосмислення UX/UI по `CLIENT_ZONE_REDESIGN.md`.
 
@@ -54,6 +54,7 @@
 | 30 | T29 | Розхідники: міграції + серверна логіка | ✅ | `create-migration` + `senior-backend` | `82e04e7d` | migrations 142-144; Product.unit; MasterExpense; ReviewedConsumable; expenses.actions; completeBooking+deduction; useExpenses; useConsumablesForBooking; RPC +operational_expenses_total |
 | 31 | T30 | Розхідники: UX/UI реалізація | ✅ | `design-taste-frontend` + `impeccable` | `1b1bfb8b` | ConsumableCard + ConsumablesTab (3-й таб) + unit selector pcs/ml/г + MaterialsReviewSheet intercept + BookingCard/Dropdown/DetailsModal + ServiceEditor read-only + ExpensesTab Pro-gate CRUD + RevenueHub Фінанси tab + WaterfallChart 6-й бар + FinancesTab 5 KPI. 13 files. TSC:0 Build:clean |
 | 31.5 | T30-ux | Розхідники: 10 UX-фіксів (4 файли) | ✅ | `design-taste-frontend` | `94627928` | ProductEditor: pre-select ?type=consumable + isConsumable + dynamic title + hide retail fields + reorder consumable block + unit suffix on stock + label fix + consumable toggle copy + price optional. ProductsPage: Додати розхідник CTA + low-stock badge. ConsumableCard: Поповнити. ServiceEditor: inline Змінити link per consumable. TSC:0 Build:clean |
+| 31.8 | T30-v2 | Розхідники v2: структурний оверхол | ✅ | `design-taste-frontend` | `1b8d4e11` | ProductEditor: bulk pricing (закупка кг/L→собівартість мл/г auto), alert threshold, Step 2 service linking full-width, no type toggle. ServiceEditor: повний CRUD vaul BottomSheet picker + X remove. services/actions new. bookings/actions: stock alert check post-decrement. StockWidget frost. FrostDashboard: StockWidget. ExpensesTab: placeholder. Migration 145. TSC:0 Build:clean |
 | 32 | T31 | Smart Design System: Context-Adaptive UI | ⬜ | `spec-driven-workflow` + `senior-frontend` + `impeccable` | useSmartTooltip + FitText + .adaptive-text |
 
 ---
