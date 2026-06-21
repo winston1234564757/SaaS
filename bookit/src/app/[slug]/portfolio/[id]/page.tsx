@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -10,7 +11,7 @@ import { PortfolioPhotoViewer } from '@/components/public/portfolio/PortfolioPho
 
 export const revalidate = 300;
 
-async function getPortfolioItem(slug: string, id: string) {
+const getPortfolioItem = cache(async (slug: string, id: string) => {
   const supabase = createPublicClient();
 
   const { data: mp } = await supabase
@@ -106,7 +107,7 @@ async function getPortfolioItem(slug: string, id: string) {
       reviews: reviewsRes.data ?? [],
     },
   };
-}
+});
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string; id: string }> }

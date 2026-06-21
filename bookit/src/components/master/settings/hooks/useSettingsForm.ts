@@ -135,7 +135,7 @@ export function useSettingsForm() {
       const supabase = createClient();
       const { data } = await supabase
         .from('schedule_templates')
-        .select('*')
+        .select('day_of_week, is_working, start_time, end_time')
         .eq('master_id', masterProfile.id);
 
       if (data && data.length > 0) {

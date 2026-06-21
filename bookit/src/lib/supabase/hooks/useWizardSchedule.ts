@@ -96,7 +96,7 @@ export function useWizardSchedule(masterId: string | undefined | null, from: str
     },
     enabled: !!masterId,
     placeholderData: keepPreviousData,
-    staleTime: 0,                // always stale — background refetch on every wizard open
+    staleTime: 30_000,
     gcTime:    1000 * 60 * 2,    // 2 min cache lifetime
     retry: 3,                    // Silent retries on flaky mobile networks
   });

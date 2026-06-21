@@ -430,10 +430,11 @@ export async function createBooking(
   // Server re-computes balance — client-supplied c2cBonusToUse is a hint only.
   let c2cBonusActual = 0;
   if (p.source === 'online' && p.c2c_bonus_to_use && resolvedClientId && masterC2cEnabled) {
-    const { data: balance } = await admin.rpc('get_c2c_balance', {
+    const { data: balance, error: balanceError } = await admin.rpc('get_c2c_balance', {
       p_referrer_id: resolvedClientId,
       p_master_id: p.masterId,
     });
+    if (balanceError) throw new Error(`C2C balance RPC failed: ${balanceError.message}`);
     const serverBalance = typeof balance === 'number' ? balance : 0;
     // Cap: client request ≤ server balance AND ≤ 80
     c2cBonusActual = Math.min(p.c2c_bonus_to_use, serverBalance, 80);

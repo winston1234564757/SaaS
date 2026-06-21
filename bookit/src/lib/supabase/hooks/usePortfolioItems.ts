@@ -51,7 +51,7 @@ export function usePortfolioItems(initialItems?: PortfolioItemFull[]) {
       });
     },
     initialData: initialItems,
-    staleTime: 0, // always refetch on mount — ensures draft/edit changes are reflected immediately
+    staleTime: 60_000,
   });
 }
 

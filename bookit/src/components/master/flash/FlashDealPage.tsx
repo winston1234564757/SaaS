@@ -452,8 +452,8 @@ const AutoFlashSettingsCard = React.memo(({
         style={{ background: enabled ? '#5C9E7A' : '#D1D5DB' }}
       >
         <motion.span
-          className="absolute top-0.5 size-5 rounded-full bg-white shadow-sm"
-          animate={{ left: enabled ? '1.375rem' : '0.125rem' }}
+          className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow-sm"
+          animate={{ x: enabled ? 20 : 0 }}
           transition={{ type: 'spring', stiffness: 500, damping: 35 }}
         />
       </button>

@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MotionConfig } from 'framer-motion';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingHero } from '@/components/landing/LandingHero';
@@ -72,7 +70,6 @@ export function LandingPageContent() {
   }, []);
 
   useEffect(() => {
-    // Check prefers-reduced-motion / weak devices check inside GSAP setup too
     const systemReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let isReducedDevice = systemReduced;
     if (typeof navigator !== 'undefined') {
@@ -83,51 +80,50 @@ export function LandingPageContent() {
       }
     }
 
-    if (isReducedDevice) {
-      return; // Do not register heavy GSAP scroll animations
-    }
+    if (isReducedDevice || window.innerWidth < 1024) return;
 
-    if (window.innerWidth < 1024) {
-      return; // card-rise disabled on mobile/tablet — touch scroll handles it natively
-    }
+    let revert: (() => void) | undefined;
+    let mounted = true;
 
-    gsap.registerPlugin(ScrollTrigger);
+    Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(
+      ([{ default: gsap }, { ScrollTrigger }]) => {
+        if (!mounted) return;
 
-    const ctx = gsap.context(() => {
-      SECTIONS.forEach((sec, i) => {
-        const prev = SECTIONS[i - 1];
+        gsap.registerPlugin(ScrollTrigger);
 
-        // Only consecutive overlap: true pairs participate in the card-rise effect.
-        // overlap: false (Process, FAQ) breaks the chain — no pin, no rise around them.
-        if (!sec.overlap || !prev?.overlap) return;
+        const ctx = gsap.context(() => {
+          SECTIONS.forEach((sec, i) => {
+            const prev = SECTIONS[i - 1];
+            if (!sec.overlap || !prev?.overlap) return;
 
-        // CSS margin-top: -OVERLAP pulls the rising section 30vh up in layout flow,
-        // pre-closing the gap that would appear once it animates up.
-        // gsap.set(y: OVERLAP) counteracts this visually → looks natural on load.
-        gsap.set(`#${sec.id}`, { y: OVERLAP });
+            gsap.set(`#${sec.id}`, { y: OVERLAP });
+            gsap.to(`#${sec.id}`, {
+              y: 0,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: `#${prev.id}`,
+                start: 'bottom bottom',
+                end: `+=${OVERLAP}`,
+                pin: true,
+                pinType: 'transform',
+                anticipatePin: 1,
+                scrub: true,
+                invalidateOnRefresh: true,
+              },
+            });
+          });
 
-        // prev section pins; current section rises scrubbed 1:1 to the scroll wheel.
-        // ease: 'none' → scrub owns the easing feel entirely.
-        gsap.to(`#${sec.id}`, {
-          y: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: `#${prev.id}`,
-            start: 'bottom bottom',   // pins when prev bottom touches viewport bottom
-            end: `+=${OVERLAP}`,      // 30vh of scroll = full rise = pin releases
-            pin: true,
-            pinType: 'transform',     // keeps element in DOM flow — no position:fixed jump
-            anticipatePin: 1,         // prevents the pop on fast scroll
-            scrub: true,              // perfect 1:1 with scroll — zero lag
-            invalidateOnRefresh: true,
-          },
+          ScrollTrigger.refresh();
         });
-      });
 
-      ScrollTrigger.refresh();
-    });
+        revert = () => ctx.revert();
+      }
+    );
 
-    return () => ctx.revert();
+    return () => {
+      mounted = false;
+      revert?.();
+    };
   }, []);
 
   return (

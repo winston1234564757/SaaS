@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createPublicClient } from '@/lib/supabase/public';
@@ -7,7 +8,7 @@ import type { Product } from '@/types/database';
 
 export const revalidate = 60;
 
-async function getMasterShop(slug: string) {
+const getMasterShop = cache(async (slug: string) => {
   const supabase = createPublicClient();
   const { data } = await supabase
     .from('master_profiles')
@@ -19,7 +20,7 @@ async function getMasterShop(slug: string) {
     .eq('is_published', true)
     .single();
   return data;
-}
+});
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }

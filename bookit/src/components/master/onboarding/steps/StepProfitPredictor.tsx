@@ -219,8 +219,8 @@ export function StepProfitPredictor({
               style={{ background: flashDealsEnabled ? '#C99020' : '#D4C5C0' }}
             >
               <motion.div
-                className="absolute top-1 size-4 rounded-full bg-secondary shadow-sm"
-                animate={{ left: flashDealsEnabled ? '28px' : '4px' }}
+                className="absolute top-1 left-1 size-4 rounded-full bg-secondary shadow-sm"
+                animate={{ x: flashDealsEnabled ? 24 : 0 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
             </button>

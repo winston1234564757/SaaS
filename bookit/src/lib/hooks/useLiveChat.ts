@@ -17,7 +17,6 @@ interface SupportMessagePayload {
 export function useLiveChat(ticketId: string | null) {
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     if (!ticketId) {
@@ -25,13 +24,13 @@ export function useLiveChat(ticketId: string | null) {
       return;
     }
 
+    const supabase = createClient();
     setLoading(true);
 
-    // 1. Fetch initial messages
     const fetchInitialMessages = async () => {
       const res = await supabase
         .from('support_messages')
-        .select('*')
+        .select('id, ticket_id, sender_id, message, attachment_url, created_at')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
 
@@ -43,7 +42,6 @@ export function useLiveChat(ticketId: string | null) {
 
     fetchInitialMessages();
 
-    // 2. Subscribe to Supabase Realtime postgres_changes
     const channel = supabase
       .channel(`chat_messages:${ticketId}`)
       .on(
@@ -66,7 +64,7 @@ export function useLiveChat(ticketId: string | null) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [ticketId, supabase]);
+  }, [ticketId]);
 
   return { messages, loading, setMessages };
 }

@@ -140,11 +140,11 @@ function PhoneMockup({
             <AnimatePresence>
               {flashDealsEnabled && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginTop: 6 }}
-                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
+                  className="overflow-hidden mt-1.5"
                 >
                   <div
                     className="flex items-center gap-1 px-2 py-1 rounded-lg"

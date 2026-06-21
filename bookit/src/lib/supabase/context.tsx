@@ -178,7 +178,10 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     };
   }, [supabase, fetchProfile]);
 
-  const contextValue = ({ user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile });
+  const contextValue = useMemo(
+    () => ({ user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile }),
+    [user, profile, masterProfile, subscription, isLoading, refresh, isImpersonating, realAdminProfile]
+  );
 
   return (
     <MasterContext.Provider value={contextValue}>

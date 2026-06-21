@@ -96,8 +96,9 @@ export async function GET(req: NextRequest) {
       if (sub.plan_id !== 'pro') throw new Error(`Unknown plan_id: ${sub.plan_id}`);
 
       // ── Pro: read billing state atomically, decide branch ──
-      const { data: stateRows } = await admin
-        .rpc('get_master_billing_state', { p_master_id: sub.master_id }) as { data: BillingStateRow[] | null };
+      const { data: stateRows, error: stateError } = await admin
+        .rpc('get_master_billing_state', { p_master_id: sub.master_id }) as { data: BillingStateRow[] | null; error: unknown };
+      if (stateError) throw new Error(`Billing state RPC failed for ${sub.master_id}`);
 
       const state = stateRows?.[0];
       const decision = calculateBillingDecision({

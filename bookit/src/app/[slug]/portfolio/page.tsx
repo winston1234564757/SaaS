@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -7,7 +8,7 @@ import { ArrowLeft, Scissors, Star, Images } from 'lucide-react';
 
 export const revalidate = 300;
 
-async function getMasterPortfolio(slug: string) {
+const getMasterPortfolio = cache(async (slug: string) => {
   const supabase = createPublicClient();
 
   const { data: mp } = await supabase
@@ -34,7 +35,7 @@ async function getMasterPortfolio(slug: string) {
     .order('display_order', { ascending: true });
 
   return { masterName, slug, items: items ?? [] };
-}
+});
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
