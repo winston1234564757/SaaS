@@ -273,6 +273,9 @@ export async function updateBookingStatus(
 
 export async function completeBooking(
   bookingId: string,
+  // undefined  = client didn't provide (race condition) → auto-fetch server-side
+  // []         = user explicitly skipped deduction ("Без списання")
+  // [{...}]    = user reviewed and confirmed quantities
   reviewedConsumables?: { product_id: string; qty_used: number }[],
 ): Promise<{ error: string | null }> {
   const supabase = await createClient();
@@ -284,15 +287,44 @@ export async function completeBooking(
 
     const { data: booking } = await admin
       .from('bookings')
-      .select('master_id, client_id, date, start_time, booking_services(service_name), master_profiles(profiles(full_name))')
+      .select('master_id, client_id, date, start_time, booking_services(service_name, service_id), master_profiles(profiles(full_name))')
       .eq('id', bookingId)
       .single();
 
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
 
-    if (reviewedConsumables && reviewedConsumables.length > 0) {
-      for (const item of reviewedConsumables) {
+    // Server-side fallback: when client didn't pass consumables, auto-fetch from product_service_links
+    let toDeduct = reviewedConsumables;
+    if (toDeduct === undefined) {
+      const svcIds = ((booking.booking_services as { service_id: string | null }[]) ?? [])
+        .map(s => s.service_id)
+        .filter(Boolean) as string[];
+
+      if (svcIds.length > 0) {
+        const { data: links } = await admin
+          .from('product_service_links')
+          .select('product_id, quantity, products!inner(product_type, is_archived)')
+          .in('service_id', svcIds)
+          .eq('products.product_type', 'consumable')
+          .eq('products.is_archived', false);
+
+        if (links && links.length > 0) {
+          const deductMap = new Map<string, number>();
+          for (const link of links) {
+            const existing = deductMap.get(link.product_id) ?? 0;
+            deductMap.set(link.product_id, existing + Number(link.quantity));
+          }
+          toDeduct = Array.from(deductMap.entries()).map(([pid, qty]) => ({
+            product_id: pid,
+            qty_used: qty,
+          }));
+        }
+      }
+    }
+
+    if (toDeduct && toDeduct.length > 0) {
+      for (const item of toDeduct) {
         if (item.qty_used <= 0) continue;
 
         const { data: product } = await admin

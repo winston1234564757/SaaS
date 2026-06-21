@@ -67,7 +67,7 @@ export function BookingCard({
   const isAnyPending = isPendingConfirm || isPendingCancel || isPendingComplete || isPendingNoShow;
 
   const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
-  const { data: consumables = [] } = useConsumablesForBooking(
+  const { data: consumables = [], isLoading: consumablesLoading } = useConsumablesForBooking(
     booking.status === 'confirmed' ? booking.id : null
   );
 
@@ -94,7 +94,7 @@ export function BookingCard({
     });
 
   const handleComplete = () => {
-    if (consumables.length > 0) {
+    if (consumablesLoading || consumables.length > 0) {
       setReviewSheetOpen(true);
       return;
     }

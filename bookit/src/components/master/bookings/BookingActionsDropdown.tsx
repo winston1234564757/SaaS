@@ -63,7 +63,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
 
   const canConfirm    = status === 'pending';
   const canComplete   = status === 'confirmed';
-  const { data: consumables = [] } = useConsumablesForBooking(canComplete ? id : null);
+  const { data: consumables = [], isLoading: consumablesLoading } = useConsumablesForBooking(canComplete ? id : null);
   const canCancel     = status === 'pending' || status === 'confirmed';
   const canReschedule = status === 'pending' || status === 'confirmed';
 
@@ -87,7 +87,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
             icon: <UserCheck size={14} />,
             label: 'Завершити',
             onClick: () => {
-              if (consumables.length > 0) {
+              if (consumablesLoading || consumables.length > 0) {
                 setReviewSheetOpen(true);
               } else {
                 run(() => completeBooking(id), 'Запис завершено');
