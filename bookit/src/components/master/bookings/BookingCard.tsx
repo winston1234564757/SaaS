@@ -138,7 +138,7 @@ export function BookingCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, type: 'spring', stiffness: 260, damping: 28 }}
+      transition={{ delay: index * 0.04, type: 'spring' as const, stiffness: 340, damping: 26 }}
       className={cn("bento-card overflow-hidden transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl hover:border-primary/20 group flex flex-col", className)}
       style={{ border: `1px solid ${cfg.color}`, background: `${cfg.color}08` }}
     >
@@ -174,7 +174,7 @@ export function BookingCard({
 
             {/* Divider */}
             {!hideTime && (
-              <div className="w-px self-stretch bg-[#F0DDD6] shrink-0" />
+              <div className="w-px self-stretch bg-[var(--border)] shrink-0" />
             )}
 
             {/* Name + Service */}
@@ -243,7 +243,7 @@ export function BookingCard({
                   type="button"
                   onClick={handleConfirm}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-primary/12 text-primary hover:bg-primary/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 px-3 h-11 rounded-full bg-primary/12 text-primary hover:bg-primary/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingConfirm
                     ? <Loader2 size={11} className="animate-spin" />
@@ -255,7 +255,7 @@ export function BookingCard({
                 type="button"
                 onClick={handleComplete}
                 disabled={isAnyPending}
-                className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-success/12 text-success hover:bg-success/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3 h-11 rounded-full bg-success/12 text-success hover:bg-success/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
               >
                 {isPendingComplete
                   ? <Loader2 size={11} className="animate-spin" />
@@ -267,7 +267,7 @@ export function BookingCard({
                   type="button"
                   onClick={handleNoShow}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-muted-foreground/10 text-muted-foreground/60 hover:bg-muted-foreground/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 px-3 h-11 rounded-full bg-muted-foreground/10 text-muted-foreground/60 hover:bg-muted-foreground/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingNoShow
                     ? <Loader2 size={11} className="animate-spin" />
@@ -279,7 +279,7 @@ export function BookingCard({
                 type="button"
                 onClick={handleCancel}
                 disabled={isAnyPending}
-                className="flex items-center gap-1.5 px-3 h-11 rounded-lg bg-error/10 text-error hover:bg-error/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3 h-11 rounded-full bg-error/10 text-error hover:bg-error/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
               >
                 {isPendingCancel
                   ? <Loader2 size={11} className="animate-spin" />

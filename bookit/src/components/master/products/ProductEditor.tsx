@@ -330,7 +330,7 @@ export function ProductEditor({ id }: Props) {
             type="button"
             onClick={() => router.back()}
             aria-label="Назад"
-            className="size-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+            className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
           >
             <ChevronLeft size={20} />
           </button>
@@ -348,7 +348,7 @@ export function ProductEditor({ id }: Props) {
               type="button"
               onClick={() => setShowDelete(v => !v)}
               aria-label="Видалити"
-              className="hidden md:flex items-center justify-center size-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
+              className="hidden md:flex items-center justify-center size-10 rounded-full bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
             >
               <Trash2 size={18} />
             </button>
@@ -357,7 +357,7 @@ export function ProductEditor({ id }: Props) {
             type="button"
             onClick={handleSave}
             disabled={isSaving || uploading}
-            className="flex items-center gap-2 px-6 h-11 rounded-lg bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 px-6 h-11 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
           >
             {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
             <span className="hidden sm:inline">Зберегти</span>
@@ -899,10 +899,10 @@ export function ProductEditor({ id }: Props) {
               {isConsumable ? 'Матеріал сховається з dashboard і не буде доступний у записах.' : 'Товар сховається з dashboard і не буде доступний клієнтам.'}
             </p>
             <div className="flex gap-3">
-              <button type="button" onClick={() => setShowDelete(false)} className="flex-1 py-3 rounded-lg bg-secondary text-foreground font-semibold active:scale-[0.95] cursor-pointer transition-all">
+              <button type="button" onClick={() => setShowDelete(false)} className="flex-1 py-3 rounded-full bg-secondary text-foreground font-semibold active:scale-[0.95] cursor-pointer transition-all">
                 Скасувати
               </button>
-              <button type="button" onClick={handleDelete} className="flex-1 py-3 rounded-lg bg-destructive text-white font-semibold active:scale-[0.95] cursor-pointer transition-all">
+              <button type="button" onClick={handleDelete} className="flex-1 py-3 rounded-full bg-destructive text-white font-semibold active:scale-[0.95] cursor-pointer transition-all">
                 Підтвердити
               </button>
             </div>

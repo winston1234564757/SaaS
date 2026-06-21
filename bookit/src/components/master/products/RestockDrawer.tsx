@@ -55,7 +55,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -66,7 +66,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring' as const, stiffness: 380, damping: 32 }}
+            transition={{ type: 'spring' as const, stiffness: 340, damping: 26 }}
           >
             {/* Handle */}
             <div className="w-10 h-1 bg-[var(--border-strong)] rounded-full mx-auto mb-5" />
@@ -127,7 +127,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
                     key={preset}
                     type="button"
                     onClick={() => setQty(q => q + preset)}
-                    className="px-3 py-1 rounded-full bg-[var(--accent-light)] text-[var(--text-secondary)] text-xs font-medium active:scale-[0.93] transition-transform hover:bg-[var(--accent-light)]"
+                    className="px-3 py-2 rounded-full bg-[var(--accent-light)] text-[var(--text-secondary)] text-xs font-medium active:scale-[0.93] transition-transform hover:bg-[var(--accent-light)]"
                   >
                     +{preset}
                   </button>

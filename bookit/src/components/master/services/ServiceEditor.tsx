@@ -620,14 +620,14 @@ export function ServiceEditor({ id }: Props) {
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-3 rounded-lg bg-secondary text-foreground font-bold text-sm active:scale-[0.95] cursor-pointer transition-all"
+                className="flex-1 py-3 rounded-full bg-secondary text-foreground font-bold text-sm active:scale-[0.95] cursor-pointer transition-all"
               >
                 Скасувати
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="flex-1 py-3 rounded-lg bg-destructive text-white font-bold text-sm shadow-lg shadow-destructive/20 active:scale-[0.95] cursor-pointer transition-all"
+                className="flex-1 py-3 rounded-full bg-destructive text-white font-bold text-sm shadow-lg shadow-destructive/20 active:scale-[0.95] cursor-pointer transition-all"
               >
                 Видалити
               </button>
@@ -670,7 +670,7 @@ export function ServiceEditor({ id }: Props) {
                           type="button"
                           onClick={() => toggleAddSelected(c.id)}
                           aria-pressed={isSelected}
-                          className={`size-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer ${
+                          className={`size-8 rounded-xl border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer ${
                             isSelected ? 'bg-primary border-primary text-white' : 'border-border bg-secondary/40'
                           }`}
                         >
@@ -706,7 +706,7 @@ export function ServiceEditor({ id }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowAddSheet(false)}
-                  className="flex-1 h-12 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:bg-secondary/60 transition-colors active:scale-[0.97]"
+                  className="flex-1 h-12 rounded-full border border-border text-sm font-semibold text-muted-foreground hover:bg-secondary/60 transition-colors active:scale-[0.97]"
                 >
                   Скасувати
                 </button>
@@ -714,7 +714,7 @@ export function ServiceEditor({ id }: Props) {
                   type="button"
                   onClick={handleSaveConsumableLinks}
                   disabled={isAddingConsumable || addSelectedIds.size === 0}
-                  className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors active:scale-[0.97] disabled:opacity-50"
+                  className="flex-1 h-12 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors active:scale-[0.97] disabled:opacity-50"
                 >
                   {isAddingConsumable ? 'Збереження...' : `Зберегти`}
                 </button>

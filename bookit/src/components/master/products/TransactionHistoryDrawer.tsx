@@ -46,7 +46,7 @@ export function TransactionHistoryDrawer({ product, open, onClose }: Props) {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -58,7 +58,7 @@ export function TransactionHistoryDrawer({ product, open, onClose }: Props) {
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring' as const, stiffness: 380, damping: 32 }}
+            transition={{ type: 'spring' as const, stiffness: 340, damping: 26 }}
           >
             {/* Handle */}
             <div className="w-10 h-1 bg-[var(--border-strong)] rounded-full mx-auto mt-4 mb-1 shrink-0" />
@@ -75,7 +75,7 @@ export function TransactionHistoryDrawer({ product, open, onClose }: Props) {
                 type="button"
                 onClick={onClose}
                 aria-label="Закрити"
-                className="size-9 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] active:scale-[0.88] transition-transform mt-0.5"
+                className="size-11 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] active:scale-[0.88] transition-transform mt-0.5"
               >
                 <X size={15} />
               </button>

@@ -49,7 +49,7 @@ export function ConsumableCard({ product, index = 0, onEdit, onRestock }: Consum
             type="button"
             aria-label="Поповнити запас"
             onClick={() => onRestock(product)}
-            className="px-3 py-1.5 rounded-full bg-[var(--accent)] text-[var(--accent-on)] text-xs font-semibold active:scale-[0.95] transition-transform duration-100"
+            className="px-3 py-2.5 min-h-[44px] rounded-full bg-[var(--accent)] text-[var(--accent-on)] text-xs font-semibold active:scale-[0.95] transition-transform duration-100"
           >
             Поповнити
           </button>
@@ -57,7 +57,7 @@ export function ConsumableCard({ product, index = 0, onEdit, onRestock }: Consum
             type="button"
             aria-label="Редагувати розхідник"
             onClick={() => onEdit(product)}
-            className="px-3 py-1.5 rounded-full border border-[var(--border-strong)] text-[var(--text-secondary)] bg-transparent text-xs font-semibold active:scale-[0.95] transition-transform duration-100 hover:bg-[var(--accent-light)]"
+            className="px-3 py-2.5 min-h-[44px] rounded-full border border-[var(--border-strong)] text-[var(--text-secondary)] bg-transparent text-xs font-semibold active:scale-[0.95] transition-transform duration-100 hover:bg-[var(--accent-light)]"
           >
             Редагувати
           </button>

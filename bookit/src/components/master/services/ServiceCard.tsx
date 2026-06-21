@@ -26,7 +26,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.05, 0.25), type: 'spring' as const, stiffness: 300, damping: 24 } as const}
+      transition={{ delay: Math.min(index * 0.05, 0.25), type: 'spring' as const, stiffness: 340, damping: 26 } as const}
       className={cn(
         "bento-card p-3 transition-all duration-300 group",
         !service.active && "opacity-55"
@@ -90,7 +90,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
               type="button"
               onClick={(e) => { e.stopPropagation(); onEdit(service); }}
               aria-label="Редагувати послугу"
-              className="size-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+              className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
             >
               <Pencil size={14} />
             </button>
@@ -109,14 +109,14 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onDelete(service.id); }}
-                  className="px-2.5 h-7 rounded-lg bg-destructive text-white text-xs font-semibold hover:bg-destructive/90 transition-colors"
+                  className="px-2.5 h-8 rounded-full bg-destructive text-white text-xs font-semibold hover:bg-destructive/90 transition-colors"
                 >
                   Так
                 </button>
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setConfirmDelete(false); }}
-                  className="px-2.5 h-7 rounded-lg bg-secondary/60 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                  className="px-2.5 h-8 rounded-full bg-secondary/60 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
                 >
                   Ні
                 </button>
@@ -127,7 +127,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
                   aria-label="Видалити послугу"
-                  className="size-8 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                  className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                 >
                   <Trash2 size={14} />
                 </button>

@@ -140,7 +140,7 @@ export function ExpensesTab() {
         <button
           type="button"
           onClick={() => setAddOpen(true)}
-          className="flex items-center gap-1.5 px-4 h-9 rounded-full bg-[var(--accent)] text-[var(--accent-on)] text-xs font-semibold active:scale-[0.95] transition-transform"
+          className="flex items-center gap-1.5 px-4 h-11 rounded-full bg-[var(--accent)] text-[var(--accent-on)] text-xs font-semibold active:scale-[0.95] transition-transform"
         >
           <Plus size={14} />
           Додати витрату
@@ -156,7 +156,7 @@ export function ExpensesTab() {
             aria-pressed={activeFilter === f.value}
             onClick={() => setActiveFilter(f.value)}
             className={cn(
-              'shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-[0.95]',
+              'shrink-0 px-4 py-2.5 rounded-full text-xs font-medium transition-all active:scale-[0.95]',
               activeFilter === f.value
                 ? 'bg-[var(--accent)] text-[var(--accent-on)]'
                 : 'border border-[var(--border-strong)] text-[var(--text-secondary)]'
@@ -220,7 +220,7 @@ export function ExpensesTab() {
                   type="button"
                   aria-label={`Видалити ${expense.name}`}
                   onClick={() => handleDelete(expense.id)}
-                  className="size-8 rounded-full border border-[var(--border)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-destructive hover:border-destructive/30 transition-colors active:scale-[0.88] shrink-0"
+                  className="size-10 rounded-full border border-[var(--border)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-destructive hover:border-destructive/30 transition-colors active:scale-[0.88] shrink-0"
                 >
                   <Trash2 size={13} />
                 </button>

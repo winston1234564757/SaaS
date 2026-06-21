@@ -59,8 +59,7 @@ export function StockWidget() {
                         type="button"
                         aria-label={`Поповнити ${p.name}`}
                         onClick={() => setRestocking(p)}
-                        className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--accent)] text-[var(--accent-on)] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-150 active:scale-[0.90] md:block hidden"
-                        style={{ minHeight: 20 }}
+                        className="px-2 py-1 rounded-full text-[10px] font-bold bg-[var(--accent)] text-[var(--accent-on)] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-150 active:scale-[0.90] md:block hidden"
                       >
                         Поповнити
                       </motion.button>

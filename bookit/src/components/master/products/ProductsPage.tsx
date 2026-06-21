@@ -185,7 +185,7 @@ export function ProductsPage() {
               type="button"
               data-tour-key="prd-add"
               onClick={() => router.push(tab === 'consumables' ? '/dashboard/products/new?type=consumable' : '/dashboard/products/new')}
-              className="mt-3 w-full flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-accent text-accent-foreground text-sm font-semibold hover:bg-accent/90 transition-colors active:scale-[0.98]"
+              className="mt-3 w-full flex items-center justify-center gap-2 min-h-[44px] rounded-full bg-accent text-accent-foreground text-sm font-semibold hover:bg-accent/90 transition-colors active:scale-[0.98]"
             >
               <Plus size={16} />
               {tab === 'consumables' ? 'Додати розхідник' : 'Додати'}
@@ -383,7 +383,7 @@ function EmptyProducts({ onAdd }: { onAdd: () => void }) {
       <button
         type="button"
         onClick={onAdd}
-        className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 active:scale-95"
+        className="mt-1 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 active:scale-95"
       >
         <Plus size={14} /> Додати товар
       </button>
