@@ -39,7 +39,7 @@ export function ConsumableCard({ product, onEdit, onRestock }: ConsumableCardPro
           onClick={() => onRestock(product)}
           className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors active:scale-95"
         >
-          +
+          Поповнити
         </button>
         <button
           type="button"

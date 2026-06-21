@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   ChevronLeft,
   Star,
@@ -471,15 +472,20 @@ export function ServiceEditor({ id }: Props) {
             {linkedConsumables.map(c => (
               <div key={c.product_id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
                 <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                <span className="text-xs font-bold text-muted-foreground shrink-0">
-                  {c.quantity} {UNIT_LABEL[c.unit]}
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    {c.quantity} {UNIT_LABEL[c.unit]}
+                  </span>
+                  <Link
+                    href={`/dashboard/products/${c.product_id}`}
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    Змінити
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground/50">
-            Редагувати прив&apos;язку можна через сторінку товару в Магазині
-          </p>
         </div>
       )}
 

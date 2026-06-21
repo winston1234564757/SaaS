@@ -168,18 +168,23 @@ export function ProductsPage() {
             </TabBtn>
             <TabBtn active={tab === 'consumables'} onClick={() => setParam('tab', 'consumables')}>
               <FlaskConical size={14} /> Розхідники
+              {lowConsumables > 0 && (
+                <span className="ml-1 size-4 rounded-full bg-warning text-white text-[9px] font-bold flex items-center justify-center">
+                  {lowConsumables > 9 ? '9+' : lowConsumables}
+                </span>
+              )}
             </TabBtn>
           </div>
 
-          {tab === 'products' && (
+          {(tab === 'products' || tab === 'consumables') && (
             <button
               type="button"
               data-tour-key="prd-add"
-              onClick={() => router.push('/dashboard/products/new')}
+              onClick={() => router.push(tab === 'consumables' ? '/dashboard/products/new?type=consumable' : '/dashboard/products/new')}
               className="mt-3 w-full flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-accent text-accent-foreground text-sm font-semibold hover:bg-accent/90 transition-colors active:scale-[0.98]"
             >
               <Plus size={16} />
-              Додати
+              {tab === 'consumables' ? 'Додати розхідник' : 'Додати'}
             </button>
           )}
         </div>
