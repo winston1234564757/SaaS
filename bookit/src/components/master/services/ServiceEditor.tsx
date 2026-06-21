@@ -192,7 +192,6 @@ export function ServiceEditor({ id }: Props) {
 
   async function handleOpenAddSheet() {
     await loadAllConsumables();
-    // Pre-mark already linked consumables
     setAddSelectedIds(new Set(linkedConsumables.map(c => c.product_id)));
     const initialQties: Record<string, string> = {};
     linkedConsumables.forEach(c => { initialQties[c.product_id] = String(c.quantity); });
@@ -245,7 +244,7 @@ export function ServiceEditor({ id }: Props) {
             type="button"
             onClick={() => router.back()}
             aria-label="Назад"
-            className="size-10 rounded-lg bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+            className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
           >
             <ChevronLeft size={20} />
           </button>
@@ -265,7 +264,7 @@ export function ServiceEditor({ id }: Props) {
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
               aria-label="Видалити послугу"
-              className="hidden md:flex items-center justify-center size-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
+              className="hidden md:flex items-center justify-center size-10 rounded-full bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
             >
               <Trash2 size={18} />
             </button>
@@ -274,7 +273,7 @@ export function ServiceEditor({ id }: Props) {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 h-11 rounded-lg bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 px-6 h-11 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
           >
             {isSaving ? (
               <div className="size-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
@@ -287,8 +286,8 @@ export function ServiceEditor({ id }: Props) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Column 1: Core Metadata */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
+        {/* Column 1: Core Metadata + Consumables */}
+        <div className="lg:col-span-8 flex flex-col gap-4">
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <div className="flex items-center gap-4">
               <div className="size-20 rounded-[24px] flex items-center justify-center text-4xl flex-shrink-0 bg-secondary/40 border border-border shadow-inner">
@@ -376,6 +375,67 @@ export function ServiceEditor({ id }: Props) {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Compact consumables — directly under metadata card */}
+          <div className={cn(
+            'widget-card px-4 py-3 flex flex-col gap-2.5 border border-border rounded-[24px] bg-card',
+            !id && 'opacity-50 pointer-events-none'
+          )}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <FlaskConical size={13} className="text-muted-foreground/60" />
+                <p className="text-xs font-semibold text-muted-foreground/80">Розхідники</p>
+                {linkedConsumables.length > 0 && (
+                  <span className="text-[10px] font-bold text-muted-foreground/50 bg-secondary/60 px-1.5 py-0.5 rounded-full">
+                    {linkedConsumables.length}
+                  </span>
+                )}
+              </div>
+              {!id ? (
+                <span className="text-[10px] text-[var(--text-tertiary)] flex items-center gap-1">
+                  <LockIcon size={10} />
+                  Спочатку збережіть
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleOpenAddSheet}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold hover:bg-primary/20 transition-colors active:scale-[0.95] cursor-pointer min-h-[28px]"
+                >
+                  <Plus size={11} />
+                  Додати
+                </button>
+              )}
+            </div>
+
+            {linkedConsumables.length === 0 ? (
+              <p className="text-[10px] text-muted-foreground/40 leading-relaxed pb-0.5">
+                Матеріали не налаштовано — списуються зі складу при завершенні запису
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5 pb-0.5">
+                {linkedConsumables.map(c => (
+                  <div
+                    key={c.product_id}
+                    className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-secondary/50 border border-border/60"
+                  >
+                    <span className="text-xs font-medium text-foreground truncate max-w-[120px]">{c.name}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground/60 shrink-0">
+                      {c.quantity}&thinsp;{UNIT_LABEL[c.unit]}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveConsumable(c.product_id)}
+                      aria-label={`Видалити ${c.name}`}
+                      className="size-4 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors active:scale-95 shrink-0"
+                    >
+                      <X size={9} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -525,7 +585,7 @@ export function ServiceEditor({ id }: Props) {
                     <button
                       type="button"
                       onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/studio/${masterId}?serviceId=${id}`)}
-                      className="w-full py-2 rounded-lg bg-secondary border border-border text-primary font-bold text-xs hover:bg-secondary/80 active:scale-[0.95] cursor-pointer transition-all"
+                      className="w-full py-2 rounded-full bg-secondary border border-border text-primary font-bold text-xs hover:bg-secondary/80 active:scale-[0.95] cursor-pointer transition-all"
                     >
                       Копіювати лінк
                     </button>
@@ -535,70 +595,6 @@ export function ServiceEditor({ id }: Props) {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Consumables section — always visible, disabled for unsaved services */}
-      <div className={`widget-card p-5 flex flex-col gap-4 border border-border rounded-[24px] bg-card ${!id ? 'opacity-50 pointer-events-none' : ''}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FlaskConical size={16} className="text-muted-foreground" />
-            <p className="text-sm font-semibold text-foreground">Розхідники послуги</p>
-          </div>
-          {!id ? (
-            <span className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
-              <LockIcon size={11} />
-              Спочатку збережіть
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={handleOpenAddSheet}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors active:scale-[0.95] cursor-pointer"
-            >
-              <Plus size={13} />
-              Додати матеріал
-            </button>
-          )}
-        </div>
-
-        <p className="text-xs text-muted-foreground/60 -mt-2">
-          Списуються зі складу при завершенні запису
-        </p>
-
-        {linkedConsumables.length === 0 ? (
-          <div className="py-6 text-center">
-            <FlaskConical size={28} className="text-muted-foreground/20 mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground/50">Розхідники не налаштовано</p>
-            <p className="text-[10px] text-muted-foreground/40 mt-0.5">Натисніть «Додати матеріал» вище</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {linkedConsumables.map(c => (
-              <div key={c.product_id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
-                <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-bold text-muted-foreground">
-                    {c.quantity} {UNIT_LABEL[c.unit]}
-                  </span>
-                  <Link
-                    href={`/dashboard/products/${c.product_id}`}
-                    className="text-xs font-semibold text-primary hover:underline"
-                  >
-                    Змінити
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveConsumable(c.product_id)}
-                    aria-label={`Видалити ${c.name}`}
-                    className="size-6 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors active:scale-95"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Delete confirm */}
