@@ -12,7 +12,11 @@ import {
   Check,
   Save,
   QrCode,
+  FlaskConical,
+  Plus,
+  X,
 } from 'lucide-react';
+import { Drawer } from 'vaul';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 import { useServices } from '@/lib/supabase/hooks/useServices';
@@ -20,12 +24,30 @@ import { type Service, CATEGORIES, DURATIONS, formatDuration, serviceSchema } fr
 import { PhotoUploader } from '@/components/shared/PhotoUploader';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
-import { FlaskConical } from 'lucide-react';
 import { SERVICE_ICON_OPTIONS, ServiceIcon } from '@/lib/service-icons';
+import {
+  addServiceConsumableLinks,
+  removeServiceConsumableLink,
+} from '@/app/(master)/dashboard/services/actions';
 
 interface Props {
   id?: string;
 }
+
+type LinkedConsumable = {
+  product_id: string;
+  name: string;
+  unit: 'pcs' | 'ml' | 'g';
+  quantity: number;
+};
+
+type ConsumableOption = {
+  id: string;
+  name: string;
+  unit: 'pcs' | 'ml' | 'g';
+};
+
+const UNIT_LABEL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
 
 const EMPTY: Omit<Service, 'id'> = {
   name: '',
@@ -52,11 +74,16 @@ export function ServiceEditor({ id }: Props) {
   const [customDurationStr, setCustomDurationStr] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [linkedConsumables, setLinkedConsumables] = useState<
-    { product_id: string; name: string; unit: 'pcs' | 'ml' | 'g'; quantity: number }[]
-  >([]);
 
-  const UNIT_LABEL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
+  // Linked consumables
+  const [linkedConsumables, setLinkedConsumables] = useState<LinkedConsumable[]>([]);
+
+  // Add-consumable sheet
+  const [showAddSheet, setShowAddSheet] = useState(false);
+  const [allConsumables, setAllConsumables] = useState<ConsumableOption[]>([]);
+  const [addSelectedIds, setAddSelectedIds] = useState<Set<string>>(new Set());
+  const [addQties, setAddQties] = useState<Record<string, string>>({});
+  const [isAddingConsumable, setIsAddingConsumable] = useState(false);
 
   const fetchLinkedConsumables = useCallback(async () => {
     if (!id) return;
@@ -75,6 +102,20 @@ export function ServiceEditor({ id }: Props) {
       })));
     }
   }, [id]);
+
+  const loadAllConsumables = useCallback(async () => {
+    if (!masterId) return;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('products')
+      .select('id, name, unit')
+      .eq('product_type', 'consumable')
+      .eq('master_id', masterId)
+      .eq('is_active', true)
+      .eq('is_archived', false)
+      .order('name');
+    setAllConsumables((data ?? []) as ConsumableOption[]);
+  }, [masterId]);
 
   useEffect(() => { fetchLinkedConsumables(); }, [fetchLinkedConsumables]);
 
@@ -141,6 +182,52 @@ export function ServiceEditor({ id }: Props) {
     }
   }
 
+  async function handleRemoveConsumable(productId: string) {
+    if (!id) return;
+    setLinkedConsumables(prev => prev.filter(c => c.product_id !== productId));
+    await removeServiceConsumableLink(id, productId);
+    fetchLinkedConsumables();
+  }
+
+  async function handleOpenAddSheet() {
+    await loadAllConsumables();
+    // Pre-mark already linked consumables
+    setAddSelectedIds(new Set(linkedConsumables.map(c => c.product_id)));
+    const initialQties: Record<string, string> = {};
+    linkedConsumables.forEach(c => { initialQties[c.product_id] = String(c.quantity); });
+    setAddQties(initialQties);
+    setShowAddSheet(true);
+  }
+
+  async function handleSaveConsumableLinks() {
+    if (!id) return;
+    setIsAddingConsumable(true);
+    try {
+      const links = Array.from(addSelectedIds).map(pid => ({
+        productId: pid,
+        quantity: parseFloat(addQties[pid] || '1') || 1,
+      }));
+      await addServiceConsumableLinks(id, links);
+      await fetchLinkedConsumables();
+      setShowAddSheet(false);
+    } finally {
+      setIsAddingConsumable(false);
+    }
+  }
+
+  function toggleAddSelected(productId: string) {
+    setAddSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+        if (!addQties[productId]) setAddQties(q => ({ ...q, [productId]: '1' }));
+      }
+      return next;
+    });
+  }
+
   if (id && isLoading && !service) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -199,7 +286,7 @@ export function ServiceEditor({ id }: Props) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Column 1: Core Metadata (lg:col-span-8) */}
+        {/* Column 1: Core Metadata */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <div className="flex items-center gap-4">
@@ -291,9 +378,8 @@ export function ServiceEditor({ id }: Props) {
           </div>
         </div>
 
-        {/* Column 2: Media Assets & Strategy & Prices (lg:col-span-4) */}
+        {/* Column 2: Media + Prices */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Media Assets Bento Box */}
           <div className="widget-card p-6 flex flex-col gap-4 border border-border rounded-[24px] bg-card">
             <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1">
               Фото послуги
@@ -307,7 +393,6 @@ export function ServiceEditor({ id }: Props) {
             </div>
           </div>
 
-          {/* Strategy & Prices Bento Box */}
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <h3 className="text-[13px] font-semibold text-foreground">Ціна та тривалість</h3>
 
@@ -393,10 +478,7 @@ export function ServiceEditor({ id }: Props) {
                   form.active ? 'bg-secondary/50 border-border' : 'bg-destructive/5 border-destructive/20 opacity-70'
                 )}
               >
-                <div className={cn(
-                  'size-9 rounded-lg flex items-center justify-center shrink-0',
-                  form.active ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
-                )}>
+                <div className={cn('size-9 rounded-lg flex items-center justify-center shrink-0', form.active ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive')}>
                   {form.active ? <Eye size={18} /> : <EyeOff size={18} />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -414,10 +496,7 @@ export function ServiceEditor({ id }: Props) {
                   form.popular ? 'bg-warning/10 border-warning/30' : 'bg-secondary/50 border-border'
                 )}
               >
-                <div className={cn(
-                  'size-9 rounded-lg flex items-center justify-center shrink-0',
-                  form.popular ? 'bg-warning/20 text-warning' : 'bg-muted/20 text-muted-foreground'
-                )}>
+                <div className={cn('size-9 rounded-lg flex items-center justify-center shrink-0', form.popular ? 'bg-warning/20 text-warning' : 'bg-muted/20 text-muted-foreground')}>
                   <Star size={18} className={form.popular ? 'fill-warning' : ''} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -430,12 +509,10 @@ export function ServiceEditor({ id }: Props) {
             {id && (
               <>
                 <div className="h-px bg-border" />
-
                 <div className="flex flex-col gap-4">
                   <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
                     <p className="text-xs font-semibold text-muted-foreground/60">Статистика з&apos;явиться після перших записів</p>
                   </div>
-
                   <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">
                     <div className="size-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
                       <QrCode size={24} />
@@ -459,38 +536,75 @@ export function ServiceEditor({ id }: Props) {
         </div>
       </div>
 
-      {id && linkedConsumables.length > 0 && (
+      {/* Consumables section — always shown for existing service */}
+      {id ? (
         <div className="widget-card p-5 flex flex-col gap-4 border border-border rounded-[24px] bg-card">
-          <div className="flex items-center gap-2">
-            <FlaskConical size={16} className="text-muted-foreground" />
-            <p className="text-sm font-semibold text-foreground">Розхідники послуги</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FlaskConical size={16} className="text-muted-foreground" />
+              <p className="text-sm font-semibold text-foreground">Розхідники послуги</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenAddSheet}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors active:scale-[0.95] cursor-pointer"
+            >
+              <Plus size={13} />
+              Додати матеріал
+            </button>
           </div>
+
           <p className="text-xs text-muted-foreground/60 -mt-2">
             Списуються зі складу при завершенні запису
           </p>
-          <div className="flex flex-col gap-2">
-            {linkedConsumables.map(c => (
-              <div key={c.product_id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
-                <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-bold text-muted-foreground">
-                    {c.quantity} {UNIT_LABEL[c.unit]}
-                  </span>
-                  <Link
-                    href={`/dashboard/products/${c.product_id}`}
-                    className="text-xs font-semibold text-primary hover:underline"
-                  >
-                    Змінити
-                  </Link>
+
+          {linkedConsumables.length === 0 ? (
+            <div className="py-6 text-center">
+              <FlaskConical size={28} className="text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground/50">Розхідники не налаштовано</p>
+              <p className="text-[10px] text-muted-foreground/40 mt-0.5">Натисніть «Додати матеріал» вище</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {linkedConsumables.map(c => (
+                <div key={c.product_id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-secondary/30 border border-border/40">
+                  <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      {c.quantity} {UNIT_LABEL[c.unit]}
+                    </span>
+                    <Link
+                      href={`/dashboard/products/${c.product_id}`}
+                      className="text-xs font-semibold text-primary hover:underline"
+                    >
+                      Змінити
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveConsumable(c.product_id)}
+                      aria-label={`Видалити ${c.name}`}
+                      className="size-6 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors active:scale-95"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="widget-card p-5 border border-dashed border-border rounded-[24px] bg-card/50">
+          <div className="flex items-center gap-2 text-muted-foreground/50">
+            <FlaskConical size={15} />
+            <p className="text-xs">Збережіть послугу, щоб прив&apos;язати розхідники</p>
           </div>
         </div>
       )}
 
+      {/* Delete confirm */}
       {showDeleteConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/40 backdrop-blur-sm">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -522,6 +636,94 @@ export function ServiceEditor({ id }: Props) {
           </motion.div>
         </div>
       )}
+
+      {/* Add consumable sheet */}
+      <Drawer.Root open={showAddSheet} onOpenChange={v => !v && setShowAddSheet(false)} shouldScaleBackground>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 bg-surface rounded-t-[28px] shadow-2xl max-h-[80vh] flex flex-col">
+            <div className="mx-auto mt-3 mb-2 w-12 h-1.5 rounded-full bg-border/60 shrink-0" />
+            <div className="px-5 overflow-y-auto pb-safe flex flex-col gap-4">
+              <div className="flex items-center justify-between pt-1 pb-2">
+                <Drawer.Title className="text-base font-bold text-foreground">
+                  Додати матеріал
+                </Drawer.Title>
+                {addSelectedIds.size > 0 && (
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                    обрано {addSelectedIds.size}
+                  </span>
+                )}
+              </div>
+
+              {allConsumables.length === 0 ? (
+                <div className="py-8 text-center">
+                  <FlaskConical size={32} className="text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground/60">Немає розхідників</p>
+                  <p className="text-xs text-muted-foreground/40 mt-1">Спочатку додайте матеріали у розділі товарів</p>
+                </div>
+              ) : (
+                <div className="flex flex-col divide-y divide-border/10">
+                  {allConsumables.map(c => {
+                    const isSelected = addSelectedIds.has(c.id);
+                    return (
+                      <div key={c.id} className="flex items-center gap-3 py-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleAddSelected(c.id)}
+                          aria-pressed={isSelected}
+                          className={`size-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer ${
+                            isSelected ? 'bg-primary border-primary text-white' : 'border-border bg-secondary/40'
+                          }`}
+                        >
+                          {isSelected && <Check size={12} />}
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                          <p className="text-[10px] text-muted-foreground/60">{UNIT_LABEL[c.unit]}</p>
+                        </div>
+                        {isSelected && (
+                          <div className="relative shrink-0">
+                            <input
+                              type="number"
+                              min="0.1"
+                              step="0.1"
+                              value={addQties[c.id] ?? '1'}
+                              onChange={e => setAddQties(q => ({ ...q, [c.id]: e.target.value }))}
+                              aria-label={`Кількість ${c.name}`}
+                              className="w-20 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs font-bold text-primary text-center outline-none focus:ring-1 focus:ring-primary/30 pr-7"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold text-primary/60 pointer-events-none">
+                              {UNIT_LABEL[c.unit]}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex gap-3 pb-6 pt-2 sticky bottom-0 bg-surface">
+                <button
+                  type="button"
+                  onClick={() => setShowAddSheet(false)}
+                  className="flex-1 h-12 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:bg-secondary/60 transition-colors active:scale-[0.97]"
+                >
+                  Скасувати
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveConsumableLinks}
+                  disabled={isAddingConsumable || addSelectedIds.size === 0}
+                  className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors active:scale-[0.97] disabled:opacity-50"
+                >
+                  {isAddingConsumable ? 'Збереження...' : `Зберегти`}
+                </button>
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import {
   notifyClientOnStatusChange,
   notifyClientOnReschedule,
+  notifyMasterStockAlert,
 } from '@/lib/notifications';
 import { createFlashDealInternal } from '@/app/(master)/dashboard/flash/actions';
 import type { BookingStatus } from '@/types/database';
@@ -296,7 +297,7 @@ export async function completeBooking(
 
         const { data: product } = await admin
           .from('products')
-          .select('stock_qty, cost_kopecks')
+          .select('stock_qty, cost_kopecks, name, unit, stock_alert_threshold')
           .eq('id', item.product_id)
           .single();
 
@@ -308,6 +309,10 @@ export async function completeBooking(
           .from('products')
           .update({ stock_qty: newQty })
           .eq('id', item.product_id);
+
+        if (product.stock_alert_threshold != null && newQty <= product.stock_alert_threshold) {
+          void notifyMasterStockAlert(booking.master_id, product.name, newQty);
+        }
 
         await admin
           .from('product_transactions')

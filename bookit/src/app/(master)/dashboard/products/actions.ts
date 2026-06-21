@@ -20,20 +20,24 @@ async function getMasterId(): Promise<string | null> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface ProductPayload {
-  icon_name?:        ProductIconName;
-  name:              string;
-  description?:      string | null;
-  category:          ProductCategory;
-  product_type?:     'retail' | 'consumable';
-  unit?:             'pcs' | 'ml' | 'g';
-  price_kopecks:     number;
-  cost_kopecks?:     number | null;  // собівартість (nullable — для обох типів)
-  photos?:           string[];
-  stock_qty?:        number;
-  is_active?:        boolean;
-  recommend_always?: boolean;
-  auto_deduct?:      boolean;        // автосписання consumable при booking completed
-  sort_order?:       number;
+  icon_name?:                ProductIconName;
+  name:                      string;
+  description?:              string | null;
+  category:                  ProductCategory;
+  product_type?:             'retail' | 'consumable';
+  unit?:                     'pcs' | 'ml' | 'g';
+  price_kopecks:             number;
+  cost_kopecks?:             number | null;
+  photos?:                   string[];
+  stock_qty?:                number;
+  stock_alert_threshold?:    number | null;
+  purchase_unit?:            'pcs' | 'g' | 'kg' | 'ml' | 'L' | null;
+  purchase_qty?:             number | null;
+  purchase_price_kopecks?:   number | null;
+  is_active?:                boolean;
+  recommend_always?:         boolean;
+  auto_deduct?:              boolean;
+  sort_order?:               number;
 }
 
 export interface OrderItemPayload {
@@ -60,27 +64,33 @@ export async function createProduct(
   if (!masterId) return { id: null, error: 'Не авторизований' };
   try {
     if (!payload.name.trim()) return { id: null, error: 'Назва обов\'язкова' };
-    if (payload.price_kopecks <= 0) return { id: null, error: 'Ціна має бути більше 0' };
+    if (payload.product_type !== 'consumable' && payload.price_kopecks <= 0) {
+      return { id: null, error: 'Ціна має бути більше 0' };
+    }
     if ((payload.photos?.length ?? 0) > 5) return { id: null, error: 'Максимум 5 фото' };
 
     const { data, error } = await createAdminClient()
       .from('products')
       .insert({
-        master_id:        masterId,
-        icon_name:        payload.icon_name ?? 'package',
-        name:             payload.name.trim(),
-        description:      payload.description ?? null,
-        category:         payload.category,
-        product_type:     payload.product_type ?? 'retail',
-        unit:             payload.unit ?? 'pcs',
-        price_kopecks:    payload.price_kopecks,
-        cost_kopecks:     payload.cost_kopecks ?? null,
-        photos:           payload.photos ?? [],
-        stock_qty:        payload.stock_qty ?? 0,
-        is_active:        payload.is_active ?? true,
-        recommend_always: payload.recommend_always ?? true,
-        auto_deduct:      payload.auto_deduct ?? true,
-        sort_order:       payload.sort_order ?? 0,
+        master_id:               masterId,
+        icon_name:               payload.icon_name ?? 'package',
+        name:                    payload.name.trim(),
+        description:             payload.description ?? null,
+        category:                payload.category,
+        product_type:            payload.product_type ?? 'retail',
+        unit:                    payload.unit ?? 'pcs',
+        price_kopecks:           payload.price_kopecks,
+        cost_kopecks:            payload.cost_kopecks ?? null,
+        photos:                  payload.photos ?? [],
+        stock_qty:               payload.stock_qty ?? 0,
+        stock_alert_threshold:   payload.stock_alert_threshold ?? null,
+        purchase_unit:           payload.purchase_unit ?? null,
+        purchase_qty:            payload.purchase_qty ?? null,
+        purchase_price_kopecks:  payload.purchase_price_kopecks ?? null,
+        is_active:               payload.is_active ?? true,
+        recommend_always:        payload.recommend_always ?? false,
+        auto_deduct:             payload.auto_deduct ?? true,
+        sort_order:              payload.sort_order ?? 0,
       })
       .select('id')
       .single();
@@ -117,25 +127,35 @@ export async function updateProduct(
   if (!masterId) return { error: 'Не авторизований' };
   try {
     if (payload.name !== undefined && !payload.name.trim()) return { error: 'Назва обов\'язкова' };
-    if (payload.price_kopecks !== undefined && payload.price_kopecks <= 0) return { error: 'Ціна має бути більше 0' };
+    if (
+      payload.price_kopecks !== undefined &&
+      payload.price_kopecks <= 0 &&
+      payload.product_type !== 'consumable'
+    ) {
+      return { error: 'Ціна має бути більше 0' };
+    }
     if ((payload.photos?.length ?? 0) > 5) return { error: 'Максимум 5 фото' };
 
     const { error } = await createAdminClient()
       .from('products')
       .update({
-        ...(payload.name          !== undefined && { name:          payload.name.trim() }),
-        ...(payload.icon_name     !== undefined && { icon_name:     payload.icon_name }),
-        ...(payload.description   !== undefined && { description:   payload.description }),
-        ...(payload.category      !== undefined && { category:      payload.category }),
-        ...(payload.product_type  !== undefined && { product_type:  payload.product_type }),
-        ...(payload.unit          !== undefined && { unit:          payload.unit }),
-        ...(payload.price_kopecks !== undefined && { price_kopecks: payload.price_kopecks }),
-        ...(payload.cost_kopecks  !== undefined && { cost_kopecks:  payload.cost_kopecks }),
-        ...(payload.photos           !== undefined && { photos:           payload.photos }),
-        ...(payload.is_active        !== undefined && { is_active:        payload.is_active }),
-        ...(payload.recommend_always !== undefined && { recommend_always: payload.recommend_always }),
-        ...(payload.auto_deduct      !== undefined && { auto_deduct:      payload.auto_deduct }),
-        ...(payload.sort_order       !== undefined && { sort_order:       payload.sort_order }),
+        ...(payload.name                 !== undefined && { name:                  payload.name.trim() }),
+        ...(payload.icon_name            !== undefined && { icon_name:             payload.icon_name }),
+        ...(payload.description          !== undefined && { description:           payload.description }),
+        ...(payload.category             !== undefined && { category:              payload.category }),
+        ...(payload.product_type         !== undefined && { product_type:          payload.product_type }),
+        ...(payload.unit                 !== undefined && { unit:                  payload.unit }),
+        ...(payload.price_kopecks        !== undefined && { price_kopecks:         payload.price_kopecks }),
+        ...(payload.cost_kopecks         !== undefined && { cost_kopecks:          payload.cost_kopecks }),
+        ...(payload.photos               !== undefined && { photos:                payload.photos }),
+        ...(payload.is_active            !== undefined && { is_active:             payload.is_active }),
+        ...(payload.recommend_always     !== undefined && { recommend_always:      payload.recommend_always }),
+        ...(payload.auto_deduct          !== undefined && { auto_deduct:           payload.auto_deduct }),
+        ...(payload.sort_order           !== undefined && { sort_order:            payload.sort_order }),
+        ...(payload.stock_alert_threshold !== undefined && { stock_alert_threshold: payload.stock_alert_threshold }),
+        ...(payload.purchase_unit        !== undefined && { purchase_unit:         payload.purchase_unit }),
+        ...(payload.purchase_qty         !== undefined && { purchase_qty:          payload.purchase_qty }),
+        ...(payload.purchase_price_kopecks !== undefined && { purchase_price_kopecks: payload.purchase_price_kopecks }),
       })
       .eq('id', id)
       .eq('master_id', masterId);

@@ -208,7 +208,7 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
                       <div className="h-40 bg-secondary/40 border border-border rounded-[28px]" />
                     </div>
                   }>
-                    <ExpensesTab isPro={pricingData.isPro} />
+                    <ExpensesTab />
                   </Suspense>
                 </motion.div>
               )}

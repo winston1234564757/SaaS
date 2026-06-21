@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -8,7 +8,6 @@ import {
   Save,
   Trash2,
   Package,
-  Link2,
   Eye,
   EyeOff,
   Check,
@@ -18,7 +17,8 @@ import {
   Hash,
   Zap,
   ZapOff,
-  DollarSign,
+  FlaskConical,
+  Bell,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
@@ -38,6 +38,15 @@ import { PRODUCT_ICON_OPTIONS, ProductIcon, type ProductIconName } from '@/lib/p
 
 // humanized
 const UNIT_LABEL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
+const PURCHASE_UNIT_LABEL: Record<string, string> = { pcs: 'шт', g: 'г', kg: 'кг', ml: 'мл', L: 'л' };
+const PURCHASE_UNITS = [
+  ['pcs', 'шт'],
+  ['ml', 'мл'],
+  ['g', 'г'],
+  ['L', 'л'],
+  ['kg', 'кг'],
+] as const;
+const RATIO_TO_BASE: Record<string, number> = { pcs: 1, g: 1, ml: 1, kg: 1000, L: 1000 };
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: 'hair', label: 'Волосся' },
@@ -48,11 +57,6 @@ const CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: 'tools', label: 'Інструменти' },
   { value: 'other', label: 'Інше' },
 ];
-
-const PRODUCT_TYPES = [
-  { value: 'retail', label: 'Для продажу' },
-  { value: 'consumable', label: 'Розхідник для послуги' },
-] as const;
 
 interface Props {
   id?: string;
@@ -77,8 +81,12 @@ export function ProductEditor({ id }: Props) {
   const [priceStr, setPriceStr] = useState('');
   const [costStr, setCostStr] = useState('');
   const [stockStr, setStockStr] = useState('0');
+  const [alertThresholdStr, setAlertThresholdStr] = useState('');
+  const [purchaseUnitStr, setPurchaseUnitStr] = useState<'pcs' | 'g' | 'kg' | 'ml' | 'L'>('ml');
+  const [purchaseQtyStr, setPurchaseQtyStr] = useState('');
+  const [purchasePriceStr, setPurchasePriceStr] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
-  const [recommendAlways, setRecommendAlways] = useState(true);
+  const [recommendAlways, setRecommendAlways] = useState(false);
   const [linkedServiceIds, setLinkedServiceIds] = useState<string[]>([]);
   const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
   const [productType, setProductType] = useState<'retail' | 'consumable'>('retail');
@@ -97,17 +105,32 @@ export function ProductEditor({ id }: Props) {
 
   const isConsumable = productType === 'consumable';
 
+  // Live cost-per-usage calculation from bulk pricing
+  const costPerUsageKopecks = useMemo(() => {
+    const qty = parseFloat(purchaseQtyStr);
+    const price = parseFloat(purchasePriceStr);
+    if (!qty || !price || qty <= 0 || price <= 0) return null;
+    return Math.round((price * 100) / (qty * (RATIO_TO_BASE[purchaseUnitStr] ?? 1)));
+  }, [purchaseQtyStr, purchasePriceStr, purchaseUnitStr]);
+
+  // Auto-fill cost from bulk pricing
+  useEffect(() => {
+    if (costPerUsageKopecks != null && isConsumable) {
+      setCostStr((costPerUsageKopecks / 100).toFixed(2));
+    }
+  }, [costPerUsageKopecks, isConsumable]);
+
   const pageTitle = id
     ? (isConsumable ? 'Редагування розхідника' : 'Редагування товару')
     : (isConsumable ? 'Новий розхідник' : 'Новий товар');
-  const pageSubtitle = id
-    ? (isConsumable ? name || 'Поточний розхідник' : name || 'Поточний товар')
-    : (isConsumable ? 'Налаштування матеріалу для послуг' : 'Створення нового товару або розхідника');
 
   // Pre-select consumable type from URL param (new item only)
   useEffect(() => {
     if (!id && searchParams.get('type') === 'consumable') {
       setProductType('consumable');
+      setRecommendAlways(false);
+      setUnit('ml');
+      setPurchaseUnitStr('L');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -117,11 +140,15 @@ export function ProductEditor({ id }: Props) {
       setName(product.name);
       setDescription(product.description ?? '');
       setCategory(product.category);
-      setPriceStr(String(product.price_kopecks / 100));
+      setPriceStr(product.price_kopecks > 0 ? String(product.price_kopecks / 100) : '');
       setCostStr(product.cost_kopecks ? String(product.cost_kopecks / 100) : '');
       setStockStr(String(product.stock_qty));
+      setAlertThresholdStr(product.stock_alert_threshold != null ? String(product.stock_alert_threshold) : '');
+      setPurchaseUnitStr((product.purchase_unit as 'pcs' | 'g' | 'kg' | 'ml' | 'L') ?? 'ml');
+      setPurchaseQtyStr(product.purchase_qty != null ? String(product.purchase_qty) : '');
+      setPurchasePriceStr(product.purchase_price_kopecks != null ? String(product.purchase_price_kopecks / 100) : '');
       setPhotos(product.photos ?? []);
-      setRecommendAlways(product.recommend_always !== false);
+      setRecommendAlways(product.recommend_always ?? false);
       setIconName(product.icon_name ?? 'package');
       setProductType(product.product_type ?? 'retail');
       setUnit(product.unit ?? 'pcs');
@@ -140,7 +167,7 @@ export function ProductEditor({ id }: Props) {
       links.forEach(l => { qMap[l.serviceId] = l.quantity; });
       setServiceQuantities(qMap);
     }
-  }, [links]);
+  }, [links, id]);
 
   function toggleService(serviceId: string) {
     setLinkedServiceIds(prev =>
@@ -212,24 +239,32 @@ export function ProductEditor({ id }: Props) {
     const price = parseFloat(priceStr) || 0;
     if (!name.trim()) { setError('Назва обов\'язкова'); return; }
     if (!isConsumable && price <= 0) { setError('Введіть коректну ціну'); return; }
-    if (!recommendAlways && linkedServiceIds.length === 0) {
-      setError(isConsumable
-        ? 'Оберіть хоча б одну послугу або увімкніть "До всіх послуг"'
-        : 'Оберіть хоча б одну послугу або увімкніть "Рекомендується завжди"');
+    if (isConsumable && !recommendAlways && linkedServiceIds.length === 0) {
+      setError('Оберіть хоча б одну послугу або увімкніть "До всіх послуг"');
+      return;
+    }
+    if (!isConsumable && !recommendAlways && linkedServiceIds.length === 0) {
+      setError('Оберіть хоча б одну послугу або увімкніть "Рекомендується завжди"');
       return;
     }
 
     setIsSaving(true);
     setError(null);
     try {
+      const effectiveCost = costStr.trim() ? Math.round(parseFloat(costStr) * 100) : null;
+
       const payload = {
         name: name.trim(),
         description: description.trim() || null,
         category,
-        price_kopecks: Math.round(price * 100),
-        cost_kopecks: costStr.trim() ? Math.round(parseFloat(costStr) * 100) : null,
+        price_kopecks: isConsumable ? Math.round(price * 100) : Math.round(price * 100),
+        cost_kopecks: effectiveCost,
         photos,
         stock_qty: showStockLimit ? Math.max(0, parseInt(stockStr, 10) || 0) : 0,
+        stock_alert_threshold: alertThresholdStr.trim() ? parseInt(alertThresholdStr, 10) : null,
+        purchase_unit: purchaseQtyStr && purchasePriceStr ? purchaseUnitStr : null,
+        purchase_qty: purchaseQtyStr.trim() ? parseFloat(purchaseQtyStr) : null,
+        purchase_price_kopecks: purchasePriceStr.trim() ? Math.round(parseFloat(purchasePriceStr) * 100) : null,
         is_active: true,
         recommend_always: recommendAlways,
         sort_order: 0,
@@ -258,7 +293,7 @@ export function ProductEditor({ id }: Props) {
 
       invalidateLinks();
       qc.invalidateQueries({ queryKey: ['products', masterProfile?.id] });
-      showToast({ type: 'success', title: 'Товар збережено' });
+      showToast({ type: 'success', title: isConsumable ? 'Розхідник збережено' : 'Товар збережено' });
       router.replace(`/dashboard/products/${productId}`, { scroll: false });
     } finally {
       setIsSaving(false);
@@ -288,6 +323,7 @@ export function ProductEditor({ id }: Props) {
 
   return (
     <div className="flex flex-col gap-6 pb-24">
+      {/* Header */}
       <div className="flex items-center justify-between mt-4 py-2">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -299,11 +335,9 @@ export function ProductEditor({ id }: Props) {
             <ChevronLeft size={20} />
           </button>
           <div className="min-w-0">
-            <h1 className="heading-serif text-xl text-foreground truncate">
-              {pageTitle}
-            </h1>
+            <h1 className="heading-serif text-xl text-foreground truncate">{pageTitle}</h1>
             <p className="text-xs text-muted-foreground/60 truncate">
-              {pageSubtitle}
+              {id ? (name || (isConsumable ? 'Поточний розхідник' : 'Поточний товар')) : (isConsumable ? 'Налаштування матеріалу для послуг' : 'Створення нового товару')}
             </p>
           </div>
         </div>
@@ -313,7 +347,7 @@ export function ProductEditor({ id }: Props) {
             <button
               type="button"
               onClick={() => setShowDelete(v => !v)}
-              aria-label="Видалити товар"
+              aria-label="Видалити"
               className="hidden md:flex items-center justify-center size-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all active:scale-[0.88] cursor-pointer"
             >
               <Trash2 size={18} />
@@ -331,28 +365,30 @@ export function ProductEditor({ id }: Props) {
         </div>
       </div>
 
+      {/* Main 2-col grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Column 1: Core Metadata */}
+        {/* Left: Core metadata */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
             <div className="flex items-center gap-4">
-              <div className="size-20 rounded-[24px] flex items-center justify-center text-4xl flex-shrink-0 bg-secondary/40 border border-border shadow-inner">
+              <div className="size-20 rounded-[24px] flex items-center justify-center flex-shrink-0 bg-secondary/40 border border-border shadow-inner">
                 <ProductIcon name={iconName} size={28} />
               </div>
               <div className="flex-1 min-w-0">
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">Назва товару</label>
+                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">
+                  {isConsumable ? 'Назва матеріалу' : 'Назва товару'}
+                </label>
                 <input
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="Введіть назву..."
-                  aria-label="Назва товару"
+                  placeholder={isConsumable ? 'Наприклад: Гель-лак OPI №12' : 'Введіть назву...'}
+                  aria-label="Назва"
                   className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-lg font-medium placeholder-muted-foreground outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
                 />
               </div>
             </div>
 
-            {/* Description — retail only */}
             {!isConsumable && (
               <div>
                 <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1 mb-2">Опис товару</label>
@@ -409,9 +445,8 @@ export function ProductEditor({ id }: Props) {
           </div>
         </div>
 
-        {/* Column 2: Media + Strategy + Prices */}
+        {/* Right: Media + Pricing */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Photos — retail only */}
           {!isConsumable && (
             <div className="widget-card p-6 flex flex-col gap-4 border border-border rounded-[24px] bg-card">
               <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1">Фото товару (до 5)</label>
@@ -441,156 +476,206 @@ export function ProductEditor({ id }: Props) {
                   </button>
                 )}
               </div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                aria-hidden="true"
-                tabIndex={-1}
-                onChange={handleFilesSelected}
-              />
+              <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" aria-hidden="true" tabIndex={-1} onChange={handleFilesSelected} />
             </div>
           )}
 
-          {/* Strategy & Prices */}
+          {/* Pricing card */}
           <div className="widget-card p-6 flex flex-col gap-6 border border-border rounded-[24px] bg-card">
-            <h3 className="text-[13px] font-semibold text-foreground">Ціна та стратегія</h3>
+            <h3 className="text-[13px] font-semibold text-foreground">{isConsumable ? 'Параметри розхідника' : 'Ціна та стратегія'}</h3>
 
-            <div className="space-y-4">
-              {/* Retail price: only for retail type */}
-              {!isConsumable && (
-                <div>
-                  <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Ціна (₴)</label>
-                  <input
-                    type="number"
-                    value={priceStr}
-                    onChange={e => setPriceStr(e.target.value)}
-                    placeholder="0"
-                    aria-label="Ціна товару в гривнях"
-                    className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
-                  />
-                </div>
-              )}
-
+            {/* Retail price */}
+            {!isConsumable && (
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Тип товару</label>
-                <div className="flex gap-2">
-                  {PRODUCT_TYPES.map(t => (
-                    <button
-                      key={t.value}
-                      type="button"
-                      onClick={() => setProductType(t.value)}
-                      className={`flex-1 py-3 rounded-xl border text-xs font-semibold transition-all active:scale-[0.95] cursor-pointer ${
-                        productType === t.value
-                          ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/10'
-                          : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
+                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Ціна (₴)</label>
+                <input
+                  type="number"
+                  value={priceStr}
+                  onChange={e => setPriceStr(e.target.value)}
+                  placeholder="0"
+                  aria-label="Ціна товару"
+                  className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
+                />
               </div>
+            )}
 
-              {/* Consumable settings — reordered: unit → costs → auto-deduct */}
-              {isConsumable && (
-                <div className="flex flex-col gap-3 p-4 rounded-xl bg-primary/5 border border-primary/15">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Налаштування розхідника</p>
+            {/* Consumable settings */}
+            {isConsumable && (
+              <div className="flex flex-col gap-4 p-4 rounded-xl bg-primary/5 border border-primary/15">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Налаштування розхідника</p>
 
-                  {/* 1. Unit selector first */}
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-2">Одиниця виміру</p>
-                    <div className="flex gap-2">
-                      {([['pcs', 'шт'], ['ml', 'мл'], ['g', 'г']] as const).map(([val, label]) => (
-                        <button
-                          key={val}
-                          type="button"
-                          aria-pressed={unit === val}
-                          onClick={() => setUnit(val)}
-                          className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition-all active:scale-[0.95] cursor-pointer ${
-                            unit === val
-                              ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/10'
-                              : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
+                {/* 1. Unit selector */}
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Одиниця витрати</p>
+                  <div className="flex gap-2">
+                    {([['pcs', 'шт'], ['ml', 'мл'], ['g', 'г']] as const).map(([val, label]) => (
+                      <button
+                        key={val}
+                        type="button"
+                        aria-pressed={unit === val}
+                        onClick={() => setUnit(val)}
+                        className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition-all active:scale-[0.95] cursor-pointer ${
+                          unit === val
+                            ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/10'
+                            : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  {/* 2. Costs */}
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1.5 block ml-1">Собівартість (₴)</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <DollarSign size={14} className="text-muted-foreground/50" />
-                        </span>
+                {/* 2. Bulk pricing */}
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Закупівля</p>
+                  <div className="flex flex-col gap-2.5">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground/50 mb-1.5">Одиниця упаковки</p>
+                      <div className="grid grid-cols-5 gap-1">
+                        {PURCHASE_UNITS.map(([val, label]) => (
+                          <button
+                            key={val}
+                            type="button"
+                            aria-pressed={purchaseUnitStr === val}
+                            onClick={() => setPurchaseUnitStr(val)}
+                            className={`py-2 rounded-lg border text-[10px] font-bold transition-all active:scale-[0.95] cursor-pointer ${
+                              purchaseUnitStr === val
+                                ? 'bg-primary text-primary-foreground border-transparent'
+                                : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground/50 mb-1 block">
+                          Кількість в упаковці ({PURCHASE_UNIT_LABEL[purchaseUnitStr]})
+                        </label>
                         <input
                           type="number"
-                          value={costStr}
-                          onChange={e => setCostStr(e.target.value)}
+                          value={purchaseQtyStr}
+                          onChange={e => setPurchaseQtyStr(e.target.value)}
                           placeholder="0"
-                          aria-label="Собівартість в гривнях"
-                          className="w-full pl-8 pr-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
+                          min="0"
+                          aria-label="Кількість в упаковці"
+                          className="w-full px-3 py-2.5 rounded-xl bg-secondary/40 border border-border text-xs font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground/50 mb-1 block">Ціна закупки (₴)</label>
+                        <input
+                          type="number"
+                          value={purchasePriceStr}
+                          onChange={e => setPurchasePriceStr(e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          aria-label="Ціна закупки"
+                          className="w-full px-3 py-2.5 rounded-xl bg-secondary/40 border border-border text-xs font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                         />
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1.5 block ml-1">Ціна продажу (₴)</label>
-                      <input
-                        type="number"
-                        value={priceStr}
-                        onChange={e => setPriceStr(e.target.value)}
-                        placeholder="0"
-                        aria-label="Ціна продажу в гривнях"
-                        className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
-                      />
-                    </div>
-                  </div>
 
-                  {/* 3. Auto-deduct */}
-                  <button
-                    type="button"
-                    aria-pressed={autoDeduct}
-                    onClick={() => setAutoDeduct(v => !v)}
-                    className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
-                      autoDeduct ? 'bg-success/10 border-success/20' : 'bg-secondary/40 border-border'
-                    }`}
-                  >
-                    <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${
-                      autoDeduct ? 'bg-success/20 text-success' : 'bg-muted/40 text-muted-foreground'
-                    }`}>
-                      {autoDeduct ? <Zap size={18} /> : <ZapOff size={18} />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-foreground leading-tight">
-                        {autoDeduct ? 'Автосписання увімкнено' : 'Автосписання вимкнено'}
-                      </p>
-                      <p className="text-xs text-muted-foreground/60 mt-0.5">
-                        {autoDeduct ? 'Списується зі складу при завершенні запису' : 'Склад не змінюється автоматично'}
-                      </p>
-                    </div>
-                  </button>
+                    {costPerUsageKopecks != null && (
+                      <div className="bg-primary/8 rounded-xl px-4 py-2.5 flex items-center justify-between border border-primary/20">
+                        <span className="text-[10px] text-muted-foreground/70 font-semibold">Собівартість</span>
+                        <span className="text-sm font-bold text-primary">
+                          {(costPerUsageKopecks / 100).toFixed(2)} ₴ / {UNIT_LABEL[unit]}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* 3. Собівартість (auto-filled or manual) */}
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="text-[10px] font-semibold text-muted-foreground/60 mb-1.5 block ml-1">
+                      Собівартість / {UNIT_LABEL[unit]} (₴)
+                    </label>
+                    <input
+                      type="number"
+                      value={costStr}
+                      onChange={e => setCostStr(e.target.value)}
+                      placeholder="0"
+                      aria-label="Собівартість"
+                      className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-[10px] font-semibold text-muted-foreground/60 mb-1.5 block ml-1">Ціна продажу (₴)</label>
+                    <input
+                      type="number"
+                      value={priceStr}
+                      onChange={e => setPriceStr(e.target.value)}
+                      placeholder="0"
+                      aria-label="Ціна продажу"
+                      className="w-full px-4 py-3 rounded-xl bg-secondary/40 border text-sm font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Auto-deduct */}
+                <button
+                  type="button"
+                  aria-pressed={autoDeduct}
+                  onClick={() => setAutoDeduct(v => !v)}
+                  className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
+                    autoDeduct ? 'bg-success/10 border-success/20' : 'bg-secondary/40 border-border'
+                  }`}
+                >
+                  <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${autoDeduct ? 'bg-success/20 text-success' : 'bg-muted/40 text-muted-foreground'}`}>
+                    {autoDeduct ? <Zap size={18} /> : <ZapOff size={18} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-foreground leading-tight">
+                      {autoDeduct ? 'Автосписання увімкнено' : 'Автосписання вимкнено'}
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5">
+                      {autoDeduct ? 'Списується при завершенні запису' : 'Склад не змінюється автоматично'}
+                    </p>
+                  </div>
+                </button>
+
+                {/* 5. Stock alert threshold */}
+                <div>
+                  <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <Bell size={10} />
+                    Сповіщати, коли залишиться
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={alertThresholdStr}
+                      onChange={e => setAlertThresholdStr(e.target.value)}
+                      placeholder="—"
+                      min="0"
+                      aria-label="Поріг сповіщення"
+                      className="w-full px-4 py-3 rounded-xl bg-secondary/40 border border-border text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 pr-12"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50 pointer-events-none">
+                      {UNIT_LABEL[unit]}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/50 mt-1 ml-1">Надішлемо сповіщення, коли запаси закінчуються</p>
+                </div>
+              </div>
+            )}
 
             <div className="h-px bg-border" />
 
-            {/* Stock qty with unit label suffix for consumables */}
+            {/* Stock */}
             <div className="flex flex-col gap-3">
               <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">Наявність на складі</label>
               <button
                 type="button"
                 aria-pressed={showStockLimit}
                 onClick={() => setShowStockLimit(v => !v)}
-                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
-                  showStockLimit ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'
-                }`}
+                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${showStockLimit ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'}`}
               >
                 <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${showStockLimit ? 'bg-success/20 text-success' : 'bg-primary/20 text-primary'}`}>
                   {showStockLimit ? <Hash size={18} /> : <InfinityIcon size={18} />}
@@ -621,114 +706,77 @@ export function ProductEditor({ id }: Props) {
               )}
             </div>
 
-            <div className="h-px bg-border" />
+            {/* Retail strategy (recommendation) */}
+            {!isConsumable && (
+              <>
+                <div className="h-px bg-border" />
+                <div className="flex flex-col gap-3">
+                  <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">Рекомендації клієнтам</label>
+                  <button
+                    type="button"
+                    aria-pressed={recommendAlways}
+                    onClick={() => setRecommendAlways(v => !v)}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${recommendAlways ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'}`}
+                  >
+                    <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${recommendAlways ? 'bg-success/20 text-success' : 'bg-primary/20 text-primary'}`}>
+                      {recommendAlways ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-foreground leading-tight">
+                        {recommendAlways ? 'Рекомендується завжди' : 'Рекомендувати вибірково'}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5">Показ товару в кошику при записі</p>
+                    </div>
+                  </button>
 
-            {/* Service linking — different copy for consumable vs retail */}
-            <div className="flex flex-col gap-3">
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">
-                {isConsumable ? 'Прив\'язка до послуг' : 'Рекомендації клієнтам'}
-              </label>
-              <button
-                type="button"
-                aria-pressed={recommendAlways}
-                onClick={() => setRecommendAlways(v => !v)}
-                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
-                  recommendAlways ? 'bg-secondary/50 border-border' : 'bg-primary/5 border-primary/20'
-                }`}
-              >
-                <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${recommendAlways ? 'bg-success/20 text-success' : 'bg-primary/20 text-primary'}`}>
-                  {recommendAlways ? <Eye size={18} /> : <EyeOff size={18} />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-foreground leading-tight">
-                    {isConsumable
-                      ? (recommendAlways ? 'До всіх послуг' : 'Конкретні послуги')
-                      : (recommendAlways ? 'Рекомендується завжди' : 'Рекомендувати вибірково')}
-                  </p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">
-                    {isConsumable
-                      ? (recommendAlways ? 'Списується при завершенні будь-якого запису' : 'Обрати конкретні послуги вручну')
-                      : 'Показ товару в кошику при записі'}
-                  </p>
-                </div>
-              </button>
-
-              {!recommendAlways && (
-                <div className="flex flex-col gap-2.5 bg-secondary/20 p-3 rounded-xl border border-border mt-1">
-                  <div className="flex items-center gap-2">
-                    <Link2 size={13} className="text-primary" />
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                      {isConsumable ? 'Прив\'язати до послуг:' : 'Рекомендувати з послугами:'}
-                    </p>
-                  </div>
-                  {activeServices.length === 0 ? (
-                    <p className="text-xs text-muted-foreground/60 pl-1">Немає активних послуг</p>
-                  ) : (
-                    <div className="flex gap-1.5 flex-wrap">
-                      {activeServices.map(s => (
-                        <div key={s.id} className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => toggleService(s.id)}
-                            className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
-                              linkedServiceIds.includes(s.id)
-                                ? 'bg-primary text-white'
-                                : 'bg-secondary text-muted-foreground hover:bg-muted/80'
-                            }`}
-                          >
-                            {s.name}
-                          </button>
-                          {linkedServiceIds.includes(s.id) && isConsumable && (
-                            <input
-                              type="number"
-                              min="1"
-                              value={serviceQuantities[s.id] ?? 1}
-                              onChange={e => setServiceQuantities(prev => ({
-                                ...prev,
-                                [s.id]: Math.max(1, parseInt(e.target.value, 10) || 1),
-                              }))}
-                              className="w-12 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary text-center outline-none focus:ring-1 focus:ring-primary/30"
-                              title={`Кількість на сеанс (${UNIT_LABEL[unit]})`}
-                            />
-                          )}
+                  {!recommendAlways && (
+                    <div className="flex flex-col gap-2.5 bg-secondary/20 p-3 rounded-xl border border-border mt-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">Рекомендувати з послугами:</p>
+                      {activeServices.length === 0 ? (
+                        <p className="text-xs text-muted-foreground/60 pl-1">Немає активних послуг</p>
+                      ) : (
+                        <div className="flex gap-1.5 flex-wrap">
+                          {activeServices.map(s => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => toggleService(s.id)}
+                              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
+                                linkedServiceIds.includes(s.id)
+                                  ? 'bg-primary text-white'
+                                  : 'bg-secondary text-muted-foreground hover:bg-muted/80'
+                              }`}
+                            >
+                              {s.name}
+                            </button>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
 
-            {/* Stats + direct link — retail only */}
+            {/* Direct link — retail only */}
             {id && !isConsumable && (
               <>
                 <div className="h-px bg-border" />
-
-                <div className="flex flex-col gap-4">
-                  <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
-                    <p className="text-xs font-semibold text-muted-foreground/60">Статистика з&apos;явиться після перших продажів</p>
+                <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">
+                  <div className="size-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
+                    <Package size={24} />
                   </div>
-
-                  <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">
-                    <div className="size-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
-                      <Package size={24} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-foreground leading-tight">Пряме посилання</p>
-                      <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">Клієнт зможе переглянути товар у вашому магазині</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (navigator.clipboard) {
-                          navigator.clipboard.writeText(`${window.location.origin}/studio/${masterId}/shop`);
-                        }
-                      }}
-                      className="w-full py-2 rounded-lg bg-secondary border border-border text-primary font-bold text-xs hover:bg-secondary/80 active:scale-[0.95] cursor-pointer transition-all"
-                    >
-                      Копіювати лінк
-                    </button>
+                  <div>
+                    <p className="text-xs font-bold text-foreground leading-tight">Пряме посилання</p>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">Клієнт зможе переглянути товар у магазині</p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(`${window.location.origin}/studio/${masterId}/shop`); }}
+                    className="w-full py-2 rounded-lg bg-secondary border border-border text-primary font-bold text-xs hover:bg-secondary/80 active:scale-[0.95] cursor-pointer transition-all"
+                  >
+                    Копіювати лінк
+                  </button>
                 </div>
               </>
             )}
@@ -736,27 +784,114 @@ export function ProductEditor({ id }: Props) {
         </div>
       </div>
 
+      {/* Step 2 — Service linking (consumable only, full width) */}
+      {isConsumable && (
+        <div className="widget-card p-6 flex flex-col gap-5 border border-border rounded-[24px] bg-card">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <FlaskConical size={16} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Прив&apos;язка до послуг</p>
+                <p className="text-[11px] text-muted-foreground/60">Для яких послуг використовується цей матеріал?</p>
+              </div>
+            </div>
+            {!recommendAlways && linkedServiceIds.length > 0 && (
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                обрано {linkedServiceIds.length} послуг
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            aria-pressed={!recommendAlways}
+            onClick={() => setRecommendAlways(v => !v)}
+            className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left active:scale-[0.95] cursor-pointer ${
+              !recommendAlways ? 'bg-primary/5 border-primary/20' : 'bg-secondary/50 border-border'
+            }`}
+          >
+            <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${!recommendAlways ? 'bg-primary/20 text-primary' : 'bg-success/20 text-success'}`}>
+              {!recommendAlways ? <EyeOff size={18} /> : <Eye size={18} />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-foreground leading-tight">
+                {recommendAlways ? 'До всіх послуг' : 'Конкретні послуги'}
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">
+                {recommendAlways
+                  ? 'Списується при завершенні будь-якого запису'
+                  : 'Прив\'язано до конкретних послуг'}
+              </p>
+            </div>
+          </button>
+
+          {!recommendAlways && (
+            <div className="flex flex-col gap-3">
+              {activeServices.length === 0 ? (
+                <p className="text-xs text-muted-foreground/60">Немає активних послуг. Додайте послуги спочатку.</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {activeServices.map(s => (
+                    <div key={s.id} className="flex flex-col gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => toggleService(s.id)}
+                        className={`w-full px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-left ${
+                          linkedServiceIds.includes(s.id)
+                            ? 'bg-primary text-white border-transparent shadow-md shadow-primary/10'
+                            : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                        }`}
+                      >
+                        <span className="truncate block">{s.name}</span>
+                      </button>
+                      {linkedServiceIds.includes(s.id) && (
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value={serviceQuantities[s.id] ?? 1}
+                            onChange={e => setServiceQuantities(prev => ({
+                              ...prev,
+                              [s.id]: Math.max(0.1, parseFloat(e.target.value) || 0.1),
+                            }))}
+                            className="w-full px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs font-bold text-primary text-center outline-none focus:ring-1 focus:ring-primary/30 pr-8"
+                            title={`Кількість на сеанс (${UNIT_LABEL[unit]})`}
+                          />
+                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-bold text-primary/60 pointer-events-none">
+                            {UNIT_LABEL[unit]}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Delete confirm */}
       {showDelete && id && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/40 backdrop-blur-sm">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-surface rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
             <div className="size-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
               <Trash2 size={32} />
             </div>
-            <h3 className="heading-serif text-xl text-foreground mb-2">Видалити товар?</h3>
-            <p className="text-sm text-muted-foreground/70 mb-6">Товар сховається з dashboard і не буде доступний клієнтам.</p>
+            <h3 className="heading-serif text-xl text-foreground mb-2">
+              {isConsumable ? 'Видалити розхідник?' : 'Видалити товар?'}
+            </h3>
+            <p className="text-sm text-muted-foreground/70 mb-6">
+              {isConsumable ? 'Матеріал сховається з dashboard і не буде доступний у записах.' : 'Товар сховається з dashboard і не буде доступний клієнтам.'}
+            </p>
             <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowDelete(false)}
-                className="flex-1 py-3 rounded-lg bg-secondary text-foreground font-semibold active:scale-[0.95] cursor-pointer transition-all"
-              >
+              <button type="button" onClick={() => setShowDelete(false)} className="flex-1 py-3 rounded-lg bg-secondary text-foreground font-semibold active:scale-[0.95] cursor-pointer transition-all">
                 Скасувати
               </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="flex-1 py-3 rounded-lg bg-destructive text-white font-semibold active:scale-[0.95] cursor-pointer transition-all"
-              >
+              <button type="button" onClick={handleDelete} className="flex-1 py-3 rounded-lg bg-destructive text-white font-semibold active:scale-[0.95] cursor-pointer transition-all">
                 Підтвердити
               </button>
             </div>

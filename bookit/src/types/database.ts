@@ -288,11 +288,14 @@ export interface Product {
   cost_kopecks: number | null;        // собівартість (для consumable — важливо; retail — опційно)
   photos: string[];
   stock_qty: number;
-  stock_alert_threshold: number | null; // поріг сповіщення (міграція 136)
+  stock_alert_threshold: number | null;
+  purchase_unit: 'pcs' | 'g' | 'kg' | 'ml' | 'L' | null;
+  purchase_qty: number | null;
+  purchase_price_kopecks: number | null;
   is_active: boolean;
-  is_archived: boolean;               // м'яке видалення (міграція 139)
+  is_archived: boolean;
   recommend_always: boolean;
-  auto_deduct: boolean;               // автосписання при booking completed (consumable)
+  auto_deduct: boolean;
   sort_order: number;
   created_at: string;
   updated_at: string;
