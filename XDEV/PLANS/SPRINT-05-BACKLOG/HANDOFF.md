@@ -61,6 +61,8 @@ Desktop поведінка без змін. TSC 0 · Build clean.
 
 **Перевірка:** TSC 0 · Build clean · 2 файли.
 
+**Hotfix (keyboard UX) · commit `62c7da75`:** На iOS коли відкривається клавіатура — браузер зміщує `position:fixed` елементи через body scroll offset, ховаючи header drawer-а. `shrink-0` / flex-zones не допомагають бо зміщується весь layout viewport. Єдиний правильний fix: `max-h-[90dvh]` замість `vh`. `dvh` (dynamic viewport height) автоматично зменшується коли keyboard відкривається — drawer стискається рівно над нею. Нуль JS, нуль event listeners. Footer: `pb-5` (20px).
+
 ---
 
 ## ▶ NEXT: `G-LOGIN-02` — Логін мобільний: зазор між інпутом і клавіатурою (P0)
