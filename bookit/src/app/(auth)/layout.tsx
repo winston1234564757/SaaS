@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Quote } from 'lucide-react';
-import { AuthKeyboard } from './_components/AuthKeyboard';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -116,8 +115,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </aside>
 
       {/* ── Right form panel ───────────────────────────────────────────────── */}
-      <AuthKeyboard
-        className="flex-1 relative flex flex-col overflow-hidden"
+      <div
+        className="flex-1 relative flex flex-col"
         style={{
           background: 'var(--background)',
           backgroundImage: [
@@ -158,7 +157,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {children}
           </div>
         </main>
-      </AuthKeyboard>
+      </div>
 
     </div>
   );
