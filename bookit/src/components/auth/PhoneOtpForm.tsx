@@ -624,7 +624,6 @@ export function PhoneOtpForm() {
                       style={{
                         color: '#0F172A',
                       }}
-                      autoFocus
                       autoComplete="tel-national"
                       aria-label="Номер телефону"
                     />
@@ -703,7 +702,6 @@ export function PhoneOtpForm() {
                       onChange={e => handleDigitChange(i, e.target.value)}
                       onKeyDown={e => handleDigitKeyDown(i, e)}
                       onPaste={i === 0 ? handleDigitPaste : undefined}
-                      autoFocus={i === 0}
                       aria-label={`Цифра ${i + 1} коду`}
                       className={[
                         'w-11 h-[58px] text-center text-xl font-bold rounded-2xl outline-none',
