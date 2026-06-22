@@ -154,9 +154,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <AuthScrollMain>
-          <div className="w-full max-w-sm mx-auto my-auto">
-            {children}
-          </div>
+          {children}
         </AuthScrollMain>
       </div>
 

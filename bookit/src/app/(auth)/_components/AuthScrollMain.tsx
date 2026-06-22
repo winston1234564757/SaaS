@@ -3,21 +3,24 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
 export function AuthScrollMain({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
 
     const onResize = () => {
-      const el = ref.current;
-      if (!el) return;
+      const wrap = wrapRef.current;
+      if (!wrap) return;
       const kbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
       if (kbH > 100) {
-        // keyboard open — push form bottom to 10px above keyboard
-        requestAnimationFrame(() => {
-          if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
-        });
+        // keyboard open: push form to bottom, pb-6 becomes the only gap
+        wrap.style.marginTop = 'auto';
+        wrap.style.marginBottom = '0';
+      } else {
+        // keyboard closed: restore my-auto centering
+        wrap.style.marginTop = '';
+        wrap.style.marginBottom = '';
       }
     };
 
@@ -26,11 +29,10 @@ export function AuthScrollMain({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <main
-      ref={ref}
-      className="relative z-10 flex-1 flex flex-col overflow-y-auto px-5 pt-8 pb-[10px]"
-    >
-      {children}
+    <main className="relative z-10 flex-1 flex flex-col overflow-y-auto px-5 pt-8 pb-6">
+      <div ref={wrapRef} className="w-full max-w-sm mx-auto my-auto">
+        {children}
+      </div>
     </main>
   );
 }
