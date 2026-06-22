@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Quote } from 'lucide-react';
+import { AuthScrollMain } from './_components/AuthScrollMain';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -152,11 +153,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </p>
         </div>
 
-        <main className="relative z-10 flex-1 flex flex-col overflow-y-auto px-5 py-8">
+        <AuthScrollMain>
           <div className="w-full max-w-sm mx-auto my-auto">
             {children}
           </div>
-        </main>
+        </AuthScrollMain>
       </div>
 
     </div>
