@@ -4,7 +4,7 @@ import { Quote } from 'lucide-react';
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     // data-theme="frost" тут — все що всередині резолвить Frost CSS vars
-    <div className="min-h-[100dvh] flex" data-theme="frost">
+    <div className="h-[100dvh] flex overflow-hidden" data-theme="frost">
 
       {/* ── Left brand panel (lg+) ─────────────────────────────────────────── */}
       <aside
