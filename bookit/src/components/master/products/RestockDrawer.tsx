@@ -71,11 +71,13 @@ export function RestockDrawer({ product, open, onClose }: Props) {
         {/* z-[76] — above BentoBottomNav z-[75] */}
         <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[76]" />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90vh] flex flex-col">
-          <div className="mx-auto mt-3 mb-1 w-12 h-1.5 rounded-full bg-[var(--border-strong)] shrink-0" />
 
-          {/* Scrollable form area */}
-          <div className="overflow-y-auto flex-1 px-5 pt-2 pb-2 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+          {/* Drag handle */}
+          <div className="mx-auto mt-3 mb-0 w-12 h-1.5 rounded-full bg-[var(--border-strong)] shrink-0" />
+
+          {/* ── ZONE 1: Fixed header — never scrolls away ── */}
+          <div className="shrink-0 px-5 pt-4 pb-3">
+            <div className="flex items-center justify-between mb-5">
               <div>
                 <Drawer.Title className="text-base font-bold text-foreground">Поповнити склад</Drawer.Title>
                 <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
@@ -125,7 +127,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
 
             {/* Quick presets for liquid/weight */}
             {unit !== 'pcs' && (
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 mt-3">
                 {PRESETS_FOR_LIQUID.map(preset => (
                   <button
                     key={preset}
@@ -138,8 +140,10 @@ export function RestockDrawer({ product, open, onClose }: Props) {
                 ))}
               </div>
             )}
+          </div>
 
-            {/* Cost field */}
+          {/* ── ZONE 2: Scroll area — only inputs ── */}
+          <div className="flex-1 overflow-y-auto px-5 pb-2 flex flex-col gap-3">
             <input
               type="number"
               inputMode="decimal"
@@ -152,7 +156,6 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
             />
 
-            {/* Note */}
             <input
               type="text"
               placeholder="Примітка (необов'язково)"
@@ -163,9 +166,9 @@ export function RestockDrawer({ product, open, onClose }: Props) {
             />
           </div>
 
-          {/* Sticky footer — always visible, outside scroll area */}
+          {/* ── ZONE 3: Sticky footer — button always visible ── */}
           <div
-            className="px-5 pt-3 shrink-0"
+            className="shrink-0 px-5 pt-3"
             style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
           >
             {error && (
@@ -181,6 +184,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               {isPending ? 'Зберігаємо...' : `Додати +${qty} ${UNIT_LABEL[unit]}`}
             </button>
           </div>
+
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
