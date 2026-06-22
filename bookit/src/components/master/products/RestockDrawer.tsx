@@ -24,10 +24,20 @@ export function RestockDrawer({ product, open, onClose }: Props) {
   const [costStr, setCostStr] = useState(
     product.cost_kopecks ? String(product.cost_kopecks / 100) : '',
   );
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]         = useState<string | null>(null);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { masterProfile } = useMasterContext();
   const qc = useQueryClient();
+
+  // Detect iOS keyboard via visualViewport resize
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const handler = () => setKeyboardOpen(window.innerHeight - vv.height > 120);
+    vv.addEventListener('resize', handler);
+    return () => { vv.removeEventListener('resize', handler); setKeyboardOpen(false); };
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -70,79 +80,110 @@ export function RestockDrawer({ product, open, onClose }: Props) {
       <Drawer.Portal>
         {/* z-[76] — above BentoBottomNav z-[75] */}
         <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[76]" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90vh] flex flex-col">
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90dvh] flex flex-col">
 
           {/* Drag handle */}
           <div className="mx-auto mt-3 mb-0 w-12 h-1.5 rounded-full bg-[var(--border-strong)] shrink-0" />
 
-          {/* ── ZONE 1: Fixed header — never scrolls away ── */}
-          <div className="shrink-0 px-5 pt-4 pb-3">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <Drawer.Title className="text-base font-bold text-foreground">Поповнити склад</Drawer.Title>
-                <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
-                  {product.name} · зараз: {product.stock_qty} {UNIT_LABEL[unit]}
-                </p>
+          {/* ── ZONE 1: Header + stepper — collapses when keyboard opens ── */}
+          <div
+            className="shrink-0 overflow-hidden transition-all duration-200 ease-out"
+            style={{
+              maxHeight: keyboardOpen ? 0 : 300,
+              opacity:   keyboardOpen ? 0 : 1,
+              paddingTop:    keyboardOpen ? 0 : undefined,
+              paddingBottom: keyboardOpen ? 0 : undefined,
+            }}
+          >
+            <div className="px-5 pt-4 pb-3">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <Drawer.Title className="text-base font-bold text-foreground">Поповнити склад</Drawer.Title>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+                    {product.name} · зараз: {product.stock_qty} {UNIT_LABEL[unit]}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label="Закрити"
+                  className="size-11 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] active:scale-[0.88] transition-transform"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Qty stepper */}
+              <div className="flex items-center justify-center gap-5">
+                <button
+                  type="button"
+                  onClick={() => setQty(q => Math.max(1, q - 1))}
+                  aria-label="Зменшити"
+                  className="size-12 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] active:scale-[0.88] transition-transform"
+                >
+                  <Minus size={20} />
+                </button>
+
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  value={qty}
+                  onChange={e => handleQtyChange(e.target.value)}
+                  aria-label="Кількість"
+                  className="w-20 text-4xl font-bold text-center text-foreground bg-transparent border-b-2 border-[var(--border-strong)] focus:border-[var(--accent)] outline-none tabular-nums transition-colors"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setQty(q => q + 1)}
+                  aria-label="Збільшити"
+                  className="size-12 rounded-xl bg-[var(--accent)] flex items-center justify-center text-[var(--accent-on)] active:scale-[0.88] transition-transform"
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
+
+              {/* Quick presets for liquid/weight */}
+              {unit !== 'pcs' && (
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  {PRESETS_FOR_LIQUID.map(preset => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setQty(q => q + preset)}
+                      className="px-3 py-2 rounded-full bg-[var(--accent-light)] text-[var(--text-secondary)] text-xs font-medium active:scale-[0.93] transition-transform"
+                    >
+                      +{preset}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Compact header shown only when keyboard is open */}
+          <div
+            className="shrink-0 overflow-hidden transition-all duration-200 ease-out"
+            style={{ maxHeight: keyboardOpen ? 56 : 0, opacity: keyboardOpen ? 1 : 0 }}
+          >
+            <div className="px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-semibold text-foreground">{product.name}</span>
+                <span className="text-sm font-bold text-[var(--accent)] tabular-nums">×{qty}</span>
               </div>
               <button
                 type="button"
                 onClick={handleClose}
                 aria-label="Закрити"
-                className="size-11 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] active:scale-[0.88] transition-transform"
+                className="size-9 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] active:scale-[0.88] transition-transform"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             </div>
-
-            {/* Qty stepper */}
-            <div className="flex items-center justify-center gap-5">
-              <button
-                type="button"
-                onClick={() => setQty(q => Math.max(1, q - 1))}
-                aria-label="Зменшити"
-                className="size-12 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] active:scale-[0.88] transition-transform"
-              >
-                <Minus size={20} />
-              </button>
-
-              <input
-                type="number"
-                inputMode="numeric"
-                min={1}
-                value={qty}
-                onChange={e => handleQtyChange(e.target.value)}
-                aria-label="Кількість"
-                className="w-20 text-4xl font-bold text-center text-foreground bg-transparent border-b-2 border-[var(--border-strong)] focus:border-[var(--accent)] outline-none tabular-nums transition-colors"
-              />
-
-              <button
-                type="button"
-                onClick={() => setQty(q => q + 1)}
-                aria-label="Збільшити"
-                className="size-12 rounded-xl bg-[var(--accent)] flex items-center justify-center text-[var(--accent-on)] active:scale-[0.88] transition-transform"
-              >
-                <Plus size={20} />
-              </button>
-            </div>
-
-            {/* Quick presets for liquid/weight */}
-            {unit !== 'pcs' && (
-              <div className="flex items-center justify-center gap-2 mt-3">
-                {PRESETS_FOR_LIQUID.map(preset => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => setQty(q => q + preset)}
-                    className="px-3 py-2 rounded-full bg-[var(--accent-light)] text-[var(--text-secondary)] text-xs font-medium active:scale-[0.93] transition-transform"
-                  >
-                    +{preset}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* ── ZONE 2: Scroll area — only inputs ── */}
+          {/* ── ZONE 2: Inputs (scroll area) ── */}
           <div className="flex-1 overflow-y-auto px-5 pb-2 flex flex-col gap-3">
             <input
               type="number"
@@ -166,14 +207,12 @@ export function RestockDrawer({ product, open, onClose }: Props) {
             />
           </div>
 
-          {/* ── ZONE 3: Sticky footer — button always visible ── */}
+          {/* ── ZONE 3: Sticky footer — always visible ── */}
           <div
             className="shrink-0 px-5 pt-3"
             style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
           >
-            {error && (
-              <p className="text-xs text-destructive px-1 mb-2">{error}</p>
-            )}
+            {error && <p className="text-xs text-destructive px-1 mb-2">{error}</p>}
             <button
               type="button"
               onClick={handleSave}
