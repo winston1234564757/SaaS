@@ -65,7 +65,17 @@ Desktop поведінка без змін. TSC 0 · Build clean.
 
 ---
 
-## ▶ NEXT: `G-LOGIN-02` — Логін мобільний: зазор між інпутом і клавіатурою (P0)
+## ✅ DONE: `G-LOGIN-02` — Логін мобільний: форма скролиться при відкритій клавіатурі (P0) · commit `e9946bc9`
+
+**Root cause:** `AuthKeyboard` ставив `height: vv.height` на правій панелі через JS. Коли відкривалась клавіатура, iOS **одночасно** скролив body (`vv.offsetTop > 0`). Панель залишалась 494px у document coordinates, але body проскролений → видна лише нижня частина картки (Google button + divider), а вище — величезний порожній фон. Для `position: static` елементів JS `visualViewport` конфліктує з iOS body scroll.
+
+**Рішення:** Видалити `AuthKeyboard` повністю. Зовнішній div — `min-h-[100dvh]` (автоматично зменшується коли keyboard відкривається). `<main>` — `overflow-y-auto` → iOS скролить всередині `<main>` (не body). Жодного JS, жодного конфлікту.
+
+**Перевірка:** TSC 0. 2 файли: `layout.tsx` (3 insertions, 52 deletions), `AuthKeyboard.tsx` (deleted).
+
+---
+
+## ▶ NEXT: `G-PWA-02` — Уніфікація горизонтальних скролів
 
 **Тип:** BUGFIX (Tier 1) · **Скіли:** `senior-frontend` → `code-review` · **Модель:** Sonnet→Opus
 
