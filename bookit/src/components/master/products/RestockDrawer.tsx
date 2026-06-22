@@ -137,7 +137,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
           </div>
 
           {/* Inputs */}
-          <div className="flex-1 overflow-y-auto px-5 flex flex-col gap-2 pb-2">
+          <div className="overflow-y-auto px-5 flex flex-col gap-2 pb-2">
             <input
               type="number"
               inputMode="decimal"
