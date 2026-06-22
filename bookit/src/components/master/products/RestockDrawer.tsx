@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useRef } from 'react';
 import { Drawer } from 'vaul';
 import { X, Plus, Minus, RefreshCw } from 'lucide-react';
 import { restockProduct } from '@/app/(master)/dashboard/products/actions';
@@ -28,6 +28,30 @@ export function RestockDrawer({ product, open, onClose }: Props) {
   const [isPending, startTransition] = useTransition();
   const { masterProfile } = useMasterContext();
   const qc = useQueryClient();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Move drawer UP by keyboard height — no height change, no jump
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv || !open) return;
+
+    const update = () => {
+      const el = contentRef.current;
+      if (!el) return;
+      const kbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      el.style.bottom = `${kbH}px`;
+    };
+
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+      const el = contentRef.current;
+      if (el) el.style.bottom = '';
+    };
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -67,9 +91,10 @@ export function RestockDrawer({ product, open, onClose }: Props) {
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[76]" />
-        {/* max-h-[90dvh] — dvh adjusts when keyboard opens on iOS */}
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90dvh] flex flex-col">
-
+        <Drawer.Content
+          ref={contentRef}
+          className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90vh] flex flex-col [transition:bottom_0.28s_ease-out]"
+        >
           {/* Drag handle */}
           <div className="mx-auto mt-3 w-12 h-1.5 rounded-full bg-[var(--border-strong)] shrink-0" />
 
@@ -159,7 +184,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
             />
           </div>
 
-          {/* Footer button — 20px above keyboard */}
+          {/* Footer */}
           <div className="shrink-0 px-5 pt-2 pb-5">
             {error && <p className="text-xs text-destructive mb-2">{error}</p>}
             <button
@@ -172,7 +197,6 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               {isPending ? 'Зберігаємо...' : `Додати +${qty} ${UNIT_LABEL[unit]}`}
             </button>
           </div>
-
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
