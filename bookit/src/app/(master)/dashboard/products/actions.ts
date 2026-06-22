@@ -217,6 +217,7 @@ export async function restockProduct(
   productId: string,
   qty: number,
   note?: string,
+  costKopecks?: number,
 ): Promise<{ error: string | null }> {
   const masterId = await getMasterId();
   if (!masterId) return { error: 'Не авторизований' };
@@ -236,7 +237,10 @@ export async function restockProduct(
 
     const { error: updateError } = await admin
       .from('products')
-      .update({ stock_qty: product.stock_qty + qty })
+      .update({
+        stock_qty: product.stock_qty + qty,
+        ...(costKopecks != null && { cost_kopecks: costKopecks }),
+      })
       .eq('id', productId);
 
     if (updateError) throw updateError;

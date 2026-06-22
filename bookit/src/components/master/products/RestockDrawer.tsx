@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useTransition } from 'react';
+import { Drawer } from 'vaul';
 import { X, Plus, Minus, RefreshCw } from 'lucide-react';
 import { restockProduct } from '@/app/(master)/dashboard/products/actions';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMasterContext } from '@/lib/supabase/context';
 import type { Product } from '@/types/database';
 
-// humanized
 const UNIT_LABEL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
 const PRESETS_FOR_LIQUID = [10, 50, 100];
 
@@ -20,17 +19,26 @@ interface Props {
 
 export function RestockDrawer({ product, open, onClose }: Props) {
   const unit = (product.unit ?? 'pcs') as 'pcs' | 'ml' | 'g';
-  const [qty, setQty]   = useState(1);
-  const [note, setNote] = useState('');
+  const [qty, setQty]       = useState(1);
+  const [note, setNote]     = useState('');
+  const [costStr, setCostStr] = useState(
+    product.cost_kopecks ? String(product.cost_kopecks / 100) : '',
+  );
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const { masterProfile } = useMasterContext();
   const qc = useQueryClient();
 
+  useEffect(() => {
+    if (open) {
+      setQty(1);
+      setNote('');
+      setCostStr(product.cost_kopecks ? String(product.cost_kopecks / 100) : '');
+      setError(null);
+    }
+  }, [open, product.id, product.cost_kopecks]);
+
   function handleClose() {
-    setQty(1);
-    setNote('');
-    setError(null);
     onClose();
   }
 
@@ -42,8 +50,13 @@ export function RestockDrawer({ product, open, onClose }: Props) {
 
   function handleSave() {
     setError(null);
+    const costVal = costStr.trim() ? parseFloat(costStr) : null;
+    const costKopecks =
+      costVal !== null && !isNaN(costVal) && costVal > 0
+        ? Math.round(costVal * 100)
+        : undefined;
     startTransition(async () => {
-      const res = await restockProduct(product.id, qty, note.trim() || undefined);
+      const res = await restockProduct(product.id, qty, note.trim() || undefined, costKopecks);
       if (res.error) { setError(res.error); return; }
       qc.invalidateQueries({ queryKey: ['products', masterProfile?.id] });
       handleClose();
@@ -51,29 +64,22 @@ export function RestockDrawer({ product, open, onClose }: Props) {
   }
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-          />
-          <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--background)] rounded-t-3xl p-6 pb-10 max-w-lg mx-auto border-t border-[var(--border)]"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring' as const, stiffness: 340, damping: 26 }}
+    <Drawer.Root
+      open={open}
+      onOpenChange={(v) => { if (!v) handleClose(); }}
+      shouldScaleBackground
+    >
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90vh] flex flex-col">
+          <div className="mx-auto mt-3 mb-1 w-12 h-1.5 rounded-full bg-[var(--border-strong)] shrink-0" />
+          <div
+            className="overflow-y-auto flex-1 px-5 pt-2 pb-6 flex flex-col gap-4"
+            style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
           >
-            {/* Handle */}
-            <div className="w-10 h-1 bg-[var(--border-strong)] rounded-full mx-auto mb-5" />
-
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold text-foreground">Поповнити склад</h2>
+                <Drawer.Title className="text-base font-bold text-foreground">Поповнити склад</Drawer.Title>
                 <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
                   {product.name} · зараз: {product.stock_qty} {UNIT_LABEL[unit]}
                 </p>
@@ -88,8 +94,8 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               </button>
             </div>
 
-            {/* Qty stepper with direct input */}
-            <div className="flex items-center justify-center gap-5 my-6">
+            {/* Qty stepper */}
+            <div className="flex items-center justify-center gap-5">
               <button
                 type="button"
                 onClick={() => setQty(q => Math.max(1, q - 1))}
@@ -119,15 +125,15 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               </button>
             </div>
 
-            {/* Quick presets — only for liquid/weight units */}
+            {/* Quick presets for liquid/weight */}
             {unit !== 'pcs' && (
-              <div className="flex items-center justify-center gap-2 mb-5">
+              <div className="flex items-center justify-center gap-2">
                 {PRESETS_FOR_LIQUID.map(preset => (
                   <button
                     key={preset}
                     type="button"
                     onClick={() => setQty(q => q + preset)}
-                    className="px-3 py-2 rounded-full bg-[var(--accent-light)] text-[var(--text-secondary)] text-xs font-medium active:scale-[0.93] transition-transform hover:bg-[var(--accent-light)]"
+                    className="px-3 py-2 rounded-full bg-[var(--accent-light)] text-[var(--text-secondary)] text-xs font-medium active:scale-[0.93] transition-transform"
                   >
                     +{preset}
                   </button>
@@ -135,18 +141,31 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               </div>
             )}
 
+            {/* Cost field */}
+            <input
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="0.01"
+              placeholder="Ціна закупки, ₴ (необов'язково)"
+              value={costStr}
+              onChange={e => setCostStr(e.target.value)}
+              aria-label="Ціна закупки за одиницю"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
+            />
+
             {/* Note */}
             <input
               type="text"
-              placeholder="Примітка (необов&apos;язково)"
+              placeholder="Примітка (необов'язково)"
               value={note}
               onChange={e => setNote(e.target.value)}
               aria-label="Примітка до поповнення"
-              className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 mb-4 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
             />
 
             {error && (
-              <p className="text-xs text-destructive mb-3 px-1">{error}</p>
+              <p className="text-xs text-destructive px-1">{error}</p>
             )}
 
             <button
@@ -158,9 +177,9 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               <RefreshCw size={16} className={isPending ? 'animate-spin' : ''} />
               {isPending ? 'Зберігаємо...' : `Додати +${qty} ${UNIT_LABEL[unit]}`}
             </button>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }
