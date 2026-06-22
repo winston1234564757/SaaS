@@ -46,5 +46,5 @@ CTA з повним текстом + `nowrap` + стрілка ≈ 180px, лог
 **Root cause:** Переповнення хедера на вузькому моб. (~360px) — повний лейбл CTA + `nowrap` + стрілка не лишали зазору по боках; touch-target був ~36px (< 44px).
 **Рішення:** моб. лейбл `Поїхали` / desktop `Спробувати безкоштовно` (два span); `gap-x-2.5 sm:gap-x-0` — 10px по боках від лого/гамбургера; `min-h-[44px] sm:min-h-0` — touch-target. Desktop не зачеплено. Тип: BUGFIX / Тір 0.
 **Гейти:** encoding ✓ · tsc 0 · build clean · impeccable 0 anti-patterns.
-**Commit:** _pending_
+**Commit:** `8a8ad674` (авто-коміт Stop-хука)
 **Що винесено в mempalace:** воркфлоу-тірування + hook pruning (окрема драверка).
