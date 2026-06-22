@@ -19,8 +19,8 @@ interface Props {
 
 export function RestockDrawer({ product, open, onClose }: Props) {
   const unit = (product.unit ?? 'pcs') as 'pcs' | 'ml' | 'g';
-  const [qty, setQty]       = useState(1);
-  const [note, setNote]     = useState('');
+  const [qty, setQty]         = useState(1);
+  const [note, setNote]       = useState('');
   const [costStr, setCostStr] = useState(
     product.cost_kopecks ? String(product.cost_kopecks / 100) : '',
   );
@@ -38,9 +38,7 @@ export function RestockDrawer({ product, open, onClose }: Props) {
     }
   }, [open, product.id, product.cost_kopecks]);
 
-  function handleClose() {
-    onClose();
-  }
+  function handleClose() { onClose(); }
 
   function handleQtyChange(raw: string) {
     const parsed = parseInt(raw, 10);
@@ -70,13 +68,13 @@ export function RestockDrawer({ product, open, onClose }: Props) {
       shouldScaleBackground
     >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90vh] flex flex-col">
+        {/* z-[76] — above BentoBottomNav z-[75] */}
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[76]" />
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90vh] flex flex-col">
           <div className="mx-auto mt-3 mb-1 w-12 h-1.5 rounded-full bg-[var(--border-strong)] shrink-0" />
-          <div
-            className="overflow-y-auto flex-1 px-5 pt-2 pb-6 flex flex-col gap-4"
-            style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
-          >
+
+          {/* Scrollable form area */}
+          <div className="overflow-y-auto flex-1 px-5 pt-2 pb-2 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
                 <Drawer.Title className="text-base font-bold text-foreground">Поповнити склад</Drawer.Title>
@@ -163,11 +161,16 @@ export function RestockDrawer({ product, open, onClose }: Props) {
               aria-label="Примітка до поповнення"
               className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
             />
+          </div>
 
+          {/* Sticky footer — always visible, outside scroll area */}
+          <div
+            className="px-5 pt-3 shrink-0"
+            style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
+          >
             {error && (
-              <p className="text-xs text-destructive px-1">{error}</p>
+              <p className="text-xs text-destructive px-1 mb-2">{error}</p>
             )}
-
             <button
               type="button"
               onClick={handleSave}
