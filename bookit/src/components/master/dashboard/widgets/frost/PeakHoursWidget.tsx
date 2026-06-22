@@ -146,7 +146,7 @@ export function PeakHoursWidget() {
           Пікові години
         </p>
 
-        <div className="flex gap-[3px] flex-1" onMouseLeave={() => { setActiveCell(null); setTooltipPos(null); }}>
+        <div className="flex gap-[3px] flex-1" onPointerLeave={(e) => { if (e.pointerType !== 'mouse') return; setActiveCell(null); setTooltipPos(null); }}>
           <div className="flex flex-col gap-[3px] pt-[18px] pr-1 shrink-0">
             {HOURS.map(h => (
               <div key={h} className="flex-1 flex items-center min-h-[10px]">
@@ -184,7 +184,7 @@ export function PeakHoursWidget() {
                         transform:    isActive ? 'scale(1.2)' : 'scale(1)',
                         transition:   'transform 100ms ease-out',
                       }}
-                      onMouseEnter={(e) => handleCell(dIdx, hIdx, e.currentTarget)}
+                      onPointerEnter={(e) => { if (e.pointerType !== 'mouse') return; handleCell(dIdx, hIdx, e.currentTarget); }}
                       onClick={(e) => handleCell(dIdx, hIdx, e.currentTarget)}
                       onFocus={() => setFocusedCell({ dIdx, hIdx })}
                       onKeyDown={(e) => handleKeyDown(e, dIdx, hIdx)}
