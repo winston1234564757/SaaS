@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (74 задачі: Зона Майстра + Клієнтська Зона + Глобальне)
 **Розпочато:** 2026-06-22
-**Прогрес:** 3/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` P0)
-**Наступна задача:** **`M-SHOP-04` — Магазин: модалка поповнення → vaul + собівартість (P0-блокер)**
+**Прогрес:** 4/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` P0)
+**Наступна задача:** **`G-LOGIN-02` — Логін мобільний: зазор між інпутом і клавіатурою (P0-блокер)**
 **Оновлено:** 2026-06-22
 
 ---
@@ -51,7 +51,19 @@ Desktop поведінка без змін. TSC 0 · Build clean.
 
 ---
 
-## ▶ NEXT: `M-SHOP-04` — Магазин: модалка поповнення → vaul + собівартість (P0)
+## ✅ DONE: `M-SHOP-04` — Магазин: модалка поповнення → vaul + собівартість (P0) · commit `98e89c52`
+
+**Root cause:** `RestockDrawer.tsx` використовував bare framer-motion (`AnimatePresence` + `motion.div`) замість vaul — пряме порушення протоколу. Поле `cost_kopecks` було в БД (міграція 139), у типах, але не у формі та не в `restockProduct` action.
+
+**Рішення:**
+- `RestockDrawer.tsx`: повна заміна на `Drawer.Root/Portal/Overlay/Content/Title` (vaul). Додано `costStr` стейт з `useEffect`-prefill при кожному відкритті (правильно синхронізується між різними продуктами). `shouldScaleBackground` = нативний UX.
+- `actions.ts → restockProduct`: 4-й параметр `costKopecks?: number`; при наявності — оновлює `products.cost_kopecks` spread-оператором в тому ж `.update()`.
+
+**Перевірка:** TSC 0 · Build clean · 2 файли.
+
+---
+
+## ▶ NEXT: `G-LOGIN-02` — Логін мобільний: зазор між інпутом і клавіатурою (P0)
 
 **Тип:** BUGFIX (Tier 1) · **Скіли:** `senior-frontend` → `code-review` · **Модель:** Sonnet→Opus
 
