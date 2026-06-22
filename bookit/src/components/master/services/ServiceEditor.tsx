@@ -21,7 +21,8 @@ import { Drawer } from 'vaul';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
 import { useServices } from '@/lib/supabase/hooks/useServices';
-import { type Service, CATEGORIES, DURATIONS, formatDuration, serviceSchema } from './types';
+import { type Service, CATEGORIES, DURATIONS, formatDuration, formatPrice, serviceSchema } from './types';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import { PhotoUploader } from '@/components/shared/PhotoUploader';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
@@ -29,6 +30,8 @@ import { SERVICE_ICON_OPTIONS, ServiceIcon } from '@/lib/service-icons';
 import {
   addServiceConsumableLinks,
   removeServiceConsumableLink,
+  getServiceStats,
+  type ServiceStats,
 } from '@/app/(master)/dashboard/services/actions';
 
 interface Props {
@@ -49,6 +52,23 @@ type ConsumableOption = {
 };
 
 const UNIT_LABEL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
+
+// Relative Ukrainian date for "last booking" line
+function relDate(ymd: string): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(`${ymd}T00:00:00`);
+  const days = Math.round((today.getTime() - d.getTime()) / 86_400_000);
+  if (days <= 0) return 'сьогодні';
+  if (days === 1) return 'вчора';
+  if (days < 7) return `${days} ${pluralUk(days, 'день', 'дні', 'днів')} тому`;
+  if (days < 31) {
+    const w = Math.floor(days / 7);
+    return `${w} ${pluralUk(w, 'тиждень', 'тижні', 'тижнів')} тому`;
+  }
+  const m = Math.floor(days / 30);
+  return `${m} ${pluralUk(m, 'місяць', 'місяці', 'місяців')} тому`;
+}
 
 const EMPTY: Omit<Service, 'id'> = {
   name: '',
@@ -78,6 +98,10 @@ export function ServiceEditor({ id }: Props) {
 
   // Linked consumables
   const [linkedConsumables, setLinkedConsumables] = useState<LinkedConsumable[]>([]);
+
+  // Per-service stats
+  const [stats, setStats] = useState<ServiceStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   // Add-consumable sheet
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -119,6 +143,16 @@ export function ServiceEditor({ id }: Props) {
   }, [masterId]);
 
   useEffect(() => { fetchLinkedConsumables(); }, [fetchLinkedConsumables]);
+
+  useEffect(() => {
+    if (!id) { setStats(null); return; }
+    let cancelled = false;
+    setStatsLoading(true);
+    getServiceStats(id).then(({ data }) => {
+      if (!cancelled) { setStats(data); setStatsLoading(false); }
+    });
+    return () => { cancelled = true; };
+  }, [id]);
 
   useEffect(() => {
     if (id && service) {
@@ -571,9 +605,44 @@ export function ServiceEditor({ id }: Props) {
               <>
                 <div className="h-px bg-border" />
                 <div className="flex flex-col gap-4">
-                  <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
-                    <p className="text-xs font-semibold text-muted-foreground/60">Статистика з&apos;явиться після перших записів</p>
-                  </div>
+                  {stats && stats.completedCount > 0 ? (
+                    <div className="bg-secondary/20 border border-border p-4 rounded-xl">
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <p className="text-sm font-bold text-foreground tabular-nums leading-tight">{stats.completedCount}</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mt-0.5">Записів</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-foreground tabular-nums leading-tight">{formatPrice(stats.revenue)}</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mt-0.5">Виручка</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-foreground tabular-nums leading-tight">{formatPrice(stats.avgCheck)}</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mt-0.5">Сер. чек</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-border/60 text-xs text-muted-foreground/70">
+                        <span>Частка <b className="font-bold text-foreground">{stats.sharePct}%</b></span>
+                        {stats.lastDate && <span>Останній запис {relDate(stats.lastDate)}</span>}
+                      </div>
+                      {stats.plannedCount > 0 && (
+                        <p className="text-xs text-muted-foreground/60 text-center mt-2">
+                          Попереду ще {stats.plannedCount} {pluralUk(stats.plannedCount, 'запис', 'записи', 'записів')}
+                        </p>
+                      )}
+                    </div>
+                  ) : statsLoading ? (
+                    <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
+                      <p className="text-xs font-semibold text-muted-foreground/60">Рахуємо статистику…</p>
+                    </div>
+                  ) : (
+                    <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
+                      <p className="text-xs font-semibold text-muted-foreground/60">Статистика з&apos;явиться після перших записів</p>
+                      {stats && stats.plannedCount > 0 && (
+                        <p className="text-xs text-muted-foreground/50 mt-1">Попереду {stats.plannedCount} {pluralUk(stats.plannedCount, 'запис', 'записи', 'записів')}</p>
+                      )}
+                    </div>
+                  )}
                   <div className="bg-secondary/40 border border-border p-4 rounded-xl flex flex-col items-center text-center gap-3">
                     <div className="size-12 rounded-lg bg-secondary border border-border flex items-center justify-center text-primary shadow-sm shrink-0">
                       <QrCode size={24} />
