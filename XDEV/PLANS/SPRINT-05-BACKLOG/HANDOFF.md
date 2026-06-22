@@ -73,6 +73,8 @@ Desktop поведінка без змін. TSC 0 · Build clean.
 
 **Перевірка:** TSC 0. 2 файли: `layout.tsx` (3 insertions, 52 deletions), `AuthKeyboard.tsx` (deleted).
 
+**Hotfix · commit `ea8e73fa`:** `my-auto` ділив вільний простір порівну → на великих iPhone ~70-80px пустоти знизу форми при відкритій клаві. Рішення: `visualViewport.resize` переключає inline style `wrap` на `mt-auto / mb-0` (форма їде до низу, `pb-6` = 24px зазор). При закритій клаві — style скидається, `my-auto` клас відновлює центрування. `inner div` переїхав з `layout.tsx` у `AuthScrollMain.tsx`.
+
 ---
 
 ## ▶ NEXT: `G-PWA-02` — Уніфікація горизонтальних скролів
