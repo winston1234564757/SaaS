@@ -620,6 +620,22 @@ export function PhoneOtpForm() {
                       value={formatPhoneDisplay(phone)}
                       onChange={e => handlePhoneChange(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleSendSms()}
+                      // Провідний "0" — фіксований префікс. Каретку завжди тримаємо
+                      // після нього (інакше ввід ламає номер на iOS).
+                      onFocus={e => {
+                        const input = e.currentTarget;
+                        requestAnimationFrame(() => {
+                          const end = input.value.length;
+                          input.setSelectionRange(end, end);
+                        });
+                      }}
+                      onClick={e => {
+                        const input = e.currentTarget;
+                        if (input.selectionStart !== null && input.selectionStart < 1) {
+                          const end = input.value.length;
+                          input.setSelectionRange(end, end);
+                        }
+                      }}
                       className="flex-1 py-[13px] pr-5 text-sm bg-transparent outline-none"
                       style={{
                         color: '#0F172A',

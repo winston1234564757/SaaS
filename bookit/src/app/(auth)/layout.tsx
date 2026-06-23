@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { Quote } from 'lucide-react';
 import { AuthScrollMain } from './_components/AuthScrollMain';
+import { AuthViewportShell } from './_components/AuthViewportShell';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    // data-theme="frost" тут — все що всередині резолвить Frost CSS vars
-    <div className="h-[100dvh] flex overflow-hidden" data-theme="frost">
+    // AuthViewportShell: position:fixed + visualViewport height (iOS keyboard fix)
+    <AuthViewportShell>
 
       {/* ── Left brand panel (lg+) ─────────────────────────────────────────── */}
       <aside
@@ -127,9 +128,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           ].join(', '),
         }}
       >
-        {/* Mobile brand strip — dark editorial header (lg:hidden) */}
+        {/* Mobile brand strip — dark editorial header (lg:hidden).
+            При відкритій клавіатурі (.kb-open на shell) стає вищою — бренд завжди добре видно. */}
         <div
-          className="relative overflow-hidden px-5 pt-6 pb-5 lg:hidden"
+          className="relative overflow-hidden px-5 pt-6 pb-5 lg:hidden transition-[padding] duration-300 ease-out [.kb-open_&]:pt-10 [.kb-open_&]:pb-8"
           style={{ background: 'var(--accent)' }}
         >
           <div aria-hidden="true" style={{
@@ -158,6 +160,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </AuthScrollMain>
       </div>
 
-    </div>
+    </AuthViewportShell>
   );
 }

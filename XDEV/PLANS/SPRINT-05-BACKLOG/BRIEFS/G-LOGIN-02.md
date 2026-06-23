@@ -1,32 +1,51 @@
 # G-LOGIN-02 — Логін мобільний: зазор між інпутом і клавіатурою
 
 **Тип:** BUGFIX · **Tier:** 1 · **Скіл:** `senior-frontend`
+**Статус:** RE-OPEN (попередній фікс `e9946bc9` не спрацював на iOS)
 
-## Root Cause
+## Справжній Root Cause (виправлено)
 
-`<main className="flex items-center justify-center">` центрує форму вертикально в доступній висоті.
+Хибна передумова всіх попередніх 5 спроб: «`dvh` зменшується коли відкривається клавіатура».
+**На iOS Safari це НЕ так.** `dvh`/`svh`/`lvh` реагують лише на згортання адресного рядка браузера, НЕ на віртуальну клавіатуру (клавіатура — оверлей, керується `interactive-widget`, який iOS ігнорує → дефолт `resizes-visual` → layout viewport і `dvh` не міняються).
 
-Коли клавіатура відкривається (autoFocus на phone input):
-- `dvh` зменшується → right panel стискається до ~426px
-- Форма (phone step) ≈ 468px → **перевищує доступний простір на 42px**
-- `flex items-center` позиціонує форму з `-22px` зверху (кліпається!)
-- iOS не скролить — бо focused input вже "видимий" (частково)
-- Між phone input і клавіатурою: **156px порожнього простору**
-- CTA "Отримати код" частково або повністю прихований
+Наслідок:
+- `h-[100dvh]` контейнер лишається на повну висоту (~844px) навіть із відкритою клавіатурою.
+- `flex-spacer`/`my-auto` позиціонує форму в межах цих 844px → форма за клавіатурою.
+- iOS сам панорамує visual viewport, щоб показати focused input → форма опиняється посередині з «мертвою зоною» знизу (те, що на скріншоті).
 
-## Fix
+Додатковий структурний фактор: `(auth)/layout.tsx` вкладений у root `<div className="flex flex-col min-h-screen">`. Навіть якщо стиснути auth-контейнер, `min-h-screen` тримає body на 100vh → body лишається панорамованим iOS.
 
-Два компоненти рішення (аналог RestockDrawer, але для не-fixed елементу):
+Чому минулого разу `AuthKeyboard` (visualViewport) видалили: він ставив `height: vv.height` на **position:static** елемент → конфлікт із iOS body-pan (`offsetTop`). Висновок «прибрати JS, юзати dvh» був помилковий — бракувало `position: fixed` + компенсації `offsetTop`.
 
-**1. `AuthKeyboard` client component** — обгортає right panel, застосовує `height: vv.height` через `visualViewport.resize`. Висота панелі = точно видима зона над клавіатурою (з плавним переходом 0.28s).
+## Fix (visualViewport-driven fixed shell)
 
-**2. Layout зміни** — `<main>` з `flex items-center justify-center` → `flex flex-col overflow-y-auto`. Внутрішній `div` отримує `my-auto` (центрування без CSS flex-overflow bug).
+**1. NEW `AuthViewportShell` (client)** — обгортає весь auth-екран:
+- `position: fixed; inset-x-0; top-0` + `h-[100dvh]` (baseline до гідрації) → вириваємось із `min-h-screen` батька, body перестає бути панорамованим.
+- `useEffect` на `window.visualViewport`: на `resize` + `scroll` ставимо
+  `el.style.height = vv.height + 'px'` (реальна висота над клавіатурою)
+  `el.style.transform = 'translateY(' + vv.offsetTop + 'px)'` (компенсація body-pan).
+- Cleanup listeners; graceful fallback якщо `visualViewport` відсутній (старі браузери) → лишається `h-[100dvh]`.
+
+**2. `AuthScrollMain`** — повертаємо центрування через `my-auto` (замість flex-spacer):
+- `<main className="flex-1 flex flex-col overflow-y-auto px-5 py-6">` + дочірній `<div className="w-full max-w-sm mx-auto my-auto">`.
+- `my-auto` центрує коли влазить; коли форма вища за видиму зону — margins колапсують, `overflow-y-auto` дає скрол без flex-clip bug.
+
+**3. Root viewport meta** (`src/app/layout.tsx`) — додаємо `interactive-widget=resizes-content` → прогресивне покращення для Android Chrome (на iOS ігнорується, шкоди нема).
 
 ## Результат
+- iOS Safari: shell = точно видима зона над клавіатурою; форма всередині, зазор ≈ pb/py-6, без мертвої зони ✓
+- iOS, висока форма (role_select): скролиться всередині shell, без clip ✓
+- Android Chrome: `resizes-content` + dvh працює нативно ✓
 - Без клавіатури: форма відцентрована вертикально ✓
-- З клавіатурою: panel стискається до `vv.height`, форма скролиться, iOS правильно скролить до focused input, зазор ≈ 5-10px ✓
-- Не чіпаємо autoFocus ✓
+- autoFocus / фокус не чіпаємо ✓
 
 ## Файли
-- NEW: `bookit/src/app/(auth)/_components/AuthKeyboard.tsx`
-- EDIT: `bookit/src/app/(auth)/layout.tsx` (lines 118–159)
+- NEW: `bookit/src/app/(auth)/_components/AuthViewportShell.tsx`
+- EDIT: `bookit/src/app/(auth)/layout.tsx` (зовнішній div → `<AuthViewportShell>`)
+- EDIT: `bookit/src/app/(auth)/_components/AuthScrollMain.tsx` (flex-spacer → my-auto)
+- EDIT: `bookit/src/app/layout.tsx` (viewport meta: `interactiveWidget: 'resizes-content'`)
+
+## Ризики
+- `position: fixed` на auth-shell: desktop split-layout стає fixed full-screen — візуально ідентично (auth = весь екран), без регресу.
+- `transform` створює containing block для fixed-нащадків — у формі fixed-нащадків нема (перевірено), безпечно.
+- Не тестується автоматично (iOS Safari) → потрібна ручна перевірка на реальному пристрої після деплою.

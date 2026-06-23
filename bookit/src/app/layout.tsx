@@ -66,6 +66,9 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  // Android Chrome: keyboard shrinks layout viewport (dvh reacts). iOS ignores
+  // this — iOS keyboard handled by AuthViewportShell via visualViewport.
+  interactiveWidget: 'resizes-content',
 };
 
 import { headers, cookies } from 'next/headers';
