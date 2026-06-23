@@ -65,15 +65,24 @@ Desktop поведінка без змін. TSC 0 · Build clean.
 
 ---
 
-## ✅ DONE: `G-LOGIN-02` — Логін мобільний: форма скролиться при відкритій клавіатурі (P0) · commit `e9946bc9`
+## ✅ DONE: `G-LOGIN-02` — Логін мобільний: iOS-клавіатура (P0) · commit `ff209529` (RE-OPEN, фінал)
 
-**Root cause:** `AuthKeyboard` ставив `height: vv.height` на правій панелі через JS. Коли відкривалась клавіатура, iOS **одночасно** скролив body (`vv.offsetTop > 0`). Панель залишалась 494px у document coordinates, але body проскролений → видна лише нижня частина картки (Google button + divider), а вище — величезний порожній фон. Для `position: static` елементів JS `visualViewport` конфліктує з iOS body scroll.
+> Попередні «фікси» (`e9946bc9` dvh+overflow, `ea8e73fa` mt-auto JS, `de5599ee` flex-spacer) НЕ спрацювали на iOS — усі стояли на хибній передумові.
 
-**Рішення:** Видалити `AuthKeyboard` повністю. Зовнішній div — `min-h-[100dvh]` (автоматично зменшується коли keyboard відкривається). `<main>` — `overflow-y-auto` → iOS скролить всередині `<main>` (не body). Жодного JS, жодного конфлікту.
+**Справжній root cause:** `dvh`/`vh` на iOS Safari **НЕ реагують на віртуальну клавіатуру**. Вони міняються лише коли згортається адресний рядок браузера. Клавіатура — оверлей; керується `interactive-widget`, який iOS ігнорує (дефолт `resizes-visual`) → `100dvh` лишається = повна висота екрана навіть із відкритою клавіатурою. Тому форма опинялась за клавіатурою, iOS сам панорамував visual viewport → «мертва зона». Додатково: `(auth)/layout.tsx` вкладений у root `min-h-screen` → body лишався панорамованим навіть після стискання auth-контейнера.
 
-**Перевірка:** TSC 0. 2 файли: `layout.tsx` (3 insertions, 52 deletions), `AuthKeyboard.tsx` (deleted).
+**Рішення (visualViewport-driven fixed shell):**
+- NEW `AuthViewportShell` (client): `position: fixed` (вириває з `min-h-screen`, body перестає панорамуватись) + `height = visualViewport.height` + `translateY(offsetTop)` на `resize`/`scroll`. На `resize` доскролює фокусний інпут у центр видимої зони (`scrollIntoView`), бо зміна height скидає iOS auto-scroll. Клас `kb-open` на shell коли `innerHeight − vv.height > 120`.
+- `AuthScrollMain`: flex-spacer → `my-auto` (центр коли влазить, скрол без flex-clip).
+- `PhoneOtpForm` phone input: каретку тримаємо після провідного `0` (`onFocus`/`onClick` → `setSelectionRange(end)`) — інакше ввід перед `0` ламав номер на iOS.
+- Brand strip: при `.kb-open` росте вищою (`[.kb-open_&]:pt-10 pb-8`, transition) — бренд завжди добре видно (за бажанням юзера).
+- root viewport: `interactiveWidget: 'resizes-content'` — прогресивне покращення для Android Chrome (iOS ігнорує).
 
-**Hotfix · commit `ea8e73fa`:** `my-auto` ділив вільний простір порівну → на великих iPhone ~70-80px пустоти знизу форми при відкритій клаві. Рішення: `visualViewport.resize` переключає inline style `wrap` на `mt-auto / mb-0` (форма їде до низу, `pb-6` = 24px зазор). При закритій клаві — style скидається, `my-auto` клас відновлює центрування. `inner div` переїхав з `layout.tsx` у `AuthScrollMain.tsx`.
+**Чому минулого разу `AuthKeyboard` видалили помилково:** він ставив `height: vv.height` на **position:static** елемент → конфлікт з iOS body-pan (`offsetTop`). Висновок «прибрати JS, юзати dvh» був хибний — бракувало `position: fixed` + компенсації `offsetTop`.
+
+**Перевірка:** TSC 0 · Build clean · 6 файлів. Підтверджено вживу на iPhone (клавіатура не перекриває, каретка після `0`, brand strip вища).
+
+**KEY RULE:** iOS Safari + клавіатура → ТІЛЬКИ `window.visualViewport` (height + offsetTop) на `position: fixed` контейнері. `dvh`/`svh`/`interactive-widget` для iOS не працюють (тільки Android Chrome).
 
 ---
 

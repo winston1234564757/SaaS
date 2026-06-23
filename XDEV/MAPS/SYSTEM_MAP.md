@@ -265,8 +265,10 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/lib/upload/uploadPhoto.ts` — single upload fn: 5 PhotoEntity types → 4 Supabase buckets (images, avatars, product-photos, portfolios); upsert only for avatars
 
 ### Auth Flow
-- `src/app/(auth)/layout.tsx` — split-screen Frost layout: 45% dark brand panel (#0F172A + aurora blobs) + 55% form panel; mobile single-column (updated 2026-05-28)
-- `src/components/auth/PhoneOtpForm.tsx` — 3-step flow (role_select→phone→otp); "Nordic Slab" redesign: white container on lavender, stacked role cards (dark slab selected / dashed outline unselected), 3-segment progress line, spring stiffness:340; WCAG AA compliant; no bento-card (updated 2026-05-28)
+- `src/app/(auth)/layout.tsx` — split-screen Frost layout: 45% dark brand panel (#0F172A + aurora blobs) + 55% form panel; mobile single-column (updated 2026-05-28). **Wrapped in `AuthViewportShell` (G-LOGIN-02, 2026-06-23).**
+- `src/app/(auth)/_components/AuthViewportShell.tsx` — **NEW client shell (iOS keyboard fix).** `position: fixed` + `height = visualViewport.height` + `translateY(offsetTop)` on resize/scroll; `scrollIntoView` focused input on resize; toggles `.kb-open` (innerHeight−vv.height>120) → brand strip grows. KEY: iOS Safari `dvh` НЕ реагує на клавіатуру — тільки `visualViewport` на `position:fixed` працює.
+- `src/app/(auth)/_components/AuthScrollMain.tsx` — `<main overflow-y-auto>` + child `my-auto` (центр коли влазить, скрол без flex-clip)
+- `src/components/auth/PhoneOtpForm.tsx` — 3-step flow (role_select→phone→otp); "Nordic Slab" redesign: white container on lavender, stacked role cards (dark slab selected / dashed outline unselected), 3-segment progress line, spring stiffness:340; WCAG AA compliant; no bento-card (updated 2026-05-28). Phone input: каретка завжди після провідного `0` (`onFocus`/`onClick` → `setSelectionRange(end)`)
 - `src/app/(auth)/` — login/register
 - `src/app/auth/callback/` — OAuth callback
 - SMS OTP: `src/app/api/auth/send-sms/`, `verify-sms/`, `link-booking/`
