@@ -262,6 +262,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/components/shared/PhotoLightbox.tsx` — shared full-screen lightbox (fixed z-[100], keyboard nav Esc/←→, safe-area); used by PortfolioPhotoUploader + PortfolioPhotoViewer + ProductFormDrawer
 - `src/components/shared/PhotoUploader.tsx` — universal upload component (T22): render-prop pattern, entity routing, CropDrawer integration; entities: master-avatar, client-avatar, service
 - `src/components/shared/CropDrawer.tsx` — reusable vaul crop bottom sheet (z-[200]/[210]); aspectRatio optional (undefined=free crop, 1=square)
+- `src/components/shared/ScrollStrip.tsx` — **(G-PWA-02)** уніфікований горизонтальний скрол-стрип: drop-in заміна `overflow-x-auto scrollbar-hide`. Edge-fade маска + стрілки (крок=1 елемент) + крапки-індикатор по 1 на елемент (active = вибрана пілюля через aria-pressed/selected/current, інакше найближча до центру; вибір→центрування). Усі в'юпорти, prefers-reduced-motion, native swipe не хайджекається. Props: arrows/dots/snap/fade/wrapperClassName. Елементи — ПРЯМІ діти. Мігровано 10 стрипів (FreeSlotsWidget, ClientsPage×2, ShopPage, StepServices, KpiTicker, ProductsPage, DashboardTopBar, SegmentBuilder, SupportChatPage)
 - `src/lib/upload/uploadPhoto.ts` — single upload fn: 5 PhotoEntity types → 4 Supabase buckets (images, avatars, product-photos, portfolios); upsert only for avatars
 
 ### Auth Flow

@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (74 задачі: Зона Майстра + Клієнтська Зона + Глобальне)
 **Розпочато:** 2026-06-22
-**Прогрес:** 4/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` P0)
-**Наступна задача:** **`G-LOGIN-02` — Логін мобільний: зазор між інпутом і клавіатурою (P0-блокер)**
-**Оновлено:** 2026-06-22
+**Прогрес:** 6/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02`)
+**Наступна задача:** **`G-PWA-01` — Скляна Safe Area (blur/backdrop при скролі)**
+**Оновлено:** 2026-06-23
 
 ---
 
@@ -86,27 +86,43 @@ Desktop поведінка без змін. TSC 0 · Build clean.
 
 ---
 
-## ▶ NEXT: `G-PWA-02` — Уніфікація горизонтальних скролів
+## ✅ DONE: `G-PWA-02` — Уніфікація горизонтальних скролів (P1) · commit `ae9466d8`
 
-**Тип:** BUGFIX (Tier 1) · **Скіли:** `senior-frontend` → `code-review` · **Модель:** Sonnet→Opus
+**Підхід:** Замість десятка окремих хаків — один спільний примітив `ScrollStrip` (`components/shared/ScrollStrip.tsx`), drop-in заміна для `overflow-x-auto scrollbar-hide`. 3 шари індикації, що з'являються ЛИШЕ коли трек переповнений:
+- **Edge-fade маска** (фон-незалежна, `mask-image`) на скролючому боці.
+- **Стрілки** на всіх в'юпортах → крок рівно **1 елемент** (знайти+центрувати наступний прихований).
+- **Крапки** по 1 на елемент (з `track.children`): активна = **вибрана пілюля** (`aria-pressed/selected/current`), інакше найближча до центру; **вибір пілюлі → крапка перемикається + елемент плавно центрується** (детект зміни через ref, без scroll-loop).
 
-**Проблема:** На дашборді блок "Пікові години" — тултіп комірки спрацьовує лише з 2-го тапу: на першому блимає і ховається, на другому фіксується.
+Best-practice (скіл `scroll-experience`): нативний свайп не хайджекається, `prefers-reduced-motion` → миттєвий скрол, passive listener + guarded setState (без jank). Деталі — `BRIEFS/G-PWA-02.md`.
 
-**Підхід (diagnose-first):**
-1. Відтворити на `/dashboard` (моб.), блок PeakHours — тапнути комірку, побачити блимання на 1-му тапі.
-2. `useSmartTooltip` (T31, `src/lib/hooks/useSmartTooltip.ts`) **вже застосований** у `PeakHoursWidget` → причина НЕ в кламп-логіці хука. Шукати в:
-   - show/hide стані самого віджета (toggle vs set),
-   - ініціалізації позиції (`tooltipPos` / перший рендер до вимірювання),
-   - конфлікті onClick/onBlur/outside-click, що ховає одразу після показу.
-3. Підтвердити root cause → фікс на рівні стану/ініціалізації → regression на моб.
+**Мігровано 10 стрипів:** FreeSlotsWidget (M-DASH-03), ClientsPage retention+segments (M-CLI-04), ShopPage, StepServices, KpiTicker (розплющено внутр. wrapper), ProductsPage, DashboardTopBar (`arrows/dots=false`), SegmentBuilder (`arrows=false`), SupportChatPage.
+
+**Свідомо НЕ чіпав:** ExplorePage (auto-scroll marquee + анімований фільтр-бар + pending `C-EXPL-01` редизайн), NavigationStrip (вже має градієнт edge-індикацію), StoryGenerator (`lg:flex-wrap`, десктоп — не скролить), таблиці, snap-каруселі/день-пікери, ServiceSelector (вже крапки+стрілки), admin-консоль.
+
+**Перевірка:** TSC 0 · Build clean. Підтверджено юзером вживу на мобілці.
+
+**KEY:** Парасолькові UX-патерни → один примітив, не N копій. `M-DASH-03` і `M-CLI-04` тепер закриваються цим же `ScrollStrip`.
+
+---
+
+## ▶ NEXT: `G-PWA-01` — Скляна Safe Area
+
+**Тип:** FEATURE (Tier 2) · **Скіли:** `progressive-web-app` + `scroll-experience` · **Модель:** Sonnet
+
+**Задача:** Для мобільних із вирізом / Dynamic Island — при скролі вгору верхня safe-area зона плавно «поглинає» елементи через матовий скляний ефект (`blur` / `backdrop-filter`).
+
+**Підхід:**
+1. Знайти top safe-area / sticky-хедер контейнери у клієнт- і майстер-зонах (`env(safe-area-inset-top)`).
+2. Scroll-driven: при скролі контенту під зону → нарощувати `backdrop-filter: blur()` + напівпрозорий Frost-фон на верхній смузі.
+3. Compositor-only (backdrop-filter/opacity), без layout-thrash; перевірити на notch/Dynamic Island.
 
 **Acceptance:**
-- [ ] Root cause задокументовано
-- [ ] Тултіп показується з ПЕРШОГО тапу, без блимання
-- [ ] Не зламано закриття (тап поза/інша комірка)
+- [ ] Верхня зона плавно матовіє при скролі
+- [ ] Коректно з safe-area insets (notch/Dynamic Island)
+- [ ] Без jank
 - [ ] TSC 0 · Build clean
 
-**⚠ Перед стартом:** `mempalace_search "PeakHours tooltip useSmartTooltip"` — T31 контекст уже в палаці.
+**⚠ Перед стартом:** `mempalace_search "safe area blur backdrop sticky header scroll"`.
 
 ---
 
