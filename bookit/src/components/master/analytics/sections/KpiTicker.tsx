@@ -4,6 +4,7 @@ import React from 'react';
 import { cn } from '@/lib/utils/cn';
 import { TrendingUp, TrendingDown, Minus, BarChart2, ShoppingBag, DollarSign, Users } from 'lucide-react';
 import { formatPrice } from '@/components/master/services/types';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 
 interface KpiPillProps {
   icon: React.ReactNode;
@@ -72,8 +73,7 @@ export function KpiTicker({
   deltas = {},
 }: KpiTickerProps) {
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide -mx-5 px-5 py-1">
-      <div className="flex gap-3 w-max">
+    <ScrollStrip className="flex gap-3 -mx-5 px-5 py-1">
         <KpiPill
           icon={<DollarSign size={16} />}
           label="Виручка"
@@ -98,7 +98,6 @@ export function KpiTicker({
           value={activeClients}
           delta={deltas.clients}
         />
-      </div>
-    </div>
+    </ScrollStrip>
   );
 }

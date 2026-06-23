@@ -16,6 +16,7 @@ import { useLiveChat } from '@/lib/hooks/useLiveChat';
 import { createSupportTicketAction, sendSupportMessageAction } from '@/lib/actions/support';
 import { parseError } from '@/lib/utils/errors';
 import { createClient } from '@/lib/supabase/client';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 
 interface SupportChatPageProps {
   user: { id: string };
@@ -211,7 +212,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
       <div className="shrink-0 bg-[var(--surface)] border-t border-[var(--border)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-xl z-10">
         <div className="max-w-2xl mx-auto w-full space-y-3">
           {messages.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1 shrink-0">
+            <ScrollStrip className="flex gap-2 py-1">
               {SUGGESTIONS.map((text) => (
                 <button
                   type="button"
@@ -222,7 +223,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
                   {text}
                 </button>
               ))}
-            </div>
+            </ScrollStrip>
           )}
           {submitError && (
             <div className="rounded-xl bg-red-50 dark:bg-red-950/20 p-3 text-xs text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40">

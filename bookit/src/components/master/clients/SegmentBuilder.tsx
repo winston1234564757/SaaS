@@ -8,6 +8,7 @@ import {
   AlertTriangle, Clock, UserCheck, UserX, Flame, Shield, Gift, Info,
 } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 import { cn } from '@/lib/utils/cn';
 import type { ClientRow } from './ClientsPage';
 import type {
@@ -243,7 +244,7 @@ function ConditionRow({
         {/* Row 2: operator chips + numeric value */}
         {isNumeric && (
           <div className="flex items-center gap-2">
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide flex-1 min-w-0 pb-0.5">
+            <ScrollStrip arrows={false} wrapperClassName="flex-1 min-w-0" className="flex gap-1.5 pb-0.5">
               {operators.map(op => (
                 <button
                   key={op}
@@ -260,7 +261,7 @@ function ConditionRow({
                   {SEGMENT_OPERATOR_LABELS[op]}
                 </button>
               ))}
-            </div>
+            </ScrollStrip>
             <input
               type="number"
               value={cond.value as number | string}

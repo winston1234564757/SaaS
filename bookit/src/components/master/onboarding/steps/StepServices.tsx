@@ -6,6 +6,7 @@ import { ArrowRight, Check, Clock, Loader2 } from 'lucide-react';
 import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
 import { cn } from '@/lib/utils/cn';
 import { inputCls } from './types';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 
 const CAT_TO_TEMPLATE: Record<string, string> = {
   nails: 'nails',
@@ -173,7 +174,7 @@ export function StepServices({
       </p>
 
       {availableTabs.length > 1 && (
-        <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide" role="tablist">
+        <ScrollStrip role="tablist" wrapperClassName="mb-4" className="flex gap-1.5 pb-1 -mx-1 px-1">
           {availableTabs.map(tab => (
             <button
               key={tab.catId}
@@ -195,7 +196,7 @@ export function StepServices({
               {tab.label}
             </button>
           ))}
-        </div>
+        </ScrollStrip>
       )}
 
       <div

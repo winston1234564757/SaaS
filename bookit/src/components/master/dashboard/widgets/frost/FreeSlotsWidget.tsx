@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Zap, Sparkles } from 'lucide-react';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import type { Service } from '@/components/master/services/types';
 import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
@@ -104,7 +105,7 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
 
         {/* Service selector */}
         {!servicesLoading && activeServices.length > 1 && (
-          <div className="flex gap-1.5 mb-3 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+          <ScrollStrip wrapperClassName="mb-3" className="flex gap-1.5 pb-0.5">
             {activeServices.map((svc: Service) => {
               const isActive = (selectedService?.id ?? activeServices[0]?.id) === svc.id;
               return (
@@ -124,7 +125,7 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
                 </button>
               );
             })}
-          </div>
+          </ScrollStrip>
         )}
       </div>
 

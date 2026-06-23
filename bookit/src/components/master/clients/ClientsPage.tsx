@@ -16,6 +16,7 @@ import { ClientGridCard } from './ClientGridCard';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
 import { Sheet } from '@/components/ui/Sheet';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 import { useMasterContext } from '@/lib/supabase/context';
 import { evaluateCustomSegment, getSegmentIcon } from './SegmentBuilder';
 import type { CustomSegment } from '@/lib/types/segments';
@@ -282,7 +283,7 @@ export function ClientsPage() {
           {!isLoading && clients.length > 0 && (
             <div className="flex flex-col gap-3 mt-2">
               {/* Retention filter chips */}
-              <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
+              <ScrollStrip className="flex gap-2 pb-0.5 -mx-1 px-1">
                 {RETENTION_FILTERS.map(f => {
                   const cfg = f.value !== 'all' ? RETENTION_CONFIG[f.value as RetentionStatus] : null;
                   const count = f.value === 'all'
@@ -311,11 +312,11 @@ export function ClientsPage() {
                     </button>
                   );
                 })}
-              </div>
+              </ScrollStrip>
 
               {/* Custom segment chips */}
               {customSegments.length > 0 ? (
-                <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-hide">
+                <ScrollStrip className="flex gap-2 pb-0.5 -mx-1 px-1">
                   {customSegments.map(seg => {
                     const isActive = customSegmentId === seg.id;
                     return (
@@ -340,7 +341,7 @@ export function ClientsPage() {
                       </button>
                     );
                   })}
-                </div>
+                </ScrollStrip>
               ) : (
                 <button
                   type="button"

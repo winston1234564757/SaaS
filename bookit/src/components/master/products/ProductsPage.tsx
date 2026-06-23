@@ -20,6 +20,7 @@ import type { Product, OrderStatus } from '@/types/database';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 
 // humanized
 const PRODUCTS_STEPS: TourStep[] = [
@@ -253,7 +254,7 @@ export function ProductsPage() {
                 transition={{ duration: 0.15 }}
                 className="flex flex-col gap-3"
               >
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                <ScrollStrip className="flex gap-2 pb-1">
                   {ORDER_FILTERS.map(f => (
                     <button
                       key={f.label}
@@ -269,7 +270,7 @@ export function ProductsPage() {
                       {f.label}
                     </button>
                   ))}
-                </div>
+                </ScrollStrip>
 
                 {oLoading ? (
                   <SkeletonList />

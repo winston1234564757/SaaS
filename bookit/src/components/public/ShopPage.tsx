@@ -13,6 +13,7 @@ import { createOrder } from '@/app/(master)/dashboard/products/actions';
 import type { Product, ProductCategory } from '@/types/database';
 import { cn } from '@/lib/utils/cn';
 import { ProductIcon } from '@/lib/product-icons';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -93,14 +94,14 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
 
       {/* Category filter */}
       {categories.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <ScrollStrip className="flex gap-2 pb-1">
           <FilterChip active={catFilter === null} onClick={() => setCatFilter(null)}>Всі</FilterChip>
           {categories.map(c => (
             <FilterChip key={c} active={catFilter === c} onClick={() => setCatFilter(c)}>
               {CATEGORY_LABELS[c]}
             </FilterChip>
           ))}
-        </div>
+        </ScrollStrip>
       )}
 
       {/* Product grid */}

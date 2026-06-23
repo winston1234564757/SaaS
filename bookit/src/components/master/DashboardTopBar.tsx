@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils/cn';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { NotificationsBell } from '@/components/master/dashboard/NotificationsBell';
+import { ScrollStrip } from '@/components/shared/ScrollStrip';
 
 const PRIMARY_NAV = [
   { href: '/dashboard',            icon: LayoutDashboard,    label: 'Огляд'     },
@@ -267,7 +268,7 @@ export function DashboardTopBar() {
                 </span>
 
                 {/* Submenu items list */}
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
+                <ScrollStrip arrows={false} dots={false} className="flex items-center gap-2 py-1">
                   {(activeGroup === 'activity' ? ACTIVITY : GROWTH).map(({ href, icon: Icon, label }) => {
                     const active = pathname.startsWith(href);
                     return (
@@ -284,7 +285,7 @@ export function DashboardTopBar() {
                       </Link>
                     );
                   })}
-                </div>
+                </ScrollStrip>
               </motion.div>
             )}
           </AnimatePresence>
