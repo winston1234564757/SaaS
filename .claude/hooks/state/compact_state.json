@@ -1,29 +1,32 @@
 {
   "edit_counts": {
-    "C:\\Users\\Vitossik\\.claude\\plans\\1-2-bright-wirth.md": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\hooks\\useSmartTooltip.ts": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\lib\\hooks\\useAdaptiveColor.ts": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\FitText.tsx": 0,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\dashboard\\widgets\\frost\\WeeklyChartWidget.tsx": 5,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\dashboard\\widgets\\frost\\PeakHoursWidget.tsx": 5,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\dashboard\\widgets\\frost\\GreetingWidget.tsx": 4,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\globals.css": 1,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-04-BACKLOG\\TRACKER.md": 2,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-04-BACKLOG\\HANDOFF.md": 2,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-04-BACKLOG\\TRANSITION_PROMPT.md": 2,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\MAPS\\SYSTEM_MAP.md": 1
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\dashboard\\widgets\\frost\\PeakHoursWidget.tsx": 4,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\BRIEFS\\M-DASH-06.md": 0,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\TRACKER.md": 8,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\HANDOFF.md": 6,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\TRANSITION_PROMPT.md": 2,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\BRIEFS\\M-SHOP-04.md": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\products\\RestockDrawer.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\(master)\\dashboard\\products\\actions.ts": 2,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\BRIEFS\\G-LOGIN-02.md": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\(auth)\\_components\\AuthKeyboard.tsx": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\(auth)\\layout.tsx": 4,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\auth\\PhoneOtpForm.tsx": 2
   },
   "consecutive_reads": 0,
   "read_files": [],
   "qa_gate_passed": true,
   "skills_called": [
-    "senior-frontend"
+    "senior-frontend",
+    "self-improving-agent",
+    "scroll-experience"
   ],
+  "mempalace_searched": true,
+  "ts_edited_since_tsc": false,
   "startup_confirmed": false,
   "mempalace_done": false,
   "systemmap_done": false,
-  "startup_date": "2026-06-21",
-  "mempalace_searched": true,
-  "ts_edits_since_tsc": 0,
-  "compact_timestamp": "2026-06-21T18:58:24.121326"
+  "post_compact": true,
+  "ts_edits_since_tsc": 1,
+  "compact_timestamp": "2026-06-22T16:08:09.211481"
 }

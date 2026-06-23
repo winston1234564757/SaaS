@@ -1,24 +1,16 @@
-# COMPACT HANDOFF — 2026-06-21T18:58:24.122466
+# COMPACT HANDOFF — 2026-06-22T16:08:09.225097
 
 ## Session State (restored after compact)
-- skills_called: senior-frontend
+- skills_called: senior-frontend, self-improving-agent, scroll-experience
 - qa_gate_passed: PASSED
 - ts_edited_since_tsc: clean
 - startup_confirmed: False (must re-confirm after compact)
 
 ## Sprint Progress
-**Прогрес:** 33/37 ✅ | **Розпочато:** 2026-06-12 | **Оновлено:** 2026-06-21
+TRACKER: unavailable
 
 ## Next Task
-Наступна задача:** **T16-redo — /explore + клієнтський навбар: повний редизайн**
-**Оновлено:** 2026-06-21
-
----
-
-## ✅ T31 — Smart Design System: Context-Adaptive UI: ЗАВЕРШЕНО
-**Commit:** `21158d98` | **Дата:** 2026-06-21 | **Скіл:** `senior-frontend`
-
-**Root cause:** WeeklyChartWidget + PeakHoursWidget мали ідентичний `useLayoutEffect` clamp boilerplate продубльований у двох місцях (T08 фіксував per-widget, але не централізував). Greeting використовував фіксований `text-[26px]` без масштабування
+HANDOFF: unavailable
 
 ## Iron Rules Reminder
 - RULE -1: mempalace_status + SYSTEM_MAP before any work

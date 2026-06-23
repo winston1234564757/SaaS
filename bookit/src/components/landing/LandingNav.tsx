@@ -27,7 +27,10 @@ export function LandingNav() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-5">
+      <header
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
+      >
         <motion.nav
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -121,7 +124,10 @@ export function LandingNav() {
             className="fixed inset-0 z-50 flex flex-col"
             style={{ background: 'rgba(239,242,255,0.97)', backdropFilter: 'blur(24px)' }}
           >
-            <div className="flex items-center justify-between px-6 pt-6 pb-8">
+            <div
+              className="flex items-center justify-between px-6 pb-8"
+              style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}
+            >
               <span
                 className="font-[family-name:var(--font-cormorant)] text-2xl font-semibold"
                 style={{ color: 'var(--l-ink)' }}
