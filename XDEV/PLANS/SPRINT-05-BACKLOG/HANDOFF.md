@@ -5,8 +5,8 @@
 **Спринт:** Sprint-05 — Загальний беклог (74 задачі: Зона Майстра + Клієнтська Зона + Глобальне)
 **Розпочато:** 2026-06-22
 **Прогрес:** 6/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02`)
-**Наступна задача:** **`G-PWA-01` — Скляна Safe Area (blur/backdrop при скролі)**
-**Оновлено:** 2026-06-23
+**Наступна задача:** **`M-DASH-01` — Дашборд: динамічні блоки рекомендацій (top)**
+**Оновлено:** 2026-06-24
 
 ---
 
@@ -105,24 +105,36 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `G-PWA-01` — Скляна Safe Area
+## ✅ DONE: `G-PWA-01` — Скляна Safe Area
 
-**Тип:** FEATURE (Tier 2) · **Скіли:** `progressive-web-app` + `scroll-experience` · **Модель:** Sonnet
+**Тип:** MOTION (Tier 1) *(виправлено з FEATURE/Tier 2 — узгоджено з WORKFLOW)* · **Скіли:** `scroll-experience` + `progressive-web-app` · **Модель:** Sonnet · **Commit:** `56ed454c`
+**Статус:** ✅ код готовий, TSC 0 · Build clean · device QA ✓ (founder).
 
-**Задача:** Для мобільних із вирізом / Dynamic Island — при скролі вгору верхня safe-area зона плавно «поглинає» елементи через матовий скляний ефект (`blur` / `backdrop-filter`).
+**Задача:** На мобільних із вирізом верхня safe-area смуга прозора → контент лізе під виріз сирим. Рішення: фіксований liquid-glass оверлей, матовість наростає при скролі.
 
-**Підхід:**
-1. Знайти top safe-area / sticky-хедер контейнери у клієнт- і майстер-зонах (`env(safe-area-inset-top)`).
-2. Scroll-driven: при скролі контенту під зону → нарощувати `backdrop-filter: blur()` + напівпрозорий Frost-фон на верхній смузі.
-3. Compositor-only (backdrop-filter/opacity), без layout-thrash; перевірити на notch/Dynamic Island.
+**Зроблено:** новий примітив `src/components/shared/GlassSafeArea.tsx` (повний drawer у MemPalace).
+- Fixed top, `height: calc(env(safe-area-inset-top,0px) * 0.8)`; scroll-driven `blur 0→14px` + `saturate(200%)`; тінт = градієнт `rgba(239,242,255, 0→0.30)`→`0→0.12` (низ); ramp 52px, ease-out `p*(2-p)`.
+- Perf: passive scroll + rAF, стилі прямо в ref (нуль re-render/кадр); при p<0.01 скидає компонувальний шар. `prefers-reduced-motion`, `-webkit-` префікс, `pointer-events-none`, `aria-hidden`.
+- Змонтовано: `my/layout.tsx` (клієнт) + `DashboardLayout.tsx` (майстер), scroll root=window; chat-гілки пропущені; z-40. Потребує `viewportFit:'cover'` (вже є).
 
 **Acceptance:**
-- [ ] Верхня зона плавно матовіє при скролі
-- [ ] Коректно з safe-area insets (notch/Dynamic Island)
-- [ ] Без jank
-- [ ] TSC 0 · Build clean
+- [x] Верхня зона плавно матовіє при скролі *(код; візуал — на device QA)*
+- [x] Коректно з safe-area insets (notch/Dynamic Island) — device QA ✓
+- [x] Без jank (compositor-only, rAF, ref-write)
+- [x] TSC 0 · Build clean
 
-**⚠ Перед стартом:** `mempalace_search "safe area blur backdrop sticky header scroll"`.
+**Деплой:** код у commit `56ed454c` (локально). `git push` / `vercel --prod` — за рішенням founder.
+**User-tune:** founder зменшив `maxBlur` 22 → 14 у фіналі.
+
+---
+
+## ▶ NEXT: `M-DASH-01` — Дашборд: динамічні блоки рекомендацій (top)
+
+**Тип:** REDESIGN (Tier 2, default) · **Скіли:** `design-taste-frontend` + `impeccable (layout)` · **Модель:** Sonnet · **Фаза 2** (старт зони Майстра)
+
+**Задача (з BACKLOG):** динамічні блоки-рекомендації у верхній частині дашборду майстра.
+
+**⚠ Перед стартом:** скрін поточного дашборду (REDESIGN → скрін обов'язковий) + `mempalace_search "dashboard recommendations widget top"` + повний Task Brief (acceptance, стани empty/loading/error).
 
 ---
 
