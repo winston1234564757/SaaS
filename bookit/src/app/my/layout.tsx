@@ -14,6 +14,7 @@ import { PublicNavbar } from '@/components/public/PublicNavbar';
 import { ClientNotificationsBell } from '@/components/client/ClientNotificationsBell';
 import { SmartBackButton } from '@/components/shared/SmartBackButton';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
+import { GlassSafeArea } from '@/components/shared/GlassSafeArea';
 
 export default async function MyLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -86,6 +87,7 @@ export default async function MyLayout({ children }: { children: React.ReactNode
 
   return (
     <div data-theme="frost" className="min-h-dvh pt-[env(safe-area-inset-top)] md:pt-20">
+      <GlassSafeArea />
       <PublicNavbar notifBell={<ClientNotificationsBell userId={user.id} />} />
       <SmartBackButton floating />
       <BlobBackground />

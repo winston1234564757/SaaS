@@ -11,6 +11,7 @@ import { MobileHub } from '@/components/shared/MobileHub';
 import { InstallBanner } from '@/components/shared/InstallBanner';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
+import { GlassSafeArea } from '@/components/shared/GlassSafeArea';
 import type { Profile, MasterProfile } from '@/types/database';
 
 function ThemeApplier() {
@@ -68,6 +69,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
   return (
       <div className="min-h-dvh flex flex-col" style={{ background: 'transparent' }}>
+        <GlassSafeArea />
         <ImpersonationBanner />
         <ThemeApplier />
 
