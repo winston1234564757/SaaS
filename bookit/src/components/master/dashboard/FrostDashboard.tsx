@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -40,11 +40,11 @@ const rise = {
   }),
 };
 
-// Quick-actions tap: pop-with-overshoot (matches mobile QuickActionsWidget).
-const TAP_POP = { type: 'spring' as const, stiffness: 520, damping: 16, mass: 0.8 };
-const tapContentVariants = { rest: { scale: 1 }, tap: { scale: 0.92 } };
-const tapIconVariants    = { rest: { y: 0 },     tap: { y: -2 } };
-// Hold navigation briefly so the tap pop reads before the route changes.
+// Quick-actions tap: pop-with-overshoot via CSS transition, press driven by
+// pointer state (NOT framer whileTap — that captures the first tap on touch and
+// the click is lost). Matches mobile QuickActionsWidget.
+const PRESS_EASE = 'transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
+// Hold navigation briefly so the release pop reads before the route changes.
 const REDIRECT_DELAY = 160;
 
 const BAR_ACTIONS = [
@@ -78,6 +78,56 @@ function FrostDivider() {
   return <div className="my-5" style={{ height: '1px', background: 'var(--border)' }} />;
 }
 
+function BarAction({
+  href, label, Icon, idx, reduce, onGo,
+}: {
+  href: string;
+  label: string;
+  Icon: React.ElementType;
+  idx: number;
+  reduce: boolean;
+  onGo: (href: string) => void;
+}) {
+  const [pressed, setPressed] = useState(false);
+  const release = () => setPressed(false);
+
+  return (
+    <button
+      type="button"
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={release}
+      onPointerLeave={release}
+      onPointerCancel={release}
+      onClick={() => onGo(href)}
+      className="flex-1 flex border-0 bg-transparent p-0 transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
+      style={{ borderLeft: idx > 0 ? '1px solid var(--border)' : 'none' }}
+    >
+      <span
+        className="flex-1 flex items-center justify-center gap-2.5 py-4"
+        style={{
+          transform: pressed && !reduce ? 'scale(0.92)' : 'scale(1)',
+          transition: reduce ? undefined : PRESS_EASE,
+        }}
+      >
+        <span
+          style={{
+            color: 'var(--accent)',
+            opacity: 0.7,
+            display: 'flex',
+            transform: pressed && !reduce ? 'translateY(-2px)' : 'translateY(0)',
+            transition: reduce ? undefined : PRESS_EASE,
+          }}
+        >
+          <Icon size={16} strokeWidth={1.8} />
+        </span>
+        <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+          {label}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 function FrostActionsBar() {
   const router = useRouter();
   const reduce = useReducedMotion();
@@ -91,33 +141,15 @@ function FrostActionsBar() {
     <div className="bento-card overflow-hidden">
       <div className="flex">
         {BAR_ACTIONS.map(({ href, label, Icon }, idx) => (
-          <motion.button
+          <BarAction
             key={href}
-            type="button"
-            onClick={() => go(href)}
-            initial="rest"
-            animate="rest"
-            whileTap={reduce ? undefined : 'tap'}
-            className="flex-1 flex border-0 bg-transparent p-0 transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
-            style={{ borderLeft: idx > 0 ? '1px solid var(--border)' : 'none' }}
-          >
-            <motion.span
-              className="flex-1 flex items-center justify-center gap-2.5 py-4"
-              variants={tapContentVariants}
-              transition={TAP_POP}
-            >
-              <motion.span
-                variants={tapIconVariants}
-                transition={TAP_POP}
-                style={{ color: 'var(--accent)', opacity: 0.7, display: 'flex' }}
-              >
-                <Icon size={16} strokeWidth={1.8} />
-              </motion.span>
-              <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {label}
-              </span>
-            </motion.span>
-          </motion.button>
+            href={href}
+            label={label}
+            Icon={Icon}
+            idx={idx}
+            reduce={!!reduce}
+            onGo={go}
+          />
         ))}
       </div>
     </div>
