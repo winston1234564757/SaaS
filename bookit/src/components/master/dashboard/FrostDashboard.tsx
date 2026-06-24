@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
 import { GreetingWidget as FrostGreeting } from './widgets/frost/GreetingWidget';
@@ -40,6 +40,11 @@ const rise = {
   }),
 };
 
+// Quick-actions tap: pop-with-overshoot (matches mobile QuickActionsWidget).
+const TAP_POP = { type: 'spring' as const, stiffness: 520, damping: 16, mass: 0.8 };
+const tapContentVariants = { rest: { scale: 1 }, tap: { scale: 0.92 } };
+const tapIconVariants    = { rest: { y: 0 },     tap: { y: -2 } };
+
 const BAR_ACTIONS = [
   { href: '/dashboard/flash',                     label: 'Flash Sale',  Icon: Zap        },
   { href: '/dashboard/marketing?mode=free_slots', label: 'Сторіс',      Icon: Sparkles   },
@@ -72,6 +77,7 @@ function FrostDivider() {
 }
 
 function FrostActionsBar() {
+  const reduce = useReducedMotion();
   return (
     <div className="bento-card overflow-hidden">
       <div className="flex">
@@ -79,15 +85,28 @@ function FrostActionsBar() {
           <Link
             key={href}
             href={href}
-            className="flex-1 flex items-center justify-center gap-2.5 py-4 transition-colors duration-150 active:scale-[0.97] active:transition-none cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
+            className="flex-1 flex transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
             style={{ borderLeft: idx > 0 ? '1px solid var(--border)' : 'none' }}
           >
-            <span style={{ color: 'var(--accent)', opacity: 0.7, display: 'flex' }}>
-              <Icon size={16} strokeWidth={1.8} />
-            </span>
-            <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-              {label}
-            </span>
+            <motion.span
+              className="flex-1 flex items-center justify-center gap-2.5 py-4"
+              variants={tapContentVariants}
+              initial="rest"
+              animate="rest"
+              whileTap={reduce ? undefined : 'tap'}
+              transition={TAP_POP}
+            >
+              <motion.span
+                variants={tapIconVariants}
+                transition={TAP_POP}
+                style={{ color: 'var(--accent)', opacity: 0.7, display: 'flex' }}
+              >
+                <Icon size={16} strokeWidth={1.8} />
+              </motion.span>
+              <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {label}
+              </span>
+            </motion.span>
           </Link>
         ))}
       </div>
