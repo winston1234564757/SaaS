@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Zap, Sparkles } from 'lucide-react';
 import { ScrollStrip } from '@/components/shared/ScrollStrip';
 import { useServices } from '@/lib/supabase/hooks/useServices';
@@ -31,6 +32,16 @@ function toISO(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// Каскад появи груп слотів (Ранок/День/Вечір) — спокійний Frost-editorial, без overshoot.
+const groupStagger = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+} as const;
+const groupItem = {
+  hidden:  { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, duration: 0.4, bounce: 0 } },
+} as const;
+
 interface FreeSlotsWidgetProps {
   onSlotClick?: (time: string, serviceId: string) => void;
 }
@@ -43,6 +54,7 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
   const { profile, masterProfile } = useMasterContext();
   const masterId  = masterProfile?.id ?? profile?.id;
   const { showToast } = useToast();
+  const reduceMotion = useReducedMotion();
   const { services, isLoading: servicesLoading } = useServices();
   const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(masterId, todayStr, futureStr);
   const wh        = (masterProfile?.working_hours as Partial<WorkingHoursConfig> | null) ?? {};
@@ -131,9 +143,15 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
 
       {/* Slots grouped by time of day */}
       {!isLoading && count > 0 && (
-        <div className="flex flex-col gap-3 px-4 pb-2">
+        <motion.div
+          key={selectedService?.id}
+          className="flex flex-col gap-3 px-4 pb-2"
+          variants={groupStagger}
+          initial={reduceMotion ? false : 'hidden'}
+          animate="visible"
+        >
           {groupedSlots.map(group => (
-            <div key={group.key}>
+            <motion.div key={group.key} variants={groupItem}>
               <p
                 className="text-[10px] font-bold tracking-[0.18em] uppercase mb-1.5"
                 style={{ color: 'var(--text-tertiary)' }}
@@ -159,9 +177,9 @@ export function FreeSlotsWidget({ onSlotClick }: FreeSlotsWidgetProps) {
                   </button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
       {!isLoading && count === 0 && (
         <p className="px-4 pb-2 text-[13px] text-[var(--text-tertiary)]">
