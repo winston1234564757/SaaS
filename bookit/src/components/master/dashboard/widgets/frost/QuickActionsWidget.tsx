@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
 
@@ -17,9 +17,19 @@ const DIVIDER = 'color-mix(in srgb, var(--accent-on) 10%, transparent)';
 const POP = { type: 'spring' as const, stiffness: 520, damping: 16, mass: 0.8 };
 const contentVariants = { rest: { scale: 1 },   tap: { scale: 0.92 } };
 const iconVariants    = { rest: { y: 0 },        tap: { y: -2 } };
+// Hold navigation briefly so the tap pop reads before the route changes.
+const REDIRECT_DELAY = 160;
 
 export function QuickActionsWidget() {
+  const router = useRouter();
   const reduce = useReducedMotion();
+
+  // Native <a> navigation conflicts with whileTap on touch (first tap only
+  // animates). Drive it manually with a short delay so the pop plays.
+  function go(href: string) {
+    if (reduce) { router.push(href); return; }
+    window.setTimeout(() => router.push(href), REDIRECT_DELAY);
+  }
 
   return (
     <div
@@ -31,10 +41,11 @@ export function QuickActionsWidget() {
           const isLeft = i % 2 === 0;
           const isTop  = i < 2;
           return (
-            <Link
+            <button
               key={href}
-              href={href}
-              className="flex h-[72px] active:bg-white/5 transition-colors duration-150"
+              type="button"
+              onClick={() => go(href)}
+              className="flex h-[72px] w-full border-0 bg-transparent p-0 cursor-pointer appearance-none active:bg-white/5 transition-colors duration-150"
               style={{
                 borderRight:  isLeft ? `1px solid ${DIVIDER}` : undefined,
                 borderBottom: isTop  ? `1px solid ${DIVIDER}` : undefined,
@@ -58,7 +69,7 @@ export function QuickActionsWidget() {
                   {label}
                 </span>
               </motion.span>
-            </Link>
+            </button>
           );
         })}
       </div>

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
 import { GreetingWidget as FrostGreeting } from './widgets/frost/GreetingWidget';
 import { FrostMetricsStrip } from './widgets/FrostMetricsStrip';
@@ -44,6 +44,8 @@ const rise = {
 const TAP_POP = { type: 'spring' as const, stiffness: 520, damping: 16, mass: 0.8 };
 const tapContentVariants = { rest: { scale: 1 }, tap: { scale: 0.92 } };
 const tapIconVariants    = { rest: { y: 0 },     tap: { y: -2 } };
+// Hold navigation briefly so the tap pop reads before the route changes.
+const REDIRECT_DELAY = 160;
 
 const BAR_ACTIONS = [
   { href: '/dashboard/flash',                     label: 'Flash Sale',  Icon: Zap        },
@@ -77,15 +79,23 @@ function FrostDivider() {
 }
 
 function FrostActionsBar() {
+  const router = useRouter();
   const reduce = useReducedMotion();
+
+  function go(href: string) {
+    if (reduce) { router.push(href); return; }
+    window.setTimeout(() => router.push(href), REDIRECT_DELAY);
+  }
+
   return (
     <div className="bento-card overflow-hidden">
       <div className="flex">
         {BAR_ACTIONS.map(({ href, label, Icon }, idx) => (
-          <Link
+          <button
             key={href}
-            href={href}
-            className="flex-1 flex transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
+            type="button"
+            onClick={() => go(href)}
+            className="flex-1 flex border-0 bg-transparent p-0 transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
             style={{ borderLeft: idx > 0 ? '1px solid var(--border)' : 'none' }}
           >
             <motion.span
@@ -107,7 +117,7 @@ function FrostActionsBar() {
                 {label}
               </span>
             </motion.span>
-          </Link>
+          </button>
         ))}
       </div>
     </div>
