@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
 import { GreetingWidget as FrostGreeting } from './widgets/frost/GreetingWidget';
 import { FrostMetricsStrip } from './widgets/FrostMetricsStrip';
@@ -40,12 +40,10 @@ const rise = {
   }),
 };
 
-// Quick-actions tap: pop-with-overshoot via CSS transition, press driven by
-// pointer state (NOT framer whileTap — that captures the first tap on touch and
-// the click is lost). Matches mobile QuickActionsWidget.
+// Quick-actions tap: press feedback via pointer state + CSS transform (NOT
+// framer whileTap — it captures the first tap on touch). Navigation stays on the
+// native <Link> click → fires first-tap + auto-prefetch. Matches QuickActionsWidget.
 const PRESS_EASE = 'transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
-// Hold navigation briefly so the release pop reads before the route changes.
-const REDIRECT_DELAY = 160;
 
 const BAR_ACTIONS = [
   { href: '/dashboard/flash',                     label: 'Flash Sale',  Icon: Zap        },
@@ -79,33 +77,31 @@ function FrostDivider() {
 }
 
 function BarAction({
-  href, label, Icon, idx, reduce, onGo,
+  href, label, Icon, idx, reduce,
 }: {
   href: string;
   label: string;
   Icon: React.ElementType;
   idx: number;
   reduce: boolean;
-  onGo: (href: string) => void;
 }) {
   const [pressed, setPressed] = useState(false);
   const release = () => setPressed(false);
 
   return (
-    <button
-      type="button"
+    <Link
+      href={href}
       onPointerDown={() => setPressed(true)}
       onPointerUp={release}
       onPointerLeave={release}
       onPointerCancel={release}
-      onClick={() => onGo(href)}
-      className="flex-1 flex border-0 bg-transparent p-0 transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
+      className="flex-1 flex transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
       style={{ borderLeft: idx > 0 ? '1px solid var(--border)' : 'none' }}
     >
       <span
         className="flex-1 flex items-center justify-center gap-2.5 py-4"
         style={{
-          transform: pressed && !reduce ? 'scale(0.92)' : 'scale(1)',
+          transform: pressed && !reduce ? 'scale(0.95)' : 'scale(1)',
           transition: reduce ? undefined : PRESS_EASE,
         }}
       >
@@ -124,24 +120,12 @@ function BarAction({
           {label}
         </span>
       </span>
-    </button>
+    </Link>
   );
 }
 
 function FrostActionsBar() {
-  const router = useRouter();
   const reduce = useReducedMotion();
-
-  // Restore Link's prefetch (lost when switching to <button>) so heavy routes
-  // like analytics navigate instantly.
-  useEffect(() => {
-    BAR_ACTIONS.forEach(a => router.prefetch(a.href));
-  }, [router]);
-
-  function go(href: string) {
-    if (reduce) { router.push(href); return; }
-    window.setTimeout(() => router.push(href), REDIRECT_DELAY);
-  }
 
   return (
     <div className="bento-card overflow-hidden">
@@ -154,7 +138,6 @@ function FrostActionsBar() {
             Icon={Icon}
             idx={idx}
             reduce={!!reduce}
-            onGo={go}
           />
         ))}
       </div>
@@ -381,7 +364,7 @@ function FrostDesktop({
       </motion.div>
 
       <motion.div custom={2} variants={rise} initial="hidden" animate="visible" className="mb-4">
-        <div className="grid gap-4 items-stretch" style={{ gridTemplateColumns: '3fr 2fr' }}>
+        <div className="grid gap-4 items-start" style={{ gridTemplateColumns: '3fr 2fr' }}>
           <div data-tour-step={2} data-tour-key="dash-2" className="flex flex-col">
             <AdaptiveContextStrip />
           </div>

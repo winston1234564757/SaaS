@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import Link from 'next/link';
 import { useReducedMotion } from 'framer-motion';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
 
@@ -13,12 +13,10 @@ const ACTIONS = [
 ] as const;
 
 const DIVIDER = 'color-mix(in srgb, var(--accent-on) 10%, transparent)';
-// Pop-with-overshoot via pure CSS transition (bouncy ease). Press driven by
-// pointer state, NOT framer whileTap — framer's gesture captures the first tap
-// on touch and the click is lost (two-tap bug). Plain onClick always fires.
+// Press feedback via pointer state + CSS transform (NOT framer whileTap — that
+// captures the first tap on touch). Navigation stays on the native <Link> click,
+// so it fires first-tap and Link auto-prefetches the route (no cold heavy nav).
 const PRESS_EASE = 'transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
-// Hold navigation briefly so the release pop reads before the route changes.
-const REDIRECT_DELAY = 160;
 
 interface TileProps {
   href: string;
@@ -27,22 +25,20 @@ interface TileProps {
   isLeft: boolean;
   isTop: boolean;
   reduce: boolean;
-  onGo: (href: string) => void;
 }
 
-function QuickTile({ href, label, Icon, isLeft, isTop, reduce, onGo }: TileProps) {
+function QuickTile({ href, label, Icon, isLeft, isTop, reduce }: TileProps) {
   const [pressed, setPressed] = useState(false);
   const release = () => setPressed(false);
 
   return (
-    <button
-      type="button"
+    <Link
+      href={href}
       onPointerDown={() => setPressed(true)}
       onPointerUp={release}
       onPointerLeave={release}
       onPointerCancel={release}
-      onClick={() => onGo(href)}
-      className="flex h-[72px] w-full border-0 bg-transparent p-0 cursor-pointer appearance-none active:bg-white/5 transition-colors duration-150"
+      className="flex h-[72px] active:bg-white/5 transition-colors duration-150"
       style={{
         borderRight:  isLeft ? `1px solid ${DIVIDER}` : undefined,
         borderBottom: isTop  ? `1px solid ${DIVIDER}` : undefined,
@@ -51,7 +47,7 @@ function QuickTile({ href, label, Icon, isLeft, isTop, reduce, onGo }: TileProps
       <span
         className="flex-1 flex flex-col items-center justify-center gap-1.5"
         style={{
-          transform: pressed && !reduce ? 'scale(0.92)' : 'scale(1)',
+          transform: pressed && !reduce ? 'scale(0.95)' : 'scale(1)',
           transition: reduce ? undefined : PRESS_EASE,
         }}
       >
@@ -71,25 +67,12 @@ function QuickTile({ href, label, Icon, isLeft, isTop, reduce, onGo }: TileProps
           {label}
         </span>
       </span>
-    </button>
+    </Link>
   );
 }
 
 export function QuickActionsWidget() {
-  const router = useRouter();
   const reduce = useReducedMotion();
-
-  // <button> loses Link's automatic route prefetch — restore it so heavy routes
-  // (e.g. analytics, dynamic ssr:false) navigate instantly instead of feeling
-  // like the first tap did nothing.
-  useEffect(() => {
-    ACTIONS.forEach(a => router.prefetch(a.href));
-  }, [router]);
-
-  function go(href: string) {
-    if (reduce) { router.push(href); return; }
-    window.setTimeout(() => router.push(href), REDIRECT_DELAY);
-  }
 
   return (
     <div
@@ -106,7 +89,6 @@ export function QuickActionsWidget() {
             isLeft={i % 2 === 0}
             isTop={i < 2}
             reduce={!!reduce}
-            onGo={go}
           />
         ))}
       </div>

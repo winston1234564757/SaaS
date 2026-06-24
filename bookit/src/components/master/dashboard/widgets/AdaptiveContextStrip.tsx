@@ -99,9 +99,9 @@ function SecondaryCard({ card, index, hideOnDesktop }: { card: StripCard; index:
       animate="visible"
       className={`bento-card p-4 flex flex-col gap-3 ${hideOnDesktop ? 'lg:hidden' : ''}`}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3.5">
         <span
-          className="flex items-center justify-center size-9 rounded-xl shrink-0"
+          className="flex items-center justify-center size-10 rounded-xl shrink-0"
           style={{
             background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
             color: 'var(--accent)',
