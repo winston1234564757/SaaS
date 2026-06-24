@@ -1,9 +1,10 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-20 · Джерело: живий код (v9.0.0 "Sprint-04: 29/37 ✅") · Sprint-04 commit: `1b1bfb8b` (T30: Розхідники UX/UI — ConsumableCard, MaterialsReviewSheet, ExpensesTab, unit selector, WaterfallChart 6th bar, FinancesTab 5 KPIs)
+> Оновлено: 2026-06-24 · Джерело: живий код (v9.0.0) · Останній код-коміт: `4d6c2dcf` (M-DASH-03: staggered reveal груп слотів у FreeSlotsWidget)
 > 
-> **⚡ Sprint-04 Status:** 29/37 ✅ | Next: T31 — Smart Design System: Context-Adaptive UI | Skills: TOP 50 configured (settings.json v9.0.0)
-> **🎯 Launch:** 2026-06-22 | Sprint-05 + Sprint-06 remaining post-launch
+> **⚡ Sprint-05 Status (ACTIVE):** 10/74 ✅ | Next: `M-DASH-04` — Дашборд: "Записи" прибрати капс (COPY) | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
+> **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
+> **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
 > 
 > **LOCAL Skills (bookit/.claude/skills/):**

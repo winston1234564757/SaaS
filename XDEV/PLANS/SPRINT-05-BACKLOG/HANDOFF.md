@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (74 задачі: Зона Майстра + Клієнтська Зона + Глобальне)
 **Розпочато:** 2026-06-22
-**Прогрес:** 9/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02`)
-**Наступна задача:** **`M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX** (перевір: ймовірно закрито G-PWA-02)
+**Прогрес:** 10/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03`)
+**Наступна задача:** **`M-DASH-04` — Дашборд: "Записи" — прибрати капс у текстах** (COPY · `humanizer` · Haiku)
 **Оновлено:** 2026-06-24
 
 ---
@@ -24,6 +24,22 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX (P1) · commit `4d6c2dcf`
+
+**Контртеза до опису:** беклог просив "UX-стрілки, перемикачі, статус скролу" зі стрілкою `→ G-PWA-02`. Перевірка показала: скрол-UX **уже повністю закрито** — селектор послуг у `frost/FreeSlotsWidget.tsx` сидить на `ScrollStrip` (стрілки на 1 крок + крапки на елемент + selection→scroll). Drawer G-PWA-02 прямо фіксує цей віджет як мігрований. Нового скрол-коду = 0.
+
+**Розширення scope (рішення Vitos):** додано motion-полиш — staggered reveal груп слотів.
+
+**Рішення:** `frost/FreeSlotsWidget.tsx` — групи Ранок/День/Вечір каскадом:
+- `groupStagger`/`groupItem` поза компонентом, `as const` (за `dashboard-animation-system`). spring `duration 0.4, bounce 0` — без overshoot (вимога Vitos), `staggerChildren 0.08`.
+- `key={selectedService?.id}` → replay на load + кожній зміні послуги.
+- `useReducedMotion()` → `initial={false}` fallback (миттєво, нуль трансформів).
+- Лише `opacity`+`y`; стагеряться тільки 3 групи, чипи разом. ScrollStrip/сітка/footer не чіпані.
+
+**Перевірка:** TSC 0 · Build clean · deploy READY на prod. Скіл `emilkowalski-motion` валідував рух. Деталі — `BRIEFS/M-DASH-03.md`.
 
 ---
 
