@@ -164,11 +164,12 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 **KEY:** «Pop» = bouncy spring на release (низький damping → overshoot природно, без явних keyframes). whileTap на дочірньому контенті + variants-пропагація на іконку = ефект без скейлу самого боксу.
 
-**Hotfix (device QA, 2 раунди) · commits `92d61922` → `e0a63f90`:** на тачі перший тап лише анімував, навігація — з другого.
-- Раунд 1 (`92d61922`, неповний): `<Link>` → `<button>` + `router.push` із затримкою 160ms. НЕ вилікувало — `whileTap` лишався на дочірньому `motion.span`, а `onClick` на батьківській кнопці = різні вузли.
-- Раунд 2 (`e0a63f90`, справжній фікс): `whileTap` піднято на сам `motion.button` (той самий вузол, що `onClick`). Скейл контенту — через variant-пропагацію на дочірні span-и (box статичний → дільники/hero-фон цілі).
+**Hotfix (device QA, 3 раунди) · commits `92d61922` → `e0a63f90` → `ef0c1e82` (фінал):** на тачі перший тап лише анімував, навігація — з другого.
+- Раунд 1 (`92d61922`): `<Link>`→`<button>`+delay. НЕ вилікувало — `whileTap` лишався на дочірньому span.
+- Раунд 2 (`e0a63f90`): `whileTap` піднято на той самий `motion.button`, що `onClick`. ВСЕ ОДНО два тапи — framer gesture перехоплює pointer і ковтає click після першої навігації.
+- Раунд 3 (`ef0c1e82`, ФІНАЛ): **framer `whileTap` прибрано повністю.** Press = власний `useState` (`onPointerDown/Up/Leave/Cancel`), scale через inline-`transform` + bouncy CSS-ease (pop-overshoot на release). Навігація — plain `onClick` + 160ms delay. Нема framer-жесту → ніщо не перехоплює тап, клік з першого разу. Винесено `QuickTile`/`BarAction` під-компоненти (hooks-in-map).
 
-**KEY-gotcha:** framer `whileTap` і навігація МАЮТЬ бути на ОДНОМУ елементі. Якщо tap-жест на дочірньому вузлі, а click на батьку/анкорі — framer перехоплює першу pointer-послідовність і перший клік губиться на тачі. Рішення: `motion.button` з `whileTap`+`onClick` разом, скейл лише контенту через variants-пропагацію, навігація `router.push` із ~160ms затримкою (reduce-motion миттєво). (Деталі — MemPalace `fixes` drawer `7ec491ed…`.)
+**KEY-gotcha:** для tap-to-navigate НЕ використовуй framer `whileTap` — його pointer-gesture конфліктує з кліком на тачі (втрата першого тапу). Press роби на pointer-стейті + CSS transform; навігуй plain `onClick`. `whileTap` ок лише для НЕ-навігаційних елементів. (Деталі — MemPalace `fixes` drawer `7ec491ed…`.)
 
 ---
 
