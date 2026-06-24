@@ -74,6 +74,7 @@
   - Full: MonthlyCalendarWidget
   - `1/2 1/2`: TopServicesWidget + CancellationRateWidget
   - `1/3 1/3 1/3`: InsightsRow + NextFreeDaysWidget + ChannelHealthWidget
+- **Top zone redesign (2026-06-24, M-DASH-01)**: верхня зона = Greeting → MetricsStrip → AdaptiveContextStrip (Greeting/MetricsStrip без змін). `AdaptiveContextStrip.tsx` перебудовано: домінантна головна картка (`FitText` title, accent-CTA) + компактні вторинні; mobile `flex-col` (головна + до 2 стеком), desktop `lg:flex-row` (головна `flex-[1.4]` + 1 вторинна, 2-га `lg:hidden`) — щоб не зламати парність висоти з `EarningsPulseWidget` у рядку `3fr 2fr`. Релевантність: `useDashboardStats().todayPending > 0` → головна порада «N записів очікують», інакше стан `useBusyness`. `StockWidget.tsx` нормалізовано під Frost-токени (`bento-card` + `var(--*)`) і **перенесено вниз — передостаннім** (перед `ReferralBoostWidget`) на mobile+desktop. `custom`-stagger у `FrostDashboard.tsx` пересортовано. `data-tour-key="dash-2"` збережено.
 - **FreeSlotsWidget slot-click → ManualBookingForm** (2026-05-30): `onSlotClick?(time,serviceId)` prop; slot `<span>`→`<button>`; `FrostDashboard` owns `WizardSlot|null` state; `ManualBookingForm` got `initialServiceId?` → `useMemo`→`initialServices`; `todayISO()` uses local date (not UTC `.toISOString()`)
 
 ### Onboarding Wizard (v2 — 5-step, 2026-05-29)

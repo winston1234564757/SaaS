@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (74 задачі: Зона Майстра + Клієнтська Зона + Глобальне)
 **Розпочато:** 2026-06-22
-**Прогрес:** 6/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02`)
-**Наступна задача:** **`M-DASH-01` — Дашборд: динамічні блоки рекомендацій (top)**
+**Прогрес:** 8/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01`)
+**Наступна задача:** **`M-DASH-02` — Дашборд: Quick Actions tap-анімація (MOTION)**
 **Оновлено:** 2026-06-24
 
 ---
@@ -128,13 +128,35 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-DASH-01` — Дашборд: динамічні блоки рекомендацій (top)
+## ✅ DONE: `M-DASH-01` — Дашборд: динамічні блоки рекомендацій (top) (P1) · commit `d857a5e6`
 
-**Тип:** REDESIGN (Tier 2, default) · **Скіли:** `design-taste-frontend` + `impeccable (layout)` · **Модель:** Sonnet · **Фаза 2** (старт зони Майстра)
+**Тип:** REDESIGN (Tier 2) · **Скіли:** `design-taste-frontend` + `humanizer` · **Фаза 2**
 
-**Задача (з BACKLOG):** динамічні блоки-рекомендації у верхній частині дашборду майстра.
+**Скоуп (розширено через QA + пряму вказівку founder):** не лише стрип, а **вся верхня зона**. Ключове рішення founder: «Stock-віджет взагалі вниз опусти, передостаннім — він не має бути зверху».
 
-**⚠ Перед стартом:** скрін поточного дашборду (REDESIGN → скрін обов'язковий) + `mempalace_search "dashboard recommendations widget top"` + повний Task Brief (acceptance, стани empty/loading/error).
+**Зроблено:**
+- **`AdaptiveContextStrip.tsx` — перебудовано.** Замість 2 рівних карток у тісному `grid-cols-2` → домінантна головна картка (велика, accent-tint, іконка-чіп 44px, заголовок через `FitText`, повноширинна accent-CTA `py-3`) + компактні вторинні. Mobile: головна зверху + вторинні стеком (до 2). Desktop (`lg:`): горизонтальний ряд головна + 1 вторинна (другу `lg:hidden`) → висота лишається ~однієї картки, пара з `EarningsPulseWidget` не з'їжджає.
+- **Релевантність.** Новий пріоритет головної поради: `useDashboardStats().todayPending > 0` → «N записів очікують → Підтвердити» (час-чутливе). Інакше — порада за станом завантаженості (`useBusyness`, 4 стани). popLayout-перехід keyed by `main.id`. `pluralUk` на годинах/записах (виправив прихований баг «1 вільних годин»).
+- **`StockWidget.tsx` — нормалізовано під Frost.** `widget-card` → `bento-card`; shadcn-utility токени (`text-muted-foreground`, `text-destructive`, `bg-secondary`, `bg-primary/40`, `text-foreground`, `text-primary`) → Frost CSS-змінні (`var(--text-tertiary/primary)`, `var(--error)`, `var(--border)`, accent-mix). Lucide-іконки в span зі style-кольором.
+- **`FrostDashboard.tsx` — Stock перенесено.** З 3-ї позиції зверху → передостаннім (після `ClientAlerts`, перед `ReferralBoostWidget`, з власним розділювачем) і на mobile, і на desktop. `custom`-індекси stagger впорядковано послідовно (були дублі `custom={3}`). `data-tour-key="dash-2"` на стрипі збережено.
+
+**Перевірка:** TSC 0 · Build clean · 3 файли. Скіли: `design-taste-frontend` (у межах наявної Frost-системи, без нав'язування Geist/zinc) + `humanizer` (нова pending-копія). Деталі — `BRIEFS/M-DASH-01.md`.
+
+**Device QA (за founder):** головна порада домінує на mobile / нічого не тиснеться / CTA ≥44px; desktop-пара по висоті рівна; Stock унизу виглядає як решта bento; стан із pending показує «N записів очікують» головною.
+
+**KEY:** На desktop стрип ділить рядок `3fr` з `EarningsPulse` → vertical-stack карток зламав би парність висоти. Рішення: responsive `flex-col` (mobile) ↔ `flex-row` + `lg:hidden` на 2-й вторинній (desktop). Головна/вторинна ієрархія через вагу+розмір+tint, не лише масштаб (правило design-taste).
+
+---
+
+## ▶ NEXT: `M-DASH-02` — Дашборд: Quick Actions tap-анімація
+
+**Тип:** MOTION (Tier 1) · **Скіли:** `emilkowalski-motion` · **Модель:** Sonnet · **P2** · **Фаза 2**
+
+**Задача (з BACKLOG):** Quick Actions — преміальна анімація при тапі: мінімальне тертя, «дорогий» відгук інтерфейсу (тактильне відчуття преміальності).
+
+**Ціль (компонент):** `src/components/master/dashboard/widgets/frost/QuickActionsWidget.tsx` (+ `FrostActionsBar` у `FrostDashboard.tsx` на desktop — теж quick-actions ряд; узгодити відчуття тапу між ними).
+
+**⚠ Перед стартом (MOTION-гейт):** референс відчуття (як має бути) + `mempalace_search "quick actions tap animation spring"` + лайт-бриф (ціль + spring/scroll-параметри). Скіл `emilkowalski-motion` → перевірити на реальному мобільному. Зараз тап = лише `active:scale-[0.97]` (CSS). Поточні `active:scale` по дашборду — спільний патерн, не зламати.
 
 ---
 
