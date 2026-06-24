@@ -164,6 +164,8 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 **KEY:** «Pop» = bouncy spring на release (низький damping → overshoot природно, без явних keyframes). whileTap на дочірньому контенті + variants-пропагація на іконку = ефект без скейлу самого боксу.
 
+**Hotfix (device QA) · commit `92d61922`:** на тачі перший тап лише анімував, навігація — з другого. Причина: `whileTap` перехоплює першу pointer-послідовність на вузлі всередині Next `<Link>` → нативний клік `<a>` ковтається. Фікс: `<Link>` → `<button>` + `router.push` із затримкою 160ms (pop встигає зіграти; reduce-motion навігує миттєво). Mobile + desktop. **KEY-gotcha:** `whileTap` × `<Link>`/`<a>` на тачі = втрата першого кліку → не клади framer tap-жест у анкор, навігуй через `router.push`.
+
 ---
 
 ## ▶ NEXT: `M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX
