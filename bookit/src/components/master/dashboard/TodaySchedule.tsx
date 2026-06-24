@@ -142,7 +142,7 @@ function BookingRow({
             {b.start_time}
           </p>
           {active && (
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--accent)] mt-0.5">
+            <p className="text-[10px] font-bold tracking-[0.1em] text-[var(--accent)] mt-0.5">
               зараз
             </p>
           )}
@@ -175,7 +175,7 @@ function BookingRow({
           <button type="button"
             onClick={e => { e.stopPropagation(); onComplete(b.id); }}
             disabled={isCompleting}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--warning)] text-white text-[10px] font-bold tracking-[0.06em] uppercase disabled:opacity-50 transition-opacity"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--warning)] text-white text-[10px] font-bold tracking-[0.06em] disabled:opacity-50 transition-opacity"
           >
             {isCompleting
               ? <Loader2 size={10} className="animate-spin" />
@@ -210,7 +210,7 @@ function StatTile({
       onMouseLeave={() => setHovered(false)}
     >
       <p className="metric-value text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
-      <p className="text-[10px] font-bold tracking-[0.06em] uppercase text-[var(--text-tertiary)]">{label}</p>
+      <p className="text-[10px] font-bold tracking-[0.06em] text-[var(--text-tertiary)]">{label}</p>
       {hovered && hasContent && (
         <div
           className="absolute z-50 bottom-full mb-1.5 pointer-events-none rounded-lg px-2.5 py-2"
@@ -317,7 +317,7 @@ function StatsView({ bookings, view }: { bookings: BookingWithServices[]; view: 
       {topService && (
         <div className="flex items-center justify-between py-2.5 border-t border-[var(--border)]">
           <div>
-            <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)]">Топ послуга</p>
+            <p className="text-[10px] font-bold tracking-[0.16em] text-[var(--text-tertiary)]">Топ послуга</p>
             <p className="font-service text-[13px] text-[var(--text-primary)] mt-0.5">{topService.name}</p>
           </div>
           <p className="metric-value text-[15px] font-semibold text-[var(--accent)]">{topService.count}×</p>
@@ -422,7 +422,7 @@ export function TodaySchedule() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)]">Записи</p>
+          <p className="text-[10px] font-bold tracking-[0.16em] text-[var(--text-tertiary)]">Записи</p>
           {!isLoading && (
             <span className="px-2 py-0.5 rounded-full bg-[var(--border)] metric-value text-[12px] font-bold text-[var(--text-tertiary)]">
               {filtered.length}
@@ -489,7 +489,7 @@ export function TodaySchedule() {
                         .map(([date, dayBookings]) => (
                           <div key={date}>
                             <div className="flex items-center gap-3 px-4 py-2">
-                              <span className="text-[12px] font-bold tracking-[0.14em] uppercase text-[var(--text-tertiary)] whitespace-nowrap">
+                              <span className="text-[12px] font-bold tracking-[0.14em] capitalize text-[var(--text-tertiary)] whitespace-nowrap">
                                 {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
                               </span>
                               <div className="flex-1 h-px bg-[var(--border)]" />
