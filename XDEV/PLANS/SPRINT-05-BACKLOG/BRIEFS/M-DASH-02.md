@@ -1,6 +1,6 @@
 # M-DASH-02 — Дашборд: Quick Actions tap-анімація
 
-**Статус:** DONE · feel: «Pop з overshoot» · commit `6421b89c` + hotfix `92d61922` (first-tap nav: Link→button+delay) · TSC 0 · Build clean
+**Статус:** DONE · feel: «Pop з overshoot» · commits `6421b89c` → `92d61922` (неповний) → `e0a63f90` (first-tap fix: whileTap на тому ж motion.button, що onClick) · TSC 0 · Build clean
 **Тип:** MOTION (Tier 1) · **Скіл:** `emilkowalski-motion` · **Модель:** Sonnet · **P2** · **Фаза 2**
 
 ---
