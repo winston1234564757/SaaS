@@ -231,11 +231,7 @@ function FrostMobile({
         <FrostMetricsStrip />
       </motion.div>
 
-      <motion.div custom={2} variants={rise} initial="hidden" animate="visible">
-        <StockWidget />
-      </motion.div>
-
-      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" data-tour-step={2} data-tour-key="dash-2">
+      <motion.div custom={2} variants={rise} initial="hidden" animate="visible" data-tour-step={2} data-tour-key="dash-2">
         <AdaptiveContextStrip />
       </motion.div>
 
@@ -287,7 +283,11 @@ function FrostMobile({
         <ClientAlertsWidget />
       </motion.div>
 
-      <motion.div custom={15} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
+      <motion.div custom={15} variants={rise} initial="hidden" animate="visible">
+        <StockWidget />
+      </motion.div>
+
+      <motion.div custom={16} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
         <ReferralBoostWidget />
       </motion.div>
     </div>
@@ -314,11 +314,7 @@ function FrostDesktop({
       </motion.div>
 
       <motion.div custom={2} variants={rise} initial="hidden" animate="visible" className="mb-4">
-        <StockWidget />
-      </motion.div>
-
-      <motion.div custom={3} variants={rise} initial="hidden" animate="visible" className="mb-4">
-        <div className="grid gap-4" style={{ gridTemplateColumns: '3fr 2fr' }}>
+        <div className="grid gap-4 items-stretch" style={{ gridTemplateColumns: '3fr 2fr' }}>
           <div data-tour-step={2} data-tour-key="dash-2" className="flex flex-col">
             <AdaptiveContextStrip />
           </div>
@@ -399,7 +395,13 @@ function FrostDesktop({
 
       <FrostDivider />
 
-      <motion.div custom={10} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
+      <motion.div custom={10} variants={rise} initial="hidden" animate="visible">
+        <StockWidget />
+      </motion.div>
+
+      <FrostDivider />
+
+      <motion.div custom={11} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
         <ReferralBoostWidget />
       </motion.div>
 

@@ -25,15 +25,19 @@ export function StockWidget() {
 
   return (
     <>
-      <div className="widget-card p-5 flex flex-col gap-4">
+      <div className="bento-card p-5 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FlaskConical size={15} className="text-muted-foreground" />
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Склад</p>
+            <span style={{ color: 'var(--text-tertiary)', display: 'flex' }}>
+              <FlaskConical size={15} strokeWidth={1.8} />
+            </span>
+            <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
+              Склад
+            </p>
           </div>
           {critical.length > 0 && (
-            <span className="flex items-center gap-1 text-[10px] font-bold text-destructive">
-              <AlertTriangle size={11} />
+            <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: 'var(--error)' }}>
+              <AlertTriangle size={11} strokeWidth={2} />
               {critical.length} мало
             </span>
           )}
@@ -49,9 +53,12 @@ export function StockWidget() {
             return (
               <div key={p.id} className="flex flex-col gap-1 group">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium truncate text-foreground">{p.name}</span>
+                  <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{p.name}</span>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className={`font-bold tabular-nums ${isCritical ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    <span
+                      className="font-bold tabular-nums"
+                      style={{ color: isCritical ? 'var(--error)' : 'var(--text-tertiary)' }}
+                    >
                       {p.stock_qty} {UNIT_LABEL[unit]}
                     </span>
                     <AnimatePresence>
@@ -59,7 +66,8 @@ export function StockWidget() {
                         type="button"
                         aria-label={`Поповнити ${p.name}`}
                         onClick={() => setRestocking(p)}
-                        className="px-2 py-1 rounded-full text-[10px] font-bold bg-[var(--accent)] text-[var(--accent-on)] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-150 active:scale-[0.90] md:block hidden"
+                        className="px-2 py-1 rounded-full text-[10px] font-bold opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-150 active:scale-[0.90] md:block hidden"
+                        style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
                       >
                         Поповнити
                       </motion.button>
@@ -68,7 +76,8 @@ export function StockWidget() {
                         type="button"
                         aria-label={`Поповнити ${p.name}`}
                         onClick={() => setRestocking(p)}
-                        className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--accent)] text-[var(--accent-on)] active:scale-[0.90] transition-transform md:hidden"
+                        className="px-2 py-0.5 rounded-full text-[10px] font-bold active:scale-[0.90] transition-transform md:hidden"
+                        style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
                       >
                         +
                       </button>
@@ -76,10 +85,15 @@ export function StockWidget() {
                   </div>
                 </div>
                 {p.stock_alert_threshold != null && (
-                  <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
+                  <div className="h-1 w-full rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
                     <div
-                      className={`h-full rounded-full transition-all ${isCritical ? 'bg-destructive' : 'bg-primary/40'}`}
-                      style={{ width: `${pct}%` }}
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${pct}%`,
+                        background: isCritical
+                          ? 'var(--error)'
+                          : 'color-mix(in srgb, var(--accent) 45%, transparent)',
+                      }}
                     />
                   </div>
                 )}
@@ -90,7 +104,8 @@ export function StockWidget() {
 
         <Link
           href="/dashboard/products?tab=consumables"
-          className="text-[10px] font-semibold text-primary/70 hover:text-primary transition-colors self-start"
+          className="text-[10px] font-semibold self-start transition-opacity hover:opacity-70"
+          style={{ color: 'var(--accent)' }}
         >
           Всі розхідники
         </Link>
