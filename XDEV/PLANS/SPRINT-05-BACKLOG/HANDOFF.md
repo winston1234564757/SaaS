@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (74 задачі: Зона Майстра + Клієнтська Зона + Глобальне)
 **Розпочато:** 2026-06-22
-**Прогрес:** 8/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01`)
-**Наступна задача:** **`M-DASH-02` — Дашборд: Quick Actions tap-анімація (MOTION)**
+**Прогрес:** 9/74 ✅ (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02`)
+**Наступна задача:** **`M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX** (перевір: ймовірно закрито G-PWA-02)
 **Оновлено:** 2026-06-24
 
 ---
@@ -148,15 +148,31 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-DASH-02` — Дашборд: Quick Actions tap-анімація
+## ✅ DONE: `M-DASH-02` — Дашборд: Quick Actions tap-анімація (P2) · commit `6421b89c`
 
-**Тип:** MOTION (Tier 1) · **Скіли:** `emilkowalski-motion` · **Модель:** Sonnet · **P2** · **Фаза 2**
+**Тип:** MOTION (Tier 1) · **Скіл:** `emilkowalski-motion` · **Feel:** «Pop з overshoot» (обрано founder)
 
-**Задача (з BACKLOG):** Quick Actions — преміальна анімація при тапі: мінімальне тертя, «дорогий» відгук інтерфейсу (тактильне відчуття преміальності).
+**Before:** mobile `QuickActionsWidget` — тап лише `active:bg-white/5` (спалах фону, нуль тактильності); desktop `FrostActionsBar` — `active:scale-[0.97] active:transition-none` (різкий снеп без пружного повернення).
 
-**Ціль (компонент):** `src/components/master/dashboard/widgets/frost/QuickActionsWidget.tsx` (+ `FrostActionsBar` у `FrostDashboard.tsx` на desktop — теж quick-actions ряд; узгодити відчуття тапу між ними).
+**Зроблено (узгоджено mobile + desktop, один motion-язик):**
+- framer-motion `whileTap` на **контенті плитки** (icon+label), не на боксі → дільники сітки та `--hero-card-bg` не рвуться при масштабі.
+- Press → `scale 0.92`; release → пружний spring `{ stiffness:520, damping:16, mass:0.8 }` дає overshoot ~1.03 і повернення. Іконка додатково `y:-2` через variants (parent `whileTap="tap"` пропагує лейбл на дочірні).
+- Лише `transform` (GPU). `useReducedMotion()` → `whileTap` вимкнено для reduce-користувачів.
+- Desktop: прибрано `active:scale active:transition-none`, той самий `TAP_POP` + variants.
 
-**⚠ Перед стартом (MOTION-гейт):** референс відчуття (як має бути) + `mempalace_search "quick actions tap animation spring"` + лайт-бриф (ціль + spring/scroll-параметри). Скіл `emilkowalski-motion` → перевірити на реальному мобільному. Зараз тап = лише `active:scale-[0.97]` (CSS). Поточні `active:scale` по дашборду — спільний патерн, не зламати.
+**Перевірка:** TSC 0 · Build clean · 2 файли. Device QA (тактильність тапу на реальному мобільному) — за founder.
+
+**KEY:** «Pop» = bouncy spring на release (низький damping → overshoot природно, без явних keyframes). whileTap на дочірньому контенті + variants-пропагація на іконку = ефект без скейлу самого боксу.
+
+---
+
+## ▶ NEXT: `M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX
+
+**Тип:** MOTION (Tier 1) · **Скіли:** `scroll-experience` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2**
+
+**Задача (з BACKLOG):** блок «Вільно сьогодні» (`FreeSlotsWidget`) — UX-стрілки, перемикачі, статус скролу (крихти/прогрес). Беклог сам помічає «→ G-PWA-02».
+
+**⚠ Перед стартом — СПОЧАТКУ ПЕРЕВІР:** G-PWA-02 (commit `ae9466d8`) **уже мігрував `FreeSlotsWidget` на `ScrollStrip`** (fade + 1-крок стрілки + крапки на елемент). Дуже ймовірно ця задача вже закрита де-факто. Відкрий `widgets/frost/FreeSlotsWidget.tsx`, переконайся що `ScrollStrip` стоїть і скрол-індикація працює → якщо так, познач ✅ як «закрито G-PWA-02» без нового коду. Новий код — лише якщо лишився реальний геп (напр. перемикачі періоду, окремий від ScrollStrip UX).
 
 ---
 
