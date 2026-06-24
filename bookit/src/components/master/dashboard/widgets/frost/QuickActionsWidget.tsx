@@ -15,8 +15,10 @@ const DIVIDER = 'color-mix(in srgb, var(--accent-on) 10%, transparent)';
 
 // Pop-with-overshoot: bouncy spring so release settles past 1.0 (~1.03) then back.
 const POP = { type: 'spring' as const, stiffness: 520, damping: 16, mass: 0.8 };
-const contentVariants = { rest: { scale: 1 },   tap: { scale: 0.92 } };
-const iconVariants    = { rest: { y: 0 },        tap: { y: -2 } };
+// whileTap lives on the button; these variants propagate to the inner content
+// so only the content scales (box stays static → dividers/hero-bg intact).
+const contentVariants = { rest: { scale: 1 }, tap: { scale: 0.92 } };
+const iconVariants    = { rest: { y: 0 },     tap: { y: -2 } };
 // Hold navigation briefly so the tap pop reads before the route changes.
 const REDIRECT_DELAY = 160;
 
@@ -24,8 +26,6 @@ export function QuickActionsWidget() {
   const router = useRouter();
   const reduce = useReducedMotion();
 
-  // Native <a> navigation conflicts with whileTap on touch (first tap only
-  // animates). Drive it manually with a short delay so the pop plays.
   function go(href: string) {
     if (reduce) { router.push(href); return; }
     window.setTimeout(() => router.push(href), REDIRECT_DELAY);
@@ -41,10 +41,13 @@ export function QuickActionsWidget() {
           const isLeft = i % 2 === 0;
           const isTop  = i < 2;
           return (
-            <button
+            <motion.button
               key={href}
               type="button"
               onClick={() => go(href)}
+              initial="rest"
+              animate="rest"
+              whileTap={reduce ? undefined : 'tap'}
               className="flex h-[72px] w-full border-0 bg-transparent p-0 cursor-pointer appearance-none active:bg-white/5 transition-colors duration-150"
               style={{
                 borderRight:  isLeft ? `1px solid ${DIVIDER}` : undefined,
@@ -54,9 +57,6 @@ export function QuickActionsWidget() {
               <motion.span
                 className="flex-1 flex flex-col items-center justify-center gap-1.5"
                 variants={contentVariants}
-                initial="rest"
-                animate="rest"
-                whileTap={reduce ? undefined : 'tap'}
                 transition={POP}
               >
                 <motion.span variants={iconVariants} transition={POP} style={{ display: 'flex' }}>
@@ -69,7 +69,7 @@ export function QuickActionsWidget() {
                   {label}
                 </span>
               </motion.span>
-            </button>
+            </motion.button>
           );
         })}
       </div>

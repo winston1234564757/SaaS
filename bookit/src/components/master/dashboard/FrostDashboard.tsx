@@ -91,19 +91,19 @@ function FrostActionsBar() {
     <div className="bento-card overflow-hidden">
       <div className="flex">
         {BAR_ACTIONS.map(({ href, label, Icon }, idx) => (
-          <button
+          <motion.button
             key={href}
             type="button"
             onClick={() => go(href)}
+            initial="rest"
+            animate="rest"
+            whileTap={reduce ? undefined : 'tap'}
             className="flex-1 flex border-0 bg-transparent p-0 transition-colors duration-150 cursor-pointer hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
             style={{ borderLeft: idx > 0 ? '1px solid var(--border)' : 'none' }}
           >
             <motion.span
               className="flex-1 flex items-center justify-center gap-2.5 py-4"
               variants={tapContentVariants}
-              initial="rest"
-              animate="rest"
-              whileTap={reduce ? undefined : 'tap'}
               transition={TAP_POP}
             >
               <motion.span
@@ -117,7 +117,7 @@ function FrostActionsBar() {
                 {label}
               </span>
             </motion.span>
-          </button>
+          </motion.button>
         ))}
       </div>
     </div>
