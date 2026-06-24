@@ -35,11 +35,11 @@ function toISO(d: Date) {
 // Каскад появи груп слотів (Ранок/День/Вечір) — спокійний Frost-editorial, без overshoot.
 const groupStagger = {
   hidden:  {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.06 } },
 } as const;
 const groupItem = {
   hidden:  { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, duration: 0.4, bounce: 0 } },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, duration: 0.6, bounce: 0 } },
 } as const;
 
 interface FreeSlotsWidgetProps {
