@@ -1,6 +1,6 @@
 # M-DASH-02 — Дашборд: Quick Actions tap-анімація
 
-**Статус:** DONE · feel: «Pop з overshoot» · commits `6421b89c` → `92d61922` → `e0a63f90` → `ef0c1e82` (whileTap прибрано, press на pointer-стейті) → `28707740` (ФІНАЛ: router.prefetch на маунті — важка аналітика лагала без Link-префетчу) · TSC 0 · Build clean
+**Статус:** DONE · feel: «Pop з overshoot» · commits `6421b89c` → `92d61922` → `e0a63f90` → `ef0c1e82` (whileTap прибрано, press на pointer-стейті) → `28707740` → `dc5df938` (ФІНАЛ, redo через plan mode: нативний `<Link>` + pointer-state press, без whileTap/setTimeout; analytics dynamic loading skeleton; + полірування) · TSC 0 · Build clean
 **Тип:** MOTION (Tier 1) · **Скіл:** `emilkowalski-motion` · **Модель:** Sonnet · **P2** · **Фаза 2**
 
 ---
