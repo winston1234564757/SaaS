@@ -167,9 +167,10 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 **Hotfix (device QA, 3 раунди) · commits `92d61922` → `e0a63f90` → `ef0c1e82` (фінал):** на тачі перший тап лише анімував, навігація — з другого.
 - Раунд 1 (`92d61922`): `<Link>`→`<button>`+delay. НЕ вилікувало — `whileTap` лишався на дочірньому span.
 - Раунд 2 (`e0a63f90`): `whileTap` піднято на той самий `motion.button`, що `onClick`. ВСЕ ОДНО два тапи — framer gesture перехоплює pointer і ковтає click після першої навігації.
-- Раунд 3 (`ef0c1e82`, ФІНАЛ): **framer `whileTap` прибрано повністю.** Press = власний `useState` (`onPointerDown/Up/Leave/Cancel`), scale через inline-`transform` + bouncy CSS-ease (pop-overshoot на release). Навігація — plain `onClick` + 160ms delay. Нема framer-жесту → ніщо не перехоплює тап, клік з першого разу. Винесено `QuickTile`/`BarAction` під-компоненти (hooks-in-map).
+- Раунд 3 (`ef0c1e82`): **framer `whileTap` прибрано повністю.** Press = власний `useState` (`onPointerDown/Up/Leave/Cancel`), scale через inline-`transform` + bouncy CSS-ease (pop-overshoot на release). Навігація — plain `onClick` + 160ms delay. Винесено `QuickTile`/`BarAction` під-компоненти (hooks-in-map). 3 кнопки запрацювали, але аналітика лишилась двотапною.
+- Раунд 4 (`28707740`, ФІНАЛ): `<button>` втратив автопрефетч `<Link>`. Легкі маршрути й так миттєві, але **аналітика** (`dynamic ssr:false`, важкий чанк+RPC) навігувала холодно → виглядало як «тап не спрацював» → другий тап. Фікс: `router.prefetch(href)` на маунті для всіх action-hrefs у `QuickActionsWidget` + `FrostActionsBar` (паритет із `<Link>`).
 
-**KEY-gotcha:** для tap-to-navigate НЕ використовуй framer `whileTap` — його pointer-gesture конфліктує з кліком на тачі (втрата першого тапу). Press роби на pointer-стейті + CSS transform; навігуй plain `onClick`. `whileTap` ок лише для НЕ-навігаційних елементів. (Деталі — MemPalace `fixes` drawer `7ec491ed…`.)
+**KEY-gotcha (2 правила):** (1) для tap-to-navigate НЕ використовуй framer `whileTap` — його pointer-gesture ковтає перший тап на тачі; press роби на pointer-стейті + CSS transform, навігуй plain `onClick`. (2) Якщо замінив `<Link>` на `<button>` для навігації — ВРУЧНУ верни `router.prefetch(href)` на маунті, інакше важкі маршрути лагають на першому тапі. (Деталі — MemPalace `fixes` drawer `7ec491ed…`.)
 
 ---
 
