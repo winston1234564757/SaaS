@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReducedMotion } from 'framer-motion';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
@@ -78,6 +78,13 @@ function QuickTile({ href, label, Icon, isLeft, isTop, reduce, onGo }: TileProps
 export function QuickActionsWidget() {
   const router = useRouter();
   const reduce = useReducedMotion();
+
+  // <button> loses Link's automatic route prefetch — restore it so heavy routes
+  // (e.g. analytics, dynamic ssr:false) navigate instantly instead of feeling
+  // like the first tap did nothing.
+  useEffect(() => {
+    ACTIONS.forEach(a => router.prefetch(a.href));
+  }, [router]);
 
   function go(href: string) {
     if (reduce) { router.push(href); return; }

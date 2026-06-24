@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Zap, Sparkles, Users, TrendingUp } from 'lucide-react';
@@ -131,6 +131,12 @@ function BarAction({
 function FrostActionsBar() {
   const router = useRouter();
   const reduce = useReducedMotion();
+
+  // Restore Link's prefetch (lost when switching to <button>) so heavy routes
+  // like analytics navigate instantly.
+  useEffect(() => {
+    BAR_ACTIONS.forEach(a => router.prefetch(a.href));
+  }, [router]);
 
   function go(href: string) {
     if (reduce) { router.push(href); return; }
