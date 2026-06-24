@@ -27,14 +27,14 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 ---
 
-## ✅ DONE: `M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX (P1) · commit `4d6c2dcf`
+## ✅ DONE: `M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX (P1) · commit `4d6c2dcf` (+tweak `762461a3`)
 
 **Контртеза до опису:** беклог просив "UX-стрілки, перемикачі, статус скролу" зі стрілкою `→ G-PWA-02`. Перевірка показала: скрол-UX **уже повністю закрито** — селектор послуг у `frost/FreeSlotsWidget.tsx` сидить на `ScrollStrip` (стрілки на 1 крок + крапки на елемент + selection→scroll). Drawer G-PWA-02 прямо фіксує цей віджет як мігрований. Нового скрол-коду = 0.
 
 **Розширення scope (рішення Vitos):** додано motion-полиш — staggered reveal груп слотів.
 
 **Рішення:** `frost/FreeSlotsWidget.tsx` — групи Ранок/День/Вечір каскадом:
-- `groupStagger`/`groupItem` поза компонентом, `as const` (за `dashboard-animation-system`). spring `duration 0.4, bounce 0` — без overshoot (вимога Vitos), `staggerChildren 0.08`.
+- `groupStagger`/`groupItem` поза компонентом, `as const` (за `dashboard-animation-system`). spring `duration 0.6, bounce 0` — без overshoot (вимога Vitos), `staggerChildren 0.12, delayChildren 0.06`. (Стартові 0.4/0.08/0.04 відчувались різко → уповільнено на 50%, tweak `762461a3`.)
 - `key={selectedService?.id}` → replay на load + кожній зміні послуги.
 - `useReducedMotion()` → `initial={false}` fallback (миттєво, нуль трансформів).
 - Лише `opacity`+`y`; стагеряться тільки 3 групи, чипи разом. ScrollStrip/сітка/footer не чіпані.
@@ -193,22 +193,17 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX
+## ▶ NEXT: `M-DASH-04` — Дашборд: "Записи" — прибрати капс у текстах
 
-**Тип:** MOTION (Tier 1) · **Скіли:** `scroll-experience` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2**
+**Тип:** COPY (Tier 0) · **Скіл:** `humanizer` · **Модель:** Haiku · **P2** · **Фаза 2**
 
-**Задача (з BACKLOG):** блок «Вільно сьогодні» (`FreeSlotsWidget`) — UX-стрілки, перемикачі, статус скролу (крихти/прогрес). Беклог сам помічає «→ G-PWA-02».
+**Задача (з BACKLOG):** блок «Записи» (статистика) — у загальному звіті (конверсія, топ-послуга) прибрати капс ("ВСЬОГО", "ОЧІКУЮТЬ") → нормальний регістр.
 
-**⚠ Перед стартом — СПОЧАТКУ ПЕРЕВІР:** G-PWA-02 (commit `ae9466d8`) **уже мігрував `FreeSlotsWidget` на `ScrollStrip`** (fade + 1-крок стрілки + крапки на елемент). Дуже ймовірно ця задача вже закрита де-факто. Відкрий `widgets/frost/FreeSlotsWidget.tsx`, переконайся що `ScrollStrip` стоїть і скрол-індикація працює → якщо так, познач ✅ як «закрито G-PWA-02» без нового коду. Новий код — лише якщо лишився реальний геп (напр. перемикачі періоду, окремий від ScrollStrip UX).
-
----
-
-## P0-черга після M-DASH-06 (ФАЗА 0)
-
-| ID | Задача | Скіли |
-|----|--------|-------|
-| `M-SHOP-04` | Модалка поповнення → `vaul` BottomSheet + поле собівартості | `senior-frontend` (vaul) |
-| `G-LOGIN-02` | Логін мобільний: прибрати зазор між полем і клавіатурою при відкритій keyboard; є Google auth + phone input — автофокус вже працює, не чіпати | `senior-frontend` |
+**Підхід (Tier 0, без брифа-файлу):**
+1. Знайти компонент блоку статистики записів (ймовірно у `widgets/frost/` або `master/bookings/` — grep `ОЧІКУЮТЬ`/`uppercase`/`tracking-` біля цих лейблів).
+2. Зібрати всі UI-рядки → `humanizer` → нормальний регістр (не CAPS, не `uppercase` клас де він робить капс на кириличному копірайті).
+3. Зважити: частина «капсу» може бути CSS `uppercase`/`tracking` на лейблах-eyebrow — рішення per-label (eyebrow-стиль лишити, читабельний текст — у нормальний регістр). Узгодити з Vitos на showі before/after.
+4. `tsc` (Tier 0 — повний build батчем перед деплоєм).
 
 ---
 

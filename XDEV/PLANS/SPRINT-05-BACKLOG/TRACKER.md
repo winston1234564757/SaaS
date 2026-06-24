@@ -38,7 +38,7 @@
 |----|--------|---|----|------------------|--------|--------|
 | `M-DASH-01` | Дашборд: динамічні блоки рекомендацій (top) | P1 | ✅ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | `d857a5e6` |
 | `M-DASH-02` | Дашборд: Quick Actions tap-анімація | P2 | ✅ | `emilkowalski-motion` | **Sonnet** | `dc5df938` |
-| `M-DASH-03` | Дашборд: "Вільно сьогодні" scroll UX (scroll=G-PWA-02; +motion-полиш груп) | P1 | ✅ | `emilkowalski-motion` | **Opus** | `4d6c2dcf` |
+| `M-DASH-03` | Дашборд: "Вільно сьогодні" scroll UX (scroll=G-PWA-02; +motion-полиш груп) | P1 | ✅ | `emilkowalski-motion` | **Opus** | `4d6c2dcf` (+tweak `762461a3`) |
 | `M-DASH-04` | Дашборд: "Записи" — прибрати капс у текстах | P2 | ⬜ | `humanizer` | **Haiku** | — |
 | `M-DASH-05` | Дашборд: "Доходи і записи" — колоризація + fix "грн" | P1 | ⬜ | `impeccable (colorize)` | **Sonnet** | — |
 | `M-DASH-07` | Дашборд: "Скасування" — overlay хто/коли | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |

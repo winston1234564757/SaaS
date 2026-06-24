@@ -1,6 +1,6 @@
 # M-DASH-03 — Дашборд: "Вільно сьогодні" scroll UX → motion-полиш слотів
 
-**Тип:** MOTION (Тір 1) · **Статус:** DONE · commit `4d6c2dcf` (deploy READY на prod)
+**Тип:** MOTION (Тір 1) · **Статус:** DONE · commit `4d6c2dcf` + tweak `762461a3` (deploy READY на prod)
 
 ---
 
@@ -8,8 +8,8 @@
 
 Скрол-UX задачі = 0 нового коду (вже покрито G-PWA-02 ScrollStrip, підтверджено). Vitos розширив → motion-полиш груп слотів.
 
-**Реалізовано** у `frost/FreeSlotsWidget.tsx`:
-- `groupStagger` (`staggerChildren 0.08, delayChildren 0.04`) + `groupItem` (`opacity 0→1, y 8→0`, spring `duration 0.4, bounce 0` — без overshoot за вимогою) — поза компонентом, `as const`.
+**Реалізовано** у `frost/FreeSlotsWidget.tsx` (фінальні числа після фідбеку "стрибає" → −50% швидкості, tweak `762461a3`):
+- `groupStagger` (`staggerChildren 0.12, delayChildren 0.06`) + `groupItem` (`opacity 0→1, y 8→0`, spring `duration 0.6, bounce 0` — без overshoot за вимогою) — поза компонентом, `as const`. (Початково 0.08/0.04/0.4 — відчувалось різко, уповільнено на 50%.)
 - Контейнер груп → `motion.div`, `key={selectedService?.id}` → remount = replay `initial→animate` на load + кожній зміні послуги (підтверджене розгалуження).
 - `useReducedMotion()` → `initial={reduceMotion ? false : 'hidden'}` — миттєвий показ без трансформів.
 - Тільки групи стагеряться (3 елементи); чипи всередині зʼявляються разом (підтверджене розгалуження). Лише `opacity`+`y`.

@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-24 · Джерело: живий код (v9.0.0) · Останній код-коміт: `4d6c2dcf` (M-DASH-03: staggered reveal груп слотів у FreeSlotsWidget)
+> Оновлено: 2026-06-24 · Джерело: живий код (v9.0.0) · Останній код-коміт: `762461a3` (M-DASH-03: staggered reveal груп слотів у FreeSlotsWidget — slowed 50%)
 > 
 > **⚡ Sprint-05 Status (ACTIVE):** 10/74 ✅ | Next: `M-DASH-04` — Дашборд: "Записи" прибрати капс (COPY) | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
