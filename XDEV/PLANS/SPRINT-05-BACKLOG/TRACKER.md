@@ -36,7 +36,7 @@
 | ID | Задача | P | Ст | Спеціаліст-скіли | Модель | Commit |
 |----|--------|---|----|------------------|--------|--------|
 | `M-DASH-01` | Дашборд: динамічні блоки рекомендацій (top) | P1 | ✅ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | `d857a5e6` |
-| `M-DASH-02` | Дашборд: Quick Actions tap-анімація | P2 | ✅ | `emilkowalski-motion` | **Sonnet** | `6421b89c` |
+| `M-DASH-02` | Дашборд: Quick Actions tap-анімація | P2 | ✅ | `emilkowalski-motion` | **Sonnet** | `dc5df938` |
 | `M-DASH-03` | Дашборд: "Вільно сьогодні" scroll UX | P1 | ⬜ | `scroll-experience` + `design-taste-frontend` | **Sonnet** | — |
 | `M-DASH-04` | Дашборд: "Записи" — прибрати капс у текстах | P2 | ⬜ | `humanizer` | **Haiku** | — |
 | `M-DASH-05` | Дашборд: "Доходи і записи" — колоризація + fix "грн" | P1 | ⬜ | `impeccable (colorize)` | **Sonnet** | — |

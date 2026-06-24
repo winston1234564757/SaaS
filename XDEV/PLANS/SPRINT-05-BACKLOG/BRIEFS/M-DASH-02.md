@@ -1,6 +1,8 @@
 # M-DASH-02 — Дашборд: Quick Actions tap-анімація
 
-**Статус:** DONE · feel: «Pop з overshoot» · commits `6421b89c` → `92d61922` → `e0a63f90` → `ef0c1e82` (whileTap прибрано, press на pointer-стейті) → `28707740` → `dc5df938` (ФІНАЛ, redo через plan mode: нативний `<Link>` + pointer-state press, без whileTap/setTimeout; analytics dynamic loading skeleton; + полірування) · TSC 0 · Build clean
+**Статус:** DONE · feel: «Pop з overshoot» · commits `6421b89c` → `92d61922` → `e0a63f90` → `ef0c1e82` (whileTap прибрано, press на pointer-стейті) → `28707740` → `dc5df938` (redo через plan mode: нативний `<Link>` + pointer-state press, без whileTap/setTimeout; analytics dynamic loading skeleton; + полірування) · TSC 0 · Build clean
+
+> ⚠ Залишкова проблема (лишаємо як є за рішенням founder): «Аналітика» на пристрої досі двотапить. Навігаційний патерн канонічний і працює для 3 легких маршрутів → причина у вазі маршруту `/dashboard/analytics` (`dynamic ssr:false` + RPC), не в Quick Actions. Окремий TODO: профілювати/code-split `AnalyticsPage`.
 **Тип:** MOTION (Tier 1) · **Скіл:** `emilkowalski-motion` · **Модель:** Sonnet · **P2** · **Фаза 2**
 
 ---

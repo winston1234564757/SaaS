@@ -173,6 +173,8 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 **KEY-gotcha (фінал):** для tap-to-navigate — **нативний `<Link>`** (префетч + миттєва надійна навігація), press через pointer-стейт + CSS transform. НЕ `whileTap` (ковтає перший тап на тачі), НЕ `<button>+setTimeout(router.push)` (затримка = перцептивний лаг → подвійний тап + втрата префетчу). Для важких `dynamic(ssr:false)` маршрутів — завжди `loading`-фолбек. (Деталі — MemPalace `fixes` drawer `7ec491ed…`.)
 
+> ⚠ **ЗАЛИШКОВА ПРОБЛЕМА (за рішенням founder — лишаємо як є, 2026-06-24):** після redo на `<Link>` 3 легкі Quick Actions навігують з першого тапу, але **«Аналітика» на пристрої досі вимагає повторного тапу**. Оскільки навігаційний патерн тепер канонічний і працює для інших маршрутів, причина — **внутрішня вага самого маршруту `/dashboard/analytics`** (`dynamic(ssr:false)` чанк `AnalyticsPage` + RPC), а НЕ компонент Quick Actions. Не доводилось до кінця за рішенням founder. **TODO (окремо, не M-DASH-02):** профілювати/полегшити завантаження `AnalyticsPage` (розмір бандла, code-split важких частин, RPC до маунту). Скіл: `react-doctor`/`react-best-practices` + bundle-аналіз.
+
 ---
 
 ## ▶ NEXT: `M-DASH-03` — Дашборд: "Вільно сьогодні" scroll UX
