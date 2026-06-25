@@ -426,16 +426,19 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-CLI-04` — Клієнти: мобільні статуси/теги scroll UX
+## ▶ NEXT: `M-CLI-06` — Сторінка клієнта (деталі) у CRM: глибокий редизайн 🔄
 
-**Тип:** REDESIGN (scroll UX) · **Скіл:** `scroll-experience` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2** · A2 (Клієнти)
+**Тип:** REDESIGN (deep) · **Скіл:** `design-taste-frontend` + `impeccable` · **Модель:** Sonnet · **P1** · **Фаза 2** · A2 (Клієнти)
 
-**Задача (з BACKLOG р.114):** мобільні статуси/теги (горизонтальний скрол) — кнопки-перемикачі + індикація. → переюз `G-PWA-02` (`ScrollStrip`).
+**Задача (з BACKLOG р.116):** повний глибокий редизайн сторінки/екрана деталей клієнта у CRM майстра. Це НЕ дрібний colorize як M-CLI-05 — більша задача (Tier 2).
 
-**Підхід (кандидати на перевірку перед кодом):**
-1. Знайти горизонтальний стрип статусів/тегів: `ClientsPage.tsx` (retention/segments strip) — за G-PWA-02 нотаткою деякі стрипи вже мігровані на `ScrollStrip` (ClientsPage retention+segments). Перевірити, що саме лишилось без UX-індикації.
-2. Якщо вже на `ScrollStrip` — можливо задача закрита (як M-DASH-03 виявилась покритою G-PWA-02). Grep + перевірка перед кодом.
-3. Інакше — мігрувати на `components/shared/ScrollStrip.tsx` (fade + стрілки 1-крок + крапки на елемент), кнопки-перемикачі ≥44px.
-4. tsc + build.
+**⚠ Відкриті питання founder (закрити ДО коду, AskUserQuestion):**
+1. **Пріоритетні секції** — статистика / історія записів / теги / нотатки: що нагорі, що згортається?
+2. **Напрям** — компактна «картка-профіль» (особиста, фото+ключове) чи «аналітична сторінка» (метрики, LTV, графіки відвідувань)?
 
-**KEY з M-CLI-02/03:** `ScrollStrip` (G-PWA-02) — спільний примітив, не вигадувати. `useDismissable` хук готовий для майбутніх банерів. **Early return ТІЛЬКИ після хуків** (урок M-CLI-03 hotfix).
+**Перед кодом (Task Gate):**
+1. Знайти поточний екран деталей клієнта — найімовірніше відкривається з `ClientsPage` через `onOpen` → `Sheet`/окремий route. Grep `bookingId`/`clientId` route + `ClientDetails`/sheet компонент. Зробити скрін поточного стану.
+2. mempalace_search по деталях клієнта + `get_master_clients` RPC (дані: retention_status, VIP, health_notes, medical_notes — міграції 068/118/20260516000000).
+3. Task Brief → QA-питання вище → APPROVE → impeccable → код.
+
+**Готові примітиви для переюзу:** `statusGlow()` (тіло картки), `RETENTION_CONFIG` + `ClientIconStack` (статус/теги), `Sheet variant="adaptive"` (overlay-патерн M-DASH-07/08), `pluralUk`. Не вигадувати нове там, де є спільне.
