@@ -219,9 +219,9 @@ export function WeeklyChartWidget() {
                       style={{
                         height:          barH,
                         borderRadius:    '3px 3px 0 0',
-                        background:      emphasis ? heat : `color-mix(in srgb, ${heat} 22%, transparent)`,
+                        background:      emphasis ? heat : `color-mix(in srgb, ${heat} 85%, transparent)`,
                         transformOrigin: 'bottom',
-                        border:          `1px solid color-mix(in srgb, ${heat} ${emphasis ? 100 : 30}%, transparent)`,
+                        border:          `1px solid color-mix(in srgb, ${heat} ${emphasis ? 100 : 70}%, transparent)`,
                       }}
                       initial={{ scaleY: 0, opacity: 0 }}
                       animate={{ scaleY: 1, opacity: 1 }}
