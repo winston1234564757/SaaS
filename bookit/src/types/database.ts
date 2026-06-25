@@ -409,6 +409,7 @@ export interface ClientMasterRelation {
   is_vip: boolean;
   is_archived: boolean;
   client_tag: string | null;
+  vibe_tags?: string[] | null;
   loyalty_points: number;
   created_at: string;
   updated_at: string;

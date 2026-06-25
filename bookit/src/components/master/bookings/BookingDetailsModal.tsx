@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  X, Clock, Phone, Globe, PenLine,
+  X, Clock, Phone, Globe, PenLine, Calendar,
   CheckCircle2, XCircle, Star, Save, Loader2,
   TrendingUp, ShoppingBag, CalendarClock, Heart, FlaskConical,
 } from 'lucide-react';
+import { ClientIdentityHeader } from '@/components/master/clients/ClientIdentityHeader';
+import { ClientStatChips, type StatChip } from '@/components/master/clients/ClientStatChips';
 import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
 import { useBookingById } from '@/lib/supabase/hooks/useBookingById';
 import { createClient } from '@/lib/supabase/client';
@@ -437,24 +439,20 @@ export function BookingDetailsModal() {
         </div>
       ) : (
         <div className="flex flex-col gap-5">
-          {/* Identity Header (Matching ClientDetailSheet style) */}
-          <div className="flex items-center gap-4 bg-secondary/60 p-4 rounded-xl border border-border shadow-sm">
-            <div className="size-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary text-xl font-bold shadow-sm shrink-0">
-              {displayBooking.client_name[0]}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-lg font-bold text-foreground leading-tight truncate">{displayBooking.client_name}</h3>
-                <span
-                  className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0"
-                  style={{ color: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.color || '#789A99', background: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.bg || '#789A9910' }}
-                >
-                  {BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.label || displayBooking.status}
-                </span>
-              </div>
-              <p className="text-xs font-bold text-muted-foreground/60 mt-0.5">{displayBooking.client_phone}</p>
-            </div>
-          </div>
+          {/* Identity Header (спільний ClientIdentityHeader — M-CLI-06) */}
+          <ClientIdentityHeader
+            name={displayBooking.client_name}
+            phone={displayBooking.client_phone}
+            glowColor={BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.color || '#789A99'}
+            statusPill={
+              <span
+                className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0"
+                style={{ color: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.color || '#789A99', background: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.bg || '#789A9910' }}
+              >
+                {BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.label || displayBooking.status}
+              </span>
+            }
+          />
 
           {/* Time & Info card */}
           <div className="bg-secondary/40 rounded-3xl p-5 border border-border/60 shadow-sm flex flex-col gap-4">
@@ -497,27 +495,20 @@ export function BookingDetailsModal() {
             </div>
           </div>
 
-          {/* LTV клієнта */}
+          {/* Профіль клієнта (спільний ClientStatChips — M-CLI-06) */}
           {displayLtv && (
-            <div className="bg-secondary/40 rounded-xl p-5 border border-border shadow-sm">
+            <div className="bento-card p-5">
               <div className="flex items-center gap-1.5 mb-4">
                 <TrendingUp size={14} className="text-primary opacity-60" />
                 <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Профіль клієнта</p>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tighter mb-1">Візитів</p>
-                  <p className="text-xl font-extrabold text-foreground">{displayLtv.total_visits}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tighter mb-1">Виручка</p>
-                  <p className="text-xl font-extrabold text-foreground">{formatPrice(displayLtv.total_spent)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tighter mb-1">Сер. чек</p>
-                  <p className="text-xl font-extrabold text-foreground">{formatPrice(displayLtv.average_check)}</p>
-                </div>
-              </div>
+              <ClientStatChips
+                chips={[
+                  { icon: Calendar, label: 'Візити', value: displayLtv.total_visits, color: '#0F766E' },
+                  { icon: TrendingUp, label: 'Виручка', value: formatPrice(displayLtv.total_spent), color: '#15803D' },
+                  { icon: Star, label: 'Сер. чек', value: formatPrice(displayLtv.average_check), color: '#B45309' },
+                ] satisfies StatChip[]}
+              />
             </div>
           )}
 

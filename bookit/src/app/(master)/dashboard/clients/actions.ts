@@ -176,3 +176,32 @@ export async function saveClientHealthInfo(
   }
 }
 
+export async function saveClientTags(
+  clientId: string,
+  tags: string[],
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Не авторизований' };
+
+    // Нормалізація: трим, без порожніх, унікальні, обмеження довжини й кількості.
+    const clean = Array.from(
+      new Set(tags.map(t => t.trim()).filter(t => t.length > 0 && t.length <= 40)),
+    ).slice(0, 20);
+
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from('client_master_relations')
+      .update({ vibe_tags: clean, updated_at: new Date().toISOString() })
+      .eq('master_id', user.id)
+      .eq('client_id', clientId);
+
+    if (error) throw error;
+    return { error: null };
+  } catch (err: any) {
+    console.error('[saveClientTags] error:', err);
+    return { error: 'Не вдалося зберегти мітки. Спробуйте ще раз.' };
+  }
+}
+
