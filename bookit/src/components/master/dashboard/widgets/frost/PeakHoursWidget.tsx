@@ -8,20 +8,9 @@ import { getNow } from '@/lib/utils/now';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { Clock } from 'lucide-react';
 import { useSmartTooltip } from '@/lib/hooks/useSmartTooltip';
-import { RETENTION_CONFIG } from '@/components/master/clients/clientsUtils';
 
 const DAYS  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-
-// Heat-банди для клітинок із записами (intensity = count/max, 0<i≤1).
-// Та сама палітра, що в WeeklyChart (RETENTION_CONFIG), без червоного:
-// порожні години нейтральні, колір сигналить лише де є записи.
-// рідко → помаранч · середньо → бірюза · пік → зелений.
-function cellColor(intensity: number): string {
-  if (intensity <= 1 / 3) return RETENTION_CONFIG.at_risk.color;
-  if (intensity <= 2 / 3) return RETENTION_CONFIG.sleeping.color;
-  return RETENTION_CONFIG.active.color;
-}
 
 function toISO(d: Date) { return format(d, 'yyyy-MM-dd'); }
 
@@ -176,11 +165,8 @@ export function PeakHoursWidget() {
                 </div>
                 {HOURS.map((_, hIdx) => {
                   const intensity = max > 0 ? grid[dIdx][hIdx] / max : 0;
-                  const isEmpty   = grid[dIdx][hIdx] === 0;
-                  const heat      = cellColor(intensity);
                   const isActive  = activeCell?.dIdx === dIdx && activeCell?.hIdx === hIdx;
                   const isFocused = focusedCell.dIdx === dIdx && focusedCell.hIdx === hIdx;
-                  const outlineColor = isEmpty ? 'var(--text-tertiary)' : heat;
                   return (
                     <button
                       key={hIdx}
@@ -192,9 +178,9 @@ export function PeakHoursWidget() {
                       aria-pressed={isActive}
                       style={{
                         borderRadius: '3px',
-                        background:   isEmpty ? 'color-mix(in srgb, var(--text-tertiary) 8%, transparent)' : heat,
-                        opacity:      isEmpty ? 1 : 0.32 + intensity * 0.68,
-                        outline:      isActive ? `1.5px solid color-mix(in srgb, ${outlineColor} 60%, transparent)` : 'none',
+                        background:   'var(--accent)',
+                        opacity:      intensity === 0 ? 0.07 : 0.14 + intensity * 0.86,
+                        outline:      isActive ? '1.5px solid color-mix(in srgb, var(--accent) 60%, transparent)' : 'none',
                         transform:    isActive ? 'scale(1.2)' : 'scale(1)',
                         transition:   'transform 100ms ease-out',
                       }}
