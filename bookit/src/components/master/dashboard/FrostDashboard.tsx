@@ -364,11 +364,13 @@ function FrostDesktop({
       </motion.div>
 
       <motion.div custom={2} variants={rise} initial="hidden" animate="visible" className="mb-4">
-        <div className="grid gap-4 items-start" style={{ gridTemplateColumns: '3fr 2fr' }}>
-          <div data-tour-step={2} data-tour-key="dash-2" className="flex flex-col">
+        <div className="grid gap-4" style={{ gridTemplateColumns: '3fr 2fr' }}>
+          <div data-tour-step={2} data-tour-key="dash-2" className="flex flex-col h-full [&>*]:h-full">
             <AdaptiveContextStrip />
           </div>
-          <EarningsPulseWidget />
+          <div className="h-full [&>*]:h-full">
+            <EarningsPulseWidget />
+          </div>
         </div>
       </motion.div>
 
@@ -380,10 +382,10 @@ function FrostDesktop({
 
       <motion.div custom={4} variants={rise} initial="hidden" animate="visible">
         <div className="grid gap-4" style={{ gridTemplateColumns: '3fr 2fr' }}>
-          <div data-tour-step={5} className="flex flex-col h-full">
+          <div data-tour-step={5} className="flex flex-col h-full [&>*]:h-full">
             <ScheduleWidget />
           </div>
-          <div data-tour-step={4} data-tour-key="dash-1">
+          <div data-tour-step={4} data-tour-key="dash-1" className="h-full [&>*]:h-full">
             <FreeSlotsWidget onSlotClick={onSlotClick} />
           </div>
         </div>
@@ -393,10 +395,10 @@ function FrostDesktop({
 
       <motion.div custom={5} variants={rise} initial="hidden" animate="visible">
         <div className="grid gap-4" style={{ gridTemplateColumns: '40fr 60fr' }}>
-          <div data-tour-step={6} className="flex flex-col">
+          <div data-tour-step={6} className="flex flex-col h-full [&>*]:h-full">
             <WeeklyChartWidget />
           </div>
-          <div data-tour-step={7}>
+          <div data-tour-step={7} className="h-full [&>*]:h-full">
             <PeakHoursWidget />
           </div>
         </div>
@@ -405,11 +407,11 @@ function FrostDesktop({
       <FrostDivider />
 
       <motion.div custom={6} variants={rise} initial="hidden" animate="visible">
-        <div className="grid gap-4 items-start" style={{ gridTemplateColumns: 'minmax(0, 480px) 1fr' }}>
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'minmax(0, 480px) 1fr' }}>
           <div data-tour-step={8}>
             <MonthlyCalendarWidget />
           </div>
-          <div data-tour-step={14}>
+          <div data-tour-step={14} className="h-full [&>*]:h-full">
             <ReferralBoostWidget />
           </div>
         </div>
@@ -419,10 +421,10 @@ function FrostDesktop({
 
       <motion.div custom={7} variants={rise} initial="hidden" animate="visible">
         <div className="grid grid-cols-2 gap-4">
-          <div data-tour-step={11}>
+          <div data-tour-step={11} className="h-full [&>*]:h-full">
             <TopServicesWidget />
           </div>
-          <div data-tour-step={10}>
+          <div data-tour-step={10} className="h-full [&>*]:h-full">
             <CancellationRateWidget />
           </div>
         </div>
@@ -432,13 +434,13 @@ function FrostDesktop({
 
       <motion.div custom={8} variants={rise} initial="hidden" animate="visible">
         <div className="grid grid-cols-3 gap-4">
-          <div data-tour-step={9} className="flex flex-col">
+          <div data-tour-step={9} className="flex flex-col h-full [&>*]:h-full">
             <InsightsRow />
           </div>
-          <div data-tour-step={12}>
+          <div data-tour-step={12} className="h-full [&>*]:h-full">
             <NextFreeDaysWidget onDayClick={onDayClick} />
           </div>
-          <div data-tour-step={13}>
+          <div data-tour-step={13} className="h-full [&>*]:h-full">
             <ChannelHealthWidget />
           </div>
         </div>
