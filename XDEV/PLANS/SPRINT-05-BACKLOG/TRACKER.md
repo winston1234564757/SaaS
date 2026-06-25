@@ -9,7 +9,8 @@
 > `G-LAND-02` закрито поза чергою як тестовий прогін воркфлоу (Тір 0).
 > `M-DASH-03` scroll-UX був покритий G-PWA-02 → закрито motion-полишем (stagger груп слотів).
 > `M-CLI-04` scroll-UX покрито G-PWA-02 → закрито перевіркою без коду: retention-чіпи + кастомні сегменти у `ClientsPage.tsx` вже обгорнуті в `ScrollStrip` (рядки 286, 319).
-> `M-BOOK-01` зроблено ПОЗА ЧЕРГОЮ (founder: «по гарячим слідам» одразу за M-CLI-05) — той самий пастельний glow на `BookingCard`. Формула винесена у спільний `lib/utils/statusGlow.ts`. Черга вертається до `M-CLI-06`.
+> `M-BOOK-01` зроблено ПОЗА ЧЕРГОЮ (founder: «по гарячим слідам» одразу за M-CLI-05) — той самий пастельний glow на `BookingCard`. Формула винесена у спільний `lib/utils/statusGlow.ts`.
+> `M-CLI-06` ✅ (commit `1f05146a`): профіль клієнта виявився СПІЛЬНИМ компонентом (6 точок) → один редизайн покрив clients/dashboard×3/StatsModals/analytics; BookingDetailsModal-дубль підтягнуто екстракцією (ClientIdentityHeader + ClientStatChips). Реальний LTV (total_spent+ранг+каденс) + реальні мітки (міграція vibe_tags text[]).
 > `M-DASH-04` ціль = віджет «Записи» (TodaySchedule на дашборді), НЕ сторінка /bookings. Скоуп: лише цей віджет, усі таби.
 > `M-DASH-10` додано поза беклогом (ad-hoc від founder): «Записи» header uppercase + багатий порожній стан → total 74→75.
 > `M-DASH-11` додано поза беклогом (ad-hoc від founder): «Пікові години» heat-палітра як у WeeklyChart → total 75→76.
