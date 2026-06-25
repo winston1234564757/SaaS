@@ -15,7 +15,7 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 13/75 ✅ | Sprint-05 IN PROGRESS
+Прогрес: 14/76 ✅ | Sprint-05 IN PROGRESS
 Наступна: M-DASH-07 — Дашборд: "Скасування" — overlay хто/коли (senior-frontend · Sonnet)
 
 Беклог = 3 зони: A. Майстер (57) · B. Клієнт (10) · C. Глобальне (7).

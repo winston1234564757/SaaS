@@ -2,12 +2,13 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план: `BACKLOG.md`
 
-**Прогрес:** 13/75 ✅ | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
+**Прогрес:** 14/76 ✅ | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
 **▶ NEXT:** `M-DASH-07` — Дашборд: "Скасування" — overlay хто/коли (senior-frontend)
 > `G-LAND-02` закрито поза чергою як тестовий прогін воркфлоу (Тір 0).
 > `M-DASH-03` scroll-UX був покритий G-PWA-02 → закрито motion-полишем (stagger груп слотів).
 > `M-DASH-04` ціль = віджет «Записи» (TodaySchedule на дашборді), НЕ сторінка /bookings. Скоуп: лише цей віджет, усі таби.
 > `M-DASH-10` додано поза беклогом (ad-hoc від founder): «Записи» header uppercase + багатий порожній стан → total 74→75.
+> `M-DASH-11` додано поза беклогом (ad-hoc від founder): «Пікові години» heat-палітра як у WeeklyChart → total 75→76.
 
 > Порядок нижче = рекомендований порядок виконання (фази). Групування за зонами — у `BACKLOG.md`.
 > Зони: **M-** Майстер · **C-** Клієнт · **G-** Глобальне. `P` = пріоритет.
@@ -44,6 +45,7 @@
 | `M-DASH-04` | Дашборд: "Записи" — прибрати капс у текстах (віджет TodaySchedule, всі таби) | P2 | ✅ | `humanizer` | **Haiku** | `b18512b4` |
 | `M-DASH-05` | Дашборд: "Доходи і записи" — колоризація + fix "грн" | P1 | ✅ | `impeccable (colorize)` | **Sonnet** | `15e7bf3b` |
 | `M-DASH-10` | Дашборд: "Записи" — uppercase header + багатий порожній стан з CTA | P1 | ✅ | `impeccable (colorize)` + `humanizer` | **Opus** | `0e40b5b9` |
+| `M-DASH-11` | Дашборд: "Пікові години" — heat-палітра як у WeeklyChart (0=нейтрал) | P1 | ✅ | `impeccable (colorize)` | **Opus** | `981ee824` |
 | `M-DASH-07` | Дашборд: "Скасування" — overlay хто/коли | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-DASH-08` | Дашборд: "Середній чек" — overlay info | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-DASH-09` | Дашборд десктоп: квадратний календар + реферали поряд | P1 | ⬜ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | — |
@@ -52,7 +54,7 @@
 | `M-CLI-03` | Клієнти: інфо-меседжі з dismiss 12год | P2 | ⬜ | `senior-frontend` + `mark-as-read-on-close` | **Sonnet** | — |
 | `M-CLI-04` | Клієнти: мобільні статуси/теги scroll UX | P1 | ⬜ | `scroll-experience` + `design-taste-frontend` | **Sonnet** | — |
 | `M-CLI-05` | Клієнти: кольорова корекція карток (пастель) | P1 | ⬜ | `impeccable (distill + colorize)` | **Sonnet** | — |
-| `M-CLI-06` | Клієнти: сторінка клієнта — повний редизайн 🔄 | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Opus** | — |
+
 | `M-BOOK-01` | Записи: кольорова корекція карток (пастель) | P1 | ⬜ | `impeccable (distill + colorize)` | **Sonnet** | — |
 | `M-BOOK-02` | Записи: таймлайн на день (bolder) | P1 | ⬜ | `impeccable (bolder)` + `design-taste-frontend` | **Sonnet** | — |
 | `M-BOOK-03` | Записи: верхні віджети клікабельні + overlay | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
@@ -111,6 +113,7 @@
 | `C-NAV-01` | MyBottomNav FAB redesign | P1 | ⬜ | `emilkowalski-motion` + `design-taste-frontend` | **Sonnet** | — |
 | `C-EXPL-01` | /explore + навбар: повний редизайн 🔄 | P1 | ⬜ | `design-taste-frontend` + `emilkowalski-motion` | **Opus** | — |
 | `C-EXPL-02` | MasterCard + MasterListCard redesign | P1 | ⬜ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | — |
+| `С-CLI-01` | Клієнти: сторінка клієнта — повний редизайн 🔄 | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Opus** | — |
 | `C-BOOK-01` | /my/bookings premium + Review/Cancel Sheet | P1 | ⬜ | `design-taste-frontend` + `emilkowalski-motion` | **Sonnet** | — |
 | `C-PROF-01` | /my/profile Identity Card redesign | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet** | — |
 | `C-MSG-02` | /my/messages: "Мої майстри" + UX fixes | P1 | ⬜ | `scroll-experience` + `design-taste-frontend` | **Sonnet** | — |
