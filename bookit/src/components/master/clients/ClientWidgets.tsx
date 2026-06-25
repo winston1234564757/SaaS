@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { formatPrice } from '@/components/master/services/types';
@@ -20,6 +20,13 @@ function formatCompact(n: number): string {
 }
 
 const SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const;
+
+// Напрям-залежний крос-слайд панелей switcher-а (transform+opacity, без overshoot).
+const panelVariants = {
+  enter: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 24 : -24 }),
+  center: { opacity: 1, x: 0 },
+  exit:  (dir: number) => ({ opacity: 0, x: dir >= 0 ? -24 : 24 }),
+};
 
 interface ClientWidgetsProps {
   clients: ClientRow[];
@@ -40,6 +47,13 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   const [showReferralDetails, setShowReferralDetails] = useState(false);
   const [expandedAmbassadorId, setExpandedAmbassadorId] = useState<string | null>(null);
   const [widgetIndex, setWidgetIndex] = useState(0);
+  const [swipeDir, setSwipeDir] = useState(0);
+  const prefersReduced = useReducedMotion();
+  const switchWidget = (i: number) => {
+    if (i === widgetIndex) return;
+    setSwipeDir(i > widgetIndex ? 1 : -1);
+    setWidgetIndex(i);
+  };
   const { data: ambassadorResult } = useTopAmbassadors(masterProfile?.id);
 
   if (isLoading) {
@@ -154,56 +168,41 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
         </div>
       </motion.button>
 
-      {/* 3. iOS Style Switcher: Important / Referrers */}
+      {/* 3. iOS Style Switcher: Important / Referrers — статична картка, свайп лише перемикає */}
       <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.1}
+        dragElastic={0}
+        dragMomentum={false}
         onDragEnd={(_, info) => {
-          if (info.offset.x > 50) setWidgetIndex(0);
-          else if (info.offset.x < -50) setWidgetIndex(1);
+          if (info.offset.x > 50) switchWidget(0);
+          else if (info.offset.x < -50) switchWidget(1);
         }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING, delay: 0.1 }}
         className="bento-card p-4 flex flex-col justify-between relative overflow-hidden touch-pan-y"
       >
-        {/* Switcher Dots — 44px touch targets, vertical stack on right */}
-        <div className="absolute top-0 right-0 flex flex-col items-center justify-center h-full z-10">
-          {[0, 1].map(i => (
-            <button
-              key={i}
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setWidgetIndex(i); }}
-              aria-pressed={widgetIndex === i}
-              aria-label={i === 0 ? 'Важливі клієнти' : 'Амбасадори'}
-              className="size-11 flex items-center justify-center rounded-full"
-            >
-              <div
-                className={`rounded-full transition-all ${widgetIndex === i ? 'h-4 w-1.5 bg-foreground' : 'size-1.5 bg-foreground/20 hover:bg-foreground/40'}`}
-              />
-            </button>
-          ))}
-        </div>
-
         {/* Content button */}
         <button
           type="button"
-          className="w-full h-full text-left flex flex-col justify-between pt-1 pr-12"
+          className="w-full h-full text-left flex flex-col justify-between pb-7"
           onClick={() => {
             if (widgetIndex === 1) setShowReferralDetails(true);
             else if (lostTreasures.length > 0) onSegmentSelect('lost_treasures');
             else onSegmentSelect('potential_vip');
           }}
         >
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" custom={swipeDir} initial={false}>
             {widgetIndex === 0 ? (
               <motion.div
                 key="treasures"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={SPRING}
+                custom={swipeDir}
+                variants={panelVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={prefersReduced ? { duration: 0 } : SPRING}
                 className="h-full flex flex-col justify-between"
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -227,10 +226,12 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
             ) : (
               <motion.div
                 key="referrers"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={SPRING}
+                custom={swipeDir}
+                variants={panelVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={prefersReduced ? { duration: 0 } : SPRING}
                 className="h-full flex flex-col justify-between"
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -247,6 +248,27 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
             )}
           </AnimatePresence>
         </button>
+
+        {/* Горизонтальні індикатори свайпу — крапка ↔ лінія, по центру знизу, 44px-таргети */}
+        <div className="absolute bottom-1 left-0 right-0 flex flex-row items-center justify-center z-10">
+          {[0, 1].map(i => (
+            <button
+              key={i}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); switchWidget(i); }}
+              aria-pressed={widgetIndex === i}
+              aria-label={i === 0 ? 'Важливі клієнти' : 'Амбасадори'}
+              className="h-11 w-8 flex items-center justify-center"
+            >
+              <motion.div
+                className="rounded-full bg-foreground"
+                style={{ height: 5 }}
+                animate={{ width: widgetIndex === i ? 18 : 5, opacity: widgetIndex === i ? 1 : 0.2 }}
+                transition={prefersReduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 32 }}
+              />
+            </button>
+          ))}
+        </div>
       </motion.div>
 
       {/* 4. Cleanup Wizard */}
