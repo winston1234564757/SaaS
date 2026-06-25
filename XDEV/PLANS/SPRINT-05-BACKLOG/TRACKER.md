@@ -47,7 +47,7 @@
 | `M-DASH-04` | Дашборд: "Записи" — прибрати капс у текстах (віджет TodaySchedule, всі таби) | P2 | ✅ | `humanizer` | **Haiku** | `b18512b4` |
 | `M-DASH-05` | Дашборд: "Доходи і записи" — колоризація + fix "грн" | P1 | ✅ | `impeccable (colorize)` | **Sonnet** | `15e7bf3b` |
 | `M-DASH-10` | Дашборд: "Записи" — uppercase header + багатий порожній стан з CTA | P1 | ✅ | `impeccable (colorize)` + `humanizer` | **Opus** | `0e40b5b9` |
-| `M-DASH-11` | Дашборд: "Пікові години" — heat-палітра як у WeeklyChart (0=нейтрал) | P1 | ✅ | `impeccable (colorize)` | **Opus** | `981ee824` |
+| `M-DASH-11` | Дашборд: "Пікові години" — heat-палітра як у WeeklyChart (0=нейтрал) | P1 | ↩️ | `impeccable (colorize)` | **Opus** | `981ee824` → СКАСОВАНО `90260003` (founder: повернути сіро-чорні) |
 | `M-DASH-12` | Дашборд десктоп: вирівняти блоки по висоті + насичені кольори як на клієнтах (ad-hoc) | P1 | ✅ | `design-taste-frontend` + `impeccable (colorize)` | **Opus** | `649d9341` + `fb2a1d71` |
 | `M-DASH-07` | Дашборд: "Скасування" — overlay хто/коли | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-DASH-08` | Дашборд: "Середній чек" — overlay info | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
