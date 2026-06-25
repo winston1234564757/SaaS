@@ -2,8 +2,9 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план: `BACKLOG.md`
 
-**Прогрес:** 14/76 ✅ | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
+**Прогрес:** 16/76 ✅ | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
 **▶ NEXT:** `M-DASH-07` — Дашборд: "Скасування" — overlay хто/коли (senior-frontend)
+> 🧪 **Пілотна хвиля 1 (мультиагент):** M-DASH-09 + M-SET-01 виконані паралельно (2 worktree-воркери), один деплой. Урок: worktree baseRef виправлено на 'head'. Деталі: `PARALLEL_WORKFLOW.md` §7.
 > `G-LAND-02` закрито поза чергою як тестовий прогін воркфлоу (Тір 0).
 > `M-DASH-03` scroll-UX був покритий G-PWA-02 → закрито motion-полишем (stagger груп слотів).
 > `M-DASH-04` ціль = віджет «Записи» (TodaySchedule на дашборді), НЕ сторінка /bookings. Скоуп: лише цей віджет, усі таби.
@@ -48,7 +49,7 @@
 | `M-DASH-11` | Дашборд: "Пікові години" — heat-палітра як у WeeklyChart (0=нейтрал) | P1 | ✅ | `impeccable (colorize)` | **Opus** | `981ee824` |
 | `M-DASH-07` | Дашборд: "Скасування" — overlay хто/коли | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-DASH-08` | Дашборд: "Середній чек" — overlay info | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
-| `M-DASH-09` | Дашборд десктоп: квадратний календар + реферали поряд | P1 | ⬜ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | — |
+| `M-DASH-09` | Дашборд десктоп: квадратний календар + реферали поряд | P1 | ✅ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | `a0614a7c` (wave-1) |
 | `M-CLI-01` | Клієнти: grid-картки єдиний лейаут | P1 | ⬜ | `impeccable (layout)` + `design-taste-frontend` | **Sonnet** | — |
 | `M-CLI-02` | Клієнти: віджет "Важливі/Амбасадори" свайп | P1 | ⬜ | `emilkowalski-motion` | **Sonnet** | — |
 | `M-CLI-03` | Клієнти: інфо-меседжі з dismiss 12год | P2 | ⬜ | `senior-frontend` + `mark-as-read-on-close` | **Sonnet** | — |
@@ -92,7 +93,7 @@
 
 | ID | Задача | P | Ст | Спеціаліст-скіли | Модель | Commit |
 |----|--------|---|----|------------------|--------|--------|
-| `M-SET-01` | Налаштування: "Графік роботи" нижче інфо профілю | P2 | ⬜ | `design-taste-frontend` | **Haiku** | — |
+| `M-SET-01` | Налаштування: "Графік роботи" нижче інфо профілю | P2 | ✅ | `design-taste-frontend` | **Haiku** | `0f19b843` (wave-1, mobile order-*) |
 | `M-SET-02` | Налаштування: дизайн блоку інфо профілю | P1 | ⬜ | `impeccable-design-polish` + `design-taste-frontend` | **Sonnet** | — |
 | `M-SET-03` | Налаштування: bookit assistant активний + лінки | P1 | ⬜ | `senior-frontend` + `humanizer` | **Sonnet** | — |
 | `M-SET-04` | Налаштування: відпустки + вихідні редизайн 🔄 | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet→Opus** | — |

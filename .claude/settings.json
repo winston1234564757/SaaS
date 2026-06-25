@@ -112,6 +112,15 @@
             "statusMessage": "Checking library hints..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Vitossik/SaaS/.claude/hooks/orchestrator_skill_hook.py",
+            "statusMessage": "Checking parallel-wave orchestration..."
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -250,6 +259,9 @@
         ]
       }
     ]
+  },
+  "worktree": {
+    "baseRef": "head"
   }
 }
 
