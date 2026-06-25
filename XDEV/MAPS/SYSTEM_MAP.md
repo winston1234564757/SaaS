@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-25 · Джерело: живий код (v9.0.0) · Останній код-коміт: `e954f909` (M-CLI-03 — інфо-меседжі dismiss 12год + хук useDismissable; hotfix порядку хуків)
+> Оновлено: 2026-06-25 · Джерело: живий код (v9.0.0) · Останній код-коміт: `1f05146a` (M-CLI-06 — редизайн профілю клієнта: спільні ClientIdentityHeader/ClientStatChips, реальний LTV + мітки vibe_tags)
 > 
-> **⚡ Sprint-05 Status (ACTIVE):** 21/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-CLI-04` — Клієнти: мобільні статуси/теги scroll UX (scroll-experience + design-taste-frontend) | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
+> **⚡ Sprint-05 Status (ACTIVE):** 25/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-BOOK-02` — Записи: таймлайн на день (bolder) | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
@@ -36,7 +36,7 @@
 |---|---|---|---|---|
 | `/dashboard` | Editorial dashboard: greeting, schedule, weekly chart, monthly calendar, sidebar widgets, adaptive strip, tour | `dashboard/page.tsx` | `dashboard/actions.ts` | `FrostDashboard.tsx`, `DashboardGreeting.tsx`, `DashboardDrawers.tsx`, `ActivationTourBanner.tsx` (cross-page spotlight, progress bar, pathname-aware re-spotlight, z-48), `ActivationTourContext.tsx` (7-step activation tour, router.push between routes, fire-and-forget DB persist, backward compat seen_tours.dashboard_v2), `TodaySchedule.tsx`, `widgets/EarningsPulseWidget.tsx`, `widgets/AdaptiveContextStrip.tsx` (4 states: empty/quiet/moderate/busy), `widgets/FrostMetricsStrip.tsx` (ticker, touch-drag), `widgets/frost/WeeklyChartWidget.tsx`, `widgets/frost/PeakHoursWidget.tsx`, `widgets/frost/CancellationRateWidget.tsx`, `widgets/frost/NextFreeDaysWidget.tsx`, `widgets/frost/InsightsRow.tsx`, `widgets/frost/ChannelHealthWidget.tsx`, `widgets/frost/TopServicesWidget.tsx` |
 | `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching. MaterialsReviewSheet intercepts "Завершити" якщо є розхідники → qty review → completeBooking(id, reviewed) | `bookings/page.tsx` | `bookings/actions.ts` (completeBooking: stock deduction + product_transactions) | `BookingsPage.tsx`, `BookingCard.tsx`, `BookingActionsDropdown.tsx`, `BookingDetailsModal.tsx` (consumables chips), `MaterialsReviewSheet.tsx` (NEW T30) |
-| `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` | `master/clients/ClientsPage.tsx` (useWindowVirtualizer list), `ClientListRow.tsx` (React.memo), `ClientGridCard.tsx` (React.memo), `clientsUtils.tsx` (shared RETENTION_CONFIG/getAutoTags/getSmartAction/ClientIconStack), `ClientDetailSheet.tsx`, `ClientWidgets.tsx` |
+| `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` (+`saveClientTags`) | `master/clients/ClientsPage.tsx` (useWindowVirtualizer list), `ClientListRow.tsx` (React.memo), `ClientGridCard.tsx` (React.memo), `clientsUtils.tsx` (shared RETENTION_CONFIG/getAutoTags/getSmartAction/ClientIconStack), `ClientDetailSheet.tsx` (M-CLI-06 профіль-картка: спільний у 6 точках — clients/dashboard×3/StatsModals/analytics), `ClientIdentityHeader.tsx` + `ClientStatChips.tsx` (M-CLI-06 спільні під-компоненти, юзаються і в `BookingDetailsModal`), `ClientWidgets.tsx` |
 | `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` |
 | `/dashboard/analytics` | Аналітика Pro v2.1 (Editorial Bento з MoM порівнянням та PNG/SVG експортом): виручка, когорти, бізнес-здоров'я, фінанси, прогнози складів, розумна націнка, ранковий брифінг, CSV | `analytics/page.tsx` | — | `master/analytics/AnalyticsPage.tsx` (включає `MorningBriefing.tsx`, `BusinessHealthScoreWidget.tsx`, `SmartPricingOptimizer.tsx`, та вкладки: `FinancesTab.tsx` (5 KPI + WaterfallChart 6 barів incl. operationalExpenses T30), `StockTab.tsx`, `ReviewsTab.tsx`, `NoShowTab.tsx`, `LeadTimeTab.tsx`, `VacationTab.tsx`, `SourceTab.tsx`) |
 | `/dashboard/flash` | Redirect Gateway to `/dashboard/revenue?tab=flash_deals` | `flash/page.tsx` | — | Redirect Gateway |
@@ -340,6 +340,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `useSourceAttribution.ts` | 10 хв | Статистика джерел залучення клієнтів |
 | `useExpenses.ts` | — | master_expenses CRUD (NEW T29/T30): `useExpenses(month?)`, `createExpense`, `updateExpense({id, payload})`, `deleteExpense` — masterId from useMasterContext internally |
 | `useConsumablesForBooking.ts` | — | Розхідники для запису (NEW T29/T30): `useConsumablesForBooking(bookingId \| null)` — null disables query; returns `{ product_id, name, unit, total_qty }[]` |
+| `useClientTags.ts` | 1 хв | Персональні мітки клієнта (M-CLI-06): точковий select `client_master_relations.vibe_tags` по master_id+client_id (не через RPC); `useClientTags(clientId)` + `useClientTagsInvalidate()` |
 
 ### Design System Hooks (`src/lib/hooks/`) — NEW T31
 - `useSmartTooltip.ts` — viewport-aware tooltip clamp: `useSmartTooltip(tooltipRef, rawLeft, safeArea=8) → number | null`. Replaces duplicated useLayoutEffect in WeeklyChartWidget + PeakHoursWidget.
@@ -474,7 +475,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 |---|---|
 | `profiles` | Всі юзери: `full_name`, `phone` (E.164), `role`, `telegram_chat_id` (клієнт), `onboarding_step`, `onboarding_data`, `health_notes`, `medical_notes` |
 | `master_profiles` | Бізнес-профіль: `slug`, `subscription_tier`, `working_hours` (jsonb), `pricing_rules` (jsonb), `categories` (text[]), `business_name`, `telegram_chat_id` (бізнес), `theme`, `retention_cycle_days`, `lifetime_discount`, `auto_flash_on_cancel BOOLEAN`, `auto_flash_discount_pct INT (10–30%)` (T32 migration 141), `activation_tour_step smallint DEFAULT NULL` (T23-impl: 0–6=active step, NULL=not started/completed), `seen_tours JSONB` (ключі: `dashboard_v2`, `activation_v1`, per-page tour names) |
-| `client_master_relations` | CRM: `total_visits`, `total_spent`, `average_check`, `last_visit_at`, `is_vip`, `tags[]`, `health_notes`, `medical_notes`, `is_archived` |
+| `client_master_relations` | CRM: `total_visits`, `total_spent`, `average_check`, `last_visit_at`, `is_vip`, `vibe_tags text[]` (M-CLI-06 — персональні мітки майстра; ⚠ `tags[]` НЕ існує — був хибний запис у мапі), `client_tag text` (legacy, unused), `health_notes`, `medical_notes`, `is_archived` |
 | **Identity Note** | Пріоритет відображення імені: `business_name` (якщо є) → `full_name`. Застосовується в `Explore`, `PublicMasterPage`, `Sidebar`. |
 
 ### Catalog

@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 24/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05` · `M-BOOK-01`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-CLI-06` — Сторінка клієнта (деталі) у CRM: глибокий редизайн** 🔄 (`design-taste-frontend` + `impeccable` · Sonnet · P1) — потребує QA-уточнень founder (пріоритетні секції: статистика/історія/теги/нотатки; напрям: картка-профіль чи аналітична сторінка)
+**Прогрес:** 25/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05` · `M-BOOK-01` · `M-CLI-06`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-BOOK-02` — Записи: таймлайн на день (bolder)** (`impeccable (bolder)` + `design-taste-frontend` · Sonnet · P1)
 **Оновлено:** 2026-06-25
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -426,19 +426,31 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-CLI-06` — Сторінка клієнта (деталі) у CRM: глибокий редизайн 🔄
+## ✅ DONE: `M-CLI-06` — Сторінка клієнта (деталі) у CRM: глибокий редизайн (P1) · commit `1f05146a` · deploy READY
 
-**Тип:** REDESIGN (deep) · **Скіл:** `design-taste-frontend` + `impeccable` · **Модель:** Sonnet · **P1** · **Фаза 2** · A2 (Клієнти)
+**Тип:** REDESIGN (deep) + DATA (реальний LTV) + NEW-FEATURE (мітки) → Tier 2 · **Скіли:** `design-taste-frontend` + `impeccable` + `humanizer` · **Модель:** Opus.
 
-**Задача (з BACKLOG р.116):** повний глибокий редизайн сторінки/екрана деталей клієнта у CRM майстра. Це НЕ дрібний colorize як M-CLI-05 — більша задача (Tier 2).
+**Рішення founder (AskUserQuestion ×4):** (1) напрям = профіль-картка (relationship-first); (2) LTV → справжній; (3) vibe-мітки → справжні; (4) колонки `tags[]` не існує → additive-міграція `vibe_tags text[]`.
 
-**⚠ Відкриті питання founder (закрити ДО коду, AskUserQuestion):**
-1. **Пріоритетні секції** — статистика / історія записів / теги / нотатки: що нагорі, що згортається?
-2. **Напрям** — компактна «картка-профіль» (особиста, фото+ключове) чи «аналітична сторінка» (метрики, LTV, графіки відвідувань)?
+**Ключове відкриття — `ClientDetailSheet` вже СПІЛЬНИЙ:** рендериться у 6 точках з ідентичними пропами `{client,onClose}` (`ClientsPage`, dashboard `frost/blossom/studio InsightsRow`, `StatsModals`, `AnalyticsPage`). Редизайн ОДНОГО компонента покрив 5 із них. Шостий контекст — `BookingDetailsModal` — мав власний дубль identity + «Профіль клієнта».
 
-**Перед кодом (Task Gate):**
-1. Знайти поточний екран деталей клієнта — найімовірніше відкривається з `ClientsPage` через `onOpen` → `Sheet`/окремий route. Grep `bookingId`/`clientId` route + `ClientDetails`/sheet компонент. Зробити скрін поточного стану.
-2. mempalace_search по деталях клієнта + `get_master_clients` RPC (дані: retention_status, VIP, health_notes, medical_notes — міграції 068/118/20260516000000).
-3. Task Brief → QA-питання вище → APPROVE → impeccable → код.
+**Реалізація:**
+- **НОВІ спільні під-компоненти** `clients/ClientIdentityHeader.tsx` (аватар без кільця + ім'я + VIP + статус-піл як слот + `statusGlow` + телефон + badge) і `clients/ClientStatChips.tsx` (`StatChip[]`, адаптивний грід 3/4). Примітивні пропи (не вимагають повного `ClientRow`) → працюють і там, де даних клієнта мало.
+- **`ClientDetailSheet.tsx` переписано** (профіль-картка): identity (retention-піл + glow), 4 метрики (+«Останній візит» через `timeAgo`), реальний LTV, історія (skeleton/empty), мітки, здоров'я, нотатки, дії.
+- **`BookingDetailsModal.tsx`**: дубль identity + LTV-блок → спільні під-компоненти (glow по статусу запису).
+- **Реальний LTV (без вигадки, без міграції):** `total_spent` + ранг «N з M» за виручкою (через `useClients()` всередині шіта — кеш, без прокидання пропа) + каденс із реальних дат `useClientBookings`.
+- **Реальні мітки:** міграція `20260625000000_client_vibe_tags.sql` (`vibe_tags text[]`, **застосована на прод**) + `saveClientTags` action (scope master_id+client_id, санітизація) + `useClientTags` хук (точковий select, не чіпає важкий RPC).
 
-**Готові примітиви для переюзу:** `statusGlow()` (тіло картки), `RETENTION_CONFIG` + `ClientIconStack` (статус/теги), `Sheet variant="adaptive"` (overlay-патерн M-DASH-07/08), `pluralUk`. Не вигадувати нове там, де є спільне.
+**Перевірка:** TSC 0 · Build clean · encoding **виправлено 30 латинських `i`** у кирилиці (повний Write) · humanizer (англ.→UA, 0 tells) · security self-review action. Деталі — `BRIEFS/M-CLI-06.md`.
+
+**KEY:** (1) перед редизайном «екрана» — grep імпортів: компонент може бути вже спільним (тут 6 точок) → одна правка = широке покриття; дублі (BookingDetailsModal) підтягнути екстракцією. (2) SYSTEM_MAP бреше про схему — `tags[]` не існувало, лише `client_tag text`. **Завжди звіряй колонку через live-DB перед action.** (3) Render-time sync масиву з react-query: default `undefined` (НЕ `[]`) — інакше fresh-array щорендер → loop. (4) Спільні під-компоненти на примітивних пропах, а не на доменному типі — переюз у контекстах із різним обсягом даних. (5) «Зробити справжнім» інколи = міграція; перевір схему ДО обіцянки в брифі.
+
+---
+
+## ▶ NEXT: `M-BOOK-02` — Записи: таймлайн на день (bolder)
+
+**Тип:** REDESIGN (bolder) · **Скіл:** `impeccable (bolder)` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2**
+
+**Задача (BACKLOG):** денний таймлайн записів зробити сміливішим/виразнішим. REDESIGN → потрібен скріншот поточного стану (self-serve dev) + Task Brief + QA на реальних неоднозначностях.
+
+**Перед кодом:** grep таймлайн-в'ю на `/dashboard/bookings` (Day/Timeline) → `BookingsPage.tsx` + `BookingCard.tsx` (вже отримав `statusGlow` у M-BOOK-01 — не дублювати). mempalace_search по таймлайну записів.
