@@ -35,3 +35,6 @@ pw-visual-audit/
 # Python cache
 __pycache__/
 *.pyc
+
+# Impeccable design-hook cache (not the skill dir .claude/skills/impeccable/)
+.impeccable/
