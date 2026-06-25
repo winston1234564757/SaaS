@@ -2,11 +2,12 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план: `BACKLOG.md`
 
-**Прогрес:** 11/74 ✅ | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-24
-**▶ NEXT:** `M-DASH-05` — Дашборд: "Доходи і записи" — колоризація + fix "грн" (impeccable colorize)
+**Прогрес:** 13/75 ✅ | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
+**▶ NEXT:** `M-DASH-07` — Дашборд: "Скасування" — overlay хто/коли (senior-frontend)
 > `G-LAND-02` закрито поза чергою як тестовий прогін воркфлоу (Тір 0).
 > `M-DASH-03` scroll-UX був покритий G-PWA-02 → закрито motion-полишем (stagger груп слотів).
 > `M-DASH-04` ціль = віджет «Записи» (TodaySchedule на дашборді), НЕ сторінка /bookings. Скоуп: лише цей віджет, усі таби.
+> `M-DASH-10` додано поза беклогом (ad-hoc від founder): «Записи» header uppercase + багатий порожній стан → total 74→75.
 
 > Порядок нижче = рекомендований порядок виконання (фази). Групування за зонами — у `BACKLOG.md`.
 > Зони: **M-** Майстер · **C-** Клієнт · **G-** Глобальне. `P` = пріоритет.
@@ -41,7 +42,8 @@
 | `M-DASH-02` | Дашборд: Quick Actions tap-анімація | P2 | ✅ | `emilkowalski-motion` | **Sonnet** | `dc5df938` |
 | `M-DASH-03` | Дашборд: "Вільно сьогодні" scroll UX (scroll=G-PWA-02; +motion-полиш груп) | P1 | ✅ | `emilkowalski-motion` | **Opus** | `4d6c2dcf` (+tweak `762461a3`) |
 | `M-DASH-04` | Дашборд: "Записи" — прибрати капс у текстах (віджет TodaySchedule, всі таби) | P2 | ✅ | `humanizer` | **Haiku** | `b18512b4` |
-| `M-DASH-05` | Дашборд: "Доходи і записи" — колоризація + fix "грн" | P1 | ⬜ | `impeccable (colorize)` | **Sonnet** | — |
+| `M-DASH-05` | Дашборд: "Доходи і записи" — колоризація + fix "грн" | P1 | ✅ | `impeccable (colorize)` | **Sonnet** | `15e7bf3b` |
+| `M-DASH-10` | Дашборд: "Записи" — uppercase header + багатий порожній стан з CTA | P1 | ✅ | `impeccable (colorize)` + `humanizer` | **Opus** | `0e40b5b9` |
 | `M-DASH-07` | Дашборд: "Скасування" — overlay хто/коли | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-DASH-08` | Дашборд: "Середній чек" — overlay info | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-DASH-09` | Дашборд десктоп: квадратний календар + реферали поряд | P1 | ⬜ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | — |
