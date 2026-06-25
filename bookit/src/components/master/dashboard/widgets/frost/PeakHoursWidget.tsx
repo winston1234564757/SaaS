@@ -193,7 +193,7 @@ export function PeakHoursWidget() {
                       style={{
                         borderRadius: '3px',
                         background:   isEmpty ? 'color-mix(in srgb, var(--text-tertiary) 8%, transparent)' : heat,
-                        opacity:      isEmpty ? 1 : 0.6 + intensity * 0.4,
+                        opacity:      1,
                         outline:      isActive ? `1.5px solid color-mix(in srgb, ${outlineColor} 60%, transparent)` : 'none',
                         transform:    isActive ? 'scale(1.2)' : 'scale(1)',
                         transition:   'transform 100ms ease-out',
