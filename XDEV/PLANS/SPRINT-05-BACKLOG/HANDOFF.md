@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 19/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-CLI-02` — Клієнти: віджет «Важливі/Амбасадори» свайп** (`emilkowalski-motion` · Sonnet · P1)
+**Прогрес:** 20/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-CLI-03` — Клієнти: інфо-меседжі з dismiss 12год** (`senior-frontend` + `mark-as-read-on-close` · Sonnet · P2)
 **Оновлено:** 2026-06-25
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,24 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-CLI-02` — Клієнти: віджет «Важливі/Амбасадори» свайп (P1) · commit `72a92ac1`
+
+**Тип:** MOTION · **Скіл:** `emilkowalski-motion` · **Модель:** Sonnet.
+
+**REDIRECT founder (суперечить беклогу):** беклог р.112 — «при свайпі сам віджет рухається». Через AskUserQuestion founder відкинув усі pager/elastic-опції: **«вона не має рухатись взагалі, а індикатори свайпу мають бути горизонтальними»**. Пріоритет за живою вказівкою.
+
+**Рішення (`ClientWidgets.tsx`, блок «3. iOS Style Switcher»):**
+1. Картка **статична**: `dragElastic={0}` + `dragMomentum={false}` → нуль візуального руху; drag лише читає напрям (`onDragEnd` offset ±50 → `switchWidget`).
+2. Індикатори **горизонтальні**: були вертикальний стек справа → ряд по центру знизу (`absolute bottom-1`, `flex-row justify-center`). Кнопки `h-11 w-8` (44px), `aria-pressed/label` збережені; `motion.div animate width 5↔18` (крапка↔лінія), spring 400/32. Контент `pr-12`→`pb-7`.
+3. Напрям-залежний крос-слайд: `panelVariants` (enter/center/exit за `swipeDir`), `AnimatePresence custom`, обидві панелі на variants.
+4. `useReducedMotion` → `{duration:0}` fallback.
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean · layout/motion-only (без нового copy). **Потребує візуального QA founder** (motion + позиція індикаторів). Деталі — `BRIEFS/M-CLI-02.md`.
+
+**KEY:** текст беклогу ≠ фінальна вимога — при неоднозначному формулюванні AskUserQuestion ПЕРЕД кодом; founder може розвернути на 180°. Tap vs drag: framer глушить click після драгу, інлайн onClick контенту збережено.
 
 ---
 
@@ -345,18 +363,18 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-CLI-02` — Клієнти: віджет «Важливі / Амбасадори» свайп
+## ▶ NEXT: `M-CLI-03` — Клієнти: інфо-меседжі з dismiss 12год
 
-**Тип:** MOTION · **Скіл:** `emilkowalski-motion` · **Модель:** Sonnet · **P1** · **Фаза 2** · A2 (Клієнти)
+**Тип:** NEW-FEATURE · **Скіл:** `senior-frontend` + патерн `mark-as-read-on-close` · **Модель:** Sonnet · **P2** · **Фаза 2** · A2 (Клієнти)
 
-**Задача (з BACKLOG р.112):** віджет «Важливі / Амбасадори»: при свайпі **сам віджет рухається**; вертикальні індикатори статусу (крапка ↔ лінія перемикаються). Преміальний, плавний UX.
+**Задача (з BACKLOG р.113):** блоки «Пора почистити базу» & «Потрібен follow up» — системні інфо-меседжі з **dismiss**; повертаються раз/12год **або при зміні даних**.
 
 **Підхід (кандидати на перевірку перед кодом):**
-1. Знайти віджет: `master/clients/ClientWidgets.tsx` (див. SYSTEM_MAP — sidebar клієнтів) — секція «Важливі/Амбасадори». Grep по «Амбасадор|Важлив».
-2. Поточна реалізація свайпу/каруселі: чи `ScrollStrip` (G-PWA-02), чи власний — визначити, що рухається зараз.
-3. `emilkowalski-motion`: рух самого віджета при свайпі + індикатори крапка↔лінія (active = лінія). spring без overshoot (вимога founder — як у dashboard-animation-system), `useReducedMotion` fallback.
+1. Знайти блоки: «Пора почистити базу» — `ClientWidgets.tsx` «4. Cleanup Wizard» (`archiveCount > 0`, є зараз). «Потрібен follow up» — grep по «follow|нагадат» у clients/.
+2. Dismiss-стан: localStorage з TTL 12год (key per-block) + інвалідація при зміні даних (напр. `archiveCount` змінився → показати знову). Скіл `mark-as-read-on-close` — патерн закриття.
+3. Анімація dismiss: collapse/fade (emilkowalski-motion рівень, transform+opacity).
 4. tsc + build.
 
-**Відкрите (уточнити на старті):** «сам віджет рухається» — паралакс контейнера, drag-track, чи трансформа на свайп-жест? Узгодити feel із founder через AskUserQuestion.
+**Відкрите (уточнити на старті):** ключ TTL — localStorage чи БД (`seen_tours`-стиль)? «При зміні даних» — за яким сигналом саме повертати (новий клієнт у відтоку / зміна лічильника)?
 
-**KEY з M-CLI-01:** грід-картки тепер мають єдиний лейаут (h-full + flex-1 + mt-auto). Для motion на віджеті — `whileTap`/drag з framer, але памʼятай урок M-DASH-02: для tap-навігації нативний `<Link>`, не `whileTap` (ковтає перший тап на тачі).
+**KEY з M-CLI-02:** свайп-перемикач тепер статичний + горизонтальні індикатори. `useReducedMotion` + `panelVariants` патерн доступний у тому ж файлі для переюзу.
