@@ -1,16 +1,47 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUp, ArrowDown, Minus, Send, Zap } from 'lucide-react';
-import { useCancellationRate } from '../shared/hooks/useCancellationRate';
+import { ArrowUp, ArrowDown, Minus, Send, Zap, CalendarX, ChevronRight } from 'lucide-react';
+import { useCancellationRate, type CancelledEntry } from '../shared/hooks/useCancellationRate';
+import { Sheet } from '@/components/ui/Sheet';
+import { timeAgo } from '@/lib/utils/dates';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 const CANCEL_ACTIONS = [
   { href: '/dashboard/marketing',                   label: 'Розсилка',   Icon: Send, primary: false },
   { href: '/dashboard/revenue?drawer=flash_deals',  label: 'Пропозиція', Icon: Zap,  primary: true  },
 ] as const;
 
+function CancelledRow({ entry }: { entry: CancelledEntry }) {
+  const when = entry.when ?? entry.bookingDate;
+  return (
+    <div className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid color-mix(in srgb, var(--accent) 8%, transparent)' }}>
+      <span
+        className="flex items-center justify-center size-10 rounded-full flex-shrink-0"
+        style={{ background: 'color-mix(in srgb, var(--error) 10%, transparent)', color: 'var(--error)' }}
+      >
+        <CalendarX size={18} strokeWidth={1.8} />
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">{entry.clientName}</p>
+        {entry.service && (
+          <p className="text-[12px] text-[var(--text-tertiary)] truncate">{entry.service}</p>
+        )}
+      </div>
+      <div className="flex flex-col items-end flex-shrink-0 text-right">
+        <span className="text-[12px] text-[var(--text-secondary)]">{timeAgo(when)}</span>
+        <span className="text-[11px] text-[var(--text-tertiary)]">
+          {entry.by === 'client' ? 'Скасував клієнт' : 'Скасували ви'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function CancellationRateWidget() {
-  const { thisRate, delta, improved, isLoading } = useCancellationRate();
+  const { thisRate, delta, improved, cancelledList, isLoading } = useCancellationRate();
+  const [open, setOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -21,18 +52,33 @@ export function CancellationRateWidget() {
     );
   }
 
+  const count = cancelledList.length;
+  const hint = count > 0
+    ? `${count} ${pluralUk(count, 'скасування', 'скасування', 'скасувань')}`
+    : 'цього тижня';
+
   return (
     <div className="bento-card p-4 flex flex-col">
       <div className="flex items-center gap-4">
-        <div className="flex-1 min-w-0">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label="Деталі скасувань цього тижня"
+          className="flex-1 min-w-0 text-left rounded-xl -m-1 p-1 transition-colors active:bg-[color-mix(in_srgb,var(--accent)_6%,transparent)]"
+        >
           <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)] mb-1.5">
             Скасування
           </p>
           <p className="metric-value text-[2rem] font-bold leading-tight text-[var(--text-primary)]">
             {thisRate !== null ? `${thisRate}%` : '—'}
           </p>
-          <p className="text-[11px] text-[var(--text-tertiary)] mt-1">цього тижня</p>
-        </div>
+          <p className="text-[11px] text-[var(--text-tertiary)] mt-1 flex items-center gap-1">
+            {hint}
+            <ChevronRight size={12} className="opacity-60" />
+          </p>
+        </button>
 
         {delta !== null && (
           <div
@@ -69,6 +115,29 @@ export function CancellationRateWidget() {
           </Link>
         ))}
       </div>
+
+      <Sheet open={open} onOpenChange={setOpen} variant="adaptive" title="Скасування цього тижня" maxWidth="md">
+        {count > 0 ? (
+          <div className="flex flex-col">
+            {cancelledList.map(entry => (
+              <CancelledRow key={entry.id} entry={entry} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center py-10">
+            <span
+              className="flex items-center justify-center size-14 rounded-full mb-4"
+              style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', color: 'var(--text-tertiary)' }}
+            >
+              <CalendarX size={26} strokeWidth={1.6} />
+            </span>
+            <p className="text-[15px] font-semibold text-[var(--text-primary)]">Цього тижня скасувань немає</p>
+            <p className="text-[13px] text-[var(--text-tertiary)] mt-1 max-w-[260px]">
+              Коли запис скасують, тут буде видно хто і коли.
+            </p>
+          </div>
+        )}
+      </Sheet>
     </div>
   );
 }

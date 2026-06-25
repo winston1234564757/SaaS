@@ -17,6 +17,8 @@ export interface BookingWithServices {
   start_time: string;
   end_time: string;
   status: BookingStatus;
+  status_changed_at: string | null;
+  cancellation_reason: string | null;
   total_price: number;
   notes: string | null;
   master_notes: string | null;
@@ -34,6 +36,8 @@ interface BookingRow {
   start_time: string | null;
   end_time: string | null;
   status: BookingStatus;
+  status_changed_at: string | null;
+  cancellation_reason: string | null;
   total_price: number | string;
   notes: string | null;
   master_notes: string | null;
@@ -52,6 +56,8 @@ function rowToBooking(row: BookingRow): BookingWithServices {
     start_time: row.start_time?.slice(0, 5) ?? '',
     end_time: row.end_time?.slice(0, 5) ?? '',
     status: row.status,
+    status_changed_at: row.status_changed_at ?? null,
+    cancellation_reason: row.cancellation_reason ?? null,
     total_price: Number(row.total_price),
     notes: row.notes,
     master_notes: row.master_notes ?? null,
@@ -81,7 +87,7 @@ export function useBookings(dateFrom: string, dateTo: string) {
         () =>
           supabase
             .from('bookings')
-            .select('id, client_name, client_phone, date, start_time, end_time, status, total_price, notes, master_notes, source, dynamic_pricing_label, dynamic_extra_kopecks, booking_services(service_name, service_price, duration_minutes)')
+            .select('id, client_name, client_phone, date, start_time, end_time, status, status_changed_at, cancellation_reason, total_price, notes, master_notes, source, dynamic_pricing_label, dynamic_extra_kopecks, booking_services(service_name, service_price, duration_minutes)')
             .eq('master_id', masterId!)
             .gte('date', dateFrom)
             .lte('date', dateTo)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useBookings } from '@/lib/supabase/hooks/useBookings';
+import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { getWeekRange } from '@/lib/utils/dates';
 
 function calcRate(bookings: { status: string }[]): number | null {
@@ -11,11 +11,36 @@ function calcRate(bookings: { status: string }[]): number | null {
   return Math.round((valid.filter(b => b.status === 'cancelled').length / valid.length) * 100);
 }
 
+export interface CancelledEntry {
+  id: string;
+  clientName: string;
+  service: string | null;
+  /** Момент скасування (status_changed_at); null для старих записів */
+  when: string | null;
+  /** Дата самого запису — фолбек для when */
+  bookingDate: string;
+  /** Інференс ініціатора: client_requested → клієнт, інакше → майстер */
+  by: 'client' | 'master';
+}
+
+function toCancelledEntry(b: BookingWithServices): CancelledEntry {
+  return {
+    id: b.id,
+    clientName: b.client_name,
+    service: b.services[0]?.name ?? null,
+    when: b.status_changed_at,
+    bookingDate: b.date,
+    by: b.cancellation_reason === 'client_requested' ? 'client' : 'master',
+  };
+}
+
 export interface CancellationRateData {
   thisRate: number | null;
   lastRate: number | null;
   delta: number | null;
   improved: boolean | null;
+  /** Скасовані записи поточного тижня, найновіші зверху */
+  cancelledList: CancelledEntry[];
   isLoading: boolean;
 }
 
@@ -28,5 +53,13 @@ export function useCancellationRate(): CancellationRateData {
   const lastRate = lastBk ? calcRate(lastBk) : null;
   const delta    = thisRate !== null && lastRate !== null ? thisRate - lastRate : null;
   const improved = delta !== null ? delta < 0 : null;
-  return { thisRate, lastRate, delta, improved, isLoading: l1 || l2 };
+  const cancelledList = (thisBk ?? [])
+    .filter(b => b.status === 'cancelled')
+    .map(toCancelledEntry)
+    .sort((a, c) => {
+      const ta = a.when ? new Date(a.when).getTime() : new Date(a.bookingDate).getTime();
+      const tc = c.when ? new Date(c.when).getTime() : new Date(c.bookingDate).getTime();
+      return tc - ta;
+    });
+  return { thisRate, lastRate, delta, improved, cancelledList, isLoading: l1 || l2 };
 }
