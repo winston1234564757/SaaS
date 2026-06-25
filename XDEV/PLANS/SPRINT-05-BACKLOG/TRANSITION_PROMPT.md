@@ -15,8 +15,8 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 17/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-DASH-08 — Дашборд: "Середній чек" — overlay info (senior-frontend · Sonnet) · близнюк M-DASH-07
+Прогрес: 18/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-CLI-01 — Клієнти: grid-картки єдиний лейаут (impeccable layout + design-taste-frontend · Sonnet) — старт A2
 Нотатки 2026-06-25:
 - M-DASH-09 + M-SET-01 закриті пілотною мультиагентною хвилею (згорнуто, див. PARALLEL_WORKFLOW.md §7).
 - M-DASH-12: вирівнювання висоти десктоп-блоків лишилось; кольори heatmap PeakHours відкочено до сіро-чорних (M-DASH-11 скасовано founder); бари WeeklyChart лишились суцільно-кольоровими — відкрите питання.

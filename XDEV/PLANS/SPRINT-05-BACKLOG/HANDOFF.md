@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 17/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-DASH-08` — Дашборд: "Середній чек" — overlay info** (`senior-frontend` · Sonnet · P1)
+**Прогрес:** 18/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-CLI-01` — Клієнти: grid-картки єдиний лейаут** (`impeccable (layout)` + `design-taste-frontend` · Sonnet · P1) — старт A2 (Клієнти)
 **Оновлено:** 2026-06-25
 
 > ⚠ **Відкрите питання founder:** бари WeeklyChart лишились суцільно-кольоровими (з M-DASH-12 colorize). PeakHours відкочено до сіро-чорних, M-DASH-11 скасовано. Узгодити: відкочувати бари теж чи лишати.
@@ -26,6 +26,23 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-DASH-08` — Дашборд: "Середній чек" — overlay розбивка по послугах (P1) · commit `37f8ca65`
+
+**Тип:** feature/overlay · **Скіл:** `senior-frontend` · **Модель:** Sonnet · близнюк M-DASH-07 (той самий `Sheet` патерн).
+
+**Контекст-рішення:** беклог мав відкрите ❓ (що в overlay). Картка `AvgCheckCard` (`InsightsRow.tsx`) **вже** показує цей-тиждень vs минулий (дельта + бари) → overlay не дублює, а додає **розбивку по послугах** (рішення founder через QA).
+
+**Рішення (`frost/InsightsRow.tsx`, `AvgCheckCard`):**
+- Метрика → `<button>` (aria-haspopup/expanded/label) + chevron → `Sheet variant=adaptive`.
+- `serviceBreakdown` useMemo з `thisBookings`: по `completed`-записах ітерує `b.services[]` → `{name, count, revenue, avgPrice, sharePct}`, сорт за `revenue` ↓. Нуль нових запитів/backend.
+- Overlay: хедер (avg чек + N завершених записів) + список послуг (назва · `count × сер.ціна` · виручка · частка % · бар). Порожній стан.
+
+**Чесний нюанс:** розбивка по `service.price`; avg чек по `total_price` (incl. товари + динамічна ціна). Сума послуг може бути < чека → overlay названо «по послугах», хедер лишає реальний avg. Зафіксовано в брифі.
+
+**Перевірка:** TSC 0 · Build clean (2.1min) · encoding clean · humanizer (copy + кома перед підрядним). Деталі — `BRIEFS/M-DASH-08.md`.
 
 ---
 
@@ -308,16 +325,17 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-DASH-08` — Дашборд: "Середній чек" — overlay info
+## ▶ NEXT: `M-CLI-01` — Клієнти: grid-картки єдиний лейаут
 
-**Тип:** feature/overlay · **Скіл:** `senior-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2** · близнюк M-DASH-07
+**Тип:** REDESIGN (layout) · **Скіл:** `impeccable (layout)` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2** · старт A2 (Клієнти)
 
-**Задача (з BACKLOG):** метрика «Середній чек» на дашборді — overlay при тапі з додатковою інфо. ❓ Відкрите питання беклогу: що саме в overlay — динаміка за період, розбивка по послугах, чи порівняння з попереднім місяцем? → вирішити через QA Gate перед кодом.
+**Задача (з BACKLOG):** картки клієнтів у grid (десктоп) мають **єдиний лейаут незалежно від контексту** — зараз кнопки/блоки різної висоти ламають вирівнювання. Smart Design System.
 
-**Підхід (переюз патерну M-DASH-07):**
-1. Знайти віджет «Середній чек» (grep `Середній чек`/`avgCheck`/`average_check` у `master/dashboard/`). Ймовірно в `EarningsPulseWidget`/`FrostMetricsStrip` або окремий.
-2. Той самий overlay-патерн: метрика → `<button>` (aria) → `Sheet variant=adaptive`.
-3. Дані: середній чек уже рахується десь (звірити hook). Для розбивки по послугах — `booking_services` агрегація read-side (як M-SVC-01 `getServiceStats`).
-4. UI-текст → humanizer · tsc + build.
+**Підхід:**
+1. Скріншот поточного grid клієнтів (REDESIGN → скрін обовʼязковий, self-serve через dev).
+2. Файл: `master/clients/ClientGridCard.tsx` (React.memo, вже існує — див. SYSTEM_MAP) + `ClientsPage.tsx` (useWindowVirtualizer grid).
+3. Причина різновисоти: умовні блоки (теги/нотатки/CTA) → вирівняти через `h-full` + flex-структуру з фіксованими зонами (як зробили M-DASH-10 для TodaySchedule висоти).
+4. `impeccable (layout)` для рівних висот/alignment, `design-taste-frontend` у межах Frost.
+5. tsc + build.
 
-**KEY з M-DASH-07:** overlay-список дашборд-метрики = спільний `ui/Sheet variant=adaptive`, не кастомний tooltip.
+**KEY з дашборд-блоку:** overlay-патерн дашборд-метрик завершено (M-DASH-07/08) — `ui/Sheet variant=adaptive`. M-BOOK-03 («верхні віджети клікабельні + overlay») переюзає той самий патерн.
