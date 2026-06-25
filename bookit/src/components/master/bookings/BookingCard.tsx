@@ -21,6 +21,7 @@ import {
   updateBookingStatus,
 } from '@/app/(master)/dashboard/bookings/actions';
 import { cn } from '@/lib/utils/cn';
+import { statusGlow } from '@/lib/utils/statusGlow';
 import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
 import { MaterialsReviewSheet } from './MaterialsReviewSheet';
 
@@ -139,8 +140,8 @@ export function BookingCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, type: 'spring' as const, stiffness: 340, damping: 26 }}
-      className={cn("bento-card overflow-hidden transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl hover:border-primary/20 group flex flex-col", className)}
-      style={{ border: `1px solid ${cfg.color}`, background: `${cfg.color}08` }}
+      className={cn("bento-card overflow-hidden group flex flex-col", className)}
+      style={{ backgroundImage: statusGlow(cfg.color) }}
     >
       <div className="flex flex-1">
 

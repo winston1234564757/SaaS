@@ -6,6 +6,7 @@ import {
   Crown, Sparkle, Heart, Gem, Calendar,
 } from 'lucide-react';
 import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
+import { statusGlow } from '@/lib/utils/statusGlow';
 
 // All colors verified WCAG AA ≥ 4.5:1 on light surfaces
 export const RETENTION_CONFIG: Record<RetentionStatus, { label: string; color: string; bg: string; dot: string }> = {
@@ -16,13 +17,12 @@ export const RETENTION_CONFIG: Record<RetentionStatus, { label: string; color: s
 };
 
 /**
- * Дуже слабкий пастельний radial-glow у кольорі статусу для тіла картки клієнта (M-CLI-05).
- * Накладається через `backgroundImage` поверх `var(--surface)` bento-card — без рамки й суцільного тінту.
- * Кут — лівий-верхній (біля імені/статус-піла; ClientIconStack живе у правому-верхньому).
- * `33` hex alpha ≈ 20% піку → плавно у прозорість. Спільний для grid + list, щоб не розсинхронити.
+ * Пастельний radial-glow у кольорі retention-статусу для тіла картки клієнта (M-CLI-05).
+ * Делегує до спільного `statusGlow` — єдине джерело формули/сили для клієнтів і записів.
+ * Кут лівий-верхній (біля статус-піла; ClientIconStack живе у правому-верхньому).
  */
 export function retentionGlow(color: string): string {
-  return `radial-gradient(125% 90% at 0% 0%, ${color}33 0%, transparent 58%)`;
+  return statusGlow(color);
 }
 
 export interface AutoTag {
