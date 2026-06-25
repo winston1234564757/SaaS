@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, Minus, Star, AlertCircle, Zap, MessageSquare, ChevronRight, Share2, Sparkles, Crown, X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { formatPrice } from '@/components/master/services/types';
 import { Sheet } from '@/components/ui/Sheet';
@@ -12,6 +12,7 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useTopAmbassadors } from '@/lib/supabase/hooks/useTopAmbassadors';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { useDismissable } from '@/lib/hooks/useDismissable';
 
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M ₴`;
@@ -92,6 +93,9 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
 
     return { activeCount, sleepingCount, atRiskCount, lostCount, totalRevenue, avgCheck, lostTreasures, newbiesAtRisk, archiveCount };
   }, [clients, masterProfile?.retention_cycle_days]);
+
+  const cleanupDismiss  = useDismissable('clients_cleanup', archiveCount);
+  const followupDismiss = useDismissable('clients_followup', newbiesAtRisk.length);
 
   const ambassadorData = ambassadorResult?.success ? ambassadorResult.data : null;
 
@@ -272,61 +276,87 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
       </motion.div>
 
       {/* 4. Cleanup Wizard */}
-      {archiveCount > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={SPRING}
-          className="col-span-2 p-5 rounded-xl bg-secondary/30 border border-secondary/50 flex flex-col items-center text-center gap-3 relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-5">
-            <Zap size={80} />
-          </div>
-          <div className="size-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground shadow-sm">
-            <Users size={20} className="opacity-40" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-foreground">Пора почистити базу</h4>
-            <p className="text-xs text-muted-foreground/60 mt-1 max-w-[240px]">
-              У вас {archiveCount} {pluralUk(archiveCount, 'клієнт', 'клієнти', 'клієнтів')} у глибокому відтоку.
-              Архівуйте їх, щоб бачити тільки актуальні дані.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onSegmentSelect('archive_cleanup')}
-            className="px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold active:scale-[0.95] transition-all shadow-lg shadow-black/5"
+      <AnimatePresence>
+        {archiveCount > 0 && !cleanupDismiss.dismissed && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -8 }}
+            transition={prefersReduced ? { duration: 0 } : SPRING}
+            className="col-span-2 p-5 rounded-xl bg-secondary/30 border border-secondary/50 flex flex-col items-center text-center gap-3 relative overflow-hidden"
           >
-            Відкрити список
-          </button>
-        </motion.div>
-      )}
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+              <Zap size={80} />
+            </div>
+            <button
+              type="button"
+              aria-label="Сховати"
+              onClick={cleanupDismiss.dismiss}
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-lg text-muted-foreground/40 hover:text-muted-foreground/70 hover:bg-secondary/60 active:scale-[0.9] transition-all"
+            >
+              <X size={14} />
+            </button>
+            <div className="size-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground shadow-sm">
+              <Users size={20} className="opacity-40" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-foreground">Пора почистити базу</h4>
+              <p className="text-xs text-muted-foreground/60 mt-1 max-w-[240px]">
+                У вас {archiveCount} {pluralUk(archiveCount, 'клієнт', 'клієнти', 'клієнтів')} у глибокому відтоку.
+                Архівуйте їх, щоб бачити тільки актуальні дані.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onSegmentSelect('archive_cleanup')}
+              className="px-6 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold active:scale-[0.95] transition-all shadow-lg shadow-black/5"
+            >
+              Відкрити список
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 5. Newbie Follow-up */}
-      {newbiesAtRisk.length > 0 && (
-        <motion.button
-          type="button"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING, delay: 0.15 }}
-          onClick={() => onSegmentSelect('newbie_danger')}
-          aria-pressed={activeSegment === 'newbie_danger'}
-          className={`col-span-2 bento-card p-4 flex items-center gap-4 active:scale-[0.95] transition-all text-left ${activeSegment === 'newbie_danger' ? 'ring-2 ring-primary bg-primary/10' : 'bg-primary/5 border-primary/20'}`}
-        >
-          <div className="p-3 rounded-xl bg-primary/10 text-primary">
-            <AlertCircle size={20} />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-foreground">Потрібен follow-up</p>
-            <p className="text-xs text-muted-foreground/70 mt-0.5 leading-tight">
-              {newbiesAtRisk.length} новачків не повернулися. Запропонуйте бонус!
-            </p>
-          </div>
-          <div className="p-2.5 rounded-xl bg-foreground text-background">
-            <MessageSquare size={16} />
-          </div>
-        </motion.button>
-      )}
+      <AnimatePresence>
+        {newbiesAtRisk.length > 0 && !followupDismiss.dismissed && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -8 }}
+            transition={prefersReduced ? { duration: 0 } : { ...SPRING, delay: 0.15 }}
+            className="col-span-2 relative"
+          >
+            <button
+              type="button"
+              onClick={() => onSegmentSelect('newbie_danger')}
+              aria-pressed={activeSegment === 'newbie_danger'}
+              className={`w-full bento-card p-4 flex items-center gap-4 active:scale-[0.95] transition-all text-left ${activeSegment === 'newbie_danger' ? 'ring-2 ring-primary bg-primary/10' : 'bg-primary/5 border-primary/20'}`}
+            >
+              <div className="p-3 rounded-xl bg-primary/10 text-primary">
+                <AlertCircle size={20} />
+              </div>
+              <div className="flex-1 pr-6">
+                <p className="text-sm font-bold text-foreground">Потрібен follow-up</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-tight">
+                  {newbiesAtRisk.length} новачків не повернулися. Запропонуйте бонус!
+                </p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-foreground text-background">
+                <MessageSquare size={16} />
+              </div>
+            </button>
+            <button
+              type="button"
+              aria-label="Сховати"
+              onClick={followupDismiss.dismiss}
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-lg text-muted-foreground/40 hover:text-muted-foreground/70 hover:bg-secondary/60 active:scale-[0.9] transition-all"
+            >
+              <X size={14} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Average Check Details */}
       <Sheet open={showCheckDetails} onOpenChange={(v) => !v && setShowCheckDetails(false)} title="Середній чек">
