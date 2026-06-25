@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-25 · Джерело: живий код (v9.0.0) · Останній код-коміт: `676c191b` (M-DASH-12 ревізія — бари WeeklyChart монохром + глибша рампа обох віджетів)
+> Оновлено: 2026-06-25 · Джерело: живий код (v9.0.0) · Останній код-коміт: `94515808` (M-CLI-01 — grid-картки клієнтів єдиний лейаут: h-full + flex-1 + mt-auto)
 > 
-> **⚡ Sprint-05 Status (ACTIVE):** 18/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-CLI-01` — Клієнти: grid-картки єдиний лейаут (impeccable layout) | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
+> **⚡ Sprint-05 Status (ACTIVE):** 19/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-CLI-02` — Клієнти: віджет «Важливі/Амбасадори» свайп (emilkowalski-motion) | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)

@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 18/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-CLI-01` — Клієнти: grid-картки єдиний лейаут** (`impeccable (layout)` + `design-taste-frontend` · Sonnet · P1) — старт A2 (Клієнти)
+**Прогрес:** 19/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-CLI-02` — Клієнти: віджет «Важливі/Амбасадори» свайп** (`emilkowalski-motion` · Sonnet · P1)
 **Оновлено:** 2026-06-25
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,26 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-CLI-01` — Клієнти: grid-картки єдиний лейаут (P1) · commit `94515808`
+
+**Тип:** REDESIGN (layout) · **Скіл:** `impeccable (layout)` + `design-taste-frontend` · **Модель:** Sonnet · старт A2 (Клієнти).
+
+**Root cause (контртеза до опису):** грід клієнтів **НЕ віртуалізований** — `ClientsPage.tsx:541` звичайний CSS grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3`); `useWindowVirtualizer` лише для list-view (`count: 0` коли grid). CSS grid вже рівняє картки в рядку (`align-items: stretch`). Справжня причина зламаного вирівнювання: `ClientGridCard` root `motion.div` **без `h-full`** + інфо-`<button>` **без `flex-1`** → контент пакувався зверху, екшн-бар «Записати» плавав на різній вертикалі (умовний at_risk-алерт, перенос імені/VIP, наявність `last_service_name`).
+
+**Рішення (4 правки лише в `ClientGridCard.tsx`, `ClientsPage` НЕ чіпано):**
+1. root `motion.div` `+ h-full` → заповнює розтягнуту grid-клітинку
+2. інфо-`<button>` `+ flex-1` → росте, штовхає екшн-бар донизу
+3. стата (Візитів/Витрачено) `+ mt-auto` → пінниться до низу → і стата, і CTA вирівняні в межах рядка
+4. ім'я `<p>` `+ min-h-[2.8rem]` → 1↔2 рядки не зсувають аватар/статус
+
+**Рішення founder (AskUserQuestion):** (1) рівна висота **у межах рядка** (per-row stretch, не `grid-auto-rows:1fr` — редагування нотатки роздуло б увесь грід); (2) at_risk-алерт **лишити умовним** (flex-1 вирівнює без резервування слота).
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean · layout-only (без нового copy). Деталі — `BRIEFS/M-CLI-01.md`.
+
+**KEY:** «єдиний лейаут карток» у CSS-grid (не віртуалізованому) = `h-full` на картці + `flex-1` на основній секції + `mt-auto` на нижньому блоці. Той самий патерн, що M-DASH-10 (TodaySchedule). Перед фіксом висоти грід-карток — перевір: грід віртуалізований (`estimateSize`) чи CSS (stretch нативно).
 
 ---
 
@@ -325,17 +345,18 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-CLI-01` — Клієнти: grid-картки єдиний лейаут
+## ▶ NEXT: `M-CLI-02` — Клієнти: віджет «Важливі / Амбасадори» свайп
 
-**Тип:** REDESIGN (layout) · **Скіл:** `impeccable (layout)` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2** · старт A2 (Клієнти)
+**Тип:** MOTION · **Скіл:** `emilkowalski-motion` · **Модель:** Sonnet · **P1** · **Фаза 2** · A2 (Клієнти)
 
-**Задача (з BACKLOG):** картки клієнтів у grid (десктоп) мають **єдиний лейаут незалежно від контексту** — зараз кнопки/блоки різної висоти ламають вирівнювання. Smart Design System.
+**Задача (з BACKLOG р.112):** віджет «Важливі / Амбасадори»: при свайпі **сам віджет рухається**; вертикальні індикатори статусу (крапка ↔ лінія перемикаються). Преміальний, плавний UX.
 
-**Підхід:**
-1. Скріншот поточного grid клієнтів (REDESIGN → скрін обовʼязковий, self-serve через dev).
-2. Файл: `master/clients/ClientGridCard.tsx` (React.memo, вже існує — див. SYSTEM_MAP) + `ClientsPage.tsx` (useWindowVirtualizer grid).
-3. Причина різновисоти: умовні блоки (теги/нотатки/CTA) → вирівняти через `h-full` + flex-структуру з фіксованими зонами (як зробили M-DASH-10 для TodaySchedule висоти).
-4. `impeccable (layout)` для рівних висот/alignment, `design-taste-frontend` у межах Frost.
-5. tsc + build.
+**Підхід (кандидати на перевірку перед кодом):**
+1. Знайти віджет: `master/clients/ClientWidgets.tsx` (див. SYSTEM_MAP — sidebar клієнтів) — секція «Важливі/Амбасадори». Grep по «Амбасадор|Важлив».
+2. Поточна реалізація свайпу/каруселі: чи `ScrollStrip` (G-PWA-02), чи власний — визначити, що рухається зараз.
+3. `emilkowalski-motion`: рух самого віджета при свайпі + індикатори крапка↔лінія (active = лінія). spring без overshoot (вимога founder — як у dashboard-animation-system), `useReducedMotion` fallback.
+4. tsc + build.
 
-**KEY з дашборд-блоку:** overlay-патерн дашборд-метрик завершено (M-DASH-07/08) — `ui/Sheet variant=adaptive`. M-BOOK-03 («верхні віджети клікабельні + overlay») переюзає той самий патерн.
+**Відкрите (уточнити на старті):** «сам віджет рухається» — паралакс контейнера, drag-track, чи трансформа на свайп-жест? Узгодити feel із founder через AskUserQuestion.
+
+**KEY з M-CLI-01:** грід-картки тепер мають єдиний лейаут (h-full + flex-1 + mt-auto). Для motion на віджеті — `whileTap`/drag з framer, але памʼятай урок M-DASH-02: для tap-навігації нативний `<Link>`, не `whileTap` (ковтає перший тап на тачі).
