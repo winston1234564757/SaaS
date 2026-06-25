@@ -440,6 +440,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `uuid.ts` | `flatUidToUuid(flat)` |
 | `occupancy.ts` | `computeOccupancy` |
 | `flashDeal.ts` | `getMonthStart`, `calcDiscountedPrice`, `isFlashSlotMatch` — pure helpers для flash deals (T11) |
+| `statusGlow.ts` | `statusGlow(hexColor)` — пастельний radial-glow тіла картки у кольорі статусу (~20%), спільний для карток клієнтів (`retentionGlow` делегує) і записів (`BookingCard`); M-CLI-05/M-BOOK-01 |
 
 ### Validations
 - `src/lib/validations/booking.ts` — Zod schema для BookingWizard

@@ -4,7 +4,7 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 23/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Прогрес:** 24/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05` · `M-BOOK-01`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
 **Наступна задача:** **`M-CLI-06` — Сторінка клієнта (деталі) у CRM: глибокий редизайн** 🔄 (`design-taste-frontend` + `impeccable` · Sonnet · P1) — потребує QA-уточнень founder (пріоритетні секції: статистика/історія/теги/нотатки; напрям: картка-профіль чи аналітична сторінка)
 **Оновлено:** 2026-06-25
 
@@ -26,6 +26,23 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-BOOK-01` — Записи: кольорова корекція карток, пастель (P1) · commit `7777a7dc` · _поза чергою_
+
+**Тип:** REDESIGN (colorize + distill) · **Скіл:** `impeccable` (colorize + distill) · **Модель:** Sonnet. **Spillover M-CLI-05** — founder: «зроби так само, по гарячим слідам».
+
+**Реалізація:**
+- **НОВИЙ спільний `src/lib/utils/statusGlow.ts`** — `statusGlow(color)` = та сама radial-glow формула (20%). ЄДИНЕ джерело сили glow для карток клієнтів + записів (founder щойно тюнив 8→20%, дві копії = біль). `clientsUtils.retentionGlow` тепер делегує → картки клієнтів НЕ зачеплені.
+- `BookingCard.tsx:142-143`: прибрано інлайн `border 1px solid cfg.color` + тінт `${cfg.color}08` + класи `hover:shadow-2xl hover:border-primary/20 hover:translate-y-[-4px] transition-all duration-300` → `bento-card overflow-hidden group flex flex-col` + `style={{ backgroundImage: statusGlow(cfg.color) }}`. Hover тепер від bento-card (lift -2px), без фіолетової рамки.
+- Статуси `BOOKING_STATUS_CONFIG`: pending `#D4935A`, confirmed `#789A99`, completed `#5C9E7A`, cancelled `#C05B5B`, no_show `#A8928D`.
+
+**ВІДХИЛЕННЯ від 1:1 (свідоме):** кнопка «Підтвердити» лишилась primary — це **головний CTA картки запису** (аналог «Записати» у клієнтів; правило «accent лише на головному CTA»). Решта екшнів уже семантичні (success/error/muted) — не чіпано. Обсяг = тільки `BookingCard.tsx` (BookingDetailsModal юзає конфіг лише для піла, рамки не має).
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean · humanizer N/A. **Потребує візуального QA founder.** Деталі — `BRIEFS/M-BOOK-01.md`.
+
+**KEY:** spillover-патерн — той самий glow на іншому домені через спільний `statusGlow()` (одне джерело сили). У записах головний CTA = «Підтвердити» (primary), не окрема «Записати». Перед застосуванням «аналога» — звір домен: у записів екшни семантично-кольорові, не всі під нейтраль.
 
 ---
 
