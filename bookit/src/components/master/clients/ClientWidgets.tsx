@@ -57,16 +57,6 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   };
   const { data: ambassadorResult } = useTopAmbassadors(masterProfile?.id);
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2 h-32 skeleton-shimmer rounded-3xl" />
-        <div className="h-28 skeleton-shimmer rounded-3xl" />
-        <div className="h-28 skeleton-shimmer rounded-3xl" />
-      </div>
-    );
-  }
-
   const {
     activeCount, sleepingCount, atRiskCount, lostCount,
     totalRevenue, avgCheck, lostTreasures, newbiesAtRisk, archiveCount,
@@ -96,6 +86,18 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
 
   const cleanupDismiss  = useDismissable('clients_cleanup', archiveCount);
   const followupDismiss = useDismissable('clients_followup', newbiesAtRisk.length);
+
+  // Early return ТІЛЬКИ після всіх хуків — інакше перехід loading→loaded міняє
+  // кількість викликаних хуків і React кидає «Rendered more hooks…» (краш на мобілці).
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2 h-32 skeleton-shimmer rounded-3xl" />
+        <div className="h-28 skeleton-shimmer rounded-3xl" />
+        <div className="h-28 skeleton-shimmer rounded-3xl" />
+      </div>
+    );
+  }
 
   const ambassadorData = ambassadorResult?.success ? ambassadorResult.data : null;
 
