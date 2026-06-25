@@ -62,7 +62,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={CARD_SPRING}
-      className="bento-card p-4 hover:shadow-md transition-shadow flex flex-col gap-3 relative"
+      className="bento-card p-4 hover:shadow-md transition-shadow flex flex-col gap-3 relative h-full"
       style={{ border: `1px solid ${ret.color}`, background: `${ret.color}08` }}
     >
       <ClientIconStack client={client} />
@@ -71,11 +71,11 @@ export const ClientGridCard = React.memo(function ClientGridCard({
       <button
         type="button"
         onClick={() => onOpen(client)}
-        className="w-full text-left flex flex-col cursor-pointer"
+        className="w-full text-left flex flex-col flex-1 cursor-pointer"
       >
         {/* Name + status */}
         <div className="mb-4">
-          <p className="font-display text-lg font-bold text-foreground leading-tight tracking-tight max-w-[70%]">
+          <p className="font-display text-lg font-bold text-foreground leading-tight tracking-tight max-w-[70%] min-h-[2.8rem]">
             {formatClientName(client.client_name)}
           </p>
           <div className="flex items-center flex-wrap gap-1.5 mt-2 max-w-[70%]">
@@ -142,7 +142,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-secondary/60">
+        <div className="grid grid-cols-2 gap-2 pt-2 mt-auto border-t border-secondary/60">
           <div>
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Візитів</p>
             <p className="text-xl font-bold text-primary leading-none mt-1">{client.total_visits}</p>
