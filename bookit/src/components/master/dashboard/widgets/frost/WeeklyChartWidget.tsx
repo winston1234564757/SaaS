@@ -8,7 +8,6 @@ import { formatPrice } from '@/components/master/services/types';
 import { getNow } from '@/lib/utils/now';
 import { BarChart2 } from 'lucide-react';
 import { useSmartTooltip } from '@/lib/hooks/useSmartTooltip';
-import { RETENTION_CONFIG } from '@/components/master/clients/clientsUtils';
 import { pluralUk } from '@/lib/utils/pluralUk';
 
 const DAYS      = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
@@ -19,15 +18,13 @@ const GAP            = 6;
 
 function getTodayIdx(): number { return (new Date().getDay() + 6) % 7; }
 
-// Heat-scale за відносним рівнем дня до максимуму тижня.
-// Палітра переюзана з блоку «Утримання бази» (сторінка Клієнти) — той самий
-// семантичний напрям: сильний день = зелений (добре), порожній = червоний.
-function heatColor(val: number, max: number): string {
-  if (val === 0) return RETENTION_CONFIG.lost.color;        // порожній день
-  const ratio = val / max;
-  if (ratio <= 1 / 3) return RETENTION_CONFIG.at_risk.color;  // слабкий
-  if (ratio <= 2 / 3) return RETENTION_CONFIG.sleeping.color; // середній
-  return RETENTION_CONFIG.active.color;                       // сильний
+// Монохромна heat-рампа на акценті: глибший сірий = більше записів.
+// Висота бара лишається первинним сигналом; колір лише підсилює щільність.
+// Глибокий нижній поріг (34%) тримає слабкі дні читабельними, не вицвілими.
+function barFill(val: number, max: number, emphasis: boolean): string {
+  if (emphasis) return 'var(--accent)';
+  const pct = val === 0 ? 14 : Math.round(34 + (val / max) * 62); // 34→96%
+  return `color-mix(in srgb, var(--accent) ${pct}%, transparent)`;
 }
 
 function toISO(d: Date) {
@@ -192,8 +189,8 @@ export function WeeklyChartWidget() {
                 const barH     = val === 0 ? 2 : Math.max(Math.round((val / maxVal) * BAR_MAX), 5);
                 const isToday  = i === today;
                 const isActive = activeBar === i;
-                const heat     = heatColor(val, maxVal);
                 const emphasis = isToday || isActive;
+                const fill     = barFill(val, maxVal, emphasis);
                 const ariaLabel = `${DAYS[i]}: ${val === 0 ? 'немає записів' : mode === 'bookings' ? `${val} записів` : formatPrice(val)}`;
 
                 return (
@@ -208,7 +205,7 @@ export function WeeklyChartWidget() {
                     {val > 0 && !isActive && (
                       <span
                         className="font-mono text-[9px] font-bold mb-[3px] tabular-nums"
-                        style={{ color: isToday ? heat : 'var(--text-tertiary)', opacity: isToday ? 1 : 0.6 }}
+                        style={{ color: isToday ? 'var(--accent)' : 'var(--text-tertiary)', opacity: isToday ? 1 : 0.6 }}
                       >
                         {mode === 'bookings' ? val : val >= 1000 ? `${Math.round(val / 1000)}к` : val}
                       </span>
@@ -219,9 +216,9 @@ export function WeeklyChartWidget() {
                       style={{
                         height:          barH,
                         borderRadius:    '3px 3px 0 0',
-                        background:      heat,
+                        background:      fill,
                         transformOrigin: 'bottom',
-                        border:          `1px solid ${heat}`,
+                        border:          `1px solid ${emphasis ? 'var(--accent)' : fill}`,
                       }}
                       initial={{ scaleY: 0, opacity: 0 }}
                       animate={{ scaleY: 1, opacity: 1 }}

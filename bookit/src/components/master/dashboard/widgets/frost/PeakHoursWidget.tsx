@@ -179,7 +179,7 @@ export function PeakHoursWidget() {
                       style={{
                         borderRadius: '3px',
                         background:   'var(--accent)',
-                        opacity:      intensity === 0 ? 0.07 : 0.14 + intensity * 0.86,
+                        opacity:      intensity === 0 ? 0.07 : 0.34 + intensity * 0.66,
                         outline:      isActive ? '1.5px solid color-mix(in srgb, var(--accent) 60%, transparent)' : 'none',
                         transform:    isActive ? 'scale(1.2)' : 'scale(1)',
                         transition:   'transform 100ms ease-out',
