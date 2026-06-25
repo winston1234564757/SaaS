@@ -11,6 +11,7 @@ import { parseError } from '@/lib/utils/errors';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
 import {
   RETENTION_CONFIG,
+  retentionGlow,
   ClientIconStack,
   formatClientName,
   type SmartSegment,
@@ -62,8 +63,8 @@ export const ClientGridCard = React.memo(function ClientGridCard({
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={CARD_SPRING}
-      className="bento-card p-4 hover:shadow-md transition-shadow flex flex-col gap-3 relative h-full"
-      style={{ border: `1px solid ${ret.color}`, background: `${ret.color}08` }}
+      className="bento-card p-4 flex flex-col gap-3 relative h-full"
+      style={{ backgroundImage: retentionGlow(ret.color) }}
     >
       <ClientIconStack client={client} />
 
@@ -95,21 +96,15 @@ export const ClientGridCard = React.memo(function ClientGridCard({
 
         {/* Avatar + last visit */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="relative">
-            <div
-              className="size-12 rounded-xl flex items-center justify-center text-lg flex-shrink-0 font-bold relative z-10"
-              style={{
-                background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
-                color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
-                boxShadow: '0 0 0 2px var(--background)',
-              }}
-            >
-              {client.client_name[0]?.toUpperCase() ?? '?'}
-            </div>
-            <div
-              className="absolute -inset-1 rounded-xl opacity-60 z-0"
-              style={{ border: `2.5px solid ${ret.color}` }}
-            />
+          <div
+            className="size-12 rounded-xl flex items-center justify-center text-lg flex-shrink-0 font-bold"
+            style={{
+              background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
+              color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
+              boxShadow: '0 0 0 2px var(--background)',
+            }}
+          >
+            {client.client_name[0]?.toUpperCase() ?? '?'}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-wider">
@@ -133,9 +128,12 @@ export const ClientGridCard = React.memo(function ClientGridCard({
 
         {/* Smart Follow-up alert */}
         {client.retention_status === 'at_risk' && (
-          <div className="mb-3 px-2 py-1 rounded-lg bg-primary/5 border border-primary/10 flex items-center gap-1.5">
-            <Zap size={10} className="text-primary" />
-            <p className="text-[10px] font-bold text-primary/80 uppercase tracking-tighter">
+          <div
+            className="mb-3 px-2 py-1 rounded-lg flex items-center gap-1.5"
+            style={{ background: `${ret.color}0F`, color: ret.color }}
+          >
+            <Zap size={10} />
+            <p className="text-[10px] font-bold uppercase tracking-tighter">
               Пора нагадати про себе
             </p>
           </div>
@@ -145,7 +143,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
         <div className="grid grid-cols-2 gap-2 pt-2 mt-auto border-t border-secondary/60">
           <div>
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Візитів</p>
-            <p className="text-xl font-bold text-primary leading-none mt-1">{client.total_visits}</p>
+            <p className="text-xl font-bold text-foreground leading-none mt-1">{client.total_visits}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-tighter">Витрачено</p>
@@ -201,7 +199,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
               <button
                 type="button"
                 onClick={() => onSmartAction(client)}
-                className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-colors duration-150 cursor-pointer active:scale-[0.88] hover:bg-primary hover:text-white"
+                className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 cursor-pointer active:scale-[0.88]"
                 aria-label="Smart-дія"
               >
                 <Sparkles size={16} />

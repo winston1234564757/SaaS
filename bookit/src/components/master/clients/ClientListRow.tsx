@@ -9,7 +9,7 @@ import { useClientNoteInvalidate } from '@/lib/supabase/hooks/useClientNote';
 import { useToast } from '@/lib/toast/context';
 import { parseError } from '@/lib/utils/errors';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
-import { RETENTION_CONFIG } from './clientsUtils';
+import { RETENTION_CONFIG, retentionGlow } from './clientsUtils';
 
 interface ClientListRowProps {
   client: ClientRow;
@@ -53,8 +53,8 @@ export const ClientListRow = React.memo(function ClientListRow({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.15 }}
-      className="bento-card p-4 hover:shadow-md transition-shadow relative group"
-      style={{ border: `1px solid ${ret.color}`, background: `${ret.color}08` }}
+      className="bento-card p-4 relative group"
+      style={{ backgroundImage: retentionGlow(ret.color) }}
     >
       {/* Main info row — opens detail sheet */}
       <button
@@ -62,21 +62,15 @@ export const ClientListRow = React.memo(function ClientListRow({
         onClick={() => onOpen(client)}
         className="w-full text-left flex items-center gap-3"
       >
-        <div className="relative flex-shrink-0">
-          <div
-            className="size-11 rounded-xl flex items-center justify-center text-lg font-bold relative z-10"
-            style={{
-              background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
-              color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
-              boxShadow: '0 0 0 2px var(--background)',
-            }}
-          >
-            {client.client_name[0]?.toUpperCase() ?? '?'}
-          </div>
-          <div
-            className="absolute -inset-1 rounded-lg opacity-40 z-0"
-            style={{ border: `2px solid ${ret.color}` }}
-          />
+        <div
+          className="size-11 rounded-xl flex items-center justify-center text-lg font-bold flex-shrink-0"
+          style={{
+            background: client.is_vip ? 'var(--warning-bg)' : 'var(--surface-strong)',
+            color: client.is_vip ? 'var(--warning)' : 'var(--text-primary)',
+            boxShadow: '0 0 0 2px var(--background)',
+          }}
+        >
+          {client.client_name[0]?.toUpperCase() ?? '?'}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -133,7 +127,7 @@ export const ClientListRow = React.memo(function ClientListRow({
           <button
             type="button"
             onClick={() => onSmartAction(client)}
-            className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm transition-colors duration-150 active:scale-[0.88] hover:bg-primary hover:text-white"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
             aria-label="Smart-дія"
           >
             <Sparkles size={14} />
@@ -203,7 +197,7 @@ export const ClientListRow = React.memo(function ClientListRow({
             <button
               type="button"
               onClick={() => onSmartAction(client)}
-              className="size-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary active:scale-[0.88] transition-all hover:bg-primary hover:text-white"
+              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
               aria-label="Smart-дія"
             >
               <Sparkles size={14} />
