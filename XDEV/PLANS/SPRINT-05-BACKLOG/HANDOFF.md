@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 16/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-DASH-07` — Дашборд: "Скасування" — overlay хто/коли** (`senior-frontend` · Sonnet · P1)
+**Прогрес:** 17/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-DASH-08` — Дашборд: "Середній чек" — overlay info** (`senior-frontend` · Sonnet · P1)
 **Оновлено:** 2026-06-25
 
 > ⚠ **Відкрите питання founder:** бари WeeklyChart лишились суцільно-кольоровими (з M-DASH-12 colorize). PeakHours відкочено до сіро-чорних, M-DASH-11 скасовано. Узгодити: відкочувати бари теж чи лишати.
@@ -26,6 +26,24 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-DASH-07` — Дашборд: "Скасування" — overlay хто/коли (P1) · commit `b970066a`
+
+**Тип:** REDESIGN/feature (overlay) · **Скіл:** `senior-frontend` · **Модель:** Sonnet · validated вживу founder («все є»).
+
+**Реальність даних (важливо для M-DASH-08 і будь-яких cancel-фіч):** у `bookings` НЕМАЄ `cancelled_by`/`cancelled_at`. «Коли» = `status_changed_at` (cancelled — термінальний статус, фолбек на `date`). «Хто» — **інференс**: `cancellation_reason === 'client_requested'` → клієнт; `null`/інше (майстер-сайд `actions.ts:107` reason не пише) → майстер. Точний лог потребував би міграції — founder обрав інференс.
+
+**Рішення:**
+- `useBookings.ts` + `useBookingById.ts`: select +`status_changed_at`, +`cancellation_reason`. Другий хук правив бо `BookingWithServicesAndProducts extends BookingWithServices` → tsc зловив відсутні поля.
+- `useCancellationRate.ts`: повертає `cancelledList: CancelledEntry[]` (скасування тижня, сорт за часом ↓; `by: 'client'|'master'`).
+- `CancellationRateWidget.tsx`: ліва метрика → `<button>` (aria-haspopup/expanded/label, target ≥44px), тап → `Sheet` variant=`adaptive` (vaul bottom моб / dialog десктоп). Рядок: CalendarX-чіп + клієнт + послуга + `timeAgo` + «Скасував клієнт / Скасували ви». Порожній стан: «Цього тижня скасувань немає».
+- Переюз: спільний `ui/Sheet`, `timeAgo` (`lib/utils/dates`), `pluralUk`. Нуль міграцій / backend / RLS (запит уже scoped по `master_id`).
+
+**Перевірка:** TSC 0 · Build clean (3.1min) · encoding clean · humanizer на новому copy. Деталі — `BRIEFS/M-DASH-07.md`.
+
+**KEY:** overlay-патерн для дашборд-метрик = спільний `Sheet variant=adaptive` (не вигадувати tooltip-позиціювання, коли контент — список). M-DASH-08 робиться тим самим патерном.
 
 ---
 
@@ -290,16 +308,16 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-DASH-07` — Дашборд: "Скасування" — overlay хто/коли
+## ▶ NEXT: `M-DASH-08` — Дашборд: "Середній чек" — overlay info
 
-**Тип:** feature/overlay · **Скіл:** `senior-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2**
+**Тип:** feature/overlay · **Скіл:** `senior-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2** · близнюк M-DASH-07
 
-**Задача (з BACKLOG):** на дашборді блок/метрика «Скасування» — додати overlay (клік/тап) з деталями: хто скасував і коли. Аналогічно патерну overlay на інших метриках (M-DASH-07/08 — пара).
+**Задача (з BACKLOG):** метрика «Середній чек» на дашборді — overlay при тапі з додатковою інфо. ❓ Відкрите питання беклогу: що саме в overlay — динаміка за період, розбивка по послугах, чи порівняння з попереднім місяцем? → вирішити через QA Gate перед кодом.
 
-**Підхід:**
-1. Знайти віджет «Скасування» на дашборді (grep `Скасування`/`cancellation` у `master/dashboard/widgets/frost/` — ймовірно `CancellationRateWidget.tsx`).
-2. Дані: скасовані bookings зі `status='cancelled'` + `cancelled_at`/`cancelled_by` (звірити схему `bookings` у SYSTEM_MAP — чи є ці поля; якщо нема — read-side агрегація з наявних).
-3. Overlay-патерн: звірити з існуючими (StatTile tooltip у `TodaySchedule.tsx`, cell-tooltip у `PeakHoursWidget`) — переюзати useRef + getBoundingClientRect, не вигадувати.
-4. tsc + build (Tier за обсягом).
+**Підхід (переюз патерну M-DASH-07):**
+1. Знайти віджет «Середній чек» (grep `Середній чек`/`avgCheck`/`average_check` у `master/dashboard/`). Ймовірно в `EarningsPulseWidget`/`FrostMetricsStrip` або окремий.
+2. Той самий overlay-патерн: метрика → `<button>` (aria) → `Sheet variant=adaptive`.
+3. Дані: середній чек уже рахується десь (звірити hook). Для розбивки по послугах — `booking_services` агрегація read-side (як M-SVC-01 `getServiceStats`).
+4. UI-текст → humanizer · tsc + build.
 
-**Звʼязка:** M-DASH-08 («Середній чек» overlay) — близнюк, робити можна підряд тим самим патерном.
+**KEY з M-DASH-07:** overlay-список дашборд-метрики = спільний `ui/Sheet variant=adaptive`, не кастомний tooltip.
