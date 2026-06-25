@@ -85,7 +85,7 @@ export default function SettingsPage() {
           {/* Row 1 col-3 — ProfileHero */}
           <motion.section
             id="hero"
-            className="lg:col-span-3"
+            className="order-1 lg:order-none lg:col-span-3"
             data-tour-key="set-profile"
             {...motionProps(0)}
           >
@@ -104,7 +104,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 1 col-4 — SmartAdvisor */}
-          <motion.section className="lg:col-span-4" {...motionProps(1)}>
+          <motion.section className="order-3 lg:order-none lg:col-span-4" {...motionProps(1)}>
             <SmartAdvisor
               data={{
                 bio: state.bio,
@@ -121,7 +121,7 @@ export default function SettingsPage() {
           {/* Row 1 col-3 — PublicStatus */}
           <motion.section
             id="status"
-            className="lg:col-span-3"
+            className="order-4 lg:order-none lg:col-span-3"
             data-tour-key="set-status"
             {...motionProps(2)}
           >
@@ -137,7 +137,7 @@ export default function SettingsPage() {
           {/* Row 3 full-width — ScheduleWidget */}
           <motion.section
             id="schedule"
-            className="lg:col-span-10"
+            className="order-2 lg:order-none lg:col-span-10"
             data-tour-key="set-schedule"
             {...motionProps(3)}
           >
@@ -153,7 +153,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 4 col-3 — StatsPulse */}
-          <motion.section id="stats" className="lg:col-span-3" {...motionProps(4)}>
+          <motion.section id="stats" className="order-5 lg:order-none lg:col-span-3" {...motionProps(4)}>
             <StatsPulseWidget
               rating={masterProfile.rating}
               ratingCount={masterProfile.rating_count}
@@ -163,7 +163,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 4 col-7 — LocationWidget */}
-          <motion.section id="location" className="lg:col-span-7" {...motionProps(5)}>
+          <motion.section id="location" className="order-6 lg:order-none lg:col-span-7" {...motionProps(5)}>
             <LocationWidget
               city={state.city}
               address={state.address}
@@ -180,7 +180,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 5 col-3 — Categories */}
-          <motion.section className="lg:col-span-3" {...motionProps(6)}>
+          <motion.section className="order-7 lg:order-none lg:col-span-3" {...motionProps(6)}>
             <CategoriesWidget
               selected={state.selectedCategories}
               onChange={actions.setSelectedCategories}
@@ -188,7 +188,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 5 col-4 — Identity */}
-          <motion.section id="identity" className="lg:col-span-4" {...motionProps(7)}>{
+          <motion.section id="identity" className="order-8 lg:order-none lg:col-span-4" {...motionProps(7)}>{
             // humanized
           }
             <div className="widget-card p-5 h-full flex flex-col gap-5">
@@ -245,7 +245,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 5 col-3 — ProductMix */}
-          <motion.section id="services" className="lg:col-span-3" {...motionProps(8)}>
+          <motion.section id="services" className="order-9 lg:order-none lg:col-span-3" {...motionProps(8)}>
             <ProductMixWidget
               services={topServices}
               onMonthChange={setAnalyticsDate}
@@ -253,7 +253,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 6 col-3 — Retention Cycle */}
-          <motion.section id="retention" className="lg:col-span-3" {...motionProps(9)}>
+          <motion.section id="retention" className="order-10 lg:order-none lg:col-span-3" {...motionProps(9)}>
             <div className="widget-card p-5 h-full flex flex-col justify-between">
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
@@ -294,7 +294,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 6 col-3 — Vacations */}
-          <motion.section id="vacations" className="lg:col-span-3" {...motionProps(10)}>
+          <motion.section id="vacations" className="order-11 lg:order-none lg:col-span-3" {...motionProps(10)}>
             <div className="widget-card p-5 h-full flex flex-col">
               <div className="flex items-center gap-2.5 mb-4">
                 <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
@@ -307,7 +307,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 6 col-4 — SegmentConfig */}
-          <motion.section id="segments" className="lg:col-span-4" {...motionProps(11)}>
+          <motion.section id="segments" className="order-12 lg:order-none lg:col-span-4" {...motionProps(11)}>
             <SegmentConfigWidget
               segments={state.segmentConfig}
               onChange={actions.setSegmentConfig}
@@ -315,7 +315,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 7 full-width — TechnicalIsland */}
-          <motion.section id="technical" className="lg:col-span-10" {...motionProps(12)}>
+          <motion.section id="technical" className="order-13 lg:order-none lg:col-span-10" {...motionProps(12)}>
             <TechnicalIsland
               instagram={state.instagram}
               telegram={state.telegram}
