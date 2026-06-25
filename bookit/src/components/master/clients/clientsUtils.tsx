@@ -19,10 +19,10 @@ export const RETENTION_CONFIG: Record<RetentionStatus, { label: string; color: s
  * Дуже слабкий пастельний radial-glow у кольорі статусу для тіла картки клієнта (M-CLI-05).
  * Накладається через `backgroundImage` поверх `var(--surface)` bento-card — без рамки й суцільного тінту.
  * Кут — лівий-верхній (біля імені/статус-піла; ClientIconStack живе у правому-верхньому).
- * `14` hex alpha ≈ 8% піку → плавно у прозорість. Спільний для grid + list, щоб не розсинхронити.
+ * `33` hex alpha ≈ 20% піку → плавно у прозорість. Спільний для grid + list, щоб не розсинхронити.
  */
 export function retentionGlow(color: string): string {
-  return `radial-gradient(125% 90% at 0% 0%, ${color}14 0%, transparent 58%)`;
+  return `radial-gradient(125% 90% at 0% 0%, ${color}33 0%, transparent 58%)`;
 }
 
 export interface AutoTag {
