@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 20/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-CLI-03` — Клієнти: інфо-меседжі з dismiss 12год** (`senior-frontend` + `mark-as-read-on-close` · Sonnet · P2)
+**Прогрес:** 21/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-CLI-04` — Клієнти: мобільні статуси/теги scroll UX** (`scroll-experience` + `design-taste-frontend` · Sonnet · P1)
 **Оновлено:** 2026-06-25
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,24 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-CLI-03` — Клієнти: інфо-меседжі з dismiss 12год (P2) · commit `10038f6b`
+
+**Тип:** NEW-FEATURE · **Скіл:** `senior-frontend` (патерн `mark-as-read-on-close` вручну — скіл не встановлений) · **Модель:** Sonnet.
+
+**Рішення founder (AskUserQuestion):** (1) сховище = **localStorage** (per-device, як `ChannelBanner`); (2) re-show сигнал = **зміна лічильника** (`archiveCount` / `newbiesAtRisk.length`).
+
+**Рішення:**
+- **НОВИЙ хук `src/lib/hooks/useDismissable.ts`** (reusable): `useDismissable(key, fingerprint)` → `{ dismissed, dismiss }`. localStorage `bookit_dismiss_${key}` = `{ ts, fp }`. `dismissed` = запис свіжий (<12год) І `fp` збігається. `useEffect`-залежність від `fp` → зміна лічильника авто-скидає dismiss. SSR-safe (старт `false`, рішення в `useEffect` → без hydration mismatch).
+- `ClientWidgets.tsx`: підключено до «Пора почистити базу» (fp=`archiveCount`) і «Потрібен follow-up» (fp=`newbiesAtRisk.length`). Останній **перебудовано** з `motion.button` → relative div + внутрішня кнопка + окрема absolute «×» (не вкладати interactive в interactive). Обидва: `AnimatePresence` exit (fade+scale, `useReducedMotion` миттєво), «×» `aria-label="Сховати"`.
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean. Деталі — `BRIEFS/M-CLI-03.md`.
+
+**⚠ HOTFIX (commit `e954f909`):** перша версія падала на мобілці (краш хуків). Я помилково поставив хуки ПІСЛЯ раннього `if (isLoading) return` (слідуючи наявному баговому розміщенню `useMemo`). На мобілці холодний рендер loading→loaded міняв кількість хуків → React «Rendered more hooks…» → error boundary/Vercel-екран. Десктоп не падав (дані кешовані, isLoading одразу false). Фікс: ранній return перенесено ПІСЛЯ всіх хуків. Drawer: `fixes/c61af153…`.
+
+**KEY:** (1) TTL+fingerprint dismiss = localStorage `{ts, fp}` + `useEffect`-залежність від `fp` (авто-reshow). Хук `useDismissable` reusable. (2) **Early return НІКОЛИ перед хуками** — усі `use*` нагорі компонента до будь-якого conditional return; інакше краш на холодному loading→loaded (часто лише мобілка/прод).
 
 ---
 
@@ -363,18 +381,16 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-CLI-03` — Клієнти: інфо-меседжі з dismiss 12год
+## ▶ NEXT: `M-CLI-04` — Клієнти: мобільні статуси/теги scroll UX
 
-**Тип:** NEW-FEATURE · **Скіл:** `senior-frontend` + патерн `mark-as-read-on-close` · **Модель:** Sonnet · **P2** · **Фаза 2** · A2 (Клієнти)
+**Тип:** REDESIGN (scroll UX) · **Скіл:** `scroll-experience` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2** · A2 (Клієнти)
 
-**Задача (з BACKLOG р.113):** блоки «Пора почистити базу» & «Потрібен follow up» — системні інфо-меседжі з **dismiss**; повертаються раз/12год **або при зміні даних**.
+**Задача (з BACKLOG р.114):** мобільні статуси/теги (горизонтальний скрол) — кнопки-перемикачі + індикація. → переюз `G-PWA-02` (`ScrollStrip`).
 
 **Підхід (кандидати на перевірку перед кодом):**
-1. Знайти блоки: «Пора почистити базу» — `ClientWidgets.tsx` «4. Cleanup Wizard» (`archiveCount > 0`, є зараз). «Потрібен follow up» — grep по «follow|нагадат» у clients/.
-2. Dismiss-стан: localStorage з TTL 12год (key per-block) + інвалідація при зміні даних (напр. `archiveCount` змінився → показати знову). Скіл `mark-as-read-on-close` — патерн закриття.
-3. Анімація dismiss: collapse/fade (emilkowalski-motion рівень, transform+opacity).
+1. Знайти горизонтальний стрип статусів/тегів: `ClientsPage.tsx` (retention/segments strip) — за G-PWA-02 нотаткою деякі стрипи вже мігровані на `ScrollStrip` (ClientsPage retention+segments). Перевірити, що саме лишилось без UX-індикації.
+2. Якщо вже на `ScrollStrip` — можливо задача закрита (як M-DASH-03 виявилась покритою G-PWA-02). Grep + перевірка перед кодом.
+3. Інакше — мігрувати на `components/shared/ScrollStrip.tsx` (fade + стрілки 1-крок + крапки на елемент), кнопки-перемикачі ≥44px.
 4. tsc + build.
 
-**Відкрите (уточнити на старті):** ключ TTL — localStorage чи БД (`seen_tours`-стиль)? «При зміні даних» — за яким сигналом саме повертати (новий клієнт у відтоку / зміна лічильника)?
-
-**KEY з M-CLI-02:** свайп-перемикач тепер статичний + горизонтальні індикатори. `useReducedMotion` + `panelVariants` патерн доступний у тому ж файлі для переюзу.
+**KEY з M-CLI-02/03:** `ScrollStrip` (G-PWA-02) — спільний примітив, не вигадувати. `useDismissable` хук готовий для майбутніх банерів. **Early return ТІЛЬКИ після хуків** (урок M-CLI-03 hotfix).

@@ -2,8 +2,8 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план: `BACKLOG.md`
 
-**Прогрес:** 20/77 ✅ · 1 ↩️ скасовано (M-DASH-11) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
-**▶ NEXT:** `M-CLI-03` — Клієнти: інфо-меседжі з dismiss 12год (senior-frontend + mark-as-read-on-close)
+**Прогрес:** 21/77 ✅ · 1 ↩️ скасовано (M-DASH-11) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
+**▶ NEXT:** `M-CLI-04` — Клієнти: мобільні статуси/теги scroll UX (scroll-experience + design-taste-frontend)
 > `M-DASH-12` додано поза беклогом (ad-hoc founder): вирівнювання висоти десктоп-блоків + кольори → total 76→77. **Вирівнювання висоти лишилось. РЕВІЗІЯ `676c191b` (2026-06-25): бари WeeklyChart відкочено з мультиколору до монохрому + поглиблено рампу обох віджетів (WeeklyChart + PeakHours) до сіро-чорної ~34→100%. Відкрите питання founder закрито.**
 > 🧪 **Мультиагент згорнуто (рішення founder 2026-06-25):** пілотна хвиля 1 (M-DASH-09 + M-SET-01) відпрацювала, але виграш ~break-even на дрібних задачах. Авто-нудж-хук + worktree baseRef прибрано. Машинерія описана в `PARALLEL_WORKFLOW.md` §7 — лишається як довідка, не активна.
 > `G-LAND-02` закрито поза чергою як тестовий прогін воркфлоу (Тір 0).
@@ -54,7 +54,7 @@
 | `M-DASH-09` | Дашборд десктоп: квадратний календар + реферали поряд | P1 | ✅ | `design-taste-frontend` + `impeccable (layout)` | **Sonnet** | `a0614a7c` (wave-1) |
 | `M-CLI-01` | Клієнти: grid-картки єдиний лейаут | P1 | ✅ | `impeccable (layout)` + `design-taste-frontend` | **Sonnet** | `94515808` |
 | `M-CLI-02` | Клієнти: віджет "Важливі/Амбасадори" свайп | P1 | ✅ | `emilkowalski-motion` | **Sonnet** | `72a92ac1` |
-| `M-CLI-03` | Клієнти: інфо-меседжі з dismiss 12год | P2 | ⬜ | `senior-frontend` + `mark-as-read-on-close` | **Sonnet** | — |
+| `M-CLI-03` | Клієнти: інфо-меседжі з dismiss 12год | P2 | ✅ | `senior-frontend` + `mark-as-read-on-close` | **Sonnet** | `10038f6b` |
 | `M-CLI-04` | Клієнти: мобільні статуси/теги scroll UX | P1 | ⬜ | `scroll-experience` + `design-taste-frontend` | **Sonnet** | — |
 | `M-CLI-05` | Клієнти: кольорова корекція карток (пастель) | P1 | ⬜ | `impeccable (distill + colorize)` | **Sonnet** | — |
 

@@ -15,12 +15,12 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 20/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-CLI-03 — Клієнти: інфо-меседжі з dismiss 12год (senior-frontend + mark-as-read-on-close · Sonnet)
+Прогрес: 21/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-CLI-04 — Клієнти: мобільні статуси/теги scroll UX (scroll-experience + design-taste-frontend · Sonnet) → переюз ScrollStrip (G-PWA-02), перевірити чи вже покрито
 Нотатки 2026-06-25:
-- M-CLI-02 закрито (commit 72a92ac1): віджет «Важливі/Амбасадори» — REDIRECT founder: картка статична (не рухається) + горизонтальні індикатори знизу. Потребує візуального QA.
-- M-CLI-01 закрито (commit 94515808): grid-картки єдиний лейаут — h-full + flex-1 + mt-auto у ClientGridCard.
-- M-DASH-12 ревізія (676c191b): бари WeeklyChart + PeakHours на монохромній рампі 34→100%. Відкрите питання founder закрито.
+- M-CLI-03 закрито (commit 10038f6b + hotfix e954f909): інфо-меседжі dismiss 12год, новий хук useDismissable. HOTFIX: краш хуків на мобілці (early return перед хуками) — урок: early return ТІЛЬКИ після всіх use*.
+- M-CLI-02 закрито (commit 72a92ac1): віджет «Важливі/Амбасадори» — REDIRECT founder: картка статична + горизонтальні індикатори знизу.
+- M-CLI-01 закрито (commit 94515808): grid-картки єдиний лейаут — h-full + flex-1 + mt-auto.
 
 Беклог = 3 зони: A. Майстер (57) · B. Клієнт (10) · C. Глобальне (7).
 Порядок виконання = фази (P0 баги → глобальні основи → майстер → клієнт → лендинг).
