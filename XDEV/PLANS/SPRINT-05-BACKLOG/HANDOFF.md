@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 22/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-CLI-05` — Клієнти: кольорова корекція карток (пастель)** (`impeccable` distill + colorize · Sonnet · P1)
+**Прогрес:** 23/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-CLI-06` — Сторінка клієнта (деталі) у CRM: глибокий редизайн** 🔄 (`design-taste-frontend` + `impeccable` · Sonnet · P1) — потребує QA-уточнень founder (пріоритетні секції: статистика/історія/теги/нотатки; напрям: картка-профіль чи аналітична сторінка)
 **Оновлено:** 2026-06-25
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,24 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-CLI-05` — Клієнти: кольорова корекція карток, пастель (P1) · commit `fa34fb9d`
+
+**Тип:** REDESIGN (colorize + distill) · **Скіл:** `impeccable` (colorize + distill) · **Модель:** Sonnet.
+
+**Контекст:** «Фіолетове тіло» ≠ `RETENTION_CONFIG` (там зелений/бірюза/помаранч/червоний). Фіолет = лавандова Frost `bento-card` поверхня + `primary`-акценти в тілі. Ключове відкриття: `.bento-card` (globals.css ~600) у Frost вже дає чисту поверхню + м'яку багатошарову тінь + 0.5px барвінковий hairline. Інлайн `border: 1px solid ret.color` + `background: ${ret.color}08` **перекривали** цю базу важчою рамкою+тінтом. Тобто «м'яка тінь» вже існувала — треба було просто прибрати перекриття, а не додавати нову тінь.
+
+**Рішення founder (AskUserQuestion):** (1) тіло = м'яка тінь (рідна bento-card) + дуже слабкий пастельний radial-glow у кольорі статусу; (2) статус-сигнал = текст-піл + glow, прибрати кольорову обводку аватара, іконки top-right лишити (вони = теги); (3) фіолет прибрати скрізь у тілі, включно зі Smart-кнопкою; accent лише на CTA «Записати»; (4) обсяг = обидві картки (grid + list).
+
+**Реалізація:**
+- **НОВИЙ хелпер `retentionGlow(color)` у `clientsUtils.tsx`** — `radial-gradient(125% 90% at 0% 0%, ${color}14 0%, transparent 58%)` (`14` hex ≈ 8% піку). Спільний для grid+list → не розсинхронити. Кут лівий-верхній (біля піла; ClientIconStack у правому-верхньому).
+- `ClientGridCard.tsx` + `ClientListRow.tsx`: прибрано інлайн `border`+`background` тінт → `style={{ backgroundImage: retentionGlow(ret.color) }}` поверх `var(--surface)` (backgroundImage не чіпає background-color класу). Прибрано `hover:shadow-md transition-shadow` (дубль bento-card hover-lift). Прибрано кольоровий ring-`<div>` навколо аватара (лишився нейтральний `boxShadow: 0 0 0 2px var(--background)`). Grid: число «Візитів» `text-primary→text-foreground`; Smart-кнопка primary→нейтраль (як Дзвінок); at_risk-бокс primary→`style` колір статусу (`${ret.color}0F` фон + ret.color текст/Zap через currentColor). List: Smart-кнопки (desktop+mobile) primary→нейтраль.
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean (grep mojibake all 3 files) · без нового copy (humanizer N/A). **Потребує візуального QA founder** (сила glow ~8% — якщо забагато/замало, крутиться однією зміною в `retentionGlow`). Деталі — `BRIEFS/M-CLI-05.md`.
+
+**KEY:** (1) перед тим як додавати «м'яку тінь» на bento-card — перевір що інлайн `style` не ПЕРЕКРИВАЄ рідну тінь класу; часто фікс = прибрати перекриття, не додати нове. (2) Пастельний body-glow без повернення тінту: `backgroundImage: radial-gradient(... ${color}~8% at corner, transparent)` поверх `var(--surface)` — backgroundImage не чіпає background-color, тінт точковий а не суцільний. Хелпер `retentionGlow` reusable для M-BOOK-01 (той самий патерн на картках записів). (3) Lucide колір без `style` на самій іконці — через `style={{color}}` на контейнері + currentColor inheritance.
 
 ---
 

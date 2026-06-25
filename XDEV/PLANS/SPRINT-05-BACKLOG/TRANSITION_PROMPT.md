@@ -15,9 +15,10 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 22/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-CLI-05 — Клієнти: кольорова корекція карток, пастель (impeccable distill + colorize · Sonnet)
+Прогрес: 23/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-CLI-06 — Сторінка клієнта (деталі) у CRM: глибокий редизайн 🔄 (design-taste-frontend + impeccable · Sonnet). ⚠ Має відкриті питання: пріоритетні секції (статистика/історія/теги/нотатки) + напрям (картка-профіль vs аналітична сторінка) — QA-уточнення ОБОВ'ЯЗКОВЕ перед кодом.
 Нотатки 2026-06-25:
+- M-CLI-05 закрито (commit fa34fb9d): кольорова корекція карток (grid+list) — пастельний radial-glow у кольорі статусу (новий retentionGlow() у clientsUtils), фіолет геть з тіла, accent лише на CTA. Потребує візуального QA founder (сила glow ~8%). Урок: інлайн style перекривав рідну м'яку тінь bento-card — фікс = прибрати перекриття.
 - M-CLI-04 закрито перевіркою (без коду): scroll-UX статусів/тегів вже покрито G-PWA-02 — ClientsPage.tsx обгортає retention-чіпи + сегменти в ScrollStrip. Як і M-DASH-03.
 - M-CLI-03 закрито (commit 10038f6b + hotfix e954f909): інфо-меседжі dismiss 12год, новий хук useDismissable. HOTFIX: краш хуків на мобілці (early return перед хуками) — урок: early return ТІЛЬКИ після всіх use*.
 - M-CLI-02 закрито (commit 72a92ac1): віджет «Важливі/Амбасадори» — REDIRECT founder: картка статична + горизонтальні індикатори знизу.
