@@ -7,6 +7,7 @@ import { getWeekRange } from '@/lib/utils/dates';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { TrendingUp, TrendingDown, Users, ChevronRight } from 'lucide-react';
 import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
+import { Sheet } from '@/components/ui/Sheet';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
 
 function fmtClientName(name: string): string {
@@ -130,11 +131,32 @@ function AvgCheckCard() {
   const prevWeek        = getWeekRange(-1);
   const { bookings: thisBookings, isLoading } = useBookings(from, to);
   const { bookings: prevBookings }            = useBookings(prevWeek.from, prevWeek.to);
+  const [open, setOpen] = useState(false);
 
   const thisAvg = useMemo(() => {
     const paid = (thisBookings ?? []).filter(b => b.status === 'completed');
     if (!paid.length) return 0;
     return Math.round(paid.reduce((s, b) => s + b.total_price, 0) / paid.length);
+  }, [thisBookings]);
+
+  const { breakdown, completedCount } = useMemo(() => {
+    const paid = (thisBookings ?? []).filter(b => b.status === 'completed');
+    const map = new Map<string, { count: number; revenue: number }>();
+    paid.forEach(b => b.services.forEach(s => {
+      const prev = map.get(s.name) ?? { count: 0, revenue: 0 };
+      map.set(s.name, { count: prev.count + 1, revenue: prev.revenue + s.price });
+    }));
+    const totalRevenue = [...map.values()].reduce((sum, v) => sum + v.revenue, 0);
+    const list = [...map.entries()]
+      .map(([name, v]) => ({
+        name,
+        count: v.count,
+        revenue: v.revenue,
+        avgPrice: v.count > 0 ? Math.round(v.revenue / v.count) : 0,
+        sharePct: totalRevenue > 0 ? Math.round((v.revenue / totalRevenue) * 100) : 0,
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+    return { breakdown: list, completedCount: paid.length };
   }, [thisBookings]);
 
   const prevAvg = useMemo(() => {
@@ -164,22 +186,34 @@ function AvgCheckCard() {
         </div>
       ) : (
         <div className="flex flex-col flex-1">
-          {/* Main metric */}
-          <p className="metric-value text-[1.6rem] font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
-            {thisAvg > 0 ? formatPrice(thisAvg) : '—'}
-          </p>
+          {/* Main metric — clickable → service breakdown overlay */}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-label="Розбивка середнього чека по послугах"
+            className="text-left rounded-xl -m-1 p-1 self-start transition-colors active:bg-[color-mix(in_srgb,var(--accent)_6%,transparent)]"
+          >
+            <span className="flex items-center gap-1">
+              <span className="metric-value text-[1.6rem] font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
+                {thisAvg > 0 ? formatPrice(thisAvg) : '—'}
+              </span>
+              <ChevronRight size={14} className="opacity-50 flex-shrink-0" style={{ color: 'var(--text-tertiary)' }} />
+            </span>
 
-          {/* Delta badge */}
-          {deltaPct !== null && (
-            <div
-              className="flex items-center gap-1 mt-1.5 text-[11px] font-bold"
-              style={{ color: isPositive ? 'var(--success)' : 'var(--error)' }}
-            >
-              {isPositive ? <TrendingUp size={10} strokeWidth={2} /> : <TrendingDown size={10} strokeWidth={2} />}
-              <span>{deltaPct > 0 ? '+' : ''}{deltaPct}%</span>
-              <span className="font-normal" style={{ color: 'var(--text-tertiary)' }}>vs минулий</span>
-            </div>
-          )}
+            {/* Delta badge */}
+            {deltaPct !== null && (
+              <span
+                className="flex items-center gap-1 mt-1.5 text-[11px] font-bold"
+                style={{ color: isPositive ? 'var(--success)' : 'var(--error)' }}
+              >
+                {isPositive ? <TrendingUp size={10} strokeWidth={2} /> : <TrendingDown size={10} strokeWidth={2} />}
+                <span>{deltaPct > 0 ? '+' : ''}{deltaPct}%</span>
+                <span className="font-normal" style={{ color: 'var(--text-tertiary)' }}>vs минулий</span>
+              </span>
+            )}
+          </button>
 
           {/* Comparison bars pinned to bottom */}
           {(thisAvg > 0 || prevAvg > 0) ? (
@@ -224,6 +258,63 @@ function AvgCheckCard() {
           )}
         </div>
       )}
+
+      <Sheet open={open} onOpenChange={setOpen} variant="adaptive" title="Середній чек цього тижня" maxWidth="md">
+        <div
+          className="flex items-end justify-between pb-3 mb-1"
+          style={{ borderBottom: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}
+        >
+          <div>
+            <p className="metric-value text-[1.5rem] font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
+              {thisAvg > 0 ? formatPrice(thisAvg) : '—'}
+            </p>
+            <p className="text-[12px] mt-1" style={{ color: 'var(--text-tertiary)' }}>середній чек</p>
+          </div>
+          <div className="text-right">
+            <p className="metric-value text-[1.1rem] font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
+              {completedCount}
+            </p>
+            <p className="text-[12px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
+              {pluralUk(completedCount, 'завершений', 'завершені', 'завершених')} {pluralUk(completedCount, 'запис', 'записи', 'записів')}
+            </p>
+          </div>
+        </div>
+
+        {breakdown.length > 0 ? (
+          <div className="flex flex-col">
+            {breakdown.map(s => (
+              <div
+                key={s.name}
+                className="py-3"
+                style={{ borderBottom: '1px solid color-mix(in srgb, var(--accent) 8%, transparent)' }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[14px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{s.name}</p>
+                  <span className="metric-value text-[13px] font-bold tabular-nums flex-shrink-0" style={{ color: 'var(--text-primary)' }}>
+                    {formatPrice(s.revenue)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mt-0.5">
+                  <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                    {s.count} × {formatPrice(s.avgPrice)}
+                  </p>
+                  <span className="text-[11px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>{s.sharePct}%</span>
+                </div>
+                <div className="h-[3px] rounded-full overflow-hidden mt-1.5" style={{ background: 'var(--border)' }}>
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${s.sharePct}%`, background: 'var(--accent)' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center py-10">
+            <p className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>Завершених записів цього тижня немає</p>
+            <p className="text-[13px] mt-1 max-w-[260px]" style={{ color: 'var(--text-tertiary)' }}>
+              Щойно завершите перші записи, тут буде видно, які послуги формують чек.
+            </p>
+          </div>
+        )}
+      </Sheet>
     </div>
   );
 }
