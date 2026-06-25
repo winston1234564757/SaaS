@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ChevronRight, Loader2, AlertCircle, CheckCircle2,
-  BarChart2, List, TrendingUp, Trophy,
+  List, TrendingUp, Trophy, CalendarPlus, Share2, Zap, Sparkles,
 } from 'lucide-react';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { formatPrice } from '@/components/master/services/types';
@@ -90,15 +90,63 @@ function isCurrentlyActive(b: BookingWithServices): boolean {
   return nowMins >= sh * 60 + sm && nowMins < eh * 60 + em;
 }
 
-function EmptyState({ view }: { view: ViewMode }) {
+const EMPTY_COPY: Record<ViewMode, { title: string; sub: string }> = {
+  today:    { title: 'Сьогодні поки вільно',        sub: 'Поділись посиланням, і клієнти запишуться самі.' },
+  tomorrow: { title: 'Завтра ще вільно',            sub: 'Саме час нагадати про себе. Закинь сторіс або акцію.' },
+  week:     { title: 'На тиждень записів ще немає', sub: 'Поділись посиланням і прогрій базу. Кілька дотиків, і слоти почнуть закриватись.' },
+};
+
+const SECONDARY_BTN: React.CSSProperties = {
+  background: 'color-mix(in srgb, var(--accent) 10%, var(--surface))',
+  border:     '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
+  color:      'var(--text-primary)',
+};
+
+function EmptyState({ view, onShare }: { view: ViewMode; onShare: () => void }) {
+  const { title, sub } = EMPTY_COPY[view];
   return (
-    <div className="flex items-center gap-2 px-4 py-5" style={{ color: 'var(--text-tertiary)' }}>
-      <BarChart2 size={14} strokeWidth={1.6} />
-      <span className="text-[12px]">
-        {view === 'today'    ? 'Записів на сьогодні немає'
-        : view === 'tomorrow' ? 'Завтра вільно'
-        : 'На тиждень записів немає'}
-      </span>
+    <div className="flex flex-1 flex-col items-center justify-center text-center gap-4 px-6 py-8 min-h-[260px]">
+      <div
+        className="flex items-center justify-center w-12 h-12 rounded-2xl"
+        style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}
+      >
+        <CalendarPlus size={22} strokeWidth={1.6} />
+      </div>
+
+      <div>
+        <p className="font-service text-[17px] leading-tight text-[var(--text-primary)]">{title}</p>
+        <p className="text-[13px] text-[var(--text-tertiary)] mt-1 max-w-[34ch] mx-auto leading-snug">{sub}</p>
+      </div>
+
+      <div className="w-full max-w-[300px] flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={onShare}
+          className="flex items-center justify-center gap-2 h-11 rounded-[14px] font-semibold text-[13px] active:scale-[0.96] transition-transform"
+          style={{ background: 'var(--accent)', color: 'var(--accent-on)', boxShadow: '0 3px 10px color-mix(in srgb, var(--accent) 22%, transparent)' }}
+        >
+          <Share2 size={15} strokeWidth={1.8} />
+          Поділитись посиланням
+        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            href="/dashboard/flash"
+            className="flex items-center justify-center gap-1.5 h-11 rounded-[14px] font-semibold text-[13px] active:scale-[0.96] transition-transform"
+            style={SECONDARY_BTN}
+          >
+            <Zap size={15} strokeWidth={1.8} />
+            Flash акція
+          </Link>
+          <Link
+            href="/dashboard/marketing"
+            className="flex items-center justify-center gap-1.5 h-11 rounded-[14px] font-semibold text-[13px] active:scale-[0.96] transition-transform"
+            style={SECONDARY_BTN}
+          >
+            <Sparkles size={15} strokeWidth={1.8} />
+            Сторіс
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
@@ -384,6 +432,22 @@ export function TodaySchedule() {
 
   const invalidateAll = () => invalidateBookingQueries(queryClient);
 
+  const handleShare = () => {
+    const slug = masterProfile?.slug;
+    if (!slug) {
+      showToast({ type: 'error', title: 'Сторінка ще не готова', message: 'Спочатку заверши налаштування профілю' });
+      return;
+    }
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://bookit.com.ua';
+    const url = `${origin}/${slug}`;
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({ title: 'Моя сторінка на Bookit', url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).catch(() => {});
+      showToast({ type: 'success', title: 'Посилання скопійовано' });
+    }
+  };
+
   const handleQuickComplete = (id: string) => {
     setCompletingId(id);
     startComplete(async () => {
@@ -418,11 +482,11 @@ export function TodaySchedule() {
     .reduce((s, b) => s + b.total_price, 0);
 
   return (
-    <div className="bento-card h-full">
+    <div className="bento-card h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <p className="text-[10px] font-bold tracking-[0.16em] text-[var(--text-tertiary)]">Записи</p>
+          <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[var(--text-tertiary)]">Записи</p>
           {!isLoading && (
             <span className="px-2 py-0.5 rounded-full bg-[var(--border)] metric-value text-[12px] font-bold text-[var(--text-tertiary)]">
               {filtered.length}
@@ -458,7 +522,7 @@ export function TodaySchedule() {
       </div>
 
       {/* Content */}
-      <div className="relative overflow-hidden w-full">
+      <div className="relative overflow-hidden w-full flex-1 flex flex-col">
         <AnimatePresence mode="popLayout">
           <motion.div
             key={`${display}-${view}`}
@@ -466,7 +530,7 @@ export function TodaySchedule() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-            className="w-full"
+            className="w-full flex-1 flex flex-col"
           >
             {display === 'list' ? (
               isLoading ? (
@@ -476,7 +540,7 @@ export function TodaySchedule() {
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
-                <EmptyState view={view} />
+                <EmptyState view={view} onShare={handleShare} />
               ) : view === 'week' ? (
                 (() => {
                   const groups: Record<string, typeof filtered> = {};
