@@ -358,8 +358,15 @@ function FrostDesktop({
 
       <FrostDivider />
 
-      <motion.div custom={6} variants={rise} initial="hidden" animate="visible" data-tour-step={8}>
-        <MonthlyCalendarWidget />
+      <motion.div custom={6} variants={rise} initial="hidden" animate="visible">
+        <div className="grid gap-4 items-start" style={{ gridTemplateColumns: 'minmax(0, 480px) 1fr' }}>
+          <div data-tour-step={8}>
+            <MonthlyCalendarWidget />
+          </div>
+          <div data-tour-step={14}>
+            <ReferralBoostWidget />
+          </div>
+        </div>
       </motion.div>
 
       <FrostDivider />
@@ -397,11 +404,6 @@ function FrostDesktop({
         <ClientAlertsWidget />
       </motion.div>
 
-      <FrostDivider />
-
-      <motion.div custom={10} variants={rise} initial="hidden" animate="visible" data-tour-step={14}>
-        <ReferralBoostWidget />
-      </motion.div>
 
     </div>
   );
