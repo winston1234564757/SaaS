@@ -1,6 +1,6 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-25 · Джерело: живий код (v9.0.0) · Останній код-коміт: `90260003` (PeakHours відкат до сіро-чорних, M-DASH-11 скасовано)
+> Оновлено: 2026-06-25 · Джерело: живий код (v9.0.0) · Останній код-коміт: `676c191b` (M-DASH-12 ревізія — бари WeeklyChart монохром + глибша рампа обох віджетів)
 > 
 > **⚡ Sprint-05 Status (ACTIVE):** 18/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-CLI-01` — Клієнти: grid-картки єдиний лейаут (impeccable layout) | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
