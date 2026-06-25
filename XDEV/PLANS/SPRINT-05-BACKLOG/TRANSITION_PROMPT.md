@@ -15,9 +15,10 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 21/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-CLI-04 — Клієнти: мобільні статуси/теги scroll UX (scroll-experience + design-taste-frontend · Sonnet) → переюз ScrollStrip (G-PWA-02), перевірити чи вже покрито
+Прогрес: 22/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-CLI-05 — Клієнти: кольорова корекція карток, пастель (impeccable distill + colorize · Sonnet)
 Нотатки 2026-06-25:
+- M-CLI-04 закрито перевіркою (без коду): scroll-UX статусів/тегів вже покрито G-PWA-02 — ClientsPage.tsx обгортає retention-чіпи + сегменти в ScrollStrip. Як і M-DASH-03.
 - M-CLI-03 закрито (commit 10038f6b + hotfix e954f909): інфо-меседжі dismiss 12год, новий хук useDismissable. HOTFIX: краш хуків на мобілці (early return перед хуками) — урок: early return ТІЛЬКИ після всіх use*.
 - M-CLI-02 закрито (commit 72a92ac1): віджет «Важливі/Амбасадори» — REDIRECT founder: картка статична + горизонтальні індикатори знизу.
 - M-CLI-01 закрито (commit 94515808): grid-картки єдиний лейаут — h-full + flex-1 + mt-auto.
