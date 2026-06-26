@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pencil, Trash2, Star, GripVertical } from 'lucide-react';
+import { Pencil, Trash2, Star, GripVertical, Eye } from 'lucide-react';
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils/cn';
@@ -17,12 +17,13 @@ interface ServiceCardProps {
   onEdit: (s: Service) => void;
   onDelete: (id: string) => void;
   onToggle: (id: string) => void;
+  onPreview: (s: Service) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   index: number;
   view?: ServiceView;
 }
 
-export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandleProps, index, view = 'grid' }: ServiceCardProps) {
+export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dragHandleProps, index, view = 'grid' }: ServiceCardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const enter = {
@@ -109,6 +110,19 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
     </Tooltip>
   );
 
+  const preview = (
+    <Tooltip content={<p className="text-xs text-foreground">Як цю послугу бачить клієнт</p>} position="top">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onPreview(service); }}
+        aria-label="Переглянути як бачить клієнт"
+        className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+      >
+        <Eye size={14} />
+      </button>
+    </Tooltip>
+  );
+
   // ─────────────────────────── LIST VIEW ───────────────────────────
   if (view === 'list') {
     return (
@@ -166,6 +180,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
         <div className="flex flex-col items-end justify-center gap-1.5 pl-1 pr-2 py-2 flex-shrink-0">
           <p className="metric-value text-sm text-foreground whitespace-nowrap">{formatPrice(service.price)}</p>
           <div className="flex items-center gap-0.5">
+            {preview}
             {editDelete}
             {toggle}
           </div>
@@ -238,7 +253,10 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, dragHandlePro
 
       {/* Footer — management actions */}
       <div className="flex items-center justify-between px-3 py-2 mt-auto border-t border-secondary/60">
-        {editDelete}
+        <div className="flex items-center gap-1">
+          {preview}
+          {editDelete}
+        </div>
         {toggle}
       </div>
     </motion.div>

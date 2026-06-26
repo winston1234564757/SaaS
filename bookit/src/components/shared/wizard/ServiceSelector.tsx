@@ -9,6 +9,7 @@ import { formatDurationFull } from '@/lib/utils/dates';
 import { fmt, slide } from './helpers';
 import type { WizardService } from './types';
 import { ServiceIcon } from '@/lib/service-icons';
+import { ServiceDetailSheet, type ServiceDetailData } from './ServiceDetailSheet';
 
 interface ServiceSelectorProps {
   services: WizardService[];
@@ -35,11 +36,13 @@ function CategoryCarousel({
   services,
   selectedServices,
   onToggle,
+  onDetail,
   c2cDiscountPct,
 }: {
   services: WizardService[];
   selectedServices: WizardService[];
   onToggle: (svc: WizardService) => void;
+  onDetail: (svc: WizardService) => void;
   c2cDiscountPct?: number | null;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -100,15 +103,9 @@ function CategoryCarousel({
             : svc.price;
 
           return (
-            <motion.button
+            <motion.div
               key={svc.id}
-              type="button"
-              whileTap={{ scale: 0.96 }}
-              onClick={() => onToggle(svc)}
-              data-testid="service-card"
-              aria-pressed={sel}
-              aria-label={`${svc.name}, ${formatDurationFull(svc.duration)}, ${fmt(price)}`}
-              className="flex-shrink-0 flex flex-col rounded-2xl overflow-hidden text-left cursor-pointer snap-start border w-[67%] sm:w-[40%]"
+              className="flex-shrink-0 flex flex-col rounded-2xl overflow-hidden snap-start border w-[67%] sm:w-[40%]"
               style={{
                 borderColor: sel ? 'var(--accent)' : 'var(--border)',
                 boxShadow: sel ? '0 0 0 1px var(--accent)' : undefined,
@@ -117,70 +114,91 @@ function CategoryCarousel({
                   : 'var(--surface)',
               }}
             >
-              {/* Photo / placeholder */}
-              <div
-                className="relative flex items-center justify-center overflow-hidden"
-                style={{
-                  minHeight: 108,
-                  background: sel
-                    ? 'color-mix(in srgb, var(--accent) 15%, var(--surface))'
-                    : 'color-mix(in srgb, var(--accent) 8%, var(--surface))',
-                }}
+              {/* Selectable area */}
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                onClick={() => onToggle(svc)}
+                data-testid="service-card"
+                aria-pressed={sel}
+                aria-label={`${svc.name}, ${formatDurationFull(svc.duration)}, ${fmt(price)}`}
+                className="flex flex-col flex-1 text-left cursor-pointer"
               >
-                {svc.image_url ? (
-                  <img
-                    src={svc.image_url}
-                    alt={svc.name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                ) : (
-                  <ServiceIcon name={svc.icon_name} size={40} className="text-primary/30" />
-                )}
-
-                {svc.popular && (
-                  <span className="absolute top-2 left-2.5 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/12 px-2 py-0.5 rounded-full">
-                    популярне
-                  </span>
-                )}
-
-                {/* Selection indicator */}
+                {/* Photo / placeholder */}
                 <div
-                  aria-hidden="true"
-                  className={`absolute top-2 right-2.5 size-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 ${
-                    sel ? 'bg-primary border-primary' : 'border-border/60 bg-background/50'
-                  }`}
+                  className="relative flex items-center justify-center overflow-hidden"
+                  style={{
+                    minHeight: 108,
+                    background: sel
+                      ? 'color-mix(in srgb, var(--accent) 15%, var(--surface))'
+                      : 'color-mix(in srgb, var(--accent) 8%, var(--surface))',
+                  }}
                 >
-                  {sel && <Check size={10} className="text-white" strokeWidth={3.5} />}
-                </div>
-              </div>
+                  {svc.image_url ? (
+                    <img
+                      src={svc.image_url}
+                      alt={svc.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <ServiceIcon name={svc.icon_name} size={40} className="text-primary/30" />
+                  )}
 
-              {/* Info */}
-              <div className="px-3 pt-2.5 pb-3 flex flex-col flex-1">
-                <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
-                  {svc.name}
-                </p>
-                <p className="text-[11px] text-muted-foreground/60 flex items-center gap-1 mt-1">
-                  <Clock size={9} />
-                  {formatDurationFull(svc.duration)}
-                </p>
-                <div className="mt-auto pt-2.5">
-                  {c2cDiscountPct ? (
-                    <>
-                      <p className={`text-base font-bold tabular-nums leading-tight ${sel ? 'text-primary' : 'text-foreground'}`}>
+                  {svc.popular && (
+                    <span className="absolute top-2 left-2.5 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/12 px-2 py-0.5 rounded-full">
+                      популярне
+                    </span>
+                  )}
+
+                  {/* Selection indicator */}
+                  <div
+                    aria-hidden="true"
+                    className={`absolute top-2 right-2.5 size-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 ${
+                      sel ? 'bg-primary border-primary' : 'border-border/60 bg-background/50'
+                    }`}
+                  >
+                    {sel && <Check size={10} className="text-white" strokeWidth={3.5} />}
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="px-3 pt-2.5 pb-3 flex flex-col flex-1">
+                  <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
+                    {svc.name}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/60 flex items-center gap-1 mt-1">
+                    <Clock size={9} />
+                    {formatDurationFull(svc.duration)}
+                  </p>
+                  <div className="mt-auto pt-2.5">
+                    {c2cDiscountPct ? (
+                      <>
+                        <p className={`text-base font-bold tabular-nums leading-tight ${sel ? 'text-primary' : 'text-foreground'}`}>
+                          {fmt(price)}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50 line-through leading-none mt-0.5">
+                          {fmt(svc.price)}
+                        </p>
+                      </>
+                    ) : (
+                      <p className={`text-base font-bold tabular-nums ${sel ? 'text-primary' : 'text-foreground'}`}>
                         {fmt(price)}
                       </p>
-                      <p className="text-[10px] text-muted-foreground/50 line-through leading-none mt-0.5">
-                        {fmt(svc.price)}
-                      </p>
-                    </>
-                  ) : (
-                    <p className={`text-base font-bold tabular-nums ${sel ? 'text-primary' : 'text-foreground'}`}>
-                      {fmt(price)}
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.button>
+              </motion.button>
+
+              {/* Detail trigger — separate from tap-to-select */}
+              <button
+                type="button"
+                onClick={() => onDetail(svc)}
+                aria-label={`Детальніше про послугу ${svc.name}`}
+                className="shrink-0 py-2.5 text-center text-xs font-bold uppercase tracking-wider bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98] transition-colors cursor-pointer"
+              >
+                Детальніше
+              </button>
+            </motion.div>
           );
         })}
       </div>
@@ -250,6 +268,25 @@ export function ServiceSelector({
 }: ServiceSelectorProps & { c2cDiscountPct?: number | null }) {
   const categories = [...new Set(services.map(s => s.category))];
   const canGoToDatetime = selectedServices.length > 0;
+  const [detailService, setDetailService] = useState<WizardService | null>(null);
+
+  const detailData: ServiceDetailData | null = detailService
+    ? {
+        id: detailService.id,
+        name: detailService.name,
+        category: detailService.category,
+        price: detailService.price,
+        duration: detailService.duration,
+        description: detailService.description ?? null,
+        imageUrl: detailService.image_url ?? null,
+        iconName: detailService.icon_name,
+        popular: detailService.popular,
+      }
+    : null;
+  const detailSelected = !!detailService && selectedServices.some(s => s.id === detailService.id);
+  const detailDiscounted = detailService && c2cDiscountPct
+    ? Math.round(detailService.price * (1 - c2cDiscountPct / 100))
+    : null;
 
   return (
     <motion.div key="services" custom={direction} variants={slide}
@@ -277,6 +314,7 @@ export function ServiceSelector({
                   services={services.filter(s => s.category === cat)}
                   selectedServices={selectedServices}
                   onToggle={onToggle}
+                  onDetail={setDetailService}
                   c2cDiscountPct={c2cDiscountPct}
                 />
               </div>
@@ -445,6 +483,16 @@ export function ServiceSelector({
           </button>
         )}
       </div>
+
+      <ServiceDetailSheet
+        open={!!detailService}
+        onOpenChange={(o) => { if (!o) setDetailService(null); }}
+        service={detailData}
+        mode="client"
+        isSelected={detailSelected}
+        onSelect={() => { if (detailService) onToggle(detailService); }}
+        discountedPrice={detailDiscounted}
+      />
     </motion.div>
   );
 }

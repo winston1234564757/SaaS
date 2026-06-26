@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, Plus, Scissors, LayoutGrid, List } from 'lucide-react';
 import type { DropResult } from '@hello-pangea/dnd';
-import { type Service, CATEGORIES } from './types';
+import { type Service, CATEGORIES, formatPrice } from './types';
 import { ServiceCard, type ServiceView } from './ServiceCard';
+import { ServiceDetailSheet, type ServiceDetailData } from '@/components/shared/wizard/ServiceDetailSheet';
 import { cn } from '@/lib/utils/cn';
 import { useServices, type ServiceRow } from '@/lib/supabase/hooks/useServices';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
@@ -122,6 +123,21 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
     router.push(`/dashboard/services/${s.id}`);
   }
 
+  const [previewService, setPreviewService] = useState<Service | null>(null);
+  const previewData: ServiceDetailData | null = previewService
+    ? {
+        id: previewService.id,
+        name: previewService.name,
+        category: previewService.category,
+        price: previewService.price,
+        duration: previewService.duration,
+        description: previewService.description ?? null,
+        imageUrl: previewService.imageUrl ?? null,
+        iconName: previewService.icon_name,
+        popular: previewService.popular,
+      }
+    : null;
+
   const activeServices = services.filter(s => s.active).length;
 
   const groupedContent = (withDnd: boolean) => (
@@ -153,6 +169,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
                             onEdit={openEditService}
                             onDelete={deleteService}
                             onToggle={id => toggleService(id, s.active)}
+                            onPreview={setPreviewService}
                           />
                         </div>
                       )}
@@ -173,6 +190,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
                   onEdit={openEditService}
                   onDelete={deleteService}
                   onToggle={id => toggleService(id, s.active)}
+                  onPreview={setPreviewService}
                 />
               ))}
             </div>
@@ -266,6 +284,14 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
       </div>
 
       <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
+
+      <ServiceDetailSheet
+        open={!!previewService}
+        onOpenChange={(o) => { if (!o) setPreviewService(null); }}
+        service={previewData}
+        mode="master"
+        formatPrice={formatPrice}
+      />
     </div>
   );
 }
