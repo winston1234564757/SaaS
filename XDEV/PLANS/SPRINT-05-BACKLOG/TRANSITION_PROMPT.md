@@ -15,8 +15,10 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 28/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-BOOK-05 — Записи: сторінка деталі запису, редизайн 🔄 (design-taste-frontend + impeccable · Sonnet→Opus · P1). Ціль = BookingDetailsModal.tsx. REDESIGN → скрін + Task Brief + QA перед кодом.
+Прогрес: 29/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-SVC-02 — Послуги: картки у стилі маркетплейсу (design-taste-frontend + impeccable · Sonnet · P1). REDESIGN → скрін + Task Brief + QA перед кодом.
+Нотатки 2026-06-26 (M-BOOK-05):
+- M-BOOK-05 закрито (commit 0ebd850b, очікує візуального QA): деталь запису лишилась adaptive Sheet (не route — той самий патерн ClientDetailSheet). Receipt-картка (hero serif-дата + час tabular + source-чіп → пунктир → рядки → «Разом» serif 3xl) + новий status-outcome блок для термінальних (status_changed_at + cancellation_reason — раніше мертві поля хука) + термінальні дії «Записати знову» (UrlActionBus booking:create+clientId) / «Профіль клієнта». a11y: пастельний статус-колір як bold-текст провалив контраст (<4.5) → text-foreground, колір лишився на іконці. Урок: звіряй що хук віддає vs що екран показує.
 Нотатки 2026-06-26 (M-BOOK-03+04):
 - M-BOOK-03+04 закрито (commit 757bcb89, deploy READY): 4 верхні bookings-віджети → клікабельні кнопки + adaptive Sheet з розбивкою; усі елементи overlay ведуть на main-елемент (клієнт→/dashboard/clients?clientPhone, запис→?bookingId — router-навігація, не інлайн-сіти). Нуль нових запитів (DashboardWidgets рахує з bookings; хук +totalBookedMinutes/totalWorkingMinutes). M-BOOK-04: кнопка «Новий запис» a11y (aria-label+текст) + компактний pill ~70/30. Урок: «все клікабельне→main-елемент» = router на канонічну сторінку сутності; «зроби справжню кнопку» ≠ завжди div→button (перевір, чи вже button; вада могла бути a11y/розмір).
 Нотатки 2026-06-26 (M-BOOK-02):

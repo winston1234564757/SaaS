@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 28/77 ✅ · 1 ↩️ скасовано (… · `M-CLI-06` · `M-BOOK-02` · `M-BOOK-03` · `M-BOOK-04`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-BOOK-05` — Записи: сторінка деталі запису — редизайн 🔄** (`design-taste-frontend` + `impeccable` · Sonnet→Opus · P1)
+**Прогрес:** 29/77 ✅ · 1 ↩️ скасовано (… · `M-CLI-06` · `M-BOOK-02` · `M-BOOK-03` · `M-BOOK-04` · `M-BOOK-05`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-SVC-02` — Послуги: картки у стилі маркетплейсу** (`design-taste-frontend` + `impeccable` · Sonnet · P1) · REDESIGN
 **Оновлено:** 2026-06-26
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,28 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-BOOK-05` — Записи: деталь запису, редизайн 🔄 (P1) · commit `0ebd850b`
+
+**Тип:** REDESIGN · **Скіл:** `design-taste-frontend` · **Модель:** Sonnet→Opus.
+
+**Рішення founder (AskUserQuestion 4/4):** (1) лишити Sheet, не route; (2) Receipt + bold hero; (3) термінальні дії «Записати знову» + «Профіль клієнта»; (4) показувати причину+час зміни статусу.
+
+**Контекст:** «Сторінка деталі запису» — насправді НЕ route. Це `BookingDetailsModal.tsx` у adaptive `Sheet` (mobile drawer / desktop dialog), відкривається через `?bookingId=`. Той самий патерн, що `ClientDetailSheet` (M-CLI-06). Ключове відкриття: хук `useBookingById` уже віддає `status_changed_at` + `cancellation_reason`, але вони НІДЕ не показувались — мертвий контент саме для скасованого/завершеного запису.
+
+**Реалізація (тільки `BookingDetailsModal.tsx`):**
+- **RECEIPT-картка** (`bento-card overflow-hidden`): hero band з glow за статусом («Запис на» + serif-дата 26px + час/тривалість `tabular-nums` + source-чіп) → пунктир → рядки послуг/товарів (`tabular-nums` ціни) → пунктир-2 → «Разом» serif 3xl + PricingBadge/Ambassador.
+- **Status-outcome блок** (термінальні): кольорова іконка (CheckCircle2/Ban/XCircle) + «Завершено/Скасовано/Клієнт не прийшов» + `formatDateTime(status_changed_at)` + `cancellation_reason` для скасованих.
+- **Термінальні дії** замість глухого кута: «Записати знову» (primary, `router.replace('?_action=booking:create&clientId=…')` через наявний `UrlActionBus` — BookingsPage підписаний) + «Профіль клієнта» (`clients?clientPhone`). Walk-in без `client_id` → лише «Записати знову» full-width. +«Відкрити» профіль на картці клієнта і для активних статусів.
+- Identity header (shared) без glow → glow перенесено на receipt-hero (один кольоровий момент, без подвоєння).
+
+**a11y (зловив реальний баг):** статус-лейбл спершу був bold у `statusColor` на власному 6%-тінті → контраст completed 2.45 / cancelled 3.31 / no_show 2.26 (треба 4.5). Виправлено → `text-foreground`; колір лишився лише на іконці (декоративно). Решта hex у файлі — лише іконки.
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean (×=U+00D7 навмисно, не mojibake) · ReschedulePanel/бекенд/хук не чіпано · прибрано 3 мертві імпорти. **Очікує візуального QA founder** (mobile drawer + desktop dialog, особливо подвійний пунктир + serif-total + outcome на скасованому). Деталі — `BRIEFS/M-BOOK-05.md`.
+
+**KEY:** (1) пастельні `BOOKING_STATUS_CONFIG`-кольори НЕ годяться як bold-текст навіть на власному тінті — усі <4.5:1; статус сигналь іконкою+фоном, текст лишай `text-foreground`. (2) Термінальний запис ≠ глухий кут: re-book через наявний `UrlActionBus` (booking:create + clientId) = нуль нового plumbing. (3) Звіряй що хук ВІДДАЄ vs що екран ПОКАЗУЄ — `status_changed_at`/`cancellation_reason` приходили давно, але були невидимі.
 
 ---
 
