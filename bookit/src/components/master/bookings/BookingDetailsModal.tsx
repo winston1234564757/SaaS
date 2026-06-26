@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  X, Clock, Phone, Globe, PenLine, Calendar,
-  CheckCircle2, XCircle, Star, Save, Loader2,
+  Clock, Globe, PenLine, Calendar,
+  CheckCircle2, XCircle, Star, Loader2, Ban, RotateCcw, ChevronRight,
   TrendingUp, ShoppingBag, CalendarClock, Heart, FlaskConical,
 } from 'lucide-react';
+import { Sheet } from '@/components/ui/Sheet';
 import { ClientIdentityHeader } from '@/components/master/clients/ClientIdentityHeader';
 import { ClientStatChips, type StatChip } from '@/components/master/clients/ClientStatChips';
 import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
@@ -27,6 +28,7 @@ import {
 import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { BookingStatus } from '@/types/database';
 import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
+import { statusGlow } from '@/lib/utils/statusGlow';
 
 const UA_MONTHS = [
   'січня','лютого','березня','квітня','травня','червня',
@@ -37,6 +39,14 @@ const UA_DAYS_SHORT = ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
 function formatDate(dateStr: string) {
   const d = new Date(dateStr + 'T00:00:00');
   return `${d.getDate()} ${UA_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** Час+дата для status_changed_at (timestamptz ISO). Напр.: «12 червня, 14:30». */
+function formatDateTime(iso: string) {
+  const d = new Date(iso);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${d.getDate()} ${UA_MONTHS[d.getMonth()]}, ${hh}:${mm}`;
 }
 
 function toISOLocal(d: Date): string {
@@ -339,8 +349,6 @@ function ReschedulePanel({
 
 // ── Main Modal ────────────────────────────────────────────────────────────────
 
-import { Sheet } from '@/components/ui/Sheet';
-
 export function BookingDetailsModal() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -416,11 +424,32 @@ export function BookingDetailsModal() {
   }, [notes, notesDirty, saveMasterNotesAsync]);
 
   const canAct = displayBooking && ['pending', 'confirmed'].includes(displayBooking.status);
+  const isTerminal = !!displayBooking && ['completed', 'cancelled', 'no_show'].includes(displayBooking.status);
+  const clientId = displayBooking?.client_id ?? null;
+  const cfg = displayBooking ? BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus] : undefined;
+  const statusColor = cfg?.color ?? '#789A99';
+
   const UNIT_LABEL_MODAL: Record<'pcs' | 'ml' | 'g', string> = { pcs: 'шт', ml: 'мл', g: 'г' };
   const { data: bookingConsumables = [] } = useConsumablesForBooking(
     displayBooking?.status === 'confirmed' ? (bookingId ?? null) : null
   );
   const durationMinutes = displayBooking?.services.reduce((acc: number, s: any) => acc + s.duration, 0) || 0;
+
+  // «Записати знову» — переюз UrlActionBus (BookingsPage підписаний на booking:create).
+  // Одна навігація: прибирає bookingId і тригерить майстер запису з pre-fill клієнта.
+  const handleRebook = () => {
+    setIsModalOpen(false);
+    const params = new URLSearchParams();
+    params.set('_action', 'booking:create');
+    if (clientId) params.set('clientId', clientId);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleOpenProfile = () => {
+    if (!displayBooking) return;
+    setIsModalOpen(false);
+    router.push(`/dashboard/clients?clientPhone=${encodeURIComponent(displayBooking.client_phone)}`);
+  };
 
   return (
     <Sheet
@@ -429,78 +458,185 @@ export function BookingDetailsModal() {
       title="Деталі запису"
     >
       {isLoading && !displayBooking ? (
-        <div className="flex justify-center items-center py-16">
-          <Loader2 size={24} className="text-primary animate-spin" />
+        <div className="flex flex-col gap-4 animate-pulse" aria-busy="true">
+          <div className="h-20 rounded-3xl bg-secondary/50" />
+          <div className="h-56 rounded-3xl bg-secondary/50" />
+          <div className="h-24 rounded-3xl bg-secondary/50" />
         </div>
       ) : !displayBooking ? (
-        <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground/60">
-          <Loader2 size={20} className="animate-spin opacity-20" />
-          <p className="text-xs font-medium">Дані не знайдено</p>
+        <div className="flex flex-col items-center justify-center py-14 gap-3 text-muted-foreground/60">
+          <CalendarClock size={30} className="opacity-25" />
+          <p className="text-sm font-medium">Запис не знайдено</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           {/* Identity Header (спільний ClientIdentityHeader — M-CLI-06) */}
           <ClientIdentityHeader
             name={displayBooking.client_name}
             phone={displayBooking.client_phone}
-            glowColor={BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.color || '#789A99'}
             statusPill={
               <span
                 className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0"
-                style={{ color: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.color || '#789A99', background: BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.bg || '#789A9910' }}
+                style={{ color: statusColor, background: cfg?.bg || '#789A9910' }}
               >
-                {BOOKING_STATUS_CONFIG[displayBooking.status as BookingStatus]?.label || displayBooking.status}
+                {cfg?.label || displayBooking.status}
               </span>
             }
           />
 
-          {/* Time & Info card */}
-          <div className="bg-secondary/40 rounded-3xl p-5 border border-border/60 shadow-sm flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Дата та час</p>
-                <p className="text-sm font-bold text-foreground">{formatDate(displayBooking.date)}</p>
-              </div>
-              <div className="text-right flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Вікно</p>
-                <div className="flex items-center gap-1.5 font-bold text-foreground text-sm">
-                  <Clock size={14} className="text-primary opacity-60" />
-                  {displayBooking.start_time} — {displayBooking.end_time}
+          {/* RECEIPT — bold hero (дата/час/статус) + склад замовлення + total */}
+          <div className="bento-card overflow-hidden">
+            {/* Hero band */}
+            <div className="px-5 pt-5 pb-4" style={{ backgroundImage: statusGlow(statusColor) }}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 mb-1.5">Запис на</p>
+                  <p className="heading-serif text-[26px] leading-[1.05] text-foreground">{formatDate(displayBooking.date)}</p>
+                  <div className="flex items-center gap-1.5 mt-2 text-sm font-bold text-foreground">
+                    <Clock size={14} className="text-primary opacity-70 shrink-0" />
+                    <span className="tabular-nums">{displayBooking.start_time} — {displayBooking.end_time}</span>
+                    {durationMinutes > 0 && (
+                      <span className="text-muted-foreground/60 font-medium">· {formatDurationFull(durationMinutes)}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="shrink-0">
+                  {displayBooking.source === 'manual' ? (
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground/70 bg-secondary/60 px-2.5 py-1 rounded-full">
+                      <PenLine size={11} /> Вручну
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                      <Globe size={11} /> Онлайн
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-dashed border-border/60">
-              <div className="flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Джерело</p>
-                {displayBooking.source === 'manual' ? (
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/60">
-                    <PenLine size={12} /> Ручний запис
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-primary">
-                    <Globe size={12} /> Онлайн запис
-                  </span>
-                )}
+            {/* Line items */}
+            {(displayBooking.services.length > 0 || (displayBooking.products && displayBooking.products.length > 0)) && (
+              <>
+                <div className="border-t border-dashed border-border/70 mx-5" />
+                <div className="px-5 py-4 flex flex-col gap-3">
+                  {displayBooking.services.map((s: any, i: number) => (
+                    <div key={`s-${i}`} className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <Clock size={14} className="text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{s.name}</p>
+                          <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{formatDurationFull(s.duration)}</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-bold text-foreground shrink-0 tabular-nums">{formatPrice(s.price)}</span>
+                    </div>
+                  ))}
+
+                  {(displayBooking.products ?? []).length > 0 && (
+                    <>
+                      <div className="border-t border-dashed border-border/50 my-0.5" />
+                      {displayBooking.products!.map((p: any, i: number) => (
+                        <div key={`p-${i}`} className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="size-8 rounded-xl bg-secondary/60 flex items-center justify-center shrink-0">
+                              <ShoppingBag size={14} className="text-muted-foreground" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{p.name}</p>
+                              <p className="text-[10px] font-medium text-muted-foreground/60">× {p.quantity}</p>
+                            </div>
+                          </div>
+                          <span className="text-sm font-bold text-foreground shrink-0 tabular-nums">{formatPrice(p.price * p.quantity)}</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Total */}
+            <div className="px-5 pb-5 pt-4 border-t-2 border-dashed border-border/70">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Разом</span>
+                <span className="heading-serif text-3xl text-foreground tabular-nums">{formatPrice(displayBooking.total_price)}</span>
               </div>
-              <div className="flex flex-col gap-1 items-end">
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Зв'язок</p>
-                <a
-                  href={`tel:${displayBooking.client_phone}`}
-                  className="flex items-center gap-1.5 text-primary font-bold hover:text-primary/90 transition-colors text-sm"
-                >
-                  <Phone size={14} /> Зателефонувати
-                </a>
-              </div>
+              {displayBooking.dynamic_pricing_label && (
+                <div className="mt-3">
+                  {displayBooking.dynamic_pricing_label.includes('Бартерна') ? (
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-sage bg-sage/10 px-3 py-2 rounded-xl border border-sage/20 leading-tight">
+                      <Heart size={14} className="fill-primary text-primary shrink-0" />
+                      <span>
+                        Знижка Ambassador: <span className="text-primary">{displayBooking.client_name}</span> запросив тебе у Bookit <Heart size={10} className="inline-block fill-primary text-primary ml-0.5 mb-0.5" />
+                      </span>
+                    </div>
+                  ) : (
+                    <PricingBadge dynamicLabel={displayBooking.dynamic_pricing_label} size="md" />
+                  )}
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Підсумок статусу (термінальні): коли + причина (дані з useBookingById) */}
+          {isTerminal && (
+            <div
+              className="rounded-3xl p-4 flex items-start gap-3"
+              style={{ background: `${statusColor}0F`, border: `1px solid ${statusColor}22` }}
+            >
+              <div className="size-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${statusColor}1A` }}>
+                <span style={{ color: statusColor }}>
+                  {displayBooking.status === 'completed'
+                    ? <CheckCircle2 size={16} />
+                    : displayBooking.status === 'cancelled'
+                    ? <Ban size={16} />
+                    : <XCircle size={16} />}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-bold text-foreground">
+                    {displayBooking.status === 'completed'
+                      ? 'Завершено'
+                      : displayBooking.status === 'cancelled'
+                      ? 'Скасовано'
+                      : 'Клієнт не прийшов'}
+                  </p>
+                  {displayBooking.status_changed_at && (
+                    <span className="text-[11px] font-medium text-muted-foreground/60">
+                      {formatDateTime(displayBooking.status_changed_at)}
+                    </span>
+                  )}
+                </div>
+                {displayBooking.status === 'cancelled' && displayBooking.cancellation_reason && (
+                  <p className="text-xs text-foreground/70 mt-1 leading-relaxed">
+                    <span className="text-muted-foreground/60">Причина: </span>
+                    {displayBooking.cancellation_reason}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Профіль клієнта (спільний ClientStatChips — M-CLI-06) */}
           {displayLtv && (
             <div className="bento-card p-5">
-              <div className="flex items-center gap-1.5 mb-4">
-                <TrendingUp size={14} className="text-primary opacity-60" />
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Профіль клієнта</p>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp size={14} className="text-primary opacity-60" />
+                  <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Профіль клієнта</p>
+                </div>
+                {clientId && (
+                  <button
+                    type="button"
+                    onClick={handleOpenProfile}
+                    className="flex items-center gap-0.5 text-[11px] font-bold text-primary hover:text-primary/80 active:scale-95 transition-all"
+                  >
+                    Відкрити <ChevronRight size={13} />
+                  </button>
+                )}
               </div>
               <ClientStatChips
                 chips={[
@@ -509,72 +645,6 @@ export function BookingDetailsModal() {
                   { icon: Star, label: 'Сер. чек', value: formatPrice(displayLtv.average_check), color: '#B45309' },
                 ] satisfies StatChip[]}
               />
-            </div>
-          )}
-
-          {/* Order details */}
-          {(displayBooking.services.length > 0 || (displayBooking.products && displayBooking.products.length > 0)) && (
-            <div className="bg-secondary/40 rounded-xl p-5 border border-border shadow-sm">
-              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-4">Склад замовлення</p>
-
-              <div className="flex flex-col gap-3">
-                {displayBooking.services.map((s: any, i: number) => (
-                  <div key={i} className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <Clock size={14} className="text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate">{s.name}</p>
-                        <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{formatDurationFull(s.duration)}</p>
-                      </div>
-                    </div>
-                    <span className="text-sm font-bold text-foreground shrink-0">{formatPrice(s.price)}</span>
-                  </div>
-                ))}
-
-                {(displayBooking.products ?? []).length > 0 && (
-                  <>
-                    <div className="border-t border-dashed border-border/60 my-1" />
-                    {displayBooking.products!.map((p: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="size-8 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
-                            <ShoppingBag size={14} className="text-muted-foreground" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold text-foreground truncate">{p.name}</p>
-                            <p className="text-[10px] font-medium text-muted-foreground/60">Кількість: {p.quantity}</p>
-                          </div>
-                        </div>
-                        <span className="text-sm font-bold text-foreground shrink-0">{formatPrice(p.price * p.quantity)}</span>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-
-              {/* Total */}
-              <div className="mt-5 pt-4 border-t-2 border-border/60">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">Разом до сплати</span>
-                  <span className="text-2xl font-extrabold text-foreground">{formatPrice(displayBooking.total_price)}</span>
-                </div>
-                {displayBooking.dynamic_pricing_label && (
-                  <div className="mt-3">
-                    {displayBooking.dynamic_pricing_label.includes('Бартерна') ? (
-                      <div className="flex items-center gap-2 text-[11px] font-bold text-sage bg-sage/10 px-3 py-2 rounded-xl border border-sage/20 leading-tight">
-                        <Heart size={14} className="fill-primary text-primary shrink-0" />
-                        <span>
-                          Знижка Ambassador: <span className="text-primary">{displayBooking.client_name}</span> запросив тебе у Bookit <Heart size={10} className="inline-block fill-primary text-primary ml-0.5 mb-0.5" />
-                        </span>
-                      </div>
-                    ) : (
-                      <PricingBadge dynamicLabel={displayBooking.dynamic_pricing_label} size="md" />
-                    )}
-                  </div>
-                )}
-              </div>
             </div>
           )}
 
@@ -601,11 +671,11 @@ export function BookingDetailsModal() {
             {displayBooking.notes && (
               <div className="bg-primary/5 rounded-3xl p-4 border border-primary/10">
                 <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1.5">Коментар клієнта</p>
-                <p className="text-sm text-foreground/80 italic font-medium leading-relaxed">"{displayBooking.notes}"</p>
+                <p className="text-sm text-foreground/80 italic font-medium leading-relaxed">&laquo;{displayBooking.notes}&raquo;</p>
               </div>
             )}
 
-            <div className="bg-secondary/40 rounded-xl p-5 border border-border shadow-sm">
+            <div className="bg-secondary/40 rounded-3xl p-5 border border-border shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Нотатки майстра</p>
                 {isAutoSaving && (
@@ -626,9 +696,9 @@ export function BookingDetailsModal() {
             </div>
           </div>
 
-          {/* Status actions */}
+          {/* Active management actions */}
           {canAct && (
-            <div className="bg-secondary/40 rounded-xl p-5 border border-border shadow-sm">
+            <div className="bg-secondary/40 rounded-3xl p-5 border border-border shadow-sm">
               <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-4">Керування записом</p>
 
               {showReschedule ? (
@@ -693,10 +763,34 @@ export function BookingDetailsModal() {
                       disabled={isUpdatingStatus}
                       className="col-span-2 flex items-center justify-center gap-2 py-4 rounded-xl bg-secondary/60 border border-border text-muted-foreground/60 hover:text-muted-foreground text-sm font-bold transition-all disabled:opacity-50 active:scale-[0.95]"
                     >
-                      Клієнт не з'явився
+                      Клієнт не прийшов
                     </button>
                   )}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Terminal-status next steps — заміна «глухого кута» */}
+          {isTerminal && (
+            <div className={`grid gap-2.5 ${clientId ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <button
+                type="button"
+                onClick={handleRebook}
+                className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-primary text-white text-sm font-bold transition-all hover:bg-primary/90 active:scale-[0.95]"
+              >
+                <RotateCcw size={16} />
+                Записати знову
+              </button>
+              {clientId && (
+                <button
+                  type="button"
+                  onClick={handleOpenProfile}
+                  className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-secondary/60 border border-border text-foreground text-sm font-bold transition-all hover:bg-secondary active:scale-[0.95]"
+                >
+                  Профіль клієнта
+                  <ChevronRight size={16} />
+                </button>
               )}
             </div>
           )}
