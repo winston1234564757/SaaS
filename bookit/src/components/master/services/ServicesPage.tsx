@@ -4,10 +4,11 @@ import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Plus, Scissors } from 'lucide-react';
+import { AlertTriangle, Plus, Scissors, LayoutGrid, List } from 'lucide-react';
 import type { DropResult } from '@hello-pangea/dnd';
 import { type Service, CATEGORIES } from './types';
-import { ServiceCard } from './ServiceCard';
+import { ServiceCard, type ServiceView } from './ServiceCard';
+import { cn } from '@/lib/utils/cn';
 import { useServices, type ServiceRow } from '@/lib/supabase/hooks/useServices';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
 import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
@@ -71,6 +72,16 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
+  const [view, setView] = useState<ServiceView>('grid');
+  useEffect(() => {
+    const saved = localStorage.getItem('services_view');
+    if (saved === 'list' || saved === 'grid') setView(saved);
+  }, []);
+  function changeView(v: ServiceView) {
+    setView(v);
+    try { localStorage.setItem('services_view', v); } catch { /* private mode */ }
+  }
+
   const router = useRouter();
   const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('services_v1', SERVICES_STEPS);
 
@@ -124,7 +135,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2"
+                  className={cn("mt-2", view === 'list' ? "flex flex-col gap-2" : "grid grid-cols-1 md:grid-cols-2 gap-3")}
                 >
                   {items.map((s, i) => (
                     <Draggable key={s.id} draggableId={s.id} index={i}>
@@ -137,6 +148,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
                           <ServiceCard
                             service={s}
                             index={i}
+                            view={view}
                             dragHandleProps={prov.dragHandleProps}
                             onEdit={openEditService}
                             onDelete={deleteService}
@@ -151,12 +163,13 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
               )}
             </Droppable>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+            <div className={cn("mt-2", view === 'list' ? "flex flex-col gap-2" : "grid grid-cols-1 md:grid-cols-2 gap-3")}>
               {items.map((s, i) => (
                 <ServiceCard
                   key={s.id}
                   service={s}
                   index={i}
+                  view={view}
                   onEdit={openEditService}
                   onDelete={deleteService}
                   onToggle={id => toggleService(id, s.active)}
@@ -193,6 +206,35 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
             <Plus size={16} />
             Додати послугу
           </button>
+
+          {services.length > 0 && (
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-secondary/40 border border-border self-start" role="group" aria-label="Режим перегляду">
+              <button
+                type="button"
+                onClick={() => changeView('grid')}
+                aria-label="Перегляд сіткою"
+                aria-pressed={view === 'grid'}
+                className={cn(
+                  "size-9 flex items-center justify-center rounded-lg transition-colors",
+                  view === 'grid' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <LayoutGrid size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => changeView('list')}
+                aria-label="Перегляд списком"
+                aria-pressed={view === 'list'}
+                className={cn(
+                  "size-9 flex items-center justify-center rounded-lg transition-colors",
+                  view === 'list' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <List size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right: content */}
@@ -245,19 +287,18 @@ function LoadingState() {
           <div className="h-3 w-24 rounded-full bg-secondary/80 mb-3 mx-1" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[0, 1, 2, 3].map(i => (
-              <div key={i} className="bento-card p-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="size-10 rounded-xl bg-secondary/80 flex-shrink-0" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3 w-28 rounded-full bg-secondary/80" />
-                    <div className="h-2 w-20 rounded-full bg-secondary/60" />
-                  </div>
-                  <div className="h-3 w-12 rounded-full bg-secondary/80 flex-shrink-0" />
+              <div key={i} className="bento-card p-0 overflow-hidden flex flex-col">
+                <div className="aspect-[16/10] w-full bg-secondary/70" />
+                <div className="px-3 pt-3 pb-1.5 flex flex-col gap-2">
+                  <div className="h-3.5 w-32 rounded-full bg-secondary/80" />
+                  <div className="h-2.5 w-40 rounded-full bg-secondary/55" />
+                  <div className="h-2.5 w-20 rounded-full bg-secondary/55" />
+                  <div className="h-4 w-16 rounded-full bg-secondary/80" />
                 </div>
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-secondary/40">
+                <div className="flex items-center justify-between px-3 py-2 border-t border-secondary/40">
                   <div className="flex gap-1">
-                    <div className="size-8 rounded-xl bg-secondary/60" />
-                    <div className="size-8 rounded-xl bg-secondary/60" />
+                    <div className="size-9 rounded-full bg-secondary/60" />
+                    <div className="size-9 rounded-full bg-secondary/60" />
                   </div>
                   <div className="w-11 h-6 rounded-full bg-secondary/60" />
                 </div>
