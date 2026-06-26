@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 30/77 ✅ · 1 ↩️ скасовано (… · `M-BOOK-05` · `M-SVC-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-SVC-03` — Послуги: режим «картка товару» (відгуки/описи) + доступний клієнтам на онлайн-записі** (`spec-driven-workflow` → `design-taste-frontend` · Opus · P1 🔄) · NEW-FEATURE
+**Прогрес:** 31/77 ✅ · 1 ↩️ скасовано (… · `M-SVC-02` · `M-SVC-03`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-SHOP-01` — Магазин: аналітика по кожному товару** (`senior-backend` + `design-taste-frontend` · Sonnet→Opus · P1) · DATA
 **Оновлено:** 2026-06-26
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,29 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SVC-03` — Послуги: детальна «картка товару» (опис+відгуки) + клієнт/майстер (P1 🔄) · commit `e2973465`
+
+**Тип:** NEW-FEATURE + DATA (гібрид) · **Тір:** 2 · **Скіли:** `spec-driven-workflow` → `create-migration` → `security-review` → `impeccable` (bolder+polish) · **Модель:** Opus.
+
+**Рішення founder (QA 4/4):** (1) відкриття через окрему кнопку «Детальніше» (тап картки = вибір лишається); (2) відгуки прив'язані до конкретної послуги через БД; (3) майстер отримує read-only прев'ю «як бачить клієнт»; (4) порожній опис — клієнту ховати, майстру нудж.
+
+**Ключове відкриття (DATA):** `reviews` не має `service_id`, а `createBooking` **не пише** `bookings.service_id`/`service_name` — єдиний зв'язок «відгук → послуга» це `reviews.booking_id → booking_services.service_id`. Тому per-service відгуки = derivation через RPC, без денормалізації. Наслідок (узгоджено): відгук візиту з кількома послугами показується під КОЖНОЮ з них (відгук про візит, не про одну послугу).
+
+**Реалізація:**
+- **БД** (`20260626000000_get_service_reviews.sql`): RPC `get_service_reviews(p_service_id uuid)` — `LANGUAGE sql`, `SECURITY DEFINER`, `SET search_path=public`, `REVOKE public` + `GRANT anon/authenticated`. Повертає лише `is_published=true` і безпечні поля (id/rating/comment/client_name/created_at). Індекс `idx_reviews_booking_id`. Застосовано через MCP, smoke-test ✅ (Брови: 3 відгуки 5.00). Без зміни схеми `reviews`.
+- **`useServiceReviews.ts`** — TanStack хук над RPC (avg+count, `enabled` при відкритті Sheet).
+- **`ServiceDetailSheet.tsx`** (NEW, спільний) — adaptive vaul Sheet, `mode: 'client'|'master'`. impeccable bolder: темний hero-блок (`--hero-card-bg`) із serif-назвою поверх — єдиний контраст для фото (img+scrim) і icon-fallback. Ціна = фокусне число (metric-value 32px). Опис / master-нудж. Рейтинг+відгуки. CTA «Обрати»/«Прибрати» (focus-visible ring). Контраст AA перевірено (mcp a11y).
+- **`ServiceSelector.tsx`** — акцентна кнопка «Детальніше» (`bg-accent`) на картці, обгортка-div + кнопка-вибір + футер (нуль вкладених `<button>`). Sheet рендериться раз.
+- **`ServiceCard.tsx` / `ServicesPage.tsx`** — Eye-прев'ю в обох режимах (grid/list) → той самий Sheet `mode="master"`.
+
+**Перевірка:** TSC 0 · build clean · security-review clean (RPC хардено за патерном проєкту, нових векторів немає). Деталі — `BRIEFS/M-SVC-03.md`.
+
+**KEY:** (1) «Відгук по послузі» у цій схемі = derivation через `booking_services`, не денормалізований стовпець (backfill-ризик + мультипослуга роблять стовпець не кращим). (2) Публічний SECURITY DEFINER RPC з явним `is_published` + проєкцією безпечних полів = безпечний public read без розширення RLS. (3) Темний hero-блок уніфікує контраст для фото+fallback — один patern замість двох. (4) «Детальніше» окремо від тап=вибір через обгортку-div, бо вкладені `<button>` = невалідний HTML.
+
+**Очікує:** візуальне QA founder (мобільний drawer + desktop dialog).
 
 ---
 

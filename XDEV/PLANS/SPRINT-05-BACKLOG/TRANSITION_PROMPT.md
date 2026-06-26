@@ -15,8 +15,10 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 30/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-SVC-03 — Послуги: режим «картка товару» (відгуки/описи) + доступний клієнтам на онлайн-записі 🔄 (spec-driven-workflow → design-taste-frontend · Opus · P1). NEW-FEATURE → brainstorming + повний spec (acceptance, всі стани) перед кодом. Базується на щойно зробленій картці послуги (M-SVC-02).
+Прогрес: 31/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-SHOP-01 — Магазин: аналітика по кожному товару (senior-backend + design-taste-frontend · Sonnet→Opus · P1). DATA → схема пайплайну (джерело product_transactions/booking_products → трансформ → відображення) + RLS перед кодом. Дзеркало M-SVC-01 (статистика послуги) для товарів.
+Нотатки 2026-06-26 (M-SVC-03):
+- M-SVC-03 закрито (commit e2973465): детальна «картка товару» опис+відгуки. БД-урок: reviews не має service_id, createBooking НЕ пише bookings.service_id → per-service відгуки лише через RPC get_service_reviews (reviews.booking_id → booking_services.service_id), SECURITY DEFINER + is_published + grant anon/authenticated. Мультипослуговий запис: відгук візиту під кожною послугою (рішення founder). Клієнт: акцентна «Детальніше» (тап=вибір лишається) → ServiceDetailSheet (темний hero serif-назва поверх = єдиний контраст фото+icon-fallback, ціна фокус, рейтинг+відгуки). Майстер: Eye-прев'ю в grid/list → той самий Sheet mode=master + нудж порожнього опису. impeccable bolder+polish, контраст AA, security-review clean. Очікує візуального QA founder.
 Нотатки 2026-06-26 (M-SVC-02):
 - M-SVC-02 закрито (commit 980b5402): картки маркетплейс + 2 режими перегляду (сітка/список, перемикач у сайдбарі + localStorage services_view). Сітка = вертик. плитка фото-зверху aspect-[16/10] (Frost icon-fallback) + footer-дії; список = горизонт. рядок, назва на всю ширину (line-clamp-2, без скорочень), правий стовпчик ціна-над-діями. ServiceCard отримав view проп + спільні editDelete/toggle блоки. 3 ітерації founder (гібрид→горизонт→вертикаль + ad-hoc другий режим). Бейдж «Хіт» на популярних. Бекенд/DnD/поля не чіпані. Урок: повні назви — ціна не має бути inline-сусідом імені в горизонт. рядку, винось у окремий стовпчик.
 Нотатки 2026-06-26 (M-BOOK-05):

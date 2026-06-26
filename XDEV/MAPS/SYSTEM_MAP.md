@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-26 · Джерело: живий код (v9.0.0) · Останній код-коміт: `0ebd850b` (M-BOOK-05 — деталь запису receipt+hero редизайн: status-outcome блок з причиною/часом, термінальні дії «Записати знову»/«Профіль»)
+> Оновлено: 2026-06-26 · Джерело: живий код (v9.0.0) · Останній код-коміт: `e2973465` (M-SVC-03 — детальна «картка товару» опис+відгуки: RPC `get_service_reviews`, `ServiceDetailSheet` спільний клієнт/майстер, акцентна «Детальніше»)
 > 
-> **⚡ Sprint-05 Status (ACTIVE):** 29/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-SVC-02` — Послуги: картки у стилі маркетплейсу | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
+> **⚡ Sprint-05 Status (ACTIVE):** 31/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-SHOP-01` — Магазин: аналітика по кожному товару | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
@@ -37,7 +37,7 @@
 | `/dashboard` | Editorial dashboard: greeting, schedule, weekly chart, monthly calendar, sidebar widgets, adaptive strip, tour | `dashboard/page.tsx` | `dashboard/actions.ts` | `FrostDashboard.tsx`, `DashboardGreeting.tsx`, `DashboardDrawers.tsx`, `ActivationTourBanner.tsx` (cross-page spotlight, progress bar, pathname-aware re-spotlight, z-48), `ActivationTourContext.tsx` (7-step activation tour, router.push between routes, fire-and-forget DB persist, backward compat seen_tours.dashboard_v2), `TodaySchedule.tsx`, `widgets/EarningsPulseWidget.tsx`, `widgets/AdaptiveContextStrip.tsx` (4 states: empty/quiet/moderate/busy), `widgets/FrostMetricsStrip.tsx` (ticker, touch-drag), `widgets/frost/WeeklyChartWidget.tsx`, `widgets/frost/PeakHoursWidget.tsx`, `widgets/frost/CancellationRateWidget.tsx`, `widgets/frost/NextFreeDaysWidget.tsx`, `widgets/frost/InsightsRow.tsx`, `widgets/frost/ChannelHealthWidget.tsx`, `widgets/frost/TopServicesWidget.tsx` |
 | `/dashboard/bookings` | Command Center: Day (Timeline) / Week+Month (Bento Analytics) switching. MaterialsReviewSheet intercepts "Завершити" якщо є розхідники → qty review → completeBooking(id, reviewed) | `bookings/page.tsx` | `bookings/actions.ts` (completeBooking: stock deduction + product_transactions) | `BookingsPage.tsx`, `BookingCard.tsx`, `BookingActionsDropdown.tsx`, `BookingDetailsModal.tsx` (M-BOOK-05: adaptive Sheet, НЕ route; receipt-картка hero serif-дата+час tabular+source-чіп→пунктир→рядки→«Разом» serif 3xl; status-outcome блок для термінальних з `status_changed_at`+`cancellation_reason`; термінальні дії «Записати знову» через `UrlActionBus` booking:create+clientId / «Профіль клієнта»; статус-лейбл text-foreground через a11y-контраст), `MaterialsReviewSheet.tsx` (NEW T30), `dashboard/VerticalTimeline.tsx` (M-BOOK-02: спец-блок `TimelineBlock` зі статус-рейкою + Smart Design System — наповнення адаптується під висоту блока: sm 1 рядок / md-lg top-anchored / xl 1год+ rich-картка; герой now-line; drag-to-reschedule), `dashboard/DashboardWidgets.tsx` (M-BOOK-03: 4 метрики→кнопки→adaptive Sheet overlay з розбивкою; елементи→main-елемент клієнт/запис; `useBookingsDashboardLogic` +totalBooked/WorkingMinutes) |
 | `/dashboard/clients` | CRM: клієнти, теги, VIP, нотатки, retention, LTV, реферали | `clients/page.tsx` | `clients/actions.ts` (+`saveClientTags`) | `master/clients/ClientsPage.tsx` (useWindowVirtualizer list), `ClientListRow.tsx` (React.memo), `ClientGridCard.tsx` (React.memo), `clientsUtils.tsx` (shared RETENTION_CONFIG/getAutoTags/getSmartAction/ClientIconStack), `ClientDetailSheet.tsx` (M-CLI-06 профіль-картка: спільний у 6 точках — clients/dashboard×3/StatsModals/analytics), `ClientIdentityHeader.tsx` + `ClientStatChips.tsx` (M-CLI-06 спільні під-компоненти, юзаються і в `BookingDetailsModal`), `ClientWidgets.tsx` |
-| `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` |
+| `/dashboard/services` | CRUD послуг та товарів (reorder, активація) | `services/page.tsx` | — | `master/services/ServicesPage.tsx` (M-SVC-02: grid/list view + localStorage; M-SVC-03: Eye-прев'ю на картці → `ServiceDetailSheet` mode="master"), `ServiceCard.tsx` (`onPreview`) |
 | `/dashboard/analytics` | Аналітика Pro v2.1 (Editorial Bento з MoM порівнянням та PNG/SVG експортом): виручка, когорти, бізнес-здоров'я, фінанси, прогнози складів, розумна націнка, ранковий брифінг, CSV | `analytics/page.tsx` | — | `master/analytics/AnalyticsPage.tsx` (включає `MorningBriefing.tsx`, `BusinessHealthScoreWidget.tsx`, `SmartPricingOptimizer.tsx`, та вкладки: `FinancesTab.tsx` (5 KPI + WaterfallChart 6 barів incl. operationalExpenses T30), `StockTab.tsx`, `ReviewsTab.tsx`, `NoShowTab.tsx`, `LeadTimeTab.tsx`, `VacationTab.tsx`, `SourceTab.tsx`) |
 | `/dashboard/flash` | Redirect Gateway to `/dashboard/revenue?tab=flash_deals` | `flash/page.tsx` | — | Redirect Gateway |
 | `/dashboard/pricing` | Redirect Gateway to `/dashboard/revenue?tab=dynamic_pricing` | `pricing/page.tsx` | — | Redirect Gateway |
@@ -578,9 +578,10 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `get_master_referral_history` | Швидке отримання історії рефералів без waterfall на клієнті (міграція 20260524124500) |
 | `get_retention_status` | Retention dashboard — міграція 076 |
 | `get_analytics_extras` | Об'єднаний мега-RPC аналітики (зайнятість, когорти, LTV, аномалії, ROI Smart Pricing та зв'язки послуг) — міграція 20260605000000 |
+| `get_service_reviews` | Published-відгуки по послузі (M-SVC-03) через `reviews.booking_id → booking_services.service_id`; SECURITY DEFINER, public read (anon/authenticated), лише безпечні поля — міграція 20260626000000. Хук: `useServiceReviews.ts` |
 
 ### Міграції
-140+ міграцій застосовано в продакшн.
+141+ міграцій застосовано в продакшн.
 Місце: `supabase/migrations/*.sql`
 
 Останні ключові:
