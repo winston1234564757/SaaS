@@ -21,6 +21,8 @@ export interface DashboardStats {
   newClientsCount: number;
   lostMinutes: number;
   efficiencyRate: number;
+  totalBookedMinutes: number;
+  totalWorkingMinutes: number;
 }
 
 export function useBookingsDashboardLogic(dateFrom: string, dateTo: string) {
@@ -34,7 +36,7 @@ export function useBookingsDashboardLogic(dateFrom: string, dateTo: string) {
     if (!bookings) return {
       totalBookings: 0, confirmedBookings: 0, pendingBookings: 0, completedBookings: 0, cancelledBookings: 0,
       totalRevenue: 0, forecastRevenue: 0, occupancyRate: 0, retentionRate: 0, returningClientsCount: 0,
-      newClientsCount: 0, lostMinutes: 0, efficiencyRate: 0
+      newClientsCount: 0, lostMinutes: 0, efficiencyRate: 0, totalBookedMinutes: 0, totalWorkingMinutes: 0
     };
 
     // 1. Basic Counts & Revenue
@@ -132,7 +134,9 @@ export function useBookingsDashboardLogic(dateFrom: string, dateTo: string) {
       returningClientsCount,
       newClientsCount,
       lostMinutes,
-      efficiencyRate
+      efficiencyRate,
+      totalBookedMinutes,
+      totalWorkingMinutes
     };
   }, [bookings, schedule, dateFrom, dateTo]);
 

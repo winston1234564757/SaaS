@@ -225,8 +225,8 @@ export function BookingsPage() {
     <div className="flex flex-col gap-6 lg:gap-10 pb-32 [overflow-x:clip]">
       {/* 1. Header & Quick Switcher */}
       <div className="flex flex-col gap-6 lg:gap-8">
-        <div className="flex items-end justify-between" data-tour-key="bok-header">
-          <div className="flex flex-col">
+        <div className="flex items-end justify-between gap-3" data-tour-key="bok-header">
+          <div className="flex flex-col min-w-0">
             <h1
               className="text-[60px] lg:text-[100px] text-foreground font-display"
               style={{
@@ -242,21 +242,22 @@ export function BookingsPage() {
             </p>
           </div>
 
-          <div className="flex gap-3 mb-1">
+          <div className="shrink-0 mb-1">
             <button
               type="button"
               onClick={() => setFormOpen(true)}
-              className="group relative flex items-center gap-2 px-5 py-3 rounded-[20px] bg-foreground text-background font-bold text-sm shadow-xl shadow-black/10 transition-colors hover:scale-105 active:scale-[0.95] cursor-pointer overflow-hidden"
+              aria-label="Новий запис"
+              className="group relative flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-foreground text-background font-bold text-[13px] lg:text-sm shadow-lg shadow-black/10 transition-colors hover:scale-105 active:scale-[0.95] cursor-pointer overflow-hidden whitespace-nowrap"
             >
               <div className="absolute inset-0 bg-background/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              <Plus size={18} className="relative z-10" />
-              <span className="relative z-10 hidden sm:inline">Новий запис</span>
+              <Plus size={16} className="relative z-10 shrink-0" />
+              <span className="relative z-10">Новий запис</span>
             </button>
           </div>
         </div>
 
         <div data-tour-key="bok-stats">
-          <DashboardWidgets stats={stats} isLoading={isLoading} />
+          <DashboardWidgets stats={stats} bookings={bookings} isLoading={isLoading} />
         </div>
       </div>
 
