@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 26/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05` · `M-BOOK-01` · `M-CLI-06` · `M-BOOK-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-BOOK-03` — Записи: верхні віджети клікабельні + overlay** (`senior-frontend` · Sonnet · P1)
+**Прогрес:** 28/77 ✅ · 1 ↩️ скасовано (… · `M-CLI-06` · `M-BOOK-02` · `M-BOOK-03` · `M-BOOK-04`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-BOOK-05` — Записи: сторінка деталі запису — редизайн 🔄** (`design-taste-frontend` + `impeccable` · Sonnet→Opus · P1)
 **Оновлено:** 2026-06-26
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -467,10 +467,30 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-BOOK-03` — Записи: верхні віджети клікабельні + overlay
+## ✅ DONE: `M-BOOK-03` + `M-BOOK-04` (P1/P2) · commit `757bcb89` · deploy READY
 
-**Тип:** feature/overlay · **Скіл:** `senior-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2**
+**Тип:** feature/overlay (03) + Тір-0 a11y/CSS (04) · **Скіл:** `senior-frontend` · **Модель:** Sonnet. Файли: `dashboard/DashboardWidgets.tsx`, `hooks/useBookingsDashboardLogic.ts`, `BookingsPage.tsx`.
 
-**Задача (BACKLOG):** верхні віджети на `/dashboard/bookings` (заповненість / прогноз / лояльність / ефективність) зробити клікабельними + overlay з деталями. Той самий патерн, що M-DASH-07/08 (спільний `Sheet variant=adaptive`, не вигадувати tooltip-позиціювання коли контент = список/деталі).
+**M-BOOK-03 — 4 верхні віджети клікабельні + overlay:**
+- Кожен `WidgetCard` → `<button>` (aria-haspopup=dialog/expanded/label, chevron-афорданс) → спільний `Sheet variant="adaptive"` (vaul bottom моб / dialog десктоп), патерн M-DASH-07/08.
+- **Заповненість** (агрегат, без навігації): прогрес-бар + Зайнято/Робочий час/Вільно (`formatDurationFull`) + активних записів. *Хук розширено: `totalBookedMinutes`, `totalWorkingMinutes` (вже рахувались — лише експоновано).*
+- **Прогноз**: Підтверджено(N·сума)+Очікує(M·сума) + список майбутніх (confirmed/pending) → клік `?bookingId`.
+- **Лояльність**: Постійні/Нові + список постійних (group bookings по `client_phone`, count>1) → клік `/dashboard/clients?clientPhone=<phone>` (ClientsPage:117 відкриває профіль із параметра).
+- **Ефективність**: efficiencyRate + lostMinutes + список скасувань → клік `?bookingId`.
+- **Рішення founder:** усі елементи overlay клікабельні → ведуть на свій main-елемент (навігація, НЕ інлайн-рендер ClientDetailSheet). Нуль нових запитів — усе з `stats`+`bookings`. Порожні стани скрізь.
 
-**Перед кодом:** grep верхні віджети bookings (`dashboard/DashboardWidgets.tsx`?) → визначити, які 4 метрики й що в overlay кожної (ймовірно ❓ для QA). mempalace_search по overlay-патерну M-DASH-07/08.
+**M-BOOK-04 — кнопка «Новий запис»:** беклогове «div→button» застаріле (вже `<button>`). Реальна проблема: на мобілці `<span hidden sm:inline>` ховав текст → icon-only без назви. Фікс: `aria-label` + текст видимий завжди. **+ founder (скрін IMG_8928):** кнопка завелика → компактний pill (`px-4 py-2.5 text-[13px]`, іконка 16, `whitespace-nowrap`, `shrink-0`); заголовок отримує решту → ~70/30.
+
+**Перевірка:** TSC 0 · Build clean (×4) · encoding clean · humanizer на новому copy (прибрано 3 em-dash/незграбні фрази). Деталі — `BRIEFS/M-BOOK-03.md`.
+
+**KEY:** (1) «все клікабельне → main-елемент» = router-навігація на канонічну сторінку сутності (клієнт→clients?clientPhone, запис→?bookingId), НЕ дублювати інлайн-сіти; ClientsPage уже відкриває профіль із `clientPhone` URL-параметра. (2) Overlay-розбивки для метрик = обчислення з уже завантажених `bookings` (group/filter/reduce), нуль запитів; проміжні знаменники (booked/working min) краще експонувати з хука, ніж переобчислювати. (3) «Зроби справжню кнопку» від founder ≠ завжди div→button — спершу перевір, чи елемент уже кнопка; реальна вада могла бути a11y (icon-only без label) або розмір.
+
+---
+
+## ▶ NEXT: `M-BOOK-05` — Записи: сторінка деталі запису — редизайн 🔄
+
+**Тип:** REDESIGN (deep) · **Скіл:** `design-taste-frontend` + `impeccable` · **Модель:** Sonnet→Opus · **P1** · **Фаза 2**
+
+**Задача (BACKLOG):** повний глибокий редизайн сторінки/модалки деталі запису (зона майстра). ❓ Що показувати (клієнт, послуги, ціна, нотатки, статус, кнопки дій), стиль (receipt-like чи картка-деталь) — QA перед брифом.
+
+**Перед кодом:** ціль = `BookingDetailsModal.tsx` (вже юзає спільні `ClientIdentityHeader`/`ClientStatChips` з M-CLI-06 + consumables chips). Скрін поточного стану (founder/self-serve) + mempalace_search. REDESIGN → Task Brief + QA на реальних неоднозначностях.

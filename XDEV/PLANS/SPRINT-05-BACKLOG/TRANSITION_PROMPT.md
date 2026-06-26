@@ -15,9 +15,11 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 26/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-BOOK-03 — Записи: верхні віджети клікабельні + overlay (senior-frontend · Sonnet · P1). Той самий overlay-патерн, що M-DASH-07/08 (Sheet variant=adaptive).
-Нотатки 2026-06-26:
+Прогрес: 28/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-BOOK-05 — Записи: сторінка деталі запису, редизайн 🔄 (design-taste-frontend + impeccable · Sonnet→Opus · P1). Ціль = BookingDetailsModal.tsx. REDESIGN → скрін + Task Brief + QA перед кодом.
+Нотатки 2026-06-26 (M-BOOK-03+04):
+- M-BOOK-03+04 закрито (commit 757bcb89, deploy READY): 4 верхні bookings-віджети → клікабельні кнопки + adaptive Sheet з розбивкою; усі елементи overlay ведуть на main-елемент (клієнт→/dashboard/clients?clientPhone, запис→?bookingId — router-навігація, не інлайн-сіти). Нуль нових запитів (DashboardWidgets рахує з bookings; хук +totalBookedMinutes/totalWorkingMinutes). M-BOOK-04: кнопка «Новий запис» a11y (aria-label+текст) + компактний pill ~70/30. Урок: «все клікабельне→main-елемент» = router на канонічну сторінку сутності; «зроби справжню кнопку» ≠ завжди div→button (перевір, чи вже button; вада могла бути a11y/розмір).
+Нотатки 2026-06-26 (M-BOOK-02):
 - M-BOOK-02 закрито (commit 811482da, deploy READY, 3 ітерації Sonnet→Opus): bolder таймлайн = спец-блок TimelineBlock (статус-рейка + твердий часовий каркас + герой now-line) у VerticalTimeline.tsx + Smart Design System (наповнення адаптується під висоту блока: sm 1 рядок / md-lg top-anchored час-на-лінії / xl 1год+ повна rich-картка justify-between з тривалістю + ціна-футер). Бокові години узгоджено зі шрифтом часу на картках (serif→sans tabular). Тіла пастельні (M-BOOK-01 не відкочено). a11y: статус=рейка+слово(secondary), не лише колір. Урок: Smart Design System на таймлайні = наповнення за висотою; top-anchor проти «плаваючого центру».
 Нотатки 2026-06-25:
 - M-CLI-06 закрито (commit 1f05146a, deploy READY): глибокий редизайн профілю клієнта (профіль-картка). ClientDetailSheet виявився СПІЛЬНИМ (6 точок виклику) → редизайн покрив клієнтів+дашборд+аналітику; BookingDetailsModal-дубль підтягнуто екстракцією. НОВІ спільні ClientIdentityHeader + ClientStatChips. Реальний LTV (total_spent + ранг + каденс, без міграції). Реальні мітки: міграція vibe_tags text[] (на прод) + saveClientTags + useClientTags. Encoding: 30 латинських i виправлено. Урок: SYSTEM_MAP брехав про tags[] — звіряй схему через live-DB.
