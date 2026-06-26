@@ -2,8 +2,9 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план: `BACKLOG.md`
 
-**Прогрес:** 31/77 ✅ · 1 ↩️ скасовано (M-DASH-11) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-26
-**▶ NEXT:** `M-SHOP-01` — Магазин: аналітика по кожному товару (senior-backend + design-taste-frontend · Sonnet→Opus · DATA)
+**Прогрес:** 32/77 ✅ · 1 ↩️ скасовано (M-DASH-11) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-27
+**▶ NEXT:** `M-SHOP-02` — Магазин: картки товарів у стилі маркетплейсу (design-taste-frontend + impeccable · Sonnet)
+> `M-SHOP-01` ✅ (commit `641141d3`): аналітика по товару — `getProductStats` рахує ОБИДВА канали продажів (order_items + booking_products); блок «Аналітика продажів» у ProductEditor + overlay Sheet з картки (a11y sibling-button підкладка); спільний `ProductStatsPanel`. **+ Аудит товарів/розхідників (UX→БД): P1 5/5 + P2 4/5 закрито в тому ж коміті.** P1: витік собівартості (колонкові GRANT anon), порожня історія складу (політика `pt_master_select`), restock `booking_products` при скасуванні, idempotency `completeBooking`. P2: atomic RPC `deduct_consumable_stock`, тип `'deduction'`, drop permissive INSERT orders/order_items, emoji→Info. 13 тестів. Міграції `20260627000001-05` (MCP+локально). Відкладено: P2 #9 vaul ShopPage + P3 advisors.
 > `M-SVC-03` ✅ (commit `e2973465`): детальна «картка товару» з описом + **відгуками по послузі**. БД: RPC `get_service_reviews(service_id)` SECURITY DEFINER — відгуки виводяться через `reviews.booking_id → booking_services.service_id` (bookings.service_id не пишеться). Мультипослуговий запис: відгук візиту показується під кожною послугою (свідоме рішення founder). Клієнт: акцентна кнопка «Детальніше» (тап=вибір лишається) → `ServiceDetailSheet` (темний hero-блок serif-назва поверх — єдиний контраст фото+icon-fallback, ціна фокусне число, опис, рейтинг+відгуки, CTA «Обрати»). Майстер: Eye-прев'ю в обох режимах → той самий Sheet read-only + нудж «Додайте опис». impeccable bolder+polish, контраст AA, security-review clean. Без зміни схеми reviews.
 > `M-SVC-02` ✅ (commit `980b5402`): картки маркетплейс + **2 режими перегляду** (сітка/список, перемикач у сайдбарі + localStorage). Сітка = вертикальна плитка фото-зверху aspect-[16/10] (Frost icon-fallback) + footer-дії; список = горизонт. рядок, назва на всю ширину (line-clamp-2, без скорочень), правий стовпчик ціна-над-діями. `view` проп + спільні editDelete/toggle блоки. 3 ітерації founder: гібрид→горизонт→вертикаль + ad-hoc другий режим. Бейдж «Хіт» на популярних. Бекенд/DnD/поля не чіпані.
 > `M-DASH-12` додано поза беклогом (ad-hoc founder): вирівнювання висоти десктоп-блоків + кольори → total 76→77. **Вирівнювання висоти лишилось. РЕВІЗІЯ `676c191b` (2026-06-25): бари WeeklyChart відкочено з мультиколору до монохрому + поглиблено рампу обох віджетів (WeeklyChart + PeakHours) до сіро-чорної ~34→100%. Відкрите питання founder закрито.**
@@ -74,7 +75,7 @@
 | `M-BOOK-05` | Записи: деталь запису — редизайн 🔄 (receipt+hero, status-outcome, термінальні дії) | P1 | ✅ | `design-taste-frontend` + `impeccable` | **Sonnet→Opus** | `0ebd850b` |
 | `M-SVC-02` | Послуги: картки у стилі маркетплейсу + 2 режими (сітка/список) | P1 | ✅ | `design-taste-frontend` + `impeccable` | **Sonnet** | `980b5402` |
 | `M-SVC-03` | Послуги: режим "картка товару" (опис+відгуки) + для клієнтів 🔄 | P1 | ✅ | `spec-driven-workflow` → `create-migration` → `security-review` → `impeccable` | **Opus** | `e2973465` |
-| `M-SHOP-01` | Магазин: аналітика по кожному товару | P1 | ⬜ | `senior-backend` + `design-taste-frontend` | **Sonnet→Opus** | — |
+| `M-SHOP-01` | Магазин: аналітика по кожному товару (+ аудит P1×5/P2×4) | P1 | ✅ | `senior-backend` + `security-review` + `create-migration` | **Opus** | `641141d3` |
 | `M-SHOP-02` | Магазин: картки товарів у стилі маркетплейсу | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet** | — |
 | `M-SHOP-03` | Магазин: режим "картка товару" + клієнт-сторінка 🔄 | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet→Opus** | — |
 

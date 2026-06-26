@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 31/77 ✅ · 1 ↩️ скасовано (… · `M-SVC-02` · `M-SVC-03`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-SHOP-01` — Магазин: аналітика по кожному товару** (`senior-backend` + `design-taste-frontend` · Sonnet→Opus · P1) · DATA
-**Оновлено:** 2026-06-26
+**Прогрес:** 32/77 ✅ · 1 ↩️ скасовано (… · `M-SVC-03` · `M-SHOP-01`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-SHOP-02` — Магазин: картки товарів у стилі маркетплейсу** (`design-taste-frontend` + `impeccable` · Sonnet · P1)
+**Оновлено:** 2026-06-27
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
 
@@ -26,6 +26,32 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SHOP-01` — Магазин: аналітика по товару + Аудит товарів/розхідників (P1+P2) · commit `641141d3`
+
+**Тип:** DATA + display + аудит-ремедіація · **Тір:** 2 · **Скіли:** `senior-backend` + `security-review` + `create-migration` + `impeccable`/`humanizer` · **Модель:** Opus.
+
+**M-SHOP-01 (аналітика товару):** `getProductStats(productId)` рахує ОБИДВА канали продажів — shop (`order_items`) + продані на записі (`booking_products` ⋈ bookings, status != cancelled). Повертає soldQty/revenue/profit/marginPct/lastSaleAt (маржа за поточним cost — історичний не зберігається). Блок «Аналітика продажів» у `ProductEditor` (тільки роздріб, з id) + overlay `Sheet` з картки. Спільний `ProductStatsPanel`. A11y: повнокарткова `<button>`-підкладка (sibling, z-0), контроли z-10 — без div-onClick, без вкладених кнопок.
+
+**Аудит (UX→БД) — знахідки з доказами, P1 5/5 + P2 4/5 закрито:**
+- **P1#1 витік собівартості:** RLS `products_public_read` (all cols) + anon-ключ публічний → `cost_kopecks`/`purchase_*` тягнулись напряму. Фікс: `REVOKE SELECT` + колонковий `GRANT` для anon (17 безпечних). Пасивного витоку не було (живі читання вже брали безпечні cols; `usePublicProducts` з cost — мертвий код, теж почистили).
+- **P1#2 порожня історія складу:** `product_transactions` RLS enabled + 0 політик → `useProductTransactions` (anon JWT) усе відсікав. Фікс: політика `pt_master_select`.
+- **P1#3 restock при скасуванні:** `createBooking` списував `booking_products` атомарно, але `cancelBooking`/`updateBookingStatus` НЕ повертали → склад втрачався. Фікс: `restockBookingProducts()` (increment_stock + ledger `return`) в обох шляхах. Гард pending/confirmed = одноразово.
+- **P1#4 idempotency `completeBooking`:** не перевіряв статус → повторне завершення списувало вдруге. Фікс: `status` у select + ранній return на `'completed'`.
+- **P2#6 non-atomic списання:** read-modify-write + max(0)-кламп розходив ledger зі складом. Фікс: RPC `deduct_consumable_stock` (GREATEST(0,…), FOR UPDATE, повертає фактично списане).
+- **P2#7 форжинг замовлень:** INSERT-політики `with_check (auth.uid() IS NOT NULL)` → клієнт міг вставити замовлення з довільним master/total. Фікс: drop обох (createOrder через admin обходить RLS, клієнтських прямих insert немає).
+- **P2#8 семантика:** розхідник писався `type='sale'`. Фікс: новий тип `'deduction'` (жодна DB-функція не читає ledger → аналітика не зачеплена) + лейбл у `TransactionHistoryDrawer`.
+- **P2#10:** emoji `ℹ️` в `OrderCard` → `<Info>` icon.
+
+**Відкладено (узгоджено):** P2#9 (vaul-міграція ShopPage — ризик: публічний checkout + конфлікт swipe галереї з drag-dismiss; окрема ітерація) · P3 (advisors auth_rls_initplan/multiple_permissive/unused_index, `any`-типи, `psl_public_read qual=true`).
+
+**Перевірка:** TSC 0 · build clean · 13 нових тестів зелені (stock.action 9 + getProductStats.action 4). Міграції `20260627000001-05` застосовано через MCP + закомічено локально. ⚠️ 4 pre-existing фейли в partners/referrals тестах — не пов'язані (мок-Supabase, інші модулі). Повний звіт аудиту: `~/.claude/plans/tranquil-plotting-feather.md`.
+
+**KEY:** (1) Товар має 2 канали продажів — будь-яка аналітика товару мусить рахувати order_items І booking_products. (2) RLS = row-level; колонковий захист = `REVOKE`+`GRANT (cols)`, але лише для anon (майстер теж authenticated → не можна revoke без поломки дашборду). (3) `product_transactions` мав RLS без політики = тиха поломка читання. (4) Списання складу мусить бути атомарним RPC + ledger = фактично списане, не запитане. (5) Скасування мусить дзеркалити створення (decrement→increment).
+
+**Manual QA (на Vercel):** аналітика товару (обидва канали), Network `/[slug]/shop` без cost, Журнал запасів не порожній, restock при скасуванні, no-double-deduct, «Списано на послугу» в журналі, кламп −2 не −5, оформлення замовлення працює, emoji→іконка.
 
 ---
 

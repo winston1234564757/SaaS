@@ -1,8 +1,8 @@
 # SYSTEM_MAP — Bookit Architectural Index
 
-> Оновлено: 2026-06-26 · Джерело: живий код (v9.0.0) · Останній код-коміт: `e2973465` (M-SVC-03 — детальна «картка товару» опис+відгуки: RPC `get_service_reviews`, `ServiceDetailSheet` спільний клієнт/майстер, акцентна «Детальніше»)
+> Оновлено: 2026-06-27 · Джерело: живий код (v9.0.0) · Останній код-коміт: `641141d3` (M-SHOP-01 аналітика товару `getProductStats` 2 канали [order_items+booking_products] + `ProductStatsPanel`; **аудит товарів/розхідників P1×5+P2×4**: колонкові GRANT anon на products, політика `pt_master_select`, RPC `deduct_consumable_stock`, тип `'deduction'`, restock booking_products при скасуванні, idempotency completeBooking, drop permissive INSERT orders/order_items)
 > 
-> **⚡ Sprint-05 Status (ACTIVE):** 31/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-SHOP-01` — Магазин: аналітика по кожному товару | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
+> **⚡ Sprint-05 Status (ACTIVE):** 32/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-SHOP-02` — Магазин: картки товарів маркетплейс | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
