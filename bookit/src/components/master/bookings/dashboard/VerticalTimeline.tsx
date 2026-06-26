@@ -1,16 +1,21 @@
 'use client';
 
 import { useState, useTransition, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { toMins, fromMins } from '@/lib/utils/smartSlots';
 import { type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
-import { BookingCard } from '../BookingCard';
-import { Plus, Moon, Check, X, Loader2, Coffee } from 'lucide-react';
+import { Plus, Moon, Check, X, Loader2, Coffee, Clock } from 'lucide-react';
 import { useToast } from '@/lib/toast/context';
 import { rescheduleBooking } from '@/app/(master)/dashboard/bookings/actions';
 import { cn } from '@/lib/utils/cn';
 import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
+import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
+import { statusGlow } from '@/lib/utils/statusGlow';
+import { formatPrice } from '@/components/master/services/types';
+import { formatDurationFull } from '@/lib/utils/dates';
+import { PricingBadge } from '@/components/shared/PricingBadge';
 
 interface BreakWindow { start: string; end: string }
 
@@ -28,18 +33,183 @@ interface Props {
 const HOUR_HEIGHT   = 180;
 const DRAG_THRESHOLD = 18; // px — ignore accidental swipes below this
 
-const STATUS_COLORS: Record<string, string> = {
-  confirmed: 'var(--success)',
-  pending:   'var(--warning)',
-  completed: 'var(--text-tertiary)',
-  no_show:   'var(--error)',
-};
-
-function padHour(h: number) {
-  return String(h).padStart(2, '0') + ':00';
+function pad2(n: number) {
+  return String(n).padStart(2, '0');
 }
 
-type TL = BookingWithServices & { top: number; height: number; color: string };
+type TL = BookingWithServices & { top: number; height: number };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TimelineBlock — purpose-built compact block (status rail + time-proportional)
+// Replaces the full list BookingCard inside the day timeline (M-BOOK-02).
+// ─────────────────────────────────────────────────────────────────────────────
+function TimelineBlock({ booking }: { booking: TL }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const cfg = BOOKING_STATUS_CONFIG[booking.status];
+  const serviceNames = booking.services.map(s => s.name).join(', ') || 'Без послуги';
+  const duration = toMins(booking.end_time) - toMins(booking.start_time);
+
+  // Smart Design System — content size + arrangement adapt to block height.
+  // Height is duration-proportional, so longer bookings get a richer, top-anchored
+  // layout (start-time aligns to its hour line); short ones stay compact/centered.
+  const h = booking.height;
+  const size: 'sm' | 'md' | 'lg' | 'xl' =
+    h >= 175 ? 'xl' : h >= 115 ? 'lg' : h >= 70 ? 'md' : 'sm';
+
+  const openModal = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('bookingId', booking.id);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={openModal}
+      aria-label={`${booking.start_time} ${booking.client_name}, ${cfg.label}`}
+      className="relative h-full w-full text-left rounded-2xl overflow-hidden flex active:scale-[0.985] transition-transform"
+      style={{
+        background:      'var(--surface)',
+        backgroundImage: statusGlow(cfg.color),
+        border:          '0.5px solid var(--border)',
+        boxShadow:       '0 2px 8px rgba(80,70,120,0.06)',
+      }}
+    >
+      {/* Status rail — bold day-scan signal */}
+      <span
+        aria-hidden
+        className="absolute left-0 inset-y-0 w-[5px]"
+        style={{ background: cfg.color }}
+      />
+
+      {size === 'sm' ? (
+        // Tight single row — vertically centered (no room to anchor)
+        <div className="flex items-center gap-2 w-full h-full pl-[17px] pr-3 min-w-0">
+          <span className="text-[14px] font-bold tabular-nums text-foreground leading-none shrink-0">
+            {booking.start_time}
+          </span>
+          <span className="font-display text-sm font-bold text-foreground truncate flex-1 min-w-0">
+            {booking.client_name}
+          </span>
+          <span className="text-[13px] font-bold tabular-nums text-foreground shrink-0">
+            {formatPrice(booking.total_price)}
+          </span>
+        </div>
+      ) : size === 'xl' ? (
+        // Rich card — 1h+ blocks become a full booking card that fills the height
+        <div className="flex flex-col h-full w-full pl-5 pr-4 py-3.5 min-w-0 justify-between">
+          {/* Top — time, duration, status, client, service */}
+          <div className="flex flex-col gap-2 min-w-0">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-1 min-w-0">
+                <span className="text-xl font-bold tabular-nums text-foreground leading-none">
+                  {booking.start_time}
+                  <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+                    –{booking.end_time}
+                  </span>
+                </span>
+                <span
+                  className="flex items-center gap-1 text-xs font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <Clock size={11} />
+                  {formatDurationFull(duration)}
+                </span>
+              </div>
+              <span className="flex items-center gap-1.5 shrink-0 pt-0.5">
+                <span className="size-1.5 rounded-full" style={{ background: cfg.color }} />
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider leading-none"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {cfg.label}
+                </span>
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 min-w-0 pt-0.5">
+              <span className="font-display text-2xl font-bold text-foreground truncate leading-tight">
+                {booking.client_name}
+              </span>
+              <span className="text-sm font-medium text-muted-foreground/70 truncate">
+                {serviceNames}
+              </span>
+            </div>
+            {booking.dynamic_pricing_label && h >= 230 && (
+              <div className="pt-0.5">
+                <PricingBadge dynamicLabel={booking.dynamic_pricing_label} size="md" />
+              </div>
+            )}
+          </div>
+          {/* Footer — price pinned to the bottom edge of the block */}
+          <div
+            className="flex items-end justify-between gap-3 pt-3"
+            style={{ borderTop: '0.5px solid var(--border)' }}
+          >
+            <span
+              className="text-[11px] font-semibold uppercase tracking-wider leading-none"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Сума
+            </span>
+            <span className="text-2xl font-bold tabular-nums text-foreground leading-none">
+              {formatPrice(booking.total_price)}
+            </span>
+          </div>
+        </div>
+      ) : (
+        // Top-anchored (md / lg) — start-time sits on its hour line; type scales with height
+        <div
+          className={cn(
+            'flex flex-col w-full h-full pl-[17px] pr-3 min-w-0',
+            size === 'lg' ? 'pt-3 gap-1.5' : 'pt-2 gap-1',
+          )}
+        >
+          {/* Row 1 — time range + status label */}
+          <div className="flex items-center justify-between gap-2">
+            <span
+              className={cn(
+                'font-bold tabular-nums text-foreground leading-none',
+                size === 'lg' ? 'text-base' : 'text-[15px]',
+              )}
+            >
+              {booking.start_time}
+              <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+                –{booking.end_time}
+              </span>
+            </span>
+            <span
+              className="text-[9px] font-bold uppercase tracking-wider shrink-0 leading-none"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              {cfg.label}
+            </span>
+          </div>
+          {/* Row 2 — client name + price */}
+          <div className="flex items-end justify-between gap-2 min-w-0">
+            <span
+              className={cn(
+                'font-display font-bold text-foreground truncate min-w-0',
+                size === 'lg' ? 'text-lg' : 'text-base',
+              )}
+            >
+              {booking.client_name}
+            </span>
+            <span className="text-sm font-bold tabular-nums text-foreground shrink-0">
+              {formatPrice(booking.total_price)}
+            </span>
+          </div>
+          {/* Row 3 — service (only on lg, which has the height for it) */}
+          {size === 'lg' && (
+            <span className="text-xs text-muted-foreground/60 truncate font-medium">
+              {serviceNames}
+            </span>
+          )}
+        </div>
+      )}
+    </button>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DraggableBookingBlock
@@ -50,14 +220,12 @@ function DraggableBookingBlock({
   endHour,
   totalHeight,
   date,
-  bufferMinutes,
 }: {
   booking: TL;
   startHour: number;
   endHour: number;
   totalHeight: number;
   date: string;
-  bufferMinutes: number;
 }) {
   const { showToast } = useToast();
   const qc = useQueryClient();
@@ -98,131 +266,128 @@ function DraggableBookingBlock({
   };
 
   return (
-    <>
-      <motion.div
-        drag={isDraggable && !pendingTime ? 'y' : false}
-        dragConstraints={{
-          top:    -booking.top,
-          bottom: totalHeight - booking.top - booking.height,
-        }}
-        dragElastic={0}
-        dragMomentum={false}
-        onDragStart={() => setIsDragging(true)}
-        onDrag={(_, info) => setPreviewStart(snapTime(info.offset.y))}
-        onDragEnd={(_, info) => {
-          setIsDragging(false);
-          setPreviewStart(null);
+    <motion.div
+      drag={isDraggable && !pendingTime ? 'y' : false}
+      dragConstraints={{
+        top:    -booking.top,
+        bottom: totalHeight - booking.top - booking.height,
+      }}
+      dragElastic={0}
+      dragMomentum={false}
+      onDragStart={() => setIsDragging(true)}
+      onDrag={(_, info) => setPreviewStart(snapTime(info.offset.y))}
+      onDragEnd={(_, info) => {
+        setIsDragging(false);
+        setPreviewStart(null);
 
-          // Swipe protection
-          if (Math.abs(info.offset.y) < DRAG_THRESHOLD) {
-            dragY.set(0);
-            return;
-          }
+        // Swipe protection
+        if (Math.abs(info.offset.y) < DRAG_THRESHOLD) {
+          dragY.set(0);
+          return;
+        }
 
-          const newStart = snapTime(info.offset.y);
-          const snapY    = ((toMins(newStart) - toMins(booking.start_time)) / 60) * HOUR_HEIGHT;
-          dragY.set(snapY);
+        const newStart = snapTime(info.offset.y);
+        const snapY    = ((toMins(newStart) - toMins(booking.start_time)) / 60) * HOUR_HEIGHT;
+        dragY.set(snapY);
 
-          if (newStart === booking.start_time) {
-            dragY.set(0);
-            return;
-          }
+        if (newStart === booking.start_time) {
+          dragY.set(0);
+          return;
+        }
 
-          const newEnd = fromMins(toMins(newStart) + duration);
-          setPendingTime({ newStart, newEnd });
-        }}
-        className={cn('select-none', isDragging && 'z-30')}
-        style={{
-          position: 'absolute',
-          left:     56,
-          right:    12,
-          top:      booking.top,
-          height:   booking.height,
-          cursor:   !isDraggable
-            ? 'default'
-            : isPending
-            ? 'wait'
-            : isDragging
-            ? 'grabbing'
-            : 'grab',
-          opacity: isPending ? 0.45 : 1,
-          y:       dragY,
-        }}
-      >
-        <div className={cn('h-full py-1', (isDragging || !!pendingTime) && 'pointer-events-none')}>
-          <BookingCard booking={booking} compact={false} hideActions hideTime={false} className="h-full" />
-        </div>
+        const newEnd = fromMins(toMins(newStart) + duration);
+        setPendingTime({ newStart, newEnd });
+      }}
+      className={cn('select-none', isDragging && 'z-30')}
+      style={{
+        position: 'absolute',
+        left:     56,
+        right:    12,
+        top:      booking.top,
+        height:   booking.height,
+        cursor:   !isDraggable
+          ? 'default'
+          : isPending
+          ? 'wait'
+          : isDragging
+          ? 'grabbing'
+          : 'grab',
+        opacity: isPending ? 0.45 : 1,
+        y:       dragY,
+      }}
+    >
+      <div className={cn('h-full py-1', (isDragging || !!pendingTime) && 'pointer-events-none')}>
+        <TimelineBlock booking={booking} />
+      </div>
 
-        {/* Drag time overlay — inside card, never clipped by timeline overflow:hidden */}
-        <AnimatePresence>
-          {isDragging && previewStart && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 24 }}
-              className="absolute top-2 left-2 px-2.5 py-1.5 rounded-xl text-[11px] font-bold tabular-nums pointer-events-none z-40"
-              style={{
-                background: 'var(--foreground)',
-                color:      'var(--background)',
-                boxShadow:  '0 2px 10px rgba(0,0,0,0.35)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {previewStart} → {fromMins(toMins(previewStart) + duration)}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Drag time overlay — inside card, never clipped by timeline overflow:hidden */}
+      <AnimatePresence>
+        {isDragging && previewStart && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 24 }}
+            className="absolute top-2 left-2 px-2.5 py-1.5 rounded-xl text-[11px] font-bold tabular-nums pointer-events-none z-40"
+            style={{
+              background: 'var(--foreground)',
+              color:      'var(--background)',
+              boxShadow:  '0 2px 10px rgba(0,0,0,0.35)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {previewStart} → {fromMins(toMins(previewStart) + duration)}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Inline confirmation overlay */}
-        <AnimatePresence>
-          {pendingTime && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.94 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-              className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-2 z-50 pointer-events-auto"
-              style={{
-                background:     'var(--surface)',
-                border:         '1.5px solid var(--accent)',
-                boxShadow:      '0 4px 20px rgba(140,110,99,0.18)',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              <p className="text-[11px] font-bold tabular-nums text-foreground">
-                {pendingTime.newStart}
-                <span className="mx-1 opacity-40">→</span>
-                {pendingTime.newEnd}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleConfirm}
-                  disabled={isPending}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-success/15 text-success text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50"
-                >
-                  {isPending
-                    ? <Loader2 size={10} className="animate-spin" />
-                    : <Check size={10} />}
-                  Так
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={isPending}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-error/10 text-error text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50"
-                >
-                  <X size={10} />
-                  Ні
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-    </>
+      {/* Inline confirmation overlay */}
+      <AnimatePresence>
+        {pendingTime && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.94 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+            className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-2 z-50 pointer-events-auto"
+            style={{
+              background:     'var(--surface)',
+              border:         '1.5px solid var(--accent)',
+              boxShadow:      '0 4px 20px rgba(140,110,99,0.18)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <p className="text-[11px] font-bold tabular-nums text-foreground">
+              {pendingTime.newStart}
+              <span className="mx-1 opacity-40">→</span>
+              {pendingTime.newEnd}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleConfirm}
+                disabled={isPending}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-success/15 text-success text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50"
+              >
+                {isPending
+                  ? <Loader2 size={10} className="animate-spin" />
+                  : <Check size={10} />}
+                Так
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={isPending}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-error/10 text-error text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50"
+              >
+                <X size={10} />
+                Ні
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -247,10 +412,11 @@ export function VerticalTimeline({
   const toTop = (time: string) =>
     ((toMins(time) - startHour * 60) / 60) * HOUR_HEIGHT;
 
-  const now     = new Date();
-  const nowMins = now.getHours() * 60 + now.getMinutes();
-  const nowTop  = ((nowMins - startHour * 60) / 60) * HOUR_HEIGHT;
-  const isToday = new Date().toISOString().split('T')[0] === date;
+  const now      = new Date();
+  const nowMins  = now.getHours() * 60 + now.getMinutes();
+  const nowTop   = ((nowMins - startHour * 60) / 60) * HOUR_HEIGHT;
+  const nowLabel = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+  const isToday  = new Date().toISOString().split('T')[0] === date;
 
   const timelineBookings = useMemo(() => {
     return bookings
@@ -260,8 +426,7 @@ export function VerticalTimeline({
         const endMin   = toMins(b.end_time);
         const top      = toTop(b.start_time);
         const height   = Math.max(((endMin - startMin) / 60) * HOUR_HEIGHT, 52);
-        const color    = STATUS_COLORS[b.status] ?? 'var(--accent)';
-        return { ...b, top, height, color };
+        return { ...b, top, height };
       });
   }, [bookings, date, startHour]);
 
@@ -354,36 +519,41 @@ export function VerticalTimeline({
         </div>
       )}
 
-      {/* Hour grid */}
+      {/* Hour grid + bold hour markers */}
       <div className="absolute inset-0 pointer-events-none">
         {hours.map(h => (
           <div key={h} className="absolute left-0 right-0" style={{ top: (h - startHour) * HOUR_HEIGHT }}>
             <div
               className="absolute left-0 right-0"
-              style={{ borderTop: '0.5px solid var(--border)', opacity: 0.55 }}
+              style={{ borderTop: '0.5px solid var(--border)', opacity: 0.7 }}
             />
-            <span
-              className="absolute select-none"
-              style={{
-                left:          8,
-                top:           4,
-                color:         'var(--text-secondary)',
-                fontFamily:    'var(--font-cormorant, Georgia, serif)',
-                fontSize:      '0.8rem',
-                letterSpacing: '-0.01em',
-                opacity:       0.8,
-              }}
-            >
-              {padHour(h)}
-            </span>
+            {/* Hour marker — same sans tabular family/weight as the card time text */}
+            <div className="absolute flex items-baseline gap-[2px] select-none" style={{ left: 8, top: 5 }}>
+              <span
+                className="tabular-nums leading-none font-bold"
+                style={{
+                  fontSize:      '1.6rem',
+                  color:         'var(--text-primary)',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {pad2(h)}
+              </span>
+              <span
+                className="leading-none tabular-nums font-bold"
+                style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}
+              >
+                00
+              </span>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Vertical accent line */}
+      {/* Vertical spine */}
       <div
         className="absolute top-0 bottom-0 pointer-events-none"
-        style={{ left: 52, width: 2, background: 'var(--border-strong)', opacity: 0.5 }}
+        style={{ left: 52, width: 2, background: 'var(--border-strong)', opacity: 0.65 }}
       />
 
       {/* Break windows */}
@@ -463,22 +633,27 @@ export function VerticalTimeline({
           endHour={endHour}
           totalHeight={totalHeight}
           date={date}
-          bufferMinutes={bufferMinutes}
         />
       ))}
 
-      {/* Now indicator */}
+      {/* Now indicator — hero current-time line with chip */}
       {isToday && nowTop >= 0 && nowTop < totalHeight && (
         <div
-          className="absolute pointer-events-none z-10"
-          style={{ top: nowTop, left: 44, right: 0 }}
+          className="absolute pointer-events-none z-20"
+          style={{ top: nowTop, left: 4, right: 0 }}
         >
-          <div className="flex items-center gap-1">
+          <div className="flex items-center -translate-y-1/2">
+            <span
+              className="px-2 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 leading-none"
+              style={{ background: 'var(--error)', color: '#fff', boxShadow: '0 2px 8px rgba(192,91,91,0.4)' }}
+            >
+              {nowLabel}
+            </span>
             <div
-              className="size-2 rounded-full shrink-0"
-              style={{ background: 'var(--error)', boxShadow: '0 0 6px var(--error)' }}
+              className="size-2 rounded-full shrink-0 -ml-0.5"
+              style={{ background: 'var(--error)', boxShadow: '0 0 8px var(--error)' }}
             />
-            <div className="flex-1 h-px" style={{ background: 'var(--error)', opacity: 0.6 }} />
+            <div className="flex-1 h-[2px]" style={{ background: 'var(--error)', opacity: 0.85 }} />
           </div>
         </div>
       )}
