@@ -26,7 +26,8 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useProducts } from '@/lib/supabase/hooks/useProducts';
 import { useProductLinks } from '@/lib/supabase/hooks/useProductLinks';
-import { createProduct, updateProduct, deleteProduct, saveProductLinks } from '@/app/(master)/dashboard/products/actions';
+import { createProduct, updateProduct, deleteProduct, saveProductLinks, getProductStats, type ProductStats } from '@/app/(master)/dashboard/products/actions';
+import { ProductStatsPanel } from './ProductStatsPanel';
 import { createClient } from '@/lib/supabase/client';
 import { getCroppedImg } from '@/components/master/settings/utils/cropImage';
 import { uploadPhoto } from '@/lib/upload/uploadPhoto';
@@ -101,6 +102,8 @@ export function ProductEditor({ id }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showStockLimit, setShowStockLimit] = useState(true);
+  const [stats, setStats] = useState<ProductStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const isConsumable = productType === 'consumable';
@@ -168,6 +171,18 @@ export function ProductEditor({ id }: Props) {
       setServiceQuantities(qMap);
     }
   }, [links, id]);
+
+  // Per-product sales analytics (retail only, saved products)
+  useEffect(() => {
+    if (!id || !product || product.product_type === 'consumable') {
+      setStats(null);
+      return;
+    }
+    setStatsLoading(true);
+    getProductStats(id)
+      .then(({ data }) => setStats(data))
+      .finally(() => setStatsLoading(false));
+  }, [id, product?.id, product?.product_type]);
 
   function toggleService(serviceId: string) {
     setLinkedServiceIds(prev =>
@@ -765,6 +780,17 @@ export function ProductEditor({ id }: Props) {
                       )}
                     </div>
                   )}
+                </div>
+              </>
+            )}
+
+            {/* Sales analytics — retail only */}
+            {id && !isConsumable && (
+              <>
+                <div className="h-px bg-border" />
+                <div className="flex flex-col gap-2">
+                  <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1">Аналітика продажів</label>
+                  <ProductStatsPanel stats={stats} loading={statsLoading} />
                 </div>
               </>
             )}

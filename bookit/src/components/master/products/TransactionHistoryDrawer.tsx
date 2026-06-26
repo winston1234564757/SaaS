@@ -14,6 +14,7 @@ const TX_LABEL: Record<string, string> = {
   sale:       'Продаж',
   adjustment: 'Коригування',
   return:     'Повернення',
+  deduction:  'Списано на послугу',
 };
 
 function formatDate(iso: string): string {

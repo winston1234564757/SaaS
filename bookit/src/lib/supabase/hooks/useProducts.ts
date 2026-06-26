@@ -18,6 +18,14 @@ const PRODUCT_SELECT =
   'is_active, is_archived, recommend_always, auto_deduct, sort_order, ' +
   'created_at, updated_at, product_service_links(service_id, quantity)';
 
+// Public (anon) projection: ONLY columns anon is granted SELECT on. Excludes
+// cost_kopecks / purchase_* / stock_alert_threshold / auto_deduct — those are
+// revoked from anon at the DB level so a master's margin never leaks to the shop.
+const PUBLIC_PRODUCT_SELECT =
+  'id, master_id, icon_name, name, description, category, product_type, unit, ' +
+  'price_kopecks, photos, stock_qty, is_active, is_archived, recommend_always, ' +
+  'sort_order, created_at, updated_at, product_service_links(service_id, quantity)';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Read hook (master dashboard)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -98,7 +106,7 @@ export function usePublicProducts(masterId: string | undefined, category?: Produ
     queryFn: async () => {
       let q = createClient()
         .from('products')
-        .select(PRODUCT_SELECT)
+        .select(PUBLIC_PRODUCT_SELECT)
         .eq('master_id', masterId!)
         .eq('is_active', true)
         .eq('is_archived', false)

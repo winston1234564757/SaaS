@@ -29,9 +29,10 @@ interface Props {
   onEdit:    () => void;
   onRestock: () => void;
   onToggle:  () => void;
+  onOpenStats?: () => void;
 }
 
-export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, onToggle }: Props) {
+export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, onToggle, onOpenStats }: Props) {
   const priceUah   = (p.price_kopecks / 100).toFixed(0);
   const coverPhoto = p.photos[0] ?? null;
 
@@ -40,8 +41,19 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bento-card p-4 flex gap-3 transition-opacity group ${!p.is_active ? 'opacity-55' : ''}`}
+      className={`bento-card relative p-4 flex gap-3 transition-opacity group ${!p.is_active ? 'opacity-55' : ''}`}
     >
+      {/* Full-card click target → sales analytics. Sibling button (not a parent
+          of the controls), so the toggle/actions below stay clickable on z-10. */}
+      {onOpenStats && (
+        <button
+          type="button"
+          onClick={onOpenStats}
+          aria-label={`Аналітика продажів: ${p.name}`}
+          className="absolute inset-0 z-0 rounded-[inherit] cursor-pointer"
+        />
+      )}
+
       {/* Photo / placeholder */}
       <div className="relative size-16 rounded-xl overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
         <button
@@ -70,7 +82,7 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
             role="switch"
             aria-checked={p.is_active}
             onClick={onToggle}
-            className="shrink-0 py-[12px] px-0.5 -my-[12px] flex items-center active:scale-95"
+            className="relative z-10 shrink-0 py-[12px] px-0.5 -my-[12px] flex items-center active:scale-95"
             aria-label={p.is_active ? 'Деактивувати' : 'Активувати'}
           >
             <span className={`w-9 h-5 rounded-full transition-colors ${p.is_active ? 'bg-accent' : 'bg-muted-foreground/30'}`}>
@@ -94,7 +106,7 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
         <div className="flex items-center justify-between mt-2.5">
           <p className="text-base font-bold text-foreground">{priceUah} ₴</p>
 
-          <div className="flex gap-1.5">
+          <div className="relative z-10 flex gap-1.5">
             <ActionBtn onClick={onRestock} label="Поповнити">
               <RefreshCw size={14} />
             </ActionBtn>

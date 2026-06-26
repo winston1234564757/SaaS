@@ -475,6 +475,111 @@ export async function saveProductLinks(
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PER-PRODUCT ANALYTICS (read-side)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ProductStats {
+  soldQty:    number;        // total units sold (orders, excl. cancelled)
+  revenue:    number;        // Σ price_kopecks × qty, in грн
+  profit:     number;        // revenue − current cost × soldQty, in грн
+  marginPct:  number;        // profit as % of revenue
+  lastSaleAt: string | null; // ISO timestamp of the latest order
+}
+
+interface SaleRow {
+  qty:           number;
+  price_kopecks: number;
+  orders: { created_at: string } | { created_at: string }[] | null;
+}
+
+interface BookingSaleRow {
+  quantity:      number;
+  product_price: number; // stored in UAH (createBooking: round(price_kopecks / 100))
+  bookings: { created_at: string } | { created_at: string }[] | null;
+}
+
+/**
+ * Per-product sales analytics for the shop.
+ * Admin client is scoped to the authenticated master; product ownership is
+ * verified first. Counts BOTH sales channels except cancelled ones: shop orders
+ * (order_items) and products sold during a booking (booking_products) — matching
+ * the unified sales view in useOrders. Profit uses the product's CURRENT cost —
+ * historical cost is not stored per line, so margin is an approximation.
+ */
+export async function getProductStats(
+  productId: string,
+): Promise<{ data: ProductStats | null; error: string | null }> {
+  const masterId = await getMasterId();
+  if (!masterId) return { data: null, error: 'Не авторизовано' };
+  try {
+    const admin = createAdminClient();
+
+    // Ownership: product must belong to this master. Pull cost in the same trip.
+    const { data: product } = await admin
+      .from('products')
+      .select('id, cost_kopecks')
+      .eq('id', productId)
+      .eq('master_id', masterId)
+      .single();
+    if (!product) return { data: null, error: 'Товар не знайдено' };
+
+    const { data: rows, error: rErr } = await admin
+      .from('order_items')
+      .select('qty, price_kopecks, orders!inner(created_at, master_id, status)')
+      .eq('product_id', productId)
+      .eq('orders.master_id', masterId)
+      .neq('orders.status', 'cancelled');
+    if (rErr) throw rErr;
+
+    let soldQty = 0;
+    let revenueKopecks = 0;
+    let lastSaleAt: string | null = null;
+
+    for (const row of (rows ?? []) as SaleRow[]) {
+      const qty = Number(row.qty) || 0;
+      soldQty += qty;
+      revenueKopecks += (Number(row.price_kopecks) || 0) * qty;
+      const ord = Array.isArray(row.orders) ? row.orders[0] : row.orders;
+      const at = ord?.created_at ?? null;
+      if (at && (!lastSaleAt || at > lastSaleAt)) lastSaleAt = at;
+    }
+
+    // Channel 2: products sold during a booking (booking_products).
+    const { data: bpRows, error: bpErr } = await admin
+      .from('booking_products')
+      .select('quantity, product_price, bookings!inner(created_at, master_id, status)')
+      .eq('product_id', productId)
+      .eq('bookings.master_id', masterId)
+      .neq('bookings.status', 'cancelled');
+    if (bpErr) throw bpErr;
+
+    for (const row of (bpRows ?? []) as BookingSaleRow[]) {
+      const qty = Number(row.quantity) || 0;
+      soldQty += qty;
+      revenueKopecks += (Number(row.product_price) || 0) * 100 * qty;
+      const bk = Array.isArray(row.bookings) ? row.bookings[0] : row.bookings;
+      const at = bk?.created_at ?? null;
+      if (at && (!lastSaleAt || at > lastSaleAt)) lastSaleAt = at;
+    }
+
+    const revenue = Math.round(revenueKopecks / 100);
+    const costKopecks = (Number(product.cost_kopecks) || 0) * soldQty;
+    const profit = Math.round((revenueKopecks - costKopecks) / 100);
+    const marginPct = revenueKopecks > 0
+      ? Math.round(((revenueKopecks - costKopecks) / revenueKopecks) * 100)
+      : 0;
+
+    return {
+      data: { soldQty, revenue, profit, marginPct, lastSaleAt },
+      error: null,
+    };
+  } catch (err: unknown) {
+    console.error('[getProductStats]', err);
+    return { data: null, error: 'Не вдалося завантажити статистику' };
+  }
+}
+
 export async function updateOrderStatus(
   orderId: string,
   status: OrderStatus,

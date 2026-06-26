@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, MapPin, Truck, Package, CalendarDays, ShoppingBag } from 'lucide-react';
+import { ChevronDown, MapPin, Truck, Package, CalendarDays, ShoppingBag, Info } from 'lucide-react';
 import type { OrderStatus } from '@/types/database';
 import type { UnifiedSale } from '@/lib/supabase/hooks/useOrders';
 import { cn } from '@/lib/utils/cn';
@@ -158,8 +158,9 @@ export function OrderCard({ order, onStatusChange }: Props) {
 
               {/* Booking note */}
               {order.source === 'booking' && (
-                <p className="text-[10px] text-muted-foreground/60 px-1">
-                  ℹ️ Статус замовлення синхронізований з бронюванням. Змінюйте в розділі «Записи».
+                <p className="flex items-start gap-1.5 text-[10px] text-muted-foreground/60 px-1">
+                  <Info size={11} className="mt-px shrink-0" />
+                  <span>Статус замовлення синхронізований з бронюванням. Змінюйте в розділі «Записи».</span>
                 </p>
               )}
 

@@ -13,9 +13,12 @@ import { useProducts } from '@/lib/supabase/hooks/useProducts';
 import { useOrders } from '@/lib/supabase/hooks/useOrders';
 import type { UnifiedSale } from '@/lib/supabase/hooks/useOrders';
 import { ProductCard } from './ProductCard';
+import { ProductStatsPanel } from './ProductStatsPanel';
 import { RestockDrawer } from './RestockDrawer';
 import { OrderCard } from './OrderCard';
 import { ConsumableCard } from './ConsumableCard';
+import { Sheet } from '@/components/ui/Sheet';
+import { getProductStats, type ProductStats } from '@/app/(master)/dashboard/products/actions';
 import type { Product, OrderStatus } from '@/types/database';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBanner';
@@ -56,6 +59,9 @@ export function ProductsPage() {
   const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('products_v1', PRODUCTS_STEPS);
 
   const [consumableSearch, setConsumableSearch] = useState('');
+  const [statsProduct, setStatsProduct] = useState<Product | null>(null);
+  const [stats, setStats] = useState<ProductStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const { products, isLoading: pLoading, toggleActive, reorderProducts } = useProducts();
   const { orders, isLoading: oLoading, updateStatus } = useOrders(orderFilter);
 
@@ -107,6 +113,15 @@ export function ProductsPage() {
 
   function closeRestock() {
     setParam('restockId', null);
+  }
+
+  function openStats(p: Product) {
+    setStatsProduct(p);
+    setStats(null);
+    setStatsLoading(true);
+    getProductStats(p.id)
+      .then(({ data }) => setStats(data))
+      .finally(() => setStatsLoading(false));
   }
 
   const ORDER_FILTERS: { label: string; value: OrderStatus | undefined }[] = [
@@ -232,6 +247,7 @@ export function ProductsPage() {
                                     onEdit={() => openEdit(p)}
                                     onRestock={() => openRestock(p)}
                                     onToggle={() => toggleActive(p.id, p.is_active)}
+                                    onOpenStats={() => openStats(p)}
                                   />
                                 </div>
                               )}
@@ -341,6 +357,21 @@ export function ProductsPage() {
           onClose={closeRestock}
         />
       )}
+
+      <Sheet
+        open={!!statsProduct}
+        onOpenChange={(o) => !o && setStatsProduct(null)}
+        variant="adaptive"
+        title="Аналітика продажів"
+        maxWidth="md"
+      >
+        {statsProduct && (
+          <div className="flex flex-col gap-4 pb-2">
+            <p className="text-sm font-semibold text-foreground">{statsProduct.name}</p>
+            <ProductStatsPanel stats={stats} loading={statsLoading} />
+          </div>
+        )}
+      </Sheet>
 
       <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>

@@ -14,6 +14,35 @@ import type { BookingStatus } from '@/types/database';
 const CANCELLABLE_STATUSES = ['pending', 'confirmed'] as const;
 const MUTABLE_STATUSES = ['pending', 'confirmed'] as const;
 
+/**
+ * Return retail products (booking_products) to stock when a booking is cancelled.
+ * createBooking decremented this stock atomically at creation; cancellation must
+ * give it back, mirroring the shop-order cancellation path (updateOrderStatus).
+ * Safe to call once per cancellation — both cancel paths gate on pending/confirmed,
+ * so a booking can never be cancelled twice.
+ */
+async function restockBookingProducts(
+  admin: ReturnType<typeof createAdminClient>,
+  bookingId: string,
+): Promise<void> {
+  const { data: bps } = await admin
+    .from('booking_products')
+    .select('product_id, quantity')
+    .eq('booking_id', bookingId);
+
+  for (const bp of bps ?? []) {
+    await admin.rpc('increment_stock', { p_product_id: bp.product_id, p_qty: bp.quantity });
+    await admin
+      .from('product_transactions')
+      .insert({
+        product_id: bp.product_id,
+        type:       'return',
+        qty_delta:  bp.quantity,
+        note:       `Повернення складу після скасування запису ${bookingId}`,
+      });
+  }
+}
+
 type BookingService = { service_name: string };
 type MasterProfileNested = { profiles: { full_name: string } | null } | null;
 
@@ -114,6 +143,9 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
     ]);
 
     if (updateErr) throw updateErr;
+
+    // Return any retail products on this booking back to stock.
+    await restockBookingProducts(admin, bookingId);
 
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
@@ -246,6 +278,11 @@ export async function updateBookingStatus(
 
     if (error) throw error;
 
+    // Return retail products to stock when this status change is a cancellation.
+    if (status === 'cancelled') {
+      await restockBookingProducts(admin, bookingId);
+    }
+
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
@@ -287,12 +324,15 @@ export async function completeBooking(
 
     const { data: booking } = await admin
       .from('bookings')
-      .select('master_id, client_id, date, start_time, booking_services(service_name, service_id), master_profiles(profiles(full_name))')
+      .select('master_id, client_id, status, date, start_time, booking_services(service_name, service_id), master_profiles(profiles(full_name))')
       .eq('id', bookingId)
       .single();
 
     if (!booking) return { error: 'Запис не знайдено' };
     if (booking.master_id !== user.id) return { error: 'Немає доступу' };
+    // Idempotency: never deduct consumables twice. A second "Завершити"
+    // (double-click / re-complete) must be a no-op for stock.
+    if (booking.status === 'completed') return { error: null };
 
     // Server-side fallback: when client didn't pass consumables, auto-fetch from product_service_links
     let toDeduct = reviewedConsumables;
@@ -329,18 +369,24 @@ export async function completeBooking(
 
         const { data: product } = await admin
           .from('products')
-          .select('stock_qty, cost_kopecks, name, unit, stock_alert_threshold')
+          .select('name, stock_alert_threshold')
           .eq('id', item.product_id)
           .single();
 
         if (!product) continue;
 
-        const newQty = Math.max(0, product.stock_qty - item.qty_used);
-
-        await admin
-          .from('products')
-          .update({ stock_qty: newQty })
-          .eq('id', item.product_id);
+        // Atomic deduct (clamps at 0) — returns the actual units removed so the
+        // ledger never diverges from stock, and is safe under concurrency.
+        const { data: deductRows, error: deductErr } = await admin
+          .rpc('deduct_consumable_stock', { p_product_id: item.product_id, p_qty: item.qty_used });
+        if (deductErr) {
+          console.error('[completeBooking] deduct_consumable_stock:', deductErr.message);
+          continue;
+        }
+        const row = Array.isArray(deductRows) ? deductRows[0] : deductRows;
+        const deducted = Number(row?.deducted) || 0;
+        const newQty = Number(row?.new_stock) || 0;
+        if (deducted <= 0) continue;
 
         if (product.stock_alert_threshold != null && newQty <= product.stock_alert_threshold) {
           void notifyMasterStockAlert(booking.master_id, product.name, newQty);
@@ -350,8 +396,8 @@ export async function completeBooking(
           .from('product_transactions')
           .insert({
             product_id: item.product_id,
-            type:       'sale',
-            qty_delta:  -item.qty_used,
+            type:       'deduction',
+            qty_delta:  -deducted,
             note:       `Списано при завершенні запису ${bookingId}`,
           });
       }
