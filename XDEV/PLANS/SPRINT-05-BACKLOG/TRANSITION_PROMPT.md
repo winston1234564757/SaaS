@@ -15,8 +15,10 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 25/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-BOOK-02 — Записи: таймлайн на день (bolder) (impeccable bolder + design-taste-frontend · Sonnet). REDESIGN → скріншот поточного стану + Task Brief перед кодом.
+Прогрес: 26/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-BOOK-03 — Записи: верхні віджети клікабельні + overlay (senior-frontend · Sonnet · P1). Той самий overlay-патерн, що M-DASH-07/08 (Sheet variant=adaptive).
+Нотатки 2026-06-26:
+- M-BOOK-02 закрито (commit 811482da, deploy READY, 3 ітерації Sonnet→Opus): bolder таймлайн = спец-блок TimelineBlock (статус-рейка + твердий часовий каркас + герой now-line) у VerticalTimeline.tsx + Smart Design System (наповнення адаптується під висоту блока: sm 1 рядок / md-lg top-anchored час-на-лінії / xl 1год+ повна rich-картка justify-between з тривалістю + ціна-футер). Бокові години узгоджено зі шрифтом часу на картках (serif→sans tabular). Тіла пастельні (M-BOOK-01 не відкочено). a11y: статус=рейка+слово(secondary), не лише колір. Урок: Smart Design System на таймлайні = наповнення за висотою; top-anchor проти «плаваючого центру».
 Нотатки 2026-06-25:
 - M-CLI-06 закрито (commit 1f05146a, deploy READY): глибокий редизайн профілю клієнта (профіль-картка). ClientDetailSheet виявився СПІЛЬНИМ (6 точок виклику) → редизайн покрив клієнтів+дашборд+аналітику; BookingDetailsModal-дубль підтягнуто екстракцією. НОВІ спільні ClientIdentityHeader + ClientStatChips. Реальний LTV (total_spent + ранг + каденс, без міграції). Реальні мітки: міграція vibe_tags text[] (на прод) + saveClientTags + useClientTags. Encoding: 30 латинських i виправлено. Урок: SYSTEM_MAP брехав про tags[] — звіряй схему через live-DB.
 - M-BOOK-01 закрито ПОЗА ЧЕРГОЮ (commit 7777a7dc, за гарячим слідом M-CLI-05): пастельний glow на BookingCard, рамка/фіолет-hover геть. Формула glow винесена у спільний lib/utils/statusGlow.ts (retentionGlow делегує). «Підтвердити» лишилась primary (головний CTA). Потребує візуального QA founder.

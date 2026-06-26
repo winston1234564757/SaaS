@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 25/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05` · `M-BOOK-01` · `M-CLI-06`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-BOOK-02` — Записи: таймлайн на день (bolder)** (`impeccable (bolder)` + `design-taste-frontend` · Sonnet · P1)
-**Оновлено:** 2026-06-25
+**Прогрес:** 26/77 ✅ · 1 ↩️ скасовано (`G-LAND-02` · `M-SVC-01` · `M-DASH-06` · `M-SHOP-04` · `G-LOGIN-02` · `G-PWA-02` · `G-PWA-01` · `M-DASH-01` · `M-DASH-02` · `M-DASH-03` · `M-DASH-04` · `M-DASH-05` · `M-DASH-10` · `M-DASH-12` · `M-DASH-09` · `M-SET-01` · `M-DASH-07` · `M-DASH-08` · `M-CLI-01` · `M-CLI-02` · `M-CLI-03` · `M-CLI-04` · `M-CLI-05` · `M-BOOK-01` · `M-CLI-06` · `M-BOOK-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-BOOK-03` — Записи: верхні віджети клікабельні + overlay** (`senior-frontend` · Sonnet · P1)
+**Оновлено:** 2026-06-26
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
 
@@ -447,10 +447,30 @@ Best-practice (скіл `scroll-experience`): нативний свайп не �
 
 ---
 
-## ▶ NEXT: `M-BOOK-02` — Записи: таймлайн на день (bolder)
+## ✅ DONE: `M-BOOK-02` — Записи: таймлайн на день (bolder) + Smart Design System (P1) · commit `811482da` · deploy READY
 
-**Тип:** REDESIGN (bolder) · **Скіл:** `impeccable (bolder)` + `design-taste-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2**
+**Тип:** REDESIGN (bolder) → переріс у Smart Design System · **Скіл:** `design-taste-frontend` + `impeccable (bolder)` · **Модель:** Sonnet→**Opus** (3 ітерації за живим фідбеком founder). Файл: `dashboard/VerticalTimeline.tsx` (день: `view==='timeline' && timeRange==='day'`).
 
-**Задача (BACKLOG):** денний таймлайн записів зробити сміливішим/виразнішим. REDESIGN → потрібен скріншот поточного стану (self-serve dev) + Task Brief + QA на реальних неоднозначностях.
+**Контекст:** таймлайн рендерив повну list-`BookingCard` у кожному слоті; `STATUS_COLORS`/`color` обчислювались але НЕ рендерились (мертвий код) → день не сканувався по статусу; бокові години serif 0.8rem шепотіли.
 
-**Перед кодом:** grep таймлайн-в'ю на `/dashboard/bookings` (Day/Timeline) → `BookingsPage.tsx` + `BookingCard.tsx` (вже отримав `statusGlow` у M-BOOK-01 — не дублювати). mempalace_search по таймлайну записів.
+**Реалізація (3 ітерації):**
+1. **Bolder каркас + спец-блок** (QA founder: напрям «рейка+каркас», блок=спец): новий `TimelineBlock` замість BookingCard — статус-рейка (лівий край 5px, `BOOKING_STATUS_CONFIG`), твердий часовий каркас, герой now-line з чіпом часу. Тіла лишились пастельними (`statusGlow`, M-BOOK-01 не відкочено). Drag-to-reschedule (`DraggableBookingBlock`) збережено.
+2. **Smart Design System** (founder, скрін IMG_8927 — на високому блоці контент плавав у центрі): наповнення адаптується під висоту блока (= тривалість): `sm`<70px 1 тісний рядок центр · `md`/`lg` top-anchored (старт-час стає на свою годинну лінію, типографіка росте) · `xl`≥175px (1год+).
+3. **`xl` = повна rich-картка** (founder, скрін image copy.png — «як картка запису, гарний лейаут, більші шрифти, дод. інфо»): `justify-between` framing — TOP: час `text-xl`+тривалість(`formatDurationFull`+Clock)+статус-чіп / ім'я `text-2xl`+послуги / `PricingBadge` (h≥230); FOOTER (border-top, притиснуто донизу): «Сума»+ціна `text-2xl`.
+4. **Узгодження шрифтів** (founder): бокові години таймлайну serif Cormorant→**sans tabular bold** (як час на картках). Формат «09» великий + «00» дрібний. Розмір ×2 (0.8→1.6rem) збережено.
+
+**a11y:** статус = рейка(колір) + слово(`--text-secondary` 5.93:1) — не лише колір (WCAG 1.4.1); пастельний `cfg.color` для тексту провалював 2.0–2.5:1 → нейтраль. Тривалість+«Сума» tertiary(2.80)→secondary(5.93). now-чіп білий/`--error` 6.47:1.
+
+**Перевірка:** TSC 0 · Build clean (×3) · encoding clean · humanizer N/A (нове: «Сума» — стандартний лейбл, тривалість з існуючого util). Деталі — `BRIEFS/M-BOOK-02.md` (3 ітерації) · скріни `SCREENS/`.
+
+**KEY:** (1) «bolder» для інструмента-планувальника = структурна сміливість (статус-рейка + каркас + now-line), НЕ гучніші тіла — не конфліктує з «тихою пастеллю» M-BOOK-01. (2) **Smart Design System на таймлайні = наповнення за висотою блока** (висота=тривалість): короткий→1 рядок, середній→top-anchored (час на годинній лінії), довгий→повна rich-картка з `justify-between` framing (top info + bottom price-footer заповнюють блок). Top-anchor критичний: центрування робило «плаваючий текст» на високих блоках. (3) Пастельні статус-кольори годяться для рейки/glow, НЕ для дрібного тексту (2:1) — статус-слово завжди нейтральним кольором. (4) «Узгодь шрифти X та Y» = одна родина+вага (тут sans tabular для всіх time-елементів), не обов'язково однаковий розмір.
+
+---
+
+## ▶ NEXT: `M-BOOK-03` — Записи: верхні віджети клікабельні + overlay
+
+**Тип:** feature/overlay · **Скіл:** `senior-frontend` · **Модель:** Sonnet · **P1** · **Фаза 2**
+
+**Задача (BACKLOG):** верхні віджети на `/dashboard/bookings` (заповненість / прогноз / лояльність / ефективність) зробити клікабельними + overlay з деталями. Той самий патерн, що M-DASH-07/08 (спільний `Sheet variant=adaptive`, не вигадувати tooltip-позиціювання коли контент = список/деталі).
+
+**Перед кодом:** grep верхні віджети bookings (`dashboard/DashboardWidgets.tsx`?) → визначити, які 4 метрики й що в overlay кожної (ймовірно ❓ для QA). mempalace_search по overlay-патерну M-DASH-07/08.

@@ -2,8 +2,8 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план: `BACKLOG.md`
 
-**Прогрес:** 25/77 ✅ · 1 ↩️ скасовано (M-DASH-11) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-25
-**▶ NEXT:** `M-BOOK-02` — Записи: таймлайн на день (bolder) (impeccable bolder + design-taste-frontend)
+**Прогрес:** 26/77 ✅ · 1 ↩️ скасовано (M-DASH-11) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-06-26
+**▶ NEXT:** `M-BOOK-03` — Записи: верхні віджети клікабельні + overlay (senior-frontend)
 > `M-DASH-12` додано поза беклогом (ad-hoc founder): вирівнювання висоти десктоп-блоків + кольори → total 76→77. **Вирівнювання висоти лишилось. РЕВІЗІЯ `676c191b` (2026-06-25): бари WeeklyChart відкочено з мультиколору до монохрому + поглиблено рампу обох віджетів (WeeklyChart + PeakHours) до сіро-чорної ~34→100%. Відкрите питання founder закрито.**
 > 🧪 **Мультиагент згорнуто (рішення founder 2026-06-25):** пілотна хвиля 1 (M-DASH-09 + M-SET-01) відпрацювала, але виграш ~break-even на дрібних задачах. Авто-нудж-хук + worktree baseRef прибрано. Машинерія описана в `PARALLEL_WORKFLOW.md` §7 — лишається як довідка, не активна.
 > `G-LAND-02` закрито поза чергою як тестовий прогін воркфлоу (Тір 0).
@@ -11,6 +11,7 @@
 > `M-CLI-04` scroll-UX покрито G-PWA-02 → закрито перевіркою без коду: retention-чіпи + кастомні сегменти у `ClientsPage.tsx` вже обгорнуті в `ScrollStrip` (рядки 286, 319).
 > `M-BOOK-01` зроблено ПОЗА ЧЕРГОЮ (founder: «по гарячим слідам» одразу за M-CLI-05) — той самий пастельний glow на `BookingCard`. Формула винесена у спільний `lib/utils/statusGlow.ts`.
 > `M-CLI-06` ✅ (commit `1f05146a`): профіль клієнта виявився СПІЛЬНИМ компонентом (6 точок) → один редизайн покрив clients/dashboard×3/StatsModals/analytics; BookingDetailsModal-дубль підтягнуто екстракцією (ClientIdentityHeader + ClientStatChips). Реальний LTV (total_spent+ранг+каденс) + реальні мітки (міграція vibe_tags text[]).
+> `M-BOOK-02` ✅ (commit `811482da`, 3 ітерації, ескалація Sonnet→Opus): bolder таймлайн = спец-блок `TimelineBlock` (статус-рейка + твердий часовий каркас + герой now-line) + **Smart Design System** — наповнення адаптується під висоту блока (sm 1 рядок / md-lg top-anchored / xl 1год+ повна rich-картка з тривалістю+ціна-футер). Бокові години узгоджено зі шрифтом часу на картках (sans tabular). Тіла лишились пастельними (M-BOOK-01 не відкочено).
 > `M-DASH-04` ціль = віджет «Записи» (TodaySchedule на дашборді), НЕ сторінка /bookings. Скоуп: лише цей віджет, усі таби.
 > `M-DASH-10` додано поза беклогом (ad-hoc від founder): «Записи» header uppercase + багатий порожній стан → total 74→75.
 > `M-DASH-11` додано поза беклогом (ad-hoc від founder): «Пікові години» heat-палітра як у WeeklyChart → total 75→76.
@@ -63,7 +64,7 @@
 | `M-CLI-06` | Клієнти: сторінка клієнта (деталі) — глибокий редизайн 🔄 + спільні під-компоненти + реальний LTV/мітки | P1 | ✅ | `design-taste-frontend` + `impeccable` + `humanizer` | **Opus** | `1f05146a` |
 
 | `M-BOOK-01` | Записи: кольорова корекція карток (пастель) | P1 | ✅ | `impeccable (distill + colorize)` | **Sonnet** | `7777a7dc` |
-| `M-BOOK-02` | Записи: таймлайн на день (bolder) | P1 | ⬜ | `impeccable (bolder)` + `design-taste-frontend` | **Sonnet** | — |
+| `M-BOOK-02` | Записи: таймлайн на день (bolder) + Smart Design System (адаптив за висотою) | P1 | ✅ | `impeccable (bolder)` + `design-taste-frontend` | **Opus** | `811482da` |
 | `M-BOOK-03` | Записи: верхні віджети клікабельні + overlay | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-BOOK-04` | Записи: "Додати запис" — справжня кнопка | P2 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `M-BOOK-05` | Записи: сторінка деталі запису — редизайн 🔄 | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet→Opus** | — |
