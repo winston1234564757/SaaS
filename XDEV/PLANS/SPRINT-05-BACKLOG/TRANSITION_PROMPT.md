@@ -15,8 +15,10 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 29/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
-Наступна: M-SVC-02 — Послуги: картки у стилі маркетплейсу (design-taste-frontend + impeccable · Sonnet · P1). REDESIGN → скрін + Task Brief + QA перед кодом.
+Прогрес: 30/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS
+Наступна: M-SVC-03 — Послуги: режим «картка товару» (відгуки/описи) + доступний клієнтам на онлайн-записі 🔄 (spec-driven-workflow → design-taste-frontend · Opus · P1). NEW-FEATURE → brainstorming + повний spec (acceptance, всі стани) перед кодом. Базується на щойно зробленій картці послуги (M-SVC-02).
+Нотатки 2026-06-26 (M-SVC-02):
+- M-SVC-02 закрито (commit 980b5402): картки маркетплейс + 2 режими перегляду (сітка/список, перемикач у сайдбарі + localStorage services_view). Сітка = вертик. плитка фото-зверху aspect-[16/10] (Frost icon-fallback) + footer-дії; список = горизонт. рядок, назва на всю ширину (line-clamp-2, без скорочень), правий стовпчик ціна-над-діями. ServiceCard отримав view проп + спільні editDelete/toggle блоки. 3 ітерації founder (гібрид→горизонт→вертикаль + ad-hoc другий режим). Бейдж «Хіт» на популярних. Бекенд/DnD/поля не чіпані. Урок: повні назви — ціна не має бути inline-сусідом імені в горизонт. рядку, винось у окремий стовпчик.
 Нотатки 2026-06-26 (M-BOOK-05):
 - M-BOOK-05 закрито (commit 0ebd850b, очікує візуального QA): деталь запису лишилась adaptive Sheet (не route — той самий патерн ClientDetailSheet). Receipt-картка (hero serif-дата + час tabular + source-чіп → пунктир → рядки → «Разом» serif 3xl) + новий status-outcome блок для термінальних (status_changed_at + cancellation_reason — раніше мертві поля хука) + термінальні дії «Записати знову» (UrlActionBus booking:create+clientId) / «Профіль клієнта». a11y: пастельний статус-колір як bold-текст провалив контраст (<4.5) → text-foreground, колір лишився на іконці. Урок: звіряй що хук віддає vs що екран показує.
 Нотатки 2026-06-26 (M-BOOK-03+04):

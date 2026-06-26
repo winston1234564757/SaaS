@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 29/77 ✅ · 1 ↩️ скасовано (… · `M-CLI-06` · `M-BOOK-02` · `M-BOOK-03` · `M-BOOK-04` · `M-BOOK-05`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-SVC-02` — Послуги: картки у стилі маркетплейсу** (`design-taste-frontend` + `impeccable` · Sonnet · P1) · REDESIGN
+**Прогрес:** 30/77 ✅ · 1 ↩️ скасовано (… · `M-BOOK-05` · `M-SVC-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-SVC-03` — Послуги: режим «картка товару» (відгуки/описи) + доступний клієнтам на онлайн-записі** (`spec-driven-workflow` → `design-taste-frontend` · Opus · P1 🔄) · NEW-FEATURE
 **Оновлено:** 2026-06-26
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,27 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SVC-02` — Послуги: картки маркетплейс + 2 режими (P1) · commit `980b5402`
+
+**Тип:** REDESIGN (+ ad-hoc міні-feature) · **Скіл:** `design-taste-frontend` · **Модель:** Sonnet.
+
+**Рішення founder (3 ітерації візуального QA):** (1) лейаут пройшов гібрид → горизонт з фото full-height → фінально **перший варіант: вертикальна плитка фото-зверху**; (2) ad-hoc доповнення — **другий режим перегляду «список»**; (3) у списку назви різались → виправлено.
+
+**Реалізація (`ServiceCard.tsx` + `ServicesPage.tsx`):**
+- **`view` проп (`'grid' | 'list'`)** на ServiceCard. Спільні блоки `editDelete` + `toggle` — один код дій на обидва режими.
+- **Сітка:** `bento-card` flex-col → фото `aspect-[16/10]` зверху (`Image fill object-cover` АБО Frost-градієнт `from-primary/12 via-accent/8` + `ServiceIcon` 40px center) → контент (назва `line-clamp-2`, опис `line-clamp-1`, категорія-піл + тривалість, ціна `metric-value text-lg`) → footer-дії `justify-between` (`mt-auto`). Бейдж «Хіт» (popular) оверлеєм top-right на фото; drag-handle top-left на hover.
+- **Список:** flex-row `items-stretch` → мініатюра 60px self-stretch → контент flex-1 (назва на всю ширину `line-clamp-2` + popular-зірка inline; категорія+тривалість) → правий стовпчик `items-end` ціна-над-діями.
+- **Перемикач** у сайдбарі (`LayoutGrid`/`List`, `aria-pressed`, `role=group`), показ лише коли `services.length > 0`, **persistence `localStorage['services_view']`** (читання в useEffect post-mount → без hydration mismatch). Контейнер груп: `view==='list' ? flex-col gap-2 : grid md:grid-cols-2`.
+- `LoadingState` skeleton під grid-силует. DnD reorder/toggle/hide/поля/RPC/бекенд **не чіпані**.
+
+**Root cause «назви ріжуться»:** `line-clamp-1` + ціна як inline-сусід контенту в горизонт. рядку → `flex-1 min-w-0` стискався під ціну+3 дії. Fix структурний: ціна винесена у вертикальний правий стовпчик з діями → ім'я отримало всю горизонталь, `line-clamp-2` в обох режимах = повні назви.
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean. Деталі — `BRIEFS/M-SVC-02.md`.
+
+**KEY:** (1) Два режими через `view` проп + спільні блоки дій = нуль дублювання edit/delete/toggle. (2) Повні назви: ціна не має бути inline-сусідом імені в горизонт. рядку — винось у окремий стовпчик. (3) Marketplace-вигляд у management-в'ю = фото-зона з якісним icon-fallback + акцент ціни, але контролі видимі (touch-екран майстра), не hover-overlay.
 
 ---
 
