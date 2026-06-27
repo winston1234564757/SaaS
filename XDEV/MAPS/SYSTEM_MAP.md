@@ -2,7 +2,7 @@
 
 > Оновлено: 2026-06-27 · Джерело: живий код (v9.0.0) · Останній код-коміт: `641141d3` (M-SHOP-01 аналітика товару `getProductStats` 2 канали [order_items+booking_products] + `ProductStatsPanel`; **аудит товарів/розхідників P1×5+P2×4**: колонкові GRANT anon на products, політика `pt_master_select`, RPC `deduct_consumable_stock`, тип `'deduction'`, restock booking_products при скасуванні, idempotency completeBooking, drop permissive INSERT orders/order_items)
 > 
-> **⚡ Sprint-05 Status (ACTIVE):** 32/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-SHOP-02` — Магазин: картки товарів маркетплейс | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
+> **⚡ Sprint-05 Status (ACTIVE):** 33/77 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-SHOP-03` — Магазин: режим «картка товару» + клієнт-сторінка | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
@@ -54,7 +54,7 @@
 | `/dashboard/growth` | Growth Hub: вкладки "Лояльність", "Реферали" та "Партнери" (inline) | `growth/page.tsx` | — | `master/growth/GrowthHubClient.tsx` |
 | `/dashboard/portfolio` | Портфоліо: CRUD кейсів, фото (tap-overlay + ←→ reorder), consent клієнта, прив'язка до послуг/відгуків | `portfolio/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioPage.tsx`, `PortfolioItemPage.tsx`, `PortfolioItemCard.tsx`, `PortfolioPhotoUploader.tsx` | Shared: `components/shared/PhotoLightbox.tsx` |
 | `/dashboard/portfolio/[id]` | Редагування кейсу портфоліо (No-Modals policy). Ліміт Starter = 5 публічних; захист на 3 рівнях. | `portfolio/[id]/page.tsx` | `portfolio/actions.ts` | `master/portfolio/PortfolioItemPage.tsx` |
-| `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення; Розхідники: 3-й таб ConsumablesTab з unit selector (pcs/ml/г) + low-stock warning | `products/page.tsx` | `products/actions.ts` (+ `unit` field) | `master/products/ProductsPage.tsx`, `ConsumableCard.tsx`, `ProductEditor.tsx` (unit selector) |
+| `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення; Розхідники: 3-й таб ConsumablesTab з unit selector (pcs/ml/г) + low-stock warning | `products/page.tsx` | `products/actions.ts` (+ `unit` field) | `master/products/ProductsPage.tsx` (M-SHOP-02: grid/list view + `localStorage['products_view']` перемикач у сайдбарі), `ProductCard.tsx` (M-SHOP-02: marketplace-картка `view` проп grid/list — плитка фото-зверху aspect-[16/10] + glass-піл залишку top-right + footer-дії [Аналітика/Поповнити/Редагувати], тап→редактор; клон ServiceCard), `ConsumableCard.tsx`, `ProductEditor.tsx` (unit selector) |
 | `/dashboard/revenue` (expenses) | Revenue Hub: 3 вкладки — Флеш-акції / Смарт-ціни / Фінанси (master_expenses Pro-gate CRUD + vaul Drawer) | `revenue/page.tsx` | `revenue/expenses.actions.ts` (createExpense/updateExpense/deleteExpense/getExpenses) | `master/revenue/RevenueHubClient.tsx`, `ExpensesTab.tsx` (NEW T30) |
 
 | `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |

@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 32/77 ✅ · 1 ↩️ скасовано (… · `M-SVC-03` · `M-SHOP-01`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-SHOP-02` — Магазин: картки товарів у стилі маркетплейсу** (`design-taste-frontend` + `impeccable` · Sonnet · P1)
+**Прогрес:** 33/77 ✅ · 1 ↩️ скасовано (… · `M-SHOP-01` · `M-SHOP-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-SHOP-03` — Магазин: режим «картка товару» + клієнт-сторінка 🔄** (`design-taste-frontend` + `impeccable` · Sonnet→Opus · P1)
 **Оновлено:** 2026-06-27
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,27 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SHOP-02` — Магазин: картки товарів маркетплейс + 2 режими (P1) · commit `4d428d28`
+
+**Тип:** REDESIGN (layout) · **Тір:** 1 · **Скіл:** `design-taste-frontend` · **Модель:** Sonnet · **Близнюк:** `M-SVC-02`.
+
+**Рішення founder (QA 3/3):** (1) тап по тілу картки → редактор (як у послуг), аналітика — окрема кнопка; (2) обидва режими grid/list + перемикач + localStorage; (3) залишок = піл-оверлей на фото top-right.
+
+**Реалізація:**
+- **`ProductCard.tsx` повністю переписано** під патерн `ServiceCard` (M-SVC-02). `view` проп (`'grid'|'list'`), спільні блоки `actions` (Аналітика `BarChart3` + Поповнити `RefreshCw` + Редагувати `Pencil`) + `toggle` — нуль дублювання між режимами.
+- **Grid:** `bento-card p-0 flex flex-col` → фото `aspect-[16/10]` зверху (`Image fill` АБО Frost-градієнт `from-primary/12 via-accent/8` + `ProductIcon` 40px) → назва `line-clamp-2` + піл-категорія + ціна `metric-value text-lg` → footer-дії `mt-auto border-t`. **Залишок — glass-піл** (`bg-background/85 backdrop-blur-sm`) оверлеєм top-right, текст-колір за кількістю (`STOCK_TEXT`: success/warning/destructive). Drag-handle top-left на hover.
+- **List:** мініатюра 60px self-stretch → контент flex-1 (назва на всю ширину `line-clamp-2` + піл-категорія + піл-залишок `STOCK_PILL` full-bg) → правий стовпчик `items-end` ціна-над-діями.
+- **Тап по тілу → `onEdit`** (контент-`<button>`). Повнокарткову z-0 sibling-підкладку (раніше → onOpenStats) прибрано — аналітика тепер явна footer-кнопка, без вкладених interactive.
+- **`ProductsPage.tsx`:** перемикач `LayoutGrid`/`List` у сайдбарі (`ViewBtn`, `aria-pressed`, `role=group`), показ лише `tab==='products' && products.length>0`. Persistence `localStorage['products_view']` (read у `useEffect` post-mount → без hydration mismatch). Droppable-контейнер `view==='list' ? flex-col gap-3 : grid md:grid-cols-2 gap-3`. DnD-reorder працює в обох (Draggable у grid-контейнері — підтверджено патерном ServicesPage). Передано `view`+`index` у ProductCard.
+
+**Збережено без змін:** тогл активності, restock, edit, drag reorder, `onOpenStats` overlay, opacity-55 неактивних, SkeletonList, бекенд/хуки/RPC, ConsumableCard (розхідники поза скоупом).
+
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean · deploy READY на прод. Новий copy — лише «Сітка»/«Список» (стандартні слова, humanizer N/A) + технічні aria-labels. **Очікує візуального QA founder** (stock-бейдж на фото, паритет із картками послуг, mobile+desktop). Деталі — `BRIEFS/M-SHOP-02.md`.
+
+**KEY:** (1) Marketplace-картка товару = клон ServiceCard (M-SVC-02) + 1 товарна поправка — залишок як glass-піл оверлеєм на фото (текст-колір за порогами 0/≤3, власне скляне тло замість full-bg піла, бо на фото full-bg піл нечитабельний). (2) Stats-on-tap → edit-on-tap: коли картка має і редактор, і аналітику, тіло веде на найчастішу дію (редагування), вторинне (аналітика) = явна кнопка — інакше повнокарткова z-0 підкладка конфліктує з контент-кнопкою. (3) DnD у grid — `@hello-pangea/dnd` Droppable працює прямо на grid-контейнері, контейнер-клас перемикається за `view`.
 
 ---
 
