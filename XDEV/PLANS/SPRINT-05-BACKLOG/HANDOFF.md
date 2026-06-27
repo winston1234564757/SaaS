@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 33/77 ✅ · 1 ↩️ скасовано (… · `M-SHOP-01` · `M-SHOP-02`) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-SHOP-03` — Магазин: режим «картка товару» + клієнт-сторінка 🔄** (`design-taste-frontend` + `impeccable` · Sonnet→Opus · P1)
+**Прогрес:** 34/78 ✅ · 1 ↩️ скасовано (… · `M-SHOP-02` · `M-SHOP-03` A+B) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
+**Наступна задача:** **`M-SHOP-03b` — Магазин: система відгуків про товари** (`create-migration` + `security-review` + `senior-backend` · Opus · P1)
 **Оновлено:** 2026-06-27
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,35 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SHOP-03` (A+B) — Магазин: сторінка товару (роут) + кошик через навігацію + майстер-прев'ю (P1) · commit `19bd7894`
+
+**Тип:** NEW-FEATURE (route + REDESIGN-гібрид) · **Тір:** 2 · **Скіли:** `spec-driven-workflow` → `design-taste-frontend` + `senior-frontend` (cart-рефактор) · **Модель:** Sonnet→Opus · **Близнюк:** `M-SVC-03`.
+
+**Рішення founder (QA 4/4 + split):** (1) окремий роут з URL; (2) кошик = shop-layout + localStorage; (3) майстер Eye-прев'ю у скоупі; (4) відгуки — повноцінні, АЛЕ **розбито**: ця сесія = A+B, відгуки (C) → окремий `M-SHOP-03b`.
+
+**Ключова відмінність від M-SVC-03:** товари важчі — не Sheet, а справжня сторінка-роут + кошик мусить пережити навігацію (у послуг Sheet нічого не ламав). `reviews` table = `booking_id NOT NULL` → для товарів не годиться, треба нова `product_reviews` (винесено в C).
+
+**Реалізація (A — сторінка + кошик):**
+- **`ShopCartContext.tsx`** (NEW) — кошик у React-context, persist у `localStorage['bookit_cart_${slug}']`. Read лише в `useEffect` post-mount (`hydrated` флаг) → без hydration mismatch. API: items/count/total/addToCart/setQty/getQty/clear.
+- **`shop/layout.tsx`** (NEW) — `ShopCartProvider` обгортає каталог + сторінку товару → стан спільний через навігацію (Next layout не ре-монтується).
+- **`ShopCartBar.tsx`** (NEW) — sticky cart-кнопка + `CartDrawer` (checkout pickup/Nova Poshta — перенесено зі ShopPage 1:1) + `OrderSuccess` (тепер fixed-overlay, не повна заміна сторінки). Читає контекст. Рендериться і на каталозі, і на сторінці товару — активна одна за раз (один роут), тож дубля немає.
+- **`ProductDetailView.tsx`** (NEW, presentational) — галерея (свайп/стрілки/крапки/thumbnails — винесено з колишнього `ProductDetailSheet`) + назва/ціна/залишок/опис (+master-нудж порожнього опису) + статична секція «Відгуки» (C підключить). Без cart-стану. `actions`-слот для cart-контролів.
+- **`[slug]/shop/[productId]/page.tsx`** (NEW SSR) — fetch одного товару (active, by slug+master), `generateMetadata` (title + OG-фото), `notFound` + Pro-gate.
+- **`ProductPage.tsx`** (NEW client) — `ProductDetailView` + qty stepper + «в кошик» (пише в контекст) + back-link + `ShopCartBar`.
+- **Рефактор `ShopPage.tsx`** — кошик local `useState` → `useShopCart()`. `ProductTile`: `motion.button`+sheet → `<Link href={/shop/${id}}>`. `ProductDetailSheet`/`CartDrawer`/`OrderSuccess`/`DeliveryBtn` видалені (переїхали). Каталог-грід/фільтри без змін.
+
+**Реалізація (B — майстер прев'ю):**
+- `ProductCard.tsx` — Eye-кнопка в `actions` (перша) → `onPreview`. Грід `grid-cols-1 md:grid-cols-2` (мобілка = 1 колонка на всю ширину) → 4 footer-кнопки (Eye/Аналітика/Поповнити/Редагувати) + тогл вміщаються.
+- `ProductsPage.tsx` — `previewProduct` стан → `Sheet variant=adaptive` з `ProductDetailView mode="master"` read-only.
+
+**Перевірка:** TSC 0 · Build clean (роут `/[slug]/shop/[productId]` згенеровано) · encoding clean · deploy READY на прод. **Очікує візуального QA founder** — особливо **рефактор кошика** (додати з каталогу + зі сторінки товару → спільний кошик → checkout самовивіз/НП → замовлення → success; reload зберігає кошик). Деталі — `BRIEFS/M-SHOP-03.md`.
+
+**KEY:** (1) Sheet→роут перетворення тягне за собою підняття будь-якого ефемерного стану (тут — кошик) у persistent-сховище, бо компонент-хост розмонтовується. shop-`layout.tsx` + context = стан переживає навігацію; localStorage = переживає reload. (2) Спільний презентаційний `ProductDetailView` без стану → юзається і публічною сторінкою (з cart-actions слотом), і майстер-прев'ю (read-only) — один patern, як ServiceDetailSheet, але як сторінка а не лише Sheet. (3) `ShopCartBar` на двох роутах безпечний бо активний лише один роут — нема двох checkout одночасно. (4) `reviews` намертво прив'язана до bookings → відгуки про товар вимагають окремої таблиці, не розширення reviews (винесено в M-SHOP-03b).
+
+**M-SHOP-03b (наступне) — спека готова в `BRIEFS/M-SHOP-03.md` Фаза C:** таблиця `product_reviews` (FK order_items, UNIQUE), RLS, RPC `get_product_reviews` (дзеркало get_service_reviews), action `submitProductReview` (завершене замовлення клієнта, без дублю), prompt у `MyBookingsPage` таб Магазин, показ у `ProductDetailView`.
 
 ---
 
