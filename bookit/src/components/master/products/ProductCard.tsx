@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Pencil, RefreshCw, GripVertical, BarChart3 } from 'lucide-react';
+import { Pencil, RefreshCw, GripVertical, BarChart3, Eye } from 'lucide-react';
 import type { Product, ProductCategory } from '@/types/database';
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import { ProductIcon } from '@/lib/product-icons';
@@ -43,11 +43,12 @@ interface Props {
   onRestock: () => void;
   onToggle:  () => void;
   onOpenStats?: () => void;
+  onPreview?: () => void;
   index?: number;
   view?: ProductView;
 }
 
-export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, onToggle, onOpenStats, index = 0, view = 'grid' }: Props) {
+export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, onToggle, onOpenStats, onPreview, index = 0, view = 'grid' }: Props) {
   const priceUah   = (p.price_kopecks / 100).toFixed(0);
   const coverPhoto = p.photos[0] ?? null;
 
@@ -60,6 +61,11 @@ export function ProductCard({ product: p, dragHandleProps, onEdit, onRestock, on
   // Shared management controls — identical markup in both views.
   const actions = (
     <div className="flex items-center gap-1">
+      {onPreview && (
+        <ActionBtn onClick={onPreview} label="Переглянути як бачить клієнт">
+          <Eye size={14} />
+        </ActionBtn>
+      )}
       {onOpenStats && (
         <ActionBtn onClick={onOpenStats} label="Аналітика продажів">
           <BarChart3 size={14} />

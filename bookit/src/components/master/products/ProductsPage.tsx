@@ -14,6 +14,7 @@ import { useOrders } from '@/lib/supabase/hooks/useOrders';
 import type { UnifiedSale } from '@/lib/supabase/hooks/useOrders';
 import { ProductCard, type ProductView } from './ProductCard';
 import { ProductStatsPanel } from './ProductStatsPanel';
+import { ProductDetailView } from '@/components/public/shop/ProductDetailView';
 import { RestockDrawer } from './RestockDrawer';
 import { OrderCard } from './OrderCard';
 import { ConsumableCard } from './ConsumableCard';
@@ -69,6 +70,7 @@ export function ProductsPage() {
     try { localStorage.setItem('products_view', v); } catch { /* private mode */ }
   }
   const [statsProduct, setStatsProduct] = useState<Product | null>(null);
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const [stats, setStats] = useState<ProductStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const { products, isLoading: pLoading, toggleActive, reorderProducts } = useProducts();
@@ -270,6 +272,7 @@ export function ProductsPage() {
                                     onRestock={() => openRestock(p)}
                                     onToggle={() => toggleActive(p.id, p.is_active)}
                                     onOpenStats={() => openStats(p)}
+                                    onPreview={() => setPreviewProduct(p)}
                                   />
                                 </div>
                               )}
@@ -393,6 +396,16 @@ export function ProductsPage() {
             <ProductStatsPanel stats={stats} loading={statsLoading} />
           </div>
         )}
+      </Sheet>
+
+      <Sheet
+        open={!!previewProduct}
+        onOpenChange={(o) => !o && setPreviewProduct(null)}
+        variant="adaptive"
+        maxWidth="lg"
+        contentClassName="px-0 py-0"
+      >
+        {previewProduct && <ProductDetailView product={previewProduct} mode="master" />}
       </Sheet>
 
       <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
