@@ -2,6 +2,7 @@ import { PublicNavbar } from '@/components/public/PublicNavbar';
 import { SmartBackButton } from '@/components/shared/SmartBackButton';
 import { ShopCartProvider } from '@/components/public/shop/ShopCartContext';
 import { GlobalCartButton } from '@/components/public/shop/GlobalCartButton';
+import { SupportWidget } from '@/components/shared/support/SupportWidget';
 
 export default async function PublicLayout(
   { children, params }: { children: React.ReactNode; params: Promise<{ slug: string }> }
@@ -14,6 +15,7 @@ export default async function PublicLayout(
         <SmartBackButton floating />
         {children}
         <GlobalCartButton preferSlug={slug} />
+        <SupportWidget />
       </div>
     </ShopCartProvider>
   );

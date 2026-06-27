@@ -30,7 +30,11 @@ type TicketType = 'feedback' | 'bug' | 'idea';
 export function SupportWidget() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, profile } = useMasterContext();
+  const { user: ctxUser, profile: ctxProfile } = useMasterContext();
+  // Client-facing zones (public master pages, /my) have no MasterProvider, so the
+  // context user is null there. Fall back to a direct client-side auth check so the
+  // support FAB works for logged-in users without making those pages dynamic (SSR).
+  const [fallbackAuth, setFallbackAuth] = useState<{ role: string | null } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<'selection' | 'form' | 'success'>('selection');
   const [ticketType, setTicketType] = useState<TicketType>('feedback');
@@ -50,6 +54,22 @@ export function SupportWidget() {
     setMounted(true);
   }, []);
 
+  // Resolve the user client-side when no MasterContext is present (client zones).
+  useEffect(() => {
+    if (ctxUser) return;
+    let active = true;
+    (async () => {
+      const { data: { user: u } } = await supabase.auth.getUser();
+      if (!active || !u) return;
+      const { data: prof } = await supabase.from('profiles').select('role').eq('id', u.id).single();
+      if (active) setFallbackAuth({ role: (prof as { role: string | null } | null)?.role ?? null });
+    })();
+    return () => { active = false; };
+  }, [ctxUser, supabase]);
+
+  const isAuthed = !!ctxUser || !!fallbackAuth;
+  const role = ctxProfile?.role ?? fallbackAuth?.role ?? null;
+
   // Clean file preview url
   useEffect(() => {
     return () => {
@@ -58,7 +78,7 @@ export function SupportWidget() {
   }, [filePreview]);
 
   const handleStartChat = () => {
-    const isMaster = profile?.role === 'master' || profile?.role === 'admin';
+    const isMaster = role === 'master' || role === 'admin';
     setIsOpen(false);
     if (isMaster) {
       router.push('/dashboard/support/chat');
@@ -79,7 +99,7 @@ export function SupportWidget() {
   });
 
   // Don't render for anonymous/unauthenticated users or on active chat routes
-  if (!user || pathname === '/dashboard/support/chat' || pathname === '/my/support/chat') {
+  if (!isAuthed || pathname === '/dashboard/support/chat' || pathname === '/my/support/chat') {
     return null;
   }
 
