@@ -1,9 +1,9 @@
 ﻿'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Package, ShoppingBag, FlaskConical, Search } from 'lucide-react';
+import { Plus, Package, ShoppingBag, FlaskConical, Search, LayoutGrid, List } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { DropResult } from '@hello-pangea/dnd';
 const DragDropContext = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.DragDropContext })), { ssr: false });
@@ -12,7 +12,7 @@ const Draggable = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default
 import { useProducts } from '@/lib/supabase/hooks/useProducts';
 import { useOrders } from '@/lib/supabase/hooks/useOrders';
 import type { UnifiedSale } from '@/lib/supabase/hooks/useOrders';
-import { ProductCard } from './ProductCard';
+import { ProductCard, type ProductView } from './ProductCard';
 import { ProductStatsPanel } from './ProductStatsPanel';
 import { RestockDrawer } from './RestockDrawer';
 import { OrderCard } from './OrderCard';
@@ -59,6 +59,15 @@ export function ProductsPage() {
   const { currentStep, nextStep, closeTour, dynamicSteps } = useDestinationTour('products_v1', PRODUCTS_STEPS);
 
   const [consumableSearch, setConsumableSearch] = useState('');
+  const [view, setView] = useState<ProductView>('grid');
+  useEffect(() => {
+    const saved = localStorage.getItem('products_view');
+    if (saved === 'list' || saved === 'grid') setView(saved);
+  }, []);
+  function changeView(v: ProductView) {
+    setView(v);
+    try { localStorage.setItem('products_view', v); } catch { /* private mode */ }
+  }
   const [statsProduct, setStatsProduct] = useState<Product | null>(null);
   const [stats, setStats] = useState<ProductStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
@@ -207,6 +216,17 @@ export function ProductsPage() {
               {tab === 'consumables' ? 'Додати розхідник' : 'Додати'}
             </button>
           )}
+
+          {tab === 'products' && products.length > 0 && (
+            <div role="group" aria-label="Режим перегляду" className="mt-3 flex items-center gap-1 p-1 rounded-full bg-secondary/60 border border-border">
+              <ViewBtn active={view === 'grid'} onClick={() => changeView('grid')} label="Сітка">
+                <LayoutGrid size={15} />
+              </ViewBtn>
+              <ViewBtn active={view === 'list'} onClick={() => changeView('list')} label="Список">
+                <List size={15} />
+              </ViewBtn>
+            </div>
+          )}
         </div>
 
         {/* Right: content */}
@@ -229,7 +249,7 @@ export function ProductsPage() {
                   <DragDropContext onDragEnd={handleProductDragEnd}>
                     <Droppable droppableId="products">
                       {(provided) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col gap-3">
+                        <div ref={provided.innerRef} {...provided.droppableProps} className={view === 'list' ? 'flex flex-col gap-3' : 'grid grid-cols-1 md:grid-cols-2 gap-3'}>
                           {products.map((p, i) => (
                             <Draggable key={p.id} draggableId={p.id} index={i}>
                               {(prov, snap) => (
@@ -243,6 +263,8 @@ export function ProductsPage() {
                                 >
                                   <ProductCard
                                     product={p}
+                                    view={view}
+                                    index={i}
                                     dragHandleProps={prov.dragHandleProps}
                                     onEdit={() => openEdit(p)}
                                     onRestock={() => openRestock(p)}
@@ -384,6 +406,23 @@ function StatChip({ label, value, warn }: { label: string; value: number | strin
       <p className={`text-base font-bold ${warn ? 'text-warning' : 'text-foreground'}`}>{value}</p>
       <p className={`text-[10px] ${warn ? 'text-warning' : 'text-muted-foreground/60'}`}>{label}</p>
     </div>
+  );
+}
+
+function ViewBtn({ active, onClick, label, children }: { active: boolean; onClick: () => void; label: string; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      aria-label={label}
+      onClick={onClick}
+      className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full text-xs font-semibold transition-all ${
+        active ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
+      }`}
+    >
+      {children}
+      {label}
+    </button>
   );
 }
 
