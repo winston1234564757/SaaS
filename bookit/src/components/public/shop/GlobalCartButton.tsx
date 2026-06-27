@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
 
@@ -13,7 +14,7 @@ interface ActiveCart { slug: string; count: number; total: number }
  * without the provider (e.g. the client `/my` area). Static read on mount +
  * refresh on storage/visibility changes — these pages don't mutate the cart.
  */
-function readActiveCart(): ActiveCart | null {
+function readActiveCart(preferSlug?: string): ActiveCart | null {
   if (typeof window === 'undefined') return null;
   const carts: Record<string, { count: number; total: number }> = {};
 
@@ -33,18 +34,25 @@ function readActiveCart(): ActiveCart | null {
   const slugs = Object.keys(carts);
   if (slugs.length === 0) return null;
 
+  // Prefer the cart of the master whose page we're on; else the last active one.
   const last = localStorage.getItem('bookit_cart_last');
-  const slug = last && carts[last] ? last : slugs[0];
+  const slug = (preferSlug && carts[preferSlug]) ? preferSlug
+    : (last && carts[last]) ? last
+    : slugs[0];
   return { slug, ...carts[slug] };
 }
 
-export function GlobalCartButton() {
+export function GlobalCartButton({ preferSlug }: { preferSlug?: string }) {
+  const pathname = usePathname();
   const [cart, setCart] = useState<ActiveCart | null>(null);
 
-  const refresh = useCallback(() => setCart(readActiveCart()), []);
+  const refresh = useCallback(() => setCart(readActiveCart(preferSlug)), [preferSlug]);
+
+  // Re-read on every client navigation — localStorage.setItem doesn't fire a
+  // 'storage' event in the same tab, so the cross-page cart could go stale.
+  useEffect(() => { refresh(); }, [pathname, refresh]);
 
   useEffect(() => {
-    refresh();
     const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
     window.addEventListener('storage', refresh);
     document.addEventListener('visibilitychange', onVisible);
@@ -54,9 +62,12 @@ export function GlobalCartButton() {
     };
   }, [refresh]);
 
+  // Shop routes render their own ShopCartBar — avoid a duplicate button there.
+  const onShopRoute = /\/shop(\/|$)/.test(pathname);
+
   return (
     <AnimatePresence>
-      {cart && (
+      {cart && !onShopRoute && (
         <motion.div
           className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-6 pt-3 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none"
           initial={{ y: 80, opacity: 0 }}
