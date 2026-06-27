@@ -15,6 +15,7 @@ import { ClientNotificationsBell } from '@/components/client/ClientNotifications
 import { SmartBackButton } from '@/components/shared/SmartBackButton';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
 import { GlassSafeArea } from '@/components/shared/GlassSafeArea';
+import { GlobalCartButton } from '@/components/public/shop/GlobalCartButton';
 
 export default async function MyLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -105,6 +106,7 @@ export default async function MyLayout({ children }: { children: React.ReactNode
           {children}
         </B2CRouteGuard>
       </div>
+      <GlobalCartButton />
       <SupportWidget />
     </div>
   );

@@ -41,10 +41,16 @@ export function ShopCartProvider({ slug, children }: { slug: string; children: R
   }, [storageKey]);
 
   // Sync to localStorage on every change (only after the initial read).
+  // Also track the last active master slug so the global (zone-less) cart
+  // button can surface this cart from anywhere (e.g. the /my client area).
   useEffect(() => {
     if (!hydrated) return;
-    try { localStorage.setItem(storageKey, JSON.stringify(items)); } catch { /* quota / private mode */ }
-  }, [items, hydrated, storageKey]);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+      if (items.length > 0) localStorage.setItem('bookit_cart_last', slug);
+      else if (localStorage.getItem('bookit_cart_last') === slug) localStorage.removeItem('bookit_cart_last');
+    } catch { /* quota / private mode */ }
+  }, [items, hydrated, storageKey, slug]);
 
   const addToCart = useCallback((product: Product, qty = 1) => {
     setItems(prev => {
