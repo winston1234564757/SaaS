@@ -50,6 +50,8 @@ export function ShopCartProvider({ slug, children }: { slug: string; children: R
       if (items.length > 0) localStorage.setItem('bookit_cart_last', slug);
       else if (localStorage.getItem('bookit_cart_last') === slug) localStorage.removeItem('bookit_cart_last');
     } catch { /* quota / private mode */ }
+    // Notify nav surfaces in the same tab (storage event only fires cross-tab).
+    window.dispatchEvent(new Event('bookit-cart'));
   }, [items, hydrated, storageKey, slug]);
 
   const addToCart = useCallback((product: Product, qty = 1) => {

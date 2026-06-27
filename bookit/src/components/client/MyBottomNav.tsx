@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, MessageCircle, User, Search, LogIn, Bell } from 'lucide-react';
+import { CalendarDays, MessageCircle, User, Search, LogIn, Bell, ShoppingBag } from 'lucide-react';
 import { motion, LayoutGroup } from 'framer-motion';
 import type { Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { NavLoginSheet } from '@/components/public/NavLoginSheet';
 import { useUnreadDMCount } from '@/lib/hooks/useUnreadDMCount';
+import { useActiveCart } from '@/components/public/shop/useActiveCart';
 
 const SPRING = { type: 'spring', stiffness: 400, damping: 30 } as const;
 
@@ -48,6 +49,9 @@ export function MyBottomNav({ initialIsAuth }: Props) {
   const isPublic = isPublicB2CRoute(pathname);
 
   const unreadDM = useUnreadDMCount(userId);
+  const cart = useActiveCart();
+  const onShopRoute = /\/shop(\/|$)/.test(pathname);
+  const showCart = !!cart && !onShopRoute;
 
   useEffect(() => {
     if (!isMyRoute) return;
@@ -175,6 +179,22 @@ export function MyBottomNav({ initialIsAuth }: Props) {
                 <span className="text-[10px] font-medium">Увійти</span>
               </button>
             </>
+          )}
+
+          {showCart && cart && (
+            <Link
+              href={`/${cart.slug}/shop`}
+              aria-label={`Кошик: ${cart.count} товарів`}
+              className="relative flex flex-col items-center gap-0.5 px-2.5 py-1.5 min-w-0 flex-1"
+            >
+              <div className="relative z-10">
+                <ShoppingBag size={22} strokeWidth={2.5} className="text-accent" />
+                <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] rounded-full bg-accent text-accent-foreground text-[8px] font-bold flex items-center justify-center px-0.5 leading-none tabular-nums pointer-events-none">
+                  {cart.count > 9 ? '9+' : cart.count}
+                </span>
+              </div>
+              <span className="relative z-10 text-[10px] font-semibold text-accent truncate">Кошик</span>
+            </Link>
           )}
 
         </div>

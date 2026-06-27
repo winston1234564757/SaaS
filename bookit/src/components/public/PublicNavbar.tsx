@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Search, Gift, User, LogIn, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { NavCartLink } from '@/components/public/shop/NavCartLink';
 
 export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode }) {
   const supabase = await createClient();
@@ -63,6 +64,7 @@ export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode 
               >
                 Мої записи
               </Link>
+              <NavCartLink />
               {notifBell}
               <Link
                 href="/my/profile"
