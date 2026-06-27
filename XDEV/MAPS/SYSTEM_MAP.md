@@ -2,7 +2,7 @@
 
 > Оновлено: 2026-06-27 · Джерело: живий код (v9.0.0) · Останній код-коміт: `641141d3` (M-SHOP-01 аналітика товару `getProductStats` 2 канали [order_items+booking_products] + `ProductStatsPanel`; **аудит товарів/розхідників P1×5+P2×4**: колонкові GRANT anon на products, політика `pt_master_select`, RPC `deduct_consumable_stock`, тип `'deduction'`, restock booking_products при скасуванні, idempotency completeBooking, drop permissive INSERT orders/order_items)
 > 
-> **⚡ Sprint-05 Status (ACTIVE):** 34/78 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Next: `M-SHOP-03b` — Магазин: система відгуків про товари | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
+> **⚡ Sprint-05 Status (ACTIVE):** 35/78 ✅ · 1 ↩️ (M-DASH-11 скасовано) · **Фаза 2 (Магазин) закрита** | Next: `M-REV-01` — Revenue флеш-акції редизайн [Фаза 3] | Трекер: `XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md`
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
@@ -257,7 +257,8 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - **`src/components/public/ProductPage.tsx`** (M-SHOP-03, NEW) — клієнт сторінки товару: `ProductDetailView` + qty stepper + «в кошик» (пише в контекст) + back-link + `ShopCartBar`
 - **`src/components/public/shop/ShopCartContext.tsx`** (M-SHOP-03, NEW) — кошик у context, persist `localStorage['bookit_cart_${slug}']`, hydration-safe (read у useEffect, `hydrated` флаг). API: items/count/total/addToCart/setQty/getQty/clear
 - **`src/components/public/shop/ShopCartBar.tsx`** (M-SHOP-03, NEW) — sticky cart-кнопка + `CartDrawer` (checkout pickup/Nova Poshta) + `OrderSuccess` (fixed-overlay). Читає контекст; на каталозі І сторінці товару (активна одна за раз)
-- **`src/components/public/shop/ProductDetailView.tsx`** (M-SHOP-03, NEW, presentational) — галерея (свайп/стрілки/крапки/thumbnails) + назва/ціна/залишок/опис (+master-нудж) + статична секція «Відгуки» (M-SHOP-03b підключить). `mode` client/master, `actions`-слот. Спільний: публічна сторінка + майстер Eye-прев'ю (ProductsPage Sheet)
+- **`src/components/public/shop/ProductDetailView.tsx`** (M-SHOP-03, presentational) — галерея (свайп/стрілки/крапки/thumbnails) + назва/ціна/залишок/опис (+master-нудж) + **секція «Відгуки»** (M-SHOP-03b: `useProductReviews` → RPC `get_product_reviews` derive `reviews.order_id → order_items.product_id`; avg+Stars+список+loading+empty). `mode` client/master, `actions`-слот. Спільний: публічна сторінка + майстер Eye-прев'ю (ProductsPage Sheet)
+- **`src/lib/supabase/hooks/useProductReviews.ts`** (M-SHOP-03b) — TanStack хук над RPC `get_product_reviews(product_id)` (дзеркало `useServiceReviews`). Відгуки про товар = derive через order_items (збір — наявний order-review flow у ShopOrderCard→ReviewSheet→submitReview, is_published=false модерація). RPC SECURITY DEFINER, лише is_published+безпечні поля. Міграція `20260627000010`.
 - Order flow: `createOrder` → INSERT `orders` + `order_items` → decrement stock (`increment_stock_rpc`) → master отримує сповіщення
 - На сторінці майстра: Shop Banner (до послуг) + Products preview strip (до 3 товарів + "Всі товари")
 - `master_profiles.ships_nova_poshta BOOLEAN` — контролює чи пропонується доставка Нова Пошта

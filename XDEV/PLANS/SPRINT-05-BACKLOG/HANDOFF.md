@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 34/78 ✅ · 1 ↩️ скасовано (… · `M-SHOP-02` · `M-SHOP-03` A+B) — `M-DASH-11` ↩️ СКАСОВАНО (founder)
-**Наступна задача:** **`M-SHOP-03b` — Магазин: система відгуків про товари** (`create-migration` + `security-review` + `senior-backend` · Opus · P1)
+**Прогрес:** 35/78 ✅ · 1 ↩️ скасовано (… · `M-SHOP-03` A+B · `M-SHOP-03b`) — `M-DASH-11` ↩️ СКАСОВАНО (founder). **Фаза 2 (Магазин) повністю закрита.**
+**Наступна задача:** **`M-REV-01` — Revenue: флеш-акції преміальний редизайн** (`design-taste-frontend` + `impeccable-design-polish` · Sonnet · P1) [старт Фази 3]
 **Оновлено:** 2026-06-27
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,27 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SHOP-03b` — Магазин: відгуки про товари на сторінці товару (P1) · commit `9f97b5a5`
+
+**Тип:** DATA (read-side) · **Тір:** 1 · **Скіли:** `create-migration` → `security-review` (self) · **Модель:** Sonnet.
+
+**Контртеза до спеки (Фаза C у M-SHOP-03.md була НЕВІРНА):** припускалось «потрібна нова таблиця `product_reviews` + новий flow збору». Жива БД спростувала: `reviews` уже має `order_id` **І** `product_id` + `client_name`; `submitReview` (`my/bookings/actions.ts`) уже пише order-відгуки (валідує order клієнта status completed/shipped, `is_published:false` → майстер модерує); `MyBookingsPage`→`ShopOrderCard` уже має «Поділитись враженнями»→`ReviewSheet`. **Збір уже працював.** Бракувало ЛИШЕ показу на сторінці товару (урок M-SVC-01/M-SHOP-01 знову).
+
+**Рішення founder (QA 2/2):** (1) derive через `order_items` (як послуги), НЕ per-product через `product_id` (не реворкати робочий збір); (2) майстер модерує (`is_published` фільтр).
+
+**Реалізація:**
+- **Міграція `20260627000010_get_product_reviews.sql`** — RPC `get_product_reviews(p_product_id)`, дзеркало `get_service_reviews`: `JOIN order_items oi ON oi.order_id = r.order_id WHERE oi.product_id = p AND r.is_published`. `LANGUAGE sql`, `SECURITY DEFINER`, `SET search_path=public`, `STABLE`, `DISTINCT`, `REVOKE public`+`GRANT anon/authenticated`, лише безпечні поля. Усі індекси вже були (`idx_reviews_order_id`, `idx_order_items_order/product`). Застосовано через MCP `apply_migration`, smoke-test ✓ (товар f216… → 1 відгук «Маска…» Viktor 5★).
+- **`useProductReviews.ts`** — TanStack хук над RPC (дзеркало `useServiceReviews`).
+- **`ProductDetailView.tsx`** — статичну заглушку «Відгуків поки немає» замінено живим блоком (хедер avg+`Stars`+count, список client_name+Stars+timeAgo+comment, loading skeleton, empty). Вигляд як `ServiceDetailSheet`. Працює на публічній сторінці І в майстер-прев'ю.
+
+**Поза скоупом (свідомо):** збір (вже є), нова таблиця (не треба), per-product через `product_id` (лишається невикористаним — per-order derive).
+
+**Перевірка:** TSC 0 · Build clean · encoding clean · RPC security self-review clean (нових векторів проти get_service_reviews нема) · deploy READY. Деталі — `BRIEFS/M-SHOP-03b.md`.
+
+**KEY:** (1) Утретє: беклог казав «будувати backend», а він уже існував — звіряй живу БД (схему + чи action уже пише) ПЕРЕД плануванням таблиць. `reviews` давно уніфікована (booking_id|order_id|product_id, міграція 112). (2) «Відгук про товар» = derive `reviews.order_id → order_items.product_id` (як послуги через booking_services), не окрема таблиця. (3) Модерація: order-відгуки `is_published=false` → показ лише після схвалення майстром; service-відгуки auto-true (розбіжність наявна, не чіпав).
 
 ---
 
