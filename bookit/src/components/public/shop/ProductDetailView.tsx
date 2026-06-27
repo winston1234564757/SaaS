@@ -6,6 +6,18 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, PencilLine, Star } from 'lucide-react';
 import type { Product, ProductCategory } from '@/types/database';
 import { ProductIcon } from '@/lib/product-icons';
+import { useProductReviews } from '@/lib/supabase/hooks/useProductReviews';
+import { timeAgo } from '@/lib/utils/dates';
+
+function Stars({ value, size = 13 }: { value: number; size?: number }) {
+  return (
+    <span className="flex items-center gap-0.5" aria-hidden="true">
+      {[1, 2, 3, 4, 5].map(i => (
+        <Star key={i} size={size} className={i <= Math.round(value) ? 'fill-warning text-warning' : 'fill-current text-current opacity-25'} />
+      ))}
+    </span>
+  );
+}
 
 const GALLERY_SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const;
 
@@ -32,6 +44,7 @@ interface Props {
  */
 export function ProductDetailView({ product: p, mode = 'client', actions }: Props) {
   const [photoIdx, setPhotoIdx] = useState(0);
+  const { reviews, count, average, isLoading: reviewsLoading } = useProductReviews(p.id);
   const photos   = p.photos ?? [];
   const catColor = CATEGORY_COLORS[p.category] ?? 'var(--cat-other)';
   const price    = (p.price_kopecks / 100).toFixed(0);
@@ -167,13 +180,42 @@ export function ProductDetailView({ product: p, mode = 'client', actions }: Prop
         {/* Cart controls (client page) */}
         {actions}
 
-        {/* Reviews — wired up in M-SHOP-03b */}
-        <div className="flex flex-col gap-2 border-t border-border pt-5 mt-1">
+        {/* Reviews — derived per-product via order_items (M-SHOP-03b) */}
+        <div className="flex flex-col gap-3.5 border-t border-border pt-5 mt-1">
           <div className="flex items-center justify-between">
             <h2 className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.14em] m-0">Відгуки</h2>
-            <Star size={14} className="text-muted-foreground/25" />
+            {count > 0 && (
+              <span className="flex items-center gap-1.5 text-foreground">
+                <Stars value={average} size={13} />
+                <span className="text-sm font-bold tabular-nums">{average.toFixed(1)}</span>
+                <span className="text-xs text-muted-foreground/60 font-medium">· {count}</span>
+              </span>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground/60 py-1.5">Відгуків поки немає</p>
+
+          {reviewsLoading ? (
+            <div className="flex flex-col gap-2.5">
+              {[0, 1].map(i => <div key={i} className="h-[68px] rounded-2xl bg-muted/12 animate-pulse" />)}
+            </div>
+          ) : count === 0 ? (
+            <p className="text-sm text-muted-foreground/60 py-1.5">Відгуків поки немає</p>
+          ) : (
+            <ul className="flex flex-col gap-2.5 list-none m-0 p-0">
+              {reviews.map(r => (
+                <li key={r.id} className="rounded-2xl bg-secondary/55 border border-border px-4 py-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-foreground truncate">{r.client_name}</span>
+                    <span className="flex items-center gap-2 shrink-0">
+                      <Stars value={r.rating} size={11} />
+                      <span className="sr-only">{r.rating} з 5</span>
+                      <span className="text-[11px] text-muted-foreground/50 tabular-nums">{timeAgo(r.created_at)}</span>
+                    </span>
+                  </div>
+                  {r.comment && <p className="text-sm text-foreground/75 leading-snug mt-2">{r.comment}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
