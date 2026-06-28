@@ -79,11 +79,13 @@ export async function createFlashDealInternal(
 
   // FR-8: both params required by the RPC
   const slotTimestamp = new Date(`${params.slotDate}T${params.slotTime}:00`).toISOString();
-  const { data: eligibleRows } = await admin
+  const { data: eligibleRows, error: eligibleErr } = await admin
     .rpc('get_eligible_flash_deal_clients', {
       p_master_id:      masterId,
+      p_service_id:     params.serviceId,
       p_slot_timestamp: slotTimestamp,
     });
+  if (eligibleErr) console.error('[flash] eligible clients RPC failed (auto):', eligibleErr.message);
 
   const notifClients = (eligibleRows ?? []) as { client_id: string; client_name: string }[];
   const clientIds    = notifClients.map(r => r.client_id);
@@ -200,11 +202,13 @@ export async function createFlashDeal(
 
   // FR-8: both params required by the RPC
   const slotTimestamp = new Date(`${params.slotDate}T${params.slotTime}:00`).toISOString();
-  const { data: eligibleRows } = await admin
+  const { data: eligibleRows, error: eligibleErr } = await admin
     .rpc('get_eligible_flash_deal_clients', {
       p_master_id:      user.id,
+      p_service_id:     params.serviceId,
       p_slot_timestamp: slotTimestamp,
     });
+  if (eligibleErr) console.error('[flash] eligible clients RPC failed:', eligibleErr.message);
 
   const notifClients = (eligibleRows ?? []) as { client_id: string; client_name: string }[];
   const clientIds    = notifClients.map(r => r.client_id);
