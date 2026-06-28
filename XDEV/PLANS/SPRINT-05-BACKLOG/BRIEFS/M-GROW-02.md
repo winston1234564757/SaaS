@@ -159,6 +159,15 @@ GRANT ALL ON master_connections TO service_role;
 
 **DB-симуляція (проти живої БД, транзакції + SET LOCAL role anon/authenticated + ROLLBACK):** 11/11 PASS. RLS читання (anon лише visible+accepted; власник обидві сторони бачить невидимі; сторонній ні) · записи (anon/authed INSERT виняток, UPDATE/DELETE 0 рядків — рядок незмінний, доведено) · логіка (accept 2 рядки, dedup partner>alliance, remove 0, alliance inviter+invitee, AllianceMap 1 напрям). Прод не забруднено (ROLLBACK). Знахідка: anon/auth мають табличні привілеї (дефолт Supabase) — захист тримає RLS (доведено), не привілеї; standard secure-Supabase, advisor clean.
 
-**Commit:** `31557c87` (код)
+**End-to-end верифікація потоків запрошень (DB-симуляція, транзакції+ROLLBACK):**
+- FLOW1 партнер (acceptPartnerInvitation): accept→2 bilateral рядки, читають growth(C+D reciprocal)+public-page(anon)+wizard ✓
+- FLOW2 реферал→alliance (applyReferralRewards M2M): 2 рядки role inviter/invitee, AllianceMap напрям C→B, idempotent recovery НЕ дублює (2 рядки) ✓
+- FLOW3 edge (пара вже alliance, потім partner-invite): **БАГ знайдено** — старий код оновлював лише 1 напрям → асиметрія (D→B partner, B→D alliance) → у UI різні бейджі. **ФІКС** `eb7a6f2a`: upsert ОБИДВА напрями ON CONFLICT (kind=partner,status=accepted,role=null), прибрано existing-check. Re-симуляція: симетрія ✓.
+- Сторінка прийняття `/dashboard/partners/join` → `JoinPartnerClient` → `acceptPartnerInvitation` → редірект growth?drawer=partners ✓.
+- Усі 3 застарілі згадки master_partners/master_alliances у коді = лише коментарі (підчищено), не запити.
+
+**ВІДОМИЙ дрібний edge (не фіксимо — 4-й порядок):** якщо реферал-пара→partner→removePartner, обидва partner-рядки видаляються (alliance в master_connections зникає; master_referrals lineage лишається). Майже неможливий сценарій.
+
+**Commit:** `31557c87` (код) + `eb7a6f2a` (фікс симетрії accept)
 **Деплой:** тримаємо до візуального QA founder. DB-міграція на cloud (additive).
 **Що винесено в mempalace:** drawer про master_connections merge + латентний RLS-баг публічної сторінки.
