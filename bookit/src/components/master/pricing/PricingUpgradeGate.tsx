@@ -26,19 +26,27 @@ interface Props {
   isDrawer?: boolean;
 }
 
+// Семантичні токени (узгоджено з DynamicPricingPage): cool = заповнення, warm = заробіток.
+const COOL = 'var(--success)';   // #16803C
+const WARM = 'var(--warning)';   // #B45309
+const STOP = 'var(--error)';     // #B91C1C — вичерпано/блок
+
 // ── Хелпери ───────────────────────────────────────────────────────────────────
 
 function kopToUah(kop: number): string {
   return (kop / 100).toLocaleString('uk-UA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
+// Рампа заповнення ліміту: спокійний → теплий → стоп.
 function barColor(pct: number): string {
-  if (pct >= 80) return '#C05B5B';
-  if (pct >= 50) return '#D4935A';
-  return '#5C9E7A';
+  if (pct >= 80) return STOP;
+  if (pct >= 50) return WARM;
+  return COOL;
 }
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 26 } as const;
+
+const tint = (color: string, pct: number) => `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
 // ── Widget: тихий час ─────────────────────────────────────────────────────────
 
@@ -50,13 +58,13 @@ function QuietHoursWidget({ insight }: { insight: QuietHoursInsight }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...SPRING, delay: 0.12 }}
       className="bento-card p-4 flex items-center gap-3"
-      style={{ background: 'rgba(120,154,153,0.06)', borderColor: 'rgba(120,154,153,0.18)' }}
+      style={{ background: tint(COOL, 6), borderColor: tint(COOL, 20) }}
     >
       <div
         className="size-10 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: 'rgba(120,154,153,0.12)' }}
+        style={{ background: tint(COOL, 12) }}
       >
-        <Moon size={18} className="text-primary" />
+        <Moon size={18} style={{ color: COOL }} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold text-foreground mb-0.5">Тихий час приносить клієнтів</p>
@@ -64,7 +72,7 @@ function QuietHoursWidget({ insight }: { insight: QuietHoursInsight }) {
           Завдяки знижкам у тихий час ви отримали{' '}
           <span className="font-bold text-foreground">{insight.count} {label}</span>{' '}
           на суму{' '}
-          <span className="font-bold text-primary">
+          <span className="font-bold text-foreground">
             {insight.totalUah.toLocaleString('uk-UA')} ₴
           </span>
         </p>
@@ -93,58 +101,37 @@ function TrialActiveView({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* ── Trial card ────────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={SPRING}
         className="bento-card overflow-hidden"
       >
-        {/* Верхня зона з градієнтом */}
-        <div
-          className="px-5 pt-5 pb-4"
-          style={{ background: 'linear-gradient(135deg, rgba(92,158,122,0.10) 0%, rgba(120,154,153,0.06) 100%)' }}
-        >
-          {/* Header */}
+        {/* Верхня зона */}
+        <div className="px-5 pt-5 pb-4" style={{ background: tint(COOL, 7) }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-              <div
-                className="size-9 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(92,158,122,0.14)' }}
-              >
-                <Sparkles size={16} style={{ color: '#5C9E7A' }} />
+              <div className="size-9 rounded-xl flex items-center justify-center" style={{ background: tint(COOL, 13) }}>
+                <Sparkles size={16} style={{ color: COOL }} />
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground leading-tight">Пробний режим</p>
                 <p className="text-[11px] text-muted-foreground/60">Динамічне ціноутворення</p>
               </div>
             </div>
-            <span
-              className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
-              style={{ background: 'rgba(92,158,122,0.12)', color: '#5C9E7A' }}
-            >
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg text-foreground" style={{ background: tint(COOL, 14) }}>
               Активно
             </span>
           </div>
 
           {/* Картки earned / limit */}
           <div className="grid grid-cols-2 gap-2.5 mb-4">
-            <div
-              className="rounded-xl px-3 py-2.5"
-              style={{ background: 'rgba(255,255,255,0.55)' }}
-            >
-              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">
-                Зароблено
-              </p>
+            <div className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface)' }}>
+              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">Зароблено</p>
               <p className="text-base font-bold text-foreground">{earnedUah} ₴</p>
             </div>
-            <div
-              className="rounded-xl px-3 py-2.5"
-              style={{ background: 'rgba(255,255,255,0.55)' }}
-            >
-              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">
-                Ліміт
-              </p>
+            <div className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface)' }}>
+              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">Ліміт</p>
               <p className="text-base font-bold text-muted-foreground">{limitUah} ₴</p>
             </div>
           </div>
@@ -153,17 +140,15 @@ function TrialActiveView({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] text-muted-foreground">Використано ліміту</span>
-              <span className="text-[11px] font-bold" style={{ color }}>{pct}%</span>
+              <span className="text-[11px] font-bold text-foreground">{pct}%</span>
             </div>
-            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.6)' }}>
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: tint(color, 16) }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.7, ease: 'easeOut' }}
                 className="h-full rounded-full"
-                style={{
-                  background: `linear-gradient(90deg, rgba(92,158,122,0.9), ${color})`,
-                }}
+                style={{ background: color }}
               />
             </div>
           </div>
@@ -175,14 +160,11 @@ function TrialActiveView({
             Фіча працює <strong className="text-foreground">безкоштовно</strong>.
             Коли ліміт вичерпається — клієнти побачать базові ціни.
           </p>
-          <button type="button"
+          <button
+            type="button"
             onClick={onUpgrade}
-            className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors active:scale-95 transition-all cursor-pointer"
-            style={{
-              color: '#789A99',
-              background: 'rgba(120,154,153,0.08)',
-              border: '1px solid rgba(120,154,153,0.2)',
-            }}
+            className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer text-primary"
+            style={{ background: 'var(--accent-soft)', border: '0.5px solid var(--border-strong)' }}
           >
             <Zap size={12} />
             {isDrawer ? 'Активувати Pro в білінгу' : 'Перейти на Pro — ліміт зникне'}
@@ -190,7 +172,6 @@ function TrialActiveView({
         </div>
       </motion.div>
 
-      {/* ── Quiet hours widget (одразу після trial блоку) ─────────────────── */}
       {quietHoursInsight && <QuietHoursWidget insight={quietHoursInsight} />}
     </div>
   );
@@ -221,19 +202,13 @@ function TrialExhaustedView({
       >
         {isDrawer && (
           <div className="absolute inset-0 pointer-events-none" style={{
-            background: 'radial-gradient(circle at center, rgba(192,91,91,0.08) 0%, transparent 70%)',
-            filter: 'blur(10px)'
+            background: `radial-gradient(circle at center, ${tint(STOP, 8)} 0%, transparent 70%)`,
+            filter: 'blur(10px)',
           }} />
         )}
-        <div
-          className="px-5 pt-5 pb-4 text-center flex flex-col items-center gap-3 relative z-10"
-          style={{ background: 'linear-gradient(135deg, rgba(192,91,91,0.07) 0%, rgba(212,147,90,0.04) 100%)' }}
-        >
-          <div
-            className="size-12 rounded-2xl flex items-center justify-center"
-            style={{ background: 'rgba(192,91,91,0.10)' }}
-          >
-            <Lock size={22} style={{ color: '#C05B5B' }} />
+        <div className="px-5 pt-5 pb-4 text-center flex flex-col items-center gap-3 relative z-10" style={{ background: tint(STOP, 6) }}>
+          <div className="size-12 rounded-2xl flex items-center justify-center" style={{ background: tint(STOP, 10) }}>
+            <Lock size={22} style={{ color: STOP }} />
           </div>
           <div>
             <h2 className="heading-serif text-lg text-foreground mb-1">Пробний ліміт вичерпано</h2>
@@ -243,10 +218,9 @@ function TrialExhaustedView({
             </p>
           </div>
 
-          {/* Прогрес 100% */}
           <div className="w-full">
-            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(192,91,91,0.12)' }}>
-              <div className="h-full w-full rounded-full" style={{ background: '#C05B5B' }} />
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: tint(STOP, 12) }}>
+              <div className="h-full w-full rounded-full" style={{ background: STOP }} />
             </div>
             <p className="text-[11px] text-muted-foreground/60 mt-1.5 text-center">
               {kopToUah(trial.earned)} ₴ з {limitUah} ₴ — 100%
@@ -258,8 +232,8 @@ function TrialExhaustedView({
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={onUpgrade}
-            className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-            style={{ background: '#789A99', boxShadow: '0 4px 14px rgba(120,154,153,0.3)' }}
+            className="w-full py-3 rounded-xl text-[var(--accent-on)] font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            style={{ background: 'var(--btn-primary-bg)', boxShadow: 'var(--btn-primary-shadow)' }}
           >
             <Zap size={15} />
             {isDrawer ? 'Перейти до кабінету білінгу' : 'Перейти на Pro — безлімітно'}
@@ -275,10 +249,10 @@ function TrialExhaustedView({
 // ── Стандартний Pro-гейт ──────────────────────────────────────────────────────
 
 const EXAMPLES = [
-  { icon: TrendingUp, label: 'Пікові години',      description: 'П\'ятниця–субота 16:00–20:00 → +15% до ціни' },
-  { icon: Moon,       label: 'Тихі години',         description: 'Пн–Ср 09:00–13:00 → -10% для заповнення розкладу' },
-  { icon: Clock,      label: 'Раннє бронювання',    description: 'Запис за 3+ дні → -10% для постійних клієнтів' },
-  { icon: Zap,        label: 'Останній момент',     description: 'Запис за 4 години → -20%, щоб не втрачати вікна' },
+  { icon: TrendingUp, tone: WARM, label: 'Пікові години',   description: 'П\'ятниця–субота 16:00–20:00 → +15% до ціни' },
+  { icon: Moon,       tone: COOL, label: 'Тихі години',      description: 'Пн–Ср 09:00–13:00 → -10% для заповнення розкладу' },
+  { icon: Clock,      tone: COOL, label: 'Раннє бронювання', description: 'Запис за 3+ дні → -10% для постійних клієнтів' },
+  { icon: Zap,        tone: COOL, label: 'Останній момент',  description: 'Запис за 4 години → -20%, щоб не втрачати вікна' },
 ];
 
 function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?: boolean }) {
@@ -292,17 +266,17 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
       >
         {isDrawer && (
           <div className="absolute inset-0 pointer-events-none" style={{
-            background: 'radial-gradient(circle at center, rgba(211,163,118,0.15) 0%, transparent 70%)',
-            filter: 'blur(10px)'
+            background: `radial-gradient(circle at center, var(--accent-light) 0%, transparent 70%)`,
+            filter: 'blur(10px)',
           }} />
         )}
-        <div className="size-14 rounded-2xl flex items-center justify-center relative z-10" style={{ background: 'rgba(120,154,153,0.15)' }}>
+        <div className="size-14 rounded-2xl flex items-center justify-center relative z-10 bg-primary/10">
           <TrendingUp size={26} className="text-primary" />
         </div>
         <div className="relative z-10">
-          <h1 className="heading-serif text-xl text-foreground mb-1">Динамічне ціноутворення</h1>
+          <h1 className="heading-serif text-xl text-foreground mb-1">Ціни, що працюють без тебе</h1>
           <p className="text-sm text-muted-foreground text-balance leading-relaxed max-w-xs mx-auto">
-            Автоматично підвищуйте ціни в пікові години та давайте знижки в тихі —
+            Автоматично підвищуйте ціни в пікові години та давайте знижки в тихі,
             щоб завжди мати повний розклад.
           </p>
         </div>
@@ -313,16 +287,16 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
       </motion.div>
 
       <div className="flex flex-col gap-3">
-        {EXAMPLES.map(({ icon: Icon, label, description }, i) => (
+        {EXAMPLES.map(({ icon: Icon, tone, label, description }, i) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING, delay: i * 0.07 }}
-            className="bento-card p-4 flex items-start gap-3 opacity-70"
+            className="bento-card p-4 flex items-start gap-3 opacity-80"
           >
-            <div className="size-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(120,154,153,0.1)' }}>
-              <Icon size={16} className="text-primary" />
+            <div className="size-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: tint(tone, 13) }}>
+              <Icon size={16} style={{ color: tone }} />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">{label}</p>
@@ -337,7 +311,8 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING, delay: 0.32 }}
         onClick={onUpgrade}
-        className="w-full h-13 rounded-2xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors shadow-[0_4px_16px_rgba(120,154,153,0.35)] flex items-center justify-center gap-2 cursor-pointer relative z-10"
+        className="w-full h-13 rounded-2xl text-[var(--accent-on)] font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer relative z-10"
+        style={{ background: 'var(--btn-primary-bg)', boxShadow: 'var(--btn-primary-shadow)' }}
       >
         <Zap size={16} />
         {isDrawer ? 'Перейти до білінгу та активувати Pro' : 'Розблокувати динамічне ціноутворення'}

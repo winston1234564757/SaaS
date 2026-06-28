@@ -29,3 +29,49 @@ export async function savePricingRules(rules: PricingRules): Promise<{ error?: s
   if (dbError) return { error: dbError.message };
   return {};
 }
+
+/**
+ * Кількість «врятованих слотів» — записів, які прийшли завдяки знижковому правилу
+ * (Тихий час / Рання бронь / Остання хвилина). Чисто-знижкові = лейбл є, але
+ * надбавки нема (dynamic_extra_kopecks = 0). Read-side, RLS майстра.
+ */
+export async function getDynamicPricingSavedSlots(): Promise<{ count: number }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { count: 0 };
+
+  const { count } = await supabase
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('master_id', user.id)
+    .in('status', ['confirmed', 'completed'])
+    .not('dynamic_pricing_label', 'is', null)
+    .eq('dynamic_extra_kopecks', 0);
+
+  return { count: count ?? 0 };
+}
+
+export interface PricingRuleStats {
+  usage_count: number;
+  earned_kopecks: number;
+  avg_pct: number | null;
+  last_date: string | null;
+  recent: { client_name: string | null; date: string | null }[];
+}
+
+/**
+ * Статистика одного правила ціноутворення (для модалки). RPC фільтрує по auth.uid()
+ * (без IDOR). marker = підрядок лейбла: 'Пік' / 'Тихий час' / 'Рання бронь' / 'Остання хвилина'.
+ */
+export async function getPricingRuleStats(marker: string): Promise<PricingRuleStats | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase.rpc('get_pricing_rule_stats', { p_rule_marker: marker });
+  if (error) {
+    console.error('[getPricingRuleStats]', error.message);
+    return null;
+  }
+  return data as PricingRuleStats;
+}
