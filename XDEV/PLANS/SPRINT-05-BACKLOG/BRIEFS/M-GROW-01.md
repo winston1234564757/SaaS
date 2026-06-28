@@ -141,6 +141,8 @@
 
 **ВІДОМА діра (документовано):** `total_visits` інкрементиться тригером лише для `client_id IS NOT NULL`; гостьові візити до реєстрації не входять. Беремо total_visits свідомо (консистентність із /clients + клієнтський прогрес-бар). Логіку букінгу не чіпали.
 
+**DB-симуляція (проти живої БД, SET LOCAL role + ROLLBACK):** 12/12 PASS. get_loyalty_overview (математика 5/2/0 на реальних даних, 3 програми, anon EXECUTE заборонено) · get_loyalty_impact (150₴ = виключено >30д/null-label/cancelled, redemptions=2, anon denied) · overview edge (one_step 0→1 при visits=4/target=5, in_progress→6, ready без змін). Прод не забруднено.
+
 **Commit:** `3cf3deea` (код, окремий від доків per founder «роби як правильно» — bisect-safe перед M-GROW-02 HARD)
 **Деплой:** тримаємо до візуального QA founder. DB-міграції вже на cloud (колонки nullable+default → код-деплой не ламає runtime).
 **Що винесено в mempalace:** drawer про loyalty redemption-tracking + Supabase anon-EXECUTE gotcha + Frost text-success малий-текст a11y.

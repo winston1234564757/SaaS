@@ -157,6 +157,8 @@ GRANT ALL ON master_connections TO service_role;
 
 **ВІДКЛАДЕНО:** drop `master_partners` + `master_alliances` — окрема міграція після ~тижня verify на проді (rollback safety).
 
+**DB-симуляція (проти живої БД, транзакції + SET LOCAL role anon/authenticated + ROLLBACK):** 11/11 PASS. RLS читання (anon лише visible+accepted; власник обидві сторони бачить невидимі; сторонній ні) · записи (anon/authed INSERT виняток, UPDATE/DELETE 0 рядків — рядок незмінний, доведено) · логіка (accept 2 рядки, dedup partner>alliance, remove 0, alliance inviter+invitee, AllianceMap 1 напрям). Прод не забруднено (ROLLBACK). Знахідка: anon/auth мають табличні привілеї (дефолт Supabase) — захист тримає RLS (доведено), не привілеї; standard secure-Supabase, advisor clean.
+
 **Commit:** `31557c87` (код)
 **Деплой:** тримаємо до візуального QA founder. DB-міграція на cloud (additive).
 **Що винесено в mempalace:** drawer про master_connections merge + латентний RLS-баг публічної сторінки.
