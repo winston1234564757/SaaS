@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 36/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 2 (Магазин) закрита, Фаза 3 (Revenue) розпочата.**
-**Наступна задача:** **`M-REV-02` — дослідження працездатності авто-flash-deal** (`diagnose` + `senior-backend` · Opus · P1). ⚠ Нотифікаційний RPC-баг уже виправлено (`7b6375f8`) → M-REV-02 звужується до перевірки, що авто-тригер при скасуванні реально спрацьовує (cron/job + чи викликається `createFlashDealInternal`).
+**Прогрес:** 38/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 3/17.**
+**Наступна задача:** **`M-REV-04` — Revenue: смарт-ціни преміальний редизайн** (`design-taste-frontend` + `impeccable-design-polish` · Sonnet · P1).
 **Оновлено:** 2026-06-28
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,47 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-REV-03` — Revenue: детальна статистика флеш-акцій (P1) · commit `255bbcf3`
+
+**Тип:** NEW-FEATURE + DATA · **Тір:** 2 · **Скіли:** `senior-backend` + `create-migration` + `humanizer` · **Модель:** Sonnet→Opus · **Бриф:** `BRIEFS/M-REV-03.md`
+
+**Підхід:** замість винаходити нове — дзеркало розсилок (`broadcast_recipients` + `getBroadcastDeliveryResults` + `BroadcastDetailSheet`).
+
+**Чесна діагностика перед кодом:** флеш-нотифікації НІКОЛИ не зберігали отримувачів (in_app писалось у `notifications` без прив'язки до конкретної акції; push/telegram fire-and-forget). Тип ручна/авто теж не зберігався. Наслідок: для ~6 уже активних акцій даних фізично нема → порожній стан. Повна стата лише для акцій від цього релізу.
+
+**Реалізація:**
+- Міграція `20260628000002` — `flash_deal_recipients(deal_id fk cascade, client_id, in_app_sent, push_sent, telegram_sent)` + index + RLS `fdr_master_select` (майстер бачить лише свої через deal join).
+- Тип ручна/авто = **reuse `booking_id`**: авто-flash пише id звільненого запису, ручний null. `booking_id IS NOT NULL` → авто. Без нової колонки, семантично правильно (FK на слот).
+- `flash/actions.ts` повний rewrite: спільний `notifyAndRecordFlashDeal` (прибрав дубль notify-блоку ручний/авто), пише recipients при відправці. Per-channel прапорці виведено з наявності push-підписки (`push_subscriptions.user_id`) / telegram (`profiles.telegram_chat_id`) — флеш шле bulk `broadcastPush`, не по-клієнтно, тож «канал доступний і ми стрельнули», не per-device receipt.
+- `getFlashDealStats(dealId)`: ownership-check, origin, claimed-конверсія, per-channel зведення, recipients list.
+- `useFlashDealStats` (лінивий хук) · `FlashDealDetailSheet` (hero+тип-бейдж+claimed+легенда+список галочок+футер+empty).
+- Рядок активної акції → `<button>` (скасування sibling, без вкладених кнопок), `aria-label`.
+- a11y: бейдж «Авто» `text-amber-600`→`amber-700` (3.19→5.02, AA для 11px). Копія через humanizer (порожній стан «Доставку для цієї акції не відстежували»).
+
+**Файли:** `flash/actions.ts` · `hooks/useFlashDeals.ts` · `FlashDealDetailSheet.tsx` (new) · `FlashDealPage.tsx` · міграція.
+
+---
+
+## ✅ DONE: `M-REV-02` — Revenue: авто-flash працездатність (A+B+C) + bug тогл (P1) · commit `255bbcf3`
+
+**Тип:** BUGFIX + NEW-FEATURE · **Тір:** 2 · **Скіли:** `diagnose` → `senior-backend` + `senior-frontend` + `humanizer` · **Модель:** Opus · **Бриф:** `BRIEFS/M-REV-02.md`
+
+**Розширена QA-діагностика (код + жива БД):** авто-тригер технічно спрацьовував, але 3 дефекти + 1 окремий баг.
+
+**A — таргетинг строгий (регрес наміру).** На БД два оверлоди `get_eligible_flash_deal_clients`: 1-арг (м'який — усі вільні в 3 дні) і 3-арг (строгий — лише історія саме на цю послугу). Код кликав 3-арг → під-таргетинг. Фікс: обидва виклики → 1-арг; **3-арг дропнуто** міграцією `20260628000001` (кінець триразового рецидиву bb9dac0e→20260611→7b6375f8 — дормантний оверлоид = міна). Ініціатор скасування виключений (`excludeClientId`).
+
+**B — клієнт-тригер (інверсія дефолту, рішення founder).** Було: тригерив лише майстер. Стало: **клієнт скасовує → авто-flash ОБОВ'ЯЗКОВО** (`my/bookings/cancelBooking` у `after()`, ініціатор виключений); **майстер скасовує → ПИТАЄМО** через confirm-шторку «Слот звільнився» → `fireAutoFlashForSlot`. **Архітектурний фікс «промту не було»:** 3 шляхи скасування майстром — `BookingCard`, `BookingActionsDropdown` (через `cancelBooking`), `BookingDetailsModal` (через `updateBookingStatus`→`useBookingById`). Per-card шторка демонтувалась РАЗОМ зі скасованою карткою → не встигала показатись. Рішення: zustand `flashOnCancelStore` + **одна** глобальна `FlashOnCancelConfirmSheet` у `DashboardLayout` (дзеркало `BookingDetailsModal`), усі 3 шляхи пушать у стор. `updateBookingStatus` + `cancelBooking` тепер вертають `flashPrompt`.
+
+**C — fire-and-forget ненадійний.** `.catch()` без `after()` на serverless міг губити INSERT+нотифікації. Загорнуто `notifyClientOnStatusChange` + авто-flash у `after()` з `next/server`.
+
+**BUG (окремий, founder: «тогл не зберігається»):** запис у БД працював (на БД майстер з ON), але `MasterContext` (`context.tsx`) і SSR `layout.tsx` мають явний select-список колонок **без** `auto_flash_on_cancel`/`auto_flash_discount_pct` → `masterProfile.auto_flash_*` = undefined → `useEffect` у FlashDealPage скидав тогл у false після кожного завантаження. Фікс: +обидві колонки в обидва select + у тип `MasterProfile` (прибрано `as any`). Діагностовано з БД — Vercel-логи були порожні (проковтнута помилка).
+
+**Файли:** `flash/actions.ts` · master `bookings/actions.ts` (cancelBooking flashPrompt + fireAutoFlashForSlot + updateBookingStatus) · `my/bookings/actions.ts` · `BookingCard.tsx` · `BookingActionsDropdown.tsx` · `FlashOnCancelConfirmSheet.tsx` (new) · `flashOnCancelStore.ts` (new) · `useBookingById.ts` · `DashboardLayout.tsx` · `context.tsx` · `layout.tsx` · `types/database.ts` · міграція `20260628000001`.
+
+**Очікує:** візуального QA founder (шторка скасування з 3 точок · статистика акції).
 
 ---
 
