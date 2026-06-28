@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 39/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 4/17.**
-**Наступна задача:** **`M-REV-05` — Revenue: статистика по типах ціноутворення** (`senior-backend` + `design-taste-frontend` · Sonnet · P1). Увага: M-REV-04 уже приніс per-rule стату (RPC `get_pricing_rule_stats` + `PricingRuleStatsSheet`) — M-REV-05 = агрегований огляд по типах, звіряй що вже є перед побудовою.
+**Прогрес:** 40/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 5/17.**
+**Наступна задача:** **`M-REV-06` — Revenue: редизайн інфо-блоку «ціноутворення»** (`impeccable` distill · Sonnet · P2). Інфо-блок = 3 чіпи Стекінг/Max-30/Max+50 у hero `DynamicPricingPage` (M-REV-04 додав їм тап-тултіпи) — distill/причесати подачу.
 **Оновлено:** 2026-06-28
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,31 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-REV-05` — Revenue: статистика по типах ціноутворення (P1) · commit `8aac403e`
+
+**Тип:** DATA + NEW-FEATURE · **Тір:** 2 · **Скіли:** `senior-backend` + `create-migration` + `design-taste-frontend` · **Модель:** Opus · **Бриф:** `BRIEFS/M-REV-05.md`
+
+**QA перед кодом (анти-сикофанство):** M-REV-04 уже закрив багато (per-rule модалки + дохід/слоти в hero + аналітик-віджет). Чесно звірив що ЛИШИЛОСЬ: (1) порівняння всіх 4 правил одночас у контексті цін; (2) аналітик-віджет сліпий до знижок. Founder підтвердив напрям «огляд + фікс аналітики», метрика = надбавка ₴ / знижки слоти.
+
+**Частина 1 — огляд-блок «Результати правил»** (`PricingRulesOverview.tsx`, на вкладці Смарт-ціни після hero):
+- 4 правила ранжовані: Пік (`+₴ · N×`, warm) + 3 знижки (`N слотів`, cool, сорт за кількістю desc). Правило з 0 → сіре читабельне (видно що не працює).
+- Тап рядка → **наявна** `PricingRuleStatsSheet` (reuse M-REV-04, нуль нового UI деталі).
+- RPC `get_pricing_rules_overview()` — усі 4 за виклик, **`auth.uid()` без IDOR**, all-time confirmed+completed. Action `getPricingRulesOverview` + лінивий fetch (усі тарифи). Блок ховається коли total=0.
+
+**Частина 2 — фікс наявного аналітик-віджета `DynamicPricingUplift`:**
+- **Знайдений баг:** `get_dynamic_pricing_uplift` групував `rule_counts` по ПОВНОМУ лейблу (`'🔥 Пік +20%'`) + лише `WHERE extra_kopecks>0` → (а) віджетний мапінг `rule==='peak'` мертвий (показував сирі лейбли), (б) знижки невидимі, (в) фрагментація на %.
+- **Фікс:** переписано (та сама сигнатура) — `rule_counts` матч по ТИПУ (ключі `peak/quiet/early_bird/last_minute`), без markup-only фільтра, +`saved_slots` (чисто-знижкові). Віджет: показує надбавку ₴ І врятовані слоти + чисті назви. `saved_slots` проведено useAnalyticsExtras→AnalyticsPage→BentoSecondary→віджет.
+
+**Файли:** `PricingRulesOverview.tsx` (new) · `DynamicPricingPage.tsx` · `pricing/actions.ts` (+getPricingRulesOverview) · `DynamicPricingUplift.tsx` · `BentoSecondary.tsx` · `AnalyticsPage.tsx` · `useAnalyticsExtras.ts` · міграції `20260628000004`+`20260628000005`.
+
+**Чесний нюанс:** огляд-блок = all-time (confirmed+completed); аналітик-віджет = за період (incl pending, як було). Різні скоупи під різні контексти (сторінка цін vs аналітика періоду) — свідомо.
+
+**KEY:** (1) Анти-сикофанство спрацювало: не побудував редундантне — звірив що M-REV-04 уже дав, M-REV-05 звузився до реальної прогалини (порівняння + фікс аналітики). (2) Виявив прихований баг наявної аналітики (мертвий мапінг + markup-сліпота) при звірці — фікс дав бонус понад скоуп. (3) Два RPC з матчем по лейблу (overview all-time auth.uid + uplift date-ranged param) — консистентний набір маркерів 'Пік'/'Тихий час'/'Рання бронь'/'Остання хвилина'.
+
+**Founder QA: «вогонь» (підтверджено візуально).**
 
 ---
 
