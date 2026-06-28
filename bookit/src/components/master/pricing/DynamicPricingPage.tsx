@@ -43,12 +43,6 @@ const tint = (color: string, pct: number) => `color-mix(in srgb, ${color} ${pct}
 // Ілюстративна база для прев'ю «що станеться з ціною». Не реальна ціна майстра.
 const PREVIEW_BASE = 500;
 
-const INFO_CHIPS = [
-  { icon: Layers,       label: 'Стекінг',  desc: 'Правила накладаються одне на одне. Якщо на слот спрацюють два — їхні відсотки додаються.' },
-  { icon: TrendingDown, label: 'Max -30%', desc: 'Хоч скільки знижок зійдеться на слоті, ціна не впаде більше ніж на 30% від базової.' },
-  { icon: TrendingUp,   label: 'Max +50%', desc: 'Сумарна надбавка не підніме ціну більше ніж на 50% від базової.' },
-];
-
 function kopToUah(kop: number): string {
   return (kop / 100).toLocaleString('uk-UA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
@@ -311,14 +305,9 @@ export function DynamicPricingPage({ initial, isDrawer }: Props) {
 // ── Sub-components ──────────────────────────────────────────────────────────
 
 const PricingHero = React.memo(({ currentStep, closeTour, nextStep, enabledCount, extraEarned, savedSlots }: any) => {
-  const [activeChip, setActiveChip] = useState<number | null>(null);
-
   const showEarned = extraEarned > 0;
   const showSlots  = (savedSlots ?? 0) > 0;
   const showResult = showEarned || showSlots;
-
-  // Карет тултіпа під сіткою чіпів: центр відповідної третини.
-  const caretLeft = activeChip === 0 ? '16.66%' : activeChip === 1 ? '50%' : '83.33%';
 
   return (
     <motion.div
@@ -371,44 +360,12 @@ const PricingHero = React.memo(({ currentStep, closeTour, nextStep, enabledCount
         </div>
       )}
 
-      <div className="mt-4">
-        <div className="grid grid-cols-3 gap-2">
-          {INFO_CHIPS.map(({ icon: Icon, label }, i) => (
-            <button
-              key={label}
-              type="button"
-              aria-pressed={activeChip === i}
-              aria-label={`${label}: пояснення`}
-              onClick={() => setActiveChip(prev => (prev === i ? null : i))}
-              className={cn(
-                'flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl border text-center transition-colors cursor-pointer active:scale-[0.97]',
-                activeChip === i ? 'bg-primary/10 border-primary/30' : 'bg-secondary/40 border-border'
-              )}
-            >
-              <Icon size={14} className="text-primary" />
-              <span className="text-[10px] font-semibold text-muted-foreground">{label}</span>
-            </button>
-          ))}
-        </div>
-        <AnimatePresence initial={false}>
-          {activeChip !== null && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="overflow-hidden"
-            >
-              <div className="relative mt-2.5 rounded-2xl bg-secondary/60 border border-border px-3.5 py-3">
-                <span
-                  className="absolute -top-[5px] size-2.5 rotate-45 bg-secondary/60 border-l border-t border-border"
-                  style={{ left: caretLeft, transform: 'translateX(-50%) rotate(45deg)' }}
-                />
-                <p className="text-xs text-muted-foreground leading-relaxed text-pretty">{INFO_CHIPS[activeChip].desc}</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2">
+        <Layers size={13} className="text-muted-foreground shrink-0" aria-hidden="true" />
+        <p className="text-[11px] leading-snug text-pretty" style={{ color: 'var(--text-secondary)' }}>
+          Правила складаються, але ціна тримається в межах{' '}
+          <span className="font-semibold tabular-nums text-foreground">від -30% до +50%</span>.
+        </p>
       </div>
     </motion.div>
   );
