@@ -15,8 +15,11 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 35/78 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS · ФАЗА 2 (МАГАЗИН) ЗАКРИТА
-Наступна: M-REV-01 — Revenue: флеш-акції преміальний редизайн (design-taste-frontend + impeccable-design-polish · Sonnet · P1) [старт Фази 3].
+Прогрес: 36/78 ✅ · 1 ↩️ (M-DASH-11 скасовано) | Sprint-05 IN PROGRESS · ФАЗА 2 (МАГАЗИН) ЗАКРИТА · ФАЗА 3 (REVENUE) СТАРТ
+Наступна: M-REV-02 — дослідження працездатності авто-flash-deal (diagnose + senior-backend · Opus · P1). ⚠ Нотифікаційний RPC-баг уже виправлено (7b6375f8) → M-REV-02 = перевірити, що авто-тригер при скасуванні реально спрацьовує.
+Нотатки 2026-06-28 (M-REV-01 + BUGFIX):
+- M-REV-01 закрито (commits 6931549a редизайн + 013095ef хаб-шелл): флеш-акції преміальний редизайн. ПЕРШИЙ прогін нового пре-код ритуалу (brainstorming→impeccable craft→grill-me, доданий у WORKFLOW). FlashDealPage: hero вигоди serif + амбер-іскра, грошовий нудж-виручка, живі таймери (timeUntil(expires_at), 1 інтервал/хв), легасі-хекси→токени, CTA помаранч→slate. Хаб-шелл RevenueHubClient (розширення founder): шапку понижено (де-твін з hero), tab-overflow фікс (текст-онлі моб + nowrap + іконки hidden lg). a11y: таймер text-foreground (амбер тінт <4.5).
+- BUGFIX 7b6375f8 (founder: «чому 0 клієнтів?»): get_eligible_flash_deal_clients виклик мав НЕІСНУЮЧУ сигнатуру (p_master_id,p_slot_timestamp) — у БД лише 1-арг і 3-арг. Помилка проковтувалась (.rpc без перевірки error) → 0 нотифікацій завжди (ручні+авто). РЕЦИДИВ (вже фіксили в bb9dac0e). Фікс: +p_service_id + error-лог + міграція 20260628000000 (3-арг повертає client_name). 0→3 клієнти на БД. Урок: .rpc() без перевірки error = тихий збій; vercel logs не покаже — джерело дає БД.
 Нотатки 2026-06-27 (M-SHOP-03b):
 - M-SHOP-03b закрито (commit 9f97b5a5, deploy READY): відгуки про товари на сторінці товару. КОНТРТЕЗА до спеки (Фаза C була невірна): нова таблиця НЕ потрібна — reviews уже має order_id+product_id (міграція 112 уніфікувала), submitReview уже збирає order-відгуки (is_published=false модерація), MyBookingsPage/ShopOrderCard уже має UI. Бракувало лише READ. Реалізовано: RPC get_product_reviews(product_id) derive reviews.order_id→order_items.product_id (як get_service_reviews; мультитовар→під кожним товаром), SECURITY DEFINER hardened, індекси були, smoke ✓, міграція 20260627000010. Хук useProductReviews. ProductDetailView: заглушку→живий блок. Рішення founder: derive (не per-product product_id) + майстер модерує. Урок (утретє): звіряй живу БД перед плануванням backend — він уже існує.
 Нотатки 2026-06-27 (M-SHOP-03 A+B):
