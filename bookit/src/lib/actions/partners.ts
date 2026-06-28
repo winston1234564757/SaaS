@@ -73,25 +73,17 @@ export async function acceptPartnerInvitation(token: string): Promise<{ success:
     if (!invitingMaster) return { success: false, error: 'Недійсне або прострочене запрошення' };
     if (invitingMaster.id === user.id) return { success: false, error: 'Ви не можете стати партнером самого себе' };
 
-    const { data: existing } = await admin
+    // Upsert ОБИДВА напрями → partner/accepted симетрично. Якщо пара вже була alliance
+    // (реферал-звʼязок), обидві сторони стають partner (dedup partner>alliance), role→null.
+    // onConflict по UNIQUE(master_id,other_id).
+    const { error: upsertErr } = await admin
       .from('master_connections')
-      .select('id')
-      .match({ master_id: invitingMaster.id, other_id: user.id })
-      .maybeSingle();
+      .upsert([
+        { master_id: invitingMaster.id, other_id: user.id, kind: 'partner', status: 'accepted', role: null },
+        { master_id: user.id, other_id: invitingMaster.id, kind: 'partner', status: 'accepted', role: null },
+      ], { onConflict: 'master_id,other_id' });
 
-    if (existing) {
-      await admin
-        .from('master_connections')
-        .update({ status: 'accepted', kind: 'partner' })
-        .eq('id', existing.id);
-    } else {
-      await admin
-        .from('master_connections')
-        .insert([
-          { master_id: invitingMaster.id, other_id: user.id, kind: 'partner', status: 'accepted' },
-          { master_id: user.id, other_id: invitingMaster.id, kind: 'partner', status: 'accepted' },
-        ]);
-    }
+    if (upsertErr) return { success: false, error: 'Не вдалося прийняти запрошення.' };
 
     revalidatePath('/dashboard/growth');
     revalidatePath('/dashboard/partners');

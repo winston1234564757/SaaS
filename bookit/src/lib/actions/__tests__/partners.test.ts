@@ -22,7 +22,7 @@ function makeChain(r: MockResult = {}): any {
   };
   const p = Promise.resolve(resolved);
   const chain: any = {};
-  const methods = ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'in', 'match', 'or', 'limit', 'order', 'single', 'maybeSingle'];
+  const methods = ['select', 'insert', 'upsert', 'update', 'delete', 'eq', 'neq', 'in', 'match', 'or', 'limit', 'order', 'single', 'maybeSingle'];
   for (const m of methods) chain[m] = vi.fn().mockReturnValue(chain);
   chain.single      = vi.fn().mockResolvedValue(resolved);
   chain.maybeSingle = vi.fn().mockResolvedValue(resolved);
@@ -122,14 +122,14 @@ describe('partners — server action integration', () => {
       expect(r).toEqual({ success: false, error: 'Ви не можете стати партнером самого себе' });
     });
 
-    it('creates bidirectional partner records', async () => {
+    it('upserts bidirectional partner records (new pair)', async () => {
       vi.mocked(createClient).mockResolvedValue({
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: MASTER_ID } } }) },
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
           master_profiles:    [{ data: { id: OTHER_ID } }],
-          master_connections: [{ data: null }, { error: null }],
+          master_connections: [{ error: null }],  // upsert ok
         }) as any,
       );
       const r = await acceptPartnerInvitation('INVITER');
@@ -137,18 +137,32 @@ describe('partners — server action integration', () => {
       expect(r.error).toBeNull();
     });
 
-    it('updates existing partner record to accepted', async () => {
+    it('upsert symmetrically upgrades an existing pair (e.g. alliance → partner)', async () => {
       vi.mocked(createClient).mockResolvedValue({
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: MASTER_ID } } }) },
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
           master_profiles:    [{ data: { id: OTHER_ID } }],
-          master_connections: [{ data: { id: 'existing-1' } }],
+          master_connections: [{ error: null }],  // upsert ok (onConflict update both directions)
         }) as any,
       );
       const r = await acceptPartnerInvitation('EXIST');
       expect(r.success).toBe(true);
+    });
+
+    it('returns error when connection upsert fails', async () => {
+      vi.mocked(createClient).mockResolvedValue({
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: MASTER_ID } } }) },
+      } as any);
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdmin({
+          master_profiles:    [{ data: { id: OTHER_ID } }],
+          master_connections: [{ error: { message: 'fk' } }],
+        }) as any,
+      );
+      const r = await acceptPartnerInvitation('FAIL');
+      expect(r.success).toBe(false);
     });
   });
 

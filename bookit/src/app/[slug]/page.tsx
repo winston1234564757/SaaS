@@ -364,7 +364,7 @@ export default async function MasterPublicPage(
     ? { tiers: loyaltyTiers, currentVisits, isAuth: !!user }
     : null;
 
-  // Build trusted partners list from accepted bilateral master_partners
+  // Build trusted partners list from accepted+visible master_connections (partner+alliance)
   const trustedPartners: TrustedPartner[] = (partnerRes.data ?? []).map((row: PartnerRow) => {
     const partnerProfile = Array.isArray(row.partner.profiles) ? row.partner.profiles[0] : row.partner.profiles;
     return {

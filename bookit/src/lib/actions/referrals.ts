@@ -199,7 +199,7 @@ export async function applyReferralRewards(
     const isExpired = expiresAt < new Date();
 
     if (isMasterRef && masterRefRes.data) {
-      // M2M: відновлюємо master_referrals / master_alliances якщо відсутні
+      // M2M: відновлюємо master_referrals / alliance-звʼязок (master_connections) якщо відсутні
       const [mrCheck, maCheck] = await Promise.all([
         admin.from('master_referrals').select('id')
           .eq('referrer_id', masterRefRes.data.id).eq('referee_id', newMasterId).maybeSingle(),
