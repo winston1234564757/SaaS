@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 41/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 6/17.**
-**Наступна задача:** **`M-GROW-01` — Ріст: лояльність преміальний редизайн + стата** (DATA + REDESIGN · `senior-backend` + `design-taste-frontend` · Sonnet · P1). Сторінка лояльності `/dashboard/growth?tab=loyalty`. Тип гібрид: редизайн карток рівнів + жива статистика по програмі. Перед кодом: звірити живу схему (loyalty тири — за MemPalace лише `percent_discount` реалізований, `free_service`/`fixed_discount` дані є без логіки) + чи є read-side для стати. Пре-код ритуал REDESIGN (brainstorming→craft→grill) для дизайн-частини.
+**Прогрес:** 42/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) 6/17 done; Growth почато: M-GROW-01 ✅.**
+**Наступна задача:** **`M-GROW-02` — Ріст: об'єднати Реферали + Партнери (HARD)** (architecture · `improve-codebase-architecture` → `senior-backend` + `security-review` · Opus · P1). ❓ Відкрите ДО брифа: яка логіка лишається, що зникає, який UI для об'єднаної сутності. Сутності в коді: `master_referrals` (C2B реферали майстрів, реферальний код) + `master_partners` (партнерства) + `master_alliances` (B2B альянси, inviter/invitee) — усі живляться через `getGrowthPageData` (`growth/actions.ts`), рендеряться в `GrowthHubClient` табами Реферали/Партнери. ⚠ `security-review` обов'язковий (referral FK 23503 — історичний баг C2B, див. mempalace `project_referral_iron_machine`). Тип = архітектурний мердж, Тір 2: brainstorming + spec-driven + повний бриф ПЕРЕД кодом.
 **Оновлено:** 2026-06-28
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,38 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-GROW-01` — Ріст: лояльність преміальний редизайн + стата (P1) · commit `3cf3deea`
+
+**Тип:** DATA + REDESIGN (гібрид) · **Тір:** 2 · **Скіли:** ритуал `brainstorming`→`impeccable craft`→self-grill + `senior-backend` + `create-migration` + `humanizer` + `mcp__a11y` + inline security-review · **Модель:** Sonnet→Opus · **Бриф:** `BRIEFS/M-GROW-01.md`
+
+**QA перед кодом (батч AskUserQuestion, анти-серійність):** 3 рішення founder — (1) дата-обсяг = Pipeline + redemption-міграція forward-only; (2) лейаут = hero-зріз + progress-aware картки; (3) стата клікабельна → /clients. Дефолти підтверджені: impact 30д, «N разів» = кожен запис зі знижкою.
+
+**Before:** сторінка лояльності = чиста форма налаштувань (CRUD програм + C2C тогл), нуль аналітики про роботу програм.
+
+**After:** панель керування. (1) `OverviewCard` — лід-речення + тріада тап-сегментів `у прогресі / готові / за крок` (колір на icon-чіпі+числі, НЕ side-stripe; не hero-metric template) → тап у `/clients` звужений + impact-смуга «₴ віддано · N разів» (30д, forward-only, чесний empty). (2) Картки програм progress-aware: двосегментна смуга reached(success)/on_track(primary/45) + «X на шляху · Y готові», `Y` клікабельне. (3) Info-банер «Як це працює» тепер ЛИШЕ в порожньому стані — огляд займає його місце (3-сек правило).
+
+**Бекенд (forward-only):**
+- Міграція `20260628000006`: `bookings.loyalty_label text` + `loyalty_amount integer` (гривні, як total_price) + partial-index `WHERE loyalty_label IS NOT NULL`.
+- `createBooking` §8 insert: пише `loyalty_label`/`loyalty_amount` — обидва вже обчислювались у §7.5 і **викидались** (раніше `dynamic_pricing_label` лояльність не містив). Логіку розрахунку не чіпано.
+- Міграція `20260628000007`: RPC `get_loyalty_overview()` (pipeline all-time з `client_master_relations.total_visits`) + `get_loyalty_impact()` (redemption 30д з bookings). SECURITY DEFINER + search_path, `auth.uid()` без параметрів (без IDOR), STABLE read-only.
+- Хук `useLoyaltyStats` (client-side RPC, GRANT authenticated).
+
+**Security (строго краще за референс M-REV-05):** advisor зловив що `anon` успадковує EXECUTE попри `REVOKE FROM public` (Supabase default-privileges грантують anon явно). Витоку не було (обидві RPC на auth.uid → для anon =NULL → порожньо), але заблокував явно `REVOKE EXECUTE ... FROM anon` (підтверджено `has_function_privilege`: anon=false, authenticated=true). Цей патерн варто застосувати і до старих overview-RPC.
+
+**A11y (mcp__a11y, на поверхні картки #DAE2FF):** великі числа success #16803C 3.89 / amber #B45309 3.90 (поріг 3:1 ✓). Малий «готові»-лінк підбито до #0D6B2F = 5.16; ClientsPage-чіп до #0A5526 = 6.17 (поріг 4.5:1 ✓ — `text-success` #16803C давав лише 3.45-3.89, провалював малий текст).
+
+**ClientsPage:** новий `?loyaltyMin=N` / `?loyaltyExact=N` фільтр по `total_visits` (окрема гілка в `filtered` useMemo, AND з рештою) + dismissible індикатор-чіп «Лояльність: готові/за крок до нагороди» з X-очисткою. Наявні retention/smartSegment/custom-фільтри не зачеплені.
+
+**ВІДОМА діра (документовано, свідоме рішення):** `total_visits` інкрементиться тригером (міграція 013) лише для `client_id IS NOT NULL` (зареєстровані); движок лояльності в createBooking рахує по `client_phone`. Гостьові візити до реєстрації не входять у total_visits → overview може недорахувати «готові» для гостей. Взято total_visits бо це та сама CRM-істина, що живить /clients + клієнтський прогрес-бар (консистентність із усім app). Логіку букінгу НЕ чіпали.
+
+**Файли:** `LoyaltyPage.tsx` (редизайн), `useLoyaltyStats.ts` (новий), `createBooking.ts` (2 рядки insert), `ClientsPage.tsx` (фільтр+чіп), 2 міграції.
+
+**KEY:** (1) DATA-розвідка ДО дизайну зловила що знижка лояльності ніде не персистилась → impact неможливий без міграції; redemption-tracking forward-only + чесний empty (як M-REV-03). (2) self-grill зловив guest-діру total_visits ДО коду. (3) Supabase REVOKE public НЕ знімає anon EXECUTE — завжди `REVOKE FROM anon` явно на auth.uid-RPC. (4) `text-success` Frost (#16803C) провалює малий текст на periwinkle (3.45) — для дрібних success-лінків бери #0D6B2F+.
+
+**Очікує візуального QA founder (не задеплоєно — тримаємо до QA; DB-міграції вже на cloud, колонки nullable+default тож код-деплой не ламає runtime).**
 
 ---
 
