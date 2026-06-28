@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 38/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 3/17.**
-**Наступна задача:** **`M-REV-04` — Revenue: смарт-ціни преміальний редизайн** (`design-taste-frontend` + `impeccable-design-polish` · Sonnet · P1).
+**Прогрес:** 39/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 4/17.**
+**Наступна задача:** **`M-REV-05` — Revenue: статистика по типах ціноутворення** (`senior-backend` + `design-taste-frontend` · Sonnet · P1). Увага: M-REV-04 уже приніс per-rule стату (RPC `get_pricing_rule_stats` + `PricingRuleStatsSheet`) — M-REV-05 = агрегований огляд по типах, звіряй що вже є перед побудовою.
 **Оновлено:** 2026-06-28
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,34 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-REV-04` — Revenue: смарт-ціни преміальний редизайн + стата по правилах (P1) · commit `c0c9020a`
+
+**Тип:** REDESIGN + DATA · **Тір:** 2 · **Скіли:** пре-код ритуал (`brainstorming` → `impeccable craft` → `grill-me`) ✓ + `create-migration` · **Модель:** Opus · **Бриф:** `BRIEFS/M-REV-04.md`
+
+**Пре-код ритуал відпрацював:** brainstorming закрив 4 розвилки (месседж=авто-заробіток+доказ; колір=Frost slate+warm/cool; цифра=наявні дані; картки=рескін+прев'ю+групування). Grill зловив: `dynamic_pricing_extra_earned` рахує **лише надбавку** (тригер `dynamic_extra_kopecks > 0` тільки markup) → доказ-цифра тільки Pro, чесний лейбл.
+
+**База (DynamicPricingPage + PricingUpgradeGate):**
+- Hero «Ціни, що працюють без тебе» + доказ-рядок. 4 правила → 2 семантичні секції: «Заробити більше» (warm-dot → Пік) / «Заповнити вікна» (cool-dot → Тихий/Рання/Остання).
+- **`border-l-4` side-stripe прибрано** (абсолютний бан impeccable) → іконка-чип у тінті несе колір; enabled = повна межа-тінт.
+- Усі легасі-хекси (`#D4935A/#789A99/#5C9E7A/#C05B5B`) → Frost-токени (`--warning`/`--success`/`--error`). `PricingUpgradeGate` 3 view (Trial/Exhausted/ProGate) повністю токенізовано + `barColor` рампа на токенах (founder: повний редизайн гейту).
+- a11y: амбер #B45309 / green #16803C на дрібному тексті = 4.50/4.49 на чистому фоні, на тінті <4.5 → усі числа `text-foreground`, колір лише декоративно (іконки/тінти/бари). Day-pills білий на амбер/green = 5.02 ✓.
+
+**Follow-up founder (4 блоки в тій самій задачі):**
+- **A. Тап-тултіпи** на інфо-чіпах (Стекінг/Max-30/Max+50): `title=` (мертве на тапі) → кнопки `aria-pressed`, тап розкриває пояснення з каретом до активного чіпа. Overflow-safe (AnchoredTooltip w-72 вилазив би).
+- **B. Врятовані слоти** у hero: read-side `getDynamicPricingSavedSlots()` рахує `confirmed+completed` зі знижковим лейблом (`label IS NOT NULL AND dynamic_extra_kopecks = 0`). Рядок адаптивний (дохід+слоти / лише дохід / лише слоти). **Закрило діру грилу:** майстер на самих знижках бачив порожній рядок при earned=0.
+- **C. Прев'ю по типу правила:** прибрано з 4 карток → на рівень секцій (надбавка пік% / знижка = найбільша увімкнена). Показ лише коли ≥1 правило ON.
+- **D. Модалка статистики по правилу (founder: усі метрики):** RPC `get_pricing_rule_stats(p_rule_marker)` — **фільтр по `auth.uid()`, без IDOR** (не приймає master_id), матч по підрядку лейбла, `SECURITY DEFINER`+`search_path`, `REVOKE public`/`GRANT authenticated`. `BarChart3` sibling-button у хедері (a11y: 3 окремі кнопки замість вкладених у тогл), відкривається й для вимкнених правил. `PricingRuleStatsSheet` (vaul, дзеркало FlashDealDetailSheet): кількість + ₴ (надбавка) + сер.% (парс із лейбла) + остання дата + 5 останніх записів + loading/empty. Міграція `20260628000003` (MCP+локально).
+
+**Чесні межі даних:** знижки лише кількість+% (₴ нема — не додають дохід); pre-feature записи без лейбла; змішаний запис (пік+остання) → у надбавку (не двічі).
+
+**Файли:** `DynamicPricingPage.tsx` · `PricingUpgradeGate.tsx` · `PricingRuleStatsSheet.tsx` (new) · `pricing/actions.ts` (+2 actions) · міграція `20260628000003`.
+
+**KEY:** (1) Пре-код ритуал вартий: grill зловив markup-only нюанс ДО коду, follow-up B перетворив його з вади на фічу (врятовані слоти = доказ для discount-only майстра). (2) Редизайн контенту оголює спільні компоненти — `PricingUpgradeGate` для Starter домінує сторінку, без його токенізації палітра була б розламана (як twin-card у M-REV-01). (3) Per-rule стата = матч по `dynamic_pricing_label` підрядку; RPC через `auth.uid()` замість param = нема IDOR. (4) M-REV-04 частково закрив M-REV-05 (per-rule) — лишився агрегований огляд.
+
+**Очікує:** візуального QA founder (тултіпи чіпів · рядок врятованих слотів · модалка стати з 4 правил).
 
 ---
 

@@ -586,6 +586,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `get_retention_status` | Retention dashboard — міграція 076 |
 | `get_analytics_extras` | Об'єднаний мега-RPC аналітики (зайнятість, когорти, LTV, аномалії, ROI Smart Pricing та зв'язки послуг) — міграція 20260605000000 |
 | `get_service_reviews` | Published-відгуки по послузі (M-SVC-03) через `reviews.booking_id → booking_services.service_id`; SECURITY DEFINER, public read (anon/authenticated), лише безпечні поля — міграція 20260626000000. Хук: `useServiceReviews.ts` |
+| `get_pricing_rule_stats` | Per-rule стата динамічних цін (M-REV-04): кількість/₴(надбавка)/сер.%/остання дата/5 останніх записів. **Фільтр по `auth.uid()` — без IDOR** (не приймає master_id), матч по підрядку `dynamic_pricing_label` ('Пік'/'Тихий час'/'Рання бронь'/'Остання хвилина'), SECURITY DEFINER, authenticated-only — міграція 20260628000003. Action: `getPricingRuleStats` · UI: `PricingRuleStatsSheet.tsx` |
 
 ### Міграції
 141+ міграцій застосовано в продакшн.
@@ -606,3 +607,4 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `20260607000000_security_search_path_fix.sql` — 19 RPC `SET search_path = public` fixes (⚠️ pending `npx supabase db push` або Dashboard SQL Editor)
 - `20260614000000_auto_flash_on_cancel.sql` — `auto_flash_on_cancel BOOLEAN`, `auto_flash_discount_pct INT` на `master_profiles` (T32 migration 141)
 - `20260618000000_activation_tour_step.sql` — `activation_tour_step smallint DEFAULT NULL` на `master_profiles` + sparse index; Activation Tour persistence (T23-impl 2026-06-18)
+- `20260628000003_get_pricing_rule_stats.sql` — RPC `get_pricing_rule_stats` per-rule стата динамічних цін (auth.uid, без IDOR) — M-REV-04 follow-up
