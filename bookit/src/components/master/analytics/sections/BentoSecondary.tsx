@@ -15,6 +15,7 @@ interface BentoSecondaryProps {
   currentRevenue: number; // в копійках
   upliftKopecks: number;
   ruleCounts: Record<string, number>;
+  savedSlots: number;
   dealsCount: number;
   claimedDeals: number;
   sentBroadcasts: number;
@@ -32,6 +33,7 @@ export function BentoSecondary({
   currentRevenue,
   upliftKopecks,
   ruleCounts,
+  savedSlots,
   dealsCount,
   claimedDeals,
   sentBroadcasts,
@@ -67,7 +69,7 @@ export function BentoSecondary({
 
       {/* 4. Smart Pricing Uplift */}
       <BentoCell variant="square" className="md:col-span-3 lg:col-span-4">
-        <DynamicPricingUplift upliftKopecks={upliftKopecks} ruleCounts={ruleCounts} />
+        <DynamicPricingUplift upliftKopecks={upliftKopecks} ruleCounts={ruleCounts} savedSlots={savedSlots} />
       </BentoCell>
 
       {/* 5. Flash Deals Card */}

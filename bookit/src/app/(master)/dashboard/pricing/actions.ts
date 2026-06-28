@@ -75,3 +75,27 @@ export async function getPricingRuleStats(marker: string): Promise<PricingRuleSt
   }
   return data as PricingRuleStats;
 }
+
+export interface PricingRulesOverview {
+  peak: { count: number; earned_kopecks: number };
+  quiet: { count: number };
+  early_bird: { count: number };
+  last_minute: { count: number };
+}
+
+/**
+ * Огляд усіх 4 правил за один виклик (M-REV-05). RPC через auth.uid() (без IDOR).
+ * Надбавка: count + earned_kopecks. Знижки: count (врятовані слоти).
+ */
+export async function getPricingRulesOverview(): Promise<PricingRulesOverview | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase.rpc('get_pricing_rules_overview');
+  if (error) {
+    console.error('[getPricingRulesOverview]', error.message);
+    return null;
+  }
+  return data as PricingRulesOverview;
+}

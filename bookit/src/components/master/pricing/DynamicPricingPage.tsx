@@ -6,7 +6,7 @@ import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { pluralUk } from '@/lib/utils/pluralUk';
-import { savePricingRules, getDynamicPricingSavedSlots } from '@/app/(master)/dashboard/pricing/actions';
+import { savePricingRules, getDynamicPricingSavedSlots, getPricingRulesOverview, type PricingRulesOverview as OverviewData } from '@/app/(master)/dashboard/pricing/actions';
 import { useMasterContext } from '@/lib/supabase/context';
 import type { PricingRules } from '@/lib/utils/dynamicPricing';
 import {
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { PricingUpgradeGate } from '@/components/master/pricing/PricingUpgradeGate';
 import { PricingRuleStatsSheet, type RuleStatMeta } from '@/components/master/pricing/PricingRuleStatsSheet';
+import { PricingRulesOverview } from '@/components/master/pricing/PricingRulesOverview';
 
 interface Props {
   initial?: PricingRules;
@@ -101,6 +102,7 @@ export function DynamicPricingPage({ initial, isDrawer }: Props) {
   const [saved, setSaved]   = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedSlots, setSavedSlots] = useState<number | null>(null);
+  const [overview, setOverview] = useState<OverviewData | null>(null);
   const [statsRule, setStatsRule] = useState<RuleStatMeta | null>(null);
   const [enabled, setEnabled] = useState({
     peak:        !!initial?.peak,
@@ -109,11 +111,11 @@ export function DynamicPricingPage({ initial, isDrawer }: Props) {
     last_minute: !!initial?.last_minute,
   });
 
-  // Врятовані слоти (read-side count) — лише для Pro/Studio, де є доказ-рядок.
+  // Огляд правил (усі тарифи) + врятовані слоти (Pro, для доказ-рядка hero).
   useEffect(() => {
-    if (!isPro) return;
     let active = true;
-    getDynamicPricingSavedSlots().then(r => { if (active) setSavedSlots(r.count); });
+    getPricingRulesOverview().then(r => { if (active) setOverview(r); });
+    if (isPro) getDynamicPricingSavedSlots().then(r => { if (active) setSavedSlots(r.count); });
     return () => { active = false; };
   }, [isPro]);
 
@@ -200,6 +202,8 @@ export function DynamicPricingPage({ initial, isDrawer }: Props) {
           savedSlots={isPro ? savedSlots : null}
         />
       )}
+
+      {!isDrawer && <PricingRulesOverview data={overview} onOpenRule={setStatsRule} />}
 
       <div className={cn('relative flex flex-col gap-2.5', currentStep === 1 && 'tour-glow z-40 scale-[1.02] transition-all duration-500')}>
         <AnchoredTooltip

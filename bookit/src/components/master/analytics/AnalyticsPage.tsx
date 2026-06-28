@@ -859,6 +859,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     currentRevenue={summary.revenue}
                     upliftKopecks={extras?.dynamic_pricing_uplift?.uplift_kopecks ?? 0}
                     ruleCounts={extras?.dynamic_pricing_uplift?.rule_counts ?? {}}
+                    savedSlots={extras?.dynamic_pricing_uplift?.saved_slots ?? 0}
                     dealsCount={flashDealsStats?.total ?? 0}
                     claimedDeals={flashDealsStats?.claimed ?? 0}
                     sentBroadcasts={broadcastsStats?.sent ?? 0}

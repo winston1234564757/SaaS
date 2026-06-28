@@ -129,6 +129,7 @@ export interface AnalyticsExtras {
   dynamic_pricing_uplift?: {
     uplift_kopecks: number;
     rule_counts: Record<string, number>;
+    saved_slots?: number;
   };
   ltv_concentration?: {
     concentration_pct: number;
