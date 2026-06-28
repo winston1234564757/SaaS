@@ -3,7 +3,17 @@
 **Статус:** DRAFT (очікує APPROVE)
 **Тип:** REDESIGN · **Тір:** 2 (преміальний редизайн) · **Модель:** Sonnet
 **Скіли:** пре-код ритуал (brainstorming → impeccable craft → grill-me) ✓ виконано · далі `design-taste-frontend` → `impeccable` (polish) → `mcp__a11y` → `humanizer` ✓
-**Файли:** `src/components/master/flash/FlashDealPage.tsx` (єдиний; `RevenueHubClient.tsx` лише хостить таб, не чіпаємо)
+**Файли:** `src/components/master/flash/FlashDealPage.tsx` + `RevenueHubClient.tsx` (хаб-шелл — розширення скоупу founder, див. нижче)
+
+## Розширення скоупу (founder, 2026-06-28): хаб-шелл
+
+Редизайн флеш-контенту оголив дві проблеми у шапці Revenue Hub (`RevenueHubClient.tsx`):
+1. **Twin-card:** шапка-хаб і новий флеш-hero обидві «іконка + serif-заголовок + сірий підзаголовок» → дублювання (anti-ref PRODUCT).
+2. **Tab overflow:** пілюлі `flex-1 px-5` + іконка + текст переносились на 2 рядки / вилазили за картку на мобільному.
+
+**Рішення (founder QA: текст-онлі таби на мобільному):**
+- Шапку понижено до тихої навігації: іконка size-9 `bg-accent-light`, sans-заголовок (не serif-hero), підзаголовок `hidden lg:block` (на мобільному прибрано → де-твін + місце).
+- Таб-бар: текст-онлі на мобільному (`whitespace-nowrap`, px-5→px-3), іконки `hidden lg:block` (десктоп вертикальна навігація). Slate-active + `layoutId` збережено.
 
 ---
 

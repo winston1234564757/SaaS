@@ -90,19 +90,21 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
     <>
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
 
-        {/* Left sidebar: hub header + tab navigation */}
-        <div className="bento-card p-5 flex flex-col gap-4" data-tour-key="rev-sidebar">
-          <div className="flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-              <Wallet size={24} />
+        {/* Left sidebar: hub header + tab navigation. Quiet nav chrome on mobile —
+            the focal moment belongs to the tab content below, not this shell. */}
+        <div className="bento-card p-4 lg:p-5 flex flex-col gap-3 lg:gap-4" data-tour-key="rev-sidebar">
+          <div className="flex items-center gap-2.5">
+            <div className="size-9 rounded-xl bg-accent-light flex items-center justify-center text-accent shrink-0">
+              <Wallet size={18} />
             </div>
-            <div>
-              <h1 className="display-md text-foreground">Revenue Hub</h1>
-              <p className="text-sm text-muted-foreground">Управління доходами та спецпропозиціями</p>
+            <div className="min-w-0">
+              <h1 className="text-base font-semibold text-foreground tracking-tight leading-tight">Revenue Hub</h1>
+              <p className="hidden lg:block text-xs text-muted-foreground mt-0.5">Управління доходами та спецпропозиціями</p>
             </div>
           </div>
 
-          {/* Tabs: horizontal pill on mobile, vertical nav on desktop */}
+          {/* Tabs: text-only segmented control on mobile (fits 3 labels, no wrap),
+              icon + label vertical nav on desktop. */}
           <div className={cn(
             'relative bg-surface/40 backdrop-blur-md border border-border/40 p-1 flex gap-1 rounded-[100px]',
             'lg:flex-col lg:rounded-2xl lg:bg-transparent lg:border-0 lg:p-0 lg:gap-1'
@@ -117,8 +119,8 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
                   aria-pressed={isActive}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    'relative flex-1 px-5 py-2.5 rounded-full text-xs font-semibold flex items-center justify-center gap-2 transition-colors duration-200 cursor-pointer active:scale-[0.95] transform-gpu',
-                    'lg:flex-none lg:w-full lg:rounded-xl lg:px-4 lg:justify-start',
+                    'relative flex-1 px-3 py-2 rounded-full text-xs font-semibold flex items-center justify-center gap-2 whitespace-nowrap transition-colors duration-200 cursor-pointer active:scale-[0.97] transform-gpu',
+                    'lg:flex-none lg:w-full lg:rounded-xl lg:px-4 lg:py-2.5 lg:justify-start',
                     isActive ? 'text-[var(--accent-on)]' : 'text-text-secondary hover:text-foreground'
                   )}
                 >
@@ -130,7 +132,7 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
                       transition={{ type: 'spring' as const, duration: 0.35, bounce: 0 }}
                     />
                   )}
-                  <Icon size={14} className="relative z-10" />
+                  <Icon size={14} className="relative z-10 hidden lg:block" />
                   <span className="relative z-10">{tab.label}</span>
                 </button>
               );
