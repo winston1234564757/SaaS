@@ -4,9 +4,10 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 42/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) 6/17 done; Growth почато: M-GROW-01 ✅.**
-**Наступна задача:** **`M-GROW-02` — Ріст: об'єднати Реферали + Партнери (HARD)** (architecture · `improve-codebase-architecture` → `senior-backend` + `security-review` · Opus · P1). ❓ Відкрите ДО брифа: яка логіка лишається, що зникає, який UI для об'єднаної сутності. Сутності в коді: `master_referrals` (C2B реферали майстрів, реферальний код) + `master_partners` (партнерства) + `master_alliances` (B2B альянси, inviter/invitee) — усі живляться через `getGrowthPageData` (`growth/actions.ts`), рендеряться в `GrowthHubClient` табами Реферали/Партнери. ⚠ `security-review` обов'язковий (referral FK 23503 — історичний баг C2B, див. mempalace `project_referral_iron_machine`). Тип = архітектурний мердж, Тір 2: brainstorming + spec-driven + повний бриф ПЕРЕД кодом.
+**Прогрес:** 43/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done (M-GROW-01, M-GROW-02).**
+**Наступна задача:** **`M-MKT-01` — Маркетинг: сторіс у рівний грід** (REDESIGN · `impeccable (layout)` + `design-taste-frontend` · Sonnet · P1). Story Generator на `/dashboard/marketing` (`StoryGenerator.tsx`). Превʼю сторіс зараз нерівні → вирівняти в грід. Перед кодом: скріншот поточного + пре-код ритуал REDESIGN (brainstorming→craft→grill). Суміжні M-MKT-02 (превʼю −30%) + M-MKT-03 (кольори) можуть піти разом якщо логічно.
 **Оновлено:** 2026-06-28
+**⏳ Технічний борг M-GROW-02:** drop `master_partners` + `master_alliances` окремою міграцією після ~тижня verify на проді (rollback safety). Дані вже в `master_connections`, старі таблиці інертні (не пишуться/не читаються).
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
 
@@ -26,6 +27,38 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-GROW-02` — Ріст: об'єднати Реферали + Партнери (HARD) (P1) · commit `31557c87`
+
+**Тип:** NEW-FEATURE / архітектурний мердж · **Тір:** 2 · **Скіли:** розвідка → `senior-backend` + `create-migration` + inline security-review (`improve-codebase-architecture` недоступний у Skill tool → fallback) · **Модель:** Opus · **Бриф:** `BRIEFS/M-GROW-02.md`
+
+**Розвідка перед брифом (2 AskUserQuestion):** «об'єднати реферали+партнери» було неоднозначне. Розвідка показала: 3 сутності роблять РІЗНЕ — `master_referrals` (C2B білінг-знижка на підписку, тригер+cron+lifetime_discount), `master_partners` (cross-promo, 2 симетричні рядки), `master_alliances` (реферал-граф, 1 directional, авто-створення в referrals.ts). Founder: **`master_referrals` НЕ чіпати, злити partners+alliances у нову `master_connections`, зараз повністю.**
+
+**Дизайн:** `master_connections` bilateral (рядок на пару master→other), `kind` partner/alliance, `role` inviter/invitee (напрям alliance; NULL для partner), `status`, `is_visible`. Alliance (1 directional) → 2 bilateral рядки при backfill.
+
+**Міграція `20260628000008` (additive+reversible):**
+- Створення + backfill (partners прямий копі; alliance→2 рядки inviter/invitee) + dedup `ON CONFLICT DO NOTHING` (partner вставлено першим → перемагає).
+- RLS: `mc_owner_read` (auth, свої) + `mc_public_read` (anon+auth, `is_visible AND accepted`) + `mc_admin`; write лише service_role.
+- Row-count верифіковано на проді: 1 alliance → 2 рядки (inviter+invitee), dedup_dropped=0.
+- Старі таблиці НЕ дропнуто (rollback safety) — окрема міграція після verify.
+
+**🔴 Латентний баг пофікшено:** `createPublicClient()` = anon, поважає RLS. Стара `master_partners` RLS = `auth.uid()=master_id OR partner_id` → для анонімного відвідувача публічної сторінки **0 рядків**. `trustedPartners` був мертвий для розлогінених (більшість трафіку). `mc_public_read` оживляє.
+
+**Перенацілено 7 споживачів:** partners.ts (accept 2 рядки/remove обидва напрями/toggle — toggleConnectionVisibility helper), referrals.ts (alliance insert + idempotent recovery → 2 рядки kind=alliance), getGrowthPageData (1 запит, спліт за kind у JS, props-контракт збережено), [slug]/page.tsx (інша FK), useBookingWizardState, AllianceMap (role='inviter' = 1 рядок/напрям через alias), partners.test + referrals.action.test (мок-ключі).
+
+**UI-мердж:** PartnersPage дві секції (партнери + альянси) → один список «У твоїй мережі» з origin-бейджами (Партнер #3F5C5B / Реферал accent). Remove лише партнерам (alliance immutable), toggle обом.
+
+**Security:** write лише service_role (нема політик write для anon/auth → форжити не можна); mc_public_read тече лише relationship-метадані видимих звʼязків (non-PII, opt-in); FK 23503 zone недоторкана (Primary→Secondary порядок, білінг/master_referrals НЕ чіпано). Advisor clean.
+
+**A11y (mcp__a11y):** бейдж/кнопка `#3F5C5B` на primary-тінті = 5.02 (`text-primary` #789A99 провалив би малий текст); accent-бейдж #0F172A високий.
+
+**Файли:** міграція + partners.ts + referrals.ts + growth/actions.ts + [slug]/page.tsx + useBookingWizardState.ts + AllianceMap.tsx + PartnersPage.tsx + 2 тести.
+
+**KEY:** (1) Розвідка ДО брифа на HARD-задачі обовʼязкова — «об'єднати X+Y» було неоднозначне, виявилось 3 сутності з різною семантикою + білінг-coupling. (2) Bilateral-модель уніфікує: directional alliance → 2 рядки з role, читання тривіальне (`WHERE master_id=me`), напрям збережено. (3) Supabase RLS пастка: вузька політика «лише сторони» вбиває публічне читання анонами — публічні фічі потребують явної anon-політики на opt-in-полях. (4) Additive міграція (нова таблиця, старі лишаються) = безпечний прод-мердж з тривіальним rollback. (5) `text-primary` Frost (#789A99) провалює малий текст — `#3F5C5B`+.
+
+**⏳ Борг:** drop `master_partners`+`master_alliances` після ~тижня verify. **Очікує візуального QA founder (не задеплоєно).**
 
 ---
 
