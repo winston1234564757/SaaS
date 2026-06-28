@@ -66,7 +66,7 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
 
     const promises: [Promise<any>, Promise<any>, Promise<any>, Promise<any>?] = [
       supabase.from('profiles').select('id, role, full_name, phone, email, avatar_url, telegram_chat_id, created_at, updated_at').eq('id', targetUserId).single(),
-      supabase.from('master_profiles').select('id, slug, business_name, bio, categories, mood_theme, accent_color, subscription_tier, subscription_expires_at, commission_rate, rating, rating_count, is_published, address, city, latitude, longitude, floor, cabinet, instagram_url, telegram_url, telegram_chat_id, avatar_emoji, has_seen_tour, seen_tours, pricing_rules, working_hours, timezone, referral_code, referred_by, retention_cycle_days, dynamic_pricing_extra_earned, c2c_enabled, c2c_discount_pct, segment_config, created_at, updated_at').eq('id', targetUserId).single(),
+      supabase.from('master_profiles').select('id, slug, business_name, bio, categories, mood_theme, accent_color, subscription_tier, subscription_expires_at, commission_rate, rating, rating_count, is_published, address, city, latitude, longitude, floor, cabinet, instagram_url, telegram_url, telegram_chat_id, avatar_emoji, has_seen_tour, seen_tours, pricing_rules, working_hours, timezone, referral_code, referred_by, retention_cycle_days, dynamic_pricing_extra_earned, c2c_enabled, c2c_discount_pct, segment_config, auto_flash_on_cancel, auto_flash_discount_pct, created_at, updated_at').eq('id', targetUserId).single(),
       activeImpersonating
         ? supabase.from('master_subscriptions').select('*').eq('master_id', targetUserId).maybeSingle()
         : supabase.rpc('get_my_subscription').maybeSingle()

@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../client';
 import { useMasterContext } from '../context';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
+import { getFlashDealStats } from '@/app/(master)/dashboard/flash/actions';
 import { getNow } from '@/lib/utils/now';
 
 export function useFlashDeals(initialData?: FlashDealRow[]) {
@@ -37,6 +38,16 @@ export function useFlashDealsInvalidate() {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
   return () => qc.invalidateQueries({ queryKey: ['flash-deals', masterId] });
+}
+
+export function useFlashDealStats(dealId: string | null) {
+  const { masterProfile } = useMasterContext();
+  return useQuery({
+    queryKey: ['flash-deal-stats', dealId],
+    queryFn:  () => getFlashDealStats(dealId!),
+    enabled:  !!dealId && !!masterProfile?.id,
+    staleTime: 30_000,
+  });
 }
 
 export function useFlashDealsCount() {

@@ -7,6 +7,7 @@ import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
 import { createFlashDeal, cancelFlashDeal, updateAutoFlashSettings } from '@/app/(master)/dashboard/flash/actions';
 import { useFlashDeals, useFlashDealsCount, useFlashDealsInvalidate } from '@/lib/supabase/hooks/useFlashDeals';
+import { FlashDealDetailSheet } from './FlashDealDetailSheet';
 import type { FlashDealRow } from '@/app/(master)/dashboard/flash/page';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
@@ -107,6 +108,7 @@ export function FlashDealPage({
   const [expiresInHours, setExpiresInHours] = useState(4);
   const [loading, setLoading]             = useState(false);
   const [result, setResult]               = useState<{ error: string | null; sentTo: number; clients?: { id: string; name: string }[] } | null>(null);
+  const [statsDeal, setStatsDeal]         = useState<{ id: string; serviceName: string } | null>(null);
   const [cancellingId, setCancellingId]   = useState<string | null>(null);
 
   // Auto Flash settings state (FR-9, FR-10)
@@ -116,9 +118,8 @@ export function FlashDealPage({
 
   useEffect(() => {
     if (masterProfile) {
-      const mp = masterProfile as any;
-      setAutoFlashOnCancel(mp.auto_flash_on_cancel ?? false);
-      setAutoFlashDiscountPct(mp.auto_flash_discount_pct ?? 20);
+      setAutoFlashOnCancel(masterProfile.auto_flash_on_cancel ?? false);
+      setAutoFlashDiscountPct(masterProfile.auto_flash_discount_pct ?? 20);
     }
   }, [masterProfile]);
 
@@ -299,6 +300,13 @@ export function FlashDealPage({
         activeDeals={activeDeals}
         cancellingId={cancellingId}
         handleCancel={handleCancel}
+        onOpenStats={(id, serviceName) => setStatsDeal({ id, serviceName })}
+      />
+
+      <FlashDealDetailSheet
+        dealId={statsDeal?.id ?? null}
+        serviceName={statsDeal?.serviceName ?? ''}
+        onClose={() => setStatsDeal(null)}
       />
     </div>
   );
@@ -754,10 +762,11 @@ const FlashDealForm = React.memo(({
   </motion.form>
 ));
 
-const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel }: {
+const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel, onOpenStats }: {
   activeDeals: FlashDealRow[];
   cancellingId: string | null;
   handleCancel: (id: string) => void;
+  onOpenStats: (id: string, serviceName: string) => void;
 }) => {
   // Keep countdown labels live without per-card timers.
   useMinuteTick(activeDeals.length > 0);
@@ -778,12 +787,17 @@ const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel }:
               const expired    = remaining === 'Минула';
               return (
                 <div key={deal.id} className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface/60 border border-border">
-                  <div className="flex-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => onOpenStats(deal.id, deal.service_name)}
+                    aria-label={`Статистика акції «${deal.service_name}»`}
+                    className="flex-1 min-w-0 text-left rounded-lg hover:opacity-80 active:scale-[0.99] transition-all"
+                  >
                     <p className="text-sm font-semibold text-foreground truncate">{deal.service_name}</p>
                     <p className="text-[11px] text-muted-foreground tabular-nums">
                       {deal.slot_date} о {deal.slot_time.slice(0, 5)} · {discounted} ₴
                     </p>
-                  </div>
+                  </button>
                   <span
                     className={cn(
                       'flex items-center gap-1 text-[11px] font-semibold tabular-nums shrink-0 px-2 py-1 rounded-lg',

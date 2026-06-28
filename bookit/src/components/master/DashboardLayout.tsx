@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js';
 import { MasterProvider, useMasterContext } from '@/lib/supabase/context';
 import { useRealtimeNotifications } from '@/lib/supabase/hooks/useRealtimeNotifications';
 import { BookingDetailsModal } from '@/components/master/bookings/BookingDetailsModal';
+import { FlashOnCancelConfirmSheet } from '@/components/master/bookings/FlashOnCancelConfirmSheet';
 import { DashboardTopBar } from '@/components/master/DashboardTopBar';
 import { MobileHub } from '@/components/shared/MobileHub';
 import { InstallBanner } from '@/components/shared/InstallBanner';
@@ -100,6 +101,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         <Suspense>
           <BookingDetailsModal />
         </Suspense>
+
+        <FlashOnCancelConfirmSheet />
       </div>
   );
 }

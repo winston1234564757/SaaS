@@ -16,6 +16,7 @@ import { parseError } from '@/lib/utils/errors';
 import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
 import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
 import { MaterialsReviewSheet } from './MaterialsReviewSheet';
+import { useFlashOnCancelStore } from '@/lib/stores/flashOnCancelStore';
 
 type BookingSlice = Pick<
   BookingWithServices,
@@ -35,6 +36,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
+  const requestFlash = useFlashOnCancelStore((s) => s.request);
 
   const defaultInvalidate = () => invalidateBookingQueries(qc);
 
@@ -49,6 +51,19 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
       } else {
         showToast({ type: 'success', title: successTitle });
         await (onSuccess ?? defaultInvalidate)();
+      }
+    });
+  };
+
+  const handleCancel = () => {
+    startTransition(async () => {
+      const { error, flashPrompt: prompt } = await cancelBooking(booking.id);
+      if (error) {
+        showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
+      } else {
+        showToast({ type: 'success', title: 'Запис скасовано' });
+        await (onSuccess ?? defaultInvalidate)();
+        if (prompt) requestFlash(booking.id, prompt);
       }
     });
   };
@@ -114,7 +129,7 @@ export function BookingActionsDropdown({ booking, onSuccess }: BookingActionsDro
           {
             icon: <XCircle size={14} />,
             label: 'Скасувати',
-            onClick: () => run(() => cancelBooking(id), 'Запис скасовано'),
+            onClick: handleCancel,
             className: 'text-destructive',
             disabled: isPending,
           },

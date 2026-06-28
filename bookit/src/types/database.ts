@@ -124,6 +124,8 @@ export interface MasterProfile {
   segment_config?: Record<string, unknown>[] | null;
   c2c_enabled?: boolean;
   c2c_discount_pct?: number;
+  auto_flash_on_cancel?: boolean;
+  auto_flash_discount_pct?: number;
   activation_tour_step?: number | null;
   ships_nova_poshta?: boolean;
   broadcasts_used?: number;

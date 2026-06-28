@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import {
   notifyClientOnStatusChange,
   notifyClientOnReschedule,
@@ -109,7 +110,9 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
   }
 }
 
-export async function cancelBooking(bookingId: string): Promise<{ error: string | null }> {
+export async function cancelBooking(
+  bookingId: string,
+): Promise<{ error: string | null; flashPrompt?: { discountPct: number; serviceName: string } }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизовано' };
@@ -155,43 +158,94 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
     const masterName = mpBase?.profiles?.full_name ?? 'Майстра';
 
     if (booking.client_id) {
-      const services = (booking.booking_services as ExtendedBookingService[]).map(s => s.service_name).join(', ');
-      notifyClientOnStatusChange({
-        clientId: booking.client_id,
-        masterId: booking.master_id,
-        masterName,
-        bookingId,
-        date: booking.date,
-        startTime: booking.start_time,
-        services,
-        status: 'cancelled',
-      }).catch(err => console.error('[cancelBooking] Notification failed:', err));
+      const services  = (booking.booking_services as ExtendedBookingService[]).map(s => s.service_name).join(', ');
+      const clientId  = booking.client_id;
+      const masterId  = booking.master_id;
+      const date      = booking.date;
+      const startTime = booking.start_time;
+      // M-REV-02 (NFR-1): run the client notification after the response flushes
+      // so the serverless invocation doesn't drop the detached promise.
+      after(() =>
+        notifyClientOnStatusChange({
+          clientId,
+          masterId,
+          masterName,
+          bookingId,
+          date,
+          startTime,
+          services,
+          status: 'cancelled',
+        }).catch(err => console.error('[cancelBooking] Notification failed:', err)),
+      );
     }
 
-    // ── Auto Flash Deal trigger (FR-2, FR-3, NFR-1) ──────────────────────
+    // ── Auto Flash Deal (M-REV-02 B) ─────────────────────────────────────
+    // Master-initiated cancel ASKS first: surface a prompt, fire on confirm
+    // via fireAutoFlashForSlot. (Client-initiated cancel fires automatically
+    // in my/bookings/actions.ts.)
+    let flashPrompt: { discountPct: number; serviceName: string } | undefined;
     if (mpFlash?.auto_flash_on_cancel) {
-      const bServices = booking.booking_services as ExtendedBookingService[];
-      const first = bServices[0];
-      // FR-6: skip if no services; FR-7: skip product-only; EC-6: skip zero price
+      const first = (booking.booking_services as ExtendedBookingService[])[0];
+      // skip if no services / product-only / zero price
       if (first?.service_id && Number(first.service_price) > 0) {
-        createFlashDealInternal(booking.master_id, mpFlash.subscription_tier, {
-          serviceId:      first.service_id,
-          serviceName:    first.service_name,
-          slotDate:       booking.date,
-          slotTime:       booking.start_time.slice(0, 5),
-          originalPrice:  Number(first.service_price),
-          discountPct:    mpFlash.auto_flash_discount_pct,
-          expiresInHours: 2,
-          slug:           mpFlash.slug ?? '',
-          masterName,
-        }).catch(err => console.error('[cancelBooking] Auto Flash Deal failed:', err));
+        flashPrompt = { discountPct: mpFlash.auto_flash_discount_pct, serviceName: first.service_name };
       }
     }
 
-    return { error: null };
+    return { error: null, flashPrompt };
   } catch (err: any) {
     console.error('[cancelBooking] error:', err);
     return { error: 'Не вдалося скасувати запис.' };
+  }
+}
+
+/**
+ * M-REV-02 (B): master confirmed the upsell after cancelling → fire the deal.
+ * Re-fetches + re-validates ownership server-side; excludes the booking's client
+ * (whose slot just freed) from targeting.
+ */
+export async function fireAutoFlashForSlot(
+  bookingId: string,
+): Promise<{ error: string | null; sentTo: number }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизовано', sentTo: 0 };
+
+  try {
+    const admin = createAdminClient();
+    const { data: booking } = await admin
+      .from('bookings')
+      .select('master_id, client_id, date, start_time, booking_services(service_id, service_name, service_price), master_profiles(slug, subscription_tier, auto_flash_on_cancel, auto_flash_discount_pct, profiles(full_name))')
+      .eq('id', bookingId)
+      .single();
+
+    if (!booking) return { error: 'Запис не знайдено', sentTo: 0 };
+    if (booking.master_id !== user.id) return { error: 'Немає доступу', sentTo: 0 };
+
+    const mp = booking.master_profiles as unknown as ExtendedMasterProfile;
+    if (!mp?.auto_flash_on_cancel) return { error: null, sentTo: 0 };
+
+    const first = (booking.booking_services as ExtendedBookingService[])[0];
+    if (!first?.service_id || Number(first.service_price) <= 0) return { error: null, sentTo: 0 };
+
+    const { error, sentTo } = await createFlashDealInternal(booking.master_id, mp.subscription_tier, {
+      serviceId:       first.service_id,
+      serviceName:     first.service_name,
+      slotDate:        booking.date,
+      slotTime:        booking.start_time.slice(0, 5),
+      originalPrice:   Number(first.service_price),
+      discountPct:     mp.auto_flash_discount_pct,
+      expiresInHours:  2,
+      slug:            mp.slug ?? '',
+      masterName:      mp.profiles?.full_name ?? 'Майстер',
+      excludeClientId: booking.client_id ?? undefined,
+      bookingId,
+    });
+
+    return { error, sentTo };
+  } catch (err: any) {
+    console.error('[fireAutoFlashForSlot] error:', err);
+    return { error: 'Не вдалося запустити акцію.', sentTo: 0 };
   }
 }
 
@@ -251,7 +305,7 @@ export async function rescheduleBooking(
 export async function updateBookingStatus(
   bookingId: string,
   status: string,
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; flashPrompt?: { discountPct: number; serviceName: string } }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Не авторизовано' };
@@ -261,7 +315,7 @@ export async function updateBookingStatus(
 
     const { data: booking } = await admin
       .from('bookings')
-      .select('master_id, client_id, status, date, start_time, booking_services(service_name), master_profiles(profiles(full_name))')
+      .select('master_id, client_id, status, date, start_time, booking_services(service_id, service_name, service_price), master_profiles(auto_flash_on_cancel, auto_flash_discount_pct, profiles(full_name))')
       .eq('id', bookingId)
       .single();
 
@@ -286,22 +340,40 @@ export async function updateBookingStatus(
     revalidatePath('/dashboard/bookings');
     revalidatePath('/my/bookings');
 
+    const mpNested = booking.master_profiles as unknown as ExtendedMasterProfile;
+
     if ((status === 'confirmed' || status === 'cancelled') && booking.client_id) {
-      const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
-      const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
-      notifyClientOnStatusChange({
-        clientId: booking.client_id,
-        masterId: booking.master_id,
-        masterName,
-        bookingId,
-        date: booking.date,
-        startTime: booking.start_time,
-        services,
-        status: status as 'confirmed' | 'cancelled',
-      }).catch(err => console.error('[updateBookingStatus] Notification failed:', err));
+      const services = (booking.booking_services as ExtendedBookingService[]).map(s => s.service_name).join(', ');
+      const masterName = mpNested?.profiles?.full_name ?? 'Майстра';
+      const clientId  = booking.client_id;
+      const masterId  = booking.master_id;
+      const date      = booking.date;
+      const startTime = booking.start_time;
+      const st        = status as 'confirmed' | 'cancelled';
+      after(() =>
+        notifyClientOnStatusChange({
+          clientId,
+          masterId,
+          masterName,
+          bookingId,
+          date,
+          startTime,
+          services,
+          status: st,
+        }).catch(err => console.error('[updateBookingStatus] Notification failed:', err)),
+      );
     }
 
-    return { error: null };
+    // M-REV-02 (B): master cancelling via the details modal → ask before flash.
+    let flashPrompt: { discountPct: number; serviceName: string } | undefined;
+    if (status === 'cancelled' && mpNested?.auto_flash_on_cancel) {
+      const first = (booking.booking_services as ExtendedBookingService[])[0];
+      if (first?.service_id && Number(first.service_price) > 0) {
+        flashPrompt = { discountPct: mpNested.auto_flash_discount_pct, serviceName: first.service_name };
+      }
+    }
+
+    return { error: null, flashPrompt };
   } catch (err: any) {
     console.error('[updateBookingStatus] error:', err);
     return { error: 'Не вдалося оновити статус запису.' };

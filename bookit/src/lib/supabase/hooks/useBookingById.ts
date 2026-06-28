@@ -12,6 +12,7 @@ import {
     updateMasterNotes
 } from '@/app/(master)/dashboard/bookings/actions';
 import { invalidateBookingQueries } from '@/lib/utils/invalidateBookingQueries';
+import { useFlashOnCancelStore } from '@/lib/stores/flashOnCancelStore';
 
 export interface BookingProduct {
   name: string;
@@ -137,12 +138,19 @@ export function useBookingById(id: string | null) {
     staleTime: 60_000,
   });
 
+  const requestFlash = useFlashOnCancelStore((s) => s.request);
+
   const updateStatus = useMutation({
     mutationFn: async (status: BookingStatus) => {
-      const result = status === 'completed' 
-        ? await completeBooking(id!)
-        : await updateBookingStatus(id!, status);
+      if (status === 'completed') {
+        const result = await completeBooking(id!);
+        if (result.error) throw new Error(result.error);
+        return;
+      }
+      const result = await updateBookingStatus(id!, status);
       if (result.error) throw new Error(result.error);
+      // M-REV-02 (B): surface the flash-deal prompt after a modal cancel.
+      if (result.flashPrompt && id) requestFlash(id, result.flashPrompt);
     },
     onMutate: async (status: BookingStatus) => {
       await qc.cancelQueries({ queryKey: key });

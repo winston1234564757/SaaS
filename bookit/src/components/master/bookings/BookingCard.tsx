@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils/cn';
 import { statusGlow } from '@/lib/utils/statusGlow';
 import { useConsumablesForBooking } from '@/lib/supabase/hooks/useConsumablesForBooking';
 import { MaterialsReviewSheet } from './MaterialsReviewSheet';
+import { useFlashOnCancelStore } from '@/lib/stores/flashOnCancelStore';
 
 interface BookingCardProps {
   booking: BookingWithServices;
@@ -68,6 +69,7 @@ export function BookingCard({
   const isAnyPending = isPendingConfirm || isPendingCancel || isPendingComplete || isPendingNoShow;
 
   const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
+  const requestFlash = useFlashOnCancelStore((s) => s.request);
   const { data: consumables = [], isLoading: consumablesLoading } = useConsumablesForBooking(
     booking.status === 'confirmed' ? booking.id : null
   );
@@ -85,12 +87,13 @@ export function BookingCard({
 
   const handleCancel = () =>
     startCancel(async () => {
-      const { error } = await cancelBooking(booking.id);
+      const { error, flashPrompt: prompt } = await cancelBooking(booking.id);
       if (error) {
         showToast({ type: 'error', title: 'Помилка', message: parseError(error) });
       } else {
         showToast({ type: 'success', title: 'Запис скасовано' });
         await invalidateAll();
+        if (prompt) requestFlash(booking.id, prompt);
       }
     });
 
