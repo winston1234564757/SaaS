@@ -34,11 +34,29 @@
 | **COPY** | — | Без брифа | `humanizer` → показати before/after |
 | **MOTION** | Референс відчуття (як має бути) | Лайт: ціль + spring/scroll-параметри | `emilkowalski-motion` → `impeccable (animate)` → перевірити на моб. |
 | **BUGFIX** | Кроки відтворення | Reproduce + гіпотеза root cause (БЕЗ дизайн-питань) | root cause ПІДТВЕРДЖЕНО → fix → regression-перевірка → `code-review` |
-| **REDESIGN** | **Скріншот поточного стану** (обов'язково) | Before + дизайн-напрям + файли + ризики | `design-taste-frontend` → `impeccable` → `mcp__a11y` → `humanizer` |
+| **REDESIGN** | **Скріншот поточного стану** (обов'язково) + **пре-код ритуал** (див. нижче) | Before + дизайн-напрям + файли + ризики | пре-код: `brainstorming` → `impeccable (craft)` → `grill-me` · далі: `design-taste-frontend` → `impeccable` → `mcp__a11y` → `humanizer` |
 | **DATA** | Де дані зараз рвуться/беруться | Схема пайплайну: джерело → трансформ → відображення + RLS | `senior-backend` → перевірка даних end-to-end → `security-review` (якщо RLS/action) |
 | **NEW-FEATURE** | Опис бажаної поведінки + edge cases | Повний spec: acceptance criteria, усі стани (empty/loading/error), edge cases | `spec-driven-workflow` → impl → `adversarial-reviewer` → `ship-gate` |
 
 **Спільне для всіх (універсальні гейти з BACKLOG):** `grilling` (план) на старті · `humanizer` на весь UI-текст · `ship-gate` перед деплоєм.
+
+---
+
+## Пре-код ритуал для REDESIGN (обов'язково)
+
+Будь-який редизайн (46 задач — тип за замовчуванням) НЕ починається з коду і навіть НЕ з брифа. Спершу — три кроки по порядку:
+
+```
+1. brainstorming        — розвідка наміру: що болить, для кого, який напрям. БЕЗ цього нема що крафтити.
+2. impeccable (craft)    — оформлення дизайн-напряму: ієрархія, токени, варіанти. Скіл, не «в голові».
+3. grill-me              — стрес-тест готового напряму ПЕРЕД кодом. Ловить дірки, поки дешево.
+```
+
+Тільки після цих трьох → пишу `BRIEFS/[ID].md` (Before + напрям + файли + ризики) → APPROVE → код.
+
+**Чому такий порядок:** `grill-me` стрес-тестить *наявний* план, тому завжди останній. `brainstorming` дає напрям, `impeccable (craft)` його оформлює — без них grill нема що грилити.
+
+**Виняток:** дрібний CSS/responsive, класифікований як Тір 0 (напр. `G-LAND-02`), — повний ритуал не вантажиться; діють внутрішні правила (CLAUDE.md, Frost-токени). Ритуал обов'язковий для справжніх редизайнів (Тір 1-2).
 
 ---
 
@@ -49,7 +67,7 @@
 | Тір | Типи | Перед кодом | Скіли | Пост-гейт |
 |-----|------|-------------|-------|-----------|
 | **0 — Дрібний** | COPY · дрібний CSS/responsive (як `G-LAND-02`) | Інлайн міні-бриф (не файл), якщо немає реальної неоднозначності | Тільки якщо потрібне судження (`humanizer` для copy). Решта — внутрішні правила, БЕЗ важких скіл-доків | `tsc --noEmit`. Повний build — НЕ за задачу, а батчем |
-| **1 — Стандарт** | REDESIGN · MOTION · BUGFIX · DATA | Task Brief (файл) + QA на реальних неоднозначностях | 1-2 спеціаліст-скіли | `tsc` + `build` |
+| **1 — Стандарт** | REDESIGN · MOTION · BUGFIX · DATA | Task Brief (файл) + QA на реальних неоднозначностях · **REDESIGN: спершу пре-код ритуал** (brainstorming → impeccable craft → grill-me) | 1-2 спеціаліст-скіли | `tsc` + `build` |
 | **2 — Важкий** | NEW-FEATURE · великий редизайн (`M-ANL-01`) · `M-GROW-02` | brainstorming + spec-driven + повний brief (acceptance, стани) | spec → impl → adversarial-reviewer | `tsc` + `build` + `ship-gate` (+ тести) |
 
 ### Правила ефективності (виведені з прогону G-LAND-02)

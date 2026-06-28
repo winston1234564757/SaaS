@@ -14,9 +14,10 @@ import { useMasterContext } from '@/lib/supabase/context';
 import { generateAvailableSlots } from '@/lib/utils/smartSlots';
 import {
   Zap, Clock, X, Send, ChevronDown, Users,
-  CheckCircle2, AlertCircle, Crown, Sparkles, Loader2, CalendarX,
+  CheckCircle2, AlertCircle, Crown, Sparkles, Loader2, CalendarX, TrendingUp,
 } from 'lucide-react';
 import { formatDurationFull } from '@/lib/utils/dates';
+import { pluralUk } from '@/lib/utils/pluralUk';
 import Link from 'next/link';
 
 interface Props {
@@ -52,10 +53,22 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// Limit bar: calm slate by default, amber as it heats up, error when exhausted.
 function progressBarColor(used: number): string {
-  if (used >= STARTER_LIMIT) return '#C05B5B';
-  if (used >= 3) return '#D4935A';
-  return '#5C9E7A';
+  if (used >= STARTER_LIMIT) return 'var(--error)';
+  if (used >= 3) return 'var(--warning)';
+  return 'var(--accent)';
+}
+
+// Re-render on a 1/min cadence so active-deal timers stay live. One interval,
+// gated on `active` so it never runs when there are no deals to tick.
+function useMinuteTick(active: boolean) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const id = setInterval(() => setTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, [active]);
 }
 
 export function FlashDealPage({
@@ -228,7 +241,6 @@ export function FlashDealPage({
       {!isDrawer && (
         <FlashDealHeader
           activeCount={activeDeals.length}
-          usedThisMonth={usedThisMonth}
           tier={tier}
           currentStep={currentStep}
           closeTour={closeTour}
@@ -294,9 +306,8 @@ export function FlashDealPage({
 
 // ── Sub-components ──────────────────────────────────────────────────────────
 
-const FlashDealHeader = React.memo(({ activeCount, usedThisMonth, tier, currentStep, closeTour, nextStep }: {
+const FlashDealHeader = React.memo(({ activeCount, tier, currentStep, closeTour, nextStep }: {
   activeCount: number;
-  usedThisMonth: number;
   tier: string;
   currentStep: number | null;
   closeTour: () => void;
@@ -320,13 +331,13 @@ const FlashDealHeader = React.memo(({ activeCount, usedThisMonth, tier, currentS
       primaryButtonText="Далі →"
       onPrimaryClick={nextStep}
     />
-    <div className="flex items-center gap-3">
+    <div className="flex items-start gap-3.5">
       <div className="size-11 rounded-2xl bg-warning/12 flex items-center justify-center shrink-0">
         <Zap size={22} className="text-warning" />
       </div>
       <div className="flex-1 min-w-0">
-        <h1 className="heading-serif text-xl text-foreground leading-tight">Флеш-акції</h1>
-        <p className="text-sm text-muted-foreground/60">Заповни вільне вікно — сповісти клієнтів</p>
+        <h1 className="heading-serif text-xl text-foreground leading-tight">Вільне вікно? Заповни знижкою.</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Порожній слот не заробляє. Клієнти побачать акцію одразу.</p>
       </div>
       {tier !== 'starter' && (
         <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full font-semibold shrink-0">
@@ -335,16 +346,17 @@ const FlashDealHeader = React.memo(({ activeCount, usedThisMonth, tier, currentS
       )}
     </div>
 
-    <div className="grid grid-cols-2 gap-2.5 mt-4">
-      <div className="p-3 rounded-2xl bg-secondary/50 border border-border">
-        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide">Активних акцій</p>
-        <p className="text-xl font-bold text-warning mt-0.5">{activeCount}</p>
+    {activeCount > 0 && (
+      <div className="flex items-center gap-2 mt-4 pt-3.5 border-t border-border/60">
+        <span className="relative flex size-2 shrink-0">
+          <span className="absolute inline-flex h-full w-full rounded-full bg-warning/60 animate-ping motion-reduce:hidden" />
+          <span className="relative inline-flex size-2 rounded-full bg-warning" />
+        </span>
+        <span className="text-xs font-medium text-foreground tabular-nums">
+          {activeCount} {pluralUk(activeCount, 'акція', 'акції', 'акцій')} зараз працює
+        </span>
       </div>
-      <div className="p-3 rounded-2xl bg-secondary/50 border border-border">
-        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide">За цей місяць</p>
-        <p className="text-xl font-bold text-foreground mt-0.5">{usedThisMonth}</p>
-      </div>
-    </div>
+    )}
   </motion.div>
 ));
 
@@ -362,14 +374,14 @@ const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barCo
   >
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1.5">
-        <Sparkles size={13} className="text-warning" />
+        <Sparkles size={13} className="text-muted-foreground" />
         <span className="text-xs font-semibold text-muted-foreground">Флеш-акції цього місяця</span>
       </div>
       <span className="text-xs font-bold tabular-nums" style={{ color: barColor }}>
         {usedThisMonth} / {STARTER_LIMIT}
       </span>
     </div>
-    <div className="w-full h-2.5 bg-[#F0E4DF] rounded-full overflow-hidden">
+    <div className="w-full h-2.5 bg-accent/10 rounded-full overflow-hidden">
       <motion.div
         className="h-full rounded-full"
         style={{ backgroundColor: barColor }}
@@ -383,7 +395,7 @@ const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barCo
         Ліміт вичерпано. Перейдіть на Pro для необмеженого доступу.
       </p>
     ) : (
-      <p className="text-xs text-muted-foreground/60">
+      <p className="text-xs text-muted-foreground/70">
         Залишилось {STARTER_LIMIT - usedThisMonth} з {STARTER_LIMIT} акцій на місяць
       </p>
     )}
@@ -395,7 +407,7 @@ const FlashDealPaywall = React.memo(() => (
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
     className="bento-card p-4 flex items-center gap-3"
-    style={{ background: 'rgba(212,147,90,0.06)' }}
+    style={{ background: 'color-mix(in srgb, var(--warning) 7%, transparent)' }}
   >
     <div className="size-10 rounded-2xl bg-warning/12 flex items-center justify-center shrink-0">
       <Crown size={18} className="text-warning" />
@@ -432,9 +444,8 @@ const AutoFlashSettingsCard = React.memo(({
   >
     <div className="flex items-center justify-between gap-3">
       <div className="flex items-center gap-3">
-        <div className="size-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'rgba(92,158,122,0.12)' }}>
-          <Zap size={15} style={{ color: '#5C9E7A' }} />
+        <div className="size-9 rounded-xl flex items-center justify-center shrink-0 bg-accent-light">
+          <Zap size={15} className="text-accent" />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground leading-tight">Авто Flash Deal</p>
@@ -448,8 +459,10 @@ const AutoFlashSettingsCard = React.memo(({
         aria-checked={enabled}
         aria-label="Авто Flash Deal при скасуванні"
         onClick={() => onToggle(!enabled)}
-        className="relative w-11 h-6 rounded-full transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-        style={{ background: enabled ? '#5C9E7A' : '#D1D5DB' }}
+        className={cn(
+          'relative w-11 h-6 rounded-full transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
+          enabled ? 'bg-primary' : 'bg-muted-foreground/30'
+        )}
       >
         <motion.span
           className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow-sm"
@@ -479,10 +492,9 @@ const AutoFlashSettingsCard = React.memo(({
                   className={cn(
                     'flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer',
                     discountPct === d
-                      ? 'text-white border-transparent'
-                      : 'bg-secondary/60 text-muted-foreground border-border hover:border-[#5C9E7A]/40'
+                      ? 'bg-primary text-primary-foreground border-transparent'
+                      : 'bg-secondary/60 text-muted-foreground border-border hover:border-accent/40'
                   )}
-                  style={discountPct === d ? { background: '#2D6A4A' } : {}}
                 >
                   {d}%
                 </button>
@@ -556,7 +568,7 @@ const FlashDealForm = React.memo(({
     />
 
     <div className="flex items-center gap-2">
-      <Zap size={14} className="text-warning" />
+      <Zap size={14} className="text-accent" />
       <h2 className="text-sm font-bold text-foreground">Нова флеш-акція</h2>
     </div>
 
@@ -567,7 +579,7 @@ const FlashDealForm = React.memo(({
           value={serviceId}
           onChange={e => handleServiceChange(e.target.value)}
           required
-          className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-secondary/80 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 transition-colors bg-secondary/60 cursor-pointer"
+          className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-secondary/80 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 transition-colors bg-secondary/60 cursor-pointer"
         >
           <option value="" disabled>Оберіть послугу…</option>
           {activeServices.map((s: any) => (
@@ -586,7 +598,7 @@ const FlashDealForm = React.memo(({
         min={todayStr()}
         onChange={e => handleDateChange(e.target.value)}
         aria-label="Дата слоту"
-        className="w-full px-3.5 py-2.5 rounded-2xl border border-secondary/80 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4935A]/30 transition-colors bg-secondary/60"
+        className="w-full px-3.5 py-2.5 rounded-2xl border border-secondary/80 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 transition-colors bg-secondary/60"
         required
       />
     </div>
@@ -598,7 +610,7 @@ const FlashDealForm = React.memo(({
           <p className="text-xs text-muted-foreground/60 text-center py-3">Спочатку оберіть послугу</p>
         ) : scheduleLoading || availableSlots === null ? (
           <div className="flex items-center justify-center gap-2 py-3">
-            <Loader2 size={14} className="text-warning animate-spin" />
+            <Loader2 size={14} className="text-accent animate-spin" />
             <span className="text-xs text-muted-foreground/60">Завантаження розкладу…</span>
           </div>
         ) : availableSlots.length === 0 ? (
@@ -616,8 +628,8 @@ const FlashDealForm = React.memo(({
                 className={cn(
                   'py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer',
                   slotTime === slot.time
-                    ? 'bg-warning text-white border-warning shadow-[0_2px_8px_rgba(212,147,90,0.3)]'
-                    : 'bg-secondary/60 text-muted-foreground border-border hover:border-warning/40'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-secondary/60 text-muted-foreground border-border hover:border-accent/40'
                 )}
               >
                 {slot.time}
@@ -636,11 +648,11 @@ const FlashDealForm = React.memo(({
           <select
             value={discountPct}
             onChange={e => setDiscountPct(Number(e.target.value))}
-            className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-secondary/80 text-sm text-foreground bg-secondary/60"
+            className="w-full appearance-none px-3.5 py-2.5 rounded-2xl border border-secondary/80 text-sm text-foreground bg-secondary/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30"
           >
             {DISCOUNT_OPTIONS.map(d => <option key={d} value={d}>{d}%</option>)}
           </select>
-          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
         </div>
       </div>
       <div>
@@ -651,9 +663,12 @@ const FlashDealForm = React.memo(({
               key={opt.value}
               type="button"
               onClick={() => setExpiresInHours(opt.value)}
-              className={`flex-1 py-2.5 rounded-2xl text-[10px] font-bold border transition-all cursor-pointer ${
-                expiresInHours === opt.value ? 'bg-warning text-white' : 'bg-secondary/60'
-              }`}
+              className={cn(
+                'flex-1 py-2.5 rounded-2xl text-[10px] font-bold border transition-all cursor-pointer',
+                expiresInHours === opt.value
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-secondary/60 text-muted-foreground border-border hover:border-accent/40'
+              )}
             >
               {opt.label}
             </button>
@@ -664,9 +679,21 @@ const FlashDealForm = React.memo(({
 
     <AnimatePresence>
       {discountedPrice !== null && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="px-4 py-3 bg-warning/8 rounded-2xl">
-          <span className="text-xs text-foreground">
-            Клієнт заплатить <span className="font-bold text-warning">{discountedPrice} ₴</span> замість {originalPrice} ₴
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="rounded-2xl border border-warning/20 px-4 py-3 flex flex-col gap-1"
+          style={{ background: 'color-mix(in srgb, var(--warning) 8%, transparent)' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <TrendingUp size={14} className="text-warning shrink-0" />
+            <span className="text-sm font-bold text-warning tabular-nums">
+              +{discountedPrice} ₴ за слот, що зараз порожній
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            Клієнт заплатить {discountedPrice} ₴ замість {originalPrice} ₴
           </span>
         </motion.div>
       )}
@@ -719,7 +746,7 @@ const FlashDealForm = React.memo(({
     <button
       type="submit"
       disabled={loading || isStarterBlocked || !slotTime}
-      className="w-full flex items-center justify-center gap-2 bg-warning disabled:opacity-50 text-white font-bold rounded-2xl py-3.5 text-sm cursor-pointer shadow-lg active:scale-95 transition-all"
+      className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground disabled:opacity-50 font-bold rounded-2xl py-3.5 text-sm cursor-pointer shadow-sm active:scale-[0.98] transition-all"
     >
       <Send size={15} />
       {loading ? 'Відправляємо…' : 'Запустити акцію'}
@@ -731,39 +758,70 @@ const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel }:
   activeDeals: FlashDealRow[];
   cancellingId: string | null;
   handleCancel: (id: string) => void;
-}) => (
-  <AnimatePresence>
-    {activeDeals.length > 0 ? (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-5 flex flex-col gap-3">
-        <div className="flex items-center gap-2 mb-1">
-          <Clock size={14} className="text-warning" />
-          <h2 className="text-sm font-bold text-foreground">Активні акції ({activeDeals.length})</h2>
-        </div>
-        <div className="flex flex-col gap-2">
-          {activeDeals.map((deal: any) => {
-            const priceUah   = Math.round(deal.original_price / 100);
-            const discounted = Math.round(priceUah * (1 - deal.discount_pct / 100));
-            return (
-              <div key={deal.id} className="flex items-center gap-3 p-3.5 rounded-2xl bg-warning/6 border border-warning/15">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{deal.service_name}</p>
-                  <p className="text-[10px] text-muted-foreground">{deal.slot_date} о {deal.slot_time.slice(0, 5)} · {discounted} ₴</p>
+}) => {
+  // Keep countdown labels live without per-card timers.
+  useMinuteTick(activeDeals.length > 0);
+
+  return (
+    <AnimatePresence>
+      {activeDeals.length > 0 ? (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-5 flex flex-col gap-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock size={14} className="text-warning" />
+            <h2 className="text-sm font-bold text-foreground">Активні акції ({activeDeals.length})</h2>
+          </div>
+          <div className="flex flex-col gap-2">
+            {activeDeals.map((deal: any) => {
+              const priceUah   = Math.round(deal.original_price / 100);
+              const discounted = Math.round(priceUah * (1 - deal.discount_pct / 100));
+              const remaining  = timeUntil(deal.expires_at);
+              const expired    = remaining === 'Минула';
+              return (
+                <div key={deal.id} className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface/60 border border-border">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{deal.service_name}</p>
+                    <p className="text-[11px] text-muted-foreground tabular-nums">
+                      {deal.slot_date} о {deal.slot_time.slice(0, 5)} · {discounted} ₴
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      'flex items-center gap-1 text-[11px] font-semibold tabular-nums shrink-0 px-2 py-1 rounded-lg',
+                      expired
+                        ? 'text-muted-foreground/70 bg-secondary/50'
+                        : 'text-foreground bg-warning/10'
+                    )}
+                  >
+                    <Clock size={11} className={expired ? '' : 'text-warning'} />
+                    {expired ? 'Завершується' : remaining}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Скасувати акцію"
+                    onClick={() => handleCancel(deal.id)}
+                    disabled={cancellingId === deal.id}
+                    className="p-2 text-muted-foreground/60 hover:text-destructive transition-colors shrink-0"
+                  >
+                    <X size={14} />
+                  </button>
                 </div>
-                <button type="button" aria-label="Скасувати акцію" onClick={() => handleCancel(deal.id)} disabled={cancellingId === deal.id} className="p-2 text-muted-foreground/60 hover:text-destructive">
-                  <X size={14} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
-    ) : (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-6 flex flex-col items-center gap-4 text-center">
-        <div className="size-16 rounded-3xl bg-warning/10 flex items-center justify-center">
-          <Zap size={28} className="text-warning" />
-        </div>
-        <p className="text-sm font-bold">Немає активних акцій</p>
-      </motion.div>
-    )}
-  </AnimatePresence>
-));
+              );
+            })}
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-6 flex flex-col items-center gap-3 text-center">
+          <div className="size-14 rounded-3xl bg-warning/10 flex items-center justify-center">
+            <Zap size={26} className="text-warning" />
+          </div>
+          <div className="flex flex-col gap-1 max-w-[260px]">
+            <p className="text-sm font-bold text-foreground">Ще немає активних акцій</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Обери вільний слот і запропонуй на нього знижку.
+            </p>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});

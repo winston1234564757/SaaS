@@ -1,25 +1,23 @@
 {
   "edit_counts": {
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\BRIEFS\\G-PWA-01.md": 3,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\shared\\GlassSafeArea.tsx": 4,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\app\\my\\layout.tsx": 2,
-    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\DashboardLayout.tsx": 2,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\MAPS\\SYSTEM_MAP.md": 1,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\HANDOFF.md": 5,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\TRACKER.md": 3,
-    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\TRANSITION_PROMPT.md": 1
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\WORKFLOW.md": 3,
+    "C:\\Users\\Vitossik\\SaaS\\XDEV\\PLANS\\SPRINT-05-BACKLOG\\BRIEFS\\M-REV-01.md": 0,
+    "C:\\Users\\Vitossik\\SaaS\\bookit\\src\\components\\master\\flash\\FlashDealPage.tsx": 1
   },
   "consecutive_reads": 0,
   "read_files": [],
   "qa_gate_passed": true,
   "skills_called": [
-    "scroll-experience",
-    "progressive-web-app"
+    "brainstorming",
+    "impeccable",
+    "grilling",
+    "humanizer",
+    "design-taste-frontend"
   ],
   "startup_confirmed": true,
   "mempalace_done": true,
   "systemmap_done": true,
-  "startup_date": "2026-06-23",
+  "startup_date": "2026-06-28",
   "mempalace_searched": true,
-  "ts_edits_since_tsc": 9
+  "ts_edits_since_tsc": 1
 }
