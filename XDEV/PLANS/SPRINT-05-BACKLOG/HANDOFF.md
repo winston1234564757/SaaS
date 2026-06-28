@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 40/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 5/17.**
-**Наступна задача:** **`M-REV-06` — Revenue: редизайн інфо-блоку «ціноутворення»** (`impeccable` distill · Sonnet · P2). Інфо-блок = 3 чіпи Стекінг/Max-30/Max+50 у hero `DynamicPricingPage` (M-REV-04 додав їм тап-тултіпи) — distill/причесати подачу.
+**Прогрес:** 41/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3 (Revenue) у роботі: 6/17.**
+**Наступна задача:** **`M-GROW-01` — Ріст: лояльність преміальний редизайн + стата** (DATA + REDESIGN · `senior-backend` + `design-taste-frontend` · Sonnet · P1). Сторінка лояльності `/dashboard/growth?tab=loyalty`. Тип гібрид: редизайн карток рівнів + жива статистика по програмі. Перед кодом: звірити живу схему (loyalty тири — за MemPalace лише `percent_discount` реалізований, `free_service`/`fixed_discount` дані є без логіки) + чи є read-side для стати. Пре-код ритуал REDESIGN (brainstorming→craft→grill) для дизайн-частини.
 **Оновлено:** 2026-06-28
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.
@@ -26,6 +26,29 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-REV-06` — Revenue: distill інфо-блоку ціноутворення (весь PricingHero) (P2) · commit `3d7a11ef`
+
+**Тип:** REDESIGN (distill) · **Тір:** 1 · **Скіли:** ритуал `brainstorming`→`impeccable craft`→`grill-me` + `humanizer` + `mcp__a11y` · **Модель:** Sonnet→Opus (повний ритуал на вимогу founder) · **Бриф:** `BRIEFS/M-REV-06.md`
+
+**QA перед кодом:** Скоуп розширено founder з «тільки інфо-чіпи» на «весь hero». Напрям delegований у `impeccable craft`. Два мікро-рішення винесено в один AskUserQuestion (анти-серійність): колір виноски = монохром-muted; копірайт = явніше про суму.
+
+**Before:** `PricingHero` тягнув 4 роботи: заголовок + active-count бейдж + conditional proof-рядок (₴/слоти) + **3 тап-чіпи механіки** (`Стекінг`/`Max -30%`/`Max +50%`) з `AnimatePresence` карет-поповером (стейт `activeChip`, математика `caretLeft`). Механіка = довідка, схована за тапом жаргонними ярликами.
+
+**After:** один тихий рядок-виноска під hairline (`border-t`), завжди видимий:
+`Layers-іконка + «Правила складаються, але ціна тримається в межах від -30% до +50%»`. Видалено: `INFO_CHIPS` const, грід-кнопки, поповер, `activeChip`, `caretLeft`. **−43 рядки** (6 ins / 49 del).
+
+**A11y-дірка, зловлена grill-me ДО коду:** «тихо» ≠ світло-сіре. `muted-foreground` (=`--text-tertiary` rgba(15,23,42,.45)) на periwinkle-card дає ефективно #80889F = **2.79:1** — провалив би 11px. Рішення: текст виноски на `--text-secondary` (#475569 = **5.98:1** AA pass), емфаза діапазону `text-foreground`, іконка декоративна (`aria-hidden`). Перевірено `mcp__a11y__get-color-contrast`.
+
+**Не чіпали:** header (заголовок/subtitle/бейдж), proof-логіку (`showEarned`/`showSlots`/`showResult`), `AnchoredTooltip` тур (прив'язаний до контейнера hero, не до чіпів — звірено по коду), props, рендер `!isDrawer`.
+
+**Файли:** `DynamicPricingPage.tsx` (тільки `PricingHero` + видалення `INFO_CHIPS`).
+
+**KEY:** (1) Distill = прибрати інтеракцію-заради-довідки; ліміти вже демонструють живі `PreviewRow` + картки правил + M-REV-05 overview одразу під hero, тож hero не місце для туторіалу. (2) grill-me на дизайні зловив a11y-діру muted-токена ДО написання коду — це і є сенс ритуалу (дешево). (3) «Тихий» текст у Frost ≠ `muted-foreground` для дрібного шрифту — використовуй `--text-secondary` (#475569) як «тихо але читабельно».
+
+**Очікує візуального QA founder (на Vercel).**
 
 ---
 
