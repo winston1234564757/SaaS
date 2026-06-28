@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Loader2, Link2, Zap, Instagram,
   LayoutGrid, List, ChevronDown, Send, MessageSquare, X,
-  CheckCircle2, Moon, AlertTriangle, UserX, Plus, Search, Share2,
+  CheckCircle2, Moon, AlertTriangle, UserX, Plus, Search, Share2, Gift,
 } from 'lucide-react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { ClientDetailSheet } from './ClientDetailSheet';
@@ -117,6 +117,19 @@ export function ClientsPage() {
     ? (clients.find(c => c.client_phone === clientPhone) ?? null)
     : null;
 
+  // M-GROW-01: deep-link фільтр лояльності (з панелі /dashboard/growth?tab=loyalty)
+  const loyaltyMin    = searchParams.get('loyaltyMin');
+  const loyaltyExact  = searchParams.get('loyaltyExact');
+  const loyaltyActive = loyaltyMin !== null || loyaltyExact !== null;
+  const loyaltyLabel  = loyaltyExact !== null ? 'за крок до нагороди' : 'готові до нагороди';
+
+  function clearLoyalty() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('loyaltyMin');
+    params.delete('loyaltyExact');
+    router.replace(`/dashboard/clients?${params.toString()}`, { scroll: false });
+  }
+
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
@@ -182,11 +195,16 @@ export function ClientsPage() {
           matchesSegment = seg ? evaluateCustomSegment(c, seg) : true;
         }
 
-        return matchesSearch && matchesRetention && matchesSegment;
+        // M-GROW-01: числовий loyalty-фільтр по total_visits
+        let matchesLoyalty = true;
+        if (loyaltyExact !== null) matchesLoyalty = c.total_visits === Number(loyaltyExact);
+        else if (loyaltyMin !== null) matchesLoyalty = c.total_visits >= Number(loyaltyMin);
+
+        return matchesSearch && matchesRetention && matchesSegment && matchesLoyalty;
       }),
       sort,
     );
-  }, [clients, search, retentionFilter, smartSegment, customSegmentId, customSegments, sort, masterProfile?.retention_cycle_days]);
+  }, [clients, search, retentionFilter, smartSegment, customSegmentId, customSegments, sort, loyaltyMin, loyaltyExact, masterProfile?.retention_cycle_days]);
 
   // ── Virtual list for list-view ──────────────────────────────────────────────
   const listRef = useRef<HTMLDivElement>(null);
@@ -280,6 +298,21 @@ export function ClientsPage() {
 
         {/* Main Content */}
         <div className="lg:col-span-8 flex flex-col gap-6">
+          {/* M-GROW-01: індикатор loyalty deep-link фільтра */}
+          {loyaltyActive && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10 border border-success/20 w-fit">
+              <Gift size={13} className="text-[#0A5526] shrink-0" />
+              <span className="text-[11px] font-bold text-[#0A5526]">Лояльність: {loyaltyLabel}</span>
+              <button
+                type="button"
+                onClick={clearLoyalty}
+                aria-label="Прибрати фільтр лояльності"
+                className="ml-1 flex items-center justify-center size-5 rounded-full hover:bg-success/15 transition-colors text-[#0A5526] active:scale-90"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
           {!isLoading && clients.length > 0 && (
             <div className="flex flex-col gap-3 mt-2">
               {/* Retention filter chips */}

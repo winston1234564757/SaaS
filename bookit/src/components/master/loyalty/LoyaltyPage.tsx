@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Pencil, Trash2, Gift, Users, Loader2, Share2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Plus, Pencil, Trash2, Gift, Users, Loader2, Share2, Check, Flame, TrendingUp } from 'lucide-react';
 import { saveMasterC2CSettings } from '@/app/(master)/dashboard/loyalty/actions';
 import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useLoyaltyStats, type LoyaltyProgramStat } from '@/lib/supabase/hooks/useLoyaltyStats';
 import { useTour } from '@/lib/hooks/useTour';
 import { AnchoredTooltip } from '@/components/ui/AnchoredTooltip';
 import { cn } from '@/lib/utils/cn';
@@ -18,10 +20,6 @@ interface LoyaltyProgram {
   rewardType: string;
   rewardValue: number;
   isActive: boolean;
-}
-
-function formatPrice(kopecks: number) {
-  return kopecks.toLocaleString('uk-UA') + ' ₴';
 }
 
 function ProgramForm({
@@ -90,7 +88,7 @@ function ProgramForm({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl bg-secondary/70 border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
+            className="flex-1 py-2.5 rounded-xl bg-secondary/70 border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors active:scale-95"
           >
             Скасувати
           </button>
@@ -108,8 +106,147 @@ function ProgramForm({
   );
 }
 
+// ── Огляд-картка: pipeline-тріада + impact-смуга (M-GROW-01) ──────────────────
+function OverviewCard({
+  inProgress,
+  ready,
+  oneStep,
+  minTarget,
+  impact,
+  onNavigate,
+}: {
+  inProgress: number;
+  ready: number;
+  oneStep: number;
+  minTarget: number;
+  impact: { given_hryvnia: number; redemptions: number } | undefined;
+  onNavigate: (params: string) => void;
+}) {
+  const segments: { key: string; value: number; label: string; icon: typeof Users; tint: string; chip: string; href: string | null }[] = [
+    { key: 'progress', value: inProgress, label: 'у прогресі', icon: TrendingUp, tint: 'text-foreground', chip: 'bg-secondary text-muted-foreground', href: 'loyaltyMin=1' },
+    { key: 'ready', value: ready, label: 'готові', icon: Check, tint: 'text-success', chip: 'bg-success/12 text-success', href: minTarget > 0 ? `loyaltyMin=${minTarget}` : null },
+    { key: 'step', value: oneStep, label: 'за крок', icon: Flame, tint: 'text-amber-700', chip: 'bg-amber-500/12 text-amber-700', href: minTarget > 1 ? `loyaltyExact=${minTarget - 1}` : null },
+  ];
+
+  return (
+    <div className="bento-card p-5 flex flex-col gap-4">
+      <p className="text-sm text-foreground">
+        <span className="font-semibold tabular-nums">{inProgress}</span>{' '}
+        {inProgress === 1 ? 'клієнт рухається' : 'клієнтів рухаються'} до нагороди
+      </p>
+
+      <div className="flex items-stretch rounded-2xl bg-secondary/30 border border-border/60 overflow-hidden">
+        {segments.map((s, i) => {
+          const Icon = s.icon;
+          const inner = (
+            <>
+              <span className={cn('size-7 rounded-lg flex items-center justify-center shrink-0', s.chip)}>
+                <Icon size={14} />
+              </span>
+              <span className={cn('text-2xl font-semibold tabular-nums leading-none', s.tint)}>{s.value}</span>
+              <span className="text-[11px] text-muted-foreground">{s.label}</span>
+            </>
+          );
+          const cls = cn(
+            'flex-1 flex flex-col items-center justify-center gap-1.5 py-3 min-h-[88px]',
+            i > 0 && 'border-l border-border/60',
+          );
+          return s.href && s.value > 0 ? (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => onNavigate(s.href!)}
+              aria-label={`${s.label}: ${s.value} клієнтів — відкрити список`}
+              className={cn(cls, 'transition-colors hover:bg-secondary/50 active:scale-[0.98] cursor-pointer')}
+            >
+              {inner}
+            </button>
+          ) : (
+            <div key={s.key} className={cls}>{inner}</div>
+          );
+        })}
+      </div>
+
+      {/* Impact-смуга (forward-only) */}
+      <div className="flex items-center gap-2 pt-1 border-t border-secondary/60">
+        {impact && impact.redemptions > 0 ? (
+          <p className="text-xs text-muted-foreground pt-2">
+            За 30 днів:{' '}
+            <span className="font-semibold text-foreground tabular-nums">{impact.given_hryvnia.toLocaleString('uk-UA')} ₴</span>{' '}
+            віддано ·{' '}
+            <span className="font-semibold text-foreground tabular-nums">{impact.redemptions}</span>{' '}
+            {impact.redemptions === 1 ? 'раз' : 'разів'}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground/60 pt-2">Поки порожньо. Перша надана знижка зʼявиться тут</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Міні-прогрес у картці програми ────────────────────────────────────────────
+function ProgramProgress({
+  stat,
+  targetVisits,
+  reduceMotion,
+  onReachedClick,
+}: {
+  stat: LoyaltyProgramStat | undefined;
+  targetVisits: number;
+  reduceMotion: boolean | null;
+  onReachedClick: () => void;
+}) {
+  const onTrack = stat?.on_track ?? 0;
+  const reached = stat?.reached ?? 0;
+  const total = onTrack + reached;
+
+  if (total === 0) {
+    return <p className="text-xs text-muted-foreground/60 mt-3">Ще немає клієнтів на цій програмі</p>;
+  }
+
+  const reachedPct = (reached / total) * 100;
+  const onTrackPct = (onTrack / total) * 100;
+
+  return (
+    <div className="mt-3 flex flex-col gap-1.5">
+      <div className="w-full h-1.5 rounded-full overflow-hidden bg-border/60 flex">
+        <motion.div
+          className="h-full bg-success"
+          initial={reduceMotion ? false : { width: 0 }}
+          animate={{ width: `${reachedPct}%` }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+        />
+        <motion.div
+          className="h-full bg-primary/45"
+          initial={reduceMotion ? false : { width: 0 }}
+          animate={{ width: `${onTrackPct}%` }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.05 }}
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        <span className="tabular-nums">{onTrack}</span> на шляху ·{' '}
+        {reached > 0 ? (
+          <button
+            type="button"
+            onClick={onReachedClick}
+            aria-label={`${reached} клієнтів готові до нагороди — відкрити список`}
+            className="text-[#0D6B2F] font-medium hover:underline active:scale-[0.98] cursor-pointer"
+          >
+            <span className="tabular-nums">{reached}</span> готові
+          </button>
+        ) : (
+          <span><span className="tabular-nums">0</span> готові</span>
+        )}
+      </p>
+    </div>
+  );
+}
+
 export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
   const { masterProfile, refresh } = useMasterContext();
+  const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const seenTours = masterProfile?.seen_tours as Record<string, boolean> | null;
   const masterId = masterProfile?.id;
   const qc = useQueryClient();
@@ -172,7 +309,24 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
     staleTime: 60_000,
   });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['loyaltyPrograms', masterId] });
+  const { overview, impact } = useLoyaltyStats(masterId);
+  const statById = useMemo(() => {
+    const m = new Map<string, LoyaltyProgramStat>();
+    (overview.data?.programs ?? []).forEach(p => m.set(p.id, p));
+    return m;
+  }, [overview.data]);
+
+  const minActiveTarget = useMemo(() => {
+    const targets = programs.filter(p => p.isActive).map(p => p.targetVisits);
+    return targets.length ? Math.min(...targets) : 0;
+  }, [programs]);
+
+  const goToClients = (params: string) => router.push(`/dashboard/clients?${params}`);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['loyaltyPrograms', masterId] });
+    qc.invalidateQueries({ queryKey: ['loyaltyOverview', masterId] });
+  };
 
   const createMutation = useMutation({
     mutationFn: async (data: Omit<LoyaltyProgram, 'id' | 'isActive'>) => {
@@ -222,6 +376,8 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
     onSuccess: () => { invalidate(); setConfirmDelete(null); },
   });
 
+  const showOverview = !isDrawer && programs.length > 0 && overview.data?.has_programs;
+
   return (
     <div className="flex flex-col gap-4 pb-8">
       {!isDrawer && (
@@ -243,16 +399,30 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
         </div>
       )}
 
-      {/* Info banner */}
-      <div className="bento-card p-4 flex items-start gap-3" style={{ background: 'rgba(120, 154, 153, 0.08)' }}>
-        <Gift size={16} className="text-primary shrink-0 mt-0.5" />
-        <div>
-          <p className="text-xs font-semibold text-foreground">Як це працює</p>
-          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            Коли клієнт досягає потрібної кількості візитів, він автоматично отримує знижку при наступному записі через публічну сторінку.
-          </p>
+      {/* Live overview (коли є програми) — інакше пояснювальний банер нижче */}
+      {showOverview && (
+        <OverviewCard
+          inProgress={overview.data!.in_progress}
+          ready={overview.data!.ready}
+          oneStep={overview.data!.one_step}
+          minTarget={minActiveTarget}
+          impact={impact.data}
+          onNavigate={goToClients}
+        />
+      )}
+
+      {/* Info banner — лише в порожньому/онбординг-стані */}
+      {programs.length === 0 && !isLoading && (
+        <div className="bento-card p-4 flex items-start gap-3" style={{ background: 'rgba(120, 154, 153, 0.08)' }}>
+          <Gift size={16} className="text-primary shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-foreground">Як це працює</p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+              Коли клієнт досягає потрібної кількості візитів, він автоматично отримує знижку при наступному записі через публічну сторінку.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Add button */}
       {!showForm && (
@@ -341,6 +511,16 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                         {p.isActive ? 'Активна' : 'Вимкнена'}
                       </span>
                     </div>
+
+                    {/* Progress-aware зріз */}
+                    {p.isActive && (
+                      <ProgramProgress
+                        stat={statById.get(p.id)}
+                        targetVisits={p.targetVisits}
+                        reduceMotion={reduceMotion}
+                        onReachedClick={() => goToClients(`loyaltyMin=${p.targetVisits}`)}
+                      />
+                    )}
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-secondary/60">
                       <div className="flex items-center gap-1">

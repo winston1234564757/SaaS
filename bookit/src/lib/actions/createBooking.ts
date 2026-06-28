@@ -544,6 +544,10 @@ export async function createBooking(
     })(),
     dynamic_extra_kopecks: dynamicExtraKopecks,
     referral_code_used: p.referral_code_used ?? null,
+    // M-GROW-01: persist loyalty redemption for master-side impact stats (forward-only).
+    // loyaltyDiscountAmount = гривні (як total_price); label NULL коли знижки не було.
+    loyalty_label: loyaltyLabel || null,
+    loyalty_amount: loyaltyDiscountAmount,
   });
 
   if (bErr) {
