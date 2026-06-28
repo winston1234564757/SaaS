@@ -64,7 +64,8 @@ interface ProfileMapItem {
       setLoading(true);
       try {
         const [alliancesRes, profilesRes, referralsRes] = await Promise.all([
-          supabase.from('master_alliances').select('inviter_id, invitee_id'),
+          // M-GROW-02: альянс у master_connections. role='inviter' = 1 рядок/напрям (канонічний inviter→invitee).
+          supabase.from('master_connections').select('inviter_id:master_id, invitee_id:other_id').eq('kind', 'alliance').eq('role', 'inviter'),
           supabase.from('master_profiles').select(`
             id, slug, business_name, subscription_tier,
             profiles:profiles!master_profiles_id_fkey ( full_name )

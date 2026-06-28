@@ -203,8 +203,9 @@ export async function applyReferralRewards(
       const [mrCheck, maCheck] = await Promise.all([
         admin.from('master_referrals').select('id')
           .eq('referrer_id', masterRefRes.data.id).eq('referee_id', newMasterId).maybeSingle(),
-        admin.from('master_alliances').select('id')
-          .eq('inviter_id', masterRefRes.data.id).eq('invitee_id', newMasterId).maybeSingle(),
+        // M-GROW-02: альянс тепер у master_connections (kind=alliance). Перевіряємо inviter-сторону.
+        admin.from('master_connections').select('id')
+          .eq('master_id', masterRefRes.data.id).eq('other_id', newMasterId).eq('kind', 'alliance').maybeSingle(),
       ]);
 
       if (!mrCheck.data) {
@@ -218,10 +219,11 @@ export async function applyReferralRewards(
       }
 
       if (!maCheck.data) {
-        const ins = await admin.from('master_alliances').insert({
-          inviter_id: masterRefRes.data.id,
-          invitee_id: newMasterId,
-        });
+        // M-GROW-02: alliance = 2 bilateral master_connections рядки (inviter + invitee сторони).
+        const ins = await admin.from('master_connections').insert([
+          { master_id: masterRefRes.data.id, other_id: newMasterId, kind: 'alliance', status: 'accepted', role: 'inviter' },
+          { master_id: newMasterId, other_id: masterRefRes.data.id, kind: 'alliance', status: 'accepted', role: 'invitee' },
+        ]);
         if (ins.error && ins.error.code !== '23505')
           console.error('[referrals] idempotent M2M alliance insert failed:', ins.error.message);
       }
@@ -318,10 +320,11 @@ export async function applyReferralRewards(
         subscription_expires_at: refStart.toISOString(),
       }).eq('id', mReferrer.id),
 
-      admin.from('master_alliances').insert({
-        inviter_id: mReferrer.id,
-        invitee_id: newMasterId,
-      }),
+      // M-GROW-02: alliance = 2 bilateral master_connections рядки (inviter + invitee сторони).
+      admin.from('master_connections').insert([
+        { master_id: mReferrer.id, other_id: newMasterId, kind: 'alliance', status: 'accepted', role: 'inviter' },
+        { master_id: newMasterId, other_id: mReferrer.id, kind: 'alliance', status: 'accepted', role: 'invitee' },
+      ]),
 
       admin.from('master_referrals').insert({
         referrer_id: mReferrer.id,

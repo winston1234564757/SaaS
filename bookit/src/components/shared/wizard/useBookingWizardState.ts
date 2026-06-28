@@ -222,7 +222,8 @@ export function useBookingWizardState({
           sb.from('client_master_relations').select('total_visits').eq('client_id', userId).eq('master_id', masterId).maybeSingle(),
           sb.from('loyalty_programs').select('name, target_visits, reward_type, reward_value').eq('master_id', masterId).eq('is_active', true),
           sb.from('bookings').select('start_time').eq('client_id', userId).eq('master_id', masterId).eq('status', 'completed').limit(20),
-          sb.from('master_partners').select('partner_id, status, master_profiles!master_partners_partner_id_fkey(id, slug, avatar_emoji, categories, profiles(full_name, avatar_url))').eq('master_id', masterId).eq('status', 'accepted').limit(5),
+          // M-GROW-02: партнери+альянси у master_connections. RLS відсіює невидимі для анон-клієнта.
+          sb.from('master_connections').select('other_id, status, master_profiles!master_connections_other_id_fkey(id, slug, avatar_emoji, categories, profiles(full_name, avatar_url))').eq('master_id', masterId).eq('status', 'accepted').limit(5),
           sb.rpc('get_c2c_balance', { p_referrer_id: userId, p_master_id: masterId }),
         ]).then(([relRes, progRes, histRes, partRes, c2cBalRes]) => {
           if (cancelled) return;
@@ -241,7 +242,7 @@ export function useBookingWizardState({
 
           if (partRes.data) {
             type PartnerRow = {
-              partner_id: string;
+              other_id: string;
               status: string;
               master_profiles: { id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null; avatar_url: string | null } | null } | Array<{ id: string; slug: string; avatar_emoji: string | null; categories: string[] | null; profiles: { full_name: string | null; avatar_url: string | null } | null }> | null;
             };
@@ -249,7 +250,7 @@ export function useBookingWizardState({
               const mp = Array.isArray(p.master_profiles) ? p.master_profiles[0] : p.master_profiles;
               const profile = Array.isArray(mp?.profiles) ? mp.profiles[0] : mp?.profiles;
               return {
-                id: mp?.id || p.partner_id,
+                id: mp?.id || p.other_id,
                 name: profile?.full_name || 'Партнер',
                 slug: mp?.slug || '',
                 emoji: mp?.avatar_emoji || '✨',

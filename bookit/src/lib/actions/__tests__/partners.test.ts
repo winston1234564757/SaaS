@@ -128,8 +128,8 @@ describe('partners — server action integration', () => {
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
-          master_profiles:  [{ data: { id: OTHER_ID } }],
-          master_partners:  [{ data: null }, { error: null }],
+          master_profiles:    [{ data: { id: OTHER_ID } }],
+          master_connections: [{ data: null }, { error: null }],
         }) as any,
       );
       const r = await acceptPartnerInvitation('INVITER');
@@ -143,8 +143,8 @@ describe('partners — server action integration', () => {
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
-          master_profiles: [{ data: { id: OTHER_ID } }],
-          master_partners: [{ data: { id: 'existing-1' } }],
+          master_profiles:    [{ data: { id: OTHER_ID } }],
+          master_connections: [{ data: { id: 'existing-1' } }],
         }) as any,
       );
       const r = await acceptPartnerInvitation('EXIST');
@@ -164,7 +164,7 @@ describe('partners — server action integration', () => {
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: MASTER_ID } } }) },
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
-        makeAdmin({ master_alliances: [{ data: null }] }) as any,
+        makeAdmin({ master_connections: [{ data: null }] }) as any,
       );
       const r = await toggleAllianceVisibility('nonexistent', true);
       expect(r).toEqual({ success: false, error: 'Альянс не знайдено' });
@@ -176,7 +176,7 @@ describe('partners — server action integration', () => {
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
-          master_alliances: [{ data: { id: 'a-1', inviter_id: 'other-1', invitee_id: 'other-2' } }],
+          master_connections: [{ data: { id: 'a-1', master_id: 'other-1' } }],
         }) as any,
       );
       const r = await toggleAllianceVisibility('a-1', true);
@@ -189,7 +189,7 @@ describe('partners — server action integration', () => {
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
-          master_alliances: [{ data: { id: 'a-1', inviter_id: MASTER_ID, invitee_id: OTHER_ID } }],
+          master_connections: [{ data: { id: 'a-1', master_id: MASTER_ID } }],
         }) as any,
       );
       const r = await toggleAllianceVisibility('a-1', true);
@@ -202,7 +202,7 @@ describe('partners — server action integration', () => {
       } as any);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
-          master_alliances: [{ data: { id: 'a-1', inviter_id: OTHER_ID, invitee_id: MASTER_ID } }],
+          master_connections: [{ data: { id: 'a-1', master_id: MASTER_ID } }],
         }) as any,
       );
       const r = await toggleAllianceVisibility('a-1', false);

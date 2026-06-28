@@ -45,57 +45,47 @@ export async function getGrowthPageData(): Promise<GrowthPageData | null> {
     { count: referralCount },
     { count: activeReferralCount },
     { data: historyRpc },
-    { data: partnersData },
-    { data: alliancesData },
+    { data: connectionsData },
   ] = await Promise.all([
     admin.from('loyalty_programs').select('id', { count: 'exact', head: true }).eq('master_id', user.id),
     admin.from('master_profiles').select('id', { count: 'exact', head: true }).eq('referred_by', referralCode),
     admin.from('master_referrals').select('id', { count: 'exact', head: true }).eq('referrer_id', user.id).eq('status', 'active'),
     admin.rpc('get_master_referral_history', { p_referrer_id: user.id }),
-    admin.from('master_partners').select(`
-      id, partner_id, status, created_at, is_visible,
-      partner:master_profiles!master_partners_partner_id_fkey (
+    // M-GROW-02: партнери + альянси обʼєднані в master_connections (bilateral). Один запит, спліт за kind нижче.
+    admin.from('master_connections').select(`
+      id, other_id, kind, status, created_at, is_visible, role,
+      other:master_profiles!master_connections_other_id_fkey (
         id, slug, avatar_emoji,
         profiles ( full_name )
       )
     `).eq('master_id', user.id),
-    admin.from('master_alliances').select(`
-      id, is_visible, inviter_id, invitee_id,
-      inviter:master_profiles!master_alliances_inviter_id_fkey (
-        id, slug, avatar_emoji,
-        profiles ( full_name )
-      ),
-      invitee:master_profiles!master_alliances_invitee_id_fkey (
-        id, slug, avatar_emoji,
-        profiles ( full_name )
-      )
-    `).or(`inviter_id.eq.${user.id},invitee_id.eq.${user.id}`),
   ]);
 
-  const partners = (partnersData ?? []).map((p: any) => {
-    const partnerProfile = Array.isArray(p.partner.profiles) ? p.partner.profiles[0] : p.partner.profiles;
+  const conns = (connectionsData ?? []) as any[];
+
+  const partners = conns.filter(c => c.kind === 'partner').map((p: any) => {
+    const prof = Array.isArray(p.other?.profiles) ? p.other.profiles[0] : p.other?.profiles;
     return {
       id: p.id as string,
-      partnerId: p.partner_id as string,
+      partnerId: p.other_id as string,
       status: p.status as string,
       createdAt: p.created_at as string,
-      slug: p.partner.slug as string,
-      name: (partnerProfile?.full_name as string) || 'Невідомий майстер',
-      emoji: (p.partner.avatar_emoji as string) || '',
+      slug: (p.other?.slug as string) ?? '',
+      name: (prof?.full_name as string) || 'Невідомий майстер',
+      emoji: (p.other?.avatar_emoji as string) || '',
       isVisible: (p.is_visible as boolean) ?? true,
     };
   });
 
-  const alliances = (alliancesData ?? []).map((row: any) => {
-    const other = row.inviter_id === user.id ? row.invitee : row.inviter;
-    const otherProfile = Array.isArray(other?.profiles) ? other?.profiles[0] : other?.profiles;
+  const alliances = conns.filter(c => c.kind === 'alliance').map((row: any) => {
+    const prof = Array.isArray(row.other?.profiles) ? row.other.profiles[0] : row.other?.profiles;
     return {
       id: row.id as string,
       isVisible: row.is_visible as boolean,
-      otherId: other?.id ?? '',
-      slug: other?.slug ?? '',
-      name: otherProfile?.full_name ?? 'Майстер',
-      emoji: other?.avatar_emoji ?? '',
+      otherId: (row.other?.id as string) ?? (row.other_id as string) ?? '',
+      slug: (row.other?.slug as string) ?? '',
+      name: (prof?.full_name as string) ?? 'Майстер',
+      emoji: (row.other?.avatar_emoji as string) ?? '',
     };
   });
 

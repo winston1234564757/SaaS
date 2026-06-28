@@ -266,12 +266,13 @@ export default async function MasterPublicPage(
           .eq('client_id', user.id)
           .eq('status', 'completed')
       : Promise.resolve({ count: null, error: null }),
-    // Accepted + visible bilateral partners for public page
+    // M-GROW-02: видимі прийняті звʼязки (партнери + альянси) для публічної сторінки.
+    // Тепер реально працює для анонів (mc_public_read RLS — стара partners-політика блокувала).
     supabase
-      .from('master_partners')
+      .from('master_connections')
       .select(`
-        partner_id,
-        partner:master_profiles!master_partners_partner_id_fkey (
+        other_id,
+        partner:master_profiles!master_connections_other_id_fkey (
           id, slug, avatar_emoji, categories,
           profiles ( full_name, avatar_url )
         )

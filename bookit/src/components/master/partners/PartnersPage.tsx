@@ -76,6 +76,27 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
   const activePartners = partners.filter(p => p.status === 'accepted');
 
+  // M-GROW-02: партнери + альянси = одна мережа звʼязків. Partner removable, alliance immutable.
+  type Conn = {
+    rowId: string; otherId: string; name: string; slug: string; emoji: string;
+    isVisible: boolean; origin: 'partner' | 'alliance';
+  };
+  const connections: Conn[] = [
+    ...activePartners.map((p): Conn => ({
+      rowId: p.id, otherId: p.partnerId, name: p.name, slug: p.slug, emoji: p.emoji,
+      isVisible: partnerVisibility[p.id] ?? p.isVisible, origin: 'partner',
+    })),
+    ...alliances.map((a): Conn => ({
+      rowId: a.id, otherId: a.otherId, name: a.name, slug: a.slug, emoji: a.emoji,
+      isVisible: allianceVisibility[a.id] ?? a.isVisible, origin: 'alliance',
+    })),
+  ];
+
+  const toggleConn = (c: Conn) =>
+    c.origin === 'partner'
+      ? handleTogglePartnerVisibility(c.rowId)
+      : handleToggleAllianceVisibility(c.rowId);
+
   return (
     <div className="flex flex-col gap-6">
       {!isDrawer && (
@@ -122,8 +143,8 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 <Users size={16} />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Активні партнери</p>
-                <p className="text-sm font-bold text-foreground">{activePartners.length}</p>
+                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">У твоїй мережі</p>
+                <p className="text-sm font-bold text-foreground">{activePartners.length + alliances.length}</p>
               </div>
             </div>
             <div className="w-px h-8 bg-border" />
@@ -134,142 +155,92 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
         </div>
       )}
 
-      {/* Partners List */}
+      {/* M-GROW-02: Обʼєднана мережа — партнери (cross-promo) + альянси (реферали) */}
       <div className="flex flex-col gap-4">
         <h2 className="text-sm font-bold text-foreground uppercase tracking-widest pl-1">
           Зараз у твоїй мережі
         </h2>
 
-        {activePartners.length === 0 ? (
+        {connections.length === 0 ? (
           <div className="bento-card p-12 border-dashed border-2 border-border bg-transparent text-center flex flex-col items-center gap-4">
             <div className="size-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
               <Users size={32} className="text-muted-foreground/40" />
             </div>
             <div>
-              <p className="text-sm font-bold text-foreground">Поки що партнерів не додано</p>
+              <p className="text-sm font-bold text-foreground">Поки що мережа порожня</p>
               <p className="text-xs text-muted-foreground/60 mt-1 italic">Поділися лінком вище з майстрами-знайомими</p>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {activePartners.map((partner) => {
-              const visible = partnerVisibility[partner.id] ?? partner.isVisible;
-              return (
-                <motion.div
-                  key={partner.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bento-card p-4 flex items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground shrink-0 font-bold text-sm">
-                      {partner.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-foreground truncate">{partner.name}</p>
-                      <Link
-                        href={`/${partner.slug}`}
-                        target="_blank"
-                        className="text-[10px] text-primary font-medium flex items-center gap-1 hover:underline"
-                      >
-                        {partner.slug} <ExternalLink size={10} />
-                      </Link>
-                    </div>
+            {connections.map((c) => (
+              <motion.div
+                key={c.rowId}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bento-card p-4 flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground shrink-0 font-bold text-sm">
+                    {c.name.slice(0, 2).toUpperCase()}
                   </div>
-
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button
-                      type="button"
-                      aria-pressed={visible}
-                      aria-label={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
-                      onClick={() => handleTogglePartnerVisibility(partner.id)}
-                      disabled={togglingId === partner.id}
-                      className={cn(
-                        'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 active:scale-[0.95]',
-                        visible
-                          ? 'bg-primary/12 text-primary hover:bg-primary/20'
-                          : 'bg-secondary text-muted-foreground/60 hover:bg-secondary/80',
-                        togglingId === partner.id && 'opacity-50 pointer-events-none',
-                      )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="text-sm font-bold text-foreground truncate">{c.name}</p>
+                      <span className={cn(
+                        'shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md',
+                        c.origin === 'partner' ? 'bg-primary/15 text-[#3F5C5B]' : 'bg-accent/15 text-accent',
+                      )}>
+                        {c.origin === 'partner' ? 'Партнер' : 'Реферал'}
+                      </span>
+                    </div>
+                    <Link
+                      href={`/${c.slug}`}
+                      target="_blank"
+                      className="text-[10px] text-primary font-medium flex items-center gap-1 hover:underline"
                     >
-                      {visible ? <Eye size={14} /> : <EyeOff size={14} />}
-                      {visible ? 'Видно' : 'Приховано'}
-                    </button>
+                      {c.slug} <ExternalLink size={10} />
+                    </Link>
+                  </div>
+                </div>
 
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    type="button"
+                    aria-pressed={c.isVisible}
+                    aria-label={c.isVisible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
+                    onClick={() => toggleConn(c)}
+                    disabled={togglingId === c.rowId}
+                    className={cn(
+                      'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 active:scale-[0.95]',
+                      c.isVisible
+                        ? 'bg-primary/12 text-[#3F5C5B] hover:bg-primary/20'
+                        : 'bg-secondary text-muted-foreground/60 hover:bg-secondary/80',
+                      togglingId === c.rowId && 'opacity-50 pointer-events-none',
+                    )}
+                  >
+                    {c.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+                    {c.isVisible ? 'Видно' : 'Приховано'}
+                  </button>
+
+                  {c.origin === 'partner' && (
                     <button
                       type="button"
                       aria-label="Видалити партнера"
-                      onClick={() => handleDelete(partner.partnerId)}
-                      disabled={isDeleting === partner.partnerId}
+                      onClick={() => handleDelete(c.otherId)}
+                      disabled={isDeleting === c.otherId}
                       className="size-9 rounded-xl flex items-center justify-center text-destructive hover:bg-destructive/10 active:scale-[0.88] transition-colors duration-150 disabled:opacity-50"
                     >
                       <Trash2 size={18} />
                     </button>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  )}
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
-
-      {/* Alliance Visibility — M2M Referral Network */}
-      {alliances.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-bold text-foreground uppercase tracking-widest pl-1">
-            Реферальний альянс
-          </h2>
-          <p className="text-xs text-muted-foreground/60 pl-1 -mt-1">
-            Майстри з вашої реферальної мережі. Увімкніть видимість — вони з'являться на вашій публічній сторінці.
-          </p>
-          <div className="flex flex-col gap-2.5">
-            {alliances.map((al) => {
-              const visible = allianceVisibility[al.id] ?? al.isVisible;
-              return (
-                <motion.div
-                  key={al.id}
-                  layout
-                  className="bento-card p-4 flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground font-bold text-xs flex-shrink-0">
-                      {al.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{al.name}</p>
-                      <Link
-                        href={`/${al.slug}`}
-                        target="_blank"
-                        className="text-[10px] text-primary font-medium flex items-center gap-1 hover:underline"
-                      >
-                        {al.slug} <ExternalLink size={9} />
-                      </Link>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    aria-pressed={visible}
-                    aria-label={visible ? 'Прибрати з публічної сторінки' : 'Показати на публічній сторінці'}
-                    onClick={() => handleToggleAllianceVisibility(al.id)}
-                    disabled={togglingId === al.id}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 active:scale-[0.95]',
-                      visible
-                        ? 'bg-primary/12 text-primary hover:bg-primary/20'
-                        : 'bg-secondary text-muted-foreground/60 hover:bg-secondary/80',
-                      togglingId === al.id && 'opacity-50 pointer-events-none',
-                    )}
-                  >
-                    {visible ? <Eye size={14} /> : <EyeOff size={14} />}
-                    {visible ? 'Видно' : 'Приховано'}
-                  </button>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Instructions */}
       <div className="bento-card p-6 bg-secondary/40 border border-border">

@@ -233,9 +233,9 @@ describe('referrals — server action integration', () => {
             { data: { id: REFERRER_ID, subscription_expires_at: null } },
             { error: null },
           ],
-          client_profiles:  [{ data: null }],  // no client referrer
-          master_alliances: [{ error: null }],
-          master_referrals: [{ error: null }],
+          client_profiles:    [{ data: null }],  // no client referrer
+          master_connections: [{ error: null }],  // M-GROW-02: alliance тепер тут
+          master_referrals:   [{ error: null }],
         }) as any,
       );
       const result = await applyReferralRewards(MASTER_ID, 'M2MREF');
@@ -279,8 +279,8 @@ describe('referrals — server action integration', () => {
           master_profiles: [{ data: { id: REFERRER_ID } }], // M2M referrer
           client_profiles: [{ data: null }],
           // check if relationships already exist → both exist → no insert
-          master_referrals:[{ data: { id: 'mr-1' } }],
-          master_alliances:[{ data: { id: 'ma-1' } }],
+          master_referrals:  [{ data: { id: 'mr-1' } }],
+          master_connections:[{ data: { id: 'ma-1' } }],  // M-GROW-02: alliance check тепер тут
         }) as any,
       );
       const result = await applyReferralRewards(MASTER_ID, 'EXISTR');
