@@ -194,8 +194,11 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const slug = masterSlug || masterProfile?.slug || 'bookit';
 
   const services = useServices(masterId);
-  const selectedSvc = services.find(s => s.id === selectedSvcId) ?? null;
-  const flashWinSvc = services.find(s => s.id === flashWinSvcId) ?? null;
+  // derive effective ids (fall back to first) замість sync-в-effect
+  const activeSvcId = selectedSvcId ?? services[0]?.id ?? null;
+  const activeFlashWinSvcId = flashWinSvcId ?? services[0]?.id ?? null;
+  const selectedSvc = services.find(s => s.id === activeSvcId) ?? null;
+  const flashWinSvc = services.find(s => s.id === activeFlashWinSvcId) ?? null;
 
   const _now = getNow();
   const todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
@@ -215,14 +218,8 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const starReviews = useStarReviews(masterId);
   const pal = PALETTES[palIdx];
   const selectedDeal = flashDeals[dealIdx] ?? null;
-  const selectedReview = starReviews.find(r => r.id === selectedReviewId) ?? null;
-
-  useEffect(() => {
-    if (services.length > 0 && !selectedSvcId) setSelectedSvcId(services[0].id);
-    if (services.length > 0 && !flashWinSvcId) setFlashWinSvcId(services[0].id);
-  }, [services, selectedSvcId, flashWinSvcId]);
-  useEffect(() => { if (starReviews.length > 0 && !selectedReviewId) setSelectedReviewId(starReviews[0].id); }, [starReviews, selectedReviewId]);
-  useEffect(() => { setFlashWinTime(null); }, [flashWinDate, flashWinSvcId]);
+  const activeReviewId = selectedReviewId ?? starReviews[0]?.id ?? null;
+  const selectedReview = starReviews.find(r => r.id === activeReviewId) ?? null;
 
   // ── canvas props ──
   const canvasSharedProps = useMemo<CanvasProps>(() => ({
@@ -251,21 +248,25 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   // ── step completeness (advisory) ──
   const stepCompletion = useMemo(() => {
     const input: StepCompletion = {
-      mode, annoText, slotsDate, vacStart, vacEnd, selectedReviewId, flashWinDate, flashWinTime,
+      mode, annoText, slotsDate, vacStart, vacEnd, selectedReviewId: activeReviewId, flashWinDate, flashWinTime,
       bgPhotoUrl: bgPhotoUrlRaw,
     };
     return Object.fromEntries(STEPS.map(s => [s.id, isStepComplete(s.id, input)])) as Record<StepId, boolean>;
-  }, [mode, annoText, slotsDate, vacStart, vacEnd, selectedReviewId, flashWinDate, flashWinTime, bgPhotoUrlRaw]);
+  }, [mode, annoText, slotsDate, vacStart, vacEnd, activeReviewId, flashWinDate, flashWinTime, bgPhotoUrlRaw]);
 
   // ── state snapshot ──
   const state = useMemo<StoryEditorState>(() => ({
-    palIdx, mode, showAvatar, showSticker, ctaText, annoText, slotsDate, selectedSvcId,
-    vacStart, vacEnd, dealIdx, selectedReviewId, flashWinSvcId, flashWinDate, flashWinTime,
+    palIdx, mode, showAvatar, showSticker, ctaText, annoText, slotsDate,
+    selectedSvcId: activeSvcId,
+    vacStart, vacEnd, dealIdx,
+    selectedReviewId: activeReviewId,
+    flashWinSvcId: activeFlashWinSvcId,
+    flashWinDate, flashWinTime,
     flashWinDiscount, platePos, textAlign, transparency, customBgPhoto, selectedBgPhotoId,
     selectedGradientId, selectedStockId,
   }), [
-    palIdx, mode, showAvatar, showSticker, ctaText, annoText, slotsDate, selectedSvcId,
-    vacStart, vacEnd, dealIdx, selectedReviewId, flashWinSvcId, flashWinDate, flashWinTime,
+    palIdx, mode, showAvatar, showSticker, ctaText, annoText, slotsDate, activeSvcId,
+    vacStart, vacEnd, dealIdx, activeReviewId, activeFlashWinSvcId, flashWinDate, flashWinTime,
     flashWinDiscount, platePos, textAlign, transparency, customBgPhoto, selectedBgPhotoId,
     selectedGradientId, selectedStockId,
   ]);
@@ -286,8 +287,8 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
       setVacEnd: tap(setVacEnd),
       setDealIdx: tap(setDealIdx),
       setSelectedReviewId: tap(setSelectedReviewId),
-      setFlashWinSvcId: tap(setFlashWinSvcId),
-      setFlashWinDate: tap(setFlashWinDate),
+      setFlashWinSvcId: (v) => { setFlashWinSvcId(v); setFlashWinTime(null); onControlChange(); },
+      setFlashWinDate: (v) => { setFlashWinDate(v); setFlashWinTime(null); onControlChange(); },
       setFlashWinTime: tap(setFlashWinTime),
       setFlashWinDiscount: tap(setFlashWinDiscount),
       setPlatePos: tap(setPlatePos),
