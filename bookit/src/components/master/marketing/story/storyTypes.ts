@@ -9,6 +9,20 @@ export type Mode =
   | 'flash_window'
   | 'portfolio_item';
 
+export type StepId = 'type' | 'content' | 'look' | 'style' | 'export';
+
+export interface StepCompletion {
+  mode: Mode;
+  annoText: string;
+  slotsDate: string | null;
+  vacStart: string | null;
+  vacEnd: string | null;
+  selectedReviewId: string | null;
+  flashWinDate: string | null;
+  flashWinTime: string | null;
+  bgPhotoUrl: string | null;
+}
+
 export interface Palette {
   id: string;
   label: string;
